@@ -2,9 +2,7 @@
 const withMDX = require('@next/mdx')({
   extension: /\.mdx?$/,
   options: {
-    providerImportSource: '@mdx-js/react',
-    remarkPlugins: [require('remark-math')],
-    rehypePlugins: [require('rehype-katex')],
+    providerImportSource: '@mdx-js/react'
   }
 });
 
