@@ -71,24 +71,26 @@ import BayesianInference from '../components/BayesianInference';
 <ConceptSection title="Central Limit Theorem">
 We begin with the formal statement of the Central Limit Theorem, which underpins the demo below:
 
-**Theorem (Central Limit Theorem).** Let X̄ be the sample mean of an i.i.d. sample of size n drawn from an unknown population with finite mean μ and variance σ². Then as n → ∞, the standardized variable
+**Theorem (Central Limit Theorem).** Let $\bar X$ be the sample mean of an i.i.d. sample of size $n$ drawn from an unknown population with finite mean $\mu$ and variance $\sigma^2$. Then as $n \to \infty$, the standardized variable
 
-Zₙ = (X̄ - μ) / (σ / √n) → 𝒩(0, 1)
+$$
+Z_n = \frac{\bar X - \mu}{\sigma / \sqrt{n}} \;\to\; \mathcal{N}(0,1)
+$$
 
-**More precisely,** for any real z:
+**More precisely,** for any real $z$:
 
-limₙ→∞ P(Zₙ ≤ z) = Φ(z)
-
-where Φ is the standard normal CDF.
+$$
+\lim_{n\to\infty} P(Z_n \le z) = \Phi(z)
+$$
 
 **Important conditions:**
-- The Xᵢ are independent and identically distributed (i.i.d.).
-- E[Xᵢ] = μ is finite.
-- Var(Xᵢ) = σ² is finite.
+- The $X_i$ are independent and identically distributed (i.i.d.).
+- $E[X_i] = \mu$ is finite.
+- $\mathrm{Var}(X_i) = \sigma^2$ is finite.
 
 **Remarks:**
-- It works even if the original Xᵢ are not normal.
-- Convergence speed depends on skewness/kurtosis; n ≥ 30 is a common rule of thumb.
+- It works even if the original $X_i$ are not normal.
+- Convergence speed depends on skewness/kurtosis; $n \ge 30$ is a common rule of thumb.
 - This justifies using normals to approximate the distribution of sample means.
 
 Below, you’ll see this in action: as you increase your sample size, the histogram of means “morphs” toward the familiar bell curve.
