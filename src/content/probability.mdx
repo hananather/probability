@@ -1,0 +1,130 @@
+import ConceptSection from '../components/ConceptSection.jsx';
+import CoinFlipSimulation from '../components/CoinFlipSimulation.jsx';
+import DistributionSimulationWrapper from '../components/DistributionSimulationWrapper.jsx';
+import CLTSimulationWrapper from '../components/CLTSimulationWrapper.jsx';
+import PointEstimation from '../components/PointEstimation.jsx'
+import ConfidenceInterval from '../components/ConfidenceInterval.jsx'
+import Bootstrapping from '../components/Bootstrapping.jsx'
+import BayesianInference from '../components/BayesianInference';
+
+<div style={{ textAlign: 'center', marginTop: '2rem' }}>
+  <img src="/uo.png" alt="University of Ottawa logo" width={75} height={75} style={{ objectFit: 'contain' }} />
+  <h1>MAT 2377</h1>
+  <h2>Probability and Statistics for Engineers</h2>
+  <p><strong>Authors:</strong> Patrick Boily and Hanan Ather (University of Ottawa)</p>
+  <hr style={{ margin: '2rem auto', width: '50%' }} />
+</div>
+
+# Probability Concepts
+
+<h2 id="chance-events">Chance Events</h2>
+
+<ConceptSection
+  title="Chance Events"
+  description={
+    <>
+      <p>
+        Randomness is all around us. Probability theory is the mathematical
+        framework that allows us to analyze chance events in a logically sound
+        manner. The probability of an event is a number indicating how likely
+        that event will occur. This number is always between 0 and 1, where 0
+        indicates impossibility and 1 indicates certainty.
+      </p>
+      <p>
+        A classic example of a probabilistic experiment is a fair coin toss,
+        in which the two possible outcomes are heads or tails. In this case,
+        the probability of flipping a head or a tail is 1/2. In an actual
+        series of coin tosses, we may get more or less than exactly 50% heads.
+        But as the number of flips increases, the long-run frequency of heads
+        is bound to get closer and closer to 50%.
+      </p>
+    </>
+  }
+>
+  <CoinFlipSimulation />
+</ConceptSection>
+
+<h2 id="expectation-variance">Expectation & Variance</h2>
+
+<ConceptSection
+  title="Expectation & Variance"
+  description={
+    <>
+      <p>
+        For any discrete distribution, its <strong>expectation</strong> indicates
+        the long-run average outcome, while its <strong>variance</strong> measures
+        how spread out the outcomes are around the expectation.
+      </p>
+      <p>
+        Drag the green bars above to adjust the probability of each face on the die.
+        Then roll the die (once or multiple times) to see how the running sample mean
+        (red) and sample variance (teal) converge to their true values.
+      </p>
+    </>
+  }
+>
+  <DistributionSimulationWrapper />
+</ConceptSection>
+
+<h2 id="central-limit-theorem">Central Limit Theorem</h2>
+
+<ConceptSection title="Central Limit Theorem">
+We begin with the formal statement of the Central Limit Theorem, which underpins the demo below:
+
+**Theorem (Central Limit Theorem).** Let X̄ be the sample mean of an i.i.d. sample of size n drawn from an unknown population with finite mean μ and variance σ². Then as n → ∞, the standardized variable
+
+Zₙ = (X̄ - μ) / (σ / √n) → 𝒩(0, 1)
+
+**More precisely,** for any real z:
+
+limₙ→∞ P(Zₙ ≤ z) = Φ(z)
+
+where Φ is the standard normal CDF.
+
+**Important conditions:**
+- The Xᵢ are independent and identically distributed (i.i.d.).
+- E[Xᵢ] = μ is finite.
+- Var(Xᵢ) = σ² is finite.
+
+**Remarks:**
+- It works even if the original Xᵢ are not normal.
+- Convergence speed depends on skewness/kurtosis; n ≥ 30 is a common rule of thumb.
+- This justifies using normals to approximate the distribution of sample means.
+
+Below, you’ll see this in action: as you increase your sample size, the histogram of means “morphs” toward the familiar bell curve.
+
+<CLTSimulationWrapper />
+
+</ConceptSection>
+
+<h2 id="point-estimation">Point Estimation</h2>
+
+<ConceptSection title="Point Estimation">
+  <PointEstimation />
+</ConceptSection>
+
+<h2 id="confidence-interval">Confidence Interval</h2>
+
+<ConceptSection title="Confidence Interval">
+  <ConfidenceInterval />
+</ConceptSection>
+
+<h2 id="bootstrapping">Bootstrapping</h2>
+
+<ConceptSection title="Bootstrapping">
+  <Bootstrapping />
+</ConceptSection>
+
+<h2 id="bayesian-inference">Bayesian Inference</h2>
+
+<ConceptSection title="Bayesian Inference">
+  <BayesianInference />
+  Suppose that on your most recent visit to the doctor's office, you decide to get tested for a rare disease. If you are unlucky enough to receive a positive result, the logical next question is, "Given the test result, what is the probability that I actually have this disease?" (Medical tests are, after all, not perfectly accurate.) Bayes' Theorem tells us exactly how to compute this probability:
+
+P(Disease|+) = (P(+|Disease)P(Disease)) / P(+)
+
+As the equation indicates, the *posterior* probability of having the disease given that the test was positive depends on the *prior* probability of the disease {"P(Disease)"}. Think of this as the incidence of the disease in the general population. Set this probability by dragging the bars below.
+
+
+
+</ConceptSection>
