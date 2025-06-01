@@ -1,11 +1,11 @@
 import ConceptSection from '../components/ConceptSection.jsx';
 import CoinFlipSimulation from '../components/CoinFlipSimulation.jsx';
-import DistributionSimulationWrapper from '../components/DistributionSimulationWrapper.jsx';
+import DistributionSimulation from '../components/DistributionSimulation.jsx';
 import CLTSimulationWrapper from '../components/CLTSimulationWrapper.jsx';
 import PointEstimation from '../components/PointEstimation.jsx'
 import ConfidenceInterval from '../components/ConfidenceInterval.jsx'
 import Bootstrapping from '../components/Bootstrapping.jsx'
-import BayesianInference from '../components/BayesianInference';
+import BayesSimulation from '../components/BayesSimulation';
 
 <div style={{ textAlign: 'center', marginTop: '2rem' }}>
   <img src="/uo.png" alt="University of Ottawa logo" width={75} height={75} style={{ objectFit: 'contain' }} />
@@ -63,7 +63,7 @@ import BayesianInference from '../components/BayesianInference';
     </>
   }
 >
-  <DistributionSimulationWrapper />
+  <DistributionSimulation />
 </ConceptSection>
 
 <h2 id="central-limit-theorem">Central Limit Theorem</h2>
@@ -84,14 +84,14 @@ $$
 $$
 
 **Important conditions:**
-- The $X_i$ are independent and identically distributed (i.i.d.).
-- $E[X_i] = \mu$ is finite.
-- $\mathrm{Var}(X_i) = \sigma^2$ is finite.
+• The $X_i$ are independent and identically distributed (i.i.d.).
+• $E[X_i] = \mu$ is finite.
+• $\mathrm{Var}(X_i) = \sigma^2$ is finite.
 
 **Remarks:**
-- It works even if the original $X_i$ are not normal.
-- Convergence speed depends on skewness/kurtosis; $n \ge 30$ is a common rule of thumb.
-- This justifies using normals to approximate the distribution of sample means.
+• It works even if the original $X_i$ are not normal.
+• Convergence speed depends on skewness/kurtosis; $n \ge 30$ is a common rule of thumb.
+• This justifies using normals to approximate the distribution of sample means.
 
 Below, you’ll see this in action: as you increase your sample size, the histogram of means “morphs” toward the familiar bell curve.
 
@@ -120,7 +120,7 @@ Below, you’ll see this in action: as you increase your sample size, the histog
 <h2 id="bayesian-inference">Bayesian Inference</h2>
 
 <ConceptSection title="Bayesian Inference">
-  <BayesianInference />
+  <BayesSimulation />
   Suppose that on your most recent visit to the doctor's office, you decide to get tested for a rare disease. If you are unlucky enough to receive a positive result, the logical next question is, "Given the test result, what is the probability that I actually have this disease?" (Medical tests are, after all, not perfectly accurate.) Bayes' Theorem tells us exactly how to compute this probability:
 
 P(Disease|+) = (P(+|Disease)P(Disease)) / P(+)

@@ -4,6 +4,7 @@
 
 import React, { useRef, useEffect, useState } from "react";
 import * as d3 from "d3";
+import PriorPlot from "./PriorPlot";
 
 function round(val, digits = 2) {
   return Math.round(val * Math.pow(10, digits)) / Math.pow(10, digits);
@@ -19,7 +20,6 @@ export default function BayesSimulation() {
   const [p_h, setPh] = useState(0.25); // P(+|Healthy)
   const [patients, setPatients] = useState([]); // patient array
   const [m, setM] = useState(0); // number of tested patients
-  const [sorted, setSorted] = useState(false);
   const svgRef = useRef();
   const priorRef = useRef();
   const likelihoodRef = useRef();
@@ -53,7 +53,6 @@ export default function BayesSimulation() {
   useEffect(() => {
     setPatients(generatePatients(200, p, p_d, p_h));
     setM(0);
-    setSorted(false);
   }, [p, p_d, p_h]);
 
   // --- Main Bayes Visualization ---
@@ -195,10 +194,6 @@ export default function BayesSimulation() {
       if (d.positiveTest) positive.push(d);
       else negative.push(d);
     });
-    if (sorted) {
-      positive = positive.filter(d => d.hasDisease).concat(positive.filter(d => !d.hasDisease));
-      negative = negative.filter(d => d.hasDisease).concat(negative.filter(d => !d.hasDisease));
-    }
     // assign new orders for contiguous packing
     positive.forEach((d, i) => d.order = i);
     negative.forEach((d, i) => d.order = i);
@@ -237,7 +232,7 @@ export default function BayesSimulation() {
         .attr("cy", d => y(1) - r - 2 * r * Math.floor(d.order / col) - 1);
 
     circles.exit().remove();
-  }, [m, sorted, patients]);
+  }, [m, patients]);
 
   // --- Likelihood bar plot (drag to set p_d, p_h) ---
   useEffect(() => {
@@ -487,14 +482,13 @@ export default function BayesSimulation() {
 
   // --- Controls ---
   return (
-    <section className="space-y-4">
+    <section className="space-y-8"> {/* Changed to space-y-8 to match original wrapper, or adjust as needed */}
+      <PriorPlot />
       <h3 className="text-lg font-semibold text-white">Bayesian Inference Simulation</h3>
       <div className="flex flex-wrap gap-4 items-center bg-neutral-900 rounded-lg p-4">
         <button className="px-3 py-1 rounded bg-pink-600 text-white" onClick={() => setM(m => Math.min(m + 1, patients.length))}>Test one</button>
         <button className="px-3 py-1 rounded bg-cyan-600 text-white" onClick={() => setM(patients.length)}>Test rest</button>
         <button className="px-3 py-1 rounded bg-gray-600 text-white" onClick={() => setM(0)}>Reset</button>
-        <button className="px-3 py-1 rounded bg-yellow-500 text-white" onClick={() => setSorted(true)}>Sort</button>
-        <button className="px-3 py-1 rounded bg-gray-400 text-white" onClick={() => setSorted(false)}>Unsort</button>
       </div>
       <div className="flex flex-wrap gap-8">
         <div>
