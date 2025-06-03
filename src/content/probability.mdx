@@ -8,6 +8,8 @@ import Bootstrapping from '../components/Bootstrapping.jsx'
 import BayesSimulation from '../components/BayesSimulation';
 import ContinuousDistributionsPDF from '../components/03-continuous-random-variables/ContinuousDistributionsPDF';
 import ContinuousExpectation from '../components/03-continuous-random-variables/ContinuousExpectation';
+import JointNormalPDF from '../components/04-continuous-joint-distributions/JointNormalPDF';
+import ConditionalSliceDemo from '../components/04-continuous-joint-distributions/ConditionalSliceDemo';
 
 
 <div style={{ textAlign: 'center', marginTop: '2rem' }}>
@@ -141,4 +143,20 @@ As the equation indicates, the *posterior* probability of having the disease giv
 
 <ConceptSection title="Expectation & Variance of a Continuous Random Variable">
 <ContinuousExpectation />
+</ConceptSection>
+
+<ConceptSection
+  title="Joint Continuous Distributions"
+  description={
+    <>
+      <p>
+        When dealing with two continuous random variables, their joint behavior is described by a
+        joint probability density function (PDF). Vary the parameters below to explore how
+        correlation shapes the bivariate normal distribution and its conditional slices.
+      </p>
+    </>
+  }
+>
+  <JointNormalPDF />
+  <ConditionalSliceDemo />
 </ConceptSection>
