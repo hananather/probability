@@ -7,7 +7,8 @@ const ExpectationWorkedExample = React.memo(function ExpectationWorkedExample({
   distLabel,
   params,
   pdfFormula,
-  meanValue
+  meanValue,
+  varianceValue
 }) {
   const paramSymbols = {
     normal: ["\\mu", "\\sigma"],
@@ -28,14 +29,17 @@ const ExpectationWorkedExample = React.memo(function ExpectationWorkedExample({
     });
   }
 
-  const integralSetup = `\\mu = \\mathbb{E}[X] = \\int_{-\\infty}^{\\infty} x f(x; ${paramsString}) \\; dx`;
-  const resultLatex = `${distLabel ? distLabel + ' ' : ''}\\text{mean} = ${meanValue?.toFixed(4)}`;
+  const integralSetup = `\\mu = \mathbb{E}[X] = \int_{-\\infty}^{\\infty} x f(x; ${paramsString}) \, dx`;
+  const secondMomentSetup = `\mathbb{E}[X^2] = \int_{-\\infty}^{\\infty} x^2 f(x; ${paramsString}) \, dx`;
+  const ex2Val = varianceValue !== undefined && meanValue !== undefined ? varianceValue + meanValue * meanValue : undefined;
+  const varianceLatex = ex2Val !== undefined ? `\\operatorname{Var}(X) = ${ex2Val.toFixed(4)} - (${meanValue?.toFixed(4)})^2 = ${varianceValue?.toFixed(4)}` : '';
+  const resultLatex = `${distLabel ? distLabel + ' ' : ''}\\mu = ${meanValue?.toFixed(4)}, \; \sigma^2 = ${varianceValue?.toFixed(4)}`;
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.MathJax?.typesetPromise) {
       window.MathJax.typesetPromise();
     }
-  }, [distName, params, meanValue, pdfFormula]);
+  }, [distName, params, meanValue, varianceValue, pdfFormula]);
 
   return (
     <>
@@ -64,7 +68,7 @@ const ExpectationWorkedExample = React.memo(function ExpectationWorkedExample({
         className="text-sm"
       >
         <h4 style={{ fontSize: '1.125rem', fontWeight: '600', borderBottom: '1px solid #4A5568', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
-          Expectation Calculation Steps
+          Expectation & Variance Calculation Steps
         </h4>
         <div style={{ marginBottom: '1rem' }}>
           <p style={{ marginBottom: '0.25rem', fontWeight: '500' }}>1. Definition:</p>
@@ -77,7 +81,15 @@ const ExpectationWorkedExample = React.memo(function ExpectationWorkedExample({
           </div>
         )}
         <div style={{ marginBottom: '1rem' }}>
-          <p style={{ marginBottom: '0.25rem', fontWeight: '500' }}>3. Result:</p>
+          <p style={{ marginBottom: '0.25rem', fontWeight: '500' }}>3. Second Moment:</p>
+          <div dangerouslySetInnerHTML={{ __html: `\\[${secondMomentSetup}\\]` }} />
+        </div>
+        <div style={{ marginBottom: '1rem' }}>
+          <p style={{ marginBottom: '0.25rem', fontWeight: '500' }}>4. Variance:</p>
+          <div dangerouslySetInnerHTML={{ __html: `\\[${varianceLatex}\\]` }} />
+        </div>
+        <div style={{ marginBottom: '1rem' }}>
+          <p style={{ marginBottom: '0.25rem', fontWeight: '500' }}>5. Results:</p>
           <div dangerouslySetInnerHTML={{ __html: `\\[${resultLatex}\\]` }} />
         </div>
       </div>

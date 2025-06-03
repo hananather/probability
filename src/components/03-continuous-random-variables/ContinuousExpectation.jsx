@@ -21,9 +21,10 @@ function ContinuousExpectation() {
   const [params, setParams] = useState(selectedDist.params.map(p => p.default));
   const svgRef = useRef();
   const [meanValue, setMeanValue] = useState(0);
+  const [varianceValue, setVarianceValue] = useState(0);
 
   const calculatePlotData = useCallback(() => {
-    let domain, data = [], meanVal;
+    let domain, data = [], meanVal, varVal;
     const numPoints = 500;
     try {
       switch (selectedDist.value) {
@@ -31,11 +32,13 @@ function ContinuousExpectation() {
           domain = [params[0] - 4 * params[1], params[0] + 4 * params[1]];
           data = d3.range(domain[0], domain[1], (domain[1] - domain[0]) / numPoints).map(xVal => ({ x: xVal, y: jStat.normal.pdf(xVal, params[0], params[1]) }));
           meanVal = jStat.normal.mean(params[0], params[1]);
+          varVal = jStat.normal.variance(params[0], params[1]);
           break;
         case "exponential":
           domain = [0, Math.max(5 / params[0], 5)];
           data = d3.range(domain[0], domain[1], (domain[1] - domain[0]) / numPoints).map(xVal => ({ x: xVal, y: jStat.exponential.pdf(xVal, params[0]) }));
           meanVal = jStat.exponential.mean(params[0]);
+          varVal = jStat.exponential.variance(params[0]);
           break;
         case "gamma":
           const gammaMean = params[0] * params[1];
@@ -44,6 +47,7 @@ function ContinuousExpectation() {
           if(domain[0] >= domain[1]) domain = [0.0001, domain[0]+1];
           data = d3.range(domain[0], domain[1], (domain[1] - domain[0]) / numPoints).map(xVal => ({ x: xVal, y: jStat.gamma.pdf(xVal, params[0], params[1]) }));
           meanVal = jStat.gamma.mean(params[0], params[1]);
+          varVal = jStat.gamma.variance(params[0], params[1]);
           break;
         case "uniform":
           let [ua, ub] = params;
@@ -51,29 +55,32 @@ function ContinuousExpectation() {
           domain = [ua - (ub-ua)*0.2 - 0.5, ub + (ub-ua)*0.2 + 0.5];
           data = d3.range(domain[0], domain[1], (domain[1] - domain[0]) / numPoints).map(xVal => ({ x: xVal, y: jStat.uniform.pdf(xVal, ua, ub) }));
           meanVal = jStat.uniform.mean(ua, ub);
+          varVal = jStat.uniform.variance(ua, ub);
           break;
         case "beta":
           domain = [0, 1];
           if (params[0] <=0 || params[1] <=0) {
-            data = []; meanVal = 0.5;
+            data = []; meanVal = 0.5; varVal = 0.0833;
           } else {
             data = d3.range(0.001, 0.999, (0.999 - 0.001) / numPoints).map(xVal => ({ x: xVal, y: jStat.beta.pdf(xVal, params[0], params[1]) }));
             meanVal = jStat.beta.mean(params[0], params[1]);
+            varVal = jStat.beta.variance(params[0], params[1]);
           }
           break;
         default:
-          domain = [-5, 5]; data = []; meanVal = 0;
+          domain = [-5, 5]; data = []; meanVal = 0; varVal = 1;
       }
-      return { domain, data, meanVal };
+      return { domain, data, meanVal, varVal };
     } catch (error) {
       console.error("Error calculating distribution data:", error);
-      return { domain: [-5,5], data: [], meanVal: 0 };
+      return { domain: [-5,5], data: [], meanVal: 0, varVal: 1 };
     }
   }, [selectedDist.value, params]);
 
   useEffect(() => {
-    const { domain, data: plotData, meanVal } = calculatePlotData();
+    const { domain, data: plotData, meanVal, varVal } = calculatePlotData();
     setMeanValue(meanVal);
+    setVarianceValue(varVal);
 
     d3.select(svgRef.current).selectAll("*").remove();
 
@@ -114,6 +121,7 @@ function ContinuousExpectation() {
     });
 
     svg.append("text").attr("x", width - 10).attr("y", -margin.top / 2 + 15).attr("text-anchor", "end").attr("fill", "#fde047").style("font-size", "14px").style("font-weight", "bold").text(`E[X] = ${meanVal.toFixed(4)}`);
+    svg.append("text").attr("x", width - 10).attr("y", -margin.top / 2 + 35).attr("text-anchor", "end").attr("fill", "#f87171").style("font-size", "14px").style("font-weight", "bold").text(`Var[X] = ${varVal.toFixed(4)}`);
 
     return () => d3.select(svgRef.current).selectAll("*").remove();
   }, [selectedDist, params, calculatePlotData]);
@@ -141,7 +149,7 @@ function ContinuousExpectation() {
   return (
     <section id="expectation-demo" className="space-y-4 my-8 p-6 bg-neutral-800 rounded-lg shadow-xl">
       <h3 className="text-xl font-semibold text-teal-400 border-b border-neutral-700 pb-2 mb-6">
-        Expectation of a Continuous Random Variable
+        Expectation & Variance of a Continuous Random Variable
       </h3>
       <div className="controls grid md:grid-cols-2 gap-6 items-start">
         <div className="space-y-2">
@@ -166,7 +174,7 @@ function ContinuousExpectation() {
         <svg ref={svgRef} style={{width:"100%", height:"auto", display:"block"}} />
       </div>
       <div className="flex justify-center">
-        <ExpectationWorkedExample distName={selectedDist.value} distLabel={selectedDist.label} params={params} pdfFormula={selectedDist.pdfTex} meanValue={meanValue} />
+        <ExpectationWorkedExample distName={selectedDist.value} distLabel={selectedDist.label} params={params} pdfFormula={selectedDist.pdfTex} meanValue={meanValue} varianceValue={varianceValue} />
       </div>
     </section>
   );
