@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import React, { memo } from "react";
+import { Button } from "./ui/button";
 import * as d3 from "d3";
 import { jStat } from "jstat";
 
@@ -197,8 +198,8 @@ function CLTSimulation() {
         draws <input id="draws" type="range" min="1" max="100" step="1" defaultValue="5" className="w-32" />
         <span id="draws-value">5</span>
         <label><input id="theoretical" type="checkbox" defaultChecked /> Show Normal overlay</label>
-        <button id="form_clt" className="px-3 py-1 bg-blue-600 text-white rounded">Drop samples</button>
-        <button onClick={handleReset} className="px-3 py-1 bg-red-600 text-white rounded">Reset</button>
+        <Button id="form_clt" className="bg-blue-600 hover:bg-blue-600/90">Drop samples</Button>
+        <Button onClick={handleReset} className="bg-red-600 hover:bg-red-600/90">Reset</Button>
       </div>
       <div id="clt-graph" style={{width:"100%",maxWidth:"800px",height:"500px",margin:"auto"}} />
     </section>

@@ -5,6 +5,7 @@
 import { useState, useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { jStat } from "jstat";
+import { Button } from "./ui/button";
 
 const margin = { top: 60, right: 20, bottom: 60, left: 20 };
 const width = 700 - margin.left - margin.right;
@@ -407,34 +408,34 @@ export default function Bootstrapping() {
             />
           </label>
         )}
-        <button
-          className="px-3 py-1 rounded bg-blue-600 text-white"
+        <Button
+          className="bg-blue-600 hover:bg-blue-600/90"
           onClick={handleSample}
           disabled={running}
         >
           Draw Sample
-        </button>
-        <button
-          className="px-3 py-1 rounded bg-teal-600 text-white"
+        </Button>
+        <Button
+          className="bg-teal-600 hover:bg-teal-600/90"
           onClick={handleResample}
           disabled={!samples.length || running}
         >
           Resample
-        </button>
-        <button
-          className="px-3 py-1 rounded bg-yellow-500 text-white"
+        </Button>
+        <Button
+          className="bg-yellow-500 hover:bg-yellow-500/90"
           onClick={handleResample100}
           disabled={!samples.length || running}
         >
           Resample ×100
-        </button>
-        <button
-          className="px-3 py-1 rounded bg-gray-600 text-white"
+        </Button>
+        <Button
+          className="bg-gray-600 hover:bg-gray-600/90"
           onClick={reset}
           disabled={running}
         >
           Reset
-        </button>
+        </Button>
       </div>
       <div className="w-full" style={{ maxWidth: 800, margin: "auto" }}>
         <svg ref={svgRef} style={{ width: "100%", height: 500 }} />

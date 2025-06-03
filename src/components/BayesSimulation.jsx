@@ -5,6 +5,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import * as d3 from "d3";
 import PriorPlot from "./PriorPlot";
+import { Button } from "./ui/button";
 
 function round(val, digits = 2) {
   return Math.round(val * Math.pow(10, digits)) / Math.pow(10, digits);
@@ -486,9 +487,9 @@ export default function BayesSimulation() {
       <PriorPlot />
       <h3 className="text-lg font-semibold text-white">Bayesian Inference Simulation</h3>
       <div className="flex flex-wrap gap-4 items-center bg-neutral-900 rounded-lg p-4">
-        <button className="px-3 py-1 rounded bg-pink-600 text-white" onClick={() => setM(m => Math.min(m + 1, patients.length))}>Test one</button>
-        <button className="px-3 py-1 rounded bg-cyan-600 text-white" onClick={() => setM(patients.length)}>Test rest</button>
-        <button className="px-3 py-1 rounded bg-gray-600 text-white" onClick={() => setM(0)}>Reset</button>
+        <Button className="bg-pink-600 hover:bg-pink-600/90" onClick={() => setM(m => Math.min(m + 1, patients.length))}>Test one</Button>
+        <Button className="bg-cyan-600 hover:bg-cyan-600/90" onClick={() => setM(patients.length)}>Test rest</Button>
+        <Button className="bg-gray-600 hover:bg-gray-600/90" onClick={() => setM(0)}>Reset</Button>
       </div>
       <div className="flex flex-wrap gap-8">
         <div>

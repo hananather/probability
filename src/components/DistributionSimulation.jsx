@@ -5,6 +5,7 @@
 import { useState, useRef, useEffect } from "react";
 import * as d3 from "d3";
 import WorkedExample from './WorkedExample';
+import { Button } from "./ui/button";
 
 export default function DistributionSimulation() {
   // probabilities for faces 1–6
@@ -242,9 +243,9 @@ export default function DistributionSimulation() {
             style={{ marginLeft: '0.5rem', width: '60px' }}
           />
         </label>
-        <button onClick={rollOnce} style={{ backgroundColor: '#4f46e5', color: '#fff', border: 'none', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer', fontSize: '1rem' }}>Roll once</button>
-        <button onClick={rollMultiple} style={{ backgroundColor: '#14b8a6', color: '#fff', border: 'none', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer', fontSize: '1rem' }}>Roll {sampleCount} times</button>
-        <button onClick={handleReset} style={{ backgroundColor: '#e53e3e', color: '#fff', border: 'none', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer', fontSize: '1rem' }}>Reset</button>
+        <Button onClick={rollOnce} className="bg-indigo-600 hover:bg-indigo-600/90">Roll once</Button>
+        <Button onClick={rollMultiple} className="bg-teal-500 hover:bg-teal-500/90">Roll {sampleCount} times</Button>
+        <Button onClick={handleReset} className="bg-red-600 hover:bg-red-600/90">Reset</Button>
       </div>
       {/* stats summary */}
       <div style={{ display: 'flex', justifyContent: 'space-around', gap: '1rem', margin: '1rem 0', color: '#fff', width: '100%', maxWidth: '500px' }}>

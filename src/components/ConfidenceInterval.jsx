@@ -5,6 +5,7 @@
 import { useState, useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { jStat } from "jstat";
+import { Button } from "./ui/button";
 
 const margin = { top: 15, right: 5, bottom: 15, left: 5 };
 const width = 800;
@@ -360,18 +361,18 @@ export default function ConfidenceInterval() {
             />
           </label>
         )}
-        <button
-          className={`px-3 py-1 rounded text-white ${running ? "bg-red-600" : "bg-blue-600"}`}
+        <Button
+          className={running ? "bg-red-600 hover:bg-red-600/90" : "bg-blue-600 hover:bg-blue-600/90"}
           onClick={() => setRunning(r => !r)}
         >
           {running ? "Stop" : "Start"}
-        </button>
-        <button
-          className="px-3 py-1 rounded bg-gray-600 text-white"
+        </Button>
+        <Button
+          className="bg-gray-600 hover:bg-gray-600/90"
           onClick={resetCI}
         >
           Reset
-        </button>
+        </Button>
       </div>
       <div className="w-full" style={{ maxWidth: 820, margin: "auto" }}>
         <svg ref={svgRef} style={{ width: "100%", height: 600 }} />

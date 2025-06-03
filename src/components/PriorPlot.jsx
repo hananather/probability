@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import * as d3 from "d3";
 import { beta } from "jstat";
+import { Button } from "./ui/button";
 
 function round(val, digits = 2) {
   return Math.round(val * Math.pow(10, digits)) / Math.pow(10, digits);
@@ -147,24 +148,24 @@ const PriorPlot = () => {
             className="mx-2 w-16"
           />
         </label>
-        <button
-          className="px-3 py-1 rounded bg-blue-600 text-white"
+        <Button
+          className="bg-blue-600 hover:bg-blue-600/90"
           onClick={() => flipCoin(1)}
         >
           Flip 1
-        </button>
-        <button
-          className="px-3 py-1 rounded bg-teal-600 text-white"
+        </Button>
+        <Button
+          className="bg-teal-600 hover:bg-teal-600/90"
           onClick={() => flipCoin(10)}
         >
           Flip 10
-        </button>
-        <button
-          className="px-3 py-1 rounded bg-gray-600 text-white"
+        </Button>
+        <Button
+          className="bg-gray-600 hover:bg-gray-600/90"
           onClick={reset}
         >
           Reset
-        </button>
+        </Button>
       </div>
       <div className="w-full" style={{ maxWidth: 800, margin: "auto" }}>
         <svg ref={svgRef} style={{ width: "100%", height: 400 }} />
