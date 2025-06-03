@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { Button } from './ui/button';
 
 const CANVAS_SIZE = 500;
 const CIRCLE_COLOR = 'rgba(249,115,22,0.3)'; // primary-500 semi-transparent
@@ -114,24 +115,9 @@ function PointEstimation() {
         </div>
         {/* Buttons */}
         <div className="controls flex flex-wrap gap-4 items-center mb-4">
-          <button
-            className="px-3 py-1 bg-blue-600 text-white rounded"
-            onClick={() => dropDots(100, 10)}
-          >
-            Drop 100 Samples
-          </button>
-          <button
-            className="px-3 py-1 bg-blue-600 text-white rounded"
-            onClick={() => dropDots(1000, 1)}
-          >
-            Drop 1000 Samples
-          </button>
-          <button
-            className="px-3 py-1 bg-red-600 text-white rounded"
-            onClick={handleReset}
-          >
-            Reset
-          </button>
+          <Button onClick={() => dropDots(100, 10)}>Drop 100 Samples</Button>
+          <Button onClick={() => dropDots(1000, 1)}>Drop 1000 Samples</Button>
+          <Button className="bg-red-600 hover:bg-red-600/90" onClick={handleReset}>Reset</Button>
         </div>
       </div>
       {/* Right: Canvas */}

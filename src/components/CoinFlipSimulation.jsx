@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import * as d3 from "d3";
+import { Button } from "./ui/button";
 
 // Interactive coin flip simulation component
 export default function CoinFlipSimulation() {
@@ -126,11 +127,11 @@ export default function CoinFlipSimulation() {
   }, [counts, trueProb]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+    <div className="flex flex-col items-center">
       {/* True probability slider */}
-      <div style={{ marginBottom: "1rem" }}>
-        <label>
-          True Heads Probability:
+      <div className="mb-4">
+        <label className="flex items-center gap-2">
+          <span>True Heads Probability:</span>
           <input
             type="range"
             min="0"
@@ -138,15 +139,15 @@ export default function CoinFlipSimulation() {
             step="0.01"
             value={trueProb}
             onChange={e => setTrueProb(+e.target.value)}
-            style={{ margin: "0 0.5rem", cursor: "pointer" }}
+            className="cursor-pointer"
           />
           {Math.round(trueProb * 100)}%
         </label>
       </div>
       {/* Batch flip controls */}
-      <div style={{ marginBottom: "1rem", display: "flex", alignItems: "center" }}>
-        <label style={{ marginRight: "0.5rem" }}>
-          Sample Size:
+      <div className="mb-4 flex items-center">
+        <label className="mr-2 flex items-center gap-2">
+          <span>Sample Size:</span>
           <input
             type="number"
             min="1"
@@ -158,48 +159,31 @@ export default function CoinFlipSimulation() {
               if (!isNaN(num)) setSampleCount(Math.min(100, Math.max(1, num)));
             }}
             onBlur={() => inputValue === "" && setInputValue(String(sampleCount))}
-            style={{ marginLeft: "0.5rem", width: "60px" }}
+            className="ml-1 w-16 rounded bg-neutral-700 px-2 py-1 text-white"
           />
         </label>
-        <button
-          onClick={handleMultipleFlip}
-          style={{ backgroundColor: "#4f46e5", color: "#fff", border: "none", padding: "0.5rem 1rem", borderRadius: "4px", cursor: "pointer" }}
-        >
-          Flip {sampleCount} times
-        </button>
+        <Button onClick={handleMultipleFlip} className="ml-2">Flip {sampleCount} times</Button>
       </div>
       {/* Summary & legend */}
-      <p style={{ margin: "0.5rem 0", fontSize: "1.1rem", fontWeight: "500" }}>
-        Total flips: {counts[0] + counts[1]}
-      </p>
-      <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
-        <span style={{ display: "flex", alignItems: "center" }}>
-          <span style={{ width: "16px", height: "16px", backgroundColor: "#4f46e5", borderRadius: "3px", marginRight: "0.5rem" }} />
+      <p className="my-2 text-lg font-medium">Total flips: {counts[0] + counts[1]}</p>
+      <div className="mb-4 flex gap-6">
+        <span className="flex items-center">
+          <span className="mr-2 h-4 w-4 rounded bg-indigo-600" />
           Observed outcomes
         </span>
-        <span style={{ display: "flex", alignItems: "center" }}>
-          <span style={{ width: "16px", height: "16px", backgroundColor: "#14b8a6", borderRadius: "3px", marginRight: "0.5rem" }} />
+        <span className="flex items-center">
+          <span className="mr-2 h-4 w-4 rounded bg-teal-500" />
           True probabilities
         </span>
       </div>
       {/* D3 chart */}
-      <div style={{ width: "400px" }}>
-        <svg ref={svgRef} style={{ width: "100%", height: "200px" }} />
+      <div className="w-[400px]">
+        <svg ref={svgRef} className="h-[200px] w-full" />
       </div>
       {/* Action buttons */}
-      <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
-        <button
-          onClick={handleFlip}
-          style={{ backgroundColor: "#4f46e5", color: "#fff", border: "none", padding: "0.6rem 1.2rem", borderRadius: "4px", cursor: "pointer", fontSize: "1rem" }}
-        >
-          Flip once
-        </button>
-        <button
-          onClick={handleReset}
-          style={{ backgroundColor: "#e53e3e", color: "#fff", border: "none", padding: "0.6rem 1.2rem", borderRadius: "4px", cursor: "pointer", fontSize: "1rem" }}
-        >
-          Reset
-        </button>
+      <div className="mt-4 flex gap-4">
+        <Button onClick={handleFlip}>Flip once</Button>
+        <Button className="bg-red-600 hover:bg-red-600/90" onClick={handleReset}>Reset</Button>
       </div>
     </div>
   );
