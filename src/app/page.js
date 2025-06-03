@@ -6,6 +6,9 @@
 import Probability from "../content/probability.mdx";
 
 export default function Home() {
-  // Render the compiled MDX React component
-  return <Probability />;
+  return (
+    <div className="space-y-8">
+      <Probability />
+    </div>
+  );
 }
