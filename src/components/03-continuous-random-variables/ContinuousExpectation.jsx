@@ -8,6 +8,14 @@ const margin = { top: 60, right: 40, bottom: 70, left: 60 };
 const width = 800 - margin.left - margin.right;
 const height = 500 - margin.top - margin.bottom;
 
+const domainMap = {
+  normal: [-25, 25],
+  exponential: [0, 60],
+  gamma: [0, 120],
+  uniform: [-6, 6],
+  beta: [0, 1]
+};
+
 const distributionOptions = [
   { value: "normal", label: "Normal", params: [{name: "μ (Mean)", min: -5, max:5, step:0.1, default: 0}, {name: "σ (Std Dev)", min: 0.1, max: 5, step:0.1, default: 1}], pdfTex: "\\frac{1}{\\sigma\\sqrt{2\\pi}} e^{-\\frac{1}{2}\\left(\\frac{x-\\mu}{\\sigma}\\right)^2}" },
   { value: "exponential", label: "Exponential", params: [{name: "λ (Rate)", min: 0.1, max: 5, step:0.1, default: 1}], pdfTex: "\\lambda e^{-\\lambda x}, \\quad x \\ge 0" },
@@ -24,27 +32,22 @@ function ContinuousExpectation() {
   const [varianceValue, setVarianceValue] = useState(0);
 
   const calculatePlotData = useCallback(() => {
-    let domain, data = [], meanVal, varVal;
+    let data = [], meanVal, varVal;
+    const domain = domainMap[selectedDist.value] || [-5, 5];
     const numPoints = 500;
     try {
       switch (selectedDist.value) {
         case "normal":
-          domain = [params[0] - 4 * params[1], params[0] + 4 * params[1]];
           data = d3.range(domain[0], domain[1], (domain[1] - domain[0]) / numPoints).map(xVal => ({ x: xVal, y: jStat.normal.pdf(xVal, params[0], params[1]) }));
           meanVal = jStat.normal.mean(params[0], params[1]);
           varVal = jStat.normal.variance(params[0], params[1]);
           break;
         case "exponential":
-          domain = [0, Math.max(5 / params[0], 5)];
           data = d3.range(domain[0], domain[1], (domain[1] - domain[0]) / numPoints).map(xVal => ({ x: xVal, y: jStat.exponential.pdf(xVal, params[0]) }));
           meanVal = jStat.exponential.mean(params[0]);
           varVal = jStat.exponential.variance(params[0]);
           break;
         case "gamma":
-          const gammaMean = params[0] * params[1];
-          const gammaStdDev = Math.sqrt(params[0]) * params[1];
-          domain = [Math.max(0.0001, gammaMean - 4 * gammaStdDev), Math.max(gammaMean + 4 * gammaStdDev, 5)];
-          if(domain[0] >= domain[1]) domain = [0.0001, domain[0]+1];
           data = d3.range(domain[0], domain[1], (domain[1] - domain[0]) / numPoints).map(xVal => ({ x: xVal, y: jStat.gamma.pdf(xVal, params[0], params[1]) }));
           meanVal = jStat.gamma.mean(params[0], params[1]);
           varVal = jStat.gamma.variance(params[0], params[1]);
@@ -52,13 +55,11 @@ function ContinuousExpectation() {
         case "uniform":
           let [ua, ub] = params;
           if (ua >= ub) { ub = ua + 0.1; }
-          domain = [ua - (ub-ua)*0.2 - 0.5, ub + (ub-ua)*0.2 + 0.5];
           data = d3.range(domain[0], domain[1], (domain[1] - domain[0]) / numPoints).map(xVal => ({ x: xVal, y: jStat.uniform.pdf(xVal, ua, ub) }));
           meanVal = jStat.uniform.mean(ua, ub);
           varVal = jStat.uniform.variance(ua, ub);
           break;
         case "beta":
-          domain = [0, 1];
           if (params[0] <=0 || params[1] <=0) {
             data = []; meanVal = 0.5; varVal = 0.0833;
           } else {
@@ -68,7 +69,7 @@ function ContinuousExpectation() {
           }
           break;
         default:
-          domain = [-5, 5]; data = []; meanVal = 0; varVal = 1;
+          data = []; meanVal = 0; varVal = 1;
       }
       return { domain, data, meanVal, varVal };
     } catch (error) {
