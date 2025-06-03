@@ -20,6 +20,13 @@ function CLTSimulation() {
   useEffect(() => {
     // clear previous
     d3.select("#clt-graph").selectAll("*").remove();
+    const alphaInput = d3.select("#alpha_clt");
+    const betaInput = d3.select("#beta_clt");
+    const sampleInput = d3.select("#sample");
+    const drawsInput = d3.select("#draws");
+    const showNormInput = d3.select("#theoretical");
+    const startBtn = d3.select("#form_clt");
+    let interval;
     function clt() {
       var dt=100, nLocal=n, alphaLocal=alpha, betaLocal=beta;
       var drawsLocal=draws, counts=[];
@@ -165,18 +172,28 @@ function CLTSimulation() {
       }
       function start(){var maxB=200,maxK=Math.max(1,Math.floor(maxB/nLocal));var K=drawsLocal>maxK?(console.warn(`Capping draws to ${maxK}`),maxK):drawsLocal;dt=350/Math.pow(1.04,K);var c=0;interval=setInterval(()=>{tick();if(++c===K)clearInterval(interval);},dt);}
       function reset(){clearInterval(interval);counts=[];svg.selectAll(".bar, circle").remove();yH.domain([0,3]);drawSampling();}
-      d3.select("#alpha_clt").on("input",function(){alphaLocal=+this.value;d3.select("#alpha_clt-value").text(alphaLocal);reset();});
-      d3.select("#beta_clt").on("input",function(){betaLocal=+this.value;d3.select("#beta_clt-value").text(betaLocal);reset();});
-      d3.select("#sample").on("input",function(){nLocal=+this.value;d3.select("#sample-value").text(nLocal);reset();});
-      d3.select("#draws").on("input",function(){drawsLocal=+this.value;d3.select("#draws-value").text(drawsLocal);});
-      d3.select("#theoretical").on("change", function() {
+      alphaInput.on("input",function(){alphaLocal=+this.value;d3.select("#alpha_clt-value").text(alphaLocal);reset();});
+      betaInput.on("input",function(){betaLocal=+this.value;d3.select("#beta_clt-value").text(betaLocal);reset();});
+      sampleInput.on("input",function(){nLocal=+this.value;d3.select("#sample-value").text(nLocal);reset();});
+      drawsInput.on("input",function(){drawsLocal=+this.value;d3.select("#draws-value").text(drawsLocal);});
+      showNormInput.on("change", function() {
         setShowNorm(this.checked);
       });
-      d3.select("#form_clt").on("click",()=>{clearInterval(interval);start();});
+      startBtn.on("click",()=>{clearInterval(interval);start();});
       drawSampling();
     }
     clt();
-    return ()=>d3.select("#clt-graph").selectAll("*").remove();
+    return () => {
+      // remove listeners and timers
+      alphaInput.on("input", null);
+      betaInput.on("input", null);
+      sampleInput.on("input", null);
+      drawsInput.on("input", null);
+      showNormInput.on("change", null);
+      startBtn.on("click", null);
+      clearInterval(interval);
+      d3.select("#clt-graph").selectAll("*").remove();
+    };
   },[alpha,beta,n,draws,showNorm]);
 
   // Reset entire page state
