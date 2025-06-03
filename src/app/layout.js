@@ -1,17 +1,12 @@
 "use client";
+export const dynamic = 'force-dynamic';
 import './globals.css';
 import 'katex/dist/katex.min.css';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 
-const geistSans = GeistSans({
-  subsets: ['latin'],
-  variable: '--font-geist-sans',
-});
-const geistMono = GeistMono({
-  subsets: ['latin'],
-  variable: '--font-geist-mono',
-});
+const geistSans = GeistSans;
+const geistMono = GeistMono;
 import { Typography } from '../components/ui/typography';
 import { SidebarProvider, SidebarTrigger, useSidebar } from '../components/ui/sidebar';
 import { AppSidebar } from '../components/AppSidebar';
