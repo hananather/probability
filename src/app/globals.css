@@ -40,12 +40,14 @@ svg text {
 input[type="range"]::-webkit-slider-thumb,
 input[type="range"]::-moz-range-thumb,
 input[type="range"]::-ms-thumb {
-  background: var(--accent);
+  background: #e5e5e7;  /* Light gray thumb for visibility */
   appearance: none;
   width: 16px;
   height: 16px;
   border-radius: 50%;
   cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  border: 1px solid #71717a;
 }
 
 input[type="range"] {
@@ -56,7 +58,7 @@ input[type="range"] {
 
 input[type="range"]::-webkit-slider-runnable-track,
 input[type="range"]::-moz-range-track {
-  background: #374151;
+  background: #52525b;  /* Lighter gray for better contrast */
   height: 4px;
   border-radius: 2px;
 }
