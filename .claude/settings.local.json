@@ -20,7 +20,15 @@
       "Bash(git branch:*)",
       "Bash(echo:*)",
       "Bash(npm run build:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(git rm:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(true)",
+      "Bash(git push:*)",
+      "Bash(npm run lint)",
+      "WebFetch(domain:www.anthropic.com)"
     ],
     "deny": []
   }

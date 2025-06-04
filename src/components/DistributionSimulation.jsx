@@ -6,10 +6,9 @@ import {
   VisualizationContainer, 
   VisualizationSection,
   GraphContainer,
-  ControlGroup,
-  StatsDisplay
+  ControlGroup
 } from './ui/VisualizationContainer';
-import { colors, typography, components, formatNumber, cn, createColorScheme } from '../lib/design-system';
+import { colors, typography, formatNumber, cn, createColorScheme } from '../lib/design-system';
 import { RangeSlider } from './ui/RangeSlider';
 
 // Use sampling color scheme
@@ -43,16 +42,10 @@ export default function DistributionSimulation() {
     return sum + p * Math.pow(x - trueExpectation, 2);
   }, 0);
   const trueE2 = probs.reduce((sum, p, i) => sum + p * Math.pow(i + 1, 2), 0);
+  
+  // Tooltip state for drag feedback
+  const [tooltip, setTooltip] = useState({ show: false, x: 0, y: 0, value: 0 });
 
-  const e1 = trueExpectation.toFixed(1);
-  const e2 = trueE2.toFixed(1);
-  const varVal = trueVariance.toFixed(1);
-  const terms = probs.map((p, i) => `${i+1}\\cdot${p.toFixed(1)}`).join(' + ');
-  const squaredTerms = probs.map((p, i) => `${(i+1)*(i+1)}\\cdot${p.toFixed(1)}`).join(' + ');
-  const meanLatex = `\\mu = \\mathbb{E}[X] = \\sum_{i=1}^{6} ${terms} = ${e1}`;
-  const ex2Latex = `\\mathbb{E}[X^2] = \\sum_{i=1}^{6} ${squaredTerms} = ${e2}`;
-  const varLatex = `\\operatorname{Var}(X) = ${e2} - (${e1})^2 = ${varVal}`;
-  const finalLatex = `\\mu = ${e1}, \\quad \\sigma^2 = ${varVal}`;
 
   // sample distribution stats
   const sampleTotal = counts.reduce((a, b) => a + b, 0);
@@ -135,8 +128,19 @@ export default function DistributionSimulation() {
       .attr("fill", colors.chart.text)
       .style("font-size", "11px");
 
-    // Bars with hover and drag
-    const bars = g.selectAll("rect").data(data).join("rect")
+    // Create invisible hit areas for better drag interaction
+    const hitAreas = g.selectAll("rect.hit-area").data(data).join("rect")
+      .attr("class", "hit-area")
+      .attr("x", d => x(d.face))
+      .attr("y", 0)
+      .attr("width", x.bandwidth())
+      .attr("height", innerHeight)
+      .attr("fill", "transparent")
+      .style("cursor", "ns-resize");
+
+    // Visible bars
+    const bars = g.selectAll("rect.bar").data(data).join("rect")
+      .attr("class", "bar")
       .attr("x", d => x(d.face))
       .attr("y", d => y(d.value))
       .attr("width", x.bandwidth())
@@ -144,71 +148,84 @@ export default function DistributionSimulation() {
       .attr("fill", colorScheme.chart.primary)
       .attr("opacity", 0.8)
       .attr("rx", 4)
-      .style("cursor", "ns-resize")
-      .on("mouseover", function(event, d) { 
-        d3.select(this)
+      .style("pointer-events", "none"); // Disable pointer events on visible bars
+
+    // Hover effects on hit areas
+    hitAreas
+      .on("mouseover", function(_, d) { 
+        bars.filter(b => b.face === d.face)
           .transition()
           .duration(150)
           .attr("opacity", 1)
           .attr("fill", colorScheme.chart.primaryLight); 
       })
-      .on("mouseout", function(event, d) { 
-        d3.select(this)
+      .on("mouseout", function(_, d) { 
+        bars.filter(b => b.face === d.face)
           .transition()
           .duration(150)
           .attr("opacity", 0.8)
           .attr("fill", colorScheme.chart.primary); 
       });
 
-    // Drag behavior with proper coordinate handling
-    bars.call(
-      d3.drag()
-        .on("start", function(event, d) {
-          d3.select(this).attr("opacity", 1);
-        })
-        .on("drag", function(event, d) {
-          // Get mouse position relative to the chart area
-          const [mouseX, mouseY] = d3.pointer(event, g.node());
-          const newVal = Math.max(0.01, Math.min(0.99, y.invert(mouseY)));
-          const oldVal = probs[d.face - 1];
-          
-          // Calculate new probabilities maintaining sum = 1
-          let updated = [...probs];
-          updated[d.face - 1] = newVal;
-          
-          // Redistribute the difference among other faces
-          const diff = oldVal - newVal;
-          const otherSum = 1 - oldVal;
-          
-          if (otherSum > 0.01) {
-            // Proportionally adjust other probabilities
-            for (let i = 0; i < 6; i++) {
-              if (i !== d.face - 1) {
-                updated[i] = probs[i] + (probs[i] / otherSum) * diff;
-              }
-            }
-          } else {
-            // If this was the only non-zero probability, distribute evenly
-            const share = (1 - newVal) / 5;
-            for (let i = 0; i < 6; i++) {
-              if (i !== d.face - 1) {
-                updated[i] = share;
-              }
-            }
-          }
-          
-          // Ensure sum is exactly 1 (handle floating point errors)
-          const sum = updated.reduce((a, b) => a + b, 0);
+    // Simple drag behavior that works
+    const dragBehavior = d3.drag()
+      .on("start", function(_, d) {
+        // Highlight the bar being dragged
+        bars.filter(b => b.face === d.face)
+          .attr("opacity", 1)
+          .attr("fill", colorScheme.chart.primaryLight);
+        
+        // Show tooltip
+        const rect = this.getBoundingClientRect();
+        setTooltip({ 
+          show: true, 
+          x: rect.left + rect.width / 2, 
+          y: rect.top - 40,
+          value: probs[d.face - 1]
+        });
+      })
+      .on("drag", function(event, d) {
+        // Direct conversion from mouse position to probability - simple and effective!
+        const newVal = Math.max(0, Math.min(1, y.invert(event.y)));
+        const oldVal = probs[d.face - 1];
+        
+        // Update tooltip
+        const rect = this.getBoundingClientRect();
+        setTooltip({ 
+          show: true, 
+          x: rect.left + rect.width / 2, 
+          y: rect.top - 40,
+          value: newVal
+        });
+        
+        // Redistribute probabilities using the exact formula from your working code
+        let updated = probs.map((p, idx) =>
+          idx === d.face - 1 ? newVal : (oldVal === 1 ? (1 - newVal) / 5 : p * (1 - newVal) / (1 - oldVal))
+        );
+        
+        // Ensure all values are non-negative and normalize to sum = 1
+        updated = updated.map(p => Math.max(0, p));
+        const sum = updated.reduce((a, b) => a + b, 0);
+        if (sum > 0) {
           updated = updated.map(p => p / sum);
-          
-          setProbs(updated);
-          expectedDataRef.current = [];
-          varianceDataRef.current = [];
-        })
-        .on("end", function(event, d) {
-          d3.select(this).attr("opacity", 0.8);
-        })
-    );
+        }
+        
+        setProbs(updated);
+        expectedDataRef.current = [];
+        varianceDataRef.current = [];
+      })
+      .on("end", function(_, d) {
+        // Reset bar appearance
+        bars.filter(b => b.face === d.face)
+          .attr("opacity", 0.8)
+          .attr("fill", colorScheme.chart.primary);
+        
+        // Hide tooltip
+        setTooltip({ show: false, x: 0, y: 0, value: 0 });
+      });
+    
+    // Apply drag behavior to hit areas
+    hitAreas.call(dragBehavior);
 
     // Percentage labels (non-interactive to not interfere with drag)
     g.selectAll("text.bar-label").data(data).join("text")
@@ -583,7 +600,10 @@ export default function DistributionSimulation() {
         <div className="lg:w-2/3 space-y-4">
           {/* Probability Distribution */}
           <GraphContainer height="300px">
-            <h4 className="text-sm font-semibold text-white mb-2 px-4 pt-3">Probability Distribution (drag bars to adjust)</h4>
+            <h4 className="text-sm font-semibold text-white mb-2 px-4 pt-3">
+              Probability Distribution 
+              <span className="text-xs font-normal text-gray-400 ml-2">(drag bars up/down to adjust)</span>
+            </h4>
             <svg ref={barSvgRef} style={{ width: "100%", height: 280 }} />
           </GraphContainer>
 
@@ -597,8 +617,29 @@ export default function DistributionSimulation() {
 
       {/* Worked Example */}
       <VisualizationSection divider className="mt-4">
-        <WorkedExample probs={displayProbs} />
+        <WorkedExample key={displayProbs.join(',')} probs={displayProbs} />
       </VisualizationSection>
+      
+      {/* Tooltip for drag feedback */}
+      {tooltip.show && (
+        <div
+          style={{
+            position: 'fixed',
+            left: tooltip.x,
+            top: tooltip.y,
+            transform: 'translateX(-50%)',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            color: 'white',
+            padding: '4px 8px',
+            borderRadius: '4px',
+            fontSize: '12px',
+            pointerEvents: 'none',
+            zIndex: 1000
+          }}
+        >
+          {(tooltip.value * 100).toFixed(1)}%
+        </div>
+      )}
     </VisualizationContainer>
   );
 }

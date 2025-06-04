@@ -14,16 +14,27 @@ export const WorkedExampleContainer = ({
   const contentRef = useRef(null);
   
   useEffect(() => {
-    if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-      // Clear and re-process MathJax
-      if (window.MathJax.typesetClear) {
-        window.MathJax.typesetClear([contentRef.current]);
+    // Process MathJax when component mounts or updates
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        // Clear and re-process MathJax
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
+          console.error('MathJax error in WorkedExampleContainer:', err);
+        });
       }
-      window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-        console.error('MathJax error in WorkedExampleContainer:', err);
-      });
-    }
-  });
+    };
+    
+    // Try to process immediately
+    processMathJax();
+    
+    // Also try after a small delay in case MathJax isn't ready
+    const timeoutId = setTimeout(processMathJax, 100);
+    
+    return () => clearTimeout(timeoutId);
+  }, [children]); // Re-run when children change
   
   return (
     <div
