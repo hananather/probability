@@ -37,17 +37,41 @@ svg text {
 }
 
 /* Range input styling */
-input[type="range"]::-webkit-slider-thumb,
-input[type="range"]::-moz-range-thumb,
-input[type="range"]::-ms-thumb {
-  background: #e5e5e7;  /* Light gray thumb for visibility */
+/* Webkit browsers */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
   appearance: none;
   width: 16px;
   height: 16px;
   border-radius: 50%;
+  background: #e5e5e7;
   cursor: pointer;
+  margin-top: -6px;  /* Centers the thumb on the track: (16px - 4px) / 2 */
   box-shadow: 0 1px 3px rgba(0,0,0,0.3);
   border: 1px solid #71717a;
+}
+
+/* Firefox */
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #e5e5e7;
+  cursor: pointer;
+  border: 1px solid #71717a;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  /* Firefox doesn't need margin-top adjustment */
+}
+
+/* IE/Edge */
+input[type="range"]::-ms-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #e5e5e7;
+  cursor: pointer;
+  border: 1px solid #71717a;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
 input[type="range"] {
@@ -62,9 +86,9 @@ input[type="range"] {
 /* Webkit browsers (Chrome, Safari) */
 input[type="range"]::-webkit-slider-runnable-track {
   width: 100%;
-  height: 8px;
-  background: #e4e4e7;  /* Almost white for maximum contrast */
-  border-radius: 4px;
+  height: 4px;  /* Normal thickness */
+  background: #71717a;  /* Medium gray for visibility without being too bright */
+  border-radius: 2px;
   border: none;
   cursor: pointer;
 }
@@ -72,9 +96,9 @@ input[type="range"]::-webkit-slider-runnable-track {
 /* Firefox */
 input[type="range"]::-moz-range-track {
   width: 100%;
-  height: 8px;
-  background: #e4e4e7;  /* Almost white for maximum contrast */
-  border-radius: 4px;
+  height: 4px;  /* Normal thickness */
+  background: #71717a;  /* Medium gray for visibility without being too bright */
+  border-radius: 2px;
   border: none;
   cursor: pointer;
 }
