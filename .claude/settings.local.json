@@ -14,7 +14,13 @@
       "Bash(cat:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(curl:*)",
+      "Bash(git tag:*)",
+      "Bash(git branch:*)",
+      "Bash(echo:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run dev:*)"
     ],
     "deny": []
   }

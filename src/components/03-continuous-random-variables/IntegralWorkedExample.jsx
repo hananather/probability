@@ -1,6 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
-import Script from "next/script";
+import React, { useEffect, useRef } from "react";
 
 const IntegralWorkedExample = React.memo(function IntegralWorkedExample({
   distName,
@@ -38,26 +37,24 @@ const IntegralWorkedExample = React.memo(function IntegralWorkedExample({
   
   const cdfCalc = `P(${intervalA?.toFixed(2)} \\le X \\le ${intervalB?.toFixed(2)}) = CDF(${intervalB?.toFixed(2)}) - CDF(${intervalA?.toFixed(2)})`;
   const cdfResult = `= ${cdfBValue?.toFixed(4)} - ${cdfAValue?.toFixed(4)} = ${probValue?.toFixed(4)}`;
+  
+  const contentRef = useRef(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && window.MathJax?.typesetPromise) {
-      window.MathJax.typesetPromise();
+    if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+      // Clear and re-process MathJax
+      if (window.MathJax.typesetClear) {
+        window.MathJax.typesetClear([contentRef.current]);
+      }
+      window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
+        console.error('MathJax error in IntegralWorkedExample:', err);
+      });
     }
   }, [distName, params, intervalA, intervalB, probValue, pdfFormula, cdfAValue, cdfBValue]); // Retypeset when any relevant prop changes
 
   return (
-    <>
-      <Script
-        id="mathjax-script-integral"
-        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"
-        strategy="afterInteractive"
-        onLoad={() => {
-          if (typeof window !== "undefined" && window.MathJax) {
-            window.MathJax.typesetPromise();
-          }
-        }}
-      />
-      <div
+    <div
+      ref={contentRef}
         style={{
           backgroundColor: '#2A303C', // Darker gray, adjust as needed
           padding: '1.5rem',
@@ -90,7 +87,6 @@ const IntegralWorkedExample = React.memo(function IntegralWorkedExample({
           <div dangerouslySetInnerHTML={{ __html: `\\[${cdfResult}\\]` }} />
         </div>
       </div>
-    </>
   );
 });
 

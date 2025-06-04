@@ -1,9 +1,8 @@
 "use client";
-
 import React from "react";
-import { WorkedExampleContainer, WorkedExampleStep, LaTeXEquation } from "./ui/WorkedExampleContainerSimple";
+import { WorkedExampleContainer, WorkedExampleStep, LaTeXEquation } from "./ui/WorkedExampleContainerV2";
 
-const WorkedExample = React.memo(function WorkedExample({ probs }) {
+const WorkedExampleV2Test = React.memo(function WorkedExampleV2Test({ probs }) {
   // compute true stats
   const trueExpectation = probs.reduce((sum, p, i) => sum + p * (i + 1), 0);
   const trueE2 = probs.reduce((sum, p, i) => sum + p * Math.pow(i + 1, 2), 0);
@@ -17,7 +16,7 @@ const WorkedExample = React.memo(function WorkedExample({ probs }) {
   const e2 = trueE2.toFixed(1);
   const varVal = trueVariance.toFixed(1);
 
-  // build LaTeX terms - fixed extra backslashes
+  // build LaTeX terms
   const terms = probs.map((p, i) => `${i + 1}\\cdot${p.toFixed(2)}`).join(" + ");
   const squaredTerms = probs.map((p, i) => `${(i + 1) * (i + 1)}\\cdot${p.toFixed(2)}`).join(" + ");
 
@@ -50,4 +49,4 @@ const WorkedExample = React.memo(function WorkedExample({ probs }) {
   );
 });
 
-export default WorkedExample;
+export default WorkedExampleV2Test;
