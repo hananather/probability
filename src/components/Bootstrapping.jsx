@@ -1,16 +1,24 @@
-// src/components/Bootstrapping.jsx
-// React translation of the bootstrapping simulation
 "use client";
-
 import { useState, useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { jStat } from "jstat";
+import { 
+  VisualizationContainer, 
+  VisualizationSection,
+  GraphContainer,
+  ControlGroup,
+  StatsDisplay
+} from './ui/VisualizationContainer';
+import { colors, typography, components, formatNumber, cn, createColorScheme } from '../lib/design-system';
+import { RangeSlider } from './ui/RangeSlider';
 
-const margin = { top: 60, right: 20, bottom: 60, left: 20 };
+// Use inference color scheme for bootstrapping
+const colorScheme = createColorScheme('inference');
+
+const margin = { top: 20, right: 30, bottom: 50, left: 60 };
 const width = 700 - margin.left - margin.right;
 const height = 500 - margin.top - margin.bottom;
-const bins = 50;
-const dt = 400;
+const bins = 30;
 
 const distOptions = [
   { value: "normal", label: "Normal" },
