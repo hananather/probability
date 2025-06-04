@@ -43,18 +43,13 @@ function CLTSimulation() {
     
     const svg = d3.select(svgRef.current);
     const { width } = svgRef.current.getBoundingClientRect();
-    const height = 560;
+    const height = 650; // Increased height for better use of space
     const margin = { top: 20, right: 30, bottom: 50, left: 60 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
-    // Clear everything except histogram bars
-    svg.selectAll("> *").each(function() {
-      const elem = d3.select(this);
-      if (!elem.classed("histogram-container")) {
-        elem.remove();
-      }
-    });
+    // Clear everything in svg
+    svg.selectAll("*").remove();
     svg.attr("viewBox", `0 0 ${width} ${height}`);
     
     // Add dark background
@@ -185,21 +180,7 @@ function CLTSimulation() {
       .attr("opacity", showNorm ? 1 : 0)
       .attr("stroke-dasharray", "8,4");
     
-    // Create histogram generator - matching reference code
-    const bins = 20;
-    const histogramGen = d3.histogram()
-      .domain(x.domain())
-      .thresholds(x.ticks(bins))
-      .value(d => d);  // Important: specify the value accessor
-    
-    // Create or select histogram group
-    let barsGroup = svg.select(".histogram-container");
-    if (barsGroup.empty()) {
-      barsGroup = svg.append("g")
-        .attr("class", "histogram-container")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
-    }
-    barsGroup = barsGroup.append("g").attr("class", "histogram");
+    // The histogram will be created/updated in the dropSamples animation
     
     // Update functions
     function updateNormalCurve() {
@@ -312,9 +293,80 @@ function CLTSimulation() {
     }
     
     updateNormalCurve();
-    updateHistogram(); // Update histogram if counts exist
+    // Don't call updateHistogram here - it's handled in dropSamples animation
     
   }, [alpha, beta, n, showNorm, theoreticalMean, theoreticalSEM]); // Remove counts dependency to prevent clearing
+
+  // Separate effect to update histogram when counts change
+  useEffect(() => {
+    if (!svgRef.current || counts.length === 0) return;
+    
+    const svg = d3.select(svgRef.current);
+    const g = svg.select("g");
+    if (g.empty()) return;
+    
+    const { width } = svgRef.current.getBoundingClientRect();
+    const height = 650;
+    const margin = { top: 20, right: 30, bottom: 50, left: 60 };
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
+    
+    const x = d3.scaleLinear().domain([0, 1]).range([0, innerWidth]);
+    const y1 = innerHeight * 0.25;
+    const y2 = innerHeight * 0.15;
+    const histHeight = innerHeight - y1 - y2;
+    
+    // Update histogram
+    const histogram = d3.histogram()
+      .domain(x.domain())
+      .thresholds(x.ticks(20));
+    
+    const data = histogram(counts);
+    const ymax = d3.max(data, d => d.length) || 1;
+    const yHist = d3.scaleLinear()
+      .domain([0, ymax])
+      .range([0, histHeight - 10]);
+    
+    let histogramGroup = g.select(".histogram");
+    if (histogramGroup.empty()) {
+      histogramGroup = g.append("g").attr("class", "histogram");
+    }
+    
+    const bars = histogramGroup.selectAll("g.bar").data(data);
+    const barEnter = bars.enter().append("g").attr("class", "bar");
+    barEnter.append("rect")
+      .attr("y", innerHeight)
+      .attr("height", 0)
+      .attr("fill", "#14b8a6")
+      .attr("opacity", 0.7);
+    barEnter.append("text")
+      .attr("text-anchor", "middle")
+      .style("font-size", "12px")
+      .style("font-weight", "600")
+      .attr("fill", "#fff");
+    
+    const allBars = bars.merge(barEnter);
+    
+    allBars.select("rect")
+      .attr("x", d => x(d.x0) + 1)
+      .attr("width", d => {
+        const width = x(d.x1) - x(d.x0) - 2;
+        return Math.max(0, width);
+      })
+      .transition().duration(250)
+      .attr("y", d => innerHeight - yHist(d.length))
+      .attr("height", d => yHist(d.length));
+    
+    allBars.select("text")
+      .attr("x", d => x(d.x0 + (d.x1 - d.x0) / 2))
+      .attr("y", d => {
+        const barHeight = yHist(d.length);
+        return innerHeight - barHeight / 2;
+      })
+      .text(d => d.length > 0 ? Math.round((d.length / counts.length) * 100) + "%" : "");
+    
+    bars.exit().remove();
+  }, [counts]);
 
   // Animation function - adapted from reference CLT code
   function dropSamples() {
@@ -324,7 +376,7 @@ function CLTSimulation() {
     const svg = d3.select(svgRef.current);
     const g = svg.select("g");
     const { width } = svgRef.current.getBoundingClientRect();
-    const height = 560;
+    const height = 650;
     const margin = { top: 20, right: 30, bottom: 50, left: 60 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
@@ -365,17 +417,10 @@ function CLTSimulation() {
         .domain([0, maxCount])
         .range([0, histogramHeight - 10]); // Leave some padding
       
-      // Find or create the persistent histogram container
-      let histogramContainer = svg.select(".histogram-container");
-      if (histogramContainer.empty()) {
-        histogramContainer = svg.append("g")
-          .attr("class", "histogram-container")
-          .attr("transform", `translate(${margin.left},${margin.top})`);
-      }
-      
-      let histogramGroup = histogramContainer.select(".histogram");
+      // Find histogram group in the main g element, not in svg directly
+      let histogramGroup = g.select(".histogram");
       if (histogramGroup.empty()) {
-        histogramGroup = histogramContainer.append("g").attr("class", "histogram");
+        histogramGroup = g.append("g").attr("class", "histogram");
       }
       
       const bars = histogramGroup.selectAll("g.bar").data(data);
@@ -492,7 +537,7 @@ function CLTSimulation() {
       svg.selectAll("circle").remove();
       svg.selectAll(".bar").remove();
       svg.selectAll(".ball-group").remove();
-      svg.selectAll(".histogram-container").remove(); // Remove the persistent container too
+      svg.selectAll(".histogram").remove();
     }
     
     setIsAnimating(false);
@@ -642,37 +687,93 @@ function CLTSimulation() {
               {/* Sample stats */}
               {counts.length > 0 && (
                 <div className="bg-neutral-800 rounded-lg p-3 border border-red-600/50">
-                  <h5 className="text-sm font-semibold text-red-400 mb-2">Sample Means (n={n}, {counts.length} means)</h5>
-                  <div className="space-y-1 text-sm">
+                  <h5 className="text-sm font-semibold text-red-400 mb-2">Sampling Distribution</h5>
+                  <div className="space-y-2 text-sm">
+                    <div className="text-xs text-neutral-400 mb-2">
+                      Each sample contains {n} observations.<br/>
+                      {counts.length} sample mean{counts.length !== 1 ? 's' : ''} collected.
+                    </div>
                     <div className="flex justify-between">
-                      <span className="text-neutral-300">Mean:</span>
+                      <span className="text-neutral-300">Mean of Means:</span>
                       <span className="font-mono font-bold text-white">{formatNumber(sampleMean, 3)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-neutral-300">Std Dev:</span>
+                      <span className="text-neutral-300">Std Dev of Means:</span>
                       <span className="font-mono font-bold text-white">{formatNumber(sampleSD, 3)}</span>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* CLT indicator */}
-              {counts.length >= 30 && (
-                <div className="text-xs text-neutral-400 text-center p-2 bg-neutral-800 rounded">
-                  {Math.abs(sampleMean - theoreticalMean) < 0.05 && 
-                   Math.abs(sampleSD - theoreticalSEM) < 0.05 ? 
-                    "✓ Sample distribution converging to normal!" : 
-                    "Keep sampling to see convergence..."}
+              {/* CLT Insights */}
+              <div className="bg-neutral-800 rounded-lg p-3">
+                <h4 className="text-sm font-semibold text-purple-400 mb-2">CLT Insights</h4>
+                <div className="space-y-2 text-xs text-neutral-300">
+                  {counts.length === 0 && (
+                    <div>
+                      <p>🎯 Ready to explore the Central Limit Theorem?</p>
+                      <p className="text-purple-300 mt-1">
+                        Click "Drop Samples" to begin your journey to 30 samples — where the magic of CLT reveals itself! 🌟
+                      </p>
+                    </div>
+                  )}
+                  {counts.length > 0 && counts.length < 5 && (
+                    <p>🎯 Keep collecting samples to see the distribution shape emerge.</p>
+                  )}
+                    {counts.length >= 5 && counts.length < 30 && (
+                      <div>
+                        <p>📊 The sampling distribution is starting to take shape. Notice how it clusters around the theoretical mean.</p>
+                        <div className="mt-2 p-2 bg-purple-900/20 border border-purple-600/30 rounded">
+                          <div className="text-xs text-purple-300">
+                            🎯 Goal: Collect {30 - counts.length} more sample{30 - counts.length !== 1 ? 's' : ''} to reach n=30 
+                            <span className="text-purple-400 font-semibold"> — a statistical milestone!</span>
+                          </div>
+                          <div className="mt-1.5">
+                            <div className="w-full bg-purple-900/30 rounded-full h-1.5">
+                              <div 
+                                className="bg-purple-500 h-1.5 rounded-full transition-all duration-300"
+                                style={{ width: `${(counts.length / 30) * 100}%` }}
+                              />
+                            </div>
+                            <div className="text-center mt-1 text-purple-400 font-mono" style={{ fontSize: '10px' }}>
+                              {counts.length}/30
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {counts.length >= 30 && (
+                      <div>
+                        <p className="text-green-400 font-semibold mb-1">
+                          ✨ CLT in Action! With {counts.length} samples:
+                        </p>
+                        <ul className="space-y-1 ml-3">
+                          <li>• The distribution is becoming bell-shaped</li>
+                          <li>• Mean of means ≈ population mean ({formatNumber(Math.abs(sampleMean - theoreticalMean), 3)} difference)</li>
+                          <li>• Standard error ≈ σ/√n ({formatNumber(Math.abs(sampleSD - theoreticalSEM), 3)} difference)</li>
+                        </ul>
+                      </div>
+                    )}
+                    {n === 1 && (
+                      <p className="text-yellow-400 mt-2">
+                        💡 With n=1, the sampling distribution equals the original distribution.
+                      </p>
+                    )}
+                    {n >= 30 && (
+                      <p className="text-blue-400 mt-2">
+                        💡 With n≥30, the CLT works well even for non-normal populations!
+                      </p>
+                    )}
+                  </div>
                 </div>
-              )}
             </div>
           </VisualizationSection>
         </div>
 
         {/* Right side - Visualization */}
         <div className="lg:w-2/3">
-          <GraphContainer height="600px">
-            <svg ref={svgRef} style={{ width: "100%", height: 600 }} />
+          <GraphContainer height="700px">
+            <svg ref={svgRef} style={{ width: "100%", height: 700 }} />
           </GraphContainer>
         </div>
       </div>

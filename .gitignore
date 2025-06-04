@@ -39,3 +39,23 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# IDE specific
+.vscode/
+.windsurfrules
+
+# OS files
+.DS_Store
+*.DS_Store
+
+# Backup files
+*.bak
+*.backup
+
+# Claude documentation
+.claude/
+
+# Personal notes
+VISUALIZATION_PROGRESS.md
+*_NOTES.md
+
