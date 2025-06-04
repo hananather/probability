@@ -111,7 +111,7 @@ const PriorPlot = () => {
   return (
     <section className="space-y-4">
       <h3 className="text-lg font-semibold">Prior (Beta Distribution)</h3>
-      <div className="flex flex-wrap gap-4 items-center bg-gray-100 rounded-lg p-4">
+      <div className="flex flex-wrap gap-4 items-center bg-neutral-800 rounded-lg p-4">
         <label>
           p:
           <input
