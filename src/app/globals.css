@@ -51,17 +51,51 @@ input[type="range"]::-ms-thumb {
 }
 
 input[type="range"] {
+  -webkit-appearance: none;  /* Important for WebKit browsers */
   appearance: none;
+  width: 100%;
   background: transparent;
+  cursor: pointer;
+  outline: none;
+}
+
+/* Webkit browsers (Chrome, Safari) */
+input[type="range"]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 8px;
+  background: #e4e4e7;  /* Almost white for maximum contrast */
+  border-radius: 4px;
+  border: none;
   cursor: pointer;
 }
 
-input[type="range"]::-webkit-slider-runnable-track,
+/* Firefox */
 input[type="range"]::-moz-range-track {
-  background: #71717a;  /* Much lighter gray for clear visibility */
-  height: 6px;  /* Slightly thicker for better visibility */
-  border-radius: 3px;
-  border: 1px solid #52525b;  /* Add border for definition */
+  width: 100%;
+  height: 8px;
+  background: #e4e4e7;  /* Almost white for maximum contrast */
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+
+/* IE/Edge */
+input[type="range"]::-ms-track {
+  width: 100%;
+  height: 8px;
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
+}
+
+input[type="range"]::-ms-fill-lower {
+  background: #a1a1aa;
+  border-radius: 4px;
+}
+
+input[type="range"]::-ms-fill-upper {
+  background: #a1a1aa;
+  border-radius: 4px;
 }
 
 /* Component Styles */
