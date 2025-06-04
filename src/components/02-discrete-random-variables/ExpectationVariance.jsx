@@ -1,15 +1,15 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import * as d3 from "d3";
-import WorkedExample from './WorkedExample';
+import ExpectationVarianceWorkedExample from './ExpectationVarianceWorkedExample';
 import { 
   VisualizationContainer, 
   VisualizationSection,
   GraphContainer,
   ControlGroup
-} from './ui/VisualizationContainer';
-import { colors, typography, formatNumber, cn, createColorScheme } from '../lib/design-system';
-import { RangeSlider } from './ui/RangeSlider';
+} from '../ui/VisualizationContainer';
+import { colors, typography, formatNumber, cn, createColorScheme } from '../../lib/design-system';
+import { RangeSlider } from '../ui/RangeSlider';
 
 // Use sampling color scheme
 const colorScheme = createColorScheme('sampling');
@@ -326,8 +326,7 @@ export default function ExpectationVariance() {
   function rollMultiple() {
     if (isRolling) return;
     setIsRolling(true);
-    expectedDataRef.current = [];
-    varianceDataRef.current = [];
+    // Don't reset the data - keep existing history!
     
     const animate = (i = 0, current = [...counts]) => {
       if (i >= sampleCount) {
@@ -391,8 +390,8 @@ export default function ExpectationVariance() {
                     Batch Size: {sampleCount}
                   </label>
                   <RangeSlider
-                    value={[sampleCount]}
-                    onValueChange={([v]) => setSampleCount(v)}
+                    value={sampleCount}
+                    onChange={(v) => setSampleCount(v)}
                     min={1}
                     max={100}
                     step={1}
@@ -561,7 +560,7 @@ export default function ExpectationVariance() {
 
       {/* Worked Example */}
       <VisualizationSection divider className="mt-4">
-        <WorkedExample key={displayProbs.join(',')} probs={displayProbs} />
+        <ExpectationVarianceWorkedExample key={displayProbs.join(',')} probs={displayProbs} />
       </VisualizationSection>
     </VisualizationContainer>
   );
