@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import * as d3 from "d3";
 import { beta } from "jstat";
+import { RangeSlider, SliderPresets } from "./ui/RangeSlider";
 
 function round(val, digits = 2) {
   return Math.round(val * Math.pow(10, digits)) / Math.pow(10, digits);
@@ -112,19 +113,15 @@ const PriorPlot = () => {
     <section className="space-y-4">
       <h3 className="text-lg font-semibold">Prior (Beta Distribution)</h3>
       <div className="flex flex-wrap gap-4 items-center bg-neutral-800 rounded-lg p-4">
-        <label>
-          p:
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
+        <div className="w-48">
+          <RangeSlider
+            label="p"
             value={p}
-            onChange={e => setP(+e.target.value)}
-            className="mx-2 w-32 accent-red-500"
+            onChange={setP}
+            {...SliderPresets.probability}
+            formatValue={(v) => round(v)}
           />
-          <span className="ml-1">{round(p)}</span>
-        </label>
+        </div>
         <label>
           alpha:
           <input

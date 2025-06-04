@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import React, { memo } from "react";
 import * as d3 from "d3";
 import { jStat } from "jstat";
+import { RangeSlider, SliderPresets } from "./ui/RangeSlider";
 
 // demo canvas settings
 const margin = { top: 15, right: 5, bottom: 15, left: 5 };
@@ -165,13 +166,7 @@ function CLTSimulation() {
       }
       function start(){var maxB=200,maxK=Math.max(1,Math.floor(maxB/nLocal));var K=drawsLocal>maxK?(console.warn(`Capping draws to ${maxK}`),maxK):drawsLocal;dt=350/Math.pow(1.04,K);var c=0;interval=setInterval(()=>{tick();if(++c===K)clearInterval(interval);},dt);}
       function reset(){clearInterval(interval);counts=[];svg.selectAll(".bar, circle").remove();yH.domain([0,3]);drawSampling();}
-      d3.select("#alpha_clt").on("input",function(){alphaLocal=+this.value;d3.select("#alpha_clt-value").text(alphaLocal);reset();});
-      d3.select("#beta_clt").on("input",function(){betaLocal=+this.value;d3.select("#beta_clt-value").text(betaLocal);reset();});
-      d3.select("#sample").on("input",function(){nLocal=+this.value;d3.select("#sample-value").text(nLocal);reset();});
-      d3.select("#draws").on("input",function(){drawsLocal=+this.value;d3.select("#draws-value").text(drawsLocal);});
-      d3.select("#theoretical").on("change", function() {
-        setShowNorm(this.checked);
-      });
+      // Event listeners removed - now using React state directly
       d3.select("#form_clt").on("click",()=>{clearInterval(interval);start();});
       drawSampling();
     }
@@ -188,15 +183,45 @@ function CLTSimulation() {
     <section id="clt-demo" className="space-y-4">
       <h3 className="text-lg font-semibold">Central Limit Theorem – Beta(α, β) → Normal(μ, σ/√n)</h3>
       <div className="controls flex flex-wrap gap-4 items-center">
-        α <input id="alpha_clt" type="range" min="0.5" max="6" step="0.1" defaultValue="1" className="w-32" />
-        <span id="alpha_clt-value">1</span>
-        β <input id="beta_clt" type="range" min="0.5" max="6" step="0.1" defaultValue="3.5" className="w-32" />
-        <span id="beta_clt-value">3.5</span>
-        n <input id="sample" type="range" min="1" max="50" step="1" defaultValue="10" className="w-32" />
-        <span id="sample-value">10</span>
-        draws <input id="draws" type="range" min="1" max="100" step="1" defaultValue="5" className="w-32" />
-        <span id="draws-value">5</span>
-        <label><input id="theoretical" type="checkbox" defaultChecked /> Show Normal overlay</label>
+        <RangeSlider
+          label="α"
+          value={alpha}
+          onChange={setAlpha}
+          min={0.5}
+          max={6}
+          step={0.1}
+          formatValue={v => v.toFixed(1)}
+          className="w-48"
+        />
+        <RangeSlider
+          label="β"
+          value={beta}
+          onChange={setBeta}
+          min={0.5}
+          max={6}
+          step={0.1}
+          formatValue={v => v.toFixed(1)}
+          className="w-48"
+        />
+        <RangeSlider
+          label="n"
+          value={n}
+          onChange={setN}
+          min={1}
+          max={50}
+          step={1}
+          className="w-48"
+        />
+        <RangeSlider
+          label="draws"
+          value={draws}
+          onChange={setDraws}
+          min={1}
+          max={100}
+          step={1}
+          className="w-48"
+        />
+        <label><input type="checkbox" checked={showNorm} onChange={e => setShowNorm(e.target.checked)} /> Show Normal overlay</label>
         <button id="form_clt" className="btn btn-primary">Drop samples</button>
         <button onClick={handleReset} className="btn btn-danger">Reset</button>
       </div>

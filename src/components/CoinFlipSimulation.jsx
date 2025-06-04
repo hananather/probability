@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import * as d3 from "d3";
+import { RangeSlider, SliderPresets } from "./ui/RangeSlider";
 
 // Interactive coin flip simulation component
 export default function CoinFlipSimulation() {
@@ -128,20 +129,13 @@ export default function CoinFlipSimulation() {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
       {/* True probability slider */}
-      <div style={{ marginBottom: "1rem" }}>
-        <label>
-          True Heads Probability:
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={trueProb}
-            onChange={e => setTrueProb(+e.target.value)}
-            style={{ margin: "0 0.5rem", cursor: "pointer" }}
-          />
-          {Math.round(trueProb * 100)}%
-        </label>
+      <div style={{ marginBottom: "1rem", width: "300px" }}>
+        <RangeSlider
+          label="True Heads Probability"
+          value={trueProb}
+          onChange={setTrueProb}
+          {...SliderPresets.probability}
+        />
       </div>
       {/* Batch flip controls */}
       <div style={{ marginBottom: "1rem", display: "flex", alignItems: "center" }}>
