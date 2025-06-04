@@ -1,10 +1,19 @@
-// src/components/DistributionSimulation.jsx
-// Combined expectation and variance simulation for a discrete distribution (die)
 "use client";
-
 import { useState, useRef, useEffect } from "react";
 import * as d3 from "d3";
 import WorkedExample from './WorkedExample';
+import { 
+  VisualizationContainer, 
+  VisualizationSection,
+  GraphContainer,
+  ControlGroup,
+  StatsDisplay
+} from './ui/VisualizationContainer';
+import { colors, typography, components, formatNumber, cn, createColorScheme } from '../lib/design-system';
+import { RangeSlider } from './ui/RangeSlider';
+
+// Use sampling color scheme
+const colorScheme = createColorScheme('sampling');
 
 export default function DistributionSimulation() {
   // probabilities for faces 1–6
@@ -18,8 +27,8 @@ export default function DistributionSimulation() {
   // observed counts for each face
   const [counts, setCounts] = useState(Array(6).fill(0));
   // batch roll controls
-  const [sampleCount, setSampleCount] = useState(1);
-  const [inputValue, setInputValue] = useState("1");
+  const [sampleCount, setSampleCount] = useState(10);
+  const [isRolling, setIsRolling] = useState(false);
 
   // refs for D3-managed SVGs and data arrays
   const barSvgRef = useRef(null);
@@ -53,126 +62,314 @@ export default function DistributionSimulation() {
   // draw bar chart: true probabilities only
   useEffect(() => {
     const svg = d3.select(barSvgRef.current);
+    if (!barSvgRef.current) return;
+    
     const { width } = barSvgRef.current.getBoundingClientRect();
-    const height = 200;
-    const marginBottom = 30; // space for tick labels
+    const height = 240;
+    const margin = { top: 10, right: 30, bottom: 40, left: 50 };
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
+    
     svg.selectAll("*").remove();
-    svg.attr("viewBox", `0 0 ${width} ${height + marginBottom}`);
+    svg.attr("viewBox", `0 0 ${width} ${height}`);
+
+    // Add dark background
+    svg.append("rect")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("fill", "#0a0a0a");
+
+    const g = svg.append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
 
     // data: only true distribution
     const data = probs.map((p, i) => ({ face: i + 1, value: p }));
 
-    const x = d3.scaleBand().domain(data.map(d => d.face)).range([0, width]).padding(0.1);
-    const y = d3.scaleLinear().domain([0, 1]).range([height, 0]);
+    const x = d3.scaleBand()
+      .domain(data.map(d => d.face))
+      .range([0, innerWidth])
+      .padding(0.2);
+    
+    const y = d3.scaleLinear()
+      .domain([0, 1])
+      .range([innerHeight, 0]);
 
-    // axis
-    const xAxisGroup = svg.append("g")
-      .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(x).tickFormat(d => d));
-    xAxisGroup.selectAll("path, line").attr("stroke", "#fff");
-    xAxisGroup.selectAll("text").attr("fill", "#fff");
+    // Add grid lines
+    g.append("g")
+      .attr("class", "grid")
+      .call(d3.axisLeft(y)
+        .ticks(5)
+        .tickSize(-innerWidth)
+        .tickFormat("")
+      )
+      .style("stroke-dasharray", "3,3")
+      .style("opacity", 0.3)
+      .selectAll("line")
+      .style("stroke", colors.chart.grid);
+
+    // X axis
+    const xAxisGroup = g.append("g")
+      .attr("transform", `translate(0,${innerHeight})`)
+      .call(d3.axisBottom(x));
+    
+    xAxisGroup.selectAll("path, line").attr("stroke", colors.chart.grid);
+    xAxisGroup.selectAll("text")
+      .attr("fill", colors.chart.text)
+      .style("font-size", "12px");
+    
     xAxisGroup.append("text")
-      .attr("x", width / 2)
-      .attr("y", 30)
-      .attr("fill", "#fff")
+      .attr("x", innerWidth / 2)
+      .attr("y", 35)
+      .attr("fill", colors.chart.text)
       .style("font-size", "14px")
+      .style("font-weight", "600")
       .style("text-anchor", "middle")
       .text("Die Face");
 
-    // bars with hover
-    const barFill = '#14b8a6';
-    const barHoverFill = '#38a169';
-    svg.selectAll("rect").data(data).join("rect")
-       .attr("x", d => x(d.face))
-       .attr("y", d => y(d.value))
-       .attr("width", x.bandwidth())
-       .attr("height", d => height - y(d.value))
-       .attr("fill", barFill)
-       .style("cursor", "ns-resize")
-       .style("transition", "fill 0.2s")
-       .on("mouseover", function(event, d) { d3.select(this).transition().duration(150).attr("fill", barHoverFill); })
-       .on("mouseout", function(event, d) { d3.select(this).transition().duration(150).attr("fill", barFill); })
-       .call(
-         d3.drag()
-            .on("drag", (event, d) => {
-               const newVal = Math.max(0, Math.min(1, y.invert(event.y)));
-               const oldVal = probs[d.face - 1];
-               const updated = probs.map((p, idx) =>
-                 idx === d.face - 1 ? newVal : (oldVal === 1 ? (1 - newVal) / 5 : p * (1 - newVal) / (1 - oldVal))
-               );
-               setProbs(updated);
-               expectedDataRef.current = [];
-               varianceDataRef.current = [];
-            })
-       )
-       .append("title")
-         .text(d => `Face ${d.face}: ${(d.value * 100).toFixed(1)}%`);
+    // Y axis
+    const yAxisGroup = g.append("g")
+      .call(d3.axisLeft(y).tickFormat(d3.format(".0%")));
+    
+    yAxisGroup.selectAll("path, line").attr("stroke", colors.chart.grid);
+    yAxisGroup.selectAll("text")
+      .attr("fill", colors.chart.text)
+      .style("font-size", "11px");
 
-    // percentage labels
-    svg.selectAll("text.bar-label").data(data).join("text")
+    // Bars with hover and drag
+    const bars = g.selectAll("rect").data(data).join("rect")
+      .attr("x", d => x(d.face))
+      .attr("y", d => y(d.value))
+      .attr("width", x.bandwidth())
+      .attr("height", d => innerHeight - y(d.value))
+      .attr("fill", colorScheme.chart.primary)
+      .attr("opacity", 0.8)
+      .attr("rx", 4)
+      .style("cursor", "ns-resize")
+      .on("mouseover", function(event, d) { 
+        d3.select(this)
+          .transition()
+          .duration(150)
+          .attr("opacity", 1)
+          .attr("fill", colorScheme.chart.primaryLight); 
+      })
+      .on("mouseout", function(event, d) { 
+        d3.select(this)
+          .transition()
+          .duration(150)
+          .attr("opacity", 0.8)
+          .attr("fill", colorScheme.chart.primary); 
+      });
+
+    // Drag behavior
+    bars.call(
+      d3.drag()
+        .on("drag", (event, d) => {
+          const newVal = Math.max(0, Math.min(1, y.invert(event.y)));
+          const oldVal = probs[d.face - 1];
+          const updated = probs.map((p, idx) =>
+            idx === d.face - 1 ? newVal : (oldVal === 1 ? (1 - newVal) / 5 : p * (1 - newVal) / (1 - oldVal))
+          );
+          setProbs(updated);
+          expectedDataRef.current = [];
+          varianceDataRef.current = [];
+        })
+    );
+
+    // Percentage labels
+    g.selectAll("text.bar-label").data(data).join("text")
       .attr("class", "bar-label")
       .attr("x", d => x(d.face) + x.bandwidth() / 2)
-      .attr("y", d => y(d.value) - 8)
+      .attr("y", d => Math.max(20, y(d.value) - 8))
       .attr("text-anchor", "middle")
-      .attr("fill", '#fff')
+      .attr("fill", colors.chart.text)
+      .style("font-size", "13px")
+      .style("font-weight", "600")
       .text(d => `${(d.value * 100).toFixed(1)}%`);
   }, [probs]);
 
   // draw convergence plot for mean & variance
   useEffect(() => {
     const svg = d3.select(plotSvgRef.current);
+    if (!plotSvgRef.current) return;
+    
     const { width } = plotSvgRef.current.getBoundingClientRect();
-    const height = 250;
+    const height = 310;
+    const margin = { top: 10, right: 120, bottom: 40, left: 50 };
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
+    
     svg.selectAll("*").remove();
     svg.attr("viewBox", `0 0 ${width} ${height}`);
 
-    const n = expectedDataRef.current.length || 1;
-    const xScale = d3.scaleLinear().domain([1, n]).range([40, width - 20]);
+    // Add dark background
+    svg.append("rect")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("fill", "#0a0a0a");
+
+    const g = svg.append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const n = Math.max(expectedDataRef.current.length, 1);
+    const xScale = d3.scaleLinear().domain([1, Math.max(n, 10)]).range([0, innerWidth]);
+    
     // y domain covers both series and true lines
-    const maxY = d3.max([trueExpectation, trueVariance, d3.max(expectedDataRef.current) || 0, d3.max(varianceDataRef.current) || 0]);
-    const yScale = d3.scaleLinear().domain([0, maxY]).range([height - 30, 10]);
+    const maxY = d3.max([
+      trueExpectation, 
+      trueVariance, 
+      d3.max(expectedDataRef.current) || 0, 
+      d3.max(varianceDataRef.current) || 0
+    ]) * 1.1;
+    const yScale = d3.scaleLinear().domain([0, maxY]).range([innerHeight, 0]);
+
+    // Add grid lines
+    g.append("g")
+      .attr("class", "grid")
+      .call(d3.axisLeft(yScale)
+        .ticks(5)
+        .tickSize(-innerWidth)
+        .tickFormat("")
+      )
+      .style("stroke-dasharray", "3,3")
+      .style("opacity", 0.3)
+      .selectAll("line")
+      .style("stroke", colors.chart.grid);
 
     // axes
-    const xAxis = svg.append('g').attr('class','x-axis').attr('transform', `translate(0,${height-30})`).call(d3.axisBottom(xScale).ticks(5));
-    const yAxis = svg.append('g').attr('class','y-axis').attr('transform', `translate(40,0)`).call(d3.axisLeft(yScale).ticks(5));
-    xAxis.selectAll('path, line').attr('stroke', '#fff');
-    xAxis.selectAll('text').attr('fill', '#fff');
-    yAxis.selectAll('path, line').attr('stroke', '#fff');
-    yAxis.selectAll('text').attr('fill', '#fff');
+    const xAxis = g.append('g')
+      .attr('class','x-axis')
+      .attr('transform', `translate(0,${innerHeight})`)
+      .call(d3.axisBottom(xScale).ticks(5));
+    
+    xAxis.selectAll('path, line').attr('stroke', colors.chart.grid);
+    xAxis.selectAll('text')
+      .attr('fill', colors.chart.text)
+      .style('font-size', '11px');
+    
+    xAxis.append("text")
+      .attr("x", innerWidth / 2)
+      .attr("y", 35)
+      .attr("fill", colors.chart.text)
+      .style("font-size", "14px")
+      .style("font-weight", "600")
+      .style("text-anchor", "middle")
+      .text("Number of Rolls");
+
+    const yAxis = g.append('g')
+      .attr('class','y-axis')
+      .call(d3.axisLeft(yScale).ticks(5));
+    
+    yAxis.selectAll('path, line').attr('stroke', colors.chart.grid);
+    yAxis.selectAll('text')
+      .attr('fill', colors.chart.text)
+      .style('font-size', '11px');
 
     // true lines
-    svg.append("line")
-      .attr("x1", xScale(1)).attr("x2", xScale(n))
-      .attr("y1", yScale(trueExpectation)).attr("y2", yScale(trueExpectation))
-      .attr("stroke", "#4f46e5").attr("stroke-dasharray", "4 2")
-      .append("title").text(`True Mean: ${trueExpectation.toFixed(2)}`);
-    svg.append("line")
-      .attr("x1", xScale(1)).attr("x2", xScale(n))
-      .attr("y1", yScale(trueVariance)).attr("y2", yScale(trueVariance))
-      .attr("stroke", "#14b8a6").attr("stroke-dasharray", "4 2")
-      .append("title").text(`True Variance: ${trueVariance.toFixed(2)}`);
+    g.append("line")
+      .attr("x1", xScale(1))
+      .attr("x2", xScale(Math.max(n, 10)))
+      .attr("y1", yScale(trueExpectation))
+      .attr("y2", yScale(trueExpectation))
+      .attr("stroke", colorScheme.chart.secondary)
+      .attr("stroke-width", 2)
+      .attr("stroke-dasharray", "8 4")
+      .attr("opacity", 0.8);
+    
+    g.append("line")
+      .attr("x1", xScale(1))
+      .attr("x2", xScale(Math.max(n, 10)))
+      .attr("y1", yScale(trueVariance))
+      .attr("y2", yScale(trueVariance))
+      .attr("stroke", colorScheme.chart.tertiary)
+      .attr("stroke-width", 2)
+      .attr("stroke-dasharray", "8 4")
+      .attr("opacity", 0.8);
 
     // sample lines
-    const linePlot = d3.line()
-      .x((_, i) => xScale(i + 1))
-      .y(d => yScale(d));
-    svg.append("path").datum(expectedDataRef.current).attr("fill", "none").attr("stroke", "#4f46e5").attr("stroke-width", 2).attr("d", linePlot);
-    svg.append("path").datum(varianceDataRef.current).attr("fill", "none").attr("stroke", "#14b8a6").attr("stroke-width", 2).attr("d", linePlot);
+    if (expectedDataRef.current.length > 0) {
+      const linePlot = d3.line()
+        .x((_, i) => xScale(i + 1))
+        .y(d => yScale(d))
+        .curve(d3.curveMonotoneX);
+      
+      g.append("path")
+        .datum(expectedDataRef.current)
+        .attr("fill", "none")
+        .attr("stroke", colorScheme.chart.primary)
+        .attr("stroke-width", 3)
+        .attr("d", linePlot);
+      
+      g.append("path")
+        .datum(varianceDataRef.current)
+        .attr("fill", "none")
+        .attr("stroke", colorScheme.chart.primary)
+        .attr("stroke-width", 3)
+        .attr("opacity", 0.6)
+        .attr("d", linePlot);
+    }
 
-    // legend
-    svg.append("circle").attr("cx", width - 100).attr("cy", 15).attr("r", 5).attr("fill", "#4f46e5");
-    svg.append("text").attr("x", width - 90).attr("y", 20).text("Mean").attr("font-size", "12px").attr("fill", "#fff");
-    svg.append("circle").attr("cx", width - 100).attr("cy", 35).attr("r", 5).attr("fill", "#14b8a6");
-    svg.append("text").attr("x", width - 90).attr("y", 40).text("Variance").attr("font-size", "12px").attr("fill", "#fff");
+    // Enhanced legend
+    const legend = g.append("g")
+      .attr("transform", `translate(${innerWidth + 10}, 20)`);
+    
+    const legendItems = [
+      { color: colorScheme.chart.primary, label: "Sample Mean", y: 0 },
+      { color: colorScheme.chart.secondary, label: "True Mean", y: 25, dashed: true },
+      { color: colorScheme.chart.primary, label: "Sample Var", y: 50, opacity: 0.6 },
+      { color: colorScheme.chart.tertiary, label: "True Var", y: 75, dashed: true }
+    ];
+    
+    legendItems.forEach(item => {
+      if (item.dashed) {
+        legend.append("line")
+          .attr("x1", 0)
+          .attr("x2", 20)
+          .attr("y1", item.y + 5)
+          .attr("y2", item.y + 5)
+          .attr("stroke", item.color)
+          .attr("stroke-width", 2)
+          .attr("stroke-dasharray", "4 2");
+      } else {
+        legend.append("rect")
+          .attr("x", 0)
+          .attr("y", item.y)
+          .attr("width", 20)
+          .attr("height", 10)
+          .attr("fill", item.color)
+          .attr("opacity", item.opacity || 1);
+      }
+      
+      legend.append("text")
+        .attr("x", 25)
+        .attr("y", item.y + 8)
+        .text(item.label)
+        .attr("font-size", "12px")
+        .attr("fill", colors.chart.text);
+    });
 
-    // tooltip points
-    svg.selectAll('.mean-point').data(expectedDataRef.current).join('circle')
-      .attr('class','mean-point').attr('cx', (_,i) => xScale(i+1)).attr('cy', d => yScale(d)).attr('r', 4).attr('fill', '#4f46e5')
-      .append('title').text((d,i) => `Roll ${i+1}: mean=${d.toFixed(2)}`);
-    svg.selectAll('.variance-point').data(varianceDataRef.current).join('circle')
-      .attr('class','variance-point').attr('cx', (_,i) => xScale(i+1)).attr('cy', d => yScale(d)).attr('r', 4).attr('fill', '#14b8a6')
-      .append('title').text((d,i) => `Roll ${i+1}: var=${d.toFixed(2)}`);
-  }, [counts, probs]);
+    // Add latest value labels if data exists
+    if (expectedDataRef.current.length > 0) {
+      const lastMean = expectedDataRef.current[expectedDataRef.current.length - 1];
+      const lastVar = varianceDataRef.current[varianceDataRef.current.length - 1];
+      
+      g.append("text")
+        .attr("x", xScale(n) + 5)
+        .attr("y", yScale(lastMean))
+        .attr("fill", colorScheme.chart.primary)
+        .style("font-size", "11px")
+        .style("font-weight", "600")
+        .text(lastMean.toFixed(2));
+      
+      g.append("text")
+        .attr("x", xScale(n) + 5)
+        .attr("y", yScale(lastVar))
+        .attr("fill", colorScheme.chart.primary)
+        .attr("opacity", 0.6)
+        .style("font-size", "11px")
+        .style("font-weight", "600")
+        .text(lastVar.toFixed(2));
+    }
+  }, [counts, probs, trueExpectation, trueVariance]);
 
   // handle one roll
   function rollOnce() {
@@ -191,11 +388,15 @@ export default function DistributionSimulation() {
 
   // handle multiple rolls
   function rollMultiple() {
+    if (isRolling) return;
+    setIsRolling(true);
     expectedDataRef.current = [];
     varianceDataRef.current = [];
+    
     const animate = (i = 0, current = [...counts]) => {
       if (i >= sampleCount) {
         setCounts(current);
+        setIsRolling(false);
         return;
       }
       const r = Math.random();
@@ -208,7 +409,10 @@ export default function DistributionSimulation() {
       const variance = current.reduce((a, c, idx) => a + Math.pow((idx + 1) - mean, 2) * c, 0) / total;
       varianceDataRef.current.push(variance);
       setCounts([...current]);
-      setTimeout(() => animate(i + 1, current), 100);
+      
+      // Faster animation for larger sample sizes
+      const delay = sampleCount > 50 ? 20 : sampleCount > 20 ? 50 : 100;
+      setTimeout(() => animate(i + 1, current), delay);
     };
     animate(0, [...counts]);
   }
@@ -224,42 +428,141 @@ export default function DistributionSimulation() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '700px', margin: '0 auto' }}>
-      {/* controls */}
-      <div style={{ marginBottom: "1rem" }}>
-        <label>
-          Sample Size:
-          <input
-            type="number"
-            min="1"
-            max="200"
-            value={inputValue}
-            onChange={e => {
-              setInputValue(e.target.value);
-              const n = parseInt(e.target.value, 10);
-              if (!isNaN(n)) setSampleCount(Math.min(200, Math.max(1, n)));
-            }}
-            style={{ marginLeft: '0.5rem', width: '60px' }}
-          />
-        </label>
-        <button onClick={rollOnce} className="btn btn-primary">Roll once</button>
-        <button onClick={rollMultiple} className="btn btn-secondary">Roll {sampleCount} times</button>
-        <button onClick={handleReset} className="btn btn-danger">Reset</button>
+    <VisualizationContainer title="Distribution Simulation: Expectation & Variance" className="p-2">
+      <div className="flex flex-col lg:flex-row gap-4">
+        {/* Left side - Controls and Stats */}
+        <div className="lg:w-1/3 space-y-3">
+          <VisualizationSection className="p-3">
+            <p className={cn(typography.description, "text-sm leading-relaxed")}>
+              Explore how sample mean and variance converge to their true values as sample size increases. 
+              Drag the bars to adjust probabilities and see how it affects the distribution's properties.
+            </p>
+          </VisualizationSection>
+
+          <VisualizationSection className="p-3">
+            <ControlGroup>
+              <div className="space-y-3">
+                {/* Sample size control */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-sm text-neutral-300">Sample Size</label>
+                    <span className="text-sm font-mono text-cyan-400">{sampleCount}</span>
+                  </div>
+                  <RangeSlider
+                    value={sampleCount}
+                    onChange={setSampleCount}
+                    min={1}
+                    max={100}
+                    step={1}
+                    showValue={false}
+                    className="accent-cyan-500"
+                  />
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex gap-2">
+                  <button
+                    className={cn(
+                      "flex-1 px-3 py-1.5 rounded text-sm font-medium transition-colors",
+                      "bg-cyan-600 hover:bg-cyan-700 text-white"
+                    )}
+                    onClick={rollOnce}
+                    disabled={isRolling}
+                  >
+                    Roll Once
+                  </button>
+                  <button
+                    className={cn(
+                      "flex-1 px-3 py-1.5 rounded text-sm font-medium transition-colors",
+                      "bg-purple-600 hover:bg-purple-700 text-white"
+                    )}
+                    onClick={rollMultiple}
+                    disabled={isRolling}
+                  >
+                    Roll {sampleCount}×
+                  </button>
+                </div>
+                
+                <button
+                  className={cn(
+                    "w-full px-3 py-1.5 rounded text-sm font-medium transition-colors",
+                    "bg-neutral-700 hover:bg-neutral-600 text-white"
+                  )}
+                  onClick={handleReset}
+                >
+                  Reset All
+                </button>
+              </div>
+            </ControlGroup>
+          </VisualizationSection>
+
+          {/* Statistics Display */}
+          <VisualizationSection className="p-3">
+            <h4 className="text-base font-bold text-white mb-3">Statistics Comparison</h4>
+            
+            <div className="space-y-3">
+              {/* Sample stats */}
+              <div className="bg-neutral-800 rounded-lg p-3">
+                <h5 className="text-sm font-semibold text-cyan-400 mb-2">Sample ({sampleTotal} rolls)</h5>
+                <div className="space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-neutral-300">Mean:</span>
+                    <span className="text-sm font-mono font-bold text-white">{formatNumber(sampleMean)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-neutral-300">Variance:</span>
+                    <span className="text-sm font-mono font-bold text-white">{formatNumber(sampleVariance)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* True stats */}
+              <div className="bg-neutral-800 rounded-lg p-3 border border-purple-600/50">
+                <h5 className="text-sm font-semibold text-purple-400 mb-2">True Distribution</h5>
+                <div className="space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-neutral-300">Expected Value:</span>
+                    <span className="text-sm font-mono font-bold text-white">{formatNumber(trueExpectation)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-neutral-300">Variance:</span>
+                    <span className="text-sm font-mono font-bold text-white">{formatNumber(trueVariance)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Convergence indicator */}
+              {sampleTotal >= 50 && (
+                <div className="text-xs text-neutral-400 text-center p-2 bg-neutral-800 rounded">
+                  {Math.abs(sampleMean - trueExpectation) < 0.1 ? 
+                    "✓ Sample mean is converging to expected value" : 
+                    "Keep rolling - statistics will converge with more samples"}
+                </div>
+              )}
+            </div>
+          </VisualizationSection>
+        </div>
+
+        {/* Right side - Visualizations */}
+        <div className="lg:w-2/3 space-y-4">
+          {/* Probability Distribution */}
+          <GraphContainer height="300px">
+            <h4 className="text-sm font-semibold text-white mb-2 px-4 pt-3">Probability Distribution (drag bars to adjust)</h4>
+            <svg ref={barSvgRef} style={{ width: "100%", height: 280 }} />
+          </GraphContainer>
+
+          {/* Convergence Plot */}
+          <GraphContainer height="350px">
+            <h4 className="text-sm font-semibold text-white mb-2 px-4 pt-3">Convergence of Mean & Variance</h4>
+            <svg ref={plotSvgRef} style={{ width: "100%", height: 330 }} />
+          </GraphContainer>
+        </div>
       </div>
-      {/* stats summary */}
-      <div style={{ display: 'flex', justifyContent: 'space-around', gap: '1rem', margin: '1rem 0', color: '#fff', width: '100%', maxWidth: '500px' }}>
-        <div><strong>Rolls:</strong> {sampleTotal}</div>
-        <div><strong>Sample Mean:</strong> {sampleMean.toFixed(2)}</div>
-        <div><strong>Sample Variance:</strong> {sampleVariance.toFixed(2)}</div>
-        <div><strong>True Mean:</strong> {trueExpectation.toFixed(2)}</div>
-        <div><strong>True Variance:</strong> {trueVariance.toFixed(2)}</div>
-      </div>
-      {/* bar chart */}
-      <svg ref={barSvgRef} style={{ width: "500px", height: "230px" }} />
-      {/* convergence plot */}
-      <svg ref={plotSvgRef} style={{ width: "500px", height: "250px", marginTop: "1rem" }} />
-      {/* worked example (debounced) */}
-      <WorkedExample probs={displayProbs} />
-    </div>
+
+      {/* Worked Example */}
+      <VisualizationSection divider className="mt-4">
+        <WorkedExample probs={displayProbs} />
+      </VisualizationSection>
+    </VisualizationContainer>
   );
 }
