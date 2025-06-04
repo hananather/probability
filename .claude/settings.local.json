@@ -40,6 +40,7 @@
       "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -l \"import.*DistributionDebug\")",
       "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -l \"import.*DistributionComparison\")",
       "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -l \"drag-test\")",
+      "Bash(rm:*)",
       "Bash(rm:*)"
     ],
     "deny": []
