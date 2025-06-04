@@ -160,22 +160,57 @@ export default function DistributionSimulation() {
           .attr("fill", colorScheme.chart.primary); 
       });
 
-    // Drag behavior
+    // Drag behavior with proper coordinate handling
     bars.call(
       d3.drag()
-        .on("drag", (event, d) => {
-          const newVal = Math.max(0, Math.min(1, y.invert(event.y)));
+        .on("start", function(event, d) {
+          d3.select(this).attr("opacity", 1);
+        })
+        .on("drag", function(event, d) {
+          // Get mouse position relative to the chart area
+          const [mouseX, mouseY] = d3.pointer(event, g.node());
+          const newVal = Math.max(0.01, Math.min(0.99, y.invert(mouseY)));
           const oldVal = probs[d.face - 1];
-          const updated = probs.map((p, idx) =>
-            idx === d.face - 1 ? newVal : (oldVal === 1 ? (1 - newVal) / 5 : p * (1 - newVal) / (1 - oldVal))
-          );
+          
+          // Calculate new probabilities maintaining sum = 1
+          let updated = [...probs];
+          updated[d.face - 1] = newVal;
+          
+          // Redistribute the difference among other faces
+          const diff = oldVal - newVal;
+          const otherSum = 1 - oldVal;
+          
+          if (otherSum > 0.01) {
+            // Proportionally adjust other probabilities
+            for (let i = 0; i < 6; i++) {
+              if (i !== d.face - 1) {
+                updated[i] = probs[i] + (probs[i] / otherSum) * diff;
+              }
+            }
+          } else {
+            // If this was the only non-zero probability, distribute evenly
+            const share = (1 - newVal) / 5;
+            for (let i = 0; i < 6; i++) {
+              if (i !== d.face - 1) {
+                updated[i] = share;
+              }
+            }
+          }
+          
+          // Ensure sum is exactly 1 (handle floating point errors)
+          const sum = updated.reduce((a, b) => a + b, 0);
+          updated = updated.map(p => p / sum);
+          
           setProbs(updated);
           expectedDataRef.current = [];
           varianceDataRef.current = [];
         })
+        .on("end", function(event, d) {
+          d3.select(this).attr("opacity", 0.8);
+        })
     );
 
-    // Percentage labels
+    // Percentage labels (non-interactive to not interfere with drag)
     g.selectAll("text.bar-label").data(data).join("text")
       .attr("class", "bar-label")
       .attr("x", d => x(d.face) + x.bandwidth() / 2)
@@ -184,6 +219,7 @@ export default function DistributionSimulation() {
       .attr("fill", colors.chart.text)
       .style("font-size", "13px")
       .style("font-weight", "600")
+      .style("pointer-events", "none")
       .text(d => `${(d.value * 100).toFixed(1)}%`);
   }, [probs]);
 
