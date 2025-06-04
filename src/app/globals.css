@@ -58,9 +58,10 @@ input[type="range"] {
 
 input[type="range"]::-webkit-slider-runnable-track,
 input[type="range"]::-moz-range-track {
-  background: #52525b;  /* Lighter gray for better contrast */
-  height: 4px;
-  border-radius: 2px;
+  background: #71717a;  /* Much lighter gray for clear visibility */
+  height: 6px;  /* Slightly thicker for better visibility */
+  border-radius: 3px;
+  border: 1px solid #52525b;  /* Add border for definition */
 }
 
 /* Component Styles */
