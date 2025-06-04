@@ -408,28 +408,28 @@ export default function Bootstrapping() {
           </label>
         )}
         <button
-          className="px-3 py-1 rounded bg-blue-600 text-white"
+          className="btn btn-primary"
           onClick={handleSample}
           disabled={running}
         >
           Draw Sample
         </button>
         <button
-          className="px-3 py-1 rounded bg-teal-600 text-white"
+          className="btn btn-secondary"
           onClick={handleResample}
           disabled={!samples.length || running}
         >
           Resample
         </button>
         <button
-          className="px-3 py-1 rounded bg-yellow-500 text-white"
+          className="btn btn-secondary"
           onClick={handleResample100}
           disabled={!samples.length || running}
         >
           Resample ×100
         </button>
         <button
-          className="px-3 py-1 rounded bg-gray-600 text-white"
+          className="btn btn-danger"
           onClick={reset}
           disabled={running}
         >

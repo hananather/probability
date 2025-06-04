@@ -361,13 +361,13 @@ export default function ConfidenceInterval() {
           </label>
         )}
         <button
-          className={`px-3 py-1 rounded text-white ${running ? "bg-red-600" : "bg-blue-600"}`}
+          className={running ? "btn btn-danger" : "btn btn-primary"}
           onClick={() => setRunning(r => !r)}
         >
           {running ? "Stop" : "Start"}
         </button>
         <button
-          className="px-3 py-1 rounded bg-gray-600 text-white"
+          className="btn btn-neutral"
           onClick={resetCI}
         >
           Reset

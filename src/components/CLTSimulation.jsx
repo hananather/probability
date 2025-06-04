@@ -197,8 +197,8 @@ function CLTSimulation() {
         draws <input id="draws" type="range" min="1" max="100" step="1" defaultValue="5" className="w-32" />
         <span id="draws-value">5</span>
         <label><input id="theoretical" type="checkbox" defaultChecked /> Show Normal overlay</label>
-        <button id="form_clt" className="px-3 py-1 bg-blue-600 text-white rounded">Drop samples</button>
-        <button onClick={handleReset} className="px-3 py-1 bg-red-600 text-white rounded">Reset</button>
+        <button id="form_clt" className="btn btn-primary">Drop samples</button>
+        <button onClick={handleReset} className="btn btn-danger">Reset</button>
       </div>
       <div id="clt-graph" style={{width:"100%",maxWidth:"800px",height:"500px",margin:"auto"}} />
     </section>

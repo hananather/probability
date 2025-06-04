@@ -115,19 +115,19 @@ function PointEstimation() {
         {/* Buttons */}
         <div className="controls flex flex-wrap gap-4 items-center mb-4">
           <button
-            className="px-3 py-1 bg-blue-600 text-white rounded"
+            className="btn btn-primary"
             onClick={() => dropDots(100, 10)}
           >
             Drop 100 Samples
           </button>
           <button
-            className="px-3 py-1 bg-blue-600 text-white rounded"
+            className="btn btn-primary"
             onClick={() => dropDots(1000, 1)}
           >
             Drop 1000 Samples
           </button>
           <button
-            className="px-3 py-1 bg-red-600 text-white rounded"
+            className="btn btn-danger"
             onClick={handleReset}
           >
             Reset

@@ -163,7 +163,7 @@ export default function CoinFlipSimulation() {
         </label>
         <button
           onClick={handleMultipleFlip}
-          style={{ backgroundColor: "#4f46e5", color: "#fff", border: "none", padding: "0.5rem 1rem", borderRadius: "4px", cursor: "pointer" }}
+          className="btn btn-primary"
         >
           Flip {sampleCount} times
         </button>
@@ -190,13 +190,13 @@ export default function CoinFlipSimulation() {
       <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
         <button
           onClick={handleFlip}
-          style={{ backgroundColor: "#4f46e5", color: "#fff", border: "none", padding: "0.6rem 1.2rem", borderRadius: "4px", cursor: "pointer", fontSize: "1rem" }}
+          className="btn btn-primary"
         >
           Flip once
         </button>
         <button
           onClick={handleReset}
-          style={{ backgroundColor: "#e53e3e", color: "#fff", border: "none", padding: "0.6rem 1.2rem", borderRadius: "4px", cursor: "pointer", fontSize: "1rem" }}
+          className="btn btn-danger"
         >
           Reset
         </button>

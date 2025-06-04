@@ -148,19 +148,19 @@ const PriorPlot = () => {
           />
         </label>
         <button
-          className="px-3 py-1 rounded bg-blue-600 text-white"
+          className="btn btn-primary"
           onClick={() => flipCoin(1)}
         >
           Flip 1
         </button>
         <button
-          className="px-3 py-1 rounded bg-teal-600 text-white"
+          className="btn btn-secondary"
           onClick={() => flipCoin(10)}
         >
           Flip 10
         </button>
         <button
-          className="px-3 py-1 rounded bg-gray-600 text-white"
+          className="btn btn-danger"
           onClick={reset}
         >
           Reset

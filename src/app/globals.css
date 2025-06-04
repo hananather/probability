@@ -115,6 +115,24 @@ input[type="range"]::-moz-range-track {
   background-color: var(--background-hover);
 }
 
+.btn-neutral {
+  background-color: #6b7280;
+  color: white;
+}
+
+.btn-neutral:hover {
+  background-color: #4b5563;
+}
+
+.btn-success {
+  background-color: #10b981;
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #059669;
+}
+
 /* Cards/Panels */
 .panel {
   background-color: var(--background-card);
