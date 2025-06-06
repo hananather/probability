@@ -41,7 +41,27 @@
       "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -l \"import.*DistributionComparison\")",
       "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -l \"drag-test\")",
       "Bash(rm:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx babel:*)",
+      "Bash(node:*)",
+      "Bash(npm install:*)",
+      "Bash(npx eslint:*)",
+      "Bash(awk:*)",
+      "Bash(touch:*)",
+      "Bash(pkill:*)",
+      "Bash(pkill:*)",
+      "Bash(npx next:*)",
+      "Bash(npm run lint:*)",
+      "Bash(wget:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(timeout 10s npm run dev)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"C\\(\" src/components/01-introduction-to-probabilities/UnorderedSamples.jsx -n)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"setCalculationSteps\" src/components/01-introduction-to-probabilities/UnorderedSamples.jsx -n)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"setInteractionCount\" src/components/01-introduction-to-probabilities/UnorderedSamples.jsx -n)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -A 2 -B 2 \"TODO|FIXME|BUG|HACK\" src/)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -B 2 -A 2 \"onClick.*undefined|onChange.*undefined|on[A-Z].*\\?\\.\" src/)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -B 2 -A 2 \"\\.map\\(|\\.filter\\(|\\.find\\(|\\.forEach\\(\" src/)"
     ],
     "deny": []
   }

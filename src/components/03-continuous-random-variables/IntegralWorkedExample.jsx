@@ -2,14 +2,14 @@
 import React, { useEffect, useRef } from "react";
 
 const IntegralWorkedExample = React.memo(function IntegralWorkedExample({
-  distName,
-  params,
-  intervalA,
-  intervalB,
-  probValue,
-  pdfFormula, // LaTeX string for f(x)
-  cdfAValue,
-  cdfBValue
+  distName = "Normal",
+  params = [0, 1],
+  intervalA = -1,
+  intervalB = 1,
+  probValue = 0.6827,
+  pdfFormula = "\\frac{1}{\\sigma\\sqrt{2\\pi}} e^{-\\frac{1}{2}\\left(\\frac{x-\\mu}{\\sigma}\\right)^2}",
+  cdfAValue = 0.1587,
+  cdfBValue = 0.8413
 }) {
   const paramSymbols = {
     normal: ["\\mu", "\\sigma"],

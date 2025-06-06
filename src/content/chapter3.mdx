@@ -1,0 +1,293 @@
+import ConceptSection from '../components/ConceptSection.jsx';
+import ContinuousDistributionsPDF from '../components/03-continuous-random-variables/ContinuousDistributionsPDF';
+import { IntegralWorkedExample } from '../components/03-continuous-random-variables/IntegralWorkedExample';
+import NormalZScoreExplorer from '../components/03-continuous-random-variables/NormalZScoreExplorer';
+import { NormalZScoreWorkedExample } from '../components/03-continuous-random-variables/NormalZScoreWorkedExample';
+import EmpiricalRule from '../components/03-continuous-random-variables/EmpiricalRule';
+import ProcessCapability from '../components/03-continuous-random-variables/ProcessCapability';
+import ZScorePracticeProblems from '../components/03-continuous-random-variables/ZScorePracticeProblems';
+import ZTableLookup from '../components/03-continuous-random-variables/ZTableLookup';
+import { ExponentialDistribution } from '../components/03-continuous-random-variables/ExponentialDistribution';
+import { ExponentialDistributionWorkedExample } from '../components/03-continuous-random-variables/ExponentialDistributionWorkedExample';
+import { GammaDistribution } from '../components/03-continuous-random-variables/GammaDistribution';
+import { GammaDistributionWorkedExample } from '../components/03-continuous-random-variables/GammaDistributionWorkedExample';
+import { NormalApproxBinomial } from '../components/03-continuous-random-variables/NormalApproxBinomial';
+import { NormalApproxBinomialWorkedExample } from '../components/03-continuous-random-variables/NormalApproxBinomialWorkedExample';
+
+<div style={{ textAlign: 'center', marginTop: '2rem' }}>
+  <h1>Chapter 3: Continuous Random Variables</h1>
+  <p>MAT 2377 - Interactive Visualizations (ALL Components)</p>
+  <hr style={{ margin: '2rem auto', width: '50%' }} />
+</div>
+
+# Chapter 3: Continuous Random Variables
+
+<h2 id="section-3-1">3.1 Probability Density Functions</h2>
+
+<ConceptSection
+  title="Probability Density Functions"
+  description={
+    <>
+      <p>
+        Continuous random variables are described by probability density functions (PDFs). 
+        Unlike discrete distributions, individual points have zero probability — instead, 
+        we calculate probabilities over intervals using integration.
+      </p>
+      <p>
+        Explore how PDFs work, their properties, and how to calculate probabilities 
+        by finding areas under the curve.
+      </p>
+    </>
+  }
+>
+  <ContinuousDistributionsPDF />
+</ConceptSection>
+
+<ConceptSection
+  title="Integration Worked Examples"
+  description={
+    <>
+      <p>
+        Master the integration techniques needed for continuous probability calculations. 
+        This interactive example walks through computing probabilities step-by-step.
+      </p>
+    </>
+  }
+>
+  <IntegralWorkedExample />
+</ConceptSection>
+
+<h2 id="section-3-2">3.2 Expectation of a Continuous Random Variable</h2>
+
+<ConceptSection
+  title="Note"
+  description={
+    <>
+      <p>
+        This section's components are currently being refactored for better educational value.
+      </p>
+    </>
+  }
+>
+  <div className="p-4 bg-gray-800 rounded">
+    <p className="text-gray-300">Content coming soon...</p>
+  </div>
+</ConceptSection>
+
+<h2 id="section-3-3">3.3 Normal Distributions</h2>
+
+<ConceptSection
+  title="Normal Distribution & Z-Score Explorer (Original)"
+  description={
+    <>
+      <p>
+        Learn how any normal distribution can be transformed into the standard normal 
+        distribution using Z-scores. This powerful technique allows us to use a single 
+        table or function for all normal distributions.
+      </p>
+      <p>
+        Discover how standardization preserves probabilities and why Z-scores are 
+        fundamental to statistical analysis and quality control.
+      </p>
+    </>
+  }
+>
+  <NormalZScoreExplorer />
+</ConceptSection>
+
+
+<ConceptSection
+  title="Normal Z-Score Worked Examples"
+  description={
+    <>
+      <p>
+        Work through detailed examples of Z-score calculations and transformations.
+      </p>
+    </>
+  }
+>
+  <NormalZScoreWorkedExample />
+</ConceptSection>
+
+<ConceptSection
+  title="Empirical Rule (68-95-99.7 Rule)"
+  description={
+    <>
+      <p>
+        Explore the empirical rule that describes how data is distributed in a normal
+        distribution: approximately 68% within 1σ, 95% within 2σ, and 99.7% within 3σ.
+      </p>
+    </>
+  }
+>
+  <EmpiricalRule />
+</ConceptSection>
+
+<ConceptSection
+  title="Z-Table Lookup Tool"
+  description={
+    <>
+      <p>
+        Interactive Z-table for looking up probabilities and critical values for the
+        standard normal distribution.
+      </p>
+    </>
+  }
+>
+  <ZTableLookup />
+</ConceptSection>
+
+<ConceptSection
+  title="Z-Score Practice Problems"
+  description={
+    <>
+      <p>
+        Practice your understanding of Z-scores with interactive problems and
+        immediate feedback.
+      </p>
+    </>
+  }
+>
+  <ZScorePracticeProblems />
+</ConceptSection>
+
+<ConceptSection
+  title="Process Capability (Cp/Cpk)"
+  description={
+    <>
+      <p>
+        Learn how normal distributions are used in quality control through process
+        capability indices Cp and Cpk.
+      </p>
+    </>
+  }
+>
+  <ProcessCapability />
+</ConceptSection>
+
+<h2 id="section-3-4">3.4 Exponential Distributions</h2>
+
+<ConceptSection
+  title="Exponential Distribution"
+  description={
+    <>
+      <p>
+        The exponential distribution models the time between events in a Poisson process. 
+        It's the continuous analog of the geometric distribution and has the unique 
+        memoryless property.
+      </p>
+      <p>
+        Explore applications in reliability engineering, queueing theory, and discover 
+        why "memoryless" makes this distribution special for modeling wait times.
+      </p>
+    </>
+  }
+>
+  <ExponentialDistribution />
+</ConceptSection>
+
+<ConceptSection
+  title="Exponential Distribution Worked Examples"
+  description={
+    <>
+      <p>
+        Work through detailed examples of exponential distribution calculations,
+        including probability computations and demonstrations of the memoryless property.
+      </p>
+    </>
+  }
+>
+  <ExponentialDistributionWorkedExample />
+</ConceptSection>
+
+<h2 id="section-3-5">3.5 Gamma Distributions</h2>
+
+<ConceptSection
+  title="Gamma Distribution"
+  description={
+    <>
+      <p>
+        The Gamma distribution generalizes the exponential distribution to model the time 
+        until the k-th event occurs. It includes exponential and chi-squared distributions 
+        as special cases.
+      </p>
+      <p>
+        Visualize how the sum of exponential random variables creates a Gamma distribution, 
+        and explore its applications in engineering and statistics.
+      </p>
+    </>
+  }
+>
+  <GammaDistribution />
+</ConceptSection>
+
+<ConceptSection
+  title="Gamma Distribution Worked Examples"
+  description={
+    <>
+      <p>
+        Step-by-step calculations for the Gamma distribution, including special cases
+        and connections to other distributions.
+      </p>
+    </>
+  }
+>
+  <GammaDistributionWorkedExample />
+</ConceptSection>
+
+<h2 id="section-3-6">3.6 Joint Distributions</h2>
+
+<ConceptSection
+  title="Joint Distributions (Coming Soon)"
+  description={
+    <>
+      <p>
+        Joint distributions describe the probability structure of multiple continuous
+        random variables considered together. This section will cover joint PDFs,
+        marginal distributions, and conditional distributions.
+      </p>
+      <p>
+        <em>Component to be developed</em>
+      </p>
+    </>
+  }
+>
+  <div style={{ padding: '2rem', textAlign: 'center', background: '#1a1a1a', borderRadius: '8px' }}>
+    <p style={{ color: '#666' }}>Joint Distributions visualization coming soon...</p>
+  </div>
+</ConceptSection>
+
+<h2 id="section-3-7">3.7 Normal Approximation of the Binomial Distribution</h2>
+
+<ConceptSection
+  title="Normal Approximation to Binomial"
+  description={
+    <>
+      <p>
+        When n is large, the discrete Binomial distribution can be approximated by the 
+        continuous Normal distribution. This powerful technique simplifies calculations 
+        and is fundamental to many statistical methods.
+      </p>
+      <p>
+        Learn when the approximation is valid (np ≥ 5 and n(1-p) ≥ 5) and how to 
+        apply the continuity correction for accurate results.
+      </p>
+    </>
+  }
+>
+  <NormalApproxBinomial />
+</ConceptSection>
+
+<ConceptSection
+  title="Normal Approximation Worked Examples"
+  description={
+    <>
+      <p>
+        Detailed examples showing how to apply the normal approximation to binomial
+        problems, including continuity correction calculations.
+      </p>
+    </>
+  }
+>
+  <NormalApproxBinomialWorkedExample />
+</ConceptSection>

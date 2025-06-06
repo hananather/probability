@@ -105,6 +105,7 @@ export const components = {
     base: 'px-4 py-2 rounded font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-800',
     primary: 'bg-teal-600 hover:bg-teal-700 text-white focus:ring-teal-500',
     secondary: 'bg-neutral-700 hover:bg-neutral-600 text-white focus:ring-neutral-500',
+    danger: 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500',
     small: 'px-3 py-1.5 text-sm',
   },
   
@@ -157,6 +158,7 @@ export const createColorScheme = (scheme = 'default') => {
       secondary: schemeColors.secondary,
       tertiary: schemeColors.tertiary,
       error: '#ef4444',      // Always red for errors
+      success: '#10b981',    // Always green for success
       grid: '#374151',       // Always neutral
       text: '#ffffff',       // Always white
       
@@ -189,7 +191,10 @@ export const createColorScheme = (scheme = 'default') => {
       primary: `text-[${schemeColors.primary}]`,
       secondary: `text-[${schemeColors.secondary}]`,
       tertiary: `text-[${schemeColors.tertiary}]`,
-    }
+    },
+    
+    // Additional colors
+    success: '#10b981',  // Green for success states
   };
 };
 

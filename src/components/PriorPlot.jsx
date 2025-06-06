@@ -21,7 +21,10 @@ const PriorPlot = () => {
   const height = 550 - margin.top - margin.bottom;
 
   useEffect(() => {
+    // When alpha/beta change, reset to initial state with just the prior
     setData([posterior(alpha, betaVal)]);
+    setCount(0);
+    setN(0);
   }, [alpha, betaVal]);
 
   useEffect(() => {
@@ -34,58 +37,146 @@ const PriorPlot = () => {
 
   function draw() {
     const svg = d3.select(svgRef.current);
-    svg.selectAll("*").remove();
-    svg
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
-      .attr("preserveAspectRatio", "xMidYMid meet");
-    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+    
+    // Initialize SVG dimensions only if not already set
+    if (svg.select("g.main-group").empty()) {
+      svg
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+        .attr("preserveAspectRatio", "xMidYMid meet");
+      
+      svg.append("g")
+        .attr("class", "main-group")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+    }
+    
+    const g = svg.select("g.main-group");
 
     const x = d3.scaleLinear().domain([0, 1]).range([0, width]);
-    const y = d3.scaleLinear().domain([0, 3]).range([height, 0]);
-    const xAxis = d3.axisBottom(x).ticks(3);
-    g.append("g")
-      .attr("class", "x axis")
-      .attr("transform", `translate(0,${height})`)
-      .call(xAxis);
-    g.append("text")
-      .attr("class", "label")
-      .attr("text-anchor", "middle")
-      .attr("transform", `translate(${width / 2},${height + margin.bottom / 2})`)
-      .text("p");
-    g.append("clipPath")
-      .attr("id", "display")
-      .append("rect")
-      .attr("x", 0)
-      .attr("y", 0)
-      .attr("width", width)
-      .attr("height", height);
+    
+    // Calculate dynamic y-domain based on current posterior
+    let maxY = 3;
+    if (data.length > 0) {
+      const currentPosterior = data[data.length - 1];
+      const currentAlpha = alpha + count;
+      const currentBeta = betaVal + n - count;
+      
+      // Calculate mode of beta distribution (where PDF is maximum)
+      if (currentAlpha > 1 && currentBeta > 1) {
+        const mode = (currentAlpha - 1) / (currentAlpha + currentBeta - 2);
+        const maxPDF = beta.pdf(mode, currentAlpha, currentBeta);
+        maxY = Math.min(Math.max(maxPDF * 1.1, 3), 100); // Add 10% padding, min 3, max 100
+      }
+    }
+    
+    const y = d3.scaleLinear().domain([0, maxY]).range([height, 0]);
+    
+    // Create axes only if they don't exist
+    if (g.select(".x.axis").empty()) {
+      const xAxis = d3.axisBottom(x).ticks(3);
+      g.append("g")
+        .attr("class", "x axis")
+        .attr("transform", `translate(0,${height})`)
+        .call(xAxis);
+      
+      g.append("text")
+        .attr("class", "label")
+        .attr("text-anchor", "middle")
+        .attr("transform", `translate(${width / 2},${height + margin.bottom / 2})`)
+        .text("p");
+      
+      // Create y-axis
+      g.append("g")
+        .attr("class", "y axis")
+        .call(d3.axisLeft(y).ticks(5));
+      
+      g.append("text")
+        .attr("class", "y-label")
+        .attr("text-anchor", "middle")
+        .attr("transform", `rotate(-90) translate(${-height/2},${-margin.left + 15})`)
+        .text("Density");
+      
+      g.append("clipPath")
+        .attr("id", "display")
+        .append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", width)
+        .attr("height", height);
+    } else {
+      // Update y-axis with transition
+      const yAxis = d3.axisLeft(y).ticks(5);
+      g.select(".y.axis")
+        .transition()
+        .duration(300)
+        .call(yAxis);
+    }
 
     const line = d3.line()
       .x(d => x(d[0]))
       .y(d => y(d[1]))
       .curve(d3.curveBasis);
 
-    g.selectAll("path.beta")
-      .data(data)
-      .join("path")
+    // Draw all posterior curves with decreasing opacity and smooth transitions
+    const paths = g.selectAll("path.beta")
+      .data(data);
+    
+    // Enter new paths
+    paths.enter()
+      .append("path")
       .attr("class", "beta")
       .attr("clip-path", "url(#display)")
+      .attr("fill", "none")
       .attr("d", d => line(d))
       .attr("stroke", "#0074D9")
-      .attr("fill", "none");
+      .attr("stroke-width", 1)
+      .attr("stroke-opacity", 0)
+      .transition()
+      .duration(300)
+      .attr("stroke-opacity", (d, i) => Math.max(1 / (data.length - i), 0.2));
+    
+    // Update existing paths
+    paths
+      .transition()
+      .duration(300)
+      .attr("d", d => line(d))
+      .attr("stroke", (d, i) => {
+        // Latest curve is green, older ones are blue
+        return i === data.length - 1 ? "#10b981" : "#0074D9";
+      })
+      .attr("stroke-width", (d, i) => {
+        // Latest curve is thicker
+        return i === data.length - 1 ? 3 : 1;
+      })
+      .attr("stroke-opacity", (d, i) => {
+        // Decreasing opacity for older curves
+        return Math.max(1 / (data.length - i), 0.2);
+      });
+    
+    // Remove old paths (shouldn't happen in our case)
+    paths.exit().remove();
 
+    // Update true value line with transition
     g.selectAll("line.true")
       .data([p])
-      .join("line")
-      .attr("class", "true")
-      .attr("clip-path", "url(#display)")
-      .attr("x1", d => x(d))
-      .attr("y1", y.range()[0])
-      .attr("x2", d => x(d))
-      .attr("y2", y(2 * y.domain()[1]))
-      .attr("stroke", "#FF4136");
+      .join(
+        enter => enter.append("line")
+          .attr("class", "true")
+          .attr("clip-path", "url(#display)")
+          .attr("x1", d => x(d))
+          .attr("y1", y.range()[0])
+          .attr("x2", d => x(d))
+          .attr("y2", y(2 * y.domain()[1]))
+          .attr("stroke", "#FF4136")
+          .attr("stroke-width", 2)
+          .attr("stroke-dasharray", "5,5"),
+        update => update
+          .transition()
+          .duration(300)
+          .attr("x1", d => x(d))
+          .attr("x2", d => x(d))
+      );
   }
 
   function flipCoin(times = 1) {

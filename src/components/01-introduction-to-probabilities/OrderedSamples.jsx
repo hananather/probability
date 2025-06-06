@@ -246,7 +246,12 @@ function OrderedSamples() {
     const slotStartX = innerWidth * 0.5;
     const slotY = innerHeight * 0.5;
     const slotWidth = Math.min((innerWidth * 0.4) / r, 60);
-    const slotSpacing = slotWidth * 1.3;
+    const slotSpacing = r >= 4 ? slotWidth * 1.2 : slotWidth * 1.3;
+    
+    // Determine label format based on number of positions
+    const useCompactLabels = r >= 4;
+    const labelFontSize = useCompactLabels ? "11px" : "14px";
+    const labelOffset = useCompactLabels ? 15 : 20;
     
     for (let i = 0; i < r; i++) {
       const slotX = slotStartX + i * slotSpacing;
@@ -261,25 +266,55 @@ function OrderedSamples() {
         .attr("stroke-width", 2)
         .attr("stroke-dasharray", "5,5");
       
+      // Add position number inside slot (always visible)
       g.append("text")
         .attr("x", slotX)
-        .attr("y", slotY + slotWidth / 2 + 20)
+        .attr("y", slotY - slotWidth / 2 - 5)
         .attr("text-anchor", "middle")
-        .attr("fill", colors.chart.text)
-        .style("font-size", "14px")
-        .text(`Position ${i + 1}`);
+        .attr("fill", colors.chart.grid)
+        .style("font-size", "10px")
+        .style("font-weight", "600")
+        .text(i + 1);
+      
+      // Add label below with smart positioning
+      if (useCompactLabels) {
+        // For many positions, use staggered layout
+        const stagger = i % 2 === 0;
+        const yPos = slotY + slotWidth / 2 + (stagger ? labelOffset : labelOffset + 15);
+        
+        g.append("text")
+          .attr("x", slotX)
+          .attr("y", yPos)
+          .attr("text-anchor", "middle")
+          .attr("fill", colors.chart.text)
+          .style("font-size", labelFontSize)
+          .text(`P${i + 1}`);
+      } else {
+        // For few positions, use normal layout
+        g.append("text")
+          .attr("x", slotX)
+          .attr("y", slotY + slotWidth / 2 + labelOffset)
+          .attr("text-anchor", "middle")
+          .attr("fill", colors.chart.text)
+          .style("font-size", labelFontSize)
+          .text(`Position ${i + 1}`);
+      }
     }
     
     // Animation function
     function animateSequence(sequence) {
       const animationGroup = g.append("g").attr("class", "animation-group");
       
+      // Different approach: for with replacement, we'll show the ball going to slot
+      // and staying there, with a visual indicator that it "returns" to bag
+      
       sequence.forEach((ballNumber, index) => {
-        const delay = index * 800;
+        const stepDelay = withReplacement ? index * 1200 : index * 800;
         const slotX = slotStartX + index * slotSpacing;
         const ballIndex = ballNumber - 1;
         const color = ballColors[ballIndex % 10];
         
+        // Create ball for this draw
         const ball = animationGroup.append("g");
         
         const circle = ball.append("circle")
@@ -301,39 +336,67 @@ function OrderedSamples() {
           .text(ballNumber)
           .attr("opacity", 0);
         
-        // Animate
+        // Step 1: Ball appears
         circle.transition()
-          .delay(delay)
+          .delay(stepDelay)
           .duration(300)
-          .attr("r", ballRadius)
-          .transition()
+          .attr("r", ballRadius);
+        
+        text.transition()
+          .delay(stepDelay)
+          .duration(300)
+          .attr("opacity", 1);
+        
+        // Step 2: Ball moves to slot
+        circle.transition()
+          .delay(stepDelay + 300)
           .duration(500)
           .attr("cx", slotX)
           .attr("cy", slotY);
         
         text.transition()
-          .delay(delay)
-          .duration(300)
-          .attr("opacity", 1)
-          .transition()
+          .delay(stepDelay + 300)
           .duration(500)
           .attr("x", slotX)
           .attr("y", slotY);
         
-        // Return to bag if with replacement
+        // For with replacement: show a visual return indicator
         if (withReplacement && index < sequence.length - 1) {
-          circle.transition()
-            .delay(delay + 800)
-            .duration(300)
-            .attr("cx", bagCx)
-            .attr("cy", bagCy)
+          // Create a dashed line showing the return path
+          const returnPath = animationGroup.append("path")
+            .attr("d", `M ${slotX} ${slotY} L ${bagCx} ${bagCy}`)
+            .attr("stroke", color)
+            .attr("stroke-width", 2)
+            .attr("stroke-dasharray", "5,5")
+            .attr("fill", "none")
             .attr("opacity", 0);
           
-          text.transition()
-            .delay(delay + 800)
-            .duration(300)
-            .attr("x", bagCx)
-            .attr("y", bagCy)
+          // Animate the return path
+          returnPath.transition()
+            .delay(stepDelay + 800)
+            .duration(200)
+            .attr("opacity", 0.5)
+            .transition()
+            .duration(200)
+            .attr("opacity", 0);
+          
+          // Add a small "return" indicator text
+          const returnText = animationGroup.append("text")
+            .attr("x", (slotX + bagCx) / 2)
+            .attr("y", (slotY + bagCy) / 2 - 10)
+            .attr("text-anchor", "middle")
+            .attr("fill", colors.chart.text)
+            .style("font-size", "10px")
+            .style("font-style", "italic")
+            .text("returns")
+            .attr("opacity", 0);
+          
+          returnText.transition()
+            .delay(stepDelay + 800)
+            .duration(200)
+            .attr("opacity", 0.7)
+            .transition()
+            .duration(200)
             .attr("opacity", 0);
         }
       });
@@ -349,6 +412,16 @@ function OrderedSamples() {
     
   }, [n, r, currentSequence, withReplacement]);
   
+  // Cleanup animation on unmount
+  useEffect(() => {
+    return () => {
+      if (animationRef.current) {
+        animationRef.current.interrupt();
+        animationRef.current.remove();
+      }
+    };
+  }, []);
+  
   // Draw one sequence
   function drawSequence() {
     if (isAnimating) return;
@@ -362,7 +435,8 @@ function OrderedSamples() {
     setSequenceCount(prev => prev + 1);
     
     // Animation duration
-    const duration = r * 800 + (withReplacement ? r * 300 : 0) + 500;
+    const stepDuration = withReplacement ? 1200 : 800;
+    const duration = r * stepDuration + 500;
     setTimeout(() => {
       setIsAnimating(false);
     }, duration);

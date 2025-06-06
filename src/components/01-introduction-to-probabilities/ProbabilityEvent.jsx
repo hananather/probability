@@ -8,6 +8,7 @@ import {
   ControlGroup
 } from '../ui/VisualizationContainer';
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
+import { ProgressTracker } from '../ui/ProgressTracker';
 
 // Use probability color scheme
 const colorScheme = createColorScheme('probability');
@@ -36,28 +37,32 @@ const DiceWorkedExample = memo(function DiceWorkedExample({ event }) {
   
   const examples = {
     even: {
-      title: "Rolling an Even Number",
-      event: "A = {2, 4, 6}",
+      title: "Even Number",
+      event: "A = \\{2, 4, 6\\}",
       favorable: 3,
-      calculation: "3/6 = 1/2"
+      fraction: "\\frac{3}{6}",
+      simplified: "\\frac{1}{2}"
     },
     prime: {
-      title: "Rolling a Prime Number",
-      event: "B = {2, 3, 5}",
+      title: "Prime Number",
+      event: "B = \\{2, 3, 5\\}",
       favorable: 3,
-      calculation: "3/6 = 1/2"
+      fraction: "\\frac{3}{6}",
+      simplified: "\\frac{1}{2}"
     },
     greater: {
-      title: "Rolling Greater Than 4",
-      event: "C = {5, 6}",
+      title: "Greater Than 4",
+      event: "C = \\{5, 6\\}",
       favorable: 2,
-      calculation: "2/6 = 1/3"
+      fraction: "\\frac{2}{6}",
+      simplified: "\\frac{1}{3}"
     },
     multiple3: {
-      title: "Rolling a Multiple of 3",
-      event: "D = {3, 6}",
+      title: "Multiple of 3",
+      event: "D = \\{3, 6\\}",
       favorable: 2,
-      calculation: "2/6 = 1/3"
+      fraction: "\\frac{2}{6}",
+      simplified: "\\frac{1}{3}"
     }
   };
   
@@ -66,162 +71,79 @@ const DiceWorkedExample = memo(function DiceWorkedExample({ event }) {
   return (
     <div ref={contentRef} style={{
       backgroundColor: '#2A303C',
-      padding: '1.5rem',
+      padding: '1rem',
       borderRadius: '8px',
       color: '#e0e0e0',
-      marginTop: '1rem'
+      marginTop: '0.5rem',
+      fontSize: '0.75rem' // Smaller base font size
     }}>
-      <h4 style={{ fontSize: '1.125rem', fontWeight: '600', borderBottom: '1px solid #4A5568', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
+      <h4 style={{ fontSize: '0.875rem', fontWeight: '600', borderBottom: '1px solid #4A5568', paddingBottom: '0.25rem', marginBottom: '0.5rem' }}>
         Example: {example.title}
       </h4>
       
-      <div style={{ marginBottom: '1rem' }}>
-        <p style={{ marginBottom: '0.25rem', fontWeight: '500' }}>Sample Space:</p>
-        <div dangerouslySetInnerHTML={{ __html: `\\[
-          S = \\{1, 2, 3, 4, 5, 6\\}
-        \\]` }} />
-        <p style={{ fontSize: '0.875rem', color: '#cbd5e0' }}>All possible outcomes when rolling a fair die.</p>
+      <div style={{ marginBottom: '0.5rem' }}>
+        <p style={{ marginBottom: '0.125rem', fontWeight: '500' }}>Sample Space:</p>
+        <div style={{ fontSize: '0.875rem' }} dangerouslySetInnerHTML={{ __html: `\\( S = \\{1, 2, 3, 4, 5, 6\\} \\)` }} />
       </div>
       
-      <div style={{ marginBottom: '1rem' }}>
-        <p style={{ marginBottom: '0.25rem', fontWeight: '500' }}>Event:</p>
-        <div dangerouslySetInnerHTML={{ __html: `\\[
-          ${example.event}
-        \\]` }} />
+      <div style={{ marginBottom: '0.5rem' }}>
+        <p style={{ marginBottom: '0.125rem', fontWeight: '500' }}>Event:</p>
+        <div style={{ fontSize: '0.875rem' }} dangerouslySetInnerHTML={{ __html: `\\( ${example.event} \\)` }} />
       </div>
       
-      <div style={{ marginBottom: '1rem' }}>
-        <p style={{ marginBottom: '0.25rem', fontWeight: '500' }}>Probability Calculation:</p>
-        <div dangerouslySetInnerHTML={{ __html: `\\[
-          P(\\text{Event}) = \\frac{\\text{Number of favorable outcomes}}{\\text{Total number of outcomes}} = \\frac{${example.favorable}}{6} = ${example.calculation}
-        \\]` }} />
+      <div style={{ marginBottom: '0.5rem' }}>
+        <p style={{ marginBottom: '0.125rem', fontWeight: '500' }}>Probability:</p>
+        <div style={{ fontSize: '0.875rem' }} dangerouslySetInnerHTML={{ __html: 
+          `\\( P(\\text{Event}) = ${example.fraction} = ${example.simplified} \\)` 
+        }} />
       </div>
       
-      <div style={{ backgroundColor: '#1A202C', padding: '1rem', borderRadius: '4px', fontSize: '0.875rem' }}>
-        <strong>Key Principle:</strong> For equally likely outcomes, probability equals the ratio of 
-        favorable outcomes to total outcomes.
+      <div style={{ backgroundColor: '#1A202C', padding: '0.5rem', borderRadius: '4px', fontSize: '0.7rem' }}>
+        <strong>Key:</strong> Favorable outcomes ÷ Total outcomes
       </div>
     </div>
   );
 });
 
-// Blood Pressure Example
-const BloodPressureExample = memo(function BloodPressureExample() {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    // MathJax timeout pattern
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          console.error('MathJax error:', err);
-        });
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
-  
-  return (
-    <div ref={contentRef} style={{
-      backgroundColor: '#2A303C',
-      padding: '1.5rem',
-      borderRadius: '8px',
-      color: '#e0e0e0',
-      marginTop: '1rem'
-    }}>
-      <h4 style={{ fontSize: '1.125rem', fontWeight: '600', borderBottom: '1px solid #4A5568', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
-        Example: Frequentist Probability
-      </h4>
-      
-      <div style={{ marginBottom: '1rem' }}>
-        <p style={{ marginBottom: '0.5rem', fontWeight: '500' }}>Problem:</p>
-        <p style={{ fontSize: '0.875rem' }}>
-          In a group of 1000 people, 545 have high blood pressure. If one person is selected randomly, 
-          what is the probability that this person has high blood pressure?
-        </p>
-      </div>
-      
-      <div style={{ marginBottom: '1rem' }}>
-        <p style={{ marginBottom: '0.25rem', fontWeight: '500' }}>Solution:</p>
-        <div dangerouslySetInnerHTML={{ __html: `\\[
-          P(\\text{High BP}) = \\frac{545}{1000} = 0.545 = 54.5\\%
-        \\]` }} />
-      </div>
-      
-      <div style={{ backgroundColor: '#1A202C', padding: '1rem', borderRadius: '4px', fontSize: '0.875rem' }}>
-        <strong>Frequentist Interpretation:</strong> The relative frequency of people with high blood 
-        pressure (545/1000) gives us the probability. As sample size increases, relative frequency 
-        approaches true probability.
-      </div>
-    </div>
-  );
-});
 
 function ProbabilityEvent() {
-  const [experiment, setExperiment] = useState('dice'); // 'dice', 'coin', 'cards'
   const [eventType, setEventType] = useState('even'); // for dice
   const [trials, setTrials] = useState(0);
   const [successes, setSuccesses] = useState(0);
   const [history, setHistory] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
   const [showDiceExample, setShowDiceExample] = useState(true);
-  const [showFreqExample, setShowFreqExample] = useState(false);
   const [isAutoRunning, setIsAutoRunning] = useState(false);
   const [targetTrials, setTargetTrials] = useState(1000);
   
   const svgRef = useRef(null);
   const intervalRef = useRef(null);
   const autoRunRef = useRef(null);
+  const trialsRef = useRef(0);
   
-  // Define events for different experiments
+  // Define dice events
   const diceEvents = {
-    even: { name: "Even", check: (n) => n % 2 === 0, theoretical: 1/2, values: [2, 4, 6] },
-    prime: { name: "Prime", check: (n) => [2, 3, 5].includes(n), theoretical: 1/2, values: [2, 3, 5] },
-    greater: { name: "> 4", check: (n) => n > 4, theoretical: 1/3, values: [5, 6] },
+    even: { name: "Even Number", check: (n) => n % 2 === 0, theoretical: 1/2, values: [2, 4, 6] },
+    prime: { name: "Prime Number", check: (n) => [2, 3, 5].includes(n), theoretical: 1/2, values: [2, 3, 5] },
+    greater: { name: "Greater than 4", check: (n) => n > 4, theoretical: 1/3, values: [5, 6] },
     multiple3: { name: "Multiple of 3", check: (n) => n % 3 === 0, theoretical: 1/3, values: [3, 6] }
-  };
-  
-  const coinEvents = {
-    heads: { name: "Heads", check: (n) => n === 1, theoretical: 1/2 },
-    tails: { name: "Tails", check: (n) => n === 0, theoretical: 1/2 }
-  };
-  
-  const cardEvents = {
-    ace: { name: "Ace", check: (n) => n % 13 === 0, theoretical: 4/52 },
-    heart: { name: "Heart", check: (n) => n < 13, theoretical: 13/52 },
-    face: { name: "Face Card", check: (n) => [10, 11, 12].includes(n % 13), theoretical: 12/52 },
-    red: { name: "Red Card", check: (n) => n < 26, theoretical: 26/52 }
   };
   
   // Get current event configuration
   function getCurrentEvent() {
-    if (experiment === 'dice') return diceEvents[eventType];
-    if (experiment === 'coin') return coinEvents.heads;
-    if (experiment === 'cards') return cardEvents.heart;
-    return diceEvents.even;
+    return diceEvents[eventType];
   }
   
   // Run single trial
   function runTrial() {
-    let outcome;
-    if (experiment === 'dice') {
-      outcome = Math.floor(Math.random() * 6) + 1;
-    } else if (experiment === 'coin') {
-      outcome = Math.random() < 0.5 ? 0 : 1;
-    } else if (experiment === 'cards') {
-      outcome = Math.floor(Math.random() * 52);
-    }
-    
+    const outcome = Math.floor(Math.random() * 6) + 1;
     const event = getCurrentEvent();
     const success = event.check(outcome);
     
-    setTrials(prev => prev + 1);
+    setTrials(prev => {
+      trialsRef.current = prev + 1;
+      return prev + 1;
+    });
     if (success) setSuccesses(prev => prev + 1);
     
     setHistory(prev => [...prev.slice(-99), { outcome, success }]);
@@ -236,7 +158,7 @@ function ProbabilityEvent() {
     const svg = d3.select(svgRef.current);
     const { width } = svgRef.current.getBoundingClientRect();
     const height = 400;
-    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
+    const margin = { top: 80, right: 40, bottom: 60, left: 60 }; // Increased top margin for dice
     
     svg.selectAll("*").remove();
     svg.attr("viewBox", `0 0 ${width} ${height}`);
@@ -253,11 +175,10 @@ function ProbabilityEvent() {
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
-    if (experiment === 'dice') {
-      // Create probability bar chart instead of just dice faces
-      const event = getCurrentEvent();
-      const theoretical = event.theoretical;
-      const experimental = trials > 0 ? successes / trials : 0;
+    // Create probability visualization for dice
+    const event = getCurrentEvent();
+    const theoretical = event.theoretical;
+    const experimental = trials > 0 ? successes / trials : 0;
       
       // Scales for bar chart
       const xScale = d3.scaleBand()
@@ -325,49 +246,97 @@ function ProbabilityEvent() {
         .attr('fill', colors.chart.text)
         .text('Probability');
       
-      // Add small dice icons above bars to show which outcomes are favorable
-      const dieSize = 30;
-      const diceY = -50;
+      // Show all dice faces with highlighting for favorable outcomes
+      const dieSize = 40;
+      const diceSpacing = 10;
+      const totalDiceWidth = 6 * dieSize + 5 * diceSpacing;
+      const diceStartX = (innerWidth - totalDiceWidth) / 2;
+      const diceY = -65;
       
-      event.values.forEach((value, i) => {
-        const x = innerWidth / 2 + (i - event.values.length / 2) * (dieSize + 5);
+      // Draw all 6 dice
+      for (let i = 1; i <= 6; i++) {
+        const x = diceStartX + (i - 1) * (dieSize + diceSpacing);
+        const isFavorable = event.values.includes(i);
         
-        // Mini die
-        g.append('rect')
-          .attr('x', x)
-          .attr('y', diceY)
+        // Create a group for each die
+        const dieGroup = g.append('g')
+          .attr('transform', `translate(${x}, ${diceY})`)
+          .style('cursor', 'pointer')
+          .on('mouseover', function() {
+            d3.select(this)
+              .transition()
+              .duration(150)
+              .attr('transform', `translate(${x}, ${diceY}) scale(1.1)`);
+          })
+          .on('mouseout', function() {
+            d3.select(this)
+              .transition()
+              .duration(150)
+              .attr('transform', `translate(${x}, ${diceY}) scale(1)`);
+          });
+        
+        // Die background
+        dieGroup.append('rect')
+          .attr('x', -dieSize/2)
+          .attr('y', -dieSize/2)
           .attr('width', dieSize)
           .attr('height', dieSize)
-          .attr('fill', colorScheme.chart.primary)
-          .attr('stroke', 'white')
-          .attr('stroke-width', 1)
-          .attr('rx', 4);
+          .attr('fill', isFavorable ? colorScheme.chart.primary : '#1a1a1a')
+          .attr('stroke', isFavorable ? 'white' : colors.chart.grid)
+          .attr('stroke-width', isFavorable ? 2 : 1)
+          .attr('rx', 6)
+          .attr('opacity', isFavorable ? 1 : 0.5);
         
-        // Number label
+        // Die dots pattern
+        const dots = [
+          [[0.5, 0.5]], // 1
+          [[0.25, 0.25], [0.75, 0.75]], // 2
+          [[0.25, 0.25], [0.5, 0.5], [0.75, 0.75]], // 3
+          [[0.25, 0.25], [0.25, 0.75], [0.75, 0.25], [0.75, 0.75]], // 4
+          [[0.25, 0.25], [0.25, 0.75], [0.5, 0.5], [0.75, 0.25], [0.75, 0.75]], // 5
+          [[0.25, 0.25], [0.25, 0.5], [0.25, 0.75], [0.75, 0.25], [0.75, 0.5], [0.75, 0.75]] // 6
+        ];
+        
+        dots[i - 1].forEach(([dx, dy]) => {
+          dieGroup.append('circle')
+            .attr('cx', (dx - 0.5) * dieSize)
+            .attr('cy', (dy - 0.5) * dieSize)
+            .attr('r', 3)
+            .attr('fill', isFavorable ? 'white' : colors.chart.text)
+            .attr('opacity', isFavorable ? 1 : 0.6);
+        });
+        
+        // Number below die (for clarity)
         g.append('text')
-          .attr('x', x + dieSize / 2)
-          .attr('y', diceY + dieSize / 2)
+          .attr('x', x)
+          .attr('y', diceY + dieSize/2 + 12)
           .attr('text-anchor', 'middle')
-          .attr('dy', '0.35em')
-          .attr('fill', 'white')
-          .style('font-size', '16px')
-          .style('font-weight', 'bold')
-          .text(value);
-      });
+          .attr('fill', isFavorable ? colorScheme.chart.primary : colors.chart.text)
+          .style('font-size', '12px')
+          .style('font-weight', isFavorable ? 'bold' : 'normal')
+          .text(i);
+      }
       
-      // Add event description
+      // Add event description above dice
       g.append('text')
         .attr('x', innerWidth / 2)
-        .attr('y', diceY - 10)
+        .attr('y', diceY - 15)
         .attr('text-anchor', 'middle')
         .attr('fill', colors.chart.text)
+        .style('font-size', '16px')
+        .style('font-weight', 'bold')
+        .text(`Event: ${event.name}`);
+      
+      // Add favorable outcomes indicator
+      g.append('text')
+        .attr('x', innerWidth / 2)
+        .attr('y', diceY + dieSize + 30)
+        .attr('text-anchor', 'middle')
+        .attr('fill', colorScheme.chart.primary)
         .style('font-size', '14px')
-        .text(`Event: ${event.name} = {${event.values.join(', ')}}`);
-    }
+        .text(`Favorable: {${event.values.join(', ')}}`);
     
-    // Frequency chart - removed, now integrated into main visualization above
-    
-  }, [experiment, eventType, trials, successes]);
+  }, [eventType, trials, successes]);
   
   // Run multiple trials
   function runMultipleTrials(count) {
@@ -400,6 +369,7 @@ function ProbabilityEvent() {
     setTrials(0);
     setSuccesses(0);
     setHistory([]);
+    trialsRef.current = 0;
   }
   
   // Auto-run functions
@@ -410,14 +380,11 @@ function ProbabilityEvent() {
     const runSpeed = 50; // ms between trials
     
     autoRunRef.current = setInterval(() => {
-      setTrials(currentTrials => {
-        if (currentTrials >= targetTrials) {
-          stopAutoRun();
-          return currentTrials;
-        }
-        runTrial();
-        return currentTrials;
-      });
+      if (trialsRef.current >= targetTrials) {
+        stopAutoRun();
+        return;
+      }
+      runTrial();
     }, runSpeed);
   }
   
@@ -459,44 +426,26 @@ function ProbabilityEvent() {
           </VisualizationSection>
 
           <VisualizationSection className="p-3">
-            <h4 className="text-base font-bold text-white mb-3">Experiment Setup</h4>
+            <h4 className="text-base font-bold text-white mb-3">Dice Event Selection</h4>
             
-            {/* Experiment type */}
+            {/* Event selection for dice */}
             <div className="mb-3">
-              <label className="text-sm text-neutral-300 mb-2 block">Experiment Type</label>
+              <label className="text-sm text-neutral-300 mb-2 block">Choose an Event</label>
               <select
-                value={experiment}
+                value={eventType}
                 onChange={(e) => {
-                  setExperiment(e.target.value);
+                  setEventType(e.target.value);
                   reset();
+                  stopAutoRun();
                 }}
                 className={cn(components.select, "w-full")}
               >
-                <option value="dice">Roll a Die</option>
-                <option value="coin">Flip a Coin</option>
-                <option value="cards">Draw a Card</option>
+                <option value="even">Even Number {'{2, 4, 6}'}</option>
+                <option value="prime">Prime Number {'{2, 3, 5}'}</option>
+                <option value="greater">Greater than 4 {'{5, 6}'}</option>
+                <option value="multiple3">Multiple of 3 {'{3, 6}'}</option>
               </select>
             </div>
-            
-            {/* Event selection for dice */}
-            {experiment === 'dice' && (
-              <div className="mb-3">
-                <label className="text-sm text-neutral-300 mb-2 block">Event</label>
-                <select
-                  value={eventType}
-                  onChange={(e) => {
-                    setEventType(e.target.value);
-                    reset();
-                  }}
-                  className={cn(components.select, "w-full")}
-                >
-                  <option value="even">Even Number</option>
-                  <option value="prime">Prime Number</option>
-                  <option value="greater">Greater than 4</option>
-                  <option value="multiple3">Multiple of 3</option>
-                </select>
-              </div>
-            )}
             
             {/* Action buttons */}
             <div className="space-y-2">
@@ -565,27 +514,16 @@ function ProbabilityEvent() {
               </div>
             </div>
             
-            {/* Show examples */}
-            <div className="space-y-2 mt-3">
-              <label className="flex items-center gap-2 text-sm">
-                <input 
-                  type="checkbox" 
-                  checked={showDiceExample} 
-                  onChange={e => setShowDiceExample(e.target.checked)}
-                  className="w-4 h-4"
-                />
-                <span className="text-neutral-300">Show dice example</span>
-              </label>
-              <label className="flex items-center gap-2 text-sm">
-                <input 
-                  type="checkbox" 
-                  checked={showFreqExample} 
-                  onChange={e => setShowFreqExample(e.target.checked)}
-                  className="w-4 h-4"
-                />
-                <span className="text-neutral-300">Show frequentist example</span>
-              </label>
-            </div>
+            {/* Show example */}
+            <label className="flex items-center gap-2 text-sm mt-3">
+              <input 
+                type="checkbox" 
+                checked={showDiceExample} 
+                onChange={e => setShowDiceExample(e.target.checked)}
+                className="w-4 h-4"
+              />
+              <span className="text-neutral-300">Show worked example</span>
+            </label>
           </VisualizationSection>
 
           {/* Results */}
@@ -675,7 +613,15 @@ function ProbabilityEvent() {
           {/* Learning Progress */}
           <VisualizationSection className="p-3">
             <h4 className="text-sm font-semibold text-purple-400 mb-2">Probability Insights</h4>
-            <div className="space-y-2 text-xs text-neutral-300">
+            
+            <ProgressTracker 
+              current={trials} 
+              goal={100} 
+              label="Trials Completed"
+              color="purple"
+            />
+            
+            <div className="space-y-2 text-xs text-neutral-300 mt-3">
               {trials === 0 && (
                 <div>
                   <p>🎯 Ready to explore probability?</p>
@@ -696,6 +642,11 @@ function ProbabilityEvent() {
                   <p className="mt-1">
                     As trials increase, experimental probability approaches {getCurrentEvent().theoretical.toFixed(3)}
                   </p>
+                  <div className="mt-2 p-2 bg-purple-900/20 border border-purple-600/30 rounded">
+                    <p className="text-purple-300">
+                      Current error: {Math.abs(successes / trials - getCurrentEvent().theoretical).toFixed(4)}
+                    </p>
+                  </div>
                 </div>
               )}
               {trials >= 100 && (
@@ -704,6 +655,9 @@ function ProbabilityEvent() {
                     ✨ Law of Large Numbers confirmed! {trials} trials completed.
                   </p>
                   <p>The difference is now just {Math.abs(successes / trials - getCurrentEvent().theoretical).toFixed(4)}!</p>
+                  <p className="text-blue-400 mt-2">
+                    💡 Try a different event to see how probabilities change!
+                  </p>
                 </div>
               )}
             </div>
@@ -716,11 +670,9 @@ function ProbabilityEvent() {
             <svg ref={svgRef} style={{ width: "100%", height: 450 }} />
           </GraphContainer>
           
-          {showDiceExample && experiment === 'dice' && (
+          {showDiceExample && (
             <DiceWorkedExample event={eventType} />
           )}
-          
-          {showFreqExample && <BloodPressureExample />}
         </div>
       </div>
     </VisualizationContainer>

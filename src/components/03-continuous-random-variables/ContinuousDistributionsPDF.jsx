@@ -21,6 +21,7 @@ function ContinuousDistributionsPDF() {
   const [selectedDist, setSelectedDist] = useState(distributionOptions[0]);
   const [params, setParams] = useState(selectedDist.params.map(p => p.default));
   const svgRef = useRef();
+  const componentRef = useRef();
 
   const [xDomain, setXDomain] = useState([-5, 5]); // For managing slider ranges
   const [intervalA, setIntervalA] = useState(xDomain[0]);
@@ -236,9 +237,36 @@ function ContinuousDistributionsPDF() {
       setIntervalB(intervalA + 0.01); // Ensure B is greater than A
     }
   };
+  
+  // Enhanced MathJax processing with retry for initial render
+  useEffect(() => {
+    let attempts = 0;
+    const maxAttempts = 20;
+    
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && componentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([componentRef.current]);
+        }
+        window.MathJax.typesetPromise([componentRef.current])
+          .then(() => {})
+          .catch((err) => {
+            if (attempts < maxAttempts) {
+              attempts++;
+              setTimeout(processMathJax, 200 * Math.min(attempts, 5)); // Cap delay at 1 second
+            }
+          });
+      } else if (attempts < maxAttempts) {
+        attempts++;
+        setTimeout(processMathJax, 200 * Math.min(attempts, 5));
+      }
+    };
+    
+    processMathJax();
+  }, []); // Run once on mount
 
   return (
-    <section id="pdf-demo" className="space-y-4 my-8 p-6 bg-neutral-800 rounded-lg shadow-xl">
+    <section ref={componentRef} id="pdf-demo" className="space-y-4 my-8 p-6 bg-neutral-800 rounded-lg shadow-xl">
       <h3 className="text-xl font-semibold text-teal-400 border-b border-neutral-700 pb-2 mb-6">
         Probability Density Functions & Integrals
       </h3>
@@ -287,7 +315,7 @@ function ContinuousDistributionsPDF() {
         <svg ref={svgRef} style={{width:"100%", height:"auto", display: "block"}} />
       </div>
        <p className="text-sm text-neutral-400 mt-4 text-center">
-        The <span style={{color: 'rgba(20, 184, 166, 0.7)'}}>teal area</span> is the PDF. The <span style={{color: 'rgba(250, 204, 21, 0.7)'}}>yellow area</span> highlights \(P(a \le X \le b)\).
+        The <span style={{color: 'rgba(20, 184, 166, 0.7)'}}>teal area</span> is the PDF. The <span style={{color: 'rgba(250, 204, 21, 0.7)'}}>yellow area</span> highlights <span dangerouslySetInnerHTML={{ __html: `\\(P(a \\le X \\le b)\\).` }} />
       </p>
       <div className="flex justify-center">
         <IntegralWorkedExample

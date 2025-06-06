@@ -19,6 +19,7 @@ const margin = { top: 20, right: 30, bottom: 50, left: 60 };
 const width = 700 - margin.left - margin.right;
 const height = 500 - margin.top - margin.bottom;
 const bins = 30;
+const dt = 500; // Animation duration in milliseconds
 
 const distOptions = [
   { value: "normal", label: "Normal" },
@@ -87,10 +88,10 @@ export default function Bootstrapping() {
     const y3 = (2 * height) / 3;
     const y4 = height;
     const y = d3.scaleLinear().domain([0, 1]).range([y1, 0]);
-    drawStatic(g, x, y1, y2, y3, y4);
+    drawStatic(g, x, y1, y2, y3, y4, n);
     drawPDF(g, x, y, y1, param, dist);
     // Histogram will be drawn in its own effect
-  }, [dist, param]);
+  }, [dist, param, n]);
 
   // --- Animate sample balls only when samples changes ---
   useEffect(() => {
@@ -114,27 +115,51 @@ export default function Bootstrapping() {
   }, [counts, currView]);
 
   // --- Draw the static SVG (distribution, axes, etc.)
-  function drawStatic(svg, x, y1, y2, y3, y4) {
-    function drawBar(dy, label) {
+  function drawStatic(svg, x, y1, y2, y3, y4, sampleSize) {
+    function drawBar(dy, label, bgColor) {
       const axis = svg.append("g").attr("class", "axis");
+      
+      // Add subtle background for section
+      if (bgColor) {
+        axis.append("rect")
+          .attr("x", x(currView[0]) - 10)
+          .attr("y", dy - 5)
+          .attr("width", x(currView[1]) - x(currView[0]) + 20)
+          .attr("height", 30)
+          .attr("fill", bgColor)
+          .attr("rx", 4);
+      }
+      
       axis.append("line")
         .attr("x1", x(currView[0]))
         .attr("x2", x(currView[1]))
         .attr("y1", dy)
         .attr("y2", dy)
         .attr("stroke", "#fff");
+      
+      // Add arrow indicator
       axis.append("text")
-        .attr("x", x(currView[0]))
+        .attr("x", x(currView[0]) - 25)
         .attr("y", dy)
-        .attr("dy", "1em")
-        .attr("fill", "#fff")
-        .style("font-size", "1.1em")
+        .attr("dy", "0.35em")
+        .attr("fill", "#9ca3af")
+        .style("font-size", "0.9em")
+        .text("▸");
+      
+      axis.append("text")
+        .attr("x", x(currView[0]) - 10)
+        .attr("y", dy)
+        .attr("dy", "1.2em")
+        .attr("fill", "#e5e7eb")
+        .style("font-size", "0.95em")
+        .style("font-weight", "500")
         .text(label);
     }
-    drawBar(y1, "distribution");
-    drawBar(y2, "sample");
-    drawBar(y3, "resample + average");
-    drawBar(y4, "count");
+    
+    drawBar(y1, "Population Distribution", "rgba(20,184,166,0.05)");
+    drawBar(y2, `Your Sample (n=${sampleSize})`, "rgba(255,139,34,0.05)");
+    drawBar(y3, "Current Resample", "rgba(56,161,105,0.05)");
+    drawBar(y4, "Bootstrap Distribution", "rgba(253,230,138,0.05)");
   }
 
   // --- Draw PDF and mean line
@@ -372,81 +397,149 @@ export default function Bootstrapping() {
     reset();
   }
 
+  // Calculate statistics
+  const theoreticalMean = dist && param ? jStat[dist].mean.apply(null, param) : null;
+  const sampleMean = samples.length > 0 ? d3.mean(samples) : null;
+  const bootstrapMean = counts.length > 0 ? d3.mean(counts) : null;
+  const bootstrapSE = counts.length > 1 ? d3.deviation(counts) : null;
+
   return (
     <section className="space-y-4">
       <h3 className="text-lg font-semibold text-white">Bootstrapping Simulation</h3>
-      <div className="flex flex-wrap gap-4 items-center bg-gray-800 rounded-lg p-4">
-        <label className="text-white">
-          Distribution:
-          <select value={dist} onChange={handleDistChange} className="ml-2 px-2 py-1 rounded bg-gray-900 text-white">
-            {distOptions.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-        </label>
-        <label className="text-white">
-          Sample Size:
-          <input
-            type="range"
-            min="2"
-            max="50"
-            value={n}
-            onChange={e => { setN(+e.target.value); reset(); }}
-            className="mx-2 w-32 accent-orange-500"
-          />
-          <span className="ml-1">{n}</span>
-        </label>
-        {dist === "normal" && (
-          <label className="text-white">
-            μ:
-            <input
-              type="number"
-              value={param[0]}
-              onChange={e => handleParamChange(0, +e.target.value)}
-              className="mx-2 w-16 rounded bg-gray-900 text-white border border-gray-700 px-2"
-            />
-            σ:
-            <input
-              type="number"
-              value={param[1]}
-              min="0.01"
-              onChange={e => handleParamChange(1, +e.target.value)}
-              className="mx-2 w-16 rounded bg-gray-900 text-white border border-gray-700 px-2"
-            />
-          </label>
-        )}
-        <button
-          className="btn btn-primary"
-          onClick={handleSample}
-          disabled={running}
-        >
-          Draw Sample
-        </button>
-        <button
-          className="btn btn-secondary"
-          onClick={handleResample}
-          disabled={!samples.length || running}
-        >
-          Resample
-        </button>
-        <button
-          className="btn btn-secondary"
-          onClick={handleResample100}
-          disabled={!samples.length || running}
-        >
-          Resample ×100
-        </button>
-        <button
-          className="btn btn-danger"
-          onClick={reset}
-          disabled={running}
-        >
-          Reset
-        </button>
+      
+      {/* Enhanced control layout with better spacing and grouping */}
+      <div className="bg-gray-800 rounded-lg p-4">
+        <div className="flex flex-wrap items-center gap-6">
+          {/* Distribution Settings Group */}
+          <div className="flex flex-wrap items-center gap-4 pr-6 border-r border-gray-700">
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-300">Distribution:</label>
+              <select 
+                value={dist} 
+                onChange={handleDistChange} 
+                className="px-3 py-1.5 rounded bg-gray-900 text-white border border-gray-700 focus:border-blue-500 focus:outline-none"
+              >
+                {distOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            
+            {dist === "normal" && (
+              <>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm text-gray-300">μ:</label>
+                  <input
+                    type="number"
+                    value={param[0]}
+                    onChange={e => handleParamChange(0, +e.target.value)}
+                    className="w-20 px-2 py-1.5 rounded bg-gray-900 text-white border border-gray-700 font-mono text-sm focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm text-gray-300">σ:</label>
+                  <input
+                    type="number"
+                    value={param[1]}
+                    min="0.01"
+                    onChange={e => handleParamChange(1, +e.target.value)}
+                    className="w-20 px-2 py-1.5 rounded bg-gray-900 text-white border border-gray-700 font-mono text-sm focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+              </>
+            )}
+            
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-300">Sample Size:</label>
+              <input
+                type="range"
+                min="2"
+                max="50"
+                value={n}
+                onChange={e => { setN(+e.target.value); reset(); }}
+                className="w-32 accent-orange-500"
+              />
+              <span className="font-mono text-sm text-white w-8">{n}</span>
+            </div>
+          </div>
+          
+          {/* Actions Group */}
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleSample}
+              disabled={running}
+            >
+              Draw Sample
+            </button>
+            <button
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleResample}
+              disabled={!samples.length || running}
+            >
+              Resample
+            </button>
+            <button
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleResample100}
+              disabled={!samples.length || running}
+            >
+              Resample ×100
+            </button>
+            <button
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={reset}
+              disabled={running}
+            >
+              Reset
+            </button>
+          </div>
+        </div>
       </div>
+      
+      {/* Visualization */}
       <div className="w-full" style={{ maxWidth: 800, margin: "auto" }}>
         <svg ref={svgRef} style={{ width: "100%", height: 500 }} />
       </div>
+      
+      {/* Statistics Panel */}
+      {(samples.length > 0 || counts.length > 0) && (
+        <div className="bg-gray-800 rounded-lg p-4" style={{ maxWidth: 800, margin: "auto" }}>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-sm font-semibold text-gray-300">📊 Statistics:</span>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div>
+              <span className="text-gray-400">Population μ:</span>
+              <span className="ml-2 font-mono text-white">
+                {theoreticalMean !== null ? theoreticalMean.toFixed(3) : '--'}
+              </span>
+            </div>
+            <div>
+              <span className="text-gray-400">Sample x̄:</span>
+              <span className="ml-2 font-mono text-white">
+                {sampleMean !== null ? sampleMean.toFixed(3) : '--'}
+              </span>
+            </div>
+            <div>
+              <span className="text-gray-400">Bootstrap μ̂:</span>
+              <span className="ml-2 font-mono text-white">
+                {bootstrapMean !== null ? bootstrapMean.toFixed(3) : '--'}
+              </span>
+            </div>
+            <div>
+              <span className="text-gray-400">Bootstrap SE:</span>
+              <span className="ml-2 font-mono text-white">
+                {bootstrapSE !== null ? bootstrapSE.toFixed(3) : '--'}
+              </span>
+            </div>
+          </div>
+          <div className="mt-2">
+            <span className="text-gray-400 text-sm">Resamples:</span>
+            <span className="ml-2 font-mono text-white text-sm">{counts.length}</span>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

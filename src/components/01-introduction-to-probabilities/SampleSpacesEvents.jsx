@@ -32,6 +32,19 @@ function SampleSpacesEvents() {
     {name: 'U', cx: 0.5, cy: 0.5, r: 0.5}
   ]);
 
+  // Update intersection highlighting
+  function updateIntersection() {
+    if (!svgRef.current) return;
+    
+    for (let i = 1; i <= 8; i++) {
+      const section = d3.select(`#set${i}`);
+      if (section.node()) {
+        const fill = currentSet.includes(i) ? colorScheme.chart.tertiary : 'transparent';
+        section.style('fill', fill).style('opacity', 0.3);
+      }
+    }
+  }
+
   // Main visualization effect
   useEffect(() => {
     if (!svgRef.current) return;
@@ -210,19 +223,6 @@ function SampleSpacesEvents() {
     }
   }, [setData, currentSet, dragEnabled]);
   
-  // Update intersection highlighting
-  function updateIntersection() {
-    if (!svgRef.current) return;
-    
-    for (let i = 1; i <= 8; i++) {
-      const section = d3.select(`#set${i}`);
-      if (section.node()) {
-        const fill = currentSet.includes(i) ? colorScheme.chart.tertiary : 'transparent';
-        section.style('fill', fill).style('opacity', 0.3);
-      }
-    }
-  }
-  
   // Set operation parser functions
   function union(set1, set2) {
     return [...new Set([...set1, ...set2])];
@@ -237,109 +237,154 @@ function SampleSpacesEvents() {
     return universe.filter(x => !set1.includes(x));
   }
   
-  // Parse set notation with proper parser
+  // Parse set notation with proper recursive descent parser
   function parseSetNotation(notation) {
-    const sets = {
-      'A': [1, 4, 5, 7],
-      'B': [2, 5, 6, 7],
-      'C': [3, 4, 6, 7],
-      'U': [1, 2, 3, 4, 5, 6, 7, 8],
-      '∅': []
-    };
-    
-    // Tokenize the expression
-    function tokenize(expr) {
-      const tokens = [];
-      let i = 0;
-      while (i < expr.length) {
-        const char = expr[i];
-        if (char === ' ') {
-          i++;
-          continue;
-        }
-        if (sets[char]) {
-          tokens.push({ type: 'SET', value: char });
-        } else if (char === '∪') {
-          tokens.push({ type: 'UNION' });
-        } else if (char === '∩') {
-          tokens.push({ type: 'INTERSECT' });
-        } else if (char === "'") {
-          tokens.push({ type: 'COMPLEMENT' });
-        } else if (char === '(') {
-          tokens.push({ type: 'LPAREN' });
-        } else if (char === ')') {
-          tokens.push({ type: 'RPAREN' });
-        } else {
-          throw new Error(`Unknown character: ${char}`);
-        }
-        i++;
-      }
-      return tokens;
-    }
-    
-    // Parse and evaluate expression
-    function evaluate(tokens) {
-      let pos = 0;
-      
-      function parseExpression() {
-        let left = parseTerm();
-        
-        while (pos < tokens.length && (tokens[pos].type === 'UNION' || tokens[pos].type === 'INTERSECT')) {
-          const op = tokens[pos].type;
-          pos++;
-          const right = parseTerm();
-          
-          if (op === 'UNION') {
-            left = union(left, right);
-          } else {
-            left = intersect(left, right);
-          }
-        }
-        
-        return left;
-      }
-      
-      function parseTerm() {
-        if (tokens[pos].type === 'LPAREN') {
-          pos++; // skip (
-          const result = parseExpression();
-          if (pos >= tokens.length || tokens[pos].type !== 'RPAREN') {
-            throw new Error('Missing closing parenthesis');
-          }
-          pos++; // skip )
-          
-          // Check for complement after parentheses
-          if (pos < tokens.length && tokens[pos].type === 'COMPLEMENT') {
-            pos++;
-            return complement(result);
-          }
-          return result;
-        }
-        
-        if (tokens[pos].type === 'SET') {
-          const setName = tokens[pos].value;
-          pos++;
-          
-          // Check for complement
-          if (pos < tokens.length && tokens[pos].type === 'COMPLEMENT') {
-            pos++;
-            return complement(sets[setName]);
-          }
-          
-          return sets[setName];
-        }
-        
-        throw new Error('Unexpected token');
-      }
-      
-      return parseExpression();
-    }
-    
     try {
-      const tokens = tokenize(notation);
-      return evaluate(tokens);
+      // Validate input
+      if (!notation || typeof notation !== 'string') {
+        return [];
+      }
+      
+      // Define set mappings
+      const sets = {
+        'A': [1, 4, 5, 7],
+        'B': [2, 5, 6, 7],
+        'C': [3, 4, 6, 7],
+        'U': [1, 2, 3, 4, 5, 6, 7, 8],
+        '∅': []
+      };
+      
+      let index = -1;
+      
+      // Parse the expression using recursive descent
+      function parse(expr) {
+        index = -1;
+        const iter = expr[Symbol.iterator]();
+        const result = parseEvent(iter);
+        return result.evaluate();
+      }
+    
+    // Parse an event (A, B, C, U, ∅, or parentheses)
+    function parseEvent(iter) {
+      const next = iter.next();
+      index++;
+      
+      if (next.done) {
+        throw new Error('Unexpected end of expression');
+      }
+      
+      const char = next.value;
+      
+      if (char === 'A') return new SetEvent('A', sets['A'], parseOperator(iter));
+      else if (char === 'B') return new SetEvent('B', sets['B'], parseOperator(iter));
+      else if (char === 'C') return new SetEvent('C', sets['C'], parseOperator(iter));
+      else if (char === '∅') return new SetEvent('∅', sets['∅'], parseOperator(iter));
+      else if (char === 'U') return new SetEvent('U', sets['U'], parseOperator(iter));
+      else if (char === '(') {
+        const innerEvent = parseEvent(iter);
+        // Consume closing parenthesis
+        const closeParen = iter.next();
+        index++;
+        if (closeParen.done || closeParen.value !== ')') {
+          throw new Error(`Expected ')' but found ${closeParen.value || 'end of expression'}`);
+        }
+        return new ParenthesesEvent(innerEvent, parseOperator(iter));
+      }
+      else throw new Error(`Expected A, B, C, ∅, U, or '(' but found '${char}'`);
+    }
+    
+    // Parse an operator (∪, ∩, ', or end of expression)
+    function parseOperator(iter) {
+      const next = iter.next();
+      index++;
+      
+      if (next.done) {
+        return new IdentityOperator();
+      }
+      
+      const char = next.value;
+      
+      if (char === '∪') return new UnionOperator(parseEvent(iter));
+      else if (char === '∩') return new IntersectOperator(parseEvent(iter));
+      else if (char === "'") return new ComplementOperator(parseOperator(iter));
+      else if (char === ')') {
+        // Put the parenthesis back for the caller to handle
+        index--;
+        return new IdentityOperator();
+      }
+      else throw new Error(`Expected ∪, ∩, ', or end of expression but found '${char}'`);
+    }
+    
+    // Event classes
+    class SetEvent {
+      constructor(name, array, operator) {
+        this.name = name;
+        this.array = array;
+        this.operator = operator;
+      }
+      
+      evaluate() {
+        return this.operator.evaluate(this.array);
+      }
+    }
+    
+    class ParenthesesEvent {
+      constructor(innerEvent, operator) {
+        this.innerEvent = innerEvent;
+        this.operator = operator;
+      }
+      
+      evaluate() {
+        return this.operator.evaluate(this.innerEvent.evaluate());
+      }
+    }
+    
+    // Operator classes
+    class IdentityOperator {
+      evaluate(array) {
+        return array;
+      }
+    }
+    
+    class UnionOperator {
+      constructor(event) {
+        this.event = event;
+      }
+      
+      evaluate(array) {
+        return union(array, this.event.evaluate());
+      }
+    }
+    
+    class IntersectOperator {
+      constructor(event) {
+        this.event = event;
+      }
+      
+      evaluate(array) {
+        return intersect(array, this.event.evaluate());
+      }
+    }
+    
+    class ComplementOperator {
+      constructor(operator) {
+        this.operator = operator;
+      }
+      
+      evaluate(array) {
+        return this.operator.evaluate(complement(array));
+      }
+    }
+    
+      try {
+        return parse(notation);
+      } catch (e) {
+        console.error('Parse error:', e);
+        return []; // Return empty set on error instead of throwing
+      }
     } catch (e) {
-      throw new Error(e.message);
+      console.error('Parser setup error:', e);
+      return [];
     }
   }
   

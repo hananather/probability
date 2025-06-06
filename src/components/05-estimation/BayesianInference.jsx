@@ -1,19 +1,24 @@
-// src/components/BayesSimulation.jsx
+// src/components/BayesianInference.jsx
 // Modern React + D3 translation of Bayesian Inference simulation (from jQuery/D3 code)
 "use client";
 
 import React, { useRef, useEffect, useState } from "react";
 import * as d3 from "d3";
-import PriorPlot from "./PriorPlot";
+import PriorPlot from "../PriorPlot";
 
 function round(val, digits = 2) {
   return Math.round(val * Math.pow(10, digits)) / Math.pow(10, digits);
 }
 
-const HEALTHY_COLOR = "#84DEFF"; // blue
-const DISEASE_COLOR = "#FF8686"; // pink/red
+const HEALTHY_COLOR = "#60A5FA"; // blue-400 for better contrast
+const DISEASE_COLOR = "#F87171"; // red-400 for better contrast
 
-export default function BayesSimulation() {
+// Vibrant button colors using color theory
+const BUTTON_PRIMARY = "#06B6D4"; // cyan-500 - vibrant, action-oriented
+const BUTTON_SECONDARY = "#8B5CF6"; // violet-500 - comprehensive action
+const BUTTON_RESET = "#6B7280"; // gray-500 - neutral destructive action
+
+export function BayesianInference() {
   // State for priors and likelihoods
   const [p, setP] = useState(0.10); // P(Disease)
   const [p_d, setPd] = useState(0.75); // P(+|Disease)
@@ -74,16 +79,16 @@ export default function BayesSimulation() {
     const y = d3.scaleLinear().domain([0, 1]).range([0, height]);
     const z = d3.scaleLinear().domain([0, 1]).range([x(0.25), x(0.75)]);
     const w = 0.25;
-    const h0 = 0.35;  // top of test bar
-    const h1 = 0.45;  // bottom of test bar
-    const h2 = 0.50;  // slider
+    const h0 = 0.25;  // top of test bar (moved up)
+    const h1 = 0.35;  // bottom of test bar (moved up)
+    const h2 = 0.40;  // slider (moved up)
     // const h0 = 0.15;  // top of test bar
     // const h1 = 0.25;  // bottom of test bar
     // const h2 = 0.30;  // slider
     const col = 20;
     const r = (w * width) / (2 * col);
 
-    // --- Draw horizontal bars ---
+    // --- Draw flow diagram elements ---
     function draw_bar(selection, x1, x2, y1, y2, label) {
       const axis = selection.append("g").attr("class", "bar");
       axis.append("line")
@@ -111,21 +116,59 @@ export default function BayesSimulation() {
           .text(label);
       }
     }
-    draw_bar(g, 0.5, 0.5, 0, 0, "P");
+    
+    // Draw flow lines
     draw_bar(g, 0.25, 0.5, h1, h0, "");
     draw_bar(g, 0.5, 0.75, h0, h1, "");
     draw_bar(g, 0.25, 0.25, h1, h2, "");
     draw_bar(g, 0.75, 0.75, h1, h2, "");
-    draw_bar(g, 0.5, 0.5, (h1 + h0) / 2, (h1 + h0) / 2, "Test");
-    draw_bar(g, (0.5 - w) / 2, (0.5 + w) / 2, 1, 1, "Negative");
-    draw_bar(g, (1.5 - w) / 2, (1.5 + w) / 2, 1, 1, "Positive");
+    // Result area labels with colored accents
+    const negX = (0.5 - w) / 2 + w/2;
+    const posX = (1.5 - w) / 2 + w/2;
+    
+    g.append("text")
+      .attr("x", x(negX))
+      .attr("y", y(0.88))
+      .attr("text-anchor", "middle")
+      .attr("font-size", 14)
+      .attr("font-weight", 500)
+      .attr("fill", "#a1a1aa")
+      .text("Test Negative (−)");
+      
+    g.append("text")
+      .attr("x", x(posX))
+      .attr("y", y(0.88))
+      .attr("text-anchor", "middle")
+      .attr("font-size", 14)
+      .attr("font-weight", 500)
+      .attr("fill", "#a1a1aa")
+      .text("Test Positive (+)");
+    
+    // Population label is now outside the SVG, so we don't need it here
+    
+    // Add "Test" label in a better position (to the side of the funnel)
+    g.append("text")
+      .attr("x", x(0.75) + 30)
+      .attr("y", y((h0 + h1) / 2))
+      .attr("text-anchor", "start")
+      .attr("font-size", 14)
+      .attr("font-weight", 500)
+      .attr("fill", "#71717a")
+      .text("Diagnostic Test");
 
     // conditional slider axis & handles
-    const sliderAxis = d3.axisBottom(z).ticks(5);
+    const sliderAxis = d3.axisBottom(z).ticks(5).tickFormat(d => d3.format(".0%")(d));
     g.append("g")
       .attr("class", "slider-axis")
       .attr("transform", `translate(0,${y(h2)})`)
-      .call(sliderAxis);
+      .call(sliderAxis)
+      .append("text")
+      .attr("x", x(0.5))
+      .attr("y", 30)
+      .attr("text-anchor", "middle")
+      .attr("font-size", 12)
+      .attr("fill", "#a1a1aa")
+      .text("Test Result Probability");
 
     // We'll use refs for the handles so we can update them from the likelihood drag handler
     let sliderHandles;
@@ -148,13 +191,13 @@ export default function BayesSimulation() {
     updateSliderHandles(p_h, p_d);
 
     // --- Population dots ---
-    // Fixed grid layout
+    // Fixed grid layout with better centering
     const gridCols = 14;
     const gridRows = Math.ceil(patients.length / gridCols);
-    const spacing = r * 2 + 2;
+    const actualRows = Math.ceil(patients.length / gridCols);
+    const spacing = r * 2.2; // Slightly more spacing for clarity
     const centerX = x(0.5);
-    // restore original grid position
-    const centerY = y(0.05) + 30;
+    const centerY = y(0.08); // Position dots higher since label is now outside
     // Animate population dots
     const circle = g.selectAll("circle.population").data(patients, d => d.index);
     circle.enter().append("circle")
@@ -163,16 +206,18 @@ export default function BayesSimulation() {
       .attr("cx", centerX)
       .attr("cy", centerY)
       .attr("fill", d => d.hasDisease ? DISEASE_COLOR : HEALTHY_COLOR)
-      .attr("opacity", 0.85)
+      .attr("opacity", 0.9)
+      .attr("stroke", "#27272a")
+      .attr("stroke-width", 0.5)
       .transition()
       .duration(600)
-      .attr("cx", (d, i) => centerX + ((i % gridCols) - gridCols / 2) * spacing)
-      .attr("cy", (d, i) => centerY + (Math.floor(i / gridCols) - gridRows / 2) * spacing);
+      .attr("cx", (d, i) => centerX + ((i % gridCols) - (gridCols - 1) / 2) * spacing)
+      .attr("cy", (d, i) => centerY + (Math.floor(i / gridCols) - (actualRows - 1) / 2) * spacing);
     circle.transition()
       .duration(600)
       .attr("fill", d => d.hasDisease ? DISEASE_COLOR : HEALTHY_COLOR)
-      .attr("cx", (d, i) => centerX + ((i % gridCols) - gridCols / 2) * spacing)
-      .attr("cy", (d, i) => centerY + (Math.floor(i / gridCols) - gridRows / 2) * spacing);
+      .attr("cx", (d, i) => centerX + ((i % gridCols) - (gridCols - 1) / 2) * spacing)
+      .attr("cy", (d, i) => centerY + (Math.floor(i / gridCols) - (actualRows - 1) / 2) * spacing);
     circle.exit().transition().duration(400).attr("opacity", 0).remove();
   }, [patients]);
 
@@ -183,7 +228,7 @@ export default function BayesSimulation() {
     const height = 500 - margin.top - margin.bottom;
     const x = d3.scaleLinear().domain([0, 1]).range([0, width]);
     const y = d3.scaleLinear().domain([0, 1]).range([0, height]);
-    const w = 0.25, h0 = 0.35, h1 = 0.45, h2 = 0.50, col = 20;
+    const w = 0.25, h0 = 0.25, h1 = 0.35, h2 = 0.40, col = 20;
     const r = (w * width) / (2 * col);
     const g = d3.select(svgRef.current).select("g");
 
@@ -199,9 +244,9 @@ export default function BayesSimulation() {
     negative.forEach((d, i) => d.order = i);
     const data = positive.concat(negative);
 
-    // timing
-    const dt = m < patients.length ? 400 : 10000 / patients.length;
-    const delay = m < patients.length ? 0 : 10000 / patients.length;
+    // timing - smoother animations
+    const dt = m < patients.length ? 500 : Math.max(50, 8000 / patients.length);
+    const delay = m < patients.length ? 0 : Math.max(20, 8000 / patients.length);
 
     // bind data
     const circles = g.selectAll("circle.patient").data(data, d => d.index);
@@ -210,7 +255,7 @@ export default function BayesSimulation() {
     circles.transition().duration(dt)
       .attr("fill", d => d.hasDisease ? DISEASE_COLOR : HEALTHY_COLOR)
       .attr("cx", d => x(0.5 * (d.positiveTest ? 1 : 0) + (0.5 - w) / 2) + r + 2 * r * (d.order % col))
-      .attr("cy", d => y(1) - r - 2 * r * Math.floor(d.order / col) - 1);
+      .attr("cy", d => y(0.75) - r - 2 * r * Math.floor(d.order / col) - 1);
 
     // enter new
     const enter = circles.enter().append("circle")
@@ -229,7 +274,7 @@ export default function BayesSimulation() {
         .attr("cy", y(h2))
       .transition().duration(dt)
         .attr("cx", d => x(0.5 * (d.positiveTest ? 1 : 0) + (0.5 - w) / 2) + r + 2 * r * (d.order % col))
-        .attr("cy", d => y(1) - r - 2 * r * Math.floor(d.order / col) - 1);
+        .attr("cy", d => y(0.75) - r - 2 * r * Math.floor(d.order / col) - 1);
 
     circles.exit().remove();
   }, [m, patients]);
@@ -399,38 +444,40 @@ export default function BayesSimulation() {
     const neg = 1 - pos;
     return (
       <div className="flex flex-wrap gap-8 mt-4 justify-center">
-        <table id="marginal" className="table-auto border-collapse border border-neutral-600 rounded overflow-hidden shadow-lg text-white text-sm">
+        <table id="marginal" className="table-auto border-collapse border border-neutral-600 rounded-lg overflow-hidden shadow-lg text-white text-sm">
+          <caption className="text-xs text-neutral-400 mb-2">Marginal Probabilities</caption>
           <thead className="bg-neutral-700">
             <tr>
-              <th className="px-6 py-2 text-xs font-medium text-gray-300">Negative</th>
-              <th className="px-6 py-2 text-xs font-medium text-gray-300">Positive</th>
+              <th className="px-6 py-2 text-xs font-medium text-gray-300">Test Negative (−)</th>
+              <th className="px-6 py-2 text-xs font-medium text-gray-300">Test Positive (+)</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td id="neg" className="px-6 py-3 hover:bg-neutral-600/50 cursor-pointer transition-colors">{round(neg, 2)}</td>
-              <td id="pos" className="px-6 py-3 hover:bg-neutral-600/50 cursor-pointer transition-colors">{round(pos, 2)}</td>
+              <td id="neg" className="px-6 py-3 hover:bg-neutral-600/50 cursor-pointer transition-colors font-mono">{round(neg, 3)}</td>
+              <td id="pos" className="px-6 py-3 hover:bg-neutral-600/50 cursor-pointer transition-colors font-mono">{round(pos, 3)}</td>
             </tr>
           </tbody>
         </table>
-        <table id="posterior" className="table-auto border-collapse border border-neutral-600 rounded overflow-hidden shadow-lg text-white text-sm">
+        <table id="posterior" className="table-auto border-collapse border border-neutral-600 rounded-lg overflow-hidden shadow-lg text-white text-sm">
+          <caption className="text-xs text-neutral-400 mb-2">Posterior Probabilities</caption>
           <thead className="bg-neutral-700">
             <tr>
-              <th className="px-6 py-2"></th>
-              <th className="px-6 py-2 text-xs font-medium text-gray-300">Negative</th>
-              <th className="px-6 py-2 text-xs font-medium text-gray-300">Positive</th>
+              <th className="px-6 py-2 text-xs font-medium text-gray-300">Health Status</th>
+              <th className="px-6 py-2 text-xs font-medium text-gray-300">Given Test (−)</th>
+              <th className="px-6 py-2 text-xs font-medium text-gray-300">Given Test (+)</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <th className="px-6 py-3 bg-neutral-700">Healthy</th>
-              <td id="h_n" className="px-6 py-3 hover:bg-neutral-600/50 cursor-pointer transition-colors">{neg > 0 ? round((1 - p) * (1 - p_h) / neg, 2) : 0}</td>
-              <td id="h_p" className="px-6 py-3 hover:bg-neutral-600/50 cursor-pointer transition-colors">{pos > 0 ? round((1 - p) * p_h / pos, 2) : 0}</td>
+              <td id="h_n" className="px-6 py-3 hover:bg-neutral-600/50 cursor-pointer transition-colors font-mono">{neg > 0 ? round((1 - p) * (1 - p_h) / neg, 3) : "0.000"}</td>
+              <td id="h_p" className="px-6 py-3 hover:bg-neutral-600/50 cursor-pointer transition-colors font-mono">{pos > 0 ? round((1 - p) * p_h / pos, 3) : "0.000"}</td>
             </tr>
             <tr>
               <th className="px-6 py-3 bg-neutral-700">Disease</th>
-              <td id="d_n" className="px-6 py-3 hover:bg-neutral-600/50 cursor-pointer transition-colors">{neg > 0 ? round(p * (1 - p_d) / neg, 2) : 0}</td>
-              <td id="d_p" className="px-6 py-3 hover:bg-neutral-600/50 cursor-pointer transition-colors">{pos > 0 ? round(p * p_d / pos, 2) : 0}</td>
+              <td id="d_n" className="px-6 py-3 hover:bg-neutral-600/50 cursor-pointer transition-colors font-mono">{neg > 0 ? round(p * (1 - p_d) / neg, 3) : "0.000"}</td>
+              <td id="d_p" className="px-6 py-3 hover:bg-neutral-600/50 cursor-pointer transition-colors font-mono">{pos > 0 ? round(p * p_d / pos, 3) : "0.000"}</td>
             </tr>
           </tbody>
         </table>
@@ -484,26 +531,67 @@ export default function BayesSimulation() {
   return (
     <section className="space-y-8"> {/* Changed to space-y-8 to match original wrapper, or adjust as needed */}
       <PriorPlot />
-      <h3 className="text-lg font-semibold text-white">Bayesian Inference Simulation</h3>
-      <div className="flex flex-wrap gap-4 items-center bg-neutral-900 rounded-lg p-4">
-        <button className="btn btn-primary" onClick={() => setM(m => Math.min(m + 1, patients.length))}>Test one</button>
-        <button className="btn btn-secondary" onClick={() => setM(patients.length)}>Test rest</button>
-        <button className="btn btn-danger" onClick={() => setM(0)}>Reset</button>
+      <div className="mb-4">
+        <p className="text-sm text-neutral-400">
+          Explore how prior beliefs and test accuracy combine to determine the probability of disease given a test result.
+          Hover over the probability tables to see which patients contribute to each outcome.
+        </p>
       </div>
+      <h3 className="text-lg font-semibold text-white">Bayesian Inference Simulation</h3>
       <div className="flex flex-wrap gap-8">
-        <div>
-          <h4 className="text-white mb-1">Prior</h4>
+        <div className="bg-neutral-900 rounded-lg p-4">
+          <h4 className="text-white mb-1 font-medium text-sm">Prior Probabilities</h4>
+          <p className="text-xs text-neutral-500 mb-2">Drag bars to adjust disease prevalence</p>
           <svg ref={priorRef} style={{ width: 300, height: 150 }} />
         </div>
-        <div>
-          <h4 className="text-white mb-1">Likelihood</h4>
+        <div className="bg-neutral-900 rounded-lg p-4">
+          <h4 className="text-white mb-1 font-medium text-sm">Test Characteristics</h4>
+          <p className="text-xs text-neutral-500 mb-2">Drag bars to adjust test accuracy</p>
           <svg ref={likelihoodRef} style={{ width: 300, height: 150 }} />
         </div>
       </div>
-      {marginalAndPosterior()}
       <div className="w-full" style={{ maxWidth: 800, margin: "auto" }}>
-        <svg ref={svgRef} style={{ width: "100%", height: 500 }} />
+        <h4 className="text-center text-white font-semibold mb-2">Population</h4>
+        <div className="border border-neutral-800 rounded-lg p-2 bg-neutral-900/30">
+          <svg ref={svgRef} style={{ width: "100%", height: 500 }} />
+        </div>
       </div>
+      <div className="flex gap-3 items-center justify-center mt-4 mb-2">
+        <button 
+          className="px-4 py-2 text-sm font-semibold text-white rounded-md transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed transform hover:-translate-y-0.5"
+          style={{ 
+            backgroundColor: BUTTON_PRIMARY,
+            boxShadow: `0 4px 14px 0 ${BUTTON_PRIMARY}40`
+          }}
+          onMouseEnter={(e) => e.target.style.boxShadow = `0 6px 20px 0 ${BUTTON_PRIMARY}60`}
+          onMouseLeave={(e) => e.target.style.boxShadow = `0 4px 14px 0 ${BUTTON_PRIMARY}40`}
+          onClick={() => setM(m => Math.min(m + 1, patients.length))}
+          disabled={m >= patients.length}
+        >
+          Test One
+        </button>
+        <button 
+          className="px-4 py-2 text-sm font-semibold text-white rounded-md transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed transform hover:-translate-y-0.5"
+          style={{ 
+            backgroundColor: BUTTON_SECONDARY,
+            boxShadow: `0 4px 14px 0 ${BUTTON_SECONDARY}40`
+          }}
+          onMouseEnter={(e) => e.target.style.boxShadow = `0 6px 20px 0 ${BUTTON_SECONDARY}60`}
+          onMouseLeave={(e) => e.target.style.boxShadow = `0 4px 14px 0 ${BUTTON_SECONDARY}40`}
+          onClick={() => setM(patients.length)}
+          disabled={m >= patients.length}
+        >
+          Test All
+        </button>
+        <button 
+          className="px-4 py-2 text-sm font-medium text-white rounded-md transition-all duration-200 hover:bg-gray-600"
+          style={{ backgroundColor: BUTTON_RESET }}
+          onClick={() => setM(0)}
+        >
+          Reset
+        </button>
+      </div>
+      {marginalAndPosterior()}
     </section>
   );
 }

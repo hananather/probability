@@ -8,81 +8,41 @@ import {
   ControlGroup
 } from '../ui/VisualizationContainer';
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
-import { ProgressTracker } from '../ui/ProgressTracker';
 
 // Use probability color scheme
 const colorScheme = createColorScheme('probability');
 
-// Worked Example Component
-const LottoWorkedExample = memo(function LottoWorkedExample() {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    // MathJax timeout pattern
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          console.error('MathJax error:', err);
-        });
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
-  
-  return (
-    <div ref={contentRef} style={{
-      backgroundColor: '#2A303C',
-      padding: '1.5rem',
-      borderRadius: '8px',
-      color: '#e0e0e0',
-      marginTop: '1rem'
-    }}>
-      <h4 style={{ fontSize: '1.125rem', fontWeight: '600', borderBottom: '1px solid #4A5568', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
-        Example: Lotto 6/49
-      </h4>
-      
-      <div style={{ marginBottom: '1rem' }}>
-        <p style={{ marginBottom: '0.25rem', fontWeight: '500' }}>Problem:</p>
-        <p style={{ marginBottom: '0.5rem', fontSize: '0.875rem' }}>
-          In how many ways can 6 balls be drawn from 49 numbered balls?
-        </p>
-      </div>
-      
-      <div style={{ marginBottom: '1rem' }}>
-        <p style={{ marginBottom: '0.25rem', fontWeight: '500' }}>Key insight:</p>
-        <p style={{ marginBottom: '0.5rem', fontSize: '0.875rem', color: '#cbd5e0' }}>
-          Order doesn&apos;t matter in lottery! {`{1,2,3,4,5,6}`} = {`{6,5,4,3,2,1}`}
-        </p>
-      </div>
-      
-      <div style={{ marginBottom: '1rem' }}>
-        <p style={{ marginBottom: '0.25rem', fontWeight: '500' }}>Solution:</p>
-        <div dangerouslySetInnerHTML={{ __html: `\\[
-          C_{49}^6 = \\binom{49}{6} = \\frac{49!}{6! \\times 43!}
-        \\]` }} />
-        <div dangerouslySetInnerHTML={{ __html: `\\[
-          = \\frac{49 \\times 48 \\times 47 \\times 46 \\times 45 \\times 44}{6 \\times 5 \\times 4 \\times 3 \\times 2 \\times 1}
-        \\]` }} />
-        <div dangerouslySetInnerHTML={{ __html: `\\[
-          = \\frac{10,068,347,520}{720} = 13,983,816
-        \\]` }} />
-      </div>
-      
-      <div style={{ backgroundColor: '#1A202C', padding: '1rem', borderRadius: '4px', fontSize: '0.875rem' }}>
-        <strong>Interpretation:</strong> There are 13,983,816 different ways to choose 6 numbers from 49.
-        <div style={{ marginTop: '0.5rem' }}>
-          Your chance of winning with one ticket: \(\frac{1}{13,983,816} \approx 0.0000071\%\)
-        </div>
-      </div>
-    </div>
-  );
-});
+// Learning challenges - defined outside component
+const challenges = [
+  {
+    id: 1,
+    title: "First Combination",
+    description: "Create a combination where C(n,r) = 10",
+    hint: "Try C(5,2) or C(10,1)",
+    check: (n, r, nCr) => nCr(n, r) === 10
+  },
+  {
+    id: 2,
+    title: "Find Symmetry",
+    description: "Set n and r where C(n,r) = C(n,n-r) and both equal 20",
+    hint: "Try n=6, r=3",
+    check: (n, r, nCr) => n !== r && nCr(n, r) === 20 && nCr(n, n-r) === 20
+  },
+  {
+    id: 3,
+    title: "Pascal's Pattern",
+    description: "Find where C(n,r) = 35",
+    hint: "Look at Pascal's triangle row 7",
+    check: (n, r, nCr) => nCr(n, r) === 35
+  },
+  {
+    id: 4,
+    title: "Equal Results",
+    description: "Find two different (n,r) pairs that both give 15",
+    hint: "One is C(6,2), find another",
+    check: (n, r, nCr) => nCr(n, r) === 15
+  }
+];
 
 // Pascal's Triangle Component
 const PascalsTriangle = memo(function PascalsTriangle({ rows = 8, highlightN = -1, highlightR = -1 }) {
@@ -107,15 +67,23 @@ const PascalsTriangle = memo(function PascalsTriangle({ rows = 8, highlightN = -
     const g = svg.append("g")
       .attr("transform", `translate(${width/2}, 20)`);
     
-    // Generate Pascal's triangle values
+    // Generate Pascal's triangle values with overflow protection
     const triangle = [];
+    const MAX_SAFE_VALUE = Number.MAX_SAFE_INTEGER;
+    
     for (let n = 0; n < rows; n++) {
       triangle[n] = [];
       for (let r = 0; r <= n; r++) {
         if (r === 0 || r === n) {
           triangle[n][r] = 1;
         } else {
-          triangle[n][r] = triangle[n-1][r-1] + triangle[n-1][r];
+          const sum = triangle[n-1][r-1] + triangle[n-1][r];
+          // Check for overflow
+          if (sum > MAX_SAFE_VALUE) {
+            triangle[n][r] = "∞"; // Display infinity symbol for overflow
+          } else {
+            triangle[n][r] = sum;
+          }
         }
       }
     }
@@ -177,11 +145,13 @@ function UnorderedSamples() {
   const [n, setN] = useState(6);
   const [r, setR] = useState(3);
   const [showPascal, setShowPascal] = useState(true);
-  const [showLottoExample, setShowLottoExample] = useState(false);
-  const [visualMode, setVisualMode] = useState('selection'); // 'selection' or 'identity'
+  const [visualMode, setVisualMode] = useState('selection'); // 'selection', 'identity', 'permutations'
   const [selectedItems, setSelectedItems] = useState(new Set());
-  const [calculationSteps, setCalculationSteps] = useState(0);
-  const [interactionCount, setInteractionCount] = useState(0);
+  const [currentChallenge, setCurrentChallenge] = useState(0);
+  const [completedChallenges, setCompletedChallenges] = useState(new Set());
+  const [showPermutations, setShowPermutations] = useState(false);
+  const [animateReordering, setAnimateReordering] = useState(false);
+  const [showHint, setShowHint] = useState(false);
   
   const svgRef = useRef(null);
   
@@ -197,13 +167,40 @@ function UnorderedSamples() {
     return Math.round(result);
   }
   
+  // Calculate nPr (permutations)
+  function nPr(n, r) {
+    if (r > n || r < 0) return 0;
+    let result = 1;
+    for (let i = 0; i < r; i++) {
+      result *= (n - i);
+    }
+    return result;
+  }
+
+  // Generate all permutations of selected items
+  function getPermutations(items) {
+    if (items.length === 0) return [[]];
+    if (items.length === 1) return [[items[0]]];
+    
+    const result = [];
+    for (let i = 0; i < items.length; i++) {
+      const current = items[i];
+      const remaining = items.slice(0, i).concat(items.slice(i + 1));
+      const perms = getPermutations(remaining);
+      for (const perm of perms) {
+        result.push([current, ...perm]);
+      }
+    }
+    return result;
+  }
+
   // Main visualization
   useEffect(() => {
     if (!svgRef.current) return;
     
     const svg = d3.select(svgRef.current);
     const { width } = svgRef.current.getBoundingClientRect();
-    const height = 400;
+    const height = 500; // Increased to accommodate bottom text area
     
     svg.selectAll("*").remove();
     svg.attr("viewBox", `0 0 ${width} ${height}`);
@@ -218,9 +215,9 @@ function UnorderedSamples() {
       .attr("transform", `translate(${width/2}, ${height/2})`);
     
     if (visualMode === 'selection') {
-      // Draw items in a circle
-      const radius = Math.min(width, height) * 0.35;
-      const itemRadius = Math.min(30, radius / n * 1.5);
+      // Draw items in a circle - use much more space
+      const radius = Math.min(width, height) * 0.42; // Increased from 0.35
+      const itemRadius = Math.min(40, radius / n * 2); // Increased from 30 and 1.5
       const items = Array.from({length: n}, (_, i) => i + 1);
       
       items.forEach((item, i) => {
@@ -246,16 +243,15 @@ function UnorderedSamples() {
               newSelected.add(item);
             }
             setSelectedItems(newSelected);
-            setCalculationSteps(prev => prev + 1);
-            setInteractionCount(prev => prev + 1);
           });
         
         group.append("text")
           .attr("text-anchor", "middle")
           .attr("dy", "0.35em")
           .attr("fill", isSelected ? "white" : colors.chart.text)
-          .style("font-size", "16px")
+          .style("font-size", "18px") // Slightly larger for better visibility
           .style("font-weight", "600")
+          .style("font-family", "monospace") // Numbers should be monospace
           .style("pointer-events", "none")
           .text(item);
       });
@@ -265,7 +261,7 @@ function UnorderedSamples() {
         .attr("text-anchor", "middle")
         .attr("dy", "-1em")
         .attr("fill", colors.chart.text)
-        .style("font-size", "18px")
+        .style("font-size", "16px") // Reduced from 18px per typography system
         .style("font-weight", "600")
         .text(`Select ${r} items`);
       
@@ -273,12 +269,163 @@ function UnorderedSamples() {
         .attr("text-anchor", "middle")
         .attr("dy", "1em")
         .attr("fill", colorScheme.chart.secondary)
-        .style("font-size", "16px")
+        .style("font-size", "14px") // Reduced from 16px
+        .style("font-family", "monospace") // Numbers should be monospace
         .text(`${selectedItems.size} / ${r} selected`);
+      
+      // Show selected combination at bottom
+      if (selectedItems.size === r) {
+        const selectedArray = Array.from(selectedItems).sort((a, b) => a - b);
+        
+        // Create a separate area below the circle for combination display
+        const bottomArea = svg.append("g")
+          .attr("transform", `translate(${width/2}, ${height - 80})`);
+        
+        bottomArea.append("text")
+          .attr("text-anchor", "middle")
+          .attr("dy", "0")
+          .attr("fill", colorScheme.chart.primary)
+          .style("font-size", "18px") // Reduced from 20px
+          .style("font-weight", "600")
+          .style("font-family", "monospace") // Set notation with monospace
+          .text(`{${selectedArray.join(', ')}}`);
+          
+        // Show that order doesn't matter
+        if (animateReordering && r >= 2) {
+          const permutations = getPermutations(selectedArray);
+          const sampledPerms = permutations.slice(0, Math.min(4, permutations.length));
+          
+          sampledPerms.forEach((perm, i) => {
+            bottomArea.append("text")
+              .attr("text-anchor", "middle")
+              .attr("y", 25 + i * 18)
+              .attr("fill", colors.chart.text)
+              .style("font-size", "14px")
+              .style("opacity", 0)
+              .text(`{${perm.join(', ')}}`)
+              .transition()
+              .delay(i * 200)
+              .duration(500)
+              .style("opacity", 0.6);
+          });
+          
+          // Equal sign
+          bottomArea.append("text")
+            .attr("text-anchor", "middle")
+            .attr("y", 25 + sampledPerms.length * 18)
+            .attr("fill", colorScheme.chart.secondary)
+            .style("font-size", "14px")
+            .style("font-weight", "600")
+            .style("opacity", 0)
+            .text("= 1 combination!")
+            .transition()
+            .delay(sampledPerms.length * 200)
+            .duration(500)
+            .style("opacity", 1);
+        }
+      }
+      
+    } else if (visualMode === 'permutations') {
+      // Show how permutations collapse into combinations
+      const selectedArray = Array.from(selectedItems).sort((a, b) => a - b);
+      
+      if (selectedArray.length === r && r <= 4) {
+        const permutations = getPermutations(selectedArray);
+        const cellSize = 60;
+        const cols = Math.ceil(Math.sqrt(permutations.length));
+        const rows = Math.ceil(permutations.length / cols);
+        
+        // Title
+        g.append("text")
+          .attr("text-anchor", "middle")
+          .attr("y", -height/2 + 30)
+          .attr("fill", colors.chart.text)
+          .style("font-size", "18px")
+          .style("font-weight", "600")
+          .text(`${permutations.length} permutations → 1 combination`);
+        
+        // Draw all permutations
+        permutations.forEach((perm, i) => {
+          const row = Math.floor(i / cols);
+          const col = i % cols;
+          const x = (col - cols/2 + 0.5) * cellSize;
+          const y = (row - rows/2 + 0.5) * cellSize + 20;
+          
+          // Box
+          g.append("rect")
+            .attr("x", x - cellSize/2 + 5)
+            .attr("y", y - 15)
+            .attr("width", cellSize - 10)
+            .attr("height", 30)
+            .attr("fill", "#1a1a1a")
+            .attr("stroke", colorScheme.chart.primary)
+            .attr("stroke-width", 1)
+            .attr("rx", 4)
+            .style("opacity", 0)
+            .transition()
+            .delay(i * 50)
+            .duration(300)
+            .style("opacity", 1);
+          
+          // Permutation text
+          g.append("text")
+            .attr("x", x)
+            .attr("y", y)
+            .attr("text-anchor", "middle")
+            .attr("dy", "0.35em")
+            .attr("fill", colors.chart.text)
+            .style("font-size", "12px")
+            .style("font-family", "monospace")
+            .style("opacity", 0)
+            .text(perm.join(','))
+            .transition()
+            .delay(i * 50)
+            .duration(300)
+            .style("opacity", 1);
+        });
+        
+        // Arrow and result
+        const arrowY = (rows/2 + 1) * cellSize;
+        g.append("path")
+          .attr("d", `M -30,${arrowY} L 0,${arrowY + 20} L 30,${arrowY}`)
+          .attr("fill", "none")
+          .attr("stroke", colorScheme.chart.secondary)
+          .attr("stroke-width", 2)
+          .style("opacity", 0)
+          .transition()
+          .delay(permutations.length * 50 + 300)
+          .duration(500)
+          .style("opacity", 1);
+        
+        // Final combination
+        g.append("text")
+          .attr("text-anchor", "middle")
+          .attr("y", arrowY + 50)
+          .attr("fill", colorScheme.chart.primary)
+          .style("font-size", "18px") // Reduced from 24px
+          .style("font-weight", "600")
+          .style("font-family", "monospace") // Set notation in monospace
+          .style("opacity", 0)
+          .text(`{${selectedArray.join(', ')}}`)
+          .transition()
+          .delay(permutations.length * 50 + 800)
+          .duration(500)
+          .style("opacity", 1);
+          
+      } else {
+        // Prompt to select items
+        g.append("text")
+          .attr("text-anchor", "middle")
+          .attr("fill", colors.chart.text)
+          .style("font-size", "18px")
+          .text(selectedArray.length === r ? 
+            "Too many permutations to display!" : 
+            `Select exactly ${r} items to see permutations`);
+      }
       
     } else {
       // Show binomial coefficient identity
-      const fontSize = 24;
+      const fontSize = 18; // Reduced from 24 per typography system
       const spacing = 40;
       
       // C(n,r) = C(n,n-r)
@@ -286,15 +433,17 @@ function UnorderedSamples() {
         .attr("text-anchor", "middle")
         .attr("y", -spacing)
         .attr("fill", colors.chart.text)
-        .style("font-size", fontSize + "px")
+        .style("font-size", "18px") // Consistent with typography system
         .style("font-weight", "600")
+        .style("font-family", "monospace") // Math notation in monospace
         .text(`C(${n},${r}) = C(${n},${n-r})`);
       
       g.append("text")
         .attr("text-anchor", "middle")
         .attr("y", 0)
         .attr("fill", colorScheme.chart.primary)
-        .style("font-size", fontSize + "px")
+        .style("font-size", "18px")
+        .style("font-family", "monospace") // Numbers in monospace
         .text(`${nCr(n, r)} = ${nCr(n, n-r)}`);
       
       // Visual explanation
@@ -313,7 +462,7 @@ function UnorderedSamples() {
         .text(`= Choosing ${n-r} items to exclude`);
     }
     
-  }, [n, r, visualMode, selectedItems]);
+  }, [n, r, visualMode, selectedItems, animateReordering]);
   
   // Generate all combinations
   function getAllCombinations() {
@@ -345,7 +494,7 @@ function UnorderedSamples() {
           <VisualizationSection className="p-3">
             <p className={cn(typography.description, "text-sm leading-relaxed")}>
               When order doesn&apos;t matter, we count combinations. The binomial 
-              coefficient C(n,r) or \(\binom{`{n}`}{`{r}`}\) counts the number of ways to 
+              coefficient <span dangerouslySetInnerHTML={{ __html: `\\(C(n,r)\\)` }} /> or <span dangerouslySetInnerHTML={{ __html: `\\(\\binom{n}{r}\\)` }} /> counts the number of ways to 
               choose r items from n distinct items.
             </p>
           </VisualizationSection>
@@ -369,7 +518,6 @@ function UnorderedSamples() {
                     setN(newN);
                     setR(Math.min(r, newN));
                     setSelectedItems(new Set());
-                    setInteractionCount(prev => prev + 1);
                   }}
                   className="w-full"
                 />
@@ -388,7 +536,6 @@ function UnorderedSamples() {
                   onChange={(e) => {
                     setR(Number(e.target.value));
                     setSelectedItems(new Set());
-                    setInteractionCount(prev => prev + 1);
                   }}
                   className="w-full"
                 />
@@ -402,10 +549,9 @@ function UnorderedSamples() {
                 <button
                   onClick={() => {
                     setVisualMode('selection');
-                    setInteractionCount(prev => prev + 1);
                   }}
                   className={cn(
-                    "flex-1 px-3 py-2 rounded text-sm font-medium transition-colors",
+                    "flex-1 px-3 py-2 rounded text-xs font-medium transition-colors",
                     visualMode === 'selection'
                       ? "bg-blue-600 text-white"
                       : "bg-neutral-700 hover:bg-neutral-600 text-white"
@@ -415,11 +561,23 @@ function UnorderedSamples() {
                 </button>
                 <button
                   onClick={() => {
-                    setVisualMode('identity');
-                    setInteractionCount(prev => prev + 1);
+                    setVisualMode('permutations');
                   }}
                   className={cn(
-                    "flex-1 px-3 py-2 rounded text-sm font-medium transition-colors",
+                    "flex-1 px-3 py-2 rounded text-xs font-medium transition-colors",
+                    visualMode === 'permutations'
+                      ? "bg-purple-600 text-white"
+                      : "bg-neutral-700 hover:bg-neutral-600 text-white"
+                  )}
+                >
+                  Permutations
+                </button>
+                <button
+                  onClick={() => {
+                    setVisualMode('identity');
+                  }}
+                  className={cn(
+                    "flex-1 px-3 py-2 rounded text-xs font-medium transition-colors",
                     visualMode === 'identity'
                       ? "bg-green-600 text-white"
                       : "bg-neutral-700 hover:bg-neutral-600 text-white"
@@ -429,6 +587,20 @@ function UnorderedSamples() {
                 </button>
               </div>
             </div>
+            
+            {visualMode === 'selection' && (
+              <div className="mt-3">
+                <label className="flex items-center gap-2 text-sm">
+                  <input 
+                    type="checkbox" 
+                    checked={animateReordering} 
+                    onChange={e => setAnimateReordering(e.target.checked)}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-neutral-300">Show order doesn't matter</span>
+                </label>
+              </div>
+            )}
             
             <div className="flex items-center gap-2 mt-3">
               <label className="flex items-center gap-2 text-sm">
@@ -441,16 +613,6 @@ function UnorderedSamples() {
                 <span className="text-neutral-300">Show Pascal&apos;s Triangle</span>
               </label>
             </div>
-            
-            <label className="flex items-center gap-2 text-sm">
-              <input 
-                type="checkbox" 
-                checked={showLottoExample} 
-                onChange={e => setShowLottoExample(e.target.checked)}
-                className="w-4 h-4"
-              />
-              <span className="text-neutral-300">Show Lotto 6/49 example</span>
-            </label>
           </VisualizationSection>
 
           {/* Calculation */}
@@ -459,13 +621,13 @@ function UnorderedSamples() {
             
             <div className="bg-neutral-800 rounded-lg p-3 border border-yellow-600/50">
               <div className="text-center">
-                <div className="text-2xl font-mono font-bold text-yellow-400 mb-2">
-                  C({n},{r}) = {nCr(n, r)}
+                <div className="text-lg font-mono font-bold text-yellow-400 mb-2">
+                  <span dangerouslySetInnerHTML={{ __html: `C(${n},${r}) = ${nCr(n, r)}` }} />
                 </div>
                 <div className="text-sm text-neutral-300 space-y-1">
-                  <div>{n}! / ({r}! × {n-r}!) = {nCr(n, r)}</div>
+                  <div className="font-mono">{n}! / ({r}! × {n-r}!) = {nCr(n, r)}</div>
                   {r <= 3 && (
-                    <div className="text-xs">
+                    <div className="text-xs font-mono">
                       = {Array.from({length: r}, (_, i) => n-i).join(' × ')} / {Array.from({length: r}, (_, i) => r-i).join(' × ')}
                     </div>
                   )}
@@ -473,11 +635,29 @@ function UnorderedSamples() {
               </div>
             </div>
             
+            {/* Compare to permutations */}
+            {selectedItems.size === r && r > 0 && (
+              <div className="mt-3 bg-neutral-800 rounded-lg p-3 border border-purple-600/50">
+                <div className="text-sm">
+                  <div className="text-purple-400 font-semibold mb-1">
+                    Permutations vs Combinations:
+                  </div>
+                  <div className="text-neutral-300 space-y-1">
+                    <div><span dangerouslySetInnerHTML={{ __html: `P(${n},${r}) = ${nPr(n, r)}` }} /> arrangements</div>
+                    <div><span dangerouslySetInnerHTML={{ __html: `C(${n},${r}) = ${nCr(n, r)}` }} /> selections</div>
+                    <div className="text-xs text-neutral-400 font-mono">
+                      Factor of {r}! = {Array.from({length: r}, (_, i) => r-i).join('×')} = {nPr(n, r) / nCr(n, r)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             {/* Show some combinations */}
             {n <= 6 && r <= 3 && r > 0 && (
               <div className="mt-3">
                 <h5 className="text-sm font-semibold text-neutral-300 mb-2">
-                  All {nCr(n, r)} combinations:
+                  All <span className="font-mono">{nCr(n, r)}</span> combinations:
                 </h5>
                 <div className="grid grid-cols-3 gap-1 text-xs font-mono text-neutral-400">
                   {getAllCombinations().map((combo, i) => (
@@ -488,70 +668,95 @@ function UnorderedSamples() {
             )}
           </VisualizationSection>
 
-          {/* Learning Progress */}
+          {/* Learning Challenges */}
           <VisualizationSection className="p-3">
-            <h4 className="text-sm font-semibold text-purple-400 mb-2">Combination Insights</h4>
+            <h4 className="text-base font-bold text-white mb-3">Learning Challenges</h4>
             
-            <ProgressTracker 
-              current={interactionCount} 
-              goal={25} 
-              label="Total Interactions"
-              color="purple"
-            />
+            {currentChallenge < challenges.length ? (
+              <div>
+                <div className="bg-neutral-800 rounded-lg p-3 border border-purple-600/50 mb-3">
+                  <div className="text-sm font-semibold text-purple-400 mb-1">
+                    Challenge {currentChallenge + 1}: {challenges[currentChallenge].title}
+                  </div>
+                  <div className="text-sm text-neutral-300">
+                    {challenges[currentChallenge].description}
+                  </div>
+                  {showHint && (
+                    <div className="text-xs text-yellow-400 mt-2">
+                      💡 Hint: {challenges[currentChallenge].hint}
+                    </div>
+                  )}
+                </div>
+                
+                <button
+                  onClick={() => setShowHint(!showHint)}
+                  className="text-xs text-neutral-400 hover:text-neutral-300 mb-2"
+                >
+                  {showHint ? "Hide" : "Show"} hint
+                </button>
+                
+                {/* Check if challenge is completed */}
+                {challenges[currentChallenge].check(n, r, nCr) && (
+                  <div className="bg-green-900/50 rounded p-2 mb-3">
+                    <div className="text-sm text-green-400">✅ Challenge Complete!</div>
+                    <button
+                      onClick={() => {
+                        setCurrentChallenge(prev => prev + 1);
+                        setShowHint(false);
+                      }}
+                      className="text-xs text-green-400 hover:text-green-300 mt-1"
+                    >
+                      Next Challenge →
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center">
+                <div className="text-green-400 font-semibold mb-2">🎉 All Challenges Complete!</div>
+                <div className="text-sm text-neutral-300">
+                  You've mastered combinations! Try the interactive lottery below.
+                </div>
+                <button
+                  onClick={() => {
+                    setCurrentChallenge(0);
+                    setCompletedChallenges(new Set());
+                  }}
+                  className="text-xs text-neutral-400 hover:text-neutral-300 mt-2"
+                >
+                  Restart Challenges
+                </button>
+              </div>
+            )}
             
-            <div className="space-y-2 text-xs text-neutral-300 mt-3">
-              {interactionCount === 0 && (
-                <div>
-                  <p>🎯 Ready to explore combinations?</p>
-                  <p className="text-purple-300 mt-1">
-                    Try clicking items in selection mode to see combinations in action!
-                  </p>
-                </div>
-              )}
-              {interactionCount > 0 && interactionCount < 5 && (
-                <div>
-                  <p>📊 Key difference from permutations:</p>
-                  <ul className="ml-3 mt-1 space-y-1">
-                    <li>• {`{1,2,3}`} = {`{3,2,1}`} = {`{2,1,3}`} (all the same)</li>
-                    <li>• Only the items matter, not their order</li>
-                  </ul>
-                </div>
-              )}
-              {interactionCount >= 5 && interactionCount < 10 && (
-                <div>
-                  <p>🎓 Pascal&apos;s Triangle connection:</p>
-                  <p className="mt-1">
-                    Row n of Pascal&apos;s Triangle contains all C(n,r) values!
-                    {showPascal && " See it highlighted below."}
-                  </p>
-                </div>
-              )}
-              {interactionCount >= 10 && interactionCount < 25 && (
-                <div>
-                  <p>🔥 Great progress! Notice these patterns:</p>
-                  <ul className="ml-3 mt-1 space-y-1">
-                    <li>• C(n,0) = C(n,n) = 1 always</li>
-                    <li>• C(n,r) = C(n,n-r) symmetry</li>
-                    <li>• When r {">"} n/2, use C(n,n-r) for easier calculation</li>
-                  </ul>
-                </div>
-              )}
-              {interactionCount >= 25 && (
-                <div>
-                  <p className="text-green-400 font-semibold mb-1">
-                    ✨ Combination Master! {interactionCount} interactions.
-                  </p>
-                  <p>Fun fact: C(n,r) = C(n,n-r) - choosing what to include = choosing what to exclude!</p>
-                </div>
-              )}
+            {/* Progress indicator */}
+            <div className="mt-3">
+              <div className="flex gap-1">
+                {challenges.map((challenge, idx) => (
+                  <div
+                    key={challenge.id}
+                    className={cn(
+                      "flex-1 h-2 rounded",
+                      completedChallenges.has(challenge.id)
+                        ? "bg-green-600"
+                        : idx === currentChallenge
+                        ? "bg-purple-600"
+                        : "bg-neutral-700"
+                    )}
+                  />
+                ))}
+              </div>
+              <div className="text-xs text-neutral-400 mt-1 font-mono">
+                {completedChallenges.size} / {challenges.length} completed
+              </div>
             </div>
           </VisualizationSection>
         </div>
 
         {/* Right Panel */}
         <div className="lg:w-2/3 space-y-4">
-          <GraphContainer height="450px">
-            <svg ref={svgRef} style={{ width: "100%", height: 450 }} />
+          <GraphContainer height="500px">
+            <svg ref={svgRef} style={{ width: "100%", height: 500 }} />
           </GraphContainer>
           
           {showPascal && (
@@ -559,12 +764,10 @@ function UnorderedSamples() {
               <h4 className="text-base font-bold text-white mb-3">Pascal&apos;s Triangle</h4>
               <PascalsTriangle rows={8} highlightN={n} highlightR={r} />
               <p className="text-xs text-neutral-400 mt-2">
-                C({n},{r}) is highlighted in row {n}, position {r}
+                <span dangerouslySetInnerHTML={{ __html: `C(${n},${r})` }} /> is highlighted in row {n}, position {r}
               </p>
             </div>
           )}
-          
-          {showLottoExample && <LottoWorkedExample />}
         </div>
       </div>
     </VisualizationContainer>
