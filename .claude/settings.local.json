@@ -61,7 +61,9 @@
       "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"setInteractionCount\" src/components/01-introduction-to-probabilities/UnorderedSamples.jsx -n)",
       "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -A 2 -B 2 \"TODO|FIXME|BUG|HACK\" src/)",
       "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -B 2 -A 2 \"onClick.*undefined|onChange.*undefined|on[A-Z].*\\?\\.\" src/)",
-      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -B 2 -A 2 \"\\.map\\(|\\.filter\\(|\\.find\\(|\\.forEach\\(\" src/)"
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -B 2 -A 2 \"\\.map\\(|\\.filter\\(|\\.find\\(|\\.forEach\\(\" src/)",
+      "Bash(git filter-branch:*)",
+      "Bash(git reset:*)"
     ],
     "deny": []
   }
