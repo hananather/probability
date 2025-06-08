@@ -1,5 +1,6 @@
 "use client";
-import { useState, Suspense, lazy } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import ConceptSection from '../../components/ConceptSection.jsx';
 import ErrorBoundary from '../../components/ErrorBoundary.jsx';
 
@@ -41,7 +42,13 @@ const ProbabilityEvent = lazy(() =>
     })
 );
 const ConditionalProbability = lazy(() => 
-  import('../../components/01-introduction-to-probabilities/ConditionalProbability.jsx')
+  import('../../components/01-introduction-to-probabilities/ConditionalProbabilityFixed.jsx')
+    .catch(() => {
+      return { default: () => <div className="text-red-500">Failed to load component</div> };
+    })
+);
+const ConditionalProbabilityEnhanced = lazy(() => 
+  import('../../components/01-introduction-to-probabilities/ConditionalProbabilityEnhanced.jsx')
     .catch(() => {
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })
@@ -55,14 +62,26 @@ const LoadingComponent = () => (
 );
 
 export default function Chapter1() {
-  // Uncomment to test loading state
-  // const [ready, setReady] = useState(false);
-  // useEffect(() => {
-  //   setTimeout(() => setReady(true), 2000);
-  // }, []);
-  // if (!ready) return null;
-  
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [activeSection, setActiveSection] = useState('sample-spaces');
+  const [useEnhancedConditional, setUseEnhancedConditional] = useState(false);
+
+  // Read section from URL on mount and when URL changes
+  useEffect(() => {
+    const section = searchParams.get('section');
+    if (section) {
+      setActiveSection(section);
+    }
+    // Check for enhanced mode in URL
+    const enhanced = searchParams.get('enhanced');
+    if (enhanced === 'true') {
+      setUseEnhancedConditional(true);
+    }
+  }, [searchParams]);
+
+  // Define the current conditional component based on the toggle
+  const ConditionalComponent = useEnhancedConditional ? ConditionalProbabilityEnhanced : ConditionalProbability;
 
   const sections = [
     {
@@ -157,7 +176,7 @@ export default function Chapter1() {
     {
       id: 'conditional',
       title: '1.6 Conditional Probability',
-      component: ConditionalProbability,
+      component: ConditionalComponent,
       description: (
         <>
           <p>
@@ -192,7 +211,10 @@ export default function Chapter1() {
           {sections.map((section) => (
             <button
               key={section.id}
-              onClick={() => setActiveSection(section.id)}
+              onClick={() => {
+                setActiveSection(section.id);
+                router.push(`/chapter1?section=${section.id}`);
+              }}
               className={`px-4 py-2 rounded-lg transition-all ${
                 activeSection === section.id
                   ? 'bg-blue-600 text-white font-semibold'
@@ -207,7 +229,21 @@ export default function Chapter1() {
         {/* Active Section Content */}
         {activeContent && (
           <>
-            <h2 className="text-2xl font-bold text-white mt-8">{activeContent.title}</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-white mt-8">{activeContent.title}</h2>
+              {/* Enhanced mode toggle for conditional probability */}
+              {activeSection === 'conditional' && (
+                <button
+                  onClick={() => {
+                    setUseEnhancedConditional(!useEnhancedConditional);
+                    router.push(`/chapter1?section=${activeSection}&enhanced=${!useEnhancedConditional}`);
+                  }}
+                  className="mt-8 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium transition-colors"
+                >
+                  {useEnhancedConditional ? '🎯 Switch to Classic View' : '🚀 Try Enhanced Learning Mode'}
+                </button>
+              )}
+            </div>
             <ConceptSection
               title={activeContent.title.split(' ').slice(1).join(' ')}
               description={activeContent.description}
