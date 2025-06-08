@@ -897,7 +897,6 @@ function ConditionalProbability() {
     
     // Ensure dropBallRef is ready before starting animation
     if (!dropBallRef.current) {
-      console.warn('Animation cannot start: dropBallRef not initialized');
       return;
     }
     

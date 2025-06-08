@@ -23,26 +23,49 @@ function SampleSpacesEvents() {
   const [dragEnabled, setDragEnabled] = useState(false);
   
   const svgRef = useRef(null);
+  const scalesRef = useRef(null);
+  const containerRef = useRef(null);
   
-  // Set data for circles
+  // Set data for circles - positioned to avoid label overlap
   const [setData, setSetData] = useState([
-    {name: 'A', cx: 0.5 - 0.1*Math.sqrt(3), cy: 0.4, r: 0.25},
-    {name: 'B', cx: 0.5 + 0.1*Math.sqrt(3), cy: 0.4, r: 0.25},
-    {name: 'C', cx: 0.5, cy: 0.7, r: 0.25},
-    {name: 'U', cx: 0.5, cy: 0.5, r: 0.5}
+    {name: 'A', cx: 0.3, cy: 0.35, r: 0.25},
+    {name: 'B', cx: 0.7, cy: 0.35, r: 0.25},
+    {name: 'C', cx: 0.5, cy: 0.7, r: 0.25}
   ]);
 
   // Update intersection highlighting
   function updateIntersection() {
-    if (!svgRef.current) return;
+    if (!containerRef.current) return;
     
+    const container = containerRef.current;
     for (let i = 1; i <= 8; i++) {
-      const section = d3.select(`#set${i}`);
+      const section = container.select(`#set${i}`);
       if (section.node()) {
-        const fill = currentSet.includes(i) ? colorScheme.chart.tertiary : 'transparent';
-        section.style('fill', fill).style('opacity', 0.3);
+        // Use high-contrast yellow for better visibility
+        const fill = currentSet.includes(i) ? '#fbbf24' : 'transparent';
+        const opacity = currentSet.includes(i) ? 0.6 : 0;
+        section
+          .transition()
+          .duration(300)
+          .style('fill', fill)
+          .style('opacity', opacity);
       }
     }
+  }
+
+  // Helper function to keep circles within rectangular bounds
+  function withinBounds(x, y, r) {
+    // Ensure circles stay within rectangular bounds with padding
+    const padding = 0.05;
+    const minX = padding + r;
+    const maxX = 1 - padding - r;
+    const minY = padding + r;
+    const maxY = 1 - padding - r;
+    
+    return [
+      Math.max(minX, Math.min(maxX, x)),
+      Math.max(minY, Math.min(maxY, y))
+    ];
   }
 
   // Main visualization effect
@@ -59,11 +82,21 @@ function SampleSpacesEvents() {
     svg.selectAll("*").remove();
     svg.attr("viewBox", `0 0 ${width} ${height}`);
     
-    // Dark background
+    // Dark background representing Universal Set
     svg.append("rect")
       .attr("width", width)
       .attr("height", height)
       .attr("fill", "#0a0a0a");
+    
+    // Add Universal Set label
+    svg.append("text")
+      .attr("x", 20)
+      .attr("y", 30)
+      .attr("fill", colors.chart.text)
+      .attr("font-size", "14px")
+      .attr("font-weight", "500")
+      .attr("opacity", 0.7)
+      .text("Universal Set U");
     
     const containerSet = svg.append('g')
       .attr("transform", `translate(${(width - size) / 2}, ${(height - size) / 2})`);
@@ -80,8 +113,8 @@ function SampleSpacesEvents() {
       .range([0, size/2 - padding/2]);
     
     // Create sections for highlighting
+    // Section 8 represents the entire universal set (no clip path needed)
     containerSet.append("rect")
-      .attr("clip-path", "url(#U)")
       .attr("class", "section")
       .attr("id", "set8")
       .attr('width', size)
@@ -161,11 +194,10 @@ function SampleSpacesEvents() {
       .attr('r', d => rScale(d.r))
       .attr('fill', 'none')
       .attr('stroke', (d, i) => {
-        if (i === 3) return colors.chart.grid; // Universe
         return [colorScheme.chart.primary, colorScheme.chart.secondary, colorScheme.chart.tertiary][i];
       })
-      .attr('stroke-width', d => d.name === 'U' ? 2 : 3)
-      .attr('stroke-dasharray', d => d.name === 'U' ? '5,5' : 'none');
+      .attr('stroke-width', 3)
+      .attr('stroke-dasharray', 'none');
     
     // Labels
     eventsSet.append('text')
@@ -189,23 +221,108 @@ function SampleSpacesEvents() {
     // Update intersection highlighting
     updateIntersection();
     
+    // Store scales and container for drag functionality
+    scalesRef.current = { xScale, yScale, rScale };
+    containerRef.current = containerSet;
+    
     // Drag functionality
     if (dragEnabled) {
       const drag = d3.drag()
+        .on('start', function(event, d) {
+          d3.select(this).style('cursor', 'grabbing');
+        })
         .on('drag', function(event, d) {
-          const index = setData.findIndex(s => s.name === d.name);
-          if (index === 3) return; // Don't drag universe
+          const x = xScale.invert(event.x);
+          const y = yScale.invert(event.y);
+          const [cx, cy] = withinBounds(x, y, d.r);
+          
+          // Update D3 elements directly without React state
+          d3.select(this)
+            .attr('cx', xScale(cx))
+            .attr('cy', yScale(cy));
+          
+          // Update corresponding text label
+          containerSet.selectAll('text')
+            .filter(t => t.name === d.name)
+            .attr('x', xScale(cx))
+            .attr('y', yScale(cy));
+          
+          // Update clip path
+          containerSet.select(`clipPath#${d.name} circle`)
+            .attr('cx', xScale(cx))
+            .attr('cy', yScale(cy));
+        })
+        .on('end', function(event, d) {
+          d3.select(this).style('cursor', 'grab');
+          
+          // Only update React state on drag end
+          const x = xScale.invert(event.x);
+          const y = yScale.invert(event.y);
+          const [cx, cy] = withinBounds(x, y, d.r);
+          
+          setSetData(prev => prev.map(s => 
+            s.name === d.name ? { ...s, cx, cy } : s
+          ));
+        });
+      
+      eventsSet.selectAll('circle')
+        .style('cursor', 'grab')
+        .call(drag);
+    }
+  }, [setData, currentSet]); // Removed dragEnabled to avoid recreation
+  
+  // Separate effect for drag enable/disable
+  useEffect(() => {
+    if (!containerRef.current || !scalesRef.current) return;
+    
+    const container = containerRef.current;
+    const { xScale, yScale, rScale } = scalesRef.current;
+    
+    if (dragEnabled) {
+      const drag = d3.drag()
+        .on('start', function(event, d) {
+          d3.select(this).style('cursor', 'grabbing');
+        })
+        .on('drag', function(event, d) {
+          const x = xScale.invert(event.x);
+          const y = yScale.invert(event.y);
+          const [cx, cy] = withinBounds(x, y, d.r);
+          
+          // Update D3 elements directly
+          d3.select(this)
+            .attr('cx', xScale(cx))
+            .attr('cy', yScale(cy));
+          
+          container.selectAll('text')
+            .filter(t => t.name === d.name)
+            .attr('x', xScale(cx))
+            .attr('y', yScale(cy));
+          
+          container.select(`clipPath#${d.name} circle`)
+            .attr('cx', xScale(cx))
+            .attr('cy', yScale(cy));
+        })
+        .on('end', function(event, d) {
+          d3.select(this).style('cursor', 'grab');
           
           const x = xScale.invert(event.x);
           const y = yScale.invert(event.y);
           const [cx, cy] = withinBounds(x, y, d.r);
           
-          const newSetData = [...setData];
-          newSetData[index] = { ...d, cx, cy };
-          setSetData(newSetData);
+          setSetData(prev => prev.map(s => 
+            s.name === d.name ? { ...s, cx, cy } : s
+          ));
         });
       
-      eventsSet.selectAll('circle').call(drag);
+      container.selectAll('circle')
+        .filter(d => d)
+        .style('cursor', 'grab')
+        .call(drag);
+    } else {
+      // Remove drag behavior
+      container.selectAll('circle')
+        .style('cursor', 'default')
+        .on('.drag', null);
     }
     
     // Helper function to keep circles within universe
@@ -221,7 +338,7 @@ function SampleSpacesEvents() {
         ];
       }
     }
-  }, [setData, currentSet, dragEnabled]);
+  }, [dragEnabled]);
   
   // Set operation parser functions
   function union(set1, set2) {
@@ -377,10 +494,13 @@ function SampleSpacesEvents() {
     }
     
       try {
-        return parse(notation);
+        // Remove whitespace
+        const cleanNotation = notation.replace(/\s/g, '');
+        if (!cleanNotation) return [];
+        return parse(cleanNotation);
       } catch (e) {
         console.error('Parse error:', e);
-        return []; // Return empty set on error instead of throwing
+        return []; // Return empty set on error
       }
     } catch (e) {
       console.error('Parser setup error:', e);
@@ -390,6 +510,11 @@ function SampleSpacesEvents() {
   
   // Handle submit
   function handleSubmit() {
+    if (!inputSet.trim()) {
+      setErrorMessage('Please enter a set expression');
+      return;
+    }
+    
     try {
       const result = parseSetNotation(inputSet);
       setCurrentSet(result);
@@ -426,8 +551,8 @@ function SampleSpacesEvents() {
           <VisualizationSection className="p-3">
             <p className={cn(typography.description, "text-sm leading-relaxed")}>
               Explore set operations and Venn diagrams. Sets A, B, and C are subsets of the 
-              universal set U. Build set expressions using union (∪), intersection (∩), 
-              and complement (') operations.
+              universal set U (represented by the dark rectangle). Build set expressions using 
+              union (∪), intersection (∩), and complement (') operations.
             </p>
           </VisualizationSection>
 
@@ -446,7 +571,7 @@ function SampleSpacesEvents() {
             
             {/* Notation buttons */}
             <div className="grid grid-cols-4 gap-2 mb-3">
-              {['A', 'B', 'C', 'U', '∅', '∪', '∩', "'", '(', ')'].map(symbol => (
+              {['A', 'B', 'C', '∅', '∪', '∩', "'", '(', ')'].map(symbol => (
                 <button
                   key={symbol}
                   onClick={() => addNotation(symbol)}

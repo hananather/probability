@@ -27,15 +27,19 @@ export default function TypeErrorVisualizer() {
   const [isDragging, setIsDragging] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
   
+  // Refs for D3 visualizations
+  const svgRef = useRef(null);
+  const scalesRef = useRef({ x: null, y: null });
+  const thresholdLineRef = useRef(null);
+  const errorAreasRef = useRef({ typeI: null, typeII: null });
+  const innerDimensionsRef = useRef({ width: 0, height: 0 });
+  
   // Reset animation state when component remounts
   useEffect(() => {
     return () => {
       setAnimateIn(false);
     };
   }, []);
-  
-  // Refs for D3 visualizations
-  const svgRef = useRef(null);
   
   // Calculate errors
   const calculateErrors = (thresh) => {
@@ -100,7 +104,7 @@ export default function TypeErrorVisualizer() {
   
   const insight = getInsight();
   
-  // Initialize and update visualization
+  // Initialize visualization (runs once)
   useEffect(() => {
     if (!svgRef.current) return;
     
@@ -120,6 +124,9 @@ export default function TypeErrorVisualizer() {
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
+    // Store dimensions for later use
+    innerDimensionsRef.current = { width: innerWidth, height: innerHeight };
+    
     // Scales
     const x = d3.scaleLinear()
       .domain([20, 120])
@@ -128,6 +135,9 @@ export default function TypeErrorVisualizer() {
     const y = d3.scaleLinear()
       .domain([0, 0.05])
       .range([innerHeight, 0]);
+    
+    // Store scales for later use
+    scalesRef.current = { x, y };
     
     // Generate distribution data
     const generateCurve = (mean, std) => {
@@ -203,34 +213,17 @@ export default function TypeErrorVisualizer() {
       .style("text-anchor", "middle")
       .text("Probability Density");
     
-    // Draw error areas if enabled
-    if (showAreas) {
-      // Type I error area (healthy people above threshold)
-      const typeIArea = d3.area()
-        .x(d => x(d.x))
-        .y0(innerHeight)
-        .y1(d => y(d.y))
-        .curve(d3.curveBasis);
-      
-      const typeIData = healthyData.filter(d => d.x >= threshold);
-      if (typeIData.length > 0) {
-        g.append("path")
-          .datum(typeIData)
-          .attr("d", typeIArea)
-          .attr("fill", "url(#typeI-gradient)")
-          .attr("class", "error-area type-i");
-      }
-      
-      // Type II error area (diseased people below threshold)
-      const typeIIData = diseasedData.filter(d => d.x <= threshold);
-      if (typeIIData.length > 0) {
-        g.append("path")
-          .datum(typeIIData)
-          .attr("d", typeIArea)
-          .attr("fill", "url(#typeII-gradient)")
-          .attr("class", "error-area type-ii");
-      }
-    }
+    // Create error area groups
+    const typeIAreaGroup = g.append("g").attr("class", "type-i-area-group");
+    const typeIIAreaGroup = g.append("g").attr("class", "type-ii-area-group");
+    
+    // Store references
+    errorAreasRef.current = { 
+      typeI: typeIAreaGroup, 
+      typeII: typeIIAreaGroup,
+      healthyData,
+      diseasedData
+    };
     
     // Draw distribution curves
     g.append("path")
@@ -266,23 +259,36 @@ export default function TypeErrorVisualizer() {
       .style("font-weight", "600")
       .text("Diseased");
     
-    // Draggable threshold line
-    const thresholdLine = g.append("g")
+    // Create threshold group
+    const thresholdGroup = g.append("g")
       .attr("class", "threshold-group")
       .style("cursor", "ew-resize");
     
-    thresholdLine.append("line")
-      .attr("x1", x(threshold))
-      .attr("x2", x(threshold))
+    thresholdLineRef.current = thresholdGroup;
+    
+    // Threshold line
+    thresholdGroup.append("line")
+      .attr("class", "threshold-line")
       .attr("y1", 0)
       .attr("y2", innerHeight)
       .attr("stroke", "#ffffff")
       .attr("stroke-width", 3)
       .attr("stroke-dasharray", "5,5");
     
-    // Threshold handle
-    thresholdLine.append("rect")
-      .attr("x", x(threshold) - 20)
+    // Threshold handle - larger invisible drag area
+    thresholdGroup.append("rect")
+      .attr("class", "threshold-drag-area")
+      .attr("y", 0)
+      .attr("width", 60)
+      .attr("height", innerHeight)
+      .attr("fill", "#ffffff")
+      .attr("fill-opacity", 0)
+      .attr("stroke", "none")
+      .style("cursor", "ew-resize");
+    
+    // Visible handle indicator
+    thresholdGroup.append("rect")
+      .attr("class", "threshold-handle")
       .attr("y", innerHeight / 2 - 20)
       .attr("width", 40)
       .attr("height", 40)
@@ -290,10 +296,11 @@ export default function TypeErrorVisualizer() {
       .attr("fill-opacity", 0.1)
       .attr("stroke", "#ffffff")
       .attr("stroke-width", 2)
-      .attr("rx", 5);
+      .attr("rx", 5)
+      .style("pointer-events", "none");
     
-    thresholdLine.append("text")
-      .attr("x", x(threshold))
+    thresholdGroup.append("text")
+      .attr("class", "threshold-icon")
       .attr("y", innerHeight / 2)
       .attr("text-anchor", "middle")
       .attr("dy", "0.35em")
@@ -303,87 +310,184 @@ export default function TypeErrorVisualizer() {
       .text("⇔");
     
     // Threshold label
-    thresholdLine.append("text")
-      .attr("x", x(threshold))
+    thresholdGroup.append("text")
+      .attr("class", "threshold-label")
       .attr("y", -10)
       .attr("text-anchor", "middle")
       .attr("fill", "#ffffff")
       .style("font-size", "12px")
-      .style("font-weight", "600")
-      .text(`Threshold: ${threshold.toFixed(0)}`);
+      .style("font-weight", "600");
     
-    // Drag behavior with debouncing
-    let dragTimeout;
+    // Drag behavior
     const drag = d3.drag()
-      .on("start", () => setIsDragging(true))
-      .on("drag", (event) => {
-        clearTimeout(dragTimeout);
-        dragTimeout = setTimeout(() => {
-          const newX = Math.max(0, Math.min(innerWidth, event.x));
-          const newThreshold = x.invert(newX);
-          const clampedThreshold = Math.max(SCENARIO.thresholdMin, Math.min(SCENARIO.thresholdMax, newThreshold));
-          setThreshold(Math.round(clampedThreshold));
-        }, 10); // Debounce for 10ms to prevent excessive updates
+      .on("start", function() {
+        d3.select(this).select(".threshold-line")
+          .attr("stroke-width", 4)
+          .attr("stroke", "#facc15");
+        setIsDragging(true);
       })
-      .on("end", () => {
-        clearTimeout(dragTimeout);
+      .on("drag", function(event) {
+        const newX = Math.max(0, Math.min(innerWidth, event.x));
+        const newThreshold = x.invert(newX);
+        const clampedThreshold = Math.max(SCENARIO.thresholdMin, Math.min(SCENARIO.thresholdMax, newThreshold));
+        
+        // Update threshold line position immediately
+        updateThresholdPosition(clampedThreshold);
+        
+        // Update React state (for error calculations)
+        setThreshold(clampedThreshold);
+      })
+      .on("end", function() {
+        d3.select(this).select(".threshold-line")
+          .attr("stroke-width", 3)
+          .attr("stroke", "#ffffff");
         setIsDragging(false);
       });
     
-    thresholdLine.call(drag);
+    thresholdGroup.call(drag);
     
     // Highlight on hover
-    thresholdLine
+    thresholdGroup
       .on("mouseenter", function() {
-        d3.select(this).select("line")
-          .attr("stroke-width", 4)
-          .attr("stroke", "#facc15");
+        if (!isDragging) {
+          d3.select(this).select(".threshold-line")
+            .attr("stroke-width", 4)
+            .attr("stroke", "#facc15");
+        }
       })
       .on("mouseleave", function() {
         if (!isDragging) {
-          d3.select(this).select("line")
+          d3.select(this).select(".threshold-line")
             .attr("stroke-width", 3)
             .attr("stroke", "#ffffff");
         }
       });
     
-    // Animate on mount
-    if (!animateIn) {
-      setAnimateIn(true);
+    // Helper function to update threshold position
+    const updateThresholdPosition = (thresh) => {
+      const xPos = x(thresh);
       
-      // Animate curves drawing (only for line paths, not area paths)
-      const paths = g.selectAll("path").filter(function() {
-        return d3.select(this).attr("fill") === "none";
-      });
+      thresholdGroup.select(".threshold-line")
+        .attr("x1", xPos)
+        .attr("x2", xPos);
       
-      paths.each(function() {
-        const path = d3.select(this);
-        try {
-          const totalLength = this.getTotalLength();
-          
-          path
-            .attr("stroke-dasharray", totalLength + " " + totalLength)
-            .attr("stroke-dashoffset", totalLength)
-            .transition()
-            .duration(1500)
-            .ease(d3.easeCubicInOut)
-            .attr("stroke-dashoffset", 0);
-        } catch (e) {
-          // If getTotalLength fails, just show the path immediately
-          console.warn("Path animation failed:", e);
-        }
-      });
+      thresholdGroup.select(".threshold-drag-area")
+        .attr("x", xPos - 30);
       
-      // Fade in error areas
-      g.selectAll(".error-area")
-        .style("opacity", 0)
-        .transition()
-        .delay(1000)
-        .duration(500)
-        .style("opacity", 1);
-    }
+      thresholdGroup.select(".threshold-handle")
+        .attr("x", xPos - 20);
+      
+      thresholdGroup.select(".threshold-icon")
+        .attr("x", xPos);
+      
+      thresholdGroup.select(".threshold-label")
+        .attr("x", xPos)
+        .text(`Threshold: ${thresh.toFixed(0)}`);
+    };
     
-  }, [threshold, showAreas, isDragging, animateIn]);
+    // Initial position
+    updateThresholdPosition(threshold);
+    
+    // Animate on mount
+    setAnimateIn(true);
+    
+    // Animate curves drawing
+    const paths = g.selectAll("path").filter(function() {
+      return d3.select(this).attr("fill") === "none";
+    });
+    
+    paths.each(function() {
+      const path = d3.select(this);
+      try {
+        const totalLength = this.getTotalLength();
+        
+        path
+          .attr("stroke-dasharray", totalLength + " " + totalLength)
+          .attr("stroke-dashoffset", totalLength)
+          .transition()
+          .duration(1500)
+          .ease(d3.easeCubicInOut)
+          .attr("stroke-dashoffset", 0);
+      } catch (e) {
+        // Path animation failed silently
+      }
+    });
+    
+  }, []); // Run only once on mount
+  
+  // Update threshold position and error areas
+  useEffect(() => {
+    if (!thresholdLineRef.current || !scalesRef.current.x) return;
+    
+    const { x, y } = scalesRef.current;
+    const { width: innerWidth, height: innerHeight } = innerDimensionsRef.current;
+    
+    // Update threshold position
+    const xPos = x(threshold);
+    
+    thresholdLineRef.current.select(".threshold-line")
+      .attr("x1", xPos)
+      .attr("x2", xPos);
+    
+    thresholdLineRef.current.select(".threshold-drag-area")
+      .attr("x", xPos - 30);
+    
+    thresholdLineRef.current.select(".threshold-handle")
+      .attr("x", xPos - 20);
+    
+    thresholdLineRef.current.select(".threshold-icon")
+      .attr("x", xPos);
+    
+    thresholdLineRef.current.select(".threshold-label")
+      .attr("x", xPos)
+      .text(`Threshold: ${threshold.toFixed(0)}`);
+    
+    // Update error areas
+    if (showAreas && errorAreasRef.current.typeI) {
+      const { typeI, typeII, healthyData, diseasedData } = errorAreasRef.current;
+      
+      // Clear existing areas
+      typeI.selectAll("*").remove();
+      typeII.selectAll("*").remove();
+      
+      // Area generator
+      const area = d3.area()
+        .x(d => x(d.x))
+        .y0(innerHeight)
+        .y1(d => y(d.y))
+        .curve(d3.curveBasis);
+      
+      // Type I error area
+      const typeIData = healthyData.filter(d => d.x >= threshold);
+      if (typeIData.length > 0) {
+        typeI.append("path")
+          .datum(typeIData)
+          .attr("d", area)
+          .attr("fill", "url(#typeI-gradient)")
+          .style("opacity", animateIn ? 0 : 1)
+          .transition()
+          .duration(300)
+          .style("opacity", 1);
+      }
+      
+      // Type II error area
+      const typeIIData = diseasedData.filter(d => d.x <= threshold);
+      if (typeIIData.length > 0) {
+        typeII.append("path")
+          .datum(typeIIData)
+          .attr("d", area)
+          .attr("fill", "url(#typeII-gradient)")
+          .style("opacity", animateIn ? 0 : 1)
+          .transition()
+          .duration(300)
+          .style("opacity", 1);
+      }
+    } else if (errorAreasRef.current.typeI) {
+      // Clear areas if not showing
+      errorAreasRef.current.typeI.selectAll("*").remove();
+      errorAreasRef.current.typeII.selectAll("*").remove();
+    }
+  }, [threshold, showAreas, animateIn]);
   
   // Reset function
   const reset = () => {

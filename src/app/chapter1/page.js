@@ -55,6 +55,13 @@ const LoadingComponent = () => (
 );
 
 export default function Chapter1() {
+  // Uncomment to test loading state
+  // const [ready, setReady] = useState(false);
+  // useEffect(() => {
+  //   setTimeout(() => setReady(true), 2000);
+  // }, []);
+  // if (!ready) return null;
+  
   const [activeSection, setActiveSection] = useState('sample-spaces');
 
   const sections = [

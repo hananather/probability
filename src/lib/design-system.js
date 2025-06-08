@@ -121,6 +121,12 @@ export const colorSchemes = {
     tertiary: '#3b82f6',   // Blue
     name: 'Default'
   },
+  probability: {
+    primary: '#3b82f6',    // Blue
+    secondary: '#10b981',  // Emerald  
+    tertiary: '#f59e0b',   // Amber
+    name: 'Probability'
+  },
   inference: {
     primary: '#3b82f6',    // Blue - posterior/evidence
     secondary: '#ef4444',  // Red - prior/hypothesis
@@ -191,6 +197,25 @@ export const createColorScheme = (scheme = 'default') => {
       primary: `text-[${schemeColors.primary}]`,
       secondary: `text-[${schemeColors.secondary}]`,
       tertiary: `text-[${schemeColors.tertiary}]`,
+    },
+    
+    // Chip colors for legend/indicators (using predefined Tailwind classes)
+    chipColors: {
+      primary: scheme === 'probability' ? 'bg-blue-500' : 
+               scheme === 'hypothesis' ? 'bg-teal-500' : 
+               scheme === 'inference' ? 'bg-blue-500' :
+               scheme === 'estimation' ? 'bg-violet-500' :
+               scheme === 'sampling' ? 'bg-cyan-500' : 'bg-teal-500',
+      secondary: scheme === 'probability' ? 'bg-emerald-500' : 
+                 scheme === 'hypothesis' ? 'bg-amber-500' : 
+                 scheme === 'inference' ? 'bg-orange-500' :
+                 scheme === 'estimation' ? 'bg-cyan-500' :
+                 scheme === 'sampling' ? 'bg-amber-500' : 'bg-yellow-500',
+      tertiary: scheme === 'probability' ? 'bg-amber-500' : 
+                scheme === 'hypothesis' ? 'bg-orange-500' : 
+                scheme === 'inference' ? 'bg-yellow-500' :
+                scheme === 'estimation' ? 'bg-amber-500' :
+                scheme === 'sampling' ? 'bg-yellow-500' : 'bg-blue-500',
     },
     
     // Additional colors

@@ -458,11 +458,11 @@ function SampleSpacesEventsOptimized() {
         if (!cleanNotation) return [];
         return parse(cleanNotation);
       } catch (e) {
-        console.error('Parse error:', e);
+        // Parse error occurred
         throw e;
       }
     } catch (e) {
-      console.error('Parser setup error:', e);
+      // Parser setup error occurred
       throw e;
     }
   }

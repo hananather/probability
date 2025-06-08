@@ -1,6 +1,13 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import * as d3 from "d3";
+import { 
+  select,
+  scaleBand,
+  scaleLinear,
+  axisBottom,
+  axisLeft,
+  format
+} from '../utils/d3-utils';
 import { 
   VisualizationContainer, 
   VisualizationSection,
@@ -102,7 +109,7 @@ export default function CoinFlipSimulation() {
       }
     ];
     
-    const svg = d3.select(svgRef.current);
+    const svg = select(svgRef.current);
     const { width } = svgRef.current.getBoundingClientRect();
     const height = 700;
     const margin = { top: 60, right: 40, bottom: 80, left: 80 };
@@ -122,24 +129,24 @@ export default function CoinFlipSimulation() {
       .attr("transform", `translate(${margin.left},${margin.top})`);
     
     // Scales
-    const x0 = d3.scaleBand()
+    const x0 = scaleBand()
       .domain(data.map(d => d.state))
       .range([0, innerWidth])
       .padding(0.3);
     
-    const x1 = d3.scaleBand()
+    const x1 = scaleBand()
       .domain(data[0].values.map(d => d.side))
       .range([0, x0.bandwidth()])
       .padding(0.1);
     
-    const y = d3.scaleLinear()
+    const y = scaleLinear()
       .domain([0, 1])
       .range([innerHeight, 0]);
     
     // Grid lines
     g.append("g")
       .attr("class", "grid")
-      .call(d3.axisLeft(y)
+      .call(axisLeft(y)
         .ticks(5)
         .tickSize(-innerWidth)
         .tickFormat(""))
@@ -212,7 +219,7 @@ export default function CoinFlipSimulation() {
     // X axis
     const xAxis = g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(x0));
+      .call(axisBottom(x0));
     
     xAxis.selectAll("path, line").attr("stroke", colors.chart.grid);
     xAxis.selectAll("text")
@@ -222,9 +229,9 @@ export default function CoinFlipSimulation() {
     
     // Y axis
     const yAxis = g.append("g")
-      .call(d3.axisLeft(y)
+      .call(axisLeft(y)
         .ticks(5)
-        .tickFormat(d3.format(".0%")));
+        .tickFormat(format(".0%")));
     
     yAxis.selectAll("path, line").attr("stroke", colors.chart.grid);
     yAxis.selectAll("text")
@@ -244,7 +251,7 @@ export default function CoinFlipSimulation() {
     
     // Legend inside each group
     groups.each(function(d) {
-      const group = d3.select(this);
+      const group = select(this);
       const legendY = -20;
       
       group.selectAll("rect.legend")

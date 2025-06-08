@@ -36,7 +36,6 @@ export const processMathJaxWithRetry = (element, dependencies = []) => {
         // Process the element
         window.MathJax.typesetPromise([element])
           .then(() => {
-            console.log(`MathJax processed successfully after ${attempts + 1} attempts`);
             // Clear any remaining timeouts
             timeoutIds.forEach(id => clearTimeout(id));
             timeoutIds = [];
@@ -129,7 +128,6 @@ export const initGlobalMathJaxProcessor = () => {
       });
       
       if (mathElements.length > 0) {
-        console.log(`Processing ${mathElements.length} elements with LaTeX on initial load`);
         window.MathJax.typesetPromise(mathElements).catch(console.error);
       }
     } else {

@@ -8,11 +8,11 @@ import {
   GraphContainer,
   ControlGroup
 } from '../ui/VisualizationContainer';
-import { colors, typography, formatNumber, cn, createColorScheme } from '../../lib/design-system';
+import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
 import { RangeSlider } from '../ui/RangeSlider';
 
-// Use sampling color scheme
-const colorScheme = createColorScheme('sampling');
+// Use probability color scheme for discrete distributions
+const colorScheme = createColorScheme('probability');
 
 export default function ExpectationVariance() {
   // probabilities for faces 1–6
@@ -34,6 +34,9 @@ export default function ExpectationVariance() {
   const plotSvgRef = useRef(null);
   const expectedDataRef = useRef([]);
   const varianceDataRef = useRef([]);
+  const scalesRef = useRef({ x: null, y: null });
+  const barsRef = useRef(null);
+  const labelsRef = useRef(null);
 
   // derived true stats
   const trueExpectation = probs.reduce((sum, p, i) => sum + p * (i + 1), 0);
@@ -48,7 +51,7 @@ export default function ExpectationVariance() {
   const sampleMean = sampleTotal > 0 ? counts.reduce((sum, c, i) => sum + (i + 1) * c, 0) / sampleTotal : 0;
   const sampleVariance = sampleTotal > 0 ? counts.reduce((sum, c, i) => sum + Math.pow((i + 1) - sampleMean, 2) * c, 0) / sampleTotal : 0;
 
-  // draw bar chart - NO TRANSFORM VERSION
+  // Initialize bar chart once
   useEffect(() => {
     const svg = d3.select(barSvgRef.current);
     const { width } = barSvgRef.current.getBoundingClientRect();
@@ -75,6 +78,9 @@ export default function ExpectationVariance() {
     const y = d3.scaleLinear()
       .domain([0, 1])
       .range([height - margin.bottom, margin.top]);
+
+    // Store scales for later use
+    scalesRef.current = { x, y };
 
     // Grid lines
     svg.append("g")
@@ -122,6 +128,8 @@ export default function ExpectationVariance() {
       .attr("rx", 4)
       .style("cursor", "ns-resize");
 
+    barsRef.current = bars;
+
     // Hover effects
     bars
       .on("mouseover", function(_, d) { 
@@ -139,7 +147,23 @@ export default function ExpectationVariance() {
           .attr("fill", colorScheme.chart.primary); 
       });
 
-    // Simple drag behavior directly on bars
+    // Helper function to update bars directly
+    const updateBarsDirectly = (newProbs) => {
+      const y = scalesRef.current.y;
+      
+      bars.each(function(d, i) {
+        d3.select(this)
+          .attr("y", y(newProbs[i]))
+          .attr("height", y(0) - y(newProbs[i]));
+      });
+      
+      // Update labels
+      labelsRef.current.each(function(d, i) {
+        d3.select(this).text(`${(newProbs[i] * 100).toFixed(0)}%`);
+      });
+    };
+
+    // Drag behavior
     bars.call(
       d3.drag()
         .on("drag", (event, d) => {
@@ -158,6 +182,10 @@ export default function ExpectationVariance() {
             updated = updated.map(p => p / sum);
           }
           
+          // Update bars directly without re-rendering
+          updateBarsDirectly(updated);
+          
+          // Update React state (for other components)
           setProbs(updated);
           expectedDataRef.current = [];
           varianceDataRef.current = [];
@@ -165,7 +193,7 @@ export default function ExpectationVariance() {
     );
 
     // Percentage labels
-    svg.selectAll("text.bar-label")
+    const labels = svg.selectAll("text.bar-label")
       .data(data)
       .join("text")
       .attr("class", "bar-label")
@@ -175,6 +203,8 @@ export default function ExpectationVariance() {
       .attr("fill", colors.chart.text)
       .attr("font-size", "12px")
       .text(d => `${(d.value * 100).toFixed(0)}%`);
+
+    labelsRef.current = labels;
 
     // Die face icons with background
     const dieGroups = svg.selectAll("g.die-face")
@@ -202,6 +232,31 @@ export default function ExpectationVariance() {
       .attr("font-size", "20px")
       .text(d => ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"][d.face - 1]);
 
+  }, []); // Only run once on mount
+
+  // Update bars when probs change externally (e.g., reset)
+  useEffect(() => {
+    if (barsRef.current && scalesRef.current.y) {
+      const y = scalesRef.current.y;
+      
+      barsRef.current.each(function(d, i) {
+        d3.select(this)
+          .transition()
+          .duration(300)
+          .attr("y", y(probs[i]))
+          .attr("height", y(0) - y(probs[i]));
+      });
+      
+      if (labelsRef.current) {
+        labelsRef.current.each(function(d, i) {
+          d3.select(this)
+            .transition()
+            .duration(300)
+            .attr("y", y(probs[i]) - 5)
+            .text(`${(probs[i] * 100).toFixed(0)}%`);
+        });
+      }
+    }
   }, [probs]);
 
   // draw convergence plot
@@ -398,35 +453,37 @@ export default function ExpectationVariance() {
                     className="mb-2"
                   />
                 </div>
-                
                 <div className="flex gap-2">
                   <button
-                    className={cn(
-                      "flex-1 px-3 py-1.5 rounded text-sm font-medium transition-colors",
-                      "bg-emerald-600 hover:bg-emerald-700 text-white"
-                    )}
                     onClick={rollOnce}
+                    disabled={isRolling}
+                    className={cn(
+                      components.button.base,
+                      components.button.secondary,
+                      "flex-1"
+                    )}
                   >
                     Roll Once
                   </button>
                   <button
-                    className={cn(
-                      "flex-1 px-3 py-1.5 rounded text-sm font-medium transition-colors",
-                      "bg-purple-600 hover:bg-purple-700 text-white"
-                    )}
                     onClick={rollMultiple}
                     disabled={isRolling}
+                    className={cn(
+                      components.button.base,
+                      components.button.primary,
+                      "flex-1"
+                    )}
                   >
-                    Roll {sampleCount}×
+                    {isRolling ? 'Rolling...' : `Roll ${sampleCount}x`}
                   </button>
                 </div>
-                
                 <button
-                  className={cn(
-                    "w-full px-3 py-1.5 rounded text-sm font-medium transition-colors",
-                    "bg-neutral-700 hover:bg-neutral-600 text-white"
-                  )}
                   onClick={handleReset}
+                  className={cn(
+                    components.button.base,
+                    components.button.destructive,
+                    "w-full"
+                  )}
                 >
                   Reset All
                 </button>
@@ -434,134 +491,104 @@ export default function ExpectationVariance() {
             </ControlGroup>
           </VisualizationSection>
 
-          {/* Statistics Display */}
+          {/* Stats Display */}
           <VisualizationSection className="p-3">
-            <h4 className="text-base font-bold text-white mb-3">Statistics Comparison</h4>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-400">Rolls:</span>
-                <span className="text-white font-medium">{sampleTotal}</span>
+            <h4 className="text-base font-bold text-white mb-3">Statistics</h4>
+            <div className="space-y-4">
+              {/* True statistics */}
+              <div className="bg-gray-800/30 rounded-lg p-3 space-y-2">
+                <h5 className="text-sm font-semibold text-gray-300">True Distribution</h5>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Expected Value:</span>
+                    <span className="font-mono text-emerald-400 font-medium">
+                      {formatNumber(trueExpectation)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Variance:</span>
+                    <span className="font-mono text-purple-400 font-medium">
+                      {formatNumber(trueVariance)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">E[X²]:</span>
+                    <span className="font-mono text-gray-300 font-medium">
+                      {formatNumber(trueE2)}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="border-t border-gray-700 pt-2">
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-400">True Mean:</span>
-                  <span className="text-emerald-400 font-medium">{trueExpectation.toFixed(3)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Sample Mean:</span>
-                  <span className="text-white font-medium">{sampleMean.toFixed(3)}</span>
-                </div>
-              </div>
-              <div className="border-t border-gray-700 pt-2">
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-400">True Variance:</span>
-                  <span className="text-purple-400 font-medium">{trueVariance.toFixed(3)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Sample Variance:</span>
-                  <span className="text-white font-medium">{sampleVariance.toFixed(3)}</span>
-                </div>
-              </div>
-            </div>
-          </VisualizationSection>
 
-          {/* Educational Insights - 4 Stage System */}
-          <VisualizationSection className="p-3 bg-gradient-to-br from-purple-900/20 to-indigo-900/20 border-purple-600/30">
-            <h4 className="text-base font-bold text-purple-300 mb-3">🎓 Learning Insights</h4>
-            <div className="space-y-2 text-sm">
-              {sampleTotal === 0 && (
-                <div>
-                  <p className="text-purple-200">🎯 Ready to explore expectation and variance?</p>
-                  <p className="text-purple-300 mt-1">
-                    Start rolling the die to see how sample statistics converge to theoretical values!
-                  </p>
-                  <div className="mt-2 p-2 bg-indigo-900/30 rounded text-xs">
-                    <p className="text-indigo-300">💡 <strong>Tip:</strong> Try adjusting the probabilities by dragging the bars!</p>
+              {/* Sample statistics */}
+              <div className="bg-gray-800/30 rounded-lg p-3 space-y-2">
+                <h5 className="text-sm font-semibold text-gray-300">
+                  Sample Distribution ({sampleTotal} rolls)
+                </h5>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Sample Mean:</span>
+                    <span className="font-mono text-emerald-400 font-medium">
+                      {sampleTotal > 0 ? formatNumber(sampleMean) : '—'}
+                    </span>
                   </div>
-                  <div className="mt-2 p-2 bg-amber-900/30 rounded text-xs">
-                    <p className="text-amber-300">🎮 <strong>Challenge:</strong> Can you create a die with expected value exactly 4.5?</p>
-                  </div>
-                </div>
-              )}
-              
-              {sampleTotal > 0 && sampleTotal < 10 && (
-                <div>
-                  <p className="text-purple-200">📊 Great start! You've rolled {sampleTotal} times.</p>
-                  <p className="text-purple-300 mt-1">
-                    Notice how sample statistics fluctuate wildly with few rolls.
-                  </p>
-                </div>
-              )}
-              
-              {sampleTotal >= 10 && sampleTotal < 100 && (
-                <div>
-                  <p className="text-purple-200">📈 Pattern emerging with {sampleTotal} rolls!</p>
-                  <div className="mt-2 p-2 bg-purple-900/20 border border-purple-600/30 rounded">
-                    <div className="text-xs text-purple-300">
-                      🎯 Goal: Reach 100 rolls to see convergence
-                    </div>
-                    <div className="mt-1.5">
-                      <div className="w-full bg-purple-900/30 rounded-full h-1.5">
-                        <div 
-                          className="bg-purple-500 h-1.5 rounded-full transition-all duration-300"
-                          style={{ width: `${Math.min((sampleTotal / 100) * 100, 100)}%` }}
-                        />
-                      </div>
-                      <div className="text-center mt-1 text-purple-400 font-mono" style={{ fontSize: '10px' }}>
-                        {sampleTotal}/100
-                      </div>
-                    </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Sample Variance:</span>
+                    <span className="font-mono text-purple-400 font-medium">
+                      {sampleTotal > 0 ? formatNumber(sampleVariance) : '—'}
+                    </span>
                   </div>
                 </div>
-              )}
-              
-              {sampleTotal >= 100 && (
-                <div>
-                  <p className="text-green-400 font-semibold mb-1">
-                    ✨ Law of Large Numbers in Action!
-                  </p>
-                  <p className="text-purple-200 text-xs">
-                    With {sampleTotal} rolls, sample statistics closely match theoretical values:
-                  </p>
-                  <div className="mt-2 space-y-1 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Mean Error:</span>
-                      <span className="text-emerald-400 font-mono">{Math.abs(sampleMean - trueExpectation).toFixed(3)}</span>
+              </div>
+
+              {/* Counts */}
+              <div className="bg-gray-800/30 rounded-lg p-3">
+                <h5 className="text-sm font-semibold text-gray-300 mb-2">Roll Counts</h5>
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  {counts.map((count, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <span className="text-2xl mr-1">
+                        {["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"][i]}
+                      </span>
+                      <span className="font-mono text-gray-400">{count}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Variance Error:</span>
-                      <span className="text-purple-400 font-mono">{Math.abs(sampleVariance - trueVariance).toFixed(3)}</span>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              )}
+              </div>
             </div>
           </VisualizationSection>
         </div>
 
         {/* Right side - Visualizations */}
-        <div className="lg:w-2/3 space-y-4">
-          {/* Probability Distribution */}
-          <GraphContainer height="300px">
-            <h4 className="text-sm font-semibold text-white mb-2 px-4 pt-3">
-              Probability Distribution 
-              <span className="text-xs font-normal text-gray-400 ml-2">(drag bars up/down to adjust)</span>
-            </h4>
-            <svg ref={barSvgRef} style={{ width: "100%", height: 280 }} />
+        <div className="lg:flex-1 space-y-4">
+          <GraphContainer title="Probability Distribution (Drag to adjust!)">
+            <svg ref={barSvgRef} className="w-full" style={{ height: 240 }} />
           </GraphContainer>
 
-          {/* Convergence Plot */}
-          <GraphContainer height="320px">
-            <h4 className="text-sm font-semibold text-white mb-2 px-4 pt-3">Convergence of Statistics</h4>
-            <svg ref={plotSvgRef} style={{ width: "100%", height: 300 }} />
+          <GraphContainer title="Convergence to True Values">
+            <svg ref={plotSvgRef} className="w-full" style={{ height: 300 }} />
+            <div className="mt-2 flex items-center gap-4 text-xs">
+              <div className="flex items-center gap-2">
+                <div className={`w-3 h-3 rounded ${colorScheme.chipColors.primary}`} />
+                <span className="text-gray-400">Expected Value</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className={`w-3 h-3 rounded ${colorScheme.chipColors.secondary}`} />
+                <span className="text-gray-400">Variance</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-0.5 border-t-2 border-dashed border-gray-500" />
+                <span className="text-gray-400">True Values</span>
+              </div>
+            </div>
           </GraphContainer>
         </div>
       </div>
 
       {/* Worked Example */}
-      <VisualizationSection divider className="mt-4">
-        <ExpectationVarianceWorkedExample key={displayProbs.join(',')} probs={displayProbs} />
-      </VisualizationSection>
+      <div className="mt-6">
+        <ExpectationVarianceWorkedExample probs={displayProbs} />
+      </div>
     </VisualizationContainer>
   );
 }

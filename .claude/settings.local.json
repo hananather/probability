@@ -63,7 +63,27 @@
       "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -B 2 -A 2 \"onClick.*undefined|onChange.*undefined|on[A-Z].*\\?\\.\" src/)",
       "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -B 2 -A 2 \"\\.map\\(|\\.filter\\(|\\.find\\(|\\.forEach\\(\" src/)",
       "Bash(git filter-branch:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -A2 -B2 \"\\.map\\(\" src/components/AppSidebar.jsx)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -n \"withinBounds\" /Users/hananather/Desktop/Javascript/prob-lab/src/components/01-introduction-to-probabilities/SampleSpacesEvents.jsx)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -B5 -A5 \"useEffect\\(\" src/components/06-hypothesis-testing/HypothesisTestingGame.jsx)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -A15 \"const initializeGame = \" src/components/06-hypothesis-testing/HypothesisTestingGame.jsx)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -B2 -A2 \"/ 0\\b\" src/components/01-introduction-to-probabilities/ConditionalProbability.jsx)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -B5 -A5 \"console\\.log\" src/components/01-introduction-to-probabilities/OrderedSamples.jsx)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -B2 -A2 \"set[A-Z]\\w*\\([^(]*\\+\" src/components/CLTSimulation.jsx)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"console\\.(log|error|warn|info|debug)\" /Users/hananather/Desktop/Javascript/prob-lab/src --type js -n)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"console\\.(log|info|debug)\" /Users/hananather/Desktop/Javascript/prob-lab/src --type js -l)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"console\\.(warn|error)\" /Users/hananather/Desktop/Javascript/prob-lab/src --type js -n)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"console\\.warn\" /Users/hananather/Desktop/Javascript/prob-lab/src/components/01-introduction-to-probabilities/ConditionalProbability.jsx -B 2 -A 2)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"console\\.(log|error)\" /Users/hananather/Desktop/Javascript/prob-lab/src/components/01-introduction-to-probabilities/SampleSpacesEventsOptimized.jsx -n)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"colorScheme\\.chart\\.primary\" /Users/hananather/Desktop/Javascript/prob-lab/src --type js -B 2 -A 2)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"createColorScheme\" /Users/hananather/Desktop/Javascript/prob-lab/src/lib/design-system.js -A 30)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"colorSchemes\" /Users/hananather/Desktop/Javascript/prob-lab/src/lib/design-system.js -B 5 -A 20)",
+      "Bash(git checkout:*)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -A 2 -B 2 \"\\.primary\" src/components --type jsx)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -A 2 -B 2 \"\\.primary\" src/components -g \"*.jsx\")",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"\\.primary\" src/components -g \"*.jsx\")",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"chipColors\" src/components -g \"*.jsx\" -A 2 -B 2)"
     ],
     "deny": []
   }
