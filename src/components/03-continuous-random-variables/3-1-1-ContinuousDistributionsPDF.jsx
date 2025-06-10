@@ -14,7 +14,7 @@ import { RangeSlider } from '../ui/RangeSlider';
 import { ProgressTracker } from '../ui/ProgressTracker';
 import { Button } from '../ui/button';
 import { createColorScheme, typography, formatNumber } from '../../lib/design-system';
-import { IntegralWorkedExample } from "./IntegralWorkedExample";
+import { IntegralWorkedExample } from "./3-1-2-IntegralWorkedExample";
 import { Lock, Unlock, Info, Sparkles, RotateCcw } from "lucide-react";
 
 // Distribution configurations with real-world context

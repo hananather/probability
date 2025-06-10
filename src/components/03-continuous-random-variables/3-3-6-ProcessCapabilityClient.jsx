@@ -1,8 +1,8 @@
 "use client";
 import dynamic from 'next/dynamic';
 
-const NormalZScoreExplorer = dynamic(
-  () => import('./NormalZScoreExplorer'),
+const ProcessCapability = dynamic(
+  () => import('./3-3-6-ProcessCapability'),
   { 
     ssr: false,
     loading: () => (
@@ -13,4 +13,4 @@ const NormalZScoreExplorer = dynamic(
   }
 );
 
-export default NormalZScoreExplorer;
+export default ProcessCapability;

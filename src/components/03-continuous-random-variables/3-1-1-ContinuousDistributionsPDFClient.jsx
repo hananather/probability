@@ -2,7 +2,7 @@
 import dynamic from 'next/dynamic';
 
 const ContinuousDistributionsPDF = dynamic(
-  () => import('./ContinuousDistributionsPDF'),
+  () => import('./3-1-1-ContinuousDistributionsPDF'),
   { 
     ssr: false,
     loading: () => (

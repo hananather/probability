@@ -1,8 +1,8 @@
 "use client";
 import dynamic from 'next/dynamic';
 
-const ZScorePracticeProblems = dynamic(
-  () => import('./ZScorePracticeProblems'),
+const NormalZScoreExplorer = dynamic(
+  () => import('./3-3-1-NormalZScoreExplorer'),
   { 
     ssr: false,
     loading: () => (
@@ -13,4 +13,4 @@ const ZScorePracticeProblems = dynamic(
   }
 );
 
-export default ZScorePracticeProblems;
+export default NormalZScoreExplorer;

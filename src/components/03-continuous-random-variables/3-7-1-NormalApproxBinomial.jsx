@@ -5,7 +5,7 @@ import { VisualizationContainer } from "../ui/VisualizationContainer";
 import { RangeSlider } from "../ui/RangeSlider";
 import { createColorScheme, typography } from "../../lib/design-system";
 import { jStat } from "jstat";
-import { NormalApproxBinomialWorkedExample } from "./NormalApproxBinomialWorkedExample";
+import { NormalApproxBinomialWorkedExample } from "./3-7-2-NormalApproxBinomialWorkedExample";
 
 const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
   // Core parameter states

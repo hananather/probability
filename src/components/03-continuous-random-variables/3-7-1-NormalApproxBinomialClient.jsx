@@ -1,8 +1,8 @@
 "use client";
 import dynamic from 'next/dynamic';
 
-const GammaDistribution = dynamic(
-  () => import('./GammaDistribution').then(mod => ({ default: mod.GammaDistribution })),
+const NormalApproxBinomial = dynamic(
+  () => import('./3-7-1-NormalApproxBinomial').then(mod => ({ default: mod.NormalApproxBinomial })),
   { 
     ssr: false,
     loading: () => (
@@ -13,4 +13,4 @@ const GammaDistribution = dynamic(
   }
 );
 
-export default GammaDistribution;
+export default NormalApproxBinomial;

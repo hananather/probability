@@ -1,8 +1,8 @@
 "use client";
 import dynamic from 'next/dynamic';
 
-const ExponentialDistribution = dynamic(
-  () => import('./ExponentialDistribution').then(mod => ({ default: mod.ExponentialDistribution })),
+const EmpiricalRule = dynamic(
+  () => import('./3-3-3-EmpiricalRule'),
   { 
     ssr: false,
     loading: () => (
@@ -13,4 +13,4 @@ const ExponentialDistribution = dynamic(
   }
 );
 
-export default ExponentialDistribution;
+export default EmpiricalRule;

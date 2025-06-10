@@ -4,7 +4,7 @@ import * as d3 from "d3";
 import { VisualizationContainer } from "../ui/VisualizationContainer";
 import { RangeSlider } from "../ui/RangeSlider";
 import { createColorScheme, typography } from "../../lib/design-system";
-import { ExponentialDistributionWorkedExample } from "./ExponentialDistributionWorkedExample";
+import { ExponentialDistributionWorkedExample } from "./3-4-2-ExponentialDistributionWorkedExample";
 
 const ExponentialDistribution = React.memo(function ExponentialDistribution() {
   // Core parameter states

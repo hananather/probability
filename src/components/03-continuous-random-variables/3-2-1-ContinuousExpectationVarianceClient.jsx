@@ -2,7 +2,7 @@
 import dynamic from 'next/dynamic';
 
 const ContinuousExpectationVariance = dynamic(
-  () => import('./ContinuousExpectationVariance'),
+  () => import('./3-2-1-ContinuousExpectationVariance'),
   { 
     ssr: false,
     loading: () => (

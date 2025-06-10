@@ -1,8 +1,8 @@
 "use client";
 import dynamic from 'next/dynamic';
 
-const EmpiricalRule = dynamic(
-  () => import('./EmpiricalRule'),
+const GammaDistribution = dynamic(
+  () => import('./3-5-1-GammaDistribution').then(mod => ({ default: mod.GammaDistribution })),
   { 
     ssr: false,
     loading: () => (
@@ -13,4 +13,4 @@ const EmpiricalRule = dynamic(
   }
 );
 
-export default EmpiricalRule;
+export default GammaDistribution;

@@ -1,8 +1,8 @@
 "use client";
 import dynamic from 'next/dynamic';
 
-const NormalApproxBinomial = dynamic(
-  () => import('./NormalApproxBinomial').then(mod => ({ default: mod.NormalApproxBinomial })),
+const ZScorePracticeProblems = dynamic(
+  () => import('./3-3-5-ZScorePracticeProblems'),
   { 
     ssr: false,
     loading: () => (
@@ -13,4 +13,4 @@ const NormalApproxBinomial = dynamic(
   }
 );
 
-export default NormalApproxBinomial;
+export default ZScorePracticeProblems;

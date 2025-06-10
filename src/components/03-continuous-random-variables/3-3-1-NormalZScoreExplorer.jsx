@@ -9,7 +9,7 @@ import {
 } from '../ui/VisualizationContainer';
 import { colors, typography, formatNumber, cn, createColorScheme } from '../../lib/design-system';
 import { RangeSlider } from '../ui/RangeSlider';
-import { NormalZScoreWorkedExample } from "./NormalZScoreWorkedExample";
+import { NormalZScoreWorkedExample } from "./3-3-2-NormalZScoreWorkedExample";
 import { RotateCcw } from "lucide-react";
 import * as jStat from "jstat";
 

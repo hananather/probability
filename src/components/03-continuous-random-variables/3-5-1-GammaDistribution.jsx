@@ -5,7 +5,7 @@ import { VisualizationContainer } from "../ui/VisualizationContainer";
 import { RangeSlider } from "../ui/RangeSlider";
 import { createColorScheme, typography } from "../../lib/design-system";
 import { jStat } from "jstat";
-import { GammaDistributionWorkedExample } from "./GammaDistributionWorkedExample";
+import { GammaDistributionWorkedExample } from "./3-5-2-GammaDistributionWorkedExample";
 import { ChevronDown, ChevronRight, AlertCircle, TrendingUp, Package, Heart, Cloud } from "lucide-react";
 
 const GammaDistribution = React.memo(function GammaDistribution() {

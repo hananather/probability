@@ -1,8 +1,8 @@
 "use client";
 import dynamic from 'next/dynamic';
 
-const ProcessCapability = dynamic(
-  () => import('./ProcessCapability'),
+const ExponentialDistribution = dynamic(
+  () => import('./3-4-1-ExponentialDistribution').then(mod => ({ default: mod.ExponentialDistribution })),
   { 
     ssr: false,
     loading: () => (
@@ -13,4 +13,4 @@ const ProcessCapability = dynamic(
   }
 );
 
-export default ProcessCapability;
+export default ExponentialDistribution;

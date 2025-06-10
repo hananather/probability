@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import ChapterLoading from '../ChapterLoading';
 
 const BridgeToContinuous = dynamic(
-  () => import('./BridgeToContinuous'),
+  () => import('./3-0-1-BridgeToContinuous'),
   {
     ssr: false,
     loading: () => <ChapterLoading />
