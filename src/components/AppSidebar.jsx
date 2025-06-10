@@ -1,6 +1,6 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import React, { useState, useEffect, Suspense } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Sidebar, SidebarContent } from './ui/sidebar';
 import { ChevronDownIcon, ChevronRightIcon } from '@radix-ui/react-icons';
@@ -89,8 +89,9 @@ const chapters = [
   },
 ];
 
-export function AppSidebar() {
+function AppSidebarInner() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [activeId, setActiveId] = useState('');
   const [expandedChapters, setExpandedChapters] = useState(() => {
     // Expand current chapter by default
@@ -163,8 +164,41 @@ export function AppSidebar() {
                   <div className="ml-6 space-y-0.5">
                     {chapter.sections.map((section) => {
                       const sectionId = section.url?.substring(1);
-                      const isActiveSection = (pathname === chapter.path && activeId === sectionId) ||
-                                            (pathname === chapter.path && !section.url);
+                      const currentSection = searchParams.get('section');
+                      
+                      // Determine if this section is active
+                      let isActiveSection = false;
+                      if (pathname === chapter.path) {
+                        if (section.url) {
+                          // For hash-based sections
+                          isActiveSection = activeId === sectionId;
+                        } else if (section.component) {
+                          // For component-based sections, check search param
+                          const sectionIdMap = {
+                            'SampleSpacesEvents': 'sample-spaces',
+                            'CountingTechniques': 'counting',
+                            'OrderedSamples': 'ordered',
+                            'UnorderedSamples': 'unordered',
+                            'ProbabilityEvent': 'probability',
+                            'ConditionalProbability': 'conditional',
+                            'MeanMedianMode': 'measures-central',
+                            'HistogramShapeExplorer': 'histograms',
+                            'DescriptiveStatsExplorer': 'stats-explorer',
+                            'TDistributionExplorer': 't-distribution',
+                            'FDistributionExplorer': 'f-distribution',
+                            'PointEstimation': 'point-estimation',
+                            'ConfidenceInterval': 'confidence-intervals',
+                            'Bootstrapping': 'bootstrapping',
+                            'HypothesisTestingGame': 'hypothesis-game',
+                            'SpatialRandomVariable': 'random-variables',
+                            'ExpectationVariance': 'expectation-variance',
+                            'ExpectationVarianceWorkedExample': 'worked-examples'
+                          };
+                          const mappedSectionId = sectionIdMap[section.component] || section.component.toLowerCase();
+                          isActiveSection = currentSection === mappedSectionId || 
+                                          (!currentSection && section === chapter.sections[0]); // Default to first section
+                        }
+                      }
                       
                       if (section.disabled) {
                         return (
@@ -177,9 +211,39 @@ export function AppSidebar() {
                         );
                       }
                       
-                      const href = section.url 
-                        ? `${chapter.path === '/' ? '' : chapter.path}${section.url}`
-                        : chapter.path;
+                      // Generate appropriate URL based on section type
+                      let href;
+                      if (section.url) {
+                        // For hash-based sections (main page and chapter 3)
+                        href = `${chapter.path === '/' ? '' : chapter.path}${section.url}`;
+                      } else if (section.component) {
+                        // For component-based sections (chapters with button navigation)
+                        // Map component names to section IDs
+                        const sectionIdMap = {
+                          'SampleSpacesEvents': 'sample-spaces',
+                          'CountingTechniques': 'counting',
+                          'OrderedSamples': 'ordered',
+                          'UnorderedSamples': 'unordered',
+                          'ProbabilityEvent': 'probability',
+                          'ConditionalProbability': 'conditional',
+                          'MeanMedianMode': 'measures-central',
+                          'HistogramShapeExplorer': 'histograms',
+                          'DescriptiveStatsExplorer': 'stats-explorer',
+                          'TDistributionExplorer': 't-distribution',
+                          'FDistributionExplorer': 'f-distribution',
+                          'PointEstimation': 'point-estimation',
+                          'ConfidenceInterval': 'confidence-intervals',
+                          'Bootstrapping': 'bootstrapping',
+                          'HypothesisTestingGame': 'hypothesis-game',
+                          'SpatialRandomVariable': 'random-variables',
+                          'ExpectationVariance': 'expectation-variance',
+                          'ExpectationVarianceWorkedExample': 'worked-examples'
+                        };
+                        const sectionId = sectionIdMap[section.component] || section.component.toLowerCase();
+                        href = `${chapter.path}?section=${sectionId}`;
+                      } else {
+                        href = chapter.path;
+                      }
                       
                       return (
                         <Link
@@ -203,5 +267,19 @@ export function AppSidebar() {
         </nav>
       </SidebarContent>
     </Sidebar>
+  );
+}
+
+export function AppSidebar() {
+  return (
+    <Suspense fallback={
+      <Sidebar>
+        <SidebarContent>
+          <div className="p-4 text-neutral-400">Loading...</div>
+        </SidebarContent>
+      </Sidebar>
+    }>
+      <AppSidebarInner />
+    </Suspense>
   );
 }

@@ -30,7 +30,7 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
   // Rule of thumb check
   const np = n * p;
   const nq = n * (1 - p);
-  const ruleOfThumbMet = np >= 5 && nq >= 5;
+  const ruleOfThumbMet = np >= 10 && nq >= 10;
   
   // Ensure k is within bounds
   useEffect(() => {
@@ -65,9 +65,14 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
         break;
       case "eq": // P(X = k)
         binomialProb = jStat.binomial.pdf(k, n, p);
-        const lowerK = showCC ? k - 0.5 : k;
-        const upperK = showCC ? k + 0.5 : k;
-        normalProb = jStat.normal.cdf(upperK, mu, sigma) - jStat.normal.cdf(lowerK, mu, sigma);
+        if (showCC) {
+          const lowerK = k - 0.5;
+          const upperK = k + 0.5;
+          normalProb = jStat.normal.cdf(upperK, mu, sigma) - jStat.normal.cdf(lowerK, mu, sigma);
+        } else {
+          // Without continuity correction, use the normal PDF scaled by the binomial spacing
+          normalProb = jStat.normal.pdf(k, mu, sigma);
+        }
         zScore = (k - mu) / sigma;
         break;
     }
@@ -595,14 +600,11 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
       </div>
       
       <NormalApproxBinomialWorkedExample
-        n={n}
-        p={p}
-        k={k}
-        probType={probType}
-        showCC={showCC}
-        binomialProb={binomialProb}
-        normalProb={normalProb}
-        error={error}
+        initialN={n}
+        initialP={p}
+        initialK={k}
+        initialProbType={probType}
+        initialShowCC={showCC}
       />
     </div>
   );

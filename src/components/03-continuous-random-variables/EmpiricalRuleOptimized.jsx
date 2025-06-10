@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import * as d3 from "d3";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { createColorScheme, typography } from "../../lib/design-system";
@@ -8,7 +8,7 @@ import { Play, Pause, RotateCcw, BarChart } from "lucide-react";
 import * as jStat from "jstat";
 import { useMathJax, latexHTML, inlineMath } from "../../utils/latex";
 
-const EmpiricalRule = () => {
+const EmpiricalRuleOptimized = () => {
   // Use vibrant custom colors to reduce blue dominance
   const colors = useMemo(() => {
     const baseColors = createColorScheme('inference');
@@ -44,77 +44,158 @@ const EmpiricalRule = () => {
     total: 0
   });
   
-  // Use MathJax hook for LaTeX rendering - must be after state declarations
+  // Use MathJax hook for LaTeX rendering
   useMathJax(mathRef, [mu, sigma, selectedRule]);
   
-  // Generate samples
-  const generateSample = () => {
+  // Optimized sample generation with incremental count updates
+  const generateSample = useCallback(() => {
     const newSample = jStat.normal.sample(mu, sigma);
+    const deviation = Math.abs(newSample - mu);
+    
     setSamples(prev => {
-      const updated = [...prev, newSample];
-      // Keep only last 1000 samples
-      return updated.slice(-1000);
+      const isAtLimit = prev.length >= 1000;
+      const updated = isAtLimit ? [...prev.slice(1), newSample] : [...prev, newSample];
+      
+      // Update counts incrementally
+      setCounts(prevCounts => {
+        let newCounts = { ...prevCounts };
+        
+        // If we're removing an old sample
+        if (isAtLimit && prev.length > 0) {
+          const removedSample = prev[0];
+          const removedDeviation = Math.abs(removedSample - mu);
+          if (removedDeviation <= sigma) newCounts.within1SD--;
+          if (removedDeviation <= 2 * sigma) newCounts.within2SD--;
+          if (removedDeviation <= 3 * sigma) newCounts.within3SD--;
+          newCounts.total = Math.max(0, newCounts.total - 1);
+        }
+        
+        // Add new sample
+        if (deviation <= sigma) newCounts.within1SD++;
+        if (deviation <= 2 * sigma) newCounts.within2SD++;
+        if (deviation <= 3 * sigma) newCounts.within3SD++;
+        newCounts.total++;
+        
+        return newCounts;
+      });
+      
+      return updated;
     });
-  };
+  }, [mu, sigma]);
   
   // Start/stop generation
-  const toggleGeneration = () => {
-    if (isGenerating) {
-      clearInterval(intervalRef.current);
-    } else {
-      intervalRef.current = setInterval(generateSample, 50);
-    }
-    setIsGenerating(!isGenerating);
-  };
+  const toggleGeneration = useCallback(() => {
+    setIsGenerating(prev => !prev);
+  }, []);
   
-  // Reset
-  const handleReset = () => {
-    setSamples([]);
-    setIsGenerating(false);
-    clearInterval(intervalRef.current);
-  };
-  
-  // Cleanup interval on unmount
+  // Effect to manage interval based on isGenerating state
   useEffect(() => {
+    if (isGenerating) {
+      intervalRef.current = setInterval(generateSample, 50);
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    }
+    
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
     };
+  }, [isGenerating, generateSample]);
+  
+  // Reset - now also properly resets counts
+  const handleReset = useCallback(() => {
+    setSamples([]);
+    setIsGenerating(false);
+    setCounts({
+      within1SD: 0,
+      within2SD: 0,
+      within3SD: 0,
+      total: 0
+    });
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+  }, []);
+  
+  // Reset counts when parameters change
+  useEffect(() => {
+    if (samples.length > 0) {
+      // Recalculate counts when mu or sigma changes
+      const within1SD = samples.filter(x => Math.abs(x - mu) <= sigma).length;
+      const within2SD = samples.filter(x => Math.abs(x - mu) <= 2 * sigma).length;
+      const within3SD = samples.filter(x => Math.abs(x - mu) <= 3 * sigma).length;
+      
+      setCounts({
+        within1SD,
+        within2SD,
+        within3SD,
+        total: samples.length
+      });
+    }
+  }, [mu, sigma]); // Only recalculate when parameters change, not on every sample
+
+  // Debounced resize handler
+  const handleResize = useMemo(() => {
+    let timeoutId;
+    return () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        if (containerRef.current) {
+          const { width } = containerRef.current.getBoundingClientRect();
+          setDimensions({
+            width: Math.min(width - 32, 1200),
+            height: Math.min(500, window.innerHeight * 0.6)
+          });
+        }
+      }, 100);
+    };
   }, []);
 
-  // Handle responsive sizing
   useEffect(() => {
-    const handleResize = () => {
-      if (containerRef.current) {
-        const { width } = containerRef.current.getBoundingClientRect();
-        setDimensions({
-          width: Math.min(width - 32, 1200),
-          height: Math.min(500, window.innerHeight * 0.6)
-        });
-      }
-    };
-
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [handleResize]);
   
-  // Calculate counts when samples change
-  useEffect(() => {
-    const within1SD = samples.filter(x => Math.abs(x - mu) <= sigma).length;
-    const within2SD = samples.filter(x => Math.abs(x - mu) <= 2 * sigma).length;
-    const within3SD = samples.filter(x => Math.abs(x - mu) <= 3 * sigma).length;
+  // Memoize curve data
+  const curveData = useMemo(() => {
+    const normalPDF = (x) => {
+      const exp = -0.5 * Math.pow((x - mu) / sigma, 2);
+      return (1 / (sigma * Math.sqrt(2 * Math.PI))) * Math.exp(exp);
+    };
     
-    setCounts({
-      within1SD,
-      within2SD,
-      within3SD,
-      total: samples.length
-    });
-  }, [samples, mu, sigma]);
+    return d3.range(mu - 4 * sigma, mu + 4 * sigma, sigma / 50)
+      .map(x => ({ x, y: normalPDF(x) }));
+  }, [mu, sigma]);
   
-  // D3 Visualization
+  // Memoize scales
+  const { xScale, yScale, yHistScale } = useMemo(() => {
+    const xScale = d3.scaleLinear()
+      .domain([mu - 4 * sigma, mu + 4 * sigma])
+      .range([50, dimensions.width - 30]);
+      
+    const yScale = d3.scaleLinear()
+      .domain([0, 0.4 / sigma])
+      .range([dimensions.height - 50, 30]);
+      
+    const maxBinHeight = samples.length > 0 ? 
+      Math.max(...d3.histogram()
+        .domain([mu - 4 * sigma, mu + 4 * sigma])
+        .thresholds(25)
+        (samples)
+        .map(d => d.length)) : 10;
+    
+    const yHistScale = d3.scaleLinear()
+      .domain([0, maxBinHeight])
+      .range([dimensions.height - 50, 30]);
+    
+    return { xScale, yScale, yHistScale };
+  }, [mu, sigma, dimensions, samples.length]);
+  
+  // Static D3 elements (curve, axes, regions)
   useEffect(() => {
     if (!svgRef.current || typeof window === 'undefined') return;
     
@@ -125,26 +206,8 @@ const EmpiricalRule = () => {
     const height = dimensions.height;
     const margin = { top: 30, right: 30, bottom: 50, left: 50 };
     
-    const g = svg.append("g");
-    
-    // Scales
-    const xScale = d3.scaleLinear()
-      .domain([mu - 4 * sigma, mu + 4 * sigma])
-      .range([margin.left, width - margin.right]);
-      
-    const yScale = d3.scaleLinear()
-      .domain([0, 0.4 / sigma])
-      .range([height - margin.bottom, margin.top]);
-    
-    // Normal PDF
-    const normalPDF = (x) => {
-      const exp = -0.5 * Math.pow((x - mu) / sigma, 2);
-      return (1 / (sigma * Math.sqrt(2 * Math.PI))) * Math.exp(exp);
-    };
-    
-    // Generate curve data
-    const curveData = d3.range(mu - 4 * sigma, mu + 4 * sigma, sigma / 50)
-      .map(x => ({ x, y: normalPDF(x) }));
+    const g = svg.append("g").attr("class", "static-layer");
+    const dynamicG = svg.append("g").attr("class", "dynamic-layer");
     
     // Subtle gradient background
     const defs = svg.append("defs");
@@ -171,7 +234,7 @@ const EmpiricalRule = () => {
       .attr("fill", "url(#bgGradient)")
       .attr("rx", 8);
     
-    // Empirical Rule regions with improved visibility
+    // Empirical Rule regions
     const regions = [
       { sd: 3, color: colors.accent, opacity: 0.2, label: "99.7%" },
       { sd: 2, color: colors.secondary, opacity: 0.25, label: "95%" },
@@ -222,10 +285,10 @@ const EmpiricalRule = () => {
           .text(`${side > 0 ? '+' : ''}${region.sd}σ`);
       });
       
-      // Percentage label with better positioning
+      // Percentage label
       regionGroup.append("text")
         .attr("x", xScale(mu))
-        .attr("y", yScale(normalPDF(mu)) + (region.sd * 40))
+        .attr("y", yScale(curveData.find(d => d.x === mu)?.y || 0) + (region.sd * 40))
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
         .style("font-weight", "700")
@@ -234,7 +297,7 @@ const EmpiricalRule = () => {
         .text(region.label);
     });
     
-    // Draw PDF curve with improved styling
+    // Draw PDF curve
     const line = d3.line()
       .x(d => xScale(d.x))
       .y(d => yScale(d.y))
@@ -283,7 +346,7 @@ const EmpiricalRule = () => {
       .call(yAxis)
       .style("color", colors.secondary);
     
-    // Distribution info in top corner
+    // Distribution info
     g.append("text")
       .attr("x", margin.left + 10)
       .attr("y", margin.top + 20)
@@ -302,35 +365,49 @@ const EmpiricalRule = () => {
       .attr("stroke", colors.text)
       .attr("stroke-width", 2)
       .attr("opacity", 0.5);
+      
+  }, [mu, sigma, selectedRule, colors, dimensions, curveData, xScale, yScale]);
+  
+  // Dynamic D3 elements (samples, histogram)
+  useEffect(() => {
+    if (!svgRef.current || typeof window === 'undefined') return;
     
-    // If showing histogram, overlay sample data with vibrant colors
+    const svg = d3.select(svgRef.current);
+    const dynamicG = svg.select("g.dynamic-layer");
+    
+    // Clear previous dynamic content
+    dynamicG.selectAll("*").remove();
+    
+    const height = dimensions.height;
+    const margin = { top: 30, right: 30, bottom: 50, left: 50 };
+    
+    // If showing histogram, overlay sample data
     if (showHistogram && samples.length > 0) {
       const bins = d3.histogram()
         .domain(xScale.domain())
         .thresholds(xScale.ticks(25))
         (samples);
       
-      const yHistScale = d3.scaleLinear()
-        .domain([0, d3.max(bins, d => d.length)])
-        .range([height - margin.bottom, margin.top]);
-      
       // Create gradient for histogram bars
-      const histGradient = defs.append("linearGradient")
-        .attr("id", "histGradient")
-        .attr("x1", "0%")
-        .attr("y1", "0%")
-        .attr("x2", "0%")
-        .attr("y2", "100%");
+      const defs = svg.select("defs");
+      if (defs.select("#histGradient").empty()) {
+        const histGradient = defs.append("linearGradient")
+          .attr("id", "histGradient")
+          .attr("x1", "0%")
+          .attr("y1", "0%")
+          .attr("x2", "0%")
+          .attr("y2", "100%");
+        
+        histGradient.append("stop")
+          .attr("offset", "0%")
+          .attr("style", `stop-color:${colors.histogram};stop-opacity:0.9`);
+        
+        histGradient.append("stop")
+          .attr("offset", "100%")
+          .attr("style", `stop-color:${colors.histogram};stop-opacity:0.6`);
+      }
       
-      histGradient.append("stop")
-        .attr("offset", "0%")
-        .attr("style", `stop-color:${colors.histogram};stop-opacity:0.9`);
-      
-      histGradient.append("stop")
-        .attr("offset", "100%")
-        .attr("style", `stop-color:${colors.histogram};stop-opacity:0.6`);
-      
-      g.selectAll(".bar")
+      dynamicG.selectAll(".bar")
         .data(bins)
         .enter().append("rect")
         .attr("class", "bar")
@@ -348,7 +425,7 @@ const EmpiricalRule = () => {
     if (samples.length > 0 && !showHistogram) {
       const recentSamples = samples.slice(-100);
       
-      g.selectAll(".sample-point")
+      dynamicG.selectAll(".sample-point")
         .data(recentSamples)
         .enter().append("circle")
         .attr("class", "sample-point")
@@ -365,15 +442,15 @@ const EmpiricalRule = () => {
         .attr("opacity", 0.6);
     }
     
-  }, [mu, sigma, samples, showHistogram, selectedRule, colors, dimensions]);
+  }, [samples, showHistogram, colors, dimensions, xScale, yHistScale, mu, sigma]);
   
-  // Calculate percentages
-  const getPercentages = () => {
+  // Memoize percentages calculation
+  const percentages = useMemo(() => {
     if (counts.total === 0) {
       return {
-        actual1SD: 0,
-        actual2SD: 0,
-        actual3SD: 0
+        actual1SD: "0.0",
+        actual2SD: "0.0",
+        actual3SD: "0.0"
       };
     }
     
@@ -382,9 +459,7 @@ const EmpiricalRule = () => {
       actual2SD: (counts.within2SD / counts.total * 100).toFixed(1),
       actual3SD: (counts.within3SD / counts.total * 100).toFixed(1)
     };
-  };
-  
-  const percentages = getPercentages();
+  }, [counts]);
   
   return (
     <div className="w-full" ref={containerRef}>
@@ -517,9 +592,9 @@ const EmpiricalRule = () => {
                 <div className="p-3 bg-emerald-900/20 border border-emerald-600/30 rounded-lg">
                   <p className="text-xs font-semibold mb-1">Convergence</p>
                   <div className="space-y-1 text-xs">
-                    <p>68% → {percentages.actual1SD}% {Math.abs(68 - percentages.actual1SD) < 2 ? '✓' : ''}</p>
-                    <p>95% → {percentages.actual2SD}% {Math.abs(95 - percentages.actual2SD) < 2 ? '✓' : ''}</p>
-                    <p>99.7% → {percentages.actual3SD}% {Math.abs(99.7 - percentages.actual3SD) < 1 ? '✓' : ''}</p>
+                    <p>68% → {percentages.actual1SD}% {Math.abs(68 - parseFloat(percentages.actual1SD)) < 2 ? '✓' : ''}</p>
+                    <p>95% → {percentages.actual2SD}% {Math.abs(95 - parseFloat(percentages.actual2SD)) < 2 ? '✓' : ''}</p>
+                    <p>99.7% → {percentages.actual3SD}% {Math.abs(99.7 - parseFloat(percentages.actual3SD)) < 1 ? '✓' : ''}</p>
                   </div>
                 </div>
               )}
@@ -567,4 +642,4 @@ const EmpiricalRule = () => {
   );
 };
 
-export default EmpiricalRule;
+export default EmpiricalRuleOptimized;

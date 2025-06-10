@@ -23,20 +23,26 @@ const NormalZScoreExplorer = () => {
   const [sigma, setSigma] = useState(15);
   const [xValue, setXValue] = useState(115);
   const [interactionCount, setInteractionCount] = useState(0);
+  const [showTransformation, setShowTransformation] = useState(false);
   
   // Calculated values
   const zScore = (xValue - mu) / sigma;
   const probability = jStat.normal.cdf(zScore, 0, 1);
   
-  // Track if user has dragged
+  // Track meaningful interactions only
+  const lastParams = useRef({ mu, sigma });
   const hasDragged = useRef(false);
   
-  // Increment interaction count when parameters change
+  // Increment interaction count only on meaningful changes
   useEffect(() => {
-    if (interactionCount > 0 || hasDragged.current) {
+    const paramsChanged = Math.abs(lastParams.current.mu - mu) > 1 || 
+                         Math.abs(lastParams.current.sigma - sigma) > 0.5;
+    
+    if (paramsChanged && interactionCount > 0) {
       setInteractionCount(prev => prev + 1);
+      lastParams.current = { mu, sigma };
     }
-  }, [mu, sigma, xValue]);
+  }, [mu, sigma]);
   
   // Reset function
   const handleReset = () => {
@@ -44,48 +50,67 @@ const NormalZScoreExplorer = () => {
     setSigma(15);
     setXValue(115);
     setInteractionCount(0);
+    setShowTransformation(false);
     hasDragged.current = false;
+    lastParams.current = { mu: 100, sigma: 15 };
   };
   
-  // D3 Visualization
+  // D3 Visualization with fixed axes
   useEffect(() => {
-    if (!svgRef.current) return;
+    if (!svgRef.current || typeof window === 'undefined') return;
     
     const svg = d3.select(svgRef.current);
     const { width } = svgRef.current.getBoundingClientRect();
-    const height = 680;
-    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
-    const plotHeight = (height - margin.top - margin.bottom) / 2 - 40;
+    const height = 600;
+    const margin = { top: 40, right: 60, bottom: 60, left: 60 };
+    const plotHeight = (height - margin.top - margin.bottom - 80) / 2;
     
     svg.selectAll("*").remove();
     svg.attr("viewBox", `0 0 ${width} ${height}`);
     
-    // Dark background
+    // Subtle gradient background
+    const defs = svg.append("defs");
+    const gradient = defs.append("linearGradient")
+      .attr("id", "bgGradient")
+      .attr("x1", "0%")
+      .attr("y1", "0%")
+      .attr("x2", "0%")
+      .attr("y2", "100%");
+    
+    gradient.append("stop")
+      .attr("offset", "0%")
+      .attr("style", "stop-color:#0f172a;stop-opacity:1");
+    
+    gradient.append("stop")
+      .attr("offset", "100%")
+      .attr("style", "stop-color:#1e293b;stop-opacity:1");
+    
     svg.append("rect")
       .attr("width", width)
       .attr("height", height)
-      .attr("fill", "#0a0a0a");
+      .attr("fill", "url(#bgGradient)");
     
     // Create main group
     const g = svg.append("g");
     
-    // X scales
-    const xRange = 4.5;
+    // Fixed X scales for better stability
+    const fixedXMin = 0;
+    const fixedXMax = 200;
     const xScaleTop = d3.scaleLinear()
-      .domain([mu - xRange * sigma, mu + xRange * sigma])
+      .domain([fixedXMin, fixedXMax])
       .range([margin.left, width - margin.right]);
       
     const xScaleBottom = d3.scaleLinear()
-      .domain([-xRange, xRange])
+      .domain([-4, 4])
       .range([margin.left, width - margin.right]);
     
-    // Y scales
+    // Fixed Y scales
     const yScaleTop = d3.scaleLinear()
-      .domain([0, 0.4 / sigma])
+      .domain([0, 0.03])  // Fixed to accommodate all reasonable distributions
       .range([margin.top + plotHeight, margin.top]);
       
     const yScaleBottom = d3.scaleLinear()
-      .domain([0, 0.4])
+      .domain([0, 0.45])
       .range([margin.top + plotHeight + 80 + plotHeight, margin.top + plotHeight + 80]);
     
     // Normal PDF functions
@@ -94,11 +119,11 @@ const NormalZScoreExplorer = () => {
       return (1 / (sd * Math.sqrt(2 * Math.PI))) * Math.exp(exp);
     };
     
-    // Generate data points
-    const topData = d3.range(mu - xRange * sigma, mu + xRange * sigma, sigma / 50)
+    // Generate data points for the entire visible range
+    const topData = d3.range(fixedXMin, fixedXMax, 0.5)
       .map(x => ({ x, y: normalPDF(x, mu, sigma) }));
       
-    const bottomData = d3.range(-xRange, xRange, 0.1)
+    const bottomData = d3.range(-4, 4, 0.05)
       .map(z => ({ x: z, y: normalPDF(z, 0, 1) }));
     
     // Line generators
@@ -119,7 +144,7 @@ const NormalZScoreExplorer = () => {
       .attr("width", width - margin.left - margin.right)
       .attr("height", plotHeight)
       .attr("fill", "#1a1a1a")
-      .attr("stroke", colors.chart.grid)
+      .attr("stroke", colorScheme.chart.grid)
       .attr("stroke-width", 1)
       .attr("rx", 4);
     
@@ -130,7 +155,7 @@ const NormalZScoreExplorer = () => {
       .attr("width", width - margin.left - margin.right)
       .attr("height", plotHeight)
       .attr("fill", "#1a1a1a")
-      .attr("stroke", colors.chart.grid)
+      .attr("stroke", colorScheme.chart.grid)
       .attr("stroke-width", 1)
       .attr("rx", 4);
     
@@ -141,7 +166,7 @@ const NormalZScoreExplorer = () => {
       .attr("text-anchor", "middle")
       .style("font-size", "16px")
       .style("font-weight", "600")
-      .style("fill", colors.chart.text)
+      .style("fill", colorScheme.chart.text)
       .text(`Original Distribution: X ~ N(μ=${mu}, σ=${sigma})`);
       
     g.append("text")
@@ -150,12 +175,12 @@ const NormalZScoreExplorer = () => {
       .attr("text-anchor", "middle")
       .style("font-size", "16px")
       .style("font-weight", "600")
-      .style("fill", colors.chart.text)
+      .style("fill", colorScheme.chart.text)
       .text("Standard Normal: Z ~ N(0, 1)");
     
-    // X axes
+    // X axes with fixed tick positions
     const xAxisTop = d3.axisBottom(xScaleTop)
-      .tickValues([mu - 3*sigma, mu - 2*sigma, mu - sigma, mu, mu + sigma, mu + 2*sigma, mu + 3*sigma])
+      .ticks(10)
       .tickFormat(d => d.toFixed(0));
       
     const xAxisBottom = d3.axisBottom(xScaleBottom)
@@ -165,15 +190,15 @@ const NormalZScoreExplorer = () => {
       .attr("transform", `translate(0,${margin.top + plotHeight})`)
       .call(xAxisTop);
       
-    xAxisTopG.selectAll("path, line").attr("stroke", colors.chart.grid);
-    xAxisTopG.selectAll("text").attr("fill", colors.chart.text);
+    xAxisTopG.selectAll("path, line").attr("stroke", colorScheme.chart.grid);
+    xAxisTopG.selectAll("text").attr("fill", colorScheme.chart.text);
       
     const xAxisBottomG = g.append("g")
       .attr("transform", `translate(0,${margin.top + plotHeight + 80 + plotHeight})`)
       .call(xAxisBottom);
       
-    xAxisBottomG.selectAll("path, line").attr("stroke", colors.chart.grid);
-    xAxisBottomG.selectAll("text").attr("fill", colors.chart.text);
+    xAxisBottomG.selectAll("path, line").attr("stroke", colorScheme.chart.grid);
+    xAxisBottomG.selectAll("text").attr("fill", colorScheme.chart.text);
     
     // Y axes
     const yAxisTop = d3.axisLeft(yScaleTop).ticks(5);
@@ -183,15 +208,15 @@ const NormalZScoreExplorer = () => {
       .attr("transform", `translate(${margin.left},0)`)
       .call(yAxisTop);
       
-    yAxisTopG.selectAll("path, line").attr("stroke", colors.chart.grid);
-    yAxisTopG.selectAll("text").attr("fill", colors.chart.text).style("font-size", "11px");
+    yAxisTopG.selectAll("path, line").attr("stroke", colorScheme.chart.grid);
+    yAxisTopG.selectAll("text").attr("fill", colorScheme.chart.text).style("font-size", "11px");
       
     const yAxisBottomG = g.append("g")
       .attr("transform", `translate(${margin.left},0)`)
       .call(yAxisBottom);
       
-    yAxisBottomG.selectAll("path, line").attr("stroke", colors.chart.grid);
-    yAxisBottomG.selectAll("text").attr("fill", colors.chart.text).style("font-size", "11px");
+    yAxisBottomG.selectAll("path, line").attr("stroke", colorScheme.chart.grid);
+    yAxisBottomG.selectAll("text").attr("fill", colorScheme.chart.text).style("font-size", "11px");
     
     // Axis labels
     g.append("text")
@@ -199,7 +224,7 @@ const NormalZScoreExplorer = () => {
       .attr("y", margin.top + plotHeight + 35)
       .attr("text-anchor", "middle")
       .style("font-size", "12px")
-      .style("fill", colors.chart.text)
+      .style("fill", colorScheme.chart.text)
       .text("x");
       
     g.append("text")
@@ -207,7 +232,7 @@ const NormalZScoreExplorer = () => {
       .attr("y", margin.top + plotHeight + 80 + plotHeight + 35)
       .attr("text-anchor", "middle")
       .style("font-size", "12px")
-      .style("fill", colors.chart.text)
+      .style("fill", colorScheme.chart.text)
       .text("z");
     
     // Area under curve for top plot
@@ -254,6 +279,41 @@ const NormalZScoreExplorer = () => {
       .attr("stroke", colorScheme.chart.primaryLight)
       .attr("stroke-width", 2)
       .attr("fill", "none");
+    
+    // Add mean line on top plot
+    g.append("line")
+      .attr("x1", xScaleTop(mu))
+      .attr("y1", margin.top)
+      .attr("x2", xScaleTop(mu))
+      .attr("y2", margin.top + plotHeight)
+      .attr("stroke", colorScheme.chart.text)
+      .attr("stroke-width", 1)
+      .attr("opacity", 0.3)
+      .attr("stroke-dasharray", "3,3");
+    
+    // Add sigma markers on top plot
+    [-3, -2, -1, 1, 2, 3].forEach(n => {
+      const x = mu + n * sigma;
+      if (x >= fixedXMin && x <= fixedXMax) {
+        g.append("line")
+          .attr("x1", xScaleTop(x))
+          .attr("y1", margin.top + plotHeight - 5)
+          .attr("x2", xScaleTop(x))
+          .attr("y2", margin.top + plotHeight)
+          .attr("stroke", colorScheme.chart.text)
+          .attr("stroke-width", 1)
+          .attr("opacity", 0.5);
+          
+        g.append("text")
+          .attr("x", xScaleTop(x))
+          .attr("y", margin.top + plotHeight + 20)
+          .attr("text-anchor", "middle")
+          .style("font-size", "10px")
+          .style("fill", colorScheme.chart.text)
+          .style("opacity", 0.7)
+          .text(`${n > 0 ? '+' : ''}${n}σ`);
+      }
+    });
     
     // Vertical lines for current x and z
     const xLine = g.append("line")
@@ -313,22 +373,59 @@ const NormalZScoreExplorer = () => {
       })
       .on("drag", (event) => {
         const newX = xScaleTop.invert(event.x);
-        const clampedX = Math.max(mu - 4*sigma, Math.min(mu + 4*sigma, newX));
+        const clampedX = Math.max(fixedXMin, Math.min(fixedXMax, newX));
         setXValue(clampedX);
       });
     
     dragCircle.call(drag);
     
-    // Add connection line between plots
-    g.append("line")
-      .attr("x1", xScaleTop(xValue))
-      .attr("y1", margin.top + plotHeight)
-      .attr("x2", xScaleBottom(zScore))
-      .attr("y2", margin.top + plotHeight + 80)
-      .attr("stroke", colors.chart.grid)
-      .attr("stroke-width", 1)
-      .attr("stroke-dasharray", "2,2")
-      .attr("opacity", 0.5);
+    // Add transformation arrow and formula
+    const transformY = margin.top + plotHeight + 40;
+    
+    // Arrow
+    const arrowG = g.append("g");
+    arrowG.append("path")
+      .attr("d", `M${width/2 - 50} ${transformY} L${width/2 + 50} ${transformY}`)
+      .attr("stroke", colorScheme.chart.secondary)
+      .attr("stroke-width", 2)
+      .attr("marker-end", "url(#arrowhead)");
+    
+    // Arrow marker
+    defs.append("marker")
+      .attr("id", "arrowhead")
+      .attr("viewBox", "0 -5 10 10")
+      .attr("refX", 8)
+      .attr("refY", 0)
+      .attr("markerWidth", 8)
+      .attr("markerHeight", 8)
+      .attr("orient", "auto")
+      .append("path")
+      .attr("d", "M0,-5L10,0L0,5")
+      .attr("fill", colorScheme.chart.secondary);
+    
+    // Transformation formula
+    g.append("text")
+      .attr("x", width / 2)
+      .attr("y", transformY - 10)
+      .attr("text-anchor", "middle")
+      .style("font-size", "14px")
+      .style("font-weight", "600")
+      .style("fill", colorScheme.chart.secondary)
+      .text("z = (x - μ) / σ");
+    
+    // Add animated connection for visual feedback
+    if (showTransformation) {
+      g.append("circle")
+        .attr("cx", xScaleTop(xValue))
+        .attr("cy", margin.top + plotHeight)
+        .attr("r", 4)
+        .attr("fill", colorScheme.chart.secondary)
+        .transition()
+        .duration(1000)
+        .attr("cx", xScaleBottom(zScore))
+        .attr("cy", margin.top + plotHeight + 80)
+        .on("end", () => setShowTransformation(false));
+    }
     
     // Add grid lines
     svg.append("g")
@@ -342,7 +439,7 @@ const NormalZScoreExplorer = () => {
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.3)
       .selectAll("line")
-      .style("stroke", colors.chart.grid);
+      .style("stroke", colorScheme.chart.grid);
       
     svg.append("g")
       .attr("class", "grid")
@@ -355,7 +452,7 @@ const NormalZScoreExplorer = () => {
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.3)
       .selectAll("line")
-      .style("stroke", colors.chart.grid);
+      .style("stroke", colorScheme.chart.grid);
     
   }, [mu, sigma, xValue, zScore, colorScheme]);
   
@@ -452,8 +549,8 @@ const NormalZScoreExplorer = () => {
                   <RangeSlider
                     value={xValue}
                     onChange={(v) => setXValue(v)}
-                    min={mu - 4 * sigma}
-                    max={mu + 4 * sigma}
+                    min={0}
+                    max={200}
                     step={0.1}
                     className="mb-2"
                   />
@@ -505,7 +602,7 @@ const NormalZScoreExplorer = () => {
           </VisualizationSection>
           {/* Educational Insights - 4 Stage System */}
           <VisualizationSection className="p-3 bg-gradient-to-br from-teal-900/20 to-cyan-900/20 border-teal-600/30">
-            <h4 className="text-base font-bold text-teal-300 mb-3">🎓 Learning Insights</h4>
+            <h4 className="text-base font-bold text-teal-300 mb-3">Learning Insights</h4>
             <div className="space-y-2 text-sm">
               {insight.stage === 0 && (
                 <div>

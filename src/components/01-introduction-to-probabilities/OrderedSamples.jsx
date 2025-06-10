@@ -223,7 +223,10 @@ function OrderedSamples() {
       const ballX = bagCx + ballR * Math.cos(angle);
       const ballY = bagCy + ballR * Math.sin(angle);
       
-      g.append("circle")
+      const ballGroup = g.append("g")
+        .attr("class", `bag-ball bag-ball-${i + 1}`);
+      
+      ballGroup.append("circle")
         .attr("cx", ballX)
         .attr("cy", ballY)
         .attr("r", ballRadius)
@@ -231,7 +234,7 @@ function OrderedSamples() {
         .attr("stroke", "white")
         .attr("stroke-width", 2);
       
-      g.append("text")
+      ballGroup.append("text")
         .attr("x", ballX)
         .attr("y", ballY)
         .attr("text-anchor", "middle")
@@ -305,14 +308,17 @@ function OrderedSamples() {
     function animateSequence(sequence) {
       const animationGroup = g.append("g").attr("class", "animation-group");
       
-      // Different approach: for with replacement, we'll show the ball going to slot
-      // and staying there, with a visual indicator that it "returns" to bag
+      // Track used balls for without replacement mode
+      const usedBalls = new Set();
       
       sequence.forEach((ballNumber, index) => {
         const stepDelay = withReplacement ? index * 1200 : index * 800;
         const slotX = slotStartX + index * slotSpacing;
         const ballIndex = ballNumber - 1;
         const color = ballColors[ballIndex % 10];
+        
+        // Add to used balls set
+        usedBalls.add(ballNumber);
         
         // Create ball for this draw
         const ball = animationGroup.append("g");
@@ -360,8 +366,9 @@ function OrderedSamples() {
           .attr("x", slotX)
           .attr("y", slotY);
         
-        // For with replacement: show a visual return indicator
+        // Different behavior based on replacement mode
         if (withReplacement && index < sequence.length - 1) {
+          // For WITH replacement: show a visual return indicator
           // Create a dashed line showing the return path
           const returnPath = animationGroup.append("path")
             .attr("d", `M ${slotX} ${slotY} L ${bagCx} ${bagCy}`)
@@ -380,7 +387,7 @@ function OrderedSamples() {
             .duration(200)
             .attr("opacity", 0);
           
-          // Add a small "return" indicator text
+          // Add a small "returns" indicator text
           const returnText = animationGroup.append("text")
             .attr("x", (slotX + bagCx) / 2)
             .attr("y", (slotY + bagCy) / 2 - 10)
@@ -398,6 +405,24 @@ function OrderedSamples() {
             .transition()
             .duration(200)
             .attr("opacity", 0);
+        } else if (!withReplacement) {
+          // For WITHOUT replacement: fade out the used ball in the bag
+          // Select the actual ball group in the bag and fade it
+          g.select(`.bag-ball-${ballNumber}`)
+            .transition()
+            .delay(stepDelay + 800)
+            .duration(300)
+            .select("circle")
+            .attr("fill", "#4a5568")
+            .attr("opacity", 0.3);
+          
+          g.select(`.bag-ball-${ballNumber}`)
+            .select("text")
+            .transition()
+            .delay(stepDelay + 800)
+            .duration(300)
+            .attr("fill", "#9ca3af")
+            .attr("opacity", 0.3);
         }
       });
       
@@ -412,15 +437,19 @@ function OrderedSamples() {
     
   }, [n, r, currentSequence, withReplacement]);
   
-  // Cleanup animation on unmount
+  // Cleanup animation on unmount and parameter changes
   useEffect(() => {
     return () => {
       if (animationRef.current) {
-        animationRef.current.interrupt();
+        // Interrupt all transitions
+        if (svgRef.current) {
+          d3.select(svgRef.current).selectAll("*").interrupt();
+        }
         animationRef.current.remove();
+        animationRef.current = null;
       }
     };
-  }, []);
+  }, [n, r, withReplacement]);
   
   // Draw one sequence
   function drawSequence() {
@@ -442,13 +471,39 @@ function OrderedSamples() {
     }, duration);
   }
   
-  // Reset
+  // Reset with proper cleanup
   function reset() {
     setCurrentSequence([]);
     setAllSequences([]);
     setSequenceCount(0);
+    setIsAnimating(false);
     if (animationRef.current) {
+      // Interrupt all transitions
+      if (svgRef.current) {
+        d3.select(svgRef.current).selectAll("*").interrupt();
+      }
       animationRef.current.remove();
+      animationRef.current = null;
+    }
+    // Reset ball appearances
+    if (svgRef.current) {
+      const svg = d3.select(svgRef.current);
+      const ballColors = d3.schemeCategory10;
+      
+      // Reset all bag balls to original state
+      for (let i = 0; i < n; i++) {
+        svg.select(`.bag-ball-${i + 1} circle`)
+          .transition()
+          .duration(300)
+          .attr("fill", ballColors[i % 10])
+          .attr("opacity", 1);
+        
+        svg.select(`.bag-ball-${i + 1} text`)
+          .transition()
+          .duration(300)
+          .attr("fill", "white")
+          .attr("opacity", 1);
+      }
     }
   }
 
@@ -582,7 +637,7 @@ function OrderedSamples() {
                   {withReplacement ? (
                     <span>{n}<sup>{r}</sup> = {calculateTotal()}</span>
                   ) : (
-                    <span>P({n},{r}) = {n}!/{n-r}! = {calculateTotal()}</span>
+                    <span>P({n},{r}) = {n}!/({n}-{r})! = {calculateTotal()}</span>
                   )}
                 </div>
               </div>

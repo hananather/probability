@@ -1,3 +1,5 @@
+"use client";
+
 // Simple, reusable range slider component
 export function RangeSlider({ 
   label, 

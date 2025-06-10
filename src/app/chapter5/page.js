@@ -1,13 +1,69 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import ConceptSection from '../../components/ConceptSection.jsx';
-import { BayesianInference } from '../../components/05-estimation/BayesianInference.jsx';
-import PointEstimation from '../../components/PointEstimation.jsx';
-import ConfidenceInterval from '../../components/ConfidenceInterval.jsx';
-import Bootstrapping from '../../components/Bootstrapping.jsx';
+
+const BayesianInference = dynamic(
+  () => import('../../components/05-estimation/BayesianInference.jsx').then(mod => ({ default: mod.BayesianInference })),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const PointEstimation = dynamic(
+  () => import('../../components/PointEstimation.jsx'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const ConfidenceInterval = dynamic(
+  () => import('../../components/ConfidenceInterval.jsx'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const Bootstrapping = dynamic(
+  () => import('../../components/Bootstrapping.jsx'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
 
 export default function Chapter5() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [activeSection, setActiveSection] = useState('bayesian');
+
+  // Read section from URL on mount and when URL changes
+  useEffect(() => {
+    const section = searchParams.get('section');
+    if (section) {
+      setActiveSection(section);
+    }
+  }, [searchParams]);
 
   const sections = [
     {
@@ -101,7 +157,10 @@ export default function Chapter5() {
           {sections.map((section) => (
             <button
               key={section.id}
-              onClick={() => setActiveSection(section.id)}
+              onClick={() => {
+                setActiveSection(section.id);
+                router.push(`/chapter5?section=${section.id}`);
+              }}
               className={`px-4 py-2 rounded-lg transition-all ${
                 activeSection === section.id
                   ? 'bg-violet-600 text-white font-semibold'

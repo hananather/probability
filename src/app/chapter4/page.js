@@ -1,38 +1,119 @@
 "use client";
 
-import { useState } from 'react';
-import MeanMedianMode from '@/components/04-descriptive-statistics-sampling/MeanMedianMode';
-import { TDistributionExplorer } from '@/components/04-descriptive-statistics-sampling/TDistributionExplorer';
-import HistogramShapeExplorer from '@/components/04-descriptive-statistics-sampling/HistogramShapeExplorer';
-import DescriptiveStatsExplorer from '@/components/04-descriptive-statistics-sampling/DescriptiveStatsExplorer';
-import { FDistributionExplorer } from '@/components/04-descriptive-statistics-sampling/FDistributionExplorer';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
+
+const MeanMedianMode = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/MeanMedianMode'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const TDistributionExplorer = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/TDistributionExplorer').then(mod => ({ default: mod.TDistributionExplorer })),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const HistogramShapeExplorer = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/HistogramShapeExplorer'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const DescriptiveStatsExplorer = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/DescriptiveStatsExplorer'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const FDistributionExplorer = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/FDistributionExplorer').then(mod => ({ default: mod.FDistributionExplorer })),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
 import ConceptSection from '@/components/ConceptSection';
 
 export default function Chapter4Page() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [currentSection, setCurrentSection] = useState(0);
+
+  // Read section from URL on mount and when URL changes
+  useEffect(() => {
+    // Map section IDs to indices
+    const sectionIdToIndex = {
+      'measures-central': 0,
+      'histograms': 1,
+      'stats-explorer': 2,
+      't-distribution': 3,
+      'f-distribution': 4
+    };
+    
+    const section = searchParams.get('section');
+    if (section && sectionIdToIndex[section] !== undefined) {
+      setCurrentSection(sectionIdToIndex[section]);
+    }
+  }, [searchParams]);
 
   const sections = [
     {
+      id: 'measures-central',
       title: "Measures of Central Tendency",
       description: "Learn about mean, median, and mode - the three fundamental ways to describe the center of a dataset.",
       component: <MeanMedianMode />
     },
     {
+      id: 'histograms',
       title: "Histograms & Data Shapes",
       description: "Explore how histograms represent data distributions and learn to identify symmetric, right-skewed, and left-skewed datasets.",
       component: <HistogramShapeExplorer />
     },
     {
+      id: 'stats-explorer',
       title: "Interactive Statistics Explorer",
       description: "Explore central tendency and dispersion measures interactively. Drag data points, observe outlier effects, and understand statistical robustness.",
       component: <DescriptiveStatsExplorer />
     },
     {
+      id: 't-distribution',
       title: "t-Distribution vs Normal",
       description: "Explore how the t-distribution accounts for uncertainty when estimating population variance and converges to normal as sample size increases.",
       component: <TDistributionExplorer />
     },
     {
+      id: 'f-distribution',
       title: "F-Distribution Explorer",
       description: "Compare variances from two samples using the F-distribution. Essential for ANOVA and variance ratio tests.",
       component: <FDistributionExplorer />
@@ -58,7 +139,10 @@ export default function Chapter4Page() {
           {sections.map((section, index) => (
             <button
               key={index}
-              onClick={() => setCurrentSection(index)}
+              onClick={() => {
+                setCurrentSection(index);
+                router.push(`/chapter4?section=${section.id}`);
+              }}
               className={`px-4 py-2 rounded-lg transition-all ${
                 currentSection === index
                   ? 'bg-blue-600 text-white font-semibold'

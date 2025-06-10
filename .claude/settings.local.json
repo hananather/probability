@@ -83,7 +83,9 @@
       "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -A 2 -B 2 \"\\.primary\" src/components --type jsx)",
       "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -A 2 -B 2 \"\\.primary\" src/components -g \"*.jsx\")",
       "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"\\.primary\" src/components -g \"*.jsx\")",
-      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"chipColors\" src/components -g \"*.jsx\" -A 2 -B 2)"
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"chipColors\" src/components -g \"*.jsx\" -A 2 -B 2)",
+      "Bash(npx prettier:*)",
+      "Bash(sed:*)"
     ],
     "deny": []
   }

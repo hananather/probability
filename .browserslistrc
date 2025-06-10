@@ -1,0 +1,12 @@
+# Browsers that we support
+
+defaults
+not IE 11
+not dead
+
+# Specific versions for better control
+Chrome >= 80
+Firefox >= 72
+Safari >= 13.1
+Edge >= 84
+iOS >= 13.4
