@@ -1,9 +1,9 @@
 import './globals.css';
 import 'katex/dist/katex.min.css';
 import { SidebarProvider, SidebarTrigger } from '../components/ui/sidebar';
-import { AppSidebar } from '../components/AppSidebar';
-import { ContentWrapper } from '../components/ContentWrapper';
-import { MathJaxProvider } from '../components/MathJaxProvider';
+import { AppSidebar } from '../components/shared/AppSidebar';
+import { ContentWrapper } from '../components/shared/ContentWrapper';
+import { MathJaxProvider } from '../components/shared/MathJaxProvider';
 
 export const metadata = {
   title: 'Probability Lab - MAT 2377',

@@ -7,15 +7,15 @@ import {
   axisBottom,
   axisLeft,
   format
-} from '../utils/d3-utils';
+} from '../../utils/d3-utils';
 import { 
   VisualizationContainer, 
   VisualizationSection,
   GraphContainer,
   ControlGroup
-} from './ui/VisualizationContainer';
-import { colors, typography, components, formatNumber, cn, createColorScheme } from '../lib/design-system';
-import { RangeSlider, SliderPresets } from "./ui/RangeSlider";
+} from '../ui/VisualizationContainer';
+import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
+import { RangeSlider, SliderPresets } from "../ui/RangeSlider";
 
 // Use probability color scheme
 const colorScheme = createColorScheme('probability');

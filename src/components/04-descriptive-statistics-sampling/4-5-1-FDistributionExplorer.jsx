@@ -7,7 +7,7 @@ import { VisualizationContainer } from "../ui/VisualizationContainer";
 import { createColorScheme, cn, typography } from "../../lib/design-system";
 import { Button } from "../ui/button";
 import { RangeSlider } from "../ui/RangeSlider";
-import { FDistributionWorkedExample } from "./FDistributionWorkedExample";
+import { FDistributionWorkedExample } from "./4-5-2-FDistributionWorkedExample";
 
 // Constants
 const MAX_STORED_VALUES = 1000; // Prevent memory issues

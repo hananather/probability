@@ -6,8 +6,8 @@ import {
   GraphContainer,
   StatsDisplay,
   ControlGroup 
-} from './ui/VisualizationContainer';
-import { colors, typography, components, formatNumber, cn } from '../lib/design-system';
+} from '../ui/VisualizationContainer';
+import { colors, typography, components, formatNumber, cn } from '../../lib/design-system';
 
 const CANVAS_SIZE = 500;
 

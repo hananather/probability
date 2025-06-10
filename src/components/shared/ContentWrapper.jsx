@@ -1,6 +1,6 @@
 "use client";
-import { Typography } from './ui/typography';
-import { useSidebar } from './ui/sidebar';
+import { Typography } from '../ui/typography';
+import { useSidebar } from '../ui/sidebar';
 
 export function ContentWrapper({ children }) {
   const { isOpen } = useSidebar();

@@ -2,7 +2,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Sidebar, SidebarContent } from './ui/sidebar';
+import { Sidebar, SidebarContent } from '../ui/sidebar';
 import { ChevronDownIcon, ChevronRightIcon } from '@radix-ui/react-icons';
 
 const chapters = [

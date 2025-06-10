@@ -4,7 +4,7 @@
 
 import React, { useRef, useEffect, useState } from "react";
 import * as d3 from "d3";
-import PriorPlot from "../PriorPlot";
+import PriorPlot from "../shared/PriorPlot";
 
 function round(val, digits = 2) {
   return Math.round(val * Math.pow(10, digits)) / Math.pow(10, digits);

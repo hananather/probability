@@ -1,40 +1,40 @@
 "use client";
 import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import ConceptSection from '../../components/ConceptSection.jsx';
-import ErrorBoundary from '../../components/ErrorBoundary.jsx';
+import ConceptSection from '../../components/shared/ConceptSection.jsx';
+import ErrorBoundary from '../../components/shared/ErrorBoundary.jsx';
 
 // Lazy load all components with error handling
 const SpatialRandomVariable = lazy(() => 
-  import('@/components/02-discrete-random-variables/SpatialRandomVariable')
+  import('@/components/02-discrete-random-variables/2-1-1-SpatialRandomVariable')
     .catch(() => {
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })
 );
 
 const ExpectationVariance = lazy(() => 
-  import('@/components/02-discrete-random-variables/ExpectationVariance')
+  import('@/components/02-discrete-random-variables/2-2-1-ExpectationVariance')
     .catch(() => {
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })
 );
 
 const ExpectationVarianceWorkedExample = lazy(() => 
-  import('@/components/02-discrete-random-variables/ExpectationVarianceWorkedExample')
+  import('@/components/02-discrete-random-variables/2-2-2-ExpectationVarianceWorkedExample')
     .catch(() => {
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })
 );
 
 const LinearTransformations = lazy(() => 
-  import('@/components/02-discrete-random-variables/LinearTransformations')
+  import('@/components/02-discrete-random-variables/2-3-1-LinearTransformations')
     .catch(() => {
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })
 );
 
 const FunctionTransformations = lazy(() => 
-  import('@/components/02-discrete-random-variables/FunctionTransformations')
+  import('@/components/02-discrete-random-variables/2-3-2-FunctionTransformations')
     .catch(() => {
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })

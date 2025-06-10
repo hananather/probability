@@ -1,54 +1,54 @@
 "use client";
 import { useState, useEffect, Suspense, lazy } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import ConceptSection from '../../components/ConceptSection.jsx';
-import ErrorBoundary from '../../components/ErrorBoundary.jsx';
+import ConceptSection from '../../components/shared/ConceptSection.jsx';
+import ErrorBoundary from '../../components/shared/ErrorBoundary.jsx';
 
 // Lazy load all components with error handling
 const SampleSpacesEvents = lazy(() => 
-  import('../../components/01-introduction-to-probabilities/SampleSpacesEvents.jsx')
+  import('../../components/01-introduction-to-probabilities/1-1-1-SampleSpacesEvents.jsx')
     .catch(() => {
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })
 );
 const CountingTechniques = lazy(() => 
-  import('../../components/01-introduction-to-probabilities/CountingTechniques.jsx')
+  import('../../components/01-introduction-to-probabilities/1-2-1-CountingTechniques.jsx')
     .catch(() => {
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })
 );
 const OrderedSamples = lazy(() => 
-  import('../../components/01-introduction-to-probabilities/OrderedSamples.jsx')
+  import('../../components/01-introduction-to-probabilities/1-3-1-OrderedSamples.jsx')
     .catch(() => {
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })
 );
 const UnorderedSamples = lazy(() => 
-  import('../../components/01-introduction-to-probabilities/UnorderedSamples.jsx')
+  import('../../components/01-introduction-to-probabilities/1-4-1-UnorderedSamples.jsx')
     .catch(() => {
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })
 );
 const InteractiveLottery = lazy(() => 
-  import('../../components/01-introduction-to-probabilities/InteractiveLottery.jsx')
+  import('../../components/01-introduction-to-probabilities/1-4-2-InteractiveLottery.jsx')
     .catch(() => {
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })
 );
 const ProbabilityEvent = lazy(() => 
-  import('../../components/01-introduction-to-probabilities/ProbabilityEvent.jsx')
+  import('../../components/01-introduction-to-probabilities/1-5-1-ProbabilityEvent.jsx')
     .catch(() => {
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })
 );
 const ConditionalProbability = lazy(() => 
-  import('../../components/01-introduction-to-probabilities/ConditionalProbabilityFixed.jsx')
+  import('../../components/01-introduction-to-probabilities/1-6-1-ConditionalProbability.jsx')
     .catch(() => {
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })
 );
 const ConditionalProbabilityEnhanced = lazy(() => 
-  import('../../components/01-introduction-to-probabilities/ConditionalProbabilityEnhanced.jsx')
+  import('../../components/01-introduction-to-probabilities/1-6-2-ConditionalProbabilityEnhanced.jsx')
     .catch(() => {
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })

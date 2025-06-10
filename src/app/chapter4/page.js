@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 
 const MeanMedianMode = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/MeanMedianMode'),
+  () => import('@/components/04-descriptive-statistics-sampling/4-1-1-MeanMedianMode'),
   { 
     ssr: false,
     loading: () => (
@@ -17,7 +17,7 @@ const MeanMedianMode = dynamic(
 );
 
 const TDistributionExplorer = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/TDistributionExplorer').then(mod => ({ default: mod.TDistributionExplorer })),
+  () => import('@/components/04-descriptive-statistics-sampling/4-4-1-TDistributionExplorer').then(mod => ({ default: mod.TDistributionExplorer })),
   { 
     ssr: false,
     loading: () => (
@@ -29,7 +29,7 @@ const TDistributionExplorer = dynamic(
 );
 
 const HistogramShapeExplorer = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/HistogramShapeExplorer'),
+  () => import('@/components/04-descriptive-statistics-sampling/4-2-1-HistogramShapeExplorer'),
   { 
     ssr: false,
     loading: () => (
@@ -41,7 +41,7 @@ const HistogramShapeExplorer = dynamic(
 );
 
 const DescriptiveStatsExplorer = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/DescriptiveStatsExplorer'),
+  () => import('@/components/04-descriptive-statistics-sampling/4-3-1-DescriptiveStatsExplorer'),
   { 
     ssr: false,
     loading: () => (
@@ -53,7 +53,7 @@ const DescriptiveStatsExplorer = dynamic(
 );
 
 const FDistributionExplorer = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/FDistributionExplorer').then(mod => ({ default: mod.FDistributionExplorer })),
+  () => import('@/components/04-descriptive-statistics-sampling/4-5-1-FDistributionExplorer').then(mod => ({ default: mod.FDistributionExplorer })),
   { 
     ssr: false,
     loading: () => (
@@ -63,7 +63,7 @@ const FDistributionExplorer = dynamic(
     )
   }
 );
-import ConceptSection from '@/components/ConceptSection';
+import ConceptSection from '@/components/shared/ConceptSection';
 
 export default function Chapter4Page() {
   const router = useRouter();

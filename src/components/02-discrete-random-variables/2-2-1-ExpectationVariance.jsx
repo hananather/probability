@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import * as d3 from "d3";
-import ExpectationVarianceWorkedExample from './ExpectationVarianceWorkedExample';
+import ExpectationVarianceWorkedExample from './2-2-2-ExpectationVarianceWorkedExample';
 import { 
   VisualizationContainer, 
   VisualizationSection,

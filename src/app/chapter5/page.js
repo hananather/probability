@@ -2,10 +2,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import ConceptSection from '../../components/ConceptSection.jsx';
+import ConceptSection from '../../components/shared/ConceptSection.jsx';
 
 const BayesianInference = dynamic(
-  () => import('../../components/05-estimation/BayesianInference.jsx').then(mod => ({ default: mod.BayesianInference })),
+  () => import('../../components/05-estimation/5-1-1-BayesianInference.jsx').then(mod => ({ default: mod.BayesianInference })),
   { 
     ssr: false,
     loading: () => (
@@ -17,7 +17,7 @@ const BayesianInference = dynamic(
 );
 
 const PointEstimation = dynamic(
-  () => import('../../components/PointEstimation.jsx'),
+  () => import('../../components/05-estimation/5-2-1-PointEstimation.jsx'),
   { 
     ssr: false,
     loading: () => (
@@ -29,7 +29,7 @@ const PointEstimation = dynamic(
 );
 
 const ConfidenceInterval = dynamic(
-  () => import('../../components/ConfidenceInterval.jsx'),
+  () => import('../../components/05-estimation/5-3-1-ConfidenceInterval.jsx'),
   { 
     ssr: false,
     loading: () => (
@@ -41,7 +41,7 @@ const ConfidenceInterval = dynamic(
 );
 
 const Bootstrapping = dynamic(
-  () => import('../../components/Bootstrapping.jsx'),
+  () => import('../../components/05-estimation/5-4-1-Bootstrapping.jsx'),
   { 
     ssr: false,
     loading: () => (

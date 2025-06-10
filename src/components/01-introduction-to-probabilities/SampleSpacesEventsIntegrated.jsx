@@ -10,7 +10,7 @@ import {
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
 import { Button } from '../ui/button';
 import { ProgressTracker } from '../ui/ProgressTracker';
-import { MathJaxContent } from '../MathJaxProvider';
+import { MathJaxContent } from '../shared/MathJaxProvider';
 
 // Enhanced color scheme for conditional/unconditional states
 const enhancedColorScheme = {

@@ -1,8 +1,8 @@
-import { ContentWrapper } from "@/components/ContentWrapper";
-import HypothesisTestingGame from "@/components/06-hypothesis-testing/HypothesisTestingGame";
-import HypothesisTestingEvidence from "@/components/06-hypothesis-testing/HypothesisTestingEvidence";
-import TypeErrorVisualizer from "@/components/06-hypothesis-testing/TypeErrorVisualizer";
-import PValueMeaning from "@/components/06-hypothesis-testing/PValueMeaning";
+import { ContentWrapper } from "@/components/shared/ContentWrapper";
+import HypothesisTestingGame from "@/components/06-hypothesis-testing/6-1-1-HypothesisTestingGame";
+import HypothesisTestingEvidence from "@/components/06-hypothesis-testing/6-1-2-HypothesisTestingEvidence";
+import TypeErrorVisualizer from "@/components/06-hypothesis-testing/6-1-3-TypeErrorVisualizer";
+import PValueMeaning from "@/components/06-hypothesis-testing/6-1-4-PValueMeaning";
 
 export default function Chapter6() {
   return (
