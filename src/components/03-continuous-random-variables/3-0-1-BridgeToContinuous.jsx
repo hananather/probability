@@ -8,6 +8,7 @@ import { ProgressTracker } from '../ui/ProgressTracker';
 import * as d3 from 'd3';
 import { inlineMath } from '../../utils/latex';
 import { D3DragWrapper } from '../ui/D3DragWrapper';
+import { cn } from '../../lib/utils';
 
 const BridgeToContinuous = () => {
   // Constants
@@ -431,11 +432,61 @@ const BridgeToContinuous = () => {
       description="Understanding the transition from discrete to continuous distributions"
     >
       <div className="space-y-6">
-        <ProgressTracker
-          steps={steps}
-          currentStep={currentStep}
-          onStepClick={setCurrentStep}
-        />
+        {/* Step Progress - Clickable */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium">Progress (click to navigate)</span>
+            <span className="text-sm text-gray-400">{currentStep + 1} / {steps.length}</span>
+          </div>
+          <div className="relative w-full bg-gray-700 rounded-full h-3 cursor-pointer">
+            {/* Clickable segments */}
+            {steps.map((step, index) => (
+              <div
+                key={index}
+                className={cn(
+                  "absolute top-0 h-3 transition-all duration-300 hover:opacity-80",
+                  index <= currentStep ? "bg-purple-600" : "bg-transparent"
+                )}
+                style={{ 
+                  left: `${(index / steps.length) * 100}%`,
+                  width: `${100 / steps.length}%`,
+                  borderRadius: index === 0 ? '9999px 0 0 9999px' : index === steps.length - 1 ? '0 9999px 9999px 0' : '0'
+                }}
+                onClick={() => setCurrentStep(index)}
+                title={step.title}
+              />
+            ))}
+            {/* Step markers */}
+            {steps.slice(1).map((_, index) => (
+              <div
+                key={index}
+                className="absolute top-0 h-3 w-0.5 bg-gray-800 pointer-events-none"
+                style={{ left: `${((index + 1) / steps.length) * 100}%` }}
+              />
+            ))}
+          </div>
+          {/* Step labels */}
+          <div className="flex justify-between mt-1">
+            {steps.map((step, index) => (
+              <button
+                key={index}
+                className={cn(
+                  "text-xs transition-colors duration-200",
+                  index === currentStep ? "text-purple-400 font-medium" : "text-gray-500 hover:text-gray-300"
+                )}
+                onClick={() => setCurrentStep(index)}
+              >
+                {index + 1}
+              </button>
+            ))}
+          </div>
+        </div>
+        
+        {/* Step info */}
+        <div className="text-center mb-4">
+          <h3 className="text-sm font-semibold">{steps[currentStep].title}</h3>
+          <p className="text-xs text-gray-400">{steps[currentStep].description}</p>
+        </div>
         
         <div className="grid lg:grid-cols-2 gap-4">
           {/* Discrete Side */}

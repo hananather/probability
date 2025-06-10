@@ -783,7 +783,7 @@ const ProcessCapability = () => {
       {animateSamples && (
         <ProgressTracker
           current={sampleCount}
-          total={50}
+          goal={50}
           label="Production Samples"
           className="mt-4"
         />

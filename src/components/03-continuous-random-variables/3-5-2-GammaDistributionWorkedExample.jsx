@@ -276,8 +276,9 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
     >
       {/* Progress Tracker */}
       <ProgressTracker 
-        milestones={milestones} 
-        currentCount={interactionCount}
+        current={interactionCount}
+        goal={20}
+        label="Exploration Progress"
         className="mb-6"
       />
       

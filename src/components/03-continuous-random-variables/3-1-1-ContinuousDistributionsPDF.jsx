@@ -650,9 +650,13 @@ const ContinuousDistributionsPDF = () => {
   // MathJax processing
   useEffect(() => {
     if (typeof window !== "undefined" && window.MathJax?.typesetPromise && componentRef.current) {
+      // Clear previous rendering
+      if (window.MathJax.typesetClear) {
+        window.MathJax.typesetClear([componentRef.current]);
+      }
       window.MathJax.typesetPromise([componentRef.current]).catch(console.error);
     }
-  }, [selectedDist]);
+  }, [selectedDist, params, intervalA, intervalB, calculatedIntegralProb]);
 
   return (
     <VisualizationContainer 
@@ -723,10 +727,8 @@ const ContinuousDistributionsPDF = () => {
           {/* Progress tracker */}
           <ProgressTracker 
             current={interactionCount}
-            milestones={[
-              { value: 10, label: "Unlock Normal", icon: Unlock },
-              { value: 20, label: "Unlock All", icon: Sparkles }
-            ]}
+            goal={20}
+            label="Exploration Progress"
           />
 
           {/* Distribution selector */}
@@ -816,7 +818,7 @@ const ContinuousDistributionsPDF = () => {
       {/* Worked example */}
       <VisualizationSection className="mt-6">
         <IntegralWorkedExample
-          distName={selectedDist.label}
+          distName={selectedDist.value}
           params={params}
           intervalA={intervalA}
           intervalB={intervalB}
