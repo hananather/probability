@@ -5,7 +5,7 @@ import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2",
   {
     variants: {
       variant: {
@@ -20,11 +20,19 @@ const buttonVariants = cva(
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
+        // New variants for your probability lab
+        primary: "bg-teal-600 text-white hover:bg-teal-700 focus:ring-teal-500",
+        success: "bg-green-600 text-white hover:bg-green-700 focus:ring-green-500",
+        danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
+        warning: "bg-orange-600 text-white hover:bg-orange-700 focus:ring-orange-500",
+        info: "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
+        neutral: "bg-neutral-600 text-white hover:bg-neutral-700 focus:ring-neutral-500 disabled:bg-neutral-600",
       },
       size: {
-        default: "h-9 px-4 py-2 has-[>svg]:px-3",
-        sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
-        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
+        default: "h-9 px-4 py-2",
+        sm: "h-8 px-3 py-1.5 text-sm",
+        lg: "h-10 px-6 py-2.5",
+        xs: "h-7 px-2.5 py-1 text-xs",
         icon: "size-9",
       },
     },

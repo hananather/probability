@@ -20,7 +20,7 @@ export const processMathJax = (element, delay = 100) => {
         window.MathJax.typesetPromise([element])
           .then(() => resolve())
           .catch((err) => {
-            console.error('MathJax processing error:', err);
+            // Silent error: MathJax processing error
             resolve();
           });
       } else {

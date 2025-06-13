@@ -172,7 +172,7 @@ export {
 // Utility to check if we missed any d3 functions
 export const checkD3Usage = (componentName) => {
   if (process.env.NODE_ENV === 'development') {
-    console.log(`D3 utils loaded for ${componentName}`);
+    // Silent: D3 utils loaded for component
   }
 };
 

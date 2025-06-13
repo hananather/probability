@@ -43,7 +43,7 @@ const PermCombWorkedExample = memo(function PermCombWorkedExample({ n, r, isPerm
           window.MathJax.typesetClear([contentRef.current]);
         }
         window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          console.error('MathJax error:', err);
+          // Silent error: MathJax error
         });
       }
     };

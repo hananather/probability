@@ -37,7 +37,7 @@ const chapters = [
     sections: [
       { title: 'Random Variables & Distributions', component: 'SpatialRandomVariable' },
       { title: 'Expectation & Variance', component: 'ExpectationVariance' },
-      { title: 'Worked Examples', component: 'ExpectationVarianceWorkedExample' },
+      { title: 'Transformations of Random Variables', component: 'Transformations' },
     ]
   },
   {
@@ -85,6 +85,13 @@ const chapters = [
     path: '/chapter7',
     sections: [
       { title: 'Coming Soon...', disabled: true },
+    ]
+  },
+  {
+    title: '🧪 Learning Sandbox',
+    path: '/learn',
+    sections: [
+      { title: 'React Experiments', url: '' },
     ]
   },
 ];
@@ -192,7 +199,7 @@ function AppSidebarInner() {
                             'HypothesisTestingGame': 'hypothesis-game',
                             'SpatialRandomVariable': 'random-variables',
                             'ExpectationVariance': 'expectation-variance',
-                            'ExpectationVarianceWorkedExample': 'worked-examples'
+                            'Transformations': 'transformations'
                           };
                           const mappedSectionId = sectionIdMap[section.component] || section.component.toLowerCase();
                           isActiveSection = currentSection === mappedSectionId || 
@@ -237,7 +244,7 @@ function AppSidebarInner() {
                           'HypothesisTestingGame': 'hypothesis-game',
                           'SpatialRandomVariable': 'random-variables',
                           'ExpectationVariance': 'expectation-variance',
-                          'ExpectationVarianceWorkedExample': 'worked-examples'
+                          'Transformations': 'transformations'
                         };
                         const sectionId = sectionIdMap[section.component] || section.component.toLowerCase();
                         href = `${chapter.path}?section=${sectionId}`;

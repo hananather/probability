@@ -327,7 +327,9 @@ const LinearTransformations = () => {
   // Process MathJax
   useEffect(() => {
     if (typeof window !== "undefined" && window.MathJax?.typesetPromise && statsRef.current) {
-      window.MathJax.typesetPromise([statsRef.current]).catch(console.error);
+      window.MathJax.typesetPromise([statsRef.current]).catch(() => {
+        // Silent error: MathJax processing error
+      });
     }
   }, [a, b]);
   

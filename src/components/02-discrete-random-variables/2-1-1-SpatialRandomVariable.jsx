@@ -394,8 +394,8 @@ const SpatialRandomVariable = () => {
     setDrawnHexCount(0);
   };
   
-  // Add point animation
-  const addPoint = (pos, color, value) => {
+  // Add point animation with improved visual feedback
+  const addPoint = (pos, color, value, hexIndex) => {
     if (valuesRef.current[value] === undefined) {
       valuesRef.current[value] = 1;
       addRect(color, value);
@@ -406,13 +406,40 @@ const SpatialRandomVariable = () => {
     totalRef.current += 1;
     setUpdateTrigger(prev => prev + 1);
     
-    // Animate point
+    // Animate point with better visual feedback
     const svg = d3.select(svgGridRef.current);
+    
+    // Pulse the hexagon that was hit
+    if (hexIndex >= 0) {
+      const hexagon = svg.select(`#hex-${hexIndex}`);
+      if (!hexagon.empty()) {
+        const originalFill = hexagon.style("fill");
+        const originalOpacity = hexagon.style("opacity");
+        
+        // Quick pulse effect
+        hexagon
+          .transition()
+          .duration(100)
+          .style("fill", d3.color(color).brighter(1))
+          .style("opacity", 1)
+          .style("filter", `drop-shadow(0 0 8px ${color})`)
+          .transition()
+          .duration(300)
+          .style("fill", originalFill)
+          .style("opacity", originalOpacity)
+          .style("filter", "none");
+      }
+    }
+    
+    // Create the sample dot with immediate color
     const circle = svg.append("circle")
       .attr("cx", pos[0])
       .attr("cy", pos[1])
-      .attr("r", 5)
-      .style("fill", "black")
+      .attr("r", 6)
+      .style("fill", color)  // Start with target color
+      .style("stroke", "#ffffff")  // White border for contrast
+      .style("stroke-width", "2px")
+      .style("filter", `drop-shadow(0 0 6px ${color})`)  // Colored glow
       .attr("opacity", 1);
     
     const circleNode = circle.node();
@@ -420,9 +447,16 @@ const SpatialRandomVariable = () => {
       animationsRef.current.add(circleNode);
     }
     
+    // Expand and fade animation
     circle.transition()
-      .style("fill", color)
-      .duration(1000)
+      .duration(200)
+      .attr("r", 12)  // Expand
+      .style("stroke-width", "3px")
+      .attr("opacity", 0.8)
+      .transition()
+      .duration(300)
+      .attr("r", 16)  // Continue expanding
+      .attr("opacity", 0)  // Fade out
       .on("end", function() {
         // Use try-catch to handle potential DOM issues
         try {
@@ -434,6 +468,24 @@ const SpatialRandomVariable = () => {
         } catch (e) {
           // Ignore errors from already removed nodes
         }
+      });
+    
+    // Add a subtle trail ring effect
+    const trail = svg.insert("circle", ":first-child")
+      .attr("cx", pos[0])
+      .attr("cy", pos[1])
+      .attr("r", 6)
+      .style("fill", "none")
+      .style("stroke", color)
+      .style("stroke-width", "1px")
+      .attr("opacity", 0.5);
+    
+    trail.transition()
+      .duration(500)
+      .attr("r", 25)
+      .attr("opacity", 0)
+      .on("end", function() {
+        d3.select(this).remove();
       });
   };
   
@@ -474,7 +526,7 @@ const SpatialRandomVariable = () => {
         if (!hexElement.empty()) {
           const color = hexElement.style("fill");
           const value = closestData.value;
-          addPoint(pos, color, value);
+          addPoint(pos, color, value, closestIndex);
         }
       }
     }, 100);

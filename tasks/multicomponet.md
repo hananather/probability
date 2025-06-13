@@ -1,0 +1,1 @@
+When desgining a new compoent a new component consider multiple options for UI. Evaluate the pros and cons of each option. Create multiple versions of the same compoent, save them all in a temp folder (chapter number - module number).

@@ -63,7 +63,7 @@ const HistogramWorkedExample = React.memo(function HistogramWorkedExample({
           window.MathJax.typesetClear([contentRef.current]);
         }
         window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          console.error('MathJax error:', err);
+          // Silent error: MathJax error
         });
       }
     };
@@ -209,7 +209,7 @@ function HistogramShapeExplorer() {
       setInteractionCount(prev => prev + 1);
       
     } catch (error) {
-      console.error('Error generating data:', error);
+      // Silent error: Error generating data
       // Fallback to simple normal distribution
       const fallbackData = Array.from({ length: sampleSize }, () => 
         jStat.normal.sample(0, 1)

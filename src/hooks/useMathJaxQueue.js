@@ -22,7 +22,7 @@ async function processQueue() {
         // Process the element
         await window.MathJax.typesetPromise([element]);
       } catch (err) {
-        console.error('MathJax error:', err);
+        // Silent error: MathJax error
       }
     }
     

@@ -298,7 +298,7 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
           window.MathJax.typesetClear([contentRef.current]);
         }
         window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          console.error('MathJax error in NormalApproxBinomialWorkedExample:', err);
+          // Silent error: MathJax error in NormalApproxBinomialWorkedExample
         });
       }
     };

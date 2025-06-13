@@ -47,7 +47,7 @@ const IntegralWorkedExample = React.memo(function IntegralWorkedExample({
         window.MathJax.typesetClear([contentRef.current]);
       }
       window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-        console.error('MathJax error in IntegralWorkedExample:', err);
+        // Silent error: MathJax error in IntegralWorkedExample
       });
     }
   }, [distName, params, intervalA, intervalB, probValue, pdfFormula, cdfAValue, cdfBValue]); // Retypeset when any relevant prop changes

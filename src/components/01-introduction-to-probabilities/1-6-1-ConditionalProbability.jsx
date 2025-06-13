@@ -9,6 +9,8 @@ import {
 } from '../ui/VisualizationContainer';
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
 import { ProgressTracker } from '../ui/ProgressTracker';
+import { Tutorial } from '../ui/Tutorial';
+import { Button } from '../ui/button';
 
 // Use probability color scheme
 const colorScheme = createColorScheme('probability');
@@ -43,8 +45,8 @@ const BayesTheoremExample = memo(function BayesTheoremExample({ eventsData }) {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          console.error('MathJax error:', err);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {
+          // MathJax error handled silently
         });
       }
     };
@@ -171,8 +173,8 @@ const ConditionalProbWorkedExample = memo(function ConditionalProbWorkedExample(
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          console.error('MathJax error:', err);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {
+          // MathJax error handled silently
         });
       }
     };
@@ -244,8 +246,8 @@ const TotalProbabilityExample = memo(function TotalProbabilityExample({ eventsDa
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          console.error('MathJax error:', err);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {
+          // MathJax error handled silently
         });
       }
     };
@@ -401,7 +403,9 @@ function ConditionalProbability() {
         .attr("height", height)
         .attr("fill", "#0a0a0a");
       
-      const g = svg.append("g").attr("class", "main-container");
+      const g = svg.append("g")
+        .attr("class", "main-container")
+        .style("fill", "none");  // Ensure no black fill inheritance
       d3ContainerRef.current = g;
       
       const innerWidth = width - margin.left - margin.right;
@@ -429,7 +433,7 @@ function ConditionalProbability() {
         innerHeight
       };
       
-      // Create gradient definition
+      // Create gradient definitions
       const defs = svg.append("defs");
       const gradient = defs.append("linearGradient")
         .attr("id", "perspectiveGradient")
@@ -446,6 +450,24 @@ function ConditionalProbability() {
         .attr("stop-color", "#ffffff")
         .attr("stop-opacity", 0.3);
       
+      // Create gradient for trails
+      const trailGradient = defs.append("linearGradient")
+        .attr("id", "trailGradient")
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "0%")
+        .attr("y2", "100%");
+      
+      trailGradient.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", "#ffffff")
+        .attr("stop-opacity", 0.8);
+      
+      trailGradient.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "#ffffff")
+        .attr("stop-opacity", 0);
+      
       // Perspective boundary rectangle (will be updated separately)
       g.append("rect")
         .attr("class", "perspective-boundary")
@@ -458,7 +480,7 @@ function ConditionalProbability() {
         .attr("pointer-events", "none");
       
       // Create event groups
-      const eventHeight = 60;
+      const eventHeight = 40;
       eventsData.forEach((d, i) => {
         const eventGroup = g.append("g")
           .attr("class", `event event-${d.name}`);
@@ -472,32 +494,33 @@ function ConditionalProbability() {
           .attr("stroke-width", 2)
           .attr("rx", 4);
         
-        // Drag handles
-        const handleSize = 8;
+        // Drag handles - LARGER SIZE for easier interaction
+        const handleWidth = 16;  // Increased from 8
+        const handleHeight = 32; // Increased from 16
         
         // Left handle
         eventGroup.append("rect")
           .attr("class", "handle left")
-          .attr("width", handleSize)
-          .attr("height", handleSize * 2)
+          .attr("width", handleWidth)
+          .attr("height", handleHeight)
           .attr("fill", "white")
           .attr("stroke", "black")
-          .attr("stroke-width", 1)
+          .attr("stroke-width", 2)
           .attr("cursor", "ew-resize")
-          .attr("rx", 2)
-          .attr("opacity", 0.8);
+          .attr("rx", 3)
+          .attr("opacity", 0.9);
         
         // Right handle
         eventGroup.append("rect")
           .attr("class", "handle right")
-          .attr("width", handleSize)
-          .attr("height", handleSize * 2)
+          .attr("width", handleWidth)
+          .attr("height", handleHeight)
           .attr("fill", "white")
           .attr("stroke", "black")
-          .attr("stroke-width", 1)
+          .attr("stroke-width", 2)
           .attr("cursor", "ew-resize")
-          .attr("rx", 2)
-          .attr("opacity", 0.8);
+          .attr("rx", 3)
+          .attr("opacity", 0.9);
         
         // Event label
         eventGroup.append("text")
@@ -546,10 +569,11 @@ function ConditionalProbability() {
       g.selectAll(".x-axis .tick line").attr("stroke", colors.chart.grid);
       
       // Ball container
-      g.append("g").attr("class", "balls");
+      g.append("g")
+        .attr("class", "balls");
       
     } catch (error) {
-      console.error('Error in ConditionalProbability setup:', error);
+      // Error in ConditionalProbability setup handled silently
     }
   }, []); // Only run once
   
@@ -560,8 +584,9 @@ function ConditionalProbability() {
     try {
       const g = d3ContainerRef.current;
       const { xScale, yScale, xWidthScale, margin, width, height, innerHeight } = scalesRef.current;
-      const eventHeight = 60;
-      const handleSize = 8;
+      const eventHeight = 40;
+      const handleWidth = 16;  // Increased size
+      const handleHeight = 32; // Increased size
       
       // Update scales domain
       xScale.domain(currentPerspective === 'universe' ? [0, 1] : 
@@ -599,14 +624,14 @@ function ConditionalProbability() {
           .attr("width", xWidthScale(d.width))
           .attr("opacity", highlightOverlaps ? 0.5 : 0.7);
         
-        // Update handles
+        // Update handles with better positioning
         eventGroup.select(".handle.left")
-          .attr("x", xScale(d.x) - handleSize/2)
-          .attr("y", yScale(d.y) + eventHeight/2 - handleSize);
+          .attr("x", xScale(d.x) - handleWidth/2)
+          .attr("y", yScale(d.y) + eventHeight/2 - handleHeight/2);
         
         eventGroup.select(".handle.right")
-          .attr("x", xScale(d.x + d.width) - handleSize/2)
-          .attr("y", yScale(d.y) + eventHeight/2 - handleSize);
+          .attr("x", xScale(d.x + d.width) - handleWidth/2)
+          .attr("y", yScale(d.y) + eventHeight/2 - handleHeight/2);
         
         // Update labels
         eventGroup.select(".event-label")
@@ -650,10 +675,11 @@ function ConditionalProbability() {
       // Store ball container reference
       const ballContainer = g.select(".balls");
       
-      // Drop ball function with enhanced visualization
+      // Drop ball function - simplified
       function dropBall() {
         const p = Math.random();
-        const baseDuration = samplesDropped < 10 ? 2000 : (samplesDropped < 50 ? 1500 : 1000);
+        const baseDuration = samplesDropped < 10 ? 1500 : 1000;
+        const eventHeight = 40;
         
         // Determine which events the ball passes through
         const eventsHit = [];
@@ -678,77 +704,87 @@ function ConditionalProbability() {
           return newHistory;
         });
         
-        // Create ball with trail
+        // Create ball group
         const ballGroup = ballContainer.append("g");
         
-        // Trail line
+        // Simple trail line
         const trail = ballGroup.append("line")
           .attr("x1", xScale(p))
           .attr("y1", yScale(0))
           .attr("x2", xScale(p))
           .attr("y2", yScale(0))
-          .attr("stroke", "white")
+          .style("stroke", "#e5e7eb")  // Neutral gray
           .attr("stroke-width", 1)
-          .attr("opacity", 0.3)
-          .attr("stroke-dasharray", "2,2");
+          .attr("opacity", 0.3);
         
-        // Ball
+        // Create ball - neutral color initially
         const ball = ballGroup.append("circle")
           .attr("cx", xScale(p))
           .attr("cy", yScale(0))
-          .attr("r", 6)
-          .attr("fill", "white")
-          .attr("stroke", "black")
-          .attr("stroke-width", 1.5);
+          .attr("r", 4)  // Smaller size
+          .style("fill", "#e5e7eb")  // Neutral light gray
+          .style("stroke", "#9ca3af")
+          .style("stroke-width", "1px")
+          .attr("opacity", 1);
         
-        // Animate through events with smoother transitions
-        let currentY = 0;
+        // Animate through events
+        let currentY = yScale(0);
         let totalDelay = 0;
+        let currentColor = "#e5e7eb";  // Track current color
         
+        // Animate to each event
         eventsHit.forEach((event, i) => {
+          const targetY = yScale(event.y) + eventHeight/2;
           const stepDuration = baseDuration / (eventsHit.length + 1);
           
           ball.transition()
             .delay(totalDelay)
             .duration(stepDuration)
-            .ease(d3.easeQuadInOut)
-            .attr("cy", yScale(event.y) + eventHeight/2)
-            .attr("fill", () => {
-              if (event.name === 'A') return colorScheme.chart.primary;
-              if (event.name === 'B') return colorScheme.chart.secondary;
-              return colorScheme.chart.tertiary;
-            })
-            .attr("r", 8);
+            .ease(d3.easeLinear)
+            .attr("cy", targetY)
+            .on("start", function() {
+              // Change color when entering event
+              if (event.name === 'A') {
+                currentColor = colorScheme.chart.primary;  // Use color scheme
+              } else if (event.name === 'B') {
+                currentColor = colorScheme.chart.secondary;
+              } else {
+                currentColor = colorScheme.chart.tertiary;
+              }
+              
+              d3.select(this)
+                .style("fill", currentColor)
+                .style("stroke", currentColor);
+            });
           
           trail.transition()
             .delay(totalDelay)
             .duration(stepDuration)
-            .attr("y2", yScale(event.y) + eventHeight/2);
+            .attr("y2", targetY)
+            .style("stroke", currentColor)
+            .attr("opacity", 0.2);
           
+          currentY = targetY;
           totalDelay += stepDuration;
         });
         
-        // Final position
+        // Final drop to bottom and disappear
         ball.transition()
           .delay(totalDelay)
-          .duration(baseDuration / 3)
+          .duration(baseDuration / 2)
           .ease(d3.easeQuadIn)
           .attr("cy", yScale(1))
-          .attr("r", 4)
-          .attr("opacity", 0);
+          .attr("opacity", 0)
+          .on("end", function() {
+            ballGroup.remove();
+            setSamplesDropped(prev => prev + 1);
+          });
         
         trail.transition()
           .delay(totalDelay)
-          .duration(baseDuration / 3)
+          .duration(baseDuration / 2)
           .attr("y2", yScale(1))
           .attr("opacity", 0);
-        
-        ballGroup.transition()
-          .delay(totalDelay + baseDuration / 3)
-          .remove()
-          .on("end", function() {
-            setSamplesDropped(prev => prev + 1);
-          });
         
         // Store ball data
         ballsRef.current.push({ p, events: eventsHit });
@@ -758,107 +794,200 @@ function ConditionalProbability() {
       dropBallRef.current = dropBall;
       
     } catch (error) {
-      console.error('Error in ConditionalProbability update:', error);
+      // Error in ConditionalProbability update handled silently
     }
   }, [eventsData, currentPerspective, highlightOverlaps]);
   
-  // Separate drag behavior setup
+  // FIXED drag behavior setup
   function setupDragBehaviors() {
     if (!d3ContainerRef.current || !scalesRef.current) return;
     
     const g = d3ContainerRef.current;
     const { xScale, yScale, xWidthScale } = scalesRef.current;
-    const eventHeight = 60;
-    const handleSize = 8;
+    const eventHeight = 40;
+    const handleWidth = 16;  // Increased from 8
+    const handleHeight = 32; // Increased from 16
+    const MIN_WIDTH = 0.02; // 2% minimum width
+    
+    // Get fresh event data for each drag setup to avoid stale closures
+    const currentEvents = [...eventsData];
+    
+    // Helper function to convert from screen coordinates to universe [0,1] space
+    function screenToUniverse(screenX) {
+      return xScale.invert(screenX);
+    }
+    
+    // Helper function to convert from universe [0,1] space to screen coordinates
+    function universeToScreen(universeX) {
+      return xScale(universeX);
+    }
+    
+    // Helper to get width in screen pixels for a given universe width
+    function universeWidthToScreen(universeWidth) {
+      return xWidthScale(universeWidth);
+    }
     
     // Drag behavior for rectangles (move)
     const dragRect = d3.drag()
       .on("start", function(event, d) {
         d3.select(this).style("cursor", "grabbing");
+        // Store initial position for smooth dragging
+        d.dragStartX = event.x;
+        d.initialX = d.x;
       })
       .on("drag", function(event, d) {
-        const newX = Math.max(0, Math.min(xScale.invert(event.x), 1 - d.width));
+        // Calculate the delta in screen space
+        const deltaScreen = event.x - d.dragStartX;
+        
+        // Convert delta to universe space
+        const startUniverseX = screenToUniverse(d.dragStartX);
+        const currentUniverseX = screenToUniverse(event.x);
+        const deltaUniverse = currentUniverseX - startUniverseX;
+        
+        // Calculate new position
+        const newX = Math.max(0, Math.min(d.initialX + deltaUniverse, 1 - d.width));
         
         // Update visuals immediately
         const eventGroup = g.select(`.event-${d.name}`);
-        eventGroup.select(".shelf").attr("x", xScale(newX));
-        eventGroup.select(".handle.left").attr("x", xScale(newX) - handleSize/2);
-        eventGroup.select(".handle.right").attr("x", xScale(newX + d.width) - handleSize/2);
-        eventGroup.select(".event-label").attr("x", xScale(newX + d.width / 2));
-        eventGroup.select(".prob-label").attr("x", xScale(newX + d.width / 2));
+        eventGroup.select(".shelf").attr("x", universeToScreen(newX));
+        eventGroup.select(".handle.left").attr("x", universeToScreen(newX) - handleWidth/2);
+        eventGroup.select(".handle.right").attr("x", universeToScreen(newX + d.width) - handleWidth/2);
+        eventGroup.select(".event-label").attr("x", universeToScreen(newX + d.width / 2));
+        eventGroup.select(".prob-label").attr("x", universeToScreen(newX + d.width / 2));
+        
+        // Update the local data for smooth dragging
+        d.x = newX;
       })
       .on("end", function(event, d) {
         d3.select(this).style("cursor", "grab");
-        const newX = Math.max(0, Math.min(xScale.invert(event.x), 1 - d.width));
         
-        // Update React state
+        // Update React state with final position
         setEventsData(prev => prev.map(e => 
-          e.name === d.name ? { ...e, x: newX } : e
+          e.name === d.name ? { ...e, x: d.x } : e
         ));
       });
     
-    // Drag behavior for left handle (resize from left)
+    // FIXED: Drag behavior for left handle (resize from left)
     const dragLeft = d3.drag()
+      .on("start", function(event, d) {
+        // Change handle appearance
+        d3.select(this)
+          .attr("fill", "#60a5fa")
+          .attr("opacity", 1);
+        
+        // Store initial positions
+        d.dragStartX = event.x;
+        d.initialX = d.x;
+        d.initialWidth = d.width;
+      })
       .on("drag", function(event, d) {
-        const newX = Math.max(0, Math.min(xScale.invert(event.x), d.x + d.width - 0.05));
-        const newWidth = d.x + d.width - newX;
+        // Calculate delta from start position
+        const deltaScreen = event.x - d.dragStartX;
+        const deltaUniverse = screenToUniverse(d.dragStartX + deltaScreen) - screenToUniverse(d.dragStartX);
+        
+        // Calculate new position and width
+        const newX = Math.max(0, Math.min(d.initialX + deltaUniverse, d.initialX + d.initialWidth - MIN_WIDTH));
+        const newWidth = d.initialX + d.initialWidth - newX;
         
         // Update visuals immediately
         const eventGroup = g.select(`.event-${d.name}`);
         eventGroup.select(".shelf")
-          .attr("x", xScale(newX))
-          .attr("width", xWidthScale(newWidth));
-        eventGroup.select(".handle.left").attr("x", xScale(newX) - handleSize/2);
-        eventGroup.select(".event-label").attr("x", xScale(newX + newWidth / 2));
+          .attr("x", universeToScreen(newX))
+          .attr("width", universeWidthToScreen(newWidth));
+        eventGroup.select(".handle.left").attr("x", universeToScreen(newX) - handleWidth/2);
+        eventGroup.select(".event-label").attr("x", universeToScreen(newX + newWidth / 2));
         eventGroup.select(".prob-label")
-          .attr("x", xScale(newX + newWidth / 2))
+          .attr("x", universeToScreen(newX + newWidth / 2))
           .text(`P(${d.name}) = ${newWidth.toFixed(3)}`);
+        
+        // Update local data
+        d.x = newX;
+        d.width = newWidth;
       })
       .on("end", function(event, d) {
-        const newX = Math.max(0, Math.min(xScale.invert(event.x), d.x + d.width - 0.05));
-        const newWidth = d.x + d.width - newX;
+        // Restore handle appearance
+        d3.select(this)
+          .attr("fill", "white")
+          .attr("opacity", 0.9);
         
         // Update React state
         setEventsData(prev => prev.map(e => 
-          e.name === d.name ? { ...e, x: newX, width: newWidth } : e
+          e.name === d.name ? { ...e, x: d.x, width: d.width } : e
         ));
       });
     
-    // Drag behavior for right handle (resize from right)
+    // FIXED: Drag behavior for right handle (resize from right)
     const dragRight = d3.drag()
+      .on("start", function(event, d) {
+        // Change handle appearance
+        d3.select(this)
+          .attr("fill", "#60a5fa")
+          .attr("opacity", 1);
+        
+        // Store initial positions
+        d.dragStartX = event.x;
+        d.initialWidth = d.width;
+      })
       .on("drag", function(event, d) {
-        const newWidth = Math.max(0.05, Math.min(xScale.invert(event.x) - d.x, 1 - d.x));
+        // Calculate delta from start position
+        const deltaScreen = event.x - d.dragStartX;
+        const deltaUniverse = screenToUniverse(d.dragStartX + deltaScreen) - screenToUniverse(d.dragStartX);
+        
+        // Calculate new width
+        const maxWidth = 1 - d.x;
+        const newWidth = Math.max(MIN_WIDTH, Math.min(d.initialWidth + deltaUniverse, maxWidth));
         
         // Update visuals immediately
         const eventGroup = g.select(`.event-${d.name}`);
-        eventGroup.select(".shelf").attr("width", xWidthScale(newWidth));
-        eventGroup.select(".handle.right").attr("x", xScale(d.x + newWidth) - handleSize/2);
-        eventGroup.select(".event-label").attr("x", xScale(d.x + newWidth / 2));
+        eventGroup.select(".shelf").attr("width", universeWidthToScreen(newWidth));
+        eventGroup.select(".handle.right").attr("x", universeToScreen(d.x + newWidth) - handleWidth/2);
+        eventGroup.select(".event-label").attr("x", universeToScreen(d.x + newWidth / 2));
         eventGroup.select(".prob-label")
-          .attr("x", xScale(d.x + newWidth / 2))
+          .attr("x", universeToScreen(d.x + newWidth / 2))
           .text(`P(${d.name}) = ${newWidth.toFixed(3)}`);
+        
+        // Update local data
+        d.width = newWidth;
       })
       .on("end", function(event, d) {
-        const newWidth = Math.max(0.05, Math.min(xScale.invert(event.x) - d.x, 1 - d.x));
+        // Restore handle appearance
+        d3.select(this)
+          .attr("fill", "white")
+          .attr("opacity", 0.9);
         
         // Update React state
         setEventsData(prev => prev.map(e => 
-          e.name === d.name ? { ...e, width: newWidth } : e
+          e.name === d.name ? { ...e, width: d.width } : e
         ));
       });
     
-    // Apply drag behaviors
-    eventsData.forEach(d => {
+    // Apply drag behaviors with fresh data
+    currentEvents.forEach((d, i) => {
       const eventGroup = g.select(`.event-${d.name}`);
+      // Create a fresh copy of the data to avoid stale references
+      const freshData = { ...d };
+      
       eventGroup.select(".shelf")
-        .datum(d)
+        .datum(freshData)
         .style("cursor", "grab")
         .call(dragRect);
       eventGroup.select(".handle.left")
-        .datum(d)
+        .datum(freshData)
+        .on("mouseover", function() {
+          d3.select(this).attr("opacity", 1);
+        })
+        .on("mouseout", function() {
+          d3.select(this).attr("opacity", 0.9);
+        })
         .call(dragLeft);
       eventGroup.select(".handle.right")
-        .datum(d)
+        .datum(freshData)
+        .on("mouseover", function() {
+          d3.select(this).attr("opacity", 1);
+        })
+        .on("mouseout", function() {
+          d3.select(this).attr("opacity", 0.9);
+        })
         .call(dragRight);
     });
   }
@@ -908,7 +1037,7 @@ function ConditionalProbability() {
     const xScale = d3.scaleBand()
       .domain(probs.map((_, i) => i))
       .range([margin.left, width - margin.right])
-      .padding(0.4);
+      .padding(0.7);
     
     const yScale = d3.scaleLinear()
       .domain([0, 1])
@@ -1007,7 +1136,7 @@ function ConditionalProbability() {
     g.selectAll(".y-axis .tick line").attr("stroke", colors.chart.grid);
     
     } catch (error) {
-      console.error('Error in ConditionalProbability D3 visualization:', error);
+      // Error in ConditionalProbability D3 visualization handled silently
       // Optionally show error message to user
       if (svgBallRef.current) {
         d3.select(svgBallRef.current)
@@ -1043,7 +1172,7 @@ function ConditionalProbability() {
         }
       }, animationSpeed);
     } catch (error) {
-      console.error('Error starting animation:', error);
+      // Error starting animation handled silently
       stopAnimation();
     }
   }
@@ -1170,8 +1299,115 @@ function ConditionalProbability() {
 
   const educationalInsight = getEducationalInsight();
 
+  // Tutorial steps for conditional probability
+  const tutorialSteps = [
+    {
+      title: "Welcome to Conditional Probability! 🎯",
+      content: (
+        <div className="space-y-2">
+          <p>Conditional probability answers the question: "What's the probability of event B happening, given that event A has already occurred?"</p>
+          <p className="text-blue-400">P(B|A) = P(A∩B) / P(A)</p>
+          <p>This interactive visualization will help you master this fundamental concept through hands-on exploration.</p>
+        </div>
+      )
+    },
+    {
+      target: '.event-A',
+      title: "Interactive Events",
+      content: (
+        <div className="space-y-2">
+          <p>These colored rectangles represent events A, B, and C. You can:</p>
+          <ul className="list-disc list-inside space-y-1 text-sm">
+            <li><strong>Drag</strong> the rectangle to move it</li>
+            <li><strong>Resize</strong> by dragging the white handles on the sides</li>
+            <li><strong>Overlap</strong> events to create intersections</li>
+          </ul>
+          <p className="text-yellow-400 text-sm">Try dragging event A now!</p>
+        </div>
+      ),
+      position: 'bottom'
+    },
+    {
+      title: "Understanding Perspectives 🔍",
+      content: (
+        <div className="space-y-2">
+          <p>The power of conditional probability lies in changing perspectives:</p>
+          <ul className="list-disc list-inside space-y-1 text-sm">
+            <li><strong>Universe:</strong> Shows all probabilities P(A), P(B), P(C)</li>
+            <li><strong>Given A:</strong> Shows P(B|A), P(C|A) - only considering outcomes in A</li>
+            <li><strong>Given B/C:</strong> Similar conditional views</li>
+          </ul>
+          <p className="text-green-400 text-sm">Switch between perspectives to see how probabilities change!</p>
+        </div>
+      )
+    },
+    {
+      title: "Sampling and the Law of Large Numbers",
+      content: (
+        <div className="space-y-2">
+          <p>Click "Start Sampling" to drop random samples through your events.</p>
+          <p>Watch as empirical probabilities converge to theoretical values - this is the Law of Large Numbers in action!</p>
+          <p className="text-purple-400 text-sm">Goal: Collect 30 samples to see patterns emerge clearly.</p>
+        </div>
+      )
+    },
+    {
+      title: "Discovering Independence 🎲",
+      content: (
+        <div className="space-y-2">
+          <p>Two events A and B are <strong>independent</strong> when:</p>
+          <p className="text-blue-400 font-mono">P(B|A) = P(B)</p>
+          <p>In other words, knowing A occurred doesn't change the probability of B!</p>
+          <p className="text-yellow-400 text-sm">Challenge: Can you arrange the events to make A and B independent?</p>
+        </div>
+      )
+    },
+    {
+      title: "Mathematical Analysis Tab 📊",
+      content: (
+        <div className="space-y-2">
+          <p>Click the "Mathematical Analysis" tab to explore:</p>
+          <ul className="list-disc list-inside space-y-1 text-sm">
+            <li><strong>Bayes' Theorem:</strong> Reverse conditional probabilities</li>
+            <li><strong>Joint Probability Tables:</strong> See all combinations</li>
+            <li><strong>Law of Total Probability:</strong> Partition the sample space</li>
+            <li><strong>Chain Rule:</strong> Handle multiple events</li>
+          </ul>
+          <p className="text-green-400 text-sm">Real engineering applications included!</p>
+        </div>
+      )
+    },
+    {
+      title: "Ready to Explore! 🚀",
+      content: (
+        <div className="space-y-2">
+          <p>You're all set to master conditional probability!</p>
+          <p>Remember:</p>
+          <ul className="list-disc list-inside space-y-1 text-sm">
+            <li>Experiment freely - drag, resize, and overlap events</li>
+            <li>Watch for the independence indicator</li>
+            <li>Collect samples to see convergence</li>
+            <li>Switch perspectives to build intuition</li>
+          </ul>
+          <p className="text-blue-400 font-semibold">Let's begin your probability journey!</p>
+        </div>
+      )
+    }
+  ];
+
+  // State for showing tutorial
+  const [showTutorial, setShowTutorial] = useState(false);
+
   return (
-    <VisualizationContainer title="Conditional Probability and Independence">
+    <VisualizationContainer title="Conditional Probability and Independence (Fixed)">
+      <Tutorial
+        steps={tutorialSteps}
+        onComplete={() => setShowTutorial(false)}
+        onSkip={() => setShowTutorial(false)}
+        showOnMount={true}
+        persistKey="conditional-probability-1-6-1-fixed"
+        mode="modal"
+      />
       <div className="flex flex-col lg:flex-row gap-6 h-full">
         {/* Left Panel */}
         <div className="lg:w-1/3 flex flex-col gap-3">
@@ -1199,6 +1435,19 @@ function ConditionalProbability() {
                   <strong>Watch patterns</strong> emerge as samples accumulate
                 </div>
               </div>
+            </div>
+            <div className="mt-4">
+              <Button
+                variant="info"
+                size="sm"
+                onClick={() => {
+                  localStorage.removeItem('tutorial-conditional-probability-1-6-1-fixed-completed');
+                  window.location.reload();
+                }}
+                className="w-full"
+              >
+                Show Tutorial Again
+              </Button>
             </div>
           </VisualizationSection>
 
@@ -1228,18 +1477,33 @@ function ConditionalProbability() {
               ))}
             </div>
             
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={isAnimating ? stopAnimation : startAnimation}
-                className={cn(
-                  "flex-1 px-3 py-2 rounded text-sm font-medium transition-colors",
-                  isAnimating
-                    ? "bg-red-600 hover:bg-red-700 text-white"
-                    : "bg-green-600 hover:bg-green-700 text-white"
-                )}
-              >
-                {isAnimating ? "Stop" : "Start"} Sampling
-              </button>
+            <div className="mt-4 space-y-2">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-neutral-300">Samples Collected:</span>
+                <span className="font-mono text-teal-400">{samplesDropped}</span>
+              </div>
+              
+              <div className="flex gap-2">
+                <button
+                  onClick={isAnimating ? stopAnimation : startAnimation}
+                  className={cn(
+                    "flex-1 px-3 py-2 rounded text-sm font-medium transition-colors",
+                    isAnimating
+                      ? "bg-red-600 hover:bg-red-700 text-white"
+                      : "bg-green-600 hover:bg-green-700 text-white"
+                  )}
+                >
+                  {isAnimating ? "Stop" : "Start"} Sampling
+                </button>
+                
+                <button
+                  onClick={reset}
+                  className="px-3 py-2 rounded text-sm font-medium bg-neutral-700 hover:bg-neutral-600 text-white transition-colors"
+                  disabled={isAnimating}
+                >
+                  Reset
+                </button>
+              </div>
             </div>
             
             <label className="flex items-center gap-2 text-sm mt-3">
@@ -1251,6 +1515,27 @@ function ConditionalProbability() {
               />
               <span className="text-neutral-300">Show probability chart</span>
             </label>
+            
+            {/* Animation Speed Control */}
+            <div className="mt-4">
+              <label className="text-sm text-neutral-300 block mb-2">
+                Animation Speed
+              </label>
+              <input 
+                type="range" 
+                min="50" 
+                max="500" 
+                step="50"
+                value={animationSpeed} 
+                onChange={e => setAnimationSpeed(Number(e.target.value))}
+                className="w-full accent-teal-500"
+              />
+              <div className="flex justify-between text-xs text-neutral-400 mt-1">
+                <span>Fast</span>
+                <span>{animationSpeed}ms</span>
+                <span>Slow</span>
+              </div>
+            </div>
           </VisualizationSection>
 
           {/* Independence Analysis */}
@@ -1365,7 +1650,7 @@ function ConditionalProbability() {
               )}
             </>
           ) : (
-            <div className="space-y-4 max-h-[800px] overflow-y-auto">
+            <div className="space-y-4">
               {/* Bayes' Theorem */}
               <BayesTheoremExample eventsData={eventsData} />
               

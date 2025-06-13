@@ -2,7 +2,55 @@
 
 This file provides guidance to Claude code when working with code in this repository. 
 
+## Instructions
+1. Ultrathink and think hard before making any changes. 
+2. Launch multiple Claude Code Agents to gather context and plan out the changes before making any changes.
+
 Always leverage existing knowledge when planning out and designing a new component or refactoring an existing component.
+
+## IMPORTANT: Use Reusable UI Components
+
+**NEVER create inline progress bars, buttons, or other UI elements. We have reusable components for these:**
+
+### Progress Bar Component
+Use `/src/components/ui/ProgressBar.jsx` for ALL progress indicators:
+
+```jsx
+import { ProgressBar, ProgressNavigation } from '@/components/ui/ProgressBar';
+
+// Basic progress bar
+<ProgressBar 
+  current={stage}
+  total={4}
+  label="Learning Progress"
+  variant="emerald" // Options: "emerald", "purple", "teal", "blue", "orange", "pink"
+/>
+
+// Navigation buttons that match the progress bar
+<ProgressNavigation
+  current={stage}
+  total={4}
+  onPrevious={() => setStage(Math.max(1, stage - 1))}
+  onNext={() => setStage(Math.min(4, stage + 1))}
+  variant="emerald" // Matches progress bar color
+/>
+```
+
+### Button Component
+Use `/src/components/ui/button.jsx` for ALL buttons:
+
+```jsx
+import { Button } from '@/components/ui/button';
+
+<Button variant="primary" size="sm" onClick={handleClick}>
+  Submit
+</Button>
+
+// Variants: "primary" (teal), "success" (green), "danger" (red), "warning" (orange), "info" (blue), "neutral" (gray)
+// Sizes: "xs", "sm", "default", "lg"
+```
+
+**Rule: If you need a progress bar or button, ALWAYS use these components. Do not create new ones inline.**
 
 ## UI Design Philosophy
 

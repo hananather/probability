@@ -499,11 +499,11 @@ function SampleSpacesEvents() {
         if (!cleanNotation) return [];
         return parse(cleanNotation);
       } catch (e) {
-        console.error('Parse error:', e);
+        // Silent error: Parse error
         return []; // Return empty set on error
       }
     } catch (e) {
-      console.error('Parser setup error:', e);
+      // Silent error: Parser setup error
       return [];
     }
   }

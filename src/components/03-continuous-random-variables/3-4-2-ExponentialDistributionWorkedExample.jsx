@@ -18,7 +18,7 @@ const ExponentialDistributionWorkedExample = React.memo(function ExponentialDist
           window.MathJax.typesetClear([contentRef.current]);
         }
         window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          console.error('MathJax error in ExponentialDistributionWorkedExample:', err);
+          // Silent error: MathJax error in ExponentialDistributionWorkedExample
         });
       }
     };

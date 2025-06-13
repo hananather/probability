@@ -367,7 +367,9 @@ const FunctionTransformations = () => {
   // Process MathJax
   useEffect(() => {
     if (typeof window !== "undefined" && window.MathJax?.typesetPromise && statsRef.current) {
-      window.MathJax.typesetPromise([statsRef.current]).catch(console.error);
+      window.MathJax.typesetPromise([statsRef.current]).catch(() => {
+        // Silent error: MathJax processing error
+      });
     }
   }, [functionType, customA, customB, customC]);
   

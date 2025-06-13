@@ -20,7 +20,7 @@ const ExpectationVarianceWorkedExample = React.memo(function ExpectationVariance
           window.MathJax.typesetClear([contentRef.current]);
         }
         window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          console.error('MathJax error in ExpectationVarianceWorkedExample:', err);
+          // Silent error: MathJax error in ExpectationVarianceWorkedExample
         });
       }
     };

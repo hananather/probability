@@ -42,7 +42,7 @@ export const WorkedExampleContainer = ({
           processingRef.current = false;
         })
         .catch((err) => {
-          console.error('MathJax processing error:', err);
+          // Silent error: MathJax processing error
           processingRef.current = false;
         });
     } else {

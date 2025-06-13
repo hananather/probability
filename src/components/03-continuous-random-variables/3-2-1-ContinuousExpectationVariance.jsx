@@ -11,6 +11,7 @@ import { colors, typography, formatNumber, cn, createColorScheme } from '../../l
 import { RangeSlider } from '../ui/RangeSlider';
 import { RotateCcw } from "lucide-react";
 import * as jStat from "jstat";
+import { ProgressBar, ProgressNavigation } from '@/components/ui/ProgressBar';
 
 const ContinuousExpectationVariance = () => {
   const colorScheme = createColorScheme('probability');
@@ -595,18 +596,12 @@ const ContinuousExpectationVariance = () => {
       }
     >
       {/* Progress indicator */}
-      <div className="mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-gray-400">Learning Progress</span>
-          <span className="text-sm font-mono text-gray-300">{stage}/4</span>
-        </div>
-        <div className="w-full bg-gray-800 rounded-full h-2">
-          <div 
-            className="bg-gradient-to-r from-emerald-500 to-emerald-400 h-2 rounded-full transition-all duration-500"
-            style={{ width: `${(stage / 4) * 100}%` }}
-          />
-        </div>
-      </div>
+      <ProgressBar 
+        current={stage}
+        total={4}
+        label="Learning Progress"
+        variant="emerald"
+      />
       
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Left side - Controls and Info */}
@@ -618,32 +613,13 @@ const ContinuousExpectationVariance = () => {
             <ControlGroup>
               <div className="space-y-3">
                 {/* Stage controls */}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setStage(Math.max(1, stage - 1))}
-                    disabled={stage === 1}
-                    className={cn(
-                      "flex-1 px-3 py-1.5 rounded text-sm font-medium transition-colors",
-                      stage === 1 
-                        ? "bg-gray-700 text-gray-500 cursor-not-allowed" 
-                        : "bg-neutral-700 hover:bg-neutral-600 text-white"
-                    )}
-                  >
-                    Previous
-                  </button>
-                  <button
-                    onClick={handleNextStage}
-                    disabled={stage === 4}
-                    className={cn(
-                      "flex-1 px-3 py-1.5 rounded text-sm font-medium transition-colors",
-                      stage === 4 
-                        ? "bg-gray-700 text-gray-500 cursor-not-allowed" 
-                        : "bg-emerald-600 hover:bg-emerald-500 text-white"
-                    )}
-                  >
-                    {stage === 4 ? "Complete!" : "Next"}
-                  </button>
-                </div>
+                <ProgressNavigation
+                  current={stage}
+                  total={4}
+                  onPrevious={() => setStage(Math.max(1, stage - 1))}
+                  onNext={handleNextStage}
+                  variant="emerald"
+                />
                 
                 {/* Distribution controls (Stage 2-4) */}
                 {stage >= 2 && (

@@ -3,11 +3,11 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { createColorScheme, typography } from "../../lib/design-system";
 import { Button } from "../ui/button";
-import { CheckCircle, XCircle, RefreshCw, HelpCircle } from "lucide-react";
+import { CheckCircle, XCircle, RefreshCw, HelpCircle, ChevronRight } from "lucide-react";
 import * as jStat from "jstat";
 
 const ZScorePracticeProblems = () => {
-  const colors = createColorScheme('estimation');
+  const colors = createColorScheme('probability');
   
   // Problem types
   const problemTypes = [
@@ -191,74 +191,80 @@ const ZScorePracticeProblems = () => {
   const stats = getStats();
   
   return (
-    <div className="w-full space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Z-Score Practice Problems</span>
-            <div className="flex items-center gap-4">
-              <div className="text-sm">
-                <span className="text-muted-foreground">Streak:</span>{' '}
-                <span className="font-bold text-lg">{streak}</span>
+    <div className="w-full max-w-6xl mx-auto space-y-4">
+      {/* Header with Streak and New Problem */}
+      <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between mb-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+          <h2 className="text-xl sm:text-2xl font-bold">Z-Score Practice Problems</h2>
+          <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+            <span className="text-sm text-muted-foreground">Streak</span>
+            <span className="text-xl sm:text-2xl font-bold font-mono text-emerald-400">{streak}</span>
+          </div>
+        </div>
+        <Button
+          onClick={() => generateProblem()}
+          variant="primary"
+          size="default"
+          className="gap-2 w-full sm:w-auto"
+        >
+          <RefreshCw className="w-4 h-4" />
+          New Problem
+        </Button>
+      </div>
+
+      <div className="flex flex-col lg:grid lg:grid-cols-[300px_1fr] gap-4">
+        {/* Left Sidebar */}
+        <Card className="h-fit lg:sticky lg:top-4">
+          <CardContent className="p-4 space-y-4">
+            {/* Problem Type Selection */}
+            <div>
+              <h3 className="text-base font-semibold mb-3">Problem Type</h3>
+              <div className="space-y-2">
+                {problemTypes.map(type => (
+                  <button
+                    key={type.id}
+                    onClick={() => {
+                      setSelectedType(type.id);
+                      generateProblem(type.id);
+                    }}
+                    className={`w-full p-3 rounded-lg border transition-all duration-200 text-left ${
+                      selectedType === type.id
+                        ? 'bg-blue-500/20 border-blue-500/50 shadow-sm'
+                        : 'bg-gray-800/50 border-gray-700 hover:bg-gray-700/50'
+                    }`}
+                  >
+                    <div className="font-medium text-sm">{type.title}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">{type.description}</div>
+                  </button>
+                ))}
               </div>
-              <Button
-                onClick={() => generateProblem()}
-                variant="outline"
-                size="sm"
-                className="gap-2"
-              >
-                <RefreshCw className="w-4 h-4" />
-                New Problem
-              </Button>
             </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 gap-6">
-            {/* Problem Selection */}
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Problem Type</h3>
-                <div className="space-y-2">
-                  {problemTypes.map(type => (
-                    <Button
-                      key={type.id}
-                      onClick={() => {
-                        setSelectedType(type.id);
-                        generateProblem(type.id);
-                      }}
-                      variant={selectedType === type.id ? 'default' : 'outline'}
-                      size="sm"
-                      className="w-full justify-start text-left"
-                    >
-                      <div>
-                        <div className="font-semibold">{type.title}</div>
-                        <div className="text-xs opacity-80">{type.description}</div>
-                      </div>
-                    </Button>
-                  ))}
+            
+            {/* Progress Stats */}
+            <div className="pt-4 border-t">
+              <h4 className="font-semibold text-sm mb-3">Your Progress</h4>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Total Problems</span>
+                  <span className="font-mono font-medium">{stats.total}</span>
                 </div>
-              </div>
-              
-              {/* Statistics */}
-              <div className="space-y-2 p-3 bg-muted/30 rounded-lg">
-                <h4 className="font-semibold">Your Progress</h4>
-                <div className="space-y-1 text-sm">
-                  <p>Total Problems: {stats.total}</p>
-                  <p>Correct: {stats.correct} ({stats.total > 0 ? ((stats.correct / stats.total) * 100).toFixed(0) : 0}%)</p>
-                  <p>Current Streak: {streak}</p>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Correct</span>
+                  <span className="font-mono font-medium">
+                    {stats.correct} ({stats.total > 0 ? ((stats.correct / stats.total) * 100).toFixed(0) : 0}%)
+                  </span>
                 </div>
                 
                 {stats.total > 0 && (
-                  <div className="mt-3 pt-3 border-t space-y-1">
-                    <p className="text-xs font-semibold">By Type:</p>
+                  <div className="mt-3 pt-3 border-t space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">By Type</p>
                     {problemTypes.map(type => {
                       const typeStats = stats.byType[type.id];
                       if (typeStats.total === 0) return null;
                       return (
-                        <div key={type.id} className="text-xs flex justify-between">
-                          <span>{type.title}:</span>
-                          <span>{typeStats.correct}/{typeStats.total}</span>
+                        <div key={type.id} className="flex justify-between text-xs">
+                          <span className="text-muted-foreground">{type.title}</span>
+                          <span className="font-mono">{typeStats.correct}/{typeStats.total}</span>
                         </div>
                       );
                     })}
@@ -266,119 +272,147 @@ const ZScorePracticeProblems = () => {
                 )}
               </div>
             </div>
-            
-            {/* Current Problem */}
-            <div className="col-span-2 space-y-4">
-              {currentProblem && (
-                <>
-                  <div className="p-4 bg-muted/20 rounded-lg">
-                    <h4 className="font-semibold mb-2">Problem {stats.total + 1}</h4>
-                    <p className="text-lg">{currentProblem.question}</p>
+          </CardContent>
+        </Card>
+        
+        {/* Main Problem Area */}
+        <Card className="flex-1">
+          <CardContent className="p-6">
+            {currentProblem && (
+              <div className="space-y-6">
+                {/* Problem Display */}
+                <div className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-sm font-medium text-muted-foreground">Problem</span>
+                    <span className="text-2xl font-bold font-mono text-blue-400">{stats.total + 1}</span>
+                  </div>
+                  <p className="text-xl leading-relaxed">{currentProblem.question}</p>
+                </div>
+                
+                {/* Answer Input */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Your Answer
+                    </label>
+                    <div className="flex gap-3">
+                      <input
+                        type="number"
+                        step="0.0001"
+                        value={userAnswer}
+                        onChange={(e) => setUserAnswer(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && checkAnswer()}
+                        className="flex-1 px-4 py-3 text-lg font-mono border rounded-lg bg-gray-900 border-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        placeholder="Enter your answer..."
+                        disabled={showFeedback}
+                      />
+                      <Button
+                        onClick={checkAnswer}
+                        disabled={!userAnswer || showFeedback}
+                        variant="primary"
+                        size="lg"
+                        className="min-w-[120px]"
+                      >
+                        Check
+                      </Button>
+                    </div>
                   </div>
                   
-                  <div className="space-y-3">
+                  {/* Hint Section */}
+                  {!showFeedback && (
                     <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Your Answer:
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          type="number"
-                          step="0.0001"
-                          value={userAnswer}
-                          onChange={(e) => setUserAnswer(e.target.value)}
-                          onKeyPress={(e) => e.key === 'Enter' && checkAnswer()}
-                          className="flex-1 px-3 py-2 border rounded-md bg-background"
-                          placeholder="Enter your answer..."
-                          disabled={showFeedback}
-                        />
-                        <Button
-                          onClick={checkAnswer}
-                          disabled={!userAnswer || showFeedback}
-                        >
-                          Check
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    {!showFeedback && (
                       <Button
                         onClick={() => setShowHint(!showHint)}
-                        variant="ghost"
+                        variant="neutral"
                         size="sm"
                         className="gap-2"
                       >
                         <HelpCircle className="w-4 h-4" />
                         {showHint ? 'Hide' : 'Show'} Hint
                       </Button>
-                    )}
-                    
-                    {showHint && !showFeedback && (
-                      <div className="p-3 bg-blue-900/20 border border-blue-600/30 rounded-lg">
-                        <p className="text-sm">{currentProblem.hint}</p>
-                      </div>
-                    )}
-                    
-                    {showFeedback && (
-                      <div className={`p-4 rounded-lg border ${
-                        isCorrect 
-                          ? 'bg-emerald-900/20 border-emerald-600/30' 
-                          : 'bg-red-900/20 border-red-600/30'
-                      }`}>
-                        <div className="flex items-start gap-2">
-                          {isCorrect ? (
-                            <CheckCircle className="w-5 h-5 text-emerald-500 mt-0.5" />
-                          ) : (
-                            <XCircle className="w-5 h-5 text-red-500 mt-0.5" />
-                          )}
-                          <div className="space-y-2">
-                            <p className="font-semibold">
-                              {isCorrect ? 'Correct!' : 'Not quite right'}
-                            </p>
-                            {!isCorrect && (
-                              <>
-                                <p className="text-sm">
-                                  Your answer: {parseFloat(userAnswer).toFixed(4)}
-                                </p>
-                                <p className="text-sm">
-                                  Correct answer: {currentProblem.answer.toFixed(4)}
-                                </p>
-                              </>
-                            )}
-                            <div className="pt-2 border-t">
-                              <p className="text-sm font-semibold">Solution:</p>
-                              <p className="text-sm">{currentProblem.solution}</p>
+                      
+                      {showHint && (
+                        <div className="mt-3 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                          <p className="text-sm">{currentProblem.hint}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Feedback */}
+                  {showFeedback && (
+                    <div className={`p-6 rounded-lg border-2 ${
+                      isCorrect 
+                        ? 'bg-emerald-500/10 border-emerald-500/30' 
+                        : 'bg-red-500/10 border-red-500/30'
+                    }`}>
+                      <div className="flex items-start gap-3">
+                        {isCorrect ? (
+                          <CheckCircle className="w-6 h-6 text-emerald-500 mt-0.5" />
+                        ) : (
+                          <XCircle className="w-6 h-6 text-red-500 mt-0.5" />
+                        )}
+                        <div className="flex-1 space-y-3">
+                          <p className="font-semibold text-lg">
+                            {isCorrect ? 'Correct!' : 'Not quite right'}
+                          </p>
+                          {!isCorrect && (
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-3">
+                                <span className="text-sm text-muted-foreground">Your answer:</span>
+                                <span className="font-mono text-lg">{parseFloat(userAnswer).toFixed(4)}</span>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <span className="text-sm text-muted-foreground">Correct answer:</span>
+                                <span className="font-mono text-lg text-emerald-400">{currentProblem.answer.toFixed(4)}</span>
+                              </div>
                             </div>
+                          )}
+                          <div className="pt-3 border-t border-gray-700">
+                            <p className="text-sm font-semibold mb-2">Solution</p>
+                            <p className="font-mono text-sm leading-relaxed">{currentProblem.solution}</p>
                           </div>
                         </div>
-                        
-                        <Button
-                          onClick={() => generateProblem()}
-                          className="mt-4 w-full"
-                        >
-                          Next Problem
-                        </Button>
                       </div>
-                    )}
-                  </div>
-                  
-                  {/* Formulas Reference */}
-                  <div className="mt-6 p-3 bg-muted/30 rounded-lg">
-                    <h4 className="font-semibold text-sm mb-2">Quick Reference</h4>
-                    <div className="space-y-1 text-xs font-mono">
-                      <p>Z-score: z = (x - μ) / σ</p>
-                      <p>Standard Normal: Z ~ N(0, 1)</p>
-                      <p>P(Z ≤ z) = Φ(z)</p>
-                      <p>P(a &lt; Z &lt; b) = Φ(b) - Φ(a)</p>
-                      <p>Empirical Rule: 68-95-99.7</p>
+                      
+                      <Button
+                        onClick={() => generateProblem()}
+                        variant="primary"
+                        size="lg"
+                        className="mt-4 w-full gap-2"
+                      >
+                        Next Problem
+                        <ChevronRight className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Quick Reference */}
+                <div className="mt-6 grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                    <h4 className="font-semibold text-sm mb-3 text-muted-foreground">Formulas</h4>
+                    <div className="space-y-2 font-mono text-sm">
+                      <div className="text-blue-400">z = (x - μ) / σ</div>
+                      <div>Z ~ N(0, 1)</div>
+                      <div>P(Z ≤ z) = Φ(z)</div>
+                      <div>P(a {"<"} Z {"<"} b) = Φ(b) - Φ(a)</div>
                     </div>
                   </div>
-                </>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+                  <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                    <h4 className="font-semibold text-sm mb-3 text-muted-foreground">Empirical Rule</h4>
+                    <div className="space-y-2 font-mono text-sm">
+                      <div>±1σ: <span className="text-emerald-400">68%</span></div>
+                      <div>±2σ: <span className="text-emerald-400">95%</span></div>
+                      <div>±3σ: <span className="text-emerald-400">99.7%</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

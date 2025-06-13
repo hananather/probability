@@ -40,12 +40,12 @@ export const processMathJaxWithRetry = (element, dependencies = []) => {
             timeoutIds.forEach(id => clearTimeout(id));
             timeoutIds = [];
           })
-          .catch((err) => {
-            console.error('MathJax processing error:', err);
+          .catch(() => {
+            // MathJax processing error handled silently
             scheduleRetry();
           });
       } catch (err) {
-        console.error('MathJax error:', err);
+        // MathJax error handled silently
         scheduleRetry();
       }
     } else {
@@ -61,7 +61,7 @@ export const processMathJaxWithRetry = (element, dependencies = []) => {
       const timeoutId = setTimeout(attemptProcess, delay);
       timeoutIds.push(timeoutId);
     } else {
-      console.warn('MathJax processing failed after maximum attempts');
+      // MathJax processing failed after maximum attempts
     }
   };
   
@@ -128,7 +128,9 @@ export const initGlobalMathJaxProcessor = () => {
       });
       
       if (mathElements.length > 0) {
-        window.MathJax.typesetPromise(mathElements).catch(console.error);
+        window.MathJax.typesetPromise(mathElements).catch(() => {
+          // MathJax error handled silently
+        });
       }
     } else {
       // Retry after delay

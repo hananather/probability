@@ -64,7 +64,7 @@ const ProcessCapability = () => {
     
     // Validate LSL < USL
     if (lsl >= usl) {
-      console.warn('Invalid specification limits: LSL >= USL');
+      // Silent warning: Invalid specification limits: LSL >= USL
       return {
         cp: 0,
         cpk: 0,
@@ -463,7 +463,7 @@ const ProcessCapability = () => {
         }
         animationRef.current = { samples };
       } catch (error) {
-        console.error('Error generating samples:', error);
+        // Silent error: Error generating samples
         animationRef.current = { samples: [] };
       }
     } else {
@@ -501,32 +501,9 @@ const ProcessCapability = () => {
 
   return (
     <VisualizationContainer
-      title="Process Capability: Where Quality Meets Profit"
-      description="See how small improvements in process capability save millions"
+      title="Process Capability (Cp/Cpk)"
+      description="Learn how normal distributions are used in quality control through process capability indices Cp and Cpk"
     >
-      {/* Opening Hook */}
-      <div className="mb-6 p-4 bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-lg border border-blue-600/30">
-        <h3 className="text-sm font-semibold text-blue-300 mb-2">
-          Real Impact
-        </h3>
-        <div className="flex items-center justify-between">
-          <div className="text-xs text-gray-300">
-            <span className="text-2xl font-bold text-white">
-              {businessExamples[0].company}
-            </span>{" "}
-            saved
-            <span className="text-xl font-bold text-green-400 ml-2">
-              {businessExamples[0].savings}
-            </span>
-            <span className="text-gray-400">
-              {" "}
-              with just {businessExamples[0].improvement} improvement
-            </span>
-          </div>
-          <Plane className="w-8 h-8 text-blue-400" />
-        </div>
-      </div>
-
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Main Visualization (80% width) */}
         <div className="flex-1">

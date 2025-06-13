@@ -223,7 +223,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
           window.MathJax.typesetClear([contentRef.current]);
         }
         window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          console.error('MathJax error in GammaDistributionWorkedExample:', err);
+          // Silent error: MathJax error in GammaDistributionWorkedExample
         });
       }
     };

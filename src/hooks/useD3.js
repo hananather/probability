@@ -26,7 +26,7 @@ export default function useD3(renderFn, deps = []) {
         svg.selectAll('*').remove();
       };
     } catch (error) {
-      console.error('Error in D3 render function:', error);
+      // Silent error: Error in D3 render function
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);

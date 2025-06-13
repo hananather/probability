@@ -263,7 +263,7 @@ const GammaDistribution = React.memo(function GammaDistribution() {
         }
       }
     } catch (error) {
-      console.error('Error calculating gamma distribution:', error);
+      // Silent error: Error calculating gamma distribution
       // Return empty data on error
       return;
     }

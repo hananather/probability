@@ -92,7 +92,7 @@ export function useMathJaxProcessor() {
             resolve();
           })
           .catch((err) => {
-            console.error('MathJax processing error:', err);
+            // Silent error: MathJax processing error
             setIsProcessing(false);
             resolve();
           });

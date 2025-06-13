@@ -16,6 +16,7 @@ import { Button } from '../ui/button';
 import { createColorScheme, typography, formatNumber } from '../../lib/design-system';
 import { IntegralWorkedExample } from "./3-1-2-IntegralWorkedExample";
 import { Lock, Unlock, Info, Sparkles, RotateCcw } from "lucide-react";
+import { ProgressBar, ProgressNavigation } from '@/components/ui/ProgressBar';
 
 // Distribution configurations with real-world context
 const distributionOptions = [
@@ -125,13 +126,19 @@ const ContinuousDistributionsPDF = () => {
   const componentRef = useRef();
   const dragRef = useRef(null);
   
-  // Start with only uniform distribution unlocked
-  const [unlockedDistributions, setUnlockedDistributions] = useState(["uniform"]);
+  // Stage-based learning: introduce distributions progressively
+  const [currentStage, setCurrentStage] = useState(0);
+  const stages = [
+    { dist: "uniform", title: "Uniform Distribution", description: "Equal probability across an interval" },
+    { dist: "normal", title: "Normal Distribution", description: "The bell curve - most common in nature" },
+    { dist: "exponential", title: "Exponential Distribution", description: "Models time between events" },
+    { dist: "gamma", title: "Gamma Distribution", description: "Sum of exponential waiting times" },
+    { dist: "beta", title: "Beta Distribution", description: "Models proportions and probabilities" }
+  ];
+  
   const [selectedDist, setSelectedDist] = useState(distributionOptions[0]);
   const [params, setParams] = useState(selectedDist.params.map(p => p.default));
-  const [interactionCount, setInteractionCount] = useState(0);
   const [showIntro, setShowIntro] = useState(true);
-  const [milestoneReached, setMilestoneReached] = useState(false);
   
   // Interval selection
   const [intervalA, setIntervalA] = useState(-0.5);
@@ -145,42 +152,34 @@ const ContinuousDistributionsPDF = () => {
   const [cdfBValue, setCdfBValue] = useState(0);
   const [meanVal, setMeanVal] = useState(0);
 
-  // Track meaningful interactions
-  const lastInteraction = useRef({ params: [...params], intervalA, intervalB });
-  
-  // Check for milestone achievements
+  // Update selected distribution when stage changes
   useEffect(() => {
-    let timeoutId;
-    
-    if (interactionCount === 10 && !unlockedDistributions.includes("normal")) {
-      setUnlockedDistributions(prev => [...prev, "normal"]);
-      setMilestoneReached(true);
-      timeoutId = setTimeout(() => setMilestoneReached(false), 4000);
-    } else if (interactionCount === 20 && unlockedDistributions.length < distributionOptions.length) {
-      setUnlockedDistributions(distributionOptions.map(d => d.value));
-      setMilestoneReached(true);
-      timeoutId = setTimeout(() => setMilestoneReached(false), 4000);
+    const stageDistValue = stages[currentStage].dist;
+    const newDist = distributionOptions.find(opt => opt.value === stageDistValue);
+    if (newDist) {
+      setSelectedDist(newDist);
+      setParams(newDist.params.map(p => p.default));
+      
+      // Reset interval to reasonable defaults for the new distribution
+      if (stageDistValue === 'uniform') {
+        setIntervalA(-0.5);
+        setIntervalB(0.5);
+      } else if (stageDistValue === 'normal') {
+        setIntervalA(-1);
+        setIntervalB(1);
+      } else if (stageDistValue === 'exponential') {
+        setIntervalA(0.5);
+        setIntervalB(2);
+      } else if (stageDistValue === 'gamma') {
+        setIntervalA(0.5);
+        setIntervalB(3);
+      } else if (stageDistValue === 'beta') {
+        setIntervalA(0.2);
+        setIntervalB(0.8);
+      }
     }
-    
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [interactionCount, unlockedDistributions]);
+  }, [currentStage]);
 
-  // Count interactions on meaningful changes
-  useEffect(() => {
-    const paramsChanged = params.some((p, i) => 
-      Math.abs(p - lastInteraction.current.params[i]) > 0.05
-    );
-    const intervalChanged = 
-      Math.abs(intervalA - lastInteraction.current.intervalA) > 0.05 ||
-      Math.abs(intervalB - lastInteraction.current.intervalB) > 0.05;
-    
-    if ((paramsChanged || intervalChanged) && interactionCount > 0) {
-      setInteractionCount(prev => prev + 1);
-      lastInteraction.current = { params: [...params], intervalA, intervalB };
-    }
-  }, [params, intervalA, intervalB]);
 
   // Calculate plot data and statistics
   const calculatePlotDataAndStats = useCallback(() => {
@@ -190,7 +189,7 @@ const ContinuousDistributionsPDF = () => {
     try {
       // Validate interval parameters
       if (intervalA >= intervalB) {
-        console.warn('Invalid interval: intervalA >= intervalB');
+        // Invalid interval: intervalA >= intervalB
         return { domain: [-5, 5], data: [], mean: 0, cdfA: 0, cdfB: 0, integralProb: 0 };
       }
 
@@ -218,7 +217,7 @@ const ContinuousDistributionsPDF = () => {
         case "gamma":
           // Validate gamma parameters
           if (params[0] <= 0 || params[1] <= 0) {
-            console.warn('Invalid gamma parameters: shape or scale <= 0');
+            // Invalid gamma parameters: shape or scale <= 0
             return { domain: [0, 10], data: [], mean: 0, cdfA: 0, cdfB: 0, integralProb: 0 };
           }
           
@@ -267,7 +266,7 @@ const ContinuousDistributionsPDF = () => {
         case "beta":
           domain = [0, 1];
           if (params[0] <= 0 || params[1] <= 0) {
-            console.warn('Invalid beta parameters: alpha or beta <= 0');
+            // Invalid beta parameters: alpha or beta <= 0
             return { domain: [0, 1], data: [], mean: 0.5, cdfA: 0, cdfB: 0, integralProb: 0 };
           }
           
@@ -299,7 +298,7 @@ const ContinuousDistributionsPDF = () => {
       return { domain, data, mean, cdfA, cdfB, integralProb };
 
     } catch (error) {
-      console.error("Error calculating distribution data:", error);
+      // Error calculating distribution data handled silently
       return { domain: [-5,5], data: [], mean: 0, cdfA:0, cdfB:0, integralProb:0 };
     }
   }, [selectedDist.value, params, intervalA, intervalB]);
@@ -461,7 +460,6 @@ const ContinuousDistributionsPDF = () => {
         .on("start", () => {
           setIsDragging(true);
           setDragType(type);
-          if (interactionCount === 0) setInteractionCount(1);
         })
         .on("drag", (event) => {
           const newX = Math.max(0, Math.min(innerWidth, event.x));
@@ -574,22 +572,8 @@ const ContinuousDistributionsPDF = () => {
       .style("font-family", "monospace")
       .text(`P(${intervalA.toFixed(2)} ≤ X ≤ ${intervalB.toFixed(2)}) = ${calculatedIntegralProb.toFixed(4)}`);
     
-  }, [calculatePlotDataAndStats, intervalA, intervalB, calculatedIntegralProb, colorScheme, interactionCount]);
+  }, [calculatePlotDataAndStats, intervalA, intervalB, calculatedIntegralProb, colorScheme]);
 
-  // Handle distribution change
-  const handleDistChange = (value) => {
-    const newDist = distributionOptions.find(opt => opt.value === value);
-    if (newDist && unlockedDistributions.includes(value)) {
-      setSelectedDist(newDist);
-      setParams(newDist.params.map(p => p.default));
-      
-      // Reset interval to reasonable defaults for the distribution
-      const { domain } = calculatePlotDataAndStats();
-      const range = domain[1] - domain[0];
-      setIntervalA(domain[0] + range * 0.3);
-      setIntervalB(domain[0] + range * 0.7);
-    }
-  };
 
   // Handle parameter change
   const handleParamChange = (index, value) => {
@@ -633,18 +617,12 @@ const ContinuousDistributionsPDF = () => {
 
   // Reset function
   const handleReset = () => {
+    setCurrentStage(0);
     setSelectedDist(distributionOptions[0]);
     setParams(distributionOptions[0].params.map(p => p.default));
     setIntervalA(-0.5);
     setIntervalB(0.5);
-    setInteractionCount(0);
-    setUnlockedDistributions(["uniform"]);
     setShowIntro(true);
-    lastInteraction.current = { 
-      params: distributionOptions[0].params.map(p => p.default), 
-      intervalA: -0.5, 
-      intervalB: 0.5 
-    };
   };
 
   // MathJax processing
@@ -654,7 +632,9 @@ const ContinuousDistributionsPDF = () => {
       if (window.MathJax.typesetClear) {
         window.MathJax.typesetClear([componentRef.current]);
       }
-      window.MathJax.typesetPromise([componentRef.current]).catch(console.error);
+      window.MathJax.typesetPromise([componentRef.current]).catch(() => {
+        // MathJax error handled silently
+      });
     }
   }, [selectedDist, params, intervalA, intervalB, calculatedIntegralProb]);
 
@@ -694,19 +674,6 @@ const ContinuousDistributionsPDF = () => {
         </div>
       )}
 
-      {/* Milestone notification */}
-      {milestoneReached && (
-        <div className="mb-4 p-3 bg-gradient-to-r from-amber-900/30 to-orange-900/30 rounded-lg border border-amber-700/50 animate-pulse">
-          <div className="flex items-center gap-3">
-            <Sparkles className="w-5 h-5 text-amber-400" />
-            <span className="text-sm font-semibold text-amber-300">
-              {interactionCount === 10 
-                ? "Great exploration! Normal distribution unlocked!" 
-                : "Amazing progress! All distributions unlocked!"}
-            </span>
-          </div>
-        </div>
-      )}
 
       {/* Main content grid */}
       <div className="grid lg:grid-cols-[1fr,300px] gap-4">
@@ -724,30 +691,29 @@ const ContinuousDistributionsPDF = () => {
 
         {/* Controls */}
         <ControlPanel className="space-y-4">
-          {/* Progress tracker */}
-          <ProgressTracker 
-            current={interactionCount}
-            goal={20}
-            label="Exploration Progress"
+          {/* Progress bar */}
+          <ProgressBar 
+            current={currentStage + 1}
+            total={stages.length}
+            label="Learning Progress"
+            variant="purple"
+          />
+          
+          {/* Navigation */}
+          <ProgressNavigation
+            current={currentStage + 1}
+            total={stages.length}
+            onPrevious={() => setCurrentStage(Math.max(0, currentStage - 1))}
+            onNext={() => setCurrentStage(Math.min(stages.length - 1, currentStage + 1))}
+            variant="purple"
           />
 
-          {/* Distribution selector */}
-          <ControlGroup title="Distribution">
-            <select 
-              value={selectedDist.value} 
-              onChange={(e) => handleDistChange(e.target.value)}
-              className="w-full p-2 rounded bg-neutral-700 text-white border border-neutral-600 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              {distributionOptions.map(opt => (
-                <option 
-                  key={opt.value} 
-                  value={opt.value}
-                  disabled={!unlockedDistributions.includes(opt.value)}
-                >
-                  {opt.label} {!unlockedDistributions.includes(opt.value) && `🔒 (Unlock at ${opt.unlockAt} interactions)`}
-                </option>
-              ))}
-            </select>
+          {/* Current Distribution Info */}
+          <ControlGroup title="Current Distribution">
+            <div className="p-3 bg-neutral-800 rounded-lg">
+              <h3 className="text-lg font-semibold text-white mb-1">{selectedDist.label}</h3>
+              <p className="text-sm text-gray-400">{stages[currentStage].description}</p>
+            </div>
           </ControlGroup>
 
           {/* Real-world context */}

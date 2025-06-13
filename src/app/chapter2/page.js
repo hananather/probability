@@ -19,12 +19,6 @@ const ExpectationVariance = lazy(() =>
     })
 );
 
-const ExpectationVarianceWorkedExample = lazy(() => 
-  import('@/components/02-discrete-random-variables/2-2-2-ExpectationVarianceWorkedExample')
-    .catch(() => {
-      return { default: () => <div className="text-red-500">Failed to load component</div> };
-    })
-);
 
 const LinearTransformations = lazy(() => 
   import('@/components/02-discrete-random-variables/2-3-1-LinearTransformations')
@@ -131,7 +125,7 @@ export default function Chapter2() {
           </ul>
         </>
       ),
-      components: [ExpectationVariance, ExpectationVarianceWorkedExample]
+      components: [ExpectationVariance]
     },
     {
       id: 'transformations',

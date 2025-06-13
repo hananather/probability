@@ -2,6 +2,53 @@
 
 ## Common Issues and Solutions
 
+### 0. Using Absolute Position Instead of Relative Movement (Most Common!)
+
+**Issue**: Handle jumps to mouse position instead of moving smoothly. When you click a resize handle, it immediately collapses or expands to wherever your mouse is.
+
+**Root Cause**: Using `event.x` directly as the new position instead of calculating the movement delta.
+
+```jsx
+// ❌ BAD: Direct position assignment causes jumping
+const dragLeft = d3.drag()
+  .on("drag", function(event, d) {
+    const newX = scale.invert(event.x);
+    // Element jumps to mouse position!
+    updateElement(newX);
+  });
+```
+
+**Solution**: Track initial position and calculate deltas:
+
+```jsx
+// ✅ GOOD: Delta-based movement
+const dragLeft = d3.drag()
+  .on("start", function(event, d) {
+    // Store where the drag started
+    d.dragStartX = event.x;
+    d.initialX = d.x;
+    d.initialWidth = d.width;
+  })
+  .on("drag", function(event, d) {
+    // Calculate how far we've moved
+    const deltaX = event.x - d.dragStartX;
+    
+    // Apply delta to initial position
+    const newX = d.initialX + scale.invert(d.dragStartX + deltaX) - scale.invert(d.dragStartX);
+    
+    // Update with constraints
+    updateElement(Math.max(minX, Math.min(maxX, newX)));
+  });
+```
+
+**The Key Pattern**:
+1. On drag start: Store initial mouse position and element state
+2. On drag: Calculate delta from start position
+3. Apply delta to initial element state
+4. This maintains the relative position between mouse and element
+
+Think of it like picking up a book - when you grab it, the book doesn't jump to your hand position, it maintains its relative position as you move.
+
 ### 1. The SVG Re-rendering Problem
 
 **Issue**: Components rebuild the entire SVG on every state change, causing:

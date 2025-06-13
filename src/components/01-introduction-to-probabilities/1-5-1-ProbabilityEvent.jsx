@@ -25,7 +25,7 @@ const DiceWorkedExample = memo(function DiceWorkedExample({ event }) {
           window.MathJax.typesetClear([contentRef.current]);
         }
         window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          console.error('MathJax error:', err);
+          // Silent error: MathJax error
         });
       }
     };
@@ -157,8 +157,8 @@ function ProbabilityEvent() {
     
     const svg = d3.select(svgRef.current);
     const { width } = svgRef.current.getBoundingClientRect();
-    const height = 400;
-    const margin = { top: 80, right: 40, bottom: 60, left: 60 }; // Increased top margin for dice
+    const height = 500; // Increased from 400 to 500
+    const margin = { top: 120, right: 40, bottom: 60, left: 60 }; // Increased top margin from 80 to 120
     
     svg.selectAll("*").remove();
     svg.attr("viewBox", `0 0 ${width} ${height}`);
@@ -184,7 +184,7 @@ function ProbabilityEvent() {
       const xScale = d3.scaleBand()
         .domain(['Theoretical', 'Experimental'])
         .range([0, innerWidth])
-        .padding(0.4);
+        .padding(0.5);
       
       const yScale = d3.scaleLinear()
         .domain([0, 1])
@@ -207,17 +207,18 @@ function ProbabilityEvent() {
         .attr('fill', d => d.color)
         .attr('opacity', 0.8);
       
-      // Add value labels
+      // Add value labels with proper formatting
       g.selectAll('.label')
         .data(data)
         .join('text')
         .attr('class', 'label')
         .attr('x', d => xScale(d.label) + xScale.bandwidth() / 2)
-        .attr('y', d => yScale(d.value) - 10)
+        .attr('y', d => yScale(d.value) - 5)
         .attr('text-anchor', 'middle')
-        .attr('fill', colors.chart.text)
-        .style('font-size', '18px')
-        .style('font-weight', 'bold')
+        .attr('fill', 'white')
+        .style('font-family', 'monospace')
+        .style('font-size', '16px')
+        .style('font-weight', '600')
         .text(d => d.value.toFixed(3));
       
       // Add axes
@@ -251,7 +252,7 @@ function ProbabilityEvent() {
       const diceSpacing = 10;
       const totalDiceWidth = 6 * dieSize + 5 * diceSpacing;
       const diceStartX = (innerWidth - totalDiceWidth) / 2;
-      const diceY = -65;
+      const diceY = -70; // Moved dice higher to create more space
       
       // Draw all 6 dice
       for (let i = 1; i <= 6; i++) {
@@ -320,11 +321,11 @@ function ProbabilityEvent() {
       // Add event description above dice
       g.append('text')
         .attr('x', innerWidth / 2)
-        .attr('y', diceY - 15)
+        .attr('y', diceY - 55)
         .attr('text-anchor', 'middle')
-        .attr('fill', colors.chart.text)
-        .style('font-size', '16px')
-        .style('font-weight', 'bold')
+        .attr('fill', colorScheme.chart.primary)
+        .style('font-size', '15px')
+        .style('font-weight', '600')
         .text(`Event: ${event.name}`);
       
       // Add favorable outcomes indicator
@@ -332,8 +333,9 @@ function ProbabilityEvent() {
         .attr('x', innerWidth / 2)
         .attr('y', diceY + dieSize + 30)
         .attr('text-anchor', 'middle')
-        .attr('fill', colorScheme.chart.primary)
+        .attr('fill', colorScheme.chart.tertiary)
         .style('font-size', '14px')
+        .style('font-weight', '600')
         .text(`Favorable: {${event.values.join(', ')}}`);
     
   }, [eventType, trials, successes]);
@@ -666,8 +668,8 @@ function ProbabilityEvent() {
 
         {/* Right Panel */}
         <div className="lg:w-2/3 space-y-4">
-          <GraphContainer height="450px">
-            <svg ref={svgRef} style={{ width: "100%", height: 450 }} />
+          <GraphContainer height="550px">
+            <svg ref={svgRef} style={{ width: "100%", height: 550 }} />
           </GraphContainer>
           
           {showDiceExample && (

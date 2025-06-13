@@ -18,7 +18,7 @@ export default function ExpectationVariance() {
   // probabilities for faces 1–6
   const [probs, setProbs] = useState(Array(6).fill(1 / 6));
   // debounce probs for worked example to avoid flicker during drag
-  const [displayProbs, setDisplayProbs] = useState(probs);
+  const [displayProbs, setDisplayProbs] = useState(Array(6).fill(1 / 6));
   useEffect(() => {
     const handler = setTimeout(() => setDisplayProbs(probs), 300);
     return () => clearTimeout(handler);
