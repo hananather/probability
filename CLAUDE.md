@@ -1,10 +1,16 @@
 # Claude.md
 
-This file provides guidance to Claude code when working with code in this repository. 
+This file provides guidance to Claude code when working with code in this repository.
+
+## Project Context
+Educational statistics platform with interactive visualizations for engineering students. Focus on maximizing learning of statistics and probability concepts through interactive diagrams.
+
 
 ## Instructions
-1. Ultrathink and think hard before making any changes. 
+1. Ultrathink and think hard before making any changes.
 2. Launch multiple Claude Code Agents to gather context and plan out the changes before making any changes.
+3. **Educational First**: Every feature should teach something
+4. **Mathematical Rigor**: Use LaTeX for expressions (see `/docs/latex-guide.md`)
 
 Always leverage existing knowledge when planning out and designing a new component or refactoring an existing component.
 
@@ -19,7 +25,7 @@ Use `/src/components/ui/ProgressBar.jsx` for ALL progress indicators:
 import { ProgressBar, ProgressNavigation } from '@/components/ui/ProgressBar';
 
 // Basic progress bar
-<ProgressBar 
+<ProgressBar
   current={stage}
   total={4}
   label="Learning Progress"
@@ -87,7 +93,7 @@ Your visualization should command attention:
 Create clarity through consistent type treatment:
 ```
 Headers:     text-base to text-lg (16-18px), font-semibold
-Labels:      text-sm (14px), regular weight  
+Labels:      text-sm (14px), regular weight
 Data/Numbers: font-mono ALWAYS - no exceptions
 Captions:    text-xs (12px), text-gray-500
 ```
@@ -168,25 +174,20 @@ Before coding, ensure you can answer:
 ## Red Flags to Avoid
 - Tiny visualizations swimming in gray space
 - Forcing horizontal content into vertical layouts (or vice versa)
-- More than 3 font sizes creating visual chaos
 - Numbers not in monospace font
-- Controls dominating over educational content
+- Visuals dominating over educational content
 - Missing hover states and transitions
 - Cramming instead of using progressive disclosure
 
 
-## Project Context
-Educational statistics platform with interactive visualizations for engineering students. Focus on maximizing learning of statistics and probability concepts through interactive diagrams.
+
 
 ## Key Design Patterns
 
 ### Progressive Learning with Milestones
 Build understanding through guided interaction:
-- Set clear goals ("Collect 30 samples to see CLT in action!")
 - Track progress with visual indicators
 - Reveal different insights at different stages
-- Celebrate when milestones are reached
-- Examples: ExpectationVariance, CLTSimulation
 
 ### Responsive Design Patterns
 Always provide great experiences across devices:
@@ -204,13 +205,8 @@ Every action should have immediate visual response:
 - Loading states during calculations
 - Clear indication of current values/selections
 
-### Educational Progression
-Structure components to support learning:
-1. **Start Simple**: Show basic concept first
-2. **Add Complexity**: Introduce parameters/variations
-3. **Provide Insights**: Reveal patterns through interaction
-4. **Connect Theory**: Link to mathematical concepts
-5. **Real-World Context**: Engineering applications
+
+
 
 ### Color Schemes
 Use `createColorScheme()` from design system:
@@ -219,12 +215,7 @@ Use `createColorScheme()` from design system:
 - `'estimation'`: Violet/Cyan/Amber
 - `'inference'`: Teal/Orange/Yellow
 
-## Core Principles
-1. **Educational First**: Every feature should teach something
-2. **Mathematical Rigor**: Use LaTeX for expressions (see `/docs/latex-guide.md`)
-3. **Progressive Disclosure**: Start simple, reveal complexity
-4. **Immediate Feedback**: Show results of every action
-5. **Engineering Context**: Connect to real-world applications
+
 
 ## Development Workflow
 

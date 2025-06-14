@@ -1,0 +1,151 @@
+import { ProgressiveContent, SectionBreak } from '../components/mdx/ProgressiveContent';
+import SampleSpacesEvents from '../components/01-introduction-to-probabilities/1-1-1-SampleSpacesEvents';
+import ConceptSection from '../components/shared/ConceptSection';
+
+<ProgressiveContent>
+
+<div className="text-center mb-8">
+  <h1 className="text-4xl font-bold text-white mb-4">Sample Spaces and Events</h1>
+  <p className="text-xl text-neutral-400">Chapter 1, Section 1</p>
+</div>
+
+<p className="text-lg leading-relaxed text-neutral-300">
+  Let's start with a fundamental question: How do we mathematically describe all possible outcomes of an experiment?
+</p>
+
+<SectionBreak />
+
+## What is a Sample Space?
+
+In probability theory, we use a **sample space** to represent all possible outcomes.
+
+> **Definition:** A sample space $S$ is the set of all possible outcomes of a random experiment.
+
+<SectionBreak />
+
+## Examples
+
+Let's look at some examples:
+
+<ul className="space-y-3 my-4">
+  <li className="flex items-start">
+    <span className="text-blue-500 mr-3 mt-1">•</span>
+    <span><strong>Coin flip:</strong> $S = \{\text{Heads}, \text{Tails}\}$</span>
+  </li>
+  <li className="flex items-start">
+    <span className="text-blue-500 mr-3 mt-1">•</span>
+    <span><strong>Die roll:</strong> $S = \{1, 2, 3, 4, 5, 6\}$</span>
+  </li>
+  <li className="flex items-start">
+    <span className="text-blue-500 mr-3 mt-1">•</span>
+    <span><strong>Two coin flips:</strong> $S = \{HH, HT, TH, TT\}$</span>
+  </li>
+</ul>
+
+Notice how the sample space depends on the experiment!
+
+<SectionBreak />
+
+## What are Events?
+
+An **event** is any subset of the sample space. It represents a collection of outcomes we're interested in.
+
+For example, when rolling a die:
+
+<ul className="space-y-2 my-4">
+  <li className="flex items-start">
+    <span className="text-purple-500 mr-3 mt-1">•</span>
+    <span>Event $A$: "Rolling an even number" = $\{2, 4, 6\}$</span>
+  </li>
+  <li className="flex items-start">
+    <span className="text-purple-500 mr-3 mt-1">•</span>
+    <span>Event $B$: "Rolling less than 3" = $\{1, 2\}$</span>
+  </li>
+</ul>
+
+<SectionBreak />
+
+## Combining Events
+
+We can combine events using set operations:
+
+<div className="space-y-6 my-6">
+  <div className="border-l-4 border-blue-500 pl-6">
+    <h3 className="text-lg font-semibold text-white mb-2">Union ($A \cup B$)</h3>
+    <p className="text-neutral-300 mb-2">Either A or B occurs</p>
+    <p className="text-sm bg-neutral-900 rounded p-3 font-mono">
+      Example: $\{2, 4, 6\} \cup \{1, 2\} = \{1, 2, 4, 6\}$
+    </p>
+  </div>
+  
+  <div className="border-l-4 border-green-500 pl-6">
+    <h3 className="text-lg font-semibold text-white mb-2">Intersection ($A \cap B$)</h3>
+    <p className="text-neutral-300 mb-2">Both A and B occur</p>
+    <p className="text-sm bg-neutral-900 rounded p-3 font-mono">
+      Example: $\{2, 4, 6\} \cap \{1, 2\} = \{2\}$
+    </p>
+  </div>
+  
+  <div className="border-l-4 border-red-500 pl-6">
+    <h3 className="text-lg font-semibold text-white mb-2">Complement ($A'$)</h3>
+    <p className="text-neutral-300 mb-2">A does not occur</p>
+    <p className="text-sm bg-neutral-900 rounded p-3 font-mono">
+      Example: $\{2, 4, 6\}' = \{1, 3, 5\}$
+    </p>
+  </div>
+</div>
+
+<SectionBreak />
+
+## Interactive Visualization
+
+Now let's explore these concepts interactively. Use the Venn diagram below to see how different set operations work.
+
+Try expressions like:
+
+<ul className="space-y-2 my-4">
+  <li className="flex items-start">
+    <span className="text-green-500 mr-3 mt-1">→</span>
+    <span><code className="bg-neutral-800 px-2 py-1 rounded">A∪B</code> (A union B)</span>
+  </li>
+  <li className="flex items-start">
+    <span className="text-green-500 mr-3 mt-1">→</span>
+    <span><code className="bg-neutral-800 px-2 py-1 rounded">A∩C</code> (A intersect C)</span>
+  </li>
+  <li className="flex items-start">
+    <span className="text-green-500 mr-3 mt-1">→</span>
+    <span><code className="bg-neutral-800 px-2 py-1 rounded">(A∪B)'</code> (complement of A union B)</span>
+  </li>
+</ul>
+
+<ConceptSection
+  title="Interactive Venn Diagram"
+  description="Explore set operations visually"
+>
+  <SampleSpacesEvents />
+</ConceptSection>
+
+<SectionBreak />
+
+## Key Takeaways
+
+<div className="bg-blue-950/30 border border-blue-900/50 rounded-lg p-6 my-6">
+  <ul className="space-y-3">
+    <li className="flex items-start">
+      <span className="text-green-500 mr-3 mt-1">✓</span>
+      <span className="text-neutral-200">A sample space contains all possible outcomes</span>
+    </li>
+    <li className="flex items-start">
+      <span className="text-green-500 mr-3 mt-1">✓</span>
+      <span className="text-neutral-200">Events are subsets of the sample space</span>
+    </li>
+    <li className="flex items-start">
+      <span className="text-green-500 mr-3 mt-1">✓</span>
+      <span className="text-neutral-200">We can combine events using union, intersection, and complement</span>
+    </li>
+  </ul>
+</div>
+
+Ready to move on? Next, we'll learn about counting techniques to calculate the size of sample spaces and events.
+
+</ProgressiveContent>

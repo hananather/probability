@@ -4,7 +4,8 @@ const withMDX = require('@next/mdx')({
   options: {
     remarkPlugins: [require('remark-math').default],
     rehypePlugins: [require('rehype-katex').default],
-    providerImportSource: '@mdx-js/react'
+    providerImportSource: '@mdx-js/react',
+    development: process.env.NODE_ENV === 'development'
   }
 });
 
