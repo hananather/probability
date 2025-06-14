@@ -36,6 +36,7 @@ export default function ExpectationVariance() {
   const varianceDataRef = useRef([]);
   const scalesRef = useRef({ x: null, y: null });
   const barsRef = useRef(null);
+  const barGroupsRef = useRef(null);
   const labelsRef = useRef(null);
 
   // derived true stats
@@ -65,7 +66,8 @@ export default function ExpectationVariance() {
     svg.append("rect")
       .attr("width", width)
       .attr("height", height)
-      .attr("fill", "#0a0a0a");
+      .attr("fill", "#0a0a0a")
+      .style("pointer-events", "none");
 
     const data = probs.map((p, i) => ({ face: i + 1, value: p }));
 
@@ -86,6 +88,7 @@ export default function ExpectationVariance() {
     svg.append("g")
       .attr("class", "grid")
       .attr("transform", `translate(${margin.left},0)`)
+      .style("pointer-events", "none")
       .call(d3.axisLeft(y)
         .ticks(5)
         .tickSize(-(width - margin.left - margin.right))
@@ -99,6 +102,7 @@ export default function ExpectationVariance() {
     // X axis
     const xAxis = svg.append("g")
       .attr("transform", `translate(0,${height - margin.bottom})`)
+      .style("pointer-events", "none")
       .call(d3.axisBottom(x).ticks(0));
     
     xAxis.selectAll("path, line").attr("stroke", colors.chart.grid);
@@ -107,6 +111,7 @@ export default function ExpectationVariance() {
     // Y axis
     const yAxis = svg.append("g")
       .attr("transform", `translate(${margin.left},0)`)
+      .style("pointer-events", "none")
       .call(d3.axisLeft(y).tickFormat(d => `${(d * 100).toFixed(0)}%`));
 
     yAxis.selectAll("path, line").attr("stroke", colors.chart.grid);
@@ -114,10 +119,14 @@ export default function ExpectationVariance() {
       .attr("fill", colors.chart.text)
       .style("font-size", "11px");
 
-    // Bars - directly on SVG
-    const bars = svg.selectAll("rect.bar")
+    // Create groups for bars and handles
+    const barGroups = svg.selectAll("g.bar-group")
       .data(data)
-      .join("rect")
+      .join("g")
+      .attr("class", "bar-group");
+
+    // Bars - directly on SVG
+    const bars = barGroups.append("rect")
       .attr("class", "bar")
       .attr("x", d => x(d.face))
       .attr("y", d => y(d.value))
@@ -126,67 +135,144 @@ export default function ExpectationVariance() {
       .attr("fill", colorScheme.chart.primary)
       .attr("opacity", 0.8)
       .attr("rx", 4)
-      .style("cursor", "ns-resize");
+      .style("cursor", "ns-resize")
+      .style("transition", "all 150ms ease-in-out");
+
+    // Add drag handles at the top of each bar
+    const handles = barGroups.append("rect")
+      .attr("class", "drag-handle")
+      .attr("x", d => x(d.face) + x.bandwidth() / 2 - 20)
+      .attr("y", d => y(d.value) - 6)
+      .attr("width", 40)
+      .attr("height", 12)
+      .attr("rx", 6)
+      .attr("fill", "white")
+      .attr("opacity", 0.3)
+      .style("cursor", "ns-resize")
+      .style("transition", "all 150ms ease-in-out");
 
     barsRef.current = bars;
+    barGroupsRef.current = barGroups;
 
-    // Hover effects
-    bars
+    // Hover effects for both bars and handles
+    barGroups
       .on("mouseover", function(_, d) { 
-        d3.select(this)
-          .transition()
-          .duration(150)
+        const group = d3.select(this);
+        group.select(".bar")
+          .style("transition", "all 150ms ease-in-out")
           .attr("opacity", 1)
-          .attr("fill", colorScheme.chart.primaryLight); 
+          .attr("fill", colorScheme.chart.primaryLight);
+        group.select(".drag-handle")
+          .style("transition", "all 150ms ease-in-out")
+          .attr("opacity", 0.6);
       })
       .on("mouseout", function(_, d) { 
-        d3.select(this)
-          .transition()
-          .duration(150)
+        const group = d3.select(this);
+        group.select(".bar")
+          .style("transition", "all 150ms ease-in-out")
           .attr("opacity", 0.8)
-          .attr("fill", colorScheme.chart.primary); 
+          .attr("fill", colorScheme.chart.primary);
+        group.select(".drag-handle")
+          .style("transition", "all 150ms ease-in-out")
+          .attr("opacity", 0.3);
       });
 
     // Helper function to update bars directly
     const updateBarsDirectly = (newProbs) => {
       const y = scalesRef.current.y;
       
-      bars.each(function(d, i) {
-        d3.select(this)
-          .attr("y", y(newProbs[i]))
-          .attr("height", y(0) - y(newProbs[i]));
-      });
-      
-      // Update labels
-      labelsRef.current.each(function(d, i) {
-        d3.select(this).text(`${(newProbs[i] * 100).toFixed(0)}%`);
+      // Update everything in a single pass for perfect synchronization
+      barGroups.each(function(d, i) {
+        const group = d3.select(this);
+        const yPos = y(newProbs[i]);
+        
+        // Batch all updates for this bar
+        group.select(".bar")
+          .attr("y", yPos)
+          .attr("height", y(0) - yPos);
+        group.select(".drag-handle")
+          .attr("y", yPos - 6);
+        
+        // Update the corresponding label immediately
+        d3.select(labelsRef.current.nodes()[i])
+          .attr("y", yPos - 5)
+          .text(`${(newProbs[i] * 100).toFixed(0)}%`);
       });
     };
 
-    // Drag behavior
-    bars.call(
+    // Local probabilities for smooth dragging
+    let dragProbs = [...probs];
+    
+    // Drag behavior on entire bar group
+    barGroups.call(
       d3.drag()
+        .on("start", function(event, d) {
+          const group = d3.select(this);
+          // Get fresh copy of current probabilities
+          dragProbs = [...probs];
+          
+          // Remove transitions during drag
+          group.selectAll(".bar, .drag-handle")
+            .style("transition", "none");
+          svg.selectAll(".bar-label")
+            .style("transition", "none");
+            
+          // Change handle color to indicate active dragging
+          group.select(".drag-handle")
+            .attr("fill", "#60a5fa")
+            .attr("opacity", 1);
+        })
         .on("drag", (event, d) => {
           const newVal = Math.max(0, Math.min(1, y.invert(event.y)));
-          const oldVal = probs[d.face - 1];
+          const faceIndex = d.face - 1;
+          const oldVal = dragProbs[faceIndex];
           
-          // Redistribute probabilities
-          let updated = probs.map((p, idx) =>
-            idx === d.face - 1 ? newVal : (oldVal === 1 ? (1 - newVal) / 5 : p * (1 - newVal) / (1 - oldVal))
-          );
           
-          // Ensure all values are non-negative and normalize to sum = 1
-          updated = updated.map(p => Math.max(0, p));
-          const sum = updated.reduce((a, b) => a + b, 0);
-          if (sum > 0) {
-            updated = updated.map(p => p / sum);
+          // Optimized redistribution in a single pass
+          const updated = new Array(6);
+          let sum = 0;
+          
+          // Calculate new probabilities and sum in one loop
+          for (let i = 0; i < 6; i++) {
+            if (i === faceIndex) {
+              updated[i] = newVal;
+            } else {
+              // Redistribute proportionally
+              const ratio = oldVal === 1 ? (1 - newVal) / 5 : (1 - newVal) / (1 - oldVal);
+              updated[i] = Math.max(0, dragProbs[i] * ratio);
+            }
+            sum += updated[i];
           }
           
-          // Update bars directly without re-rendering
-          updateBarsDirectly(updated);
+          // Normalize in place if needed
+          if (sum > 0 && Math.abs(sum - 1) > 0.0001) {
+            const invSum = 1 / sum;
+            for (let i = 0; i < 6; i++) {
+              updated[i] *= invSum;
+            }
+          }
           
-          // Update React state (for other components)
-          setProbs(updated);
+          // Store for next calculation
+          dragProbs = updated;
+          
+          // Update bars directly without re-rendering React - IMMEDIATE update
+          updateBarsDirectly(updated);
+        })
+        .on("end", function(event, d) {
+          const group = d3.select(this);
+          // Restore transitions
+          group.selectAll(".bar, .drag-handle")
+            .style("transition", "all 150ms ease-in-out");
+          svg.selectAll(".bar-label")
+            .style("transition", "all 150ms ease-in-out");
+            
+          // Reset handle color
+          group.select(".drag-handle")
+            .attr("fill", "white")
+            .attr("opacity", 0.3);
+            
+          // Only update React state once at the end
+          setProbs(dragProbs);
           expectedDataRef.current = [];
           varianceDataRef.current = [];
         })
@@ -202,6 +288,8 @@ export default function ExpectationVariance() {
       .attr("text-anchor", "middle")
       .attr("fill", colors.chart.text)
       .attr("font-size", "12px")
+      .style("font-weight", "600")
+      .style("pointer-events", "none")
       .text(d => `${(d.value * 100).toFixed(0)}%`);
 
     labelsRef.current = labels;
@@ -210,7 +298,8 @@ export default function ExpectationVariance() {
     const dieGroups = svg.selectAll("g.die-face")
       .data(data)
       .join("g")
-      .attr("class", "die-face");
+      .attr("class", "die-face")
+      .style("pointer-events", "none");
 
     // Die background
     dieGroups.append("rect")
@@ -236,15 +325,20 @@ export default function ExpectationVariance() {
 
   // Update bars when probs change externally (e.g., reset)
   useEffect(() => {
-    if (barsRef.current && scalesRef.current.y) {
+    if (barGroupsRef.current && scalesRef.current.y) {
       const y = scalesRef.current.y;
       
-      barsRef.current.each(function(d, i) {
-        d3.select(this)
+      barGroupsRef.current.each(function(d, i) {
+        const group = d3.select(this);
+        group.select(".bar")
           .transition()
           .duration(300)
           .attr("y", y(probs[i]))
           .attr("height", y(0) - y(probs[i]));
+        group.select(".drag-handle")
+          .transition()
+          .duration(300)
+          .attr("y", y(probs[i]) - 6);
       });
       
       if (labelsRef.current) {
@@ -273,7 +367,8 @@ export default function ExpectationVariance() {
     svg.append("rect")
       .attr("width", width)
       .attr("height", height)
-      .attr("fill", "#0a0a0a");
+      .attr("fill", "#0a0a0a")
+      .style("pointer-events", "none");
 
     const n = Math.max(expectedDataRef.current.length, 1);
     const xScale = d3.scaleLinear()

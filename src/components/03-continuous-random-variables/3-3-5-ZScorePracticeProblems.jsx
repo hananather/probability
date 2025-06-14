@@ -1,10 +1,64 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useSafeMathJax } from '../../utils/mathJaxFix';
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { createColorScheme, typography } from "../../lib/design-system";
 import { Button } from "../ui/button";
 import { CheckCircle, XCircle, RefreshCw, HelpCircle, ChevronRight } from "lucide-react";
 import * as jStat from "jstat";
+
+// Memoized component for problem type buttons to prevent re-renders
+const ProblemTypeButton = React.memo(({ type, isSelected, onClick }) => {
+  const buttonRef = useRef(null);
+  
+  // Use safe MathJax processing with error handling
+  useSafeMathJax(buttonRef, []);
+  
+  return (
+    <button
+      ref={buttonRef}
+      onClick={onClick}
+      className={`w-full p-3 rounded-lg border transition-all duration-200 text-left ${
+        isSelected
+          ? 'bg-blue-500/20 border-blue-500/50 shadow-sm'
+          : 'bg-gray-800/50 border-gray-700 hover:bg-gray-700/50'
+      }`}
+    >
+      <div className="font-medium text-sm">{type.title}</div>
+      <div className="text-xs text-muted-foreground mt-0.5">{type.description}</div>
+    </button>
+  );
+});
+
+// Memoized component for Quick Reference section
+const QuickReference = React.memo(() => {
+  const contentRef = useRef(null);
+  
+  // Use safe MathJax processing with error handling
+  useSafeMathJax(contentRef, []);
+  
+  return (
+    <div ref={contentRef} className="mt-6 grid grid-cols-2 gap-4">
+      <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+        <h4 className="font-semibold text-sm mb-3 text-muted-foreground">Formulas</h4>
+        <div className="space-y-2 font-mono text-sm">
+          <div className="text-blue-400" dangerouslySetInnerHTML={{ __html: `\\(z = \\frac{x - \\mu}{\\sigma}\\)` }} />
+          <div dangerouslySetInnerHTML={{ __html: `\\(Z \\sim N(0, 1)\\)` }} />
+          <div dangerouslySetInnerHTML={{ __html: `\\(P(Z \\leq z) = \\Phi(z)\\)` }} />
+          <div dangerouslySetInnerHTML={{ __html: `\\(P(a < Z < b) = \\Phi(b) - \\Phi(a)\\)` }} />
+        </div>
+      </div>
+      <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+        <h4 className="font-semibold text-sm mb-3 text-muted-foreground">Empirical Rule</h4>
+        <div className="space-y-2 font-mono text-sm">
+          <div><span dangerouslySetInnerHTML={{ __html: `\\(\\pm 1\\sigma\\)` }} />: <span className="text-emerald-400">68%</span></div>
+          <div><span dangerouslySetInnerHTML={{ __html: `\\(\\pm 2\\sigma\\)` }} />: <span className="text-emerald-400">95%</span></div>
+          <div><span dangerouslySetInnerHTML={{ __html: `\\(\\pm 3\\sigma\\)` }} />: <span className="text-emerald-400">99.7%</span></div>
+        </div>
+      </div>
+    </div>
+  );
+});
 
 const ZScorePracticeProblems = () => {
   const colors = createColorScheme('probability');
@@ -14,7 +68,7 @@ const ZScorePracticeProblems = () => {
     {
       id: 'z-to-p',
       title: 'Find Probability from Z-Score',
-      description: 'Given a z-score, find P(Z ≤ z)'
+      description: <span>Given a z-score, find <span dangerouslySetInnerHTML={{ __html: `\\(P(Z \\leq z)\\)` }} /></span>
     },
     {
       id: 'p-to-z',
@@ -24,17 +78,17 @@ const ZScorePracticeProblems = () => {
     {
       id: 'x-to-z',
       title: 'Convert X to Z-Score',
-      description: 'Given X ~ N(μ, σ²), convert x to z'
+      description: <span>Given <span dangerouslySetInnerHTML={{ __html: `\\(X \\sim N(\\mu, \\sigma^2)\\)` }} />, convert <span dangerouslySetInnerHTML={{ __html: `\\(x\\)` }} /> to <span dangerouslySetInnerHTML={{ __html: `\\(z\\)` }} /></span>
     },
     {
       id: 'range',
       title: 'Find Probability in Range',
-      description: 'Find P(a < X < b) for normal distribution'
+      description: <span>Find <span dangerouslySetInnerHTML={{ __html: `\\(P(a < X < b)\\)` }} /> for normal distribution</span>
     },
     {
       id: 'empirical',
       title: 'Apply Empirical Rule',
-      description: 'Use the 68-95-99.7 rule'
+      description: <span>Use the <span dangerouslySetInnerHTML={{ __html: `\\(68\\)` }} />-<span dangerouslySetInnerHTML={{ __html: `\\(95\\)` }} />-<span dangerouslySetInnerHTML={{ __html: `\\(99.7\\)` }} /> rule</span>
     }
   ];
   
@@ -58,12 +112,12 @@ const ZScorePracticeProblems = () => {
         const p = jStat.normal.cdf(parseFloat(z), 0, 1);
         problem = {
           type,
-          question: `Find P(Z ≤ ${z})`,
+          question: <span>Find <span dangerouslySetInnerHTML={{ __html: `\\(P(Z \\leq ${z})\\)` }} /></span>,
           given: { z: parseFloat(z) },
           answer: p,
           tolerance: 0.0005,
-          hint: `Use the standard normal CDF: Φ(${z})`,
-          solution: `P(Z ≤ ${z}) = Φ(${z}) = ${p.toFixed(4)}`
+          hint: <span>Use the standard normal CDF: <span dangerouslySetInnerHTML={{ __html: `\\(\\Phi(${z})\\)` }} /></span>,
+          solution: <span><span dangerouslySetInnerHTML={{ __html: `\\(P(Z \\leq ${z}) = \\Phi(${z}) = ${p.toFixed(4)}\\)` }} /></span>
         };
         break;
         
@@ -72,12 +126,12 @@ const ZScorePracticeProblems = () => {
         const zScore = jStat.normal.inv(prob, 0, 1);
         problem = {
           type,
-          question: `Find z such that P(Z ≤ z) = ${prob.toFixed(3)}`,
+          question: <span>Find <span dangerouslySetInnerHTML={{ __html: `\\(z\\)` }} /> such that <span dangerouslySetInnerHTML={{ __html: `\\(P(Z \\leq z) = ${prob.toFixed(3)}\\)` }} /></span>,
           given: { p: prob },
           answer: zScore,
           tolerance: 0.005,
-          hint: `Use the inverse normal CDF: Φ⁻¹(${prob.toFixed(3)})`,
-          solution: `z = Φ⁻¹(${prob.toFixed(3)}) = ${zScore.toFixed(3)}`
+          hint: <span>Use the inverse normal CDF: <span dangerouslySetInnerHTML={{ __html: `\\(\\Phi^{-1}(${prob.toFixed(3)})\\)` }} /></span>,
+          solution: <span><span dangerouslySetInnerHTML={{ __html: `\\(z = \\Phi^{-1}(${prob.toFixed(3)}) = ${zScore.toFixed(3)}\\)` }} /></span>
         };
         break;
         
@@ -88,12 +142,12 @@ const ZScorePracticeProblems = () => {
         const zCalc = (x - mu) / sigma;
         problem = {
           type,
-          question: `Given X ~ N(${mu}, ${sigma}²), find the z-score for x = ${x.toFixed(1)}`,
+          question: <span>Given <span dangerouslySetInnerHTML={{ __html: `\\(X \\sim N(${mu}, ${sigma}^2)\\)` }} />, find the z-score for <span dangerouslySetInnerHTML={{ __html: `\\(x = ${x.toFixed(1)}\\)` }} /></span>,
           given: { mu, sigma, x },
           answer: zCalc,
           tolerance: 0.005,
-          hint: `Use z = (x - μ) / σ = (${x.toFixed(1)} - ${mu}) / ${sigma}`,
-          solution: `z = (${x.toFixed(1)} - ${mu}) / ${sigma} = ${zCalc.toFixed(3)}`
+          hint: <span>Use <span dangerouslySetInnerHTML={{ __html: `\\(z = \\frac{x - \\mu}{\\sigma} = \\frac{${x.toFixed(1)} - ${mu}}{${sigma}}\\)` }} /></span>,
+          solution: <span><span dangerouslySetInnerHTML={{ __html: `\\(z = \\frac{${x.toFixed(1)} - ${mu}}{${sigma}} = ${zCalc.toFixed(3)}\\)` }} /></span>
         };
         break;
         
@@ -107,12 +161,12 @@ const ZScorePracticeProblems = () => {
         const pRange = jStat.normal.cdf(z2, 0, 1) - jStat.normal.cdf(z1, 0, 1);
         problem = {
           type,
-          question: `Given X ~ N(${muRange}, ${sigmaRange}²), find P(${a.toFixed(1)} < X < ${b.toFixed(1)})`,
+          question: <span>Given <span dangerouslySetInnerHTML={{ __html: `\\(X \\sim N(${muRange}, ${sigmaRange}^2)\\)` }} />, find <span dangerouslySetInnerHTML={{ __html: `\\(P(${a.toFixed(1)} < X < ${b.toFixed(1)})\\)` }} /></span>,
           given: { mu: muRange, sigma: sigmaRange, a, b },
           answer: pRange,
           tolerance: 0.0005,
-          hint: `Convert to z-scores: z₁ = ${z1.toFixed(2)}, z₂ = ${z2.toFixed(2)}`,
-          solution: `P(${a.toFixed(1)} < X < ${b.toFixed(1)}) = Φ(${z2.toFixed(2)}) - Φ(${z1.toFixed(2)}) = ${pRange.toFixed(4)}`
+          hint: <span>Convert to z-scores: <span dangerouslySetInnerHTML={{ __html: `\\(z_1 = ${z1.toFixed(2)}\\)` }} />, <span dangerouslySetInnerHTML={{ __html: `\\(z_2 = ${z2.toFixed(2)}\\)` }} /></span>,
+          solution: <span><span dangerouslySetInnerHTML={{ __html: `\\(P(${a.toFixed(1)} < X < ${b.toFixed(1)}) = \\Phi(${z2.toFixed(2)}) - \\Phi(${z1.toFixed(2)}) = ${pRange.toFixed(4)}\\)` }} /></span>
         };
         break;
         
@@ -123,12 +177,12 @@ const ZScorePracticeProblems = () => {
         const empiricalProbs = { 1: 0.68, 2: 0.95, 3: 0.997 };
         problem = {
           type,
-          question: `Given X ~ N(${muEmp}, ${sigmaEmp}²), what percentage of values fall within ${numSigmas}σ of the mean?`,
+          question: <span>Given <span dangerouslySetInnerHTML={{ __html: `\\(X \\sim N(${muEmp}, ${sigmaEmp}^2)\\)` }} />, what percentage of values fall within <span dangerouslySetInnerHTML={{ __html: `\\(${numSigmas}\\sigma\\)` }} /> of the mean?</span>,
           given: { mu: muEmp, sigma: sigmaEmp, numSigmas },
           answer: empiricalProbs[numSigmas],
           tolerance: 0.005,
-          hint: `Use the empirical rule: ${numSigmas}σ corresponds to a specific percentage`,
-          solution: `Within ±${numSigmas}σ: approximately ${(empiricalProbs[numSigmas] * 100).toFixed(1)}% of values`
+          hint: <span>Use the empirical rule: <span dangerouslySetInnerHTML={{ __html: `\\(${numSigmas}\\sigma\\)` }} /> corresponds to a specific percentage</span>,
+          solution: <span>Within <span dangerouslySetInnerHTML={{ __html: `\\(\\pm ${numSigmas}\\sigma\\)` }} />: approximately <span dangerouslySetInnerHTML={{ __html: `\\(${(empiricalProbs[numSigmas] * 100).toFixed(1)}\\%\\)` }} /> of values</span>
         };
         break;
     }
@@ -190,6 +244,86 @@ const ZScorePracticeProblems = () => {
   
   const stats = getStats();
   
+  // Memoized component for problem display
+  const ProblemDisplay = React.memo(({ problemNumber, question }) => {
+    const contentRef = useRef(null);
+    
+    useEffect(() => {
+      const processMathJax = () => {
+        if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+          if (window.MathJax.typesetClear) {
+            window.MathJax.typesetClear([contentRef.current]);
+          }
+          window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        }
+      };
+      processMathJax();
+      const timeoutId = setTimeout(processMathJax, 100);
+      return () => clearTimeout(timeoutId);
+    }, [question]);
+    
+    return (
+      <div ref={contentRef} className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-sm font-medium text-muted-foreground">Problem</span>
+          <span className="text-2xl font-bold font-mono text-blue-400">{problemNumber}</span>
+        </div>
+        <p className="text-xl leading-relaxed">{question}</p>
+      </div>
+    );
+  });
+  
+  // Memoized component for hint display
+  const HintDisplay = React.memo(({ hint }) => {
+    const contentRef = useRef(null);
+    
+    useEffect(() => {
+      const processMathJax = () => {
+        if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+          if (window.MathJax.typesetClear) {
+            window.MathJax.typesetClear([contentRef.current]);
+          }
+          window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        }
+      };
+      processMathJax();
+      const timeoutId = setTimeout(processMathJax, 100);
+      return () => clearTimeout(timeoutId);
+    }, [hint]);
+    
+    return (
+      <div ref={contentRef} className="mt-3 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+        <p className="text-sm">{hint}</p>
+      </div>
+    );
+  });
+  
+  // Memoized component for solution display
+  const SolutionDisplay = React.memo(({ solution }) => {
+    const contentRef = useRef(null);
+    
+    useEffect(() => {
+      const processMathJax = () => {
+        if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+          if (window.MathJax.typesetClear) {
+            window.MathJax.typesetClear([contentRef.current]);
+          }
+          window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        }
+      };
+      processMathJax();
+      const timeoutId = setTimeout(processMathJax, 100);
+      return () => clearTimeout(timeoutId);
+    }, [solution]);
+    
+    return (
+      <div ref={contentRef} className="pt-3 border-t border-gray-700">
+        <p className="text-sm font-semibold mb-2">Solution</p>
+        <p className="font-mono text-sm leading-relaxed">{solution}</p>
+      </div>
+    );
+  });
+  
   return (
     <div className="w-full max-w-6xl mx-auto space-y-4">
       {/* Header with Streak and New Problem */}
@@ -221,21 +355,15 @@ const ZScorePracticeProblems = () => {
               <h3 className="text-base font-semibold mb-3">Problem Type</h3>
               <div className="space-y-2">
                 {problemTypes.map(type => (
-                  <button
+                  <ProblemTypeButton
                     key={type.id}
+                    type={type}
+                    isSelected={selectedType === type.id}
                     onClick={() => {
                       setSelectedType(type.id);
                       generateProblem(type.id);
                     }}
-                    className={`w-full p-3 rounded-lg border transition-all duration-200 text-left ${
-                      selectedType === type.id
-                        ? 'bg-blue-500/20 border-blue-500/50 shadow-sm'
-                        : 'bg-gray-800/50 border-gray-700 hover:bg-gray-700/50'
-                    }`}
-                  >
-                    <div className="font-medium text-sm">{type.title}</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">{type.description}</div>
-                  </button>
+                  />
                 ))}
               </div>
             </div>
@@ -281,13 +409,10 @@ const ZScorePracticeProblems = () => {
             {currentProblem && (
               <div className="space-y-6">
                 {/* Problem Display */}
-                <div className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-sm font-medium text-muted-foreground">Problem</span>
-                    <span className="text-2xl font-bold font-mono text-blue-400">{stats.total + 1}</span>
-                  </div>
-                  <p className="text-xl leading-relaxed">{currentProblem.question}</p>
-                </div>
+                <ProblemDisplay 
+                  problemNumber={stats.total + 1} 
+                  question={currentProblem.question} 
+                />
                 
                 {/* Answer Input */}
                 <div className="space-y-4">
@@ -332,9 +457,7 @@ const ZScorePracticeProblems = () => {
                       </Button>
                       
                       {showHint && (
-                        <div className="mt-3 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                          <p className="text-sm">{currentProblem.hint}</p>
-                        </div>
+                        <HintDisplay hint={currentProblem.hint} />
                       )}
                     </div>
                   )}
@@ -368,10 +491,7 @@ const ZScorePracticeProblems = () => {
                               </div>
                             </div>
                           )}
-                          <div className="pt-3 border-t border-gray-700">
-                            <p className="text-sm font-semibold mb-2">Solution</p>
-                            <p className="font-mono text-sm leading-relaxed">{currentProblem.solution}</p>
-                          </div>
+                          <SolutionDisplay solution={currentProblem.solution} />
                         </div>
                       </div>
                       
@@ -389,25 +509,7 @@ const ZScorePracticeProblems = () => {
                 </div>
                 
                 {/* Quick Reference */}
-                <div className="mt-6 grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-                    <h4 className="font-semibold text-sm mb-3 text-muted-foreground">Formulas</h4>
-                    <div className="space-y-2 font-mono text-sm">
-                      <div className="text-blue-400">z = (x - μ) / σ</div>
-                      <div>Z ~ N(0, 1)</div>
-                      <div>P(Z ≤ z) = Φ(z)</div>
-                      <div>P(a {"<"} Z {"<"} b) = Φ(b) - Φ(a)</div>
-                    </div>
-                  </div>
-                  <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-                    <h4 className="font-semibold text-sm mb-3 text-muted-foreground">Empirical Rule</h4>
-                    <div className="space-y-2 font-mono text-sm">
-                      <div>±1σ: <span className="text-emerald-400">68%</span></div>
-                      <div>±2σ: <span className="text-emerald-400">95%</span></div>
-                      <div>±3σ: <span className="text-emerald-400">99.7%</span></div>
-                    </div>
-                  </div>
-                </div>
+                <QuickReference />
               </div>
             )}
           </CardContent>

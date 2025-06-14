@@ -1,13 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { 
-  select,
-  scaleBand,
-  scaleLinear,
-  axisBottom,
-  axisLeft,
-  format
-} from '../../utils/d3-utils';
+import * as d3 from "d3";
 import { 
   VisualizationContainer, 
   VisualizationSection,
@@ -29,6 +22,16 @@ export default function CoinFlipSimulation() {
   
   const svgRef = useRef(null);
   const contentRef = useRef(null);
+  const scalesRef = useRef({ x0: null, x1: null, y: null });
+  const elementsRef = useRef({
+    observedBars: null,
+    theoreticalBars: null,
+    dragHandles: null,
+    valueLabels: null,
+    countLabels: null,
+    convergenceText: null,
+    ciLines: null
+  });
   
   const totalFlips = counts[0] + counts[1];
   
@@ -71,48 +74,12 @@ export default function CoinFlipSimulation() {
     return () => clearTimeout(timeoutId);
   }, [totalFlips, trueProb, counts]);
   
-  // D3 visualization
+  // Initialize D3 visualization once
   useEffect(() => {
-    const [heads, tails] = counts;
-    const total = totalFlips;
-    
-    // Apply Laplace smoothing for small samples to prevent extreme bars
-    // This prevents the visual issue where one bar shoots to 100% with n=1
-    let observedHeadsProb, observedTailsProb;
-    if (total === 0) {
-      observedHeadsProb = 0.5;
-      observedTailsProb = 0.5;
-    } else if (total < 5) {
-      // Add pseudo-counts (Laplace smoothing) to avoid 0% or 100% bars
-      const smoothingFactor = 0.5;
-      observedHeadsProb = (heads + smoothingFactor) / (total + 2 * smoothingFactor);
-      observedTailsProb = (tails + smoothingFactor) / (total + 2 * smoothingFactor);
-    } else {
-      observedHeadsProb = heads / total;
-      observedTailsProb = tails / total;
-    }
-    
-    const data = [
-      {
-        state: "Observed",
-        values: [
-          { side: "Heads", value: observedHeadsProb, count: heads },
-          { side: "Tails", value: observedTailsProb, count: tails }
-        ]
-      },
-      {
-        state: "Theoretical",
-        values: [
-          { side: "Heads", value: trueProb },
-          { side: "Tails", value: 1 - trueProb }
-        ]
-      }
-    ];
-    
-    const svg = select(svgRef.current);
+    const svg = d3.select(svgRef.current);
     const { width } = svgRef.current.getBoundingClientRect();
     const height = 700;
-    const margin = { top: 60, right: 40, bottom: 80, left: 80 };
+    const margin = { top: 70, right: 40, bottom: 80, left: 80 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
@@ -123,103 +90,66 @@ export default function CoinFlipSimulation() {
     svg.append("rect")
       .attr("width", width)
       .attr("height", height)
-      .attr("fill", "#0a0a0a");
+      .attr("fill", "#0a0a0a")
+      .style("pointer-events", "none");
     
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
     
+    // Initialize data structure
+    const initialData = [
+      {
+        state: "Observed",
+        values: [
+          { side: "Heads", value: 0, count: 0 },
+          { side: "Tails", value: 0, count: 0 }
+        ]
+      },
+      {
+        state: "Theoretical",
+        values: [
+          { side: "Heads", value: 0.5 },
+          { side: "Tails", value: 0.5 }
+        ]
+      }
+    ];
+    
     // Scales
-    const x0 = scaleBand()
-      .domain(data.map(d => d.state))
+    const x0 = d3.scaleBand()
+      .domain(initialData.map(d => d.state))
       .range([0, innerWidth])
       .padding(0.3);
     
-    const x1 = scaleBand()
-      .domain(data[0].values.map(d => d.side))
+    const x1 = d3.scaleBand()
+      .domain(initialData[0].values.map(d => d.side))
       .range([0, x0.bandwidth()])
       .padding(0.1);
     
-    const y = scaleLinear()
+    // Adjust y scale to leave room for legend
+    const y = d3.scaleLinear()
       .domain([0, 1])
-      .range([innerHeight, 0]);
+      .range([innerHeight, 60]); // Leave 60px at top for legend with safe padding
+    
+    scalesRef.current = { x0, x1, y };
     
     // Grid lines
     g.append("g")
       .attr("class", "grid")
-      .call(axisLeft(y)
+      .style("pointer-events", "none")
+      .call(d3.axisLeft(y)
         .ticks(5)
         .tickSize(-innerWidth)
         .tickFormat(""))
       .style("stroke-dasharray", "3,3")
-      .style("opacity", 0.3);
-    
-    // Draw bars
-    const groups = g.selectAll("g.state")
-      .data(data)
-      .enter().append("g")
-      .attr("class", "state")
-      .attr("transform", d => `translate(${x0(d.state)},0)`);
-    
-    const bars = groups.selectAll("rect")
-      .data(d => d.values.map(v => ({ ...v, state: d.state })))
-      .enter().append("rect")
-      .attr("x", d => x1(d.side))
-      .attr("y", innerHeight)
-      .attr("width", x1.bandwidth())
-      .attr("height", 0)
-      .attr("rx", 4)
-      .attr("fill", d => {
-        if (d.state === "Observed") {
-          return d.side === "Heads" ? colorScheme.chart.primary : colorScheme.chart.secondary;
-        } else {
-          return d.side === "Heads" ? colorScheme.chart.primary + "60" : colorScheme.chart.secondary + "60";
-        }
-      })
-      .attr("stroke", d => {
-        if (d.state === "Theoretical") {
-          return d.side === "Heads" ? colorScheme.chart.primary : colorScheme.chart.secondary;
-        }
-        return "none";
-      })
-      .attr("stroke-width", 2)
-      .attr("stroke-dasharray", d => d.state === "Theoretical" ? "5,5" : "none");
-    
-    // Animate bars
-    bars.transition()
-      .duration(300)
-      .attr("y", d => y(d.value))
-      .attr("height", d => innerHeight - y(d.value));
-    
-    // Value labels
-    groups.selectAll("text.value")
-      .data(d => d.values.map(v => ({ ...v, state: d.state })))
-      .enter().append("text")
-      .attr("class", "value")
-      .attr("x", d => x1(d.side) + x1.bandwidth() / 2)
-      .attr("y", d => y(d.value) - 5)
-      .attr("text-anchor", "middle")
-      .attr("fill", colors.chart.text)
-      .style("font-size", "14px")
-      .style("font-weight", "600")
-      .text(d => `${(d.value * 100).toFixed(2)}%`);
-    
-    // Count labels for observed
-    groups.selectAll("text.count")
-      .data(d => d.state === "Observed" ? d.values.map(v => ({ ...v, state: d.state })) : [])
-      .enter().append("text")
-      .attr("class", "count")
-      .attr("x", d => x1(d.side) + x1.bandwidth() / 2)
-      .attr("y", d => y(d.value) + 20)
-      .attr("text-anchor", "middle")
-      .attr("fill", colors.chart.text)
-      .style("font-size", "12px")
-      .style("opacity", 0.8)
-      .text(d => `n = ${d.count}`);
+      .style("opacity", 0.3)
+      .selectAll("line")
+      .style("stroke", colors.chart.grid);
     
     // X axis
     const xAxis = g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
-      .call(axisBottom(x0));
+      .style("pointer-events", "none")
+      .call(d3.axisBottom(x0));
     
     xAxis.selectAll("path, line").attr("stroke", colors.chart.grid);
     xAxis.selectAll("text")
@@ -229,9 +159,10 @@ export default function CoinFlipSimulation() {
     
     // Y axis
     const yAxis = g.append("g")
-      .call(axisLeft(y)
+      .style("pointer-events", "none")
+      .call(d3.axisLeft(y)
         .ticks(5)
-        .tickFormat(format(".0%")));
+        .tickFormat(d3.format(".0%")));
     
     yAxis.selectAll("path, line").attr("stroke", colors.chart.grid);
     yAxis.selectAll("text")
@@ -249,10 +180,154 @@ export default function CoinFlipSimulation() {
       .attr("fill", colors.chart.text)
       .text("Probability");
     
+    // Create groups for observed and theoretical
+    const groups = g.selectAll("g.state")
+      .data(initialData)
+      .enter().append("g")
+      .attr("class", d => `state ${d.state.toLowerCase()}`)
+      .attr("transform", d => `translate(${x0(d.state)},0)`);
+    
+    // Create bar groups for each value
+    const barGroups = groups.selectAll("g.bar-group")
+      .data(d => d.values.map(v => ({ ...v, state: d.state })))
+      .enter().append("g")
+      .attr("class", "bar-group");
+    
+    // Create bars
+    const bars = barGroups.append("rect")
+      .attr("class", "bar")
+      .attr("x", d => x1(d.side))
+      .attr("y", innerHeight)
+      .attr("width", x1.bandwidth())
+      .attr("height", 0)
+      .attr("rx", 4)
+      .attr("fill", d => {
+        if (d.state === "Observed") {
+          return d.side === "Heads" ? colorScheme.chart.primary : colorScheme.chart.secondary;
+        } else {
+          return d.side === "Heads" ? colorScheme.chart.primary : colorScheme.chart.secondary;
+        }
+      })
+      .attr("opacity", d => d.state === "Theoretical" ? 0.6 : 0.8)
+      .style("cursor", d => d.state === "Theoretical" ? "ns-resize" : "default")
+      .style("transition", "all 150ms ease-in-out");
+    
+    // Add drag handles for theoretical bars
+    const handles = barGroups.filter(d => d.state === "Theoretical")
+      .append("rect")
+      .attr("class", "drag-handle")
+      .attr("x", d => x1(d.side) + x1.bandwidth() / 2 - 20)
+      .attr("y", d => y(d.value) - 6)
+      .attr("width", 40)
+      .attr("height", 12)
+      .attr("rx", 6)
+      .attr("fill", "white")
+      .attr("opacity", 0.3)
+      .style("cursor", "ns-resize")
+      .style("transition", "all 150ms ease-in-out");
+    
+    // Hover effects for theoretical bars
+    g.selectAll(".theoretical .bar-group")
+      .on("mouseover", function() {
+        const group = d3.select(this);
+        group.select(".bar")
+          .style("transition", "all 150ms ease-in-out")
+          .attr("opacity", 0.8);
+        group.select(".drag-handle")
+          .style("transition", "all 150ms ease-in-out")
+          .attr("opacity", 0.6);
+      })
+      .on("mouseout", function() {
+        const group = d3.select(this);
+        group.select(".bar")
+          .style("transition", "all 150ms ease-in-out")
+          .attr("opacity", 0.6);
+        group.select(".drag-handle")
+          .style("transition", "all 150ms ease-in-out")
+          .attr("opacity", 0.3);
+      });
+    
+    // Drag behavior for theoretical bars
+    let dragProb = trueProb;
+    
+    g.selectAll(".theoretical .bar-group")
+      .call(
+        d3.drag()
+          .on("start", function(event, d) {
+            const group = d3.select(this);
+            dragProb = trueProb;
+            
+            // Remove transitions during drag
+            group.selectAll(".bar, .drag-handle")
+              .style("transition", "none");
+            g.selectAll(".value")
+              .style("transition", "none");
+              
+            // Change handle color to indicate active dragging
+            group.select(".drag-handle")
+              .attr("fill", "#60a5fa")
+              .attr("opacity", 1);
+          })
+          .on("drag", function(event, d) {
+            if (d.side === "Heads") {
+              // Only allow dragging on heads bar
+              const newVal = Math.max(0, Math.min(1, y.invert(event.y)));
+              dragProb = newVal;
+              
+              // Update both theoretical bars immediately
+              updateTheoreticalBars(dragProb);
+            }
+          })
+          .on("end", function(event, d) {
+            const group = d3.select(this);
+            
+            // Restore transitions
+            g.selectAll(".theoretical .bar, .theoretical .drag-handle")
+              .style("transition", "all 150ms ease-in-out");
+            g.selectAll(".value")
+              .style("transition", "all 150ms ease-in-out");
+              
+            // Reset handle color
+            group.select(".drag-handle")
+              .attr("fill", "white")
+              .attr("opacity", 0.3);
+              
+            // Update React state
+            if (d.side === "Heads") {
+              setTrueProb(dragProb);
+            }
+          })
+      );
+    
+    // Value labels
+    const valueLabels = barGroups.append("text")
+      .attr("class", "value")
+      .attr("x", d => x1(d.side) + x1.bandwidth() / 2)
+      .attr("y", innerHeight - 5)
+      .attr("text-anchor", "middle")
+      .attr("fill", colors.chart.text)
+      .style("font-size", "14px")
+      .style("font-weight", "600")
+      .style("pointer-events", "none")
+      .text("0.00%");
+    
+    // Count labels for observed
+    const countLabels = barGroups.filter(d => d.state === "Observed")
+      .append("text")
+      .attr("class", "count")
+      .attr("x", d => x1(d.side) + x1.bandwidth() / 2)
+      .attr("y", innerHeight - 20)
+      .attr("text-anchor", "middle")
+      .attr("fill", colors.chart.text)
+      .style("font-size", "12px")
+      .style("opacity", 0.8)
+      .style("pointer-events", "none")
+      .text("n = 0");
+    
     // Legend inside each group
     groups.each(function(d) {
-      const group = select(this);
-      const legendY = -20;
+      const group = d3.select(this);
+      const legendY = 10; // Position legend at top of chart area
       
       group.selectAll("rect.legend")
         .data(d.values)
@@ -276,56 +351,152 @@ export default function CoinFlipSimulation() {
         .text(v => v.side);
     });
     
-    // Convergence indicator with confidence interval
+    // Convergence text placeholder
+    const convergenceText = g.append("text")
+      .attr("class", "convergence-text")
+      .attr("x", innerWidth / 2)
+      .attr("y", -20)
+      .attr("text-anchor", "middle")
+      .style("font-size", "16px")
+      .style("font-weight", "600")
+      .attr("fill", colorScheme.chart.tertiary);
+    
+    // Store references
+    elementsRef.current = {
+      observedBars: g.selectAll(".observed .bar"),
+      theoreticalBars: g.selectAll(".theoretical .bar"),
+      dragHandles: g.selectAll(".drag-handle"),
+      valueLabels: g.selectAll(".value"),
+      countLabels: g.selectAll(".count"),
+      convergenceText: convergenceText,
+      g: g
+    };
+    
+    // Helper function to update theoretical bars
+    function updateTheoreticalBars(prob) {
+      const y = scalesRef.current.y;
+      const theoreticalData = [
+        { side: "Heads", value: prob },
+        { side: "Tails", value: 1 - prob }
+      ];
+      
+      g.selectAll(".theoretical .bar-group").each(function(d, i) {
+        const group = d3.select(this);
+        const newData = theoreticalData.find(td => td.side === d.side);
+        
+        group.select(".bar")
+          .attr("y", y(newData.value))
+          .attr("height", innerHeight - y(newData.value));
+          
+        group.select(".drag-handle")
+          .attr("y", y(newData.value) - 6);
+          
+        group.select(".value")
+          .attr("y", y(newData.value) - 5)
+          .text(`${(newData.value * 100).toFixed(2)}%`);
+      });
+    }
+    
+    // Initial update to show theoretical bars at 50%
+    updateTheoreticalBars(0.5);
+    
+  }, []); // Run once on mount
+  
+  // Update visualization when data changes
+  useEffect(() => {
+    if (!elementsRef.current.g) return;
+    
+    const [heads, tails] = counts;
+    const total = totalFlips;
+    const { x1, y } = scalesRef.current;
+    const innerHeight = y(0);
+    
+    // Calculate observed probabilities
+    let observedHeadsProb, observedTailsProb;
+    if (total === 0) {
+      observedHeadsProb = 0;
+      observedTailsProb = 0;
+    } else {
+      observedHeadsProb = heads / total;
+      observedTailsProb = tails / total;
+    }
+    
+    const observedData = [
+      { side: "Heads", value: observedHeadsProb, count: heads },
+      { side: "Tails", value: observedTailsProb, count: tails }
+    ];
+    
+    const theoreticalData = [
+      { side: "Heads", value: trueProb },
+      { side: "Tails", value: 1 - trueProb }
+    ];
+    
+    // Update observed bars
+    elementsRef.current.g.selectAll(".observed .bar-group").each(function(d, i) {
+      const group = d3.select(this);
+      const newData = observedData.find(od => od.side === d.side);
+      
+      group.select(".bar")
+        .transition()
+        .duration(300)
+        .attr("y", y(newData.value))
+        .attr("height", innerHeight - y(newData.value));
+        
+      group.select(".value")
+        .transition()
+        .duration(300)
+        .attr("y", newData.value > 0 ? y(newData.value) - 5 : innerHeight - 5)
+        .text(`${(newData.value * 100).toFixed(2)}%`);
+        
+      group.select(".count")
+        .transition()
+        .duration(300)
+        .attr("y", newData.value > 0 ? y(newData.value) + 20 : innerHeight - 20)
+        .text(`n = ${newData.count}`);
+    });
+    
+    // Update theoretical bars
+    elementsRef.current.g.selectAll(".theoretical .bar-group").each(function(d, i) {
+      const group = d3.select(this);
+      const newData = theoreticalData.find(td => td.side === d.side);
+      
+      group.select(".bar")
+        .transition()
+        .duration(300)
+        .attr("y", y(newData.value))
+        .attr("height", innerHeight - y(newData.value));
+        
+      group.select(".drag-handle")
+        .transition()
+        .duration(300)
+        .attr("y", y(newData.value) - 6);
+        
+      group.select(".value")
+        .transition()
+        .duration(300)
+        .attr("y", y(newData.value) - 5)
+        .text(`${(newData.value * 100).toFixed(2)}%`);
+    });
+    
+    // Update convergence indicator
     if (totalFlips > 0) {
       const difference = Math.abs(observedHeadsProb - trueProb);
       const standardError = Math.sqrt(trueProb * (1 - trueProb) / totalFlips);
-      const z95 = 1.96; // 95% confidence interval
+      const z95 = 1.96;
       const marginOfError = z95 * standardError;
       
-      // Convergence status
       const convergenceText = difference < marginOfError ? "Within 95% CI" : 
                             difference < 2 * marginOfError ? "Approaching convergence" : 
                             "Insufficient sample size";
       
-      g.append("text")
-        .attr("x", innerWidth / 2)
-        .attr("y", -30)
-        .attr("text-anchor", "middle")
-        .style("font-size", "16px")
-        .style("font-weight", "600")
-        .attr("fill", difference < marginOfError ? colorScheme.success : colorScheme.chart.tertiary)
-        .text(convergenceText);
+      elementsRef.current.convergenceText
+        .text(convergenceText)
+        .attr("fill", difference < marginOfError ? colorScheme.success : colorScheme.chart.tertiary);
       
-      // Only show error bars when we have sufficient samples
-      if (totalFlips >= 10) {
-        // Add confidence interval visualization for observed probability
-        const observedX = x0("Observed") + x1("Heads") + x1.bandwidth() / 2;
-        const ciUpper = Math.min(1, observedHeadsProb + marginOfError);
-        const ciLower = Math.max(0, observedHeadsProb - marginOfError);
-        
-        // CI error bars
-        g.append("line")
-          .attr("x1", observedX)
-          .attr("x2", observedX)
-          .attr("y1", y(ciUpper))
-          .attr("y2", y(ciLower))
-          .attr("stroke", colorScheme.chart.primary)
-          .attr("stroke-width", 2)
-          .attr("opacity", 0.8);
-        
-        // CI caps
-        [-1, 1].forEach(dir => {
-          g.append("line")
-            .attr("x1", observedX - 5)
-            .attr("x2", observedX + 5)
-            .attr("y1", y(dir === 1 ? ciUpper : ciLower))
-            .attr("y2", y(dir === 1 ? ciUpper : ciLower))
-            .attr("stroke", colorScheme.chart.primary)
-            .attr("stroke-width", 2)
-            .attr("opacity", 0.8);
-        });
-      }
+      // Remove old CI lines (keeping this line to clean up any existing ones)
+      elementsRef.current.g.selectAll(".ci-line, .ci-cap").remove();
+    } else {
+      elementsRef.current.convergenceText.text("");
     }
     
   }, [counts, trueProb, totalFlips]);
@@ -333,11 +504,7 @@ export default function CoinFlipSimulation() {
   // Calculate statistics
   let observedHeadsProb;
   if (totalFlips === 0) {
-    observedHeadsProb = 0.5;
-  } else if (totalFlips < 5) {
-    // Match the smoothing used in visualization
-    const smoothingFactor = 0.5;
-    observedHeadsProb = (counts[0] + smoothingFactor) / (totalFlips + 2 * smoothingFactor);
+    observedHeadsProb = 0;
   } else {
     observedHeadsProb = counts[0] / totalFlips;
   }
@@ -363,15 +530,20 @@ export default function CoinFlipSimulation() {
           <VisualizationSection className="p-3">
             <h4 className="text-base font-bold text-white mb-3">Parameters</h4>
             
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-neutral-300">
-                True Probability <span dangerouslySetInnerHTML={{ __html: `\\(p\\)` }} />
-              </label>
-              <RangeSlider
-                value={trueProb}
-                onChange={setTrueProb}
-                {...SliderPresets.probability}
-              />
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-neutral-300 mb-1">
+                  True Probability <span dangerouslySetInnerHTML={{ __html: `\\(p\\)` }} />
+                </label>
+                <RangeSlider
+                  value={trueProb}
+                  onChange={setTrueProb}
+                  {...SliderPresets.probability}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Drag the theoretical bars to adjust probability
+                </p>
+              </div>
             </div>
             
             <ControlGroup label="Sample Size per Trial">
@@ -444,8 +616,7 @@ export default function CoinFlipSimulation() {
               <div className="border-t border-neutral-700 pt-2">
                 <div className="flex justify-between">
                   <span className="text-neutral-400">
-                    Sample Proportion <span dangerouslySetInnerHTML={{ __html: `\\(\\hat{p}\\)` }} />
-                    {totalFlips > 0 && totalFlips < 5 && <span className="text-xs"> (smoothed)</span>}:
+                    Sample Proportion <span dangerouslySetInnerHTML={{ __html: `\\(\\hat{p}\\)` }} />:
                   </span>
                   <span className="font-mono text-white">{(observedHeadsProb).toFixed(4)}</span>
                 </div>
@@ -502,7 +673,6 @@ export default function CoinFlipSimulation() {
                   <p className="text-purple-300 mt-1">
                     With small sample size, the sample proportion <span dangerouslySetInnerHTML={{ __html: `\\(\\hat{p} = ${observedHeadsProb.toFixed(3)}\\)` }} /> 
                     exhibits high variance around <span dangerouslySetInnerHTML={{ __html: `\\(p = ${trueProb}\\)` }} />.
-                    {totalFlips < 5 && <span className="text-xs"> (Laplace smoothing applied to prevent extreme values)</span>}
                   </p>
                   <div className="mt-2 p-2 bg-amber-900/30 rounded">
                     <p className="text-amber-300">

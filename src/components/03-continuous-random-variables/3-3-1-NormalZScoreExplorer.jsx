@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, memo } from "react";
 import * as d3 from "d3";
 import { 
   VisualizationContainer, 
@@ -12,6 +12,17 @@ import { RangeSlider } from '../ui/RangeSlider';
 import { NormalZScoreWorkedExample } from "./3-3-2-NormalZScoreWorkedExample";
 import { RotateCcw } from "lucide-react";
 import * as jStat from "jstat";
+import { useSafeMathJax } from '../../utils/mathJaxFix';
+
+// LaTeX content wrapper component to prevent re-renders
+const LatexContent = memo(function LatexContent({ children }) {
+  const contentRef = useRef(null);
+  
+  // Use safe MathJax processing with error handling
+  useSafeMathJax(contentRef, [children]);
+  
+  return <span ref={contentRef}>{children}</span>;
+});
 
 const NormalZScoreExplorer = () => {
   const colorScheme = createColorScheme('inference');
@@ -167,7 +178,7 @@ const NormalZScoreExplorer = () => {
       .style("font-size", "16px")
       .style("font-weight", "600")
       .style("fill", colorScheme.chart.text)
-      .text(`Original Distribution: X ~ N(μ=${mu}, σ=${sigma})`);
+      .text(`Original Distribution: X ~ N(\u03BC=${mu}, \u03C3=${sigma})`);
       
     g.append("text")
       .attr("x", width / 2)
@@ -311,7 +322,7 @@ const NormalZScoreExplorer = () => {
           .style("font-size", "10px")
           .style("fill", colorScheme.chart.text)
           .style("opacity", 0.7)
-          .text(`${n > 0 ? '+' : ''}${n}σ`);
+          .text(`${n > 0 ? '+' : ''}${n}\u03C3`);
       }
     });
     
@@ -411,7 +422,7 @@ const NormalZScoreExplorer = () => {
       .style("font-size", "14px")
       .style("font-weight", "600")
       .style("fill", colorScheme.chart.secondary)
-      .text("z = (x - μ) / σ");
+      .text("z = (x - \u03BC) / \u03C3");
     
     // Add animated connection for visual feedback
     if (showTransformation) {
@@ -460,30 +471,29 @@ const NormalZScoreExplorer = () => {
   const getInsight = () => {
     if (interactionCount === 0) {
       return {
-        message: "Welcome! Let's see how any Normal distribution N(μ,σ²) can be 'standardized' to the N(0,1) Z-distribution. Change μ, σ, and x to see the magic.",
+        message: <span>Welcome! Let's see how any Normal distribution <span dangerouslySetInnerHTML={{ __html: `\\(N(\\mu,\\sigma^2)\\)` }} /> can be 'standardized' to the <span dangerouslySetInnerHTML={{ __html: `\\(N(0,1)\\)` }} /> Z-distribution. Change <span dangerouslySetInnerHTML={{ __html: `\\(\\mu\\)` }} />, <span dangerouslySetInnerHTML={{ __html: `\\(\\sigma\\)` }} />, and <span dangerouslySetInnerHTML={{ __html: `\\(x\\)` }} /> to see the magic.</span>,
         stage: 0
       };
     } else if (interactionCount <= 5) {
       return {
-        message: "Play with μ and σ. Notice the top curve changes shape and position, but the bottom Z-curve is fixed. The x-value you pick on top has a corresponding z-value on the bottom.",
+        message: <span>Play with <span dangerouslySetInnerHTML={{ __html: `\\(\\mu\\)` }} /> and <span dangerouslySetInnerHTML={{ __html: `\\(\\sigma\\)` }} />. Notice the top curve changes shape and position, but the bottom Z-curve is fixed. The x-value you pick on top has a corresponding z-value on the bottom.</span>,
         stage: 1
       };
     } else if (interactionCount <= 14) {
-      const specialCases = [];
-      if (Math.abs(xValue - mu) < 0.5) {
-        specialCases.push(`Try setting x=μ. What is the z-score? What is the probability Φ(z)? (Should be z=0, Φ(0)=0.5)`);
-      }
-      specialCases.push("What happens to z if you increase σ while keeping x and μ the same distance apart? (Z gets smaller)");
+      const specialCase1 = Math.abs(xValue - mu) < 0.5 ? 
+        <span> Try setting <span dangerouslySetInnerHTML={{ __html: `\\(x=\\mu\\)` }} />. What is the z-score? What is the probability <span dangerouslySetInnerHTML={{ __html: `\\(\\Phi(z)\\)` }} />? (Should be <span dangerouslySetInnerHTML={{ __html: `\\(z=0\\)` }} />, <span dangerouslySetInnerHTML={{ __html: `\\(\\Phi(0)=0.5\\)` }} />)</span> : null;
+      
+      const specialCase2 = <span> What happens to <span dangerouslySetInnerHTML={{ __html: `\\(z\\)` }} /> if you increase <span dangerouslySetInnerHTML={{ __html: `\\(\\sigma\\)` }} /> while keeping <span dangerouslySetInnerHTML={{ __html: `\\(x\\)` }} /> and <span dangerouslySetInnerHTML={{ __html: `\\(\\mu\\)` }} /> the same distance apart? (Z gets smaller)</span>;
       
       return {
-        message: `The shaded areas represent P(X≤x) and P(Z≤z). Observe that these probabilities (areas) are always equal! The z-score tells you how many 'standard units' x is away from its mean. ${specialCases.join(" ")}`,
+        message: <span>The shaded areas represent <span dangerouslySetInnerHTML={{ __html: `\\(P(X\\leq x)\\)` }} /> and <span dangerouslySetInnerHTML={{ __html: `\\(P(Z\\leq z)\\)` }} />. Observe that these probabilities (areas) are always equal! The z-score tells you how many 'standard units' <span dangerouslySetInnerHTML={{ __html: `\\(x\\)` }} /> is away from its mean.{specialCase1}{specialCase2}</span>,
         stage: 2
       };
     } else {
       return {
-        message: "✨ Standardization Mastered! You've seen that P(X≤x)=Φ((x-μ)/σ). This is powerful because we only need one table (or function) for the Standard Normal CDF, Φ(z), to find probabilities for any Normal distribution.",
+        message: <span>✨ Standardization Mastered! You've seen that <span dangerouslySetInnerHTML={{ __html: `\\(P(X\\leq x)=\\Phi\\left(\\frac{x-\\mu}{\\sigma}\\right)\\)` }} />. This is powerful because we only need one table (or function) for the Standard Normal CDF, <span dangerouslySetInnerHTML={{ __html: `\\(\\Phi(z)\\)` }} />, to find probabilities for any Normal distribution.</span>,
         stage: 3,
-        application: "Engineering Application: Imagine testing steel rods. Spec: length = 500±2mm. Your process gives μ=500mm, σ=0.5mm. A rod at 501mm has z=(501-500)/0.5=+2. A rod at 498.5mm has z=(498.5-500)/0.5=-3. This tells you immediately how 'typical' or 'extreme' these rods are relative to your process variation, without needing a new probability curve for every spec!"
+        application: <span>Engineering Application: Imagine testing steel rods. Spec: length = 500±2mm. Your process gives <span dangerouslySetInnerHTML={{ __html: `\\(\\mu=500\\text{mm}\\)` }} />, <span dangerouslySetInnerHTML={{ __html: `\\(\\sigma=0.5\\text{mm}\\)` }} />. A rod at 501mm has <span dangerouslySetInnerHTML={{ __html: `\\(z=\\frac{501-500}{0.5}=+2\\)` }} />. A rod at 498.5mm has <span dangerouslySetInnerHTML={{ __html: `\\(z=\\frac{498.5-500}{0.5}=-3\\)` }} />. This tells you immediately how 'typical' or 'extreme' these rods are relative to your process variation, without needing a new probability curve for every spec!</span>
       };
     }
   };
@@ -498,7 +508,7 @@ const NormalZScoreExplorer = () => {
         <>
           <p className={typography.description}>
             <strong>How do we standardize any normal distribution?</strong> The Z-score transformation 
-            converts any Normal distribution N(μ,σ²) to the Standard Normal N(0,1).
+            converts any Normal distribution <span dangerouslySetInnerHTML={{ __html: `\\(N(\\mu,\\sigma^2)\\)` }} /> to the Standard Normal <span dangerouslySetInnerHTML={{ __html: `\\(N(0,1)\\)` }} />.
           </p>
           <p className={cn(typography.description, "mt-2")}>
             <span className="text-teal-400">Z-scores</span> tell us how many standard deviations 
@@ -516,7 +526,7 @@ const NormalZScoreExplorer = () => {
               <div className="space-y-3">
                 <div>
                   <label className="text-sm text-gray-300 mb-1 block">
-                    Mean (μ): {mu}
+                    Mean (\u03BC): {mu}
                   </label>
                   <RangeSlider
                     value={mu}
@@ -530,7 +540,7 @@ const NormalZScoreExplorer = () => {
                 
                 <div>
                   <label className="text-sm text-gray-300 mb-1 block">
-                    Standard Deviation (σ): {sigma}
+                    Standard Deviation (\u03C3): {sigma}
                   </label>
                   <RangeSlider
                     value={sigma}
@@ -586,16 +596,24 @@ const NormalZScoreExplorer = () => {
                   <span className="text-teal-400 font-mono font-medium">{zScore.toFixed(4)}</span>
                 </div>
                 <div className="text-xs text-gray-500 mb-2">
-                  z = (x - μ) / σ = ({xValue.toFixed(1)} - {mu}) / {sigma}
+                  <LatexContent>
+                    <span dangerouslySetInnerHTML={{ __html: `\\(z = \\frac{x - \\mu}{\\sigma} = \\frac{${xValue.toFixed(1)} - ${mu}}{${sigma}} = ${((xValue - mu) / sigma).toFixed(4)}\\)` }} />
+                  </LatexContent>
                 </div>
               </div>
               <div className="border-t border-gray-700 pt-2">
                 <div className="flex justify-between mb-1">
-                  <span className="text-gray-400">P(X ≤ {xValue.toFixed(1)}):</span>
+                  <span className="text-gray-400">
+                    <LatexContent>
+                      <span dangerouslySetInnerHTML={{ __html: `\\(P(X \\leq ${xValue.toFixed(1)})\\):` }} />
+                    </LatexContent>
+                  </span>
                   <span className="text-orange-400 font-mono font-medium">{probability.toFixed(4)}</span>
                 </div>
                 <div className="text-xs text-gray-500">
-                  = P(Z ≤ {zScore.toFixed(4)}) = Φ({zScore.toFixed(4)})
+                  <LatexContent>
+                    <span dangerouslySetInnerHTML={{ __html: `\\(= P(Z \\leq ${zScore.toFixed(4)}) = \\Phi(${zScore.toFixed(4)})\\)` }} />
+                  </LatexContent>
                 </div>
               </div>
             </div>
@@ -606,7 +624,7 @@ const NormalZScoreExplorer = () => {
             <div className="space-y-2 text-sm">
               {insight.stage === 0 && (
                 <div>
-                  <p className="text-teal-200">{insight.message}</p>
+                  <p className="text-teal-200"><LatexContent>{insight.message}</LatexContent></p>
                   <div className="mt-2 p-2 bg-cyan-900/30 rounded text-xs">
                     <p className="text-cyan-300">💡 <strong>Tip:</strong> Try dragging the orange dot on the top plot!</p>
                   </div>
@@ -615,13 +633,13 @@ const NormalZScoreExplorer = () => {
               
               {insight.stage === 1 && (
                 <div>
-                  <p className="text-teal-200">{insight.message}</p>
+                  <p className="text-teal-200"><LatexContent>{insight.message}</LatexContent></p>
                 </div>
               )}
               
               {insight.stage === 2 && (
                 <div>
-                  <p className="text-teal-200">{insight.message}</p>
+                  <p className="text-teal-200"><LatexContent>{insight.message}</LatexContent></p>
                   {interactionCount > 0 && interactionCount < 15 && (
                     <div className="mt-2 p-2 bg-teal-900/20 border border-teal-600/30 rounded">
                       <div className="text-xs text-teal-300">
@@ -646,11 +664,11 @@ const NormalZScoreExplorer = () => {
               {insight.stage === 3 && (
                 <div>
                   <p className="text-green-400 font-semibold mb-1">
-                    ✨ {insight.message}
+                    <LatexContent>{insight.message}</LatexContent>
                   </p>
                   {insight.application && (
                     <div className="mt-2 p-2 bg-emerald-900/30 border border-emerald-600/30 rounded">
-                      <p className="text-emerald-200 text-xs">{insight.application}</p>
+                      <p className="text-emerald-200 text-xs"><LatexContent>{insight.application}</LatexContent></p>
                     </div>
                   )}
                 </div>

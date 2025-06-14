@@ -5,7 +5,6 @@ import { IntegralWorkedExample } from '../components/03-continuous-random-variab
 import NormalZScoreExplorer from '../components/03-continuous-random-variables/3-3-1-NormalZScoreExplorerClient';
 import { NormalZScoreWorkedExample } from '../components/03-continuous-random-variables/3-3-2-NormalZScoreWorkedExample';
 import EmpiricalRule from '../components/03-continuous-random-variables/3-3-3-EmpiricalRuleClient';
-import ProcessCapability from '../components/03-continuous-random-variables/3-3-6-ProcessCapabilityClient';
 import ZScorePracticeProblems from '../components/03-continuous-random-variables/3-3-5-ZScorePracticeProblemsClient';
 import ZTableLookup from '../components/03-continuous-random-variables/3-3-4-ZTableLookupClient';
 import ExponentialDistribution from '../components/03-continuous-random-variables/3-4-1-ExponentialDistributionClient';
@@ -23,6 +22,16 @@ import ContinuousExpectationVariance from '../components/03-continuous-random-va
 </div>
 
 # Chapter 3: Continuous Random Variables
+
+## What You'll Learn
+
+In this chapter, we make the leap from discrete to continuous probability. This transition requires new mathematical tools (integration instead of summation) but the core concepts remain the same:
+
+1. **Probability** → Still measures likelihood, but now over intervals
+2. **Expected Value** → Still the average, but computed with integrals
+3. **Variance** → Still measures spread, but using continuous formulas
+
+**Key mental shift**: Instead of counting outcomes, we measure areas under curves.
 
 <h2 id="section-3-0">Introduction: From Discrete to Continuous</h2>
 
@@ -45,6 +54,17 @@ import ContinuousExpectationVariance from '../components/03-continuous-random-va
   <BridgeToContinuous />
 </ConceptSection>
 
+### Understanding "Density" in Probability
+
+Before we dive into PDFs, let's clarify what we mean by **density**. Think of it like population density:
+
+- **Population density** = people per square mile
+- **Probability density** = probability per unit of $x$
+
+Just as you need area (square miles) to find total population, you need area under the probability density curve to find actual probability. This is why we integrate!
+
+**Key insight**: For continuous variables, individual points have zero width, so they have zero probability. We can only measure probability over intervals.
+
 <h2 id="section-3-1">3.1 Probability Density Functions</h2>
 
 <ConceptSection
@@ -66,6 +86,43 @@ import ContinuousExpectationVariance from '../components/03-continuous-random-va
   <ContinuousDistributionsPDF />
 </ConceptSection>
 
+### Critical Concept: PDF ≠ Probability!
+
+⚠️ **Common Misconception Alert**: The height of the PDF at a point is NOT a probability!
+
+Let's be crystal clear about this:
+- $f(x)$ = probability **density** at point $x$ (probability per unit)
+- $P(X = x) = 0$ for any specific value $x$ (always!)
+- $P(a < X < b) = \int_a^b f(x) \, dx$ = area under the curve
+
+**Why can PDF values exceed 1?** Because they're densities, not probabilities! If you pack probability into a small interval, the density (height) must be large to maintain total area = 1.
+
+**Example**: For Uniform(0, 0.5), the PDF height is 2 everywhere. This ensures:
+$$\int_0^{0.5} 2 \, dx = 2 \times 0.5 = 1$$
+
+### The Fundamental Property: Total Area = 1
+
+Every valid PDF must satisfy:
+$$\int_{-\infty}^{\infty} f(x) \, dx = 1$$
+
+This ensures all probabilities sum to 100%. When you change distribution parameters, the shape adjusts to maintain this property.
+
+### Why Integration?
+
+You might wonder: why do we need integration for continuous distributions?
+
+**The problem**: With continuous variables, there are uncountably infinite possible values between any two points. We can't add them up one by one like we do with discrete variables.
+
+**The solution**: Integration is essentially "sophisticated addition" that can handle infinitely many values. Think of it as:
+- Discrete: Add up finite/countable values
+- Continuous: Add up infinite/uncountable values
+
+The integral $\int_a^b f(x) \, dx$ can be visualized as:
+1. Slice the area under $f(x)$ into tiny rectangles
+2. Each rectangle has area ≈ height × width = $f(x) \times dx$
+3. Add up all rectangle areas
+4. As rectangles get infinitely thin, sum → integral
+
 <ConceptSection
   title="3.1.2 Integration Worked Examples"
   description={
@@ -81,6 +138,23 @@ import ContinuousExpectationVariance from '../components/03-continuous-random-va
 </ConceptSection>
 
 <h2 id="section-3-2">3.2 Expectation of a Continuous Random Variable</h2>
+
+### Understanding Expected Value: The Weighted Average
+
+Before we explore continuous expectation, let's refresh what expected value means:
+
+**For discrete variables**: $E[X] = \sum x \cdot P(X = x)$
+- Each value $x$ contributes to the average
+- Its contribution = value × probability
+- We sum all contributions
+
+**For continuous variables**: $E[X] = \int x \cdot f(x) \, dx$
+- Each value $x$ still contributes to the average
+- Its contribution = value × probability density × width
+- $x \cdot f(x) \, dx$ represents the contribution from a tiny interval
+- Integration adds up infinite tiny contributions
+
+**Key intuition**: Expected value is the "balance point" of the distribution - where the distribution would balance if placed on a seesaw.
 
 <ConceptSection
   title="3.2.1 Continuous Expectation & Variance"
@@ -101,7 +175,42 @@ import ContinuousExpectationVariance from '../components/03-continuous-random-va
   <ContinuousExpectationVariance />
 </ConceptSection>
 
+### From Riemann Sums to Integrals
+
+What you just witnessed in the animation is the fundamental theorem at work:
+
+$$\lim_{n \to \infty} \sum_{i=1}^{n} x_i \cdot P(X = x_i) = \int_{-\infty}^{\infty} x \cdot f(x) \, dx$$
+
+As we use more and more rectangles (discrete approximations), the sum approaches the integral. This is why:
+- Discrete expectation uses **summation** (adding countable pieces)
+- Continuous expectation uses **integration** (adding uncountable pieces)
+
+The mathematics changes, but the concept remains the same: finding the average value weighted by probability.
+
 <h2 id="section-3-3">3.3 Normal Distributions</h2>
+
+### The Universal Language of Statistics
+
+The normal distribution is everywhere - heights, test scores, measurement errors, and countless other phenomena. But each has its own scale. How do we compare a test score from an exam with $\mu = 75, \sigma = 10$ to one with $\mu = 50, \sigma = 5$? 
+
+Enter **standardization** - the statistical equivalent of a universal translator. In this section, you'll master:
+1. **Z-scores**: Converting any normal distribution to a standard scale
+2. **The 68-95-99.7 Rule**: Quick probability estimates without calculations
+3. **Z-tables**: Understanding cumulative probabilities (even if computers do the work now)
+
+### Why Standardization? The Big Picture
+
+Imagine trying to compare:
+- Temperature in Boston (°F) vs. Paris (°C)
+- Heights in feet vs. centimeters
+- Test scores from different exams
+
+Without a common scale, comparison is impossible. Z-scores provide that common scale for ALL normal distributions.
+
+**The magic**: Once standardized, every normal distribution becomes the same standard normal distribution $N(0,1)$. This means:
+- One formula works for all
+- One table covers every case
+- Software needs only one implementation
 
 <ConceptSection
   title="3.3.1 Normal Distribution & Z-Score Explorer"
@@ -121,6 +230,41 @@ import ContinuousExpectationVariance from '../components/03-continuous-random-va
 >
   <NormalZScoreExplorer />
 </ConceptSection>
+
+### Understanding Z-Scores: Your Statistical GPS
+
+A Z-score answers: **"How many standard deviations away from the mean is this value?"**
+
+$$Z = \frac{X - \mu}{\sigma}$$
+
+Think of it as your position relative to "average":
+- $Z = 0$: Exactly average
+- $Z = 1$: One standard deviation above average
+- $Z = -2$: Two standard deviations below average
+
+**Critical insight**: The sign tells direction (above/below), the magnitude tells extremity.
+
+#### Common Misconceptions About Z-Scores
+
+**❌ Misconception**: "Z-scores are probabilities"  
+**✓ Reality**: Z-scores are standardized positions. To get probability, you need $P(Z \leq z) = \Phi(z)$
+
+**❌ Misconception**: "Negative Z-scores are bad"  
+**✓ Reality**: Negative just means "below average" - context matters!
+- Golf scores: negative is good (below par)
+- Heights: negative is just shorter than average
+- Costs: negative might mean savings
+
+**❌ Misconception**: "Z-scores only work for test scores"  
+**✓ Reality**: ANY normally distributed data can be standardized
+
+#### The Preservation Property
+
+Here's what makes standardization powerful:
+
+$$P(a < X < b) = P\left(\frac{a-\mu}{\sigma} < Z < \frac{b-\mu}{\sigma}\right)$$
+
+**Translation**: Areas under the curve (probabilities) don't change when we standardize! We're just changing the labels on the x-axis, not the shape or areas.
 
 
 <ConceptSection
@@ -144,11 +288,20 @@ import ContinuousExpectationVariance from '../components/03-continuous-random-va
         Explore the empirical rule that describes how data is distributed in a normal
         distribution: approximately 68% within 1σ, 95% within 2σ, and 99.7% within 3σ.
       </p>
+      <p>
+        Discover where these specific percentages come from mathematically, why they
+        matter in practice, and how they form the foundation of quality control and
+        Six Sigma methodologies.
+      </p>
     </>
   }
 >
   <EmpiricalRule />
 </ConceptSection>
+
+import EmpiricalRuleExplanation from './03-continuous-random-variables/3-3-3-empirical-rule-explanation.mdx';
+
+<EmpiricalRuleExplanation />
 
 <ConceptSection
   title="3.3.4 Z-Table Lookup Tool"
@@ -164,6 +317,69 @@ import ContinuousExpectationVariance from '../components/03-continuous-random-va
   <ZTableLookup />
 </ConceptSection>
 
+### Why Z-Tables Still Matter (Even with Computers)
+
+You might wonder: "Why learn about Z-tables when computers can calculate probabilities instantly?" Here's why understanding them remains crucial:
+
+#### 1. Building Statistical Intuition
+
+Z-tables reveal the **structure** of the normal distribution:
+- See how probability accumulates as you move from left to right
+- Understand why $\Phi(0) = 0.5$ (half the distribution is below the mean)
+- Visualize how quickly probability approaches 0 and 1 in the tails
+
+#### 2. Quick Mental Estimates
+
+Memorizing a few key values enables rapid assessment:
+- $\Phi(1) \approx 0.84$ → About 84% below one standard deviation
+- $\Phi(1.96) \approx 0.975$ → The famous 95% confidence interval bound
+- $\Phi(2) \approx 0.977$ → Quick check for "within 2σ"
+
+These mental benchmarks help you spot errors and make quick decisions.
+
+#### 3. Understanding Statistical Reports
+
+When you read "p < 0.05" or "z = 2.33", you can immediately understand:
+- How extreme the result is
+- What percentage of the distribution this represents
+- Whether the finding is practically significant
+
+#### What a Z-Table Actually Shows
+
+The Z-table displays $\Phi(z) = P(Z \leq z)$ - the cumulative distribution function (CDF) of the standard normal:
+
+$$\Phi(z) = \int_{-\infty}^{z} \frac{1}{\sqrt{2\pi}} e^{-\frac{t^2}{2}} dt$$
+
+This integral has no closed form, hence the need for tables or numerical computation.
+
+#### The Symmetry Property
+
+The standard normal is perfectly symmetric around 0, giving us:
+
+$$\Phi(-z) = 1 - \Phi(z)$$
+
+This means you only need positive values in the table - negative values can be derived!
+
+**Example**: 
+- $\Phi(1.5) = 0.9332$
+- Therefore: $\Phi(-1.5) = 1 - 0.9332 = 0.0668$
+
+#### Common Z-Table Pitfalls
+
+**❌ Reading the wrong probability**
+- Tables show $P(Z \leq z)$, not $P(Z \geq z)$
+- For upper tail: $P(Z > z) = 1 - \Phi(z)$
+
+**❌ Forgetting about two-tailed tests**
+- For $P(|Z| > z)$: multiply the tail probability by 2
+- For 95% confidence: use $z = 1.96$, not $z = 1.645$
+
+**❌ Interpolation errors**
+- Most tables go to 2 decimal places
+- For more precision, linear interpolation is acceptable
+
+**Remember**: The goal isn't memorization - it's understanding how probability accumulates in a normal distribution!
+
 <ConceptSection
   title="3.3.5 Z-Score Practice Problems"
   description={
@@ -178,21 +394,78 @@ import ContinuousExpectationVariance from '../components/03-continuous-random-va
   <ZScorePracticeProblems />
 </ConceptSection>
 
-<ConceptSection
-  title="3.3.6 Process Capability (Cp/Cpk)"
-  description={
-    <>
-      <p>
-        Learn how normal distributions are used in quality control through process
-        capability indices Cp and Cpk.
-      </p>
-    </>
-  }
->
-  <ProcessCapability />
-</ConceptSection>
+### Bringing It All Together: The Power of the Normal Distribution
+
+You've now mastered the three pillars of working with normal distributions:
+
+1. **Standardization (Z-scores)**: Transform any normal distribution to $N(0,1)$
+2. **The 68-95-99.7 Rule**: Quick probability estimates without calculation
+3. **Z-tables**: Precise probabilities when you need them
+
+#### The Complete Workflow
+
+Here's how these concepts work together in practice:
+
+**Step 1: Identify the distribution**
+- Given: $X \sim N(\mu, \sigma^2)$
+- Example: Heights $\sim N(170, 36)$ cm
+
+**Step 2: Standardize if needed**
+- Convert to Z-score: $Z = \frac{X - \mu}{\sigma}$
+- Example: Is 185 cm unusual? $Z = \frac{185 - 170}{6} = 2.5$
+
+**Step 3: Apply the 68-95-99.7 rule for quick assessment**
+- $|Z| > 2$: Outside 95% range, somewhat unusual
+- $|Z| > 3$: Outside 99.7% range, very unusual
+
+**Step 4: Use Z-table for precise probability**
+- $\Phi(2.5) = 0.9938$
+- Only 0.62% of people are taller
+
+#### Real Engineering Applications
+
+**Quality Control**: 
+- Set specification limits at $\mu \pm 3\sigma$
+- Monitor process capability index: $C_p = \frac{USL - LSL}{6\sigma}$
+
+**Reliability Engineering**:
+- Component lifetime often normally distributed (after log transformation)
+- Calculate failure probabilities for warranty periods
+
+**Signal Processing**:
+- Noise is often normally distributed
+- Signal-to-noise ratio relates to Z-scores
+
+**Risk Assessment**:
+- Value at Risk (VaR) uses normal quantiles
+- Stress testing examines extreme Z-scores
+
+#### Key Takeaways
+
+✅ **Z-scores are universal** - they work for any normal distribution  
+✅ **The 68-95-99.7 rule is your quick reference** - no calculations needed  
+✅ **Z-tables build intuition** - even if computers do the work  
+✅ **Together, these tools make you fluent** in the language of statistics
+
+Now, test your understanding with practice problems that integrate all these concepts!
+
 
 <h2 id="section-3-4">3.4 Exponential Distributions</h2>
+
+### The "Memoryless" Property Explained
+
+Before diving into the exponential distribution, let's clarify what "memoryless" means - it's not intuitive at first!
+
+**Memoryless means**: The probability of waiting another $t$ units of time doesn't depend on how long you've already waited.
+
+**Mathematically**: $P(X > s + t | X > s) = P(X > t)$
+
+**Real example**: If bus arrivals follow an exponential distribution:
+- You've waited 10 minutes already
+- The probability of waiting 5 more minutes is the SAME as when you first arrived
+- The bus doesn't "know" you've been waiting!
+
+This seems counterintuitive but is perfect for modeling truly random events where the past doesn't influence the future.
 
 <ConceptSection
   title="3.4.1 Exponential Distribution"
@@ -285,6 +558,22 @@ import ContinuousExpectationVariance from '../components/03-continuous-random-va
 </ConceptSection>
 
 <h2 id="section-3-7">3.7 Normal Approximation of the Binomial Distribution</h2>
+
+### Why Approximate Discrete with Continuous?
+
+This might seem backwards - why use a continuous distribution for discrete data? Two key reasons:
+
+1. **Computational efficiency**: Calculating $\binom{1000}{523}p^{523}(1-p)^{477}$ is computationally expensive
+2. **Central Limit Theorem**: The binomial distribution naturally approaches normal shape as $n$ increases
+
+**When to use it**: The approximation works well when both:
+- $np \geq 5$ (enough expected successes)
+- $n(1-p) \geq 5$ (enough expected failures)
+
+**The continuity correction**: Since we're approximating discrete (integers) with continuous (real numbers):
+- $P(X = k)$ becomes $P(k - 0.5 < X < k + 0.5)$
+- $P(X \leq k)$ becomes $P(X < k + 0.5)$
+- $P(X < k)$ becomes $P(X < k - 0.5)$
 
 <ConceptSection
   title="3.7.1 Normal Approximation to Binomial"

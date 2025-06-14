@@ -26,7 +26,7 @@ const chapters = [
       { title: 'Sample Spaces & Events', component: 'SampleSpacesEvents' },
       { title: 'Counting Techniques', component: 'CountingTechniques' },
       { title: 'Ordered Samples (Permutations)', component: 'OrderedSamples' },
-      { title: 'Unordered Samples (Combinations)', component: 'UnorderedSamples' },
+      { title: 'Unordered Samples (Combinations)', component: 'UnorderedSamples', customPath: '/chapter1/1-4' },
       { title: 'Probability of an Event', component: 'ProbabilityEvent' },
       { title: 'Conditional Probability', component: 'ConditionalProbability' },
     ]
@@ -220,7 +220,10 @@ function AppSidebarInner() {
                       
                       // Generate appropriate URL based on section type
                       let href;
-                      if (section.url) {
+                      if (section.customPath) {
+                        // For sections with custom paths (like MDX pages)
+                        href = section.customPath;
+                      } else if (section.url) {
                         // For hash-based sections (main page and chapter 3)
                         href = `${chapter.path === '/' ? '' : chapter.path}${section.url}`;
                       } else if (section.component) {

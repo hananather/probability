@@ -11,391 +11,438 @@ import {
   StatsDisplay
 } from '../ui/VisualizationContainer';
 import { RangeSlider } from '../ui/RangeSlider';
-import { ProgressTracker } from '../ui/ProgressTracker';
 import { Button } from '../ui/button';
 import { createColorScheme, typography, formatNumber } from '../../lib/design-system';
 import { IntegralWorkedExample } from "./3-1-2-IntegralWorkedExample";
-import { Lock, Unlock, Info, Sparkles, RotateCcw } from "lucide-react";
+import { Info, Sparkles, ArrowRight, CheckCircle, BarChart3, TrendingUp } from "lucide-react";
 import { ProgressBar, ProgressNavigation } from '@/components/ui/ProgressBar';
+import { useSafeMathJax } from '../../utils/mathJaxFix';
 
-// Distribution configurations with real-world context
-const distributionOptions = [
-  { 
-    value: "uniform", 
-    label: "Uniform", 
-    locked: false,
-    params: [
-      {name: "a (Min)", min: -5, max: 5, step: 0.1, default: 0}, 
-      {name: "b (Max)", min: -4, max: 6, step: 0.1, default: 1}
-    ], 
-    pdfTex: "\\frac{1}{b-a}, \\quad a \\le x \\le b",
-    realWorld: {
-      title: "Random Number Generation & Rounding Errors",
-      description: "The uniform distribution models situations where all outcomes in a range are equally likely.",
-      examples: [
-        "Computer random number generators produce uniform values between 0 and 1",
-        "Rounding errors in measurements uniformly distributed within ±0.5 units",
-        "Arrival times within a scheduled window (e.g., 8-9 AM appointments)"
+// Color scheme for the visualization - using vibrant colors
+const colorScheme = createColorScheme('estimation'); // Violet/Cyan/Amber for better visibility
+
+// Learning stages for guided progression
+const learningStages = [
+  {
+    id: 'motivation',
+    title: 'Why PDFs Matter',
+    subtitle: 'Understanding continuous probability',
+    distribution: null,
+    content: {
+      main: "Unlike discrete distributions where we can assign probability to individual outcomes, continuous distributions pose a challenge: What's the probability of getting exactly π when measuring?",
+      points: [
+        "With infinite precision, P(X = exactly π) = 0",
+        "Instead, we ask: What's P(3.14 ≤ X ≤ 3.15)?",
+        "PDFs give us probability through area under the curve"
+      ],
+      insight: "The Probability Density Function (PDF) tells us how probability is distributed across continuous values."
+    }
+  },
+  {
+    id: 'uniform-intro',
+    title: 'The Uniform Distribution',
+    subtitle: 'Equal probability across an interval',
+    distribution: 'uniform',
+    params: { a: 0, b: 1 },
+    content: {
+      main: "The simplest continuous distribution: every value in the interval [a, b] is equally likely.",
+      realWorld: "Computer random number generators produce uniform values between 0 and 1",
+      activity: "Drag the interval markers below to see how probability equals area!"
+    }
+  },
+  {
+    id: 'uniform-explore',
+    title: 'Exploring Uniform Properties',
+    subtitle: 'Understanding constant density',
+    distribution: 'uniform',
+    params: { a: -2, b: 3 },
+    content: {
+      main: "Notice how the PDF is a constant height rectangle. This height equals 1/(b-a) so the total area is 1.",
+      explore: [
+        "Try changing the interval width [a, b]",
+        "Observe how the height adjusts to keep total area = 1",
+        "Calculate some probabilities by dragging the shaded region"
       ]
     }
   },
-  { 
-    value: "normal", 
-    label: "Normal", 
-    locked: true,
-    unlockAt: 10,
-    params: [
-      {name: "μ (Mean)", min: -5, max: 5, step: 0.1, default: 0}, 
-      {name: "σ (Std Dev)", min: 0.1, max: 5, step: 0.1, default: 1}
-    ], 
-    pdfTex: "\\frac{1}{\\sigma\\sqrt{2\\pi}} e^{-\\frac{1}{2}\\left(\\frac{x-\\mu}{\\sigma}\\right)^2}",
-    realWorld: {
-      title: "Quality Control & Natural Measurements",
-      description: "The normal distribution appears everywhere due to the Central Limit Theorem.",
-      examples: [
-        "Manufacturing tolerances: part dimensions cluster around target values",
-        "Human measurements: heights, weights, IQ scores follow bell curves",
-        "Measurement errors: aggregate of many small random errors"
+  {
+    id: 'normal-intro',
+    title: 'The Normal Distribution',
+    subtitle: 'The famous bell curve',
+    distribution: 'normal',
+    params: { μ: 0, σ: 1 },
+    content: {
+      main: "The normal distribution appears everywhere in nature due to the Central Limit Theorem.",
+      realWorld: "Manufacturing tolerances: part dimensions cluster around target values",
+      key: "68% of values fall within ±1σ, 95% within ±2σ, 99.7% within ±3σ"
+    }
+  },
+  {
+    id: 'normal-explore',
+    title: 'Normal Distribution Properties',
+    subtitle: 'Mean and standard deviation',
+    distribution: 'normal',
+    params: { μ: 2, σ: 0.5 },
+    content: {
+      main: "The normal distribution is completely determined by two parameters: mean (μ) and standard deviation (σ).",
+      explore: [
+        "Adjust μ to shift the center",
+        "Adjust σ to control the spread",
+        "Find P(-1σ ≤ X ≤ +1σ) - it should be ≈0.68"
       ]
     }
   },
-  { 
-    value: "exponential", 
-    label: "Exponential", 
-    locked: true,
-    unlockAt: 20,
-    params: [
-      {name: "λ (Rate)", min: 0.1, max: 5, step: 0.1, default: 1}
-    ], 
-    pdfTex: "\\lambda e^{-\\lambda x}, \\quad x \\ge 0",
-    realWorld: {
-      title: "Wait Times & Component Lifetimes",
-      description: "The exponential distribution models time until the next random event.",
-      examples: [
-        "Time between customer arrivals at a service counter",
-        "Lifetime of electronic components before failure",
-        "Time between radioactive decay events"
-      ]
+  {
+    id: 'exponential-intro',
+    title: 'The Exponential Distribution',
+    subtitle: 'Modeling waiting times',
+    distribution: 'exponential',
+    params: { λ: 1 },
+    content: {
+      main: "The exponential distribution models the time between random events, like customer arrivals or component failures.",
+      realWorld: "Time between customer arrivals at a service counter",
+      property: "Memoryless property: P(X > s+t | X > s) = P(X > t)"
     }
   },
-  { 
-    value: "gamma", 
-    label: "Gamma", 
-    locked: true,
-    unlockAt: 20,
-    params: [
-      {name: "k (Shape)", min: 0.1, max: 10, step: 0.1, default: 2}, 
-      {name: "θ (Scale)", min: 0.1, max: 5, step: 0.1, default: 1}
-    ], 
-    pdfTex: "\\frac{1}{\\Gamma(k)\\theta^k} x^{k-1} e^{-x/\\theta}, \\quad x > 0",
-    realWorld: {
-      title: "Insurance Claims & Rainfall",
-      description: "The gamma distribution models the sum of exponential waiting times.",
-      examples: [
-        "Total rainfall in a season (sum of storm amounts)",
-        "Insurance claim sizes (many small, few large)",
-        "Time to complete multiple sequential tasks"
-      ]
-    }
-  },
-  { 
-    value: "beta", 
-    label: "Beta", 
-    locked: true,
-    unlockAt: 20,
-    params: [
-      {name: "α (Alpha)", min: 0.1, max: 10, step: 0.1, default: 2}, 
-      {name: "β (Beta)", min: 0.1, max: 10, step: 0.1, default: 2}
-    ], 
-    pdfTex: "\\frac{x^{\\alpha-1}(1-x)^{\\beta-1}}{B(\\alpha, \\beta)}, \\quad 0 < x < 1",
-    realWorld: {
-      title: "Project Completion & Success Rates",
-      description: "The beta distribution models proportions and probabilities.",
-      examples: [
-        "Project completion percentage at any given time",
-        "Success rate of a manufacturing process",
-        "Prior probabilities in Bayesian inference"
+  {
+    id: 'synthesis',
+    title: 'Putting It All Together',
+    subtitle: 'Key concepts review',
+    distribution: 'normal',
+    params: { μ: 0, σ: 1 },
+    content: {
+      main: "You've learned the fundamental concepts of continuous distributions!",
+      keyTakeaways: [
+        "PDFs describe probability density, not probability itself",
+        "Probability = Area under the curve over an interval",
+        "Total area under any PDF must equal 1",
+        "Different distributions model different phenomena"
       ]
     }
   }
 ];
 
+// Distribution configurations
+const distributions = {
+  uniform: {
+    pdf: (x, a, b) => x >= a && x <= b ? 1 / (b - a) : 0,
+    cdf: (x, a, b) => jStat.uniform.cdf(x, a, b),
+    mean: (a, b) => (a + b) / 2,
+    domain: (a, b) => [a - (b-a)*0.2, b + (b-a)*0.2],
+    pdfTex: "\\frac{1}{b-a}, \\quad a \\le x \\le b",
+    paramConfig: [
+      {name: "a (Min)", min: -5, max: 5, step: 0.1, default: 0}, 
+      {name: "b (Max)", min: -4, max: 6, step: 0.1, default: 1}
+    ]
+  },
+  normal: {
+    pdf: (x, μ, σ) => jStat.normal.pdf(x, μ, σ),
+    cdf: (x, μ, σ) => jStat.normal.cdf(x, μ, σ),
+    mean: (μ, σ) => μ,
+    domain: (μ, σ) => [μ - 4*σ, μ + 4*σ],
+    pdfTex: "\\frac{1}{\\sigma\\sqrt{2\\pi}} e^{-\\frac{1}{2}\\left(\\frac{x-\\mu}{\\sigma}\\right)^2}",
+    paramConfig: [
+      {name: "μ (Mean)", min: -5, max: 5, step: 0.1, default: 0}, 
+      {name: "σ (Std Dev)", min: 0.1, max: 3, step: 0.1, default: 1}
+    ]
+  },
+  exponential: {
+    pdf: (x, λ) => x >= 0 ? jStat.exponential.pdf(x, λ) : 0,
+    cdf: (x, λ) => x >= 0 ? jStat.exponential.cdf(x, λ) : 0,
+    mean: (λ) => 1 / λ,
+    domain: (λ) => [0, Math.max(5, 5/λ)],
+    pdfTex: "\\lambda e^{-\\lambda x}, \\quad x \\ge 0",
+    paramConfig: [
+      {name: "λ (Rate)", min: 0.1, max: 5, step: 0.1, default: 1}
+    ]
+  }
+};
+
+// Memoized PDF formula display
+const PDFFormulaDisplay = memo(function PDFFormulaDisplay({ pdfTex, label }) {
+  const formulaRef = useRef(null);
+  
+  // Use safe MathJax processing with error handling
+  useSafeMathJax(formulaRef, [pdfTex]);
+  
+  return (
+    <div className="p-3 bg-gradient-to-r from-blue-900/20 to-emerald-900/20 rounded-lg border border-blue-700/30">
+      <div className="text-xs text-gray-400 mb-1">{label || "PDF Formula:"}</div>
+      <div ref={formulaRef} className="text-center text-sm">
+        <span dangerouslySetInnerHTML={{ __html: `\\(f(x) = ${pdfTex}\\)` }} />
+      </div>
+    </div>
+  );
+});
+
+// Main component
 const ContinuousDistributionsPDF = () => {
-  const colorScheme = createColorScheme('probability');
   const svgRef = useRef();
   const componentRef = useRef();
-  const dragRef = useRef(null);
   
-  // Stage-based learning: introduce distributions progressively
+  // Stage management
   const [currentStage, setCurrentStage] = useState(0);
-  const stages = [
-    { dist: "uniform", title: "Uniform Distribution", description: "Equal probability across an interval" },
-    { dist: "normal", title: "Normal Distribution", description: "The bell curve - most common in nature" },
-    { dist: "exponential", title: "Exponential Distribution", description: "Models time between events" },
-    { dist: "gamma", title: "Gamma Distribution", description: "Sum of exponential waiting times" },
-    { dist: "beta", title: "Beta Distribution", description: "Models proportions and probabilities" }
-  ];
+  const stage = learningStages[currentStage];
   
-  const [selectedDist, setSelectedDist] = useState(distributionOptions[0]);
-  const [params, setParams] = useState(selectedDist.params.map(p => p.default));
-  const [showIntro, setShowIntro] = useState(true);
+  // Distribution state
+  const [params, setParams] = useState([]);
+  const [intervalA, setIntervalA] = useState(-1);
+  const [intervalB, setIntervalB] = useState(1);
   
-  // Interval selection
-  const [intervalA, setIntervalA] = useState(-0.5);
-  const [intervalB, setIntervalB] = useState(0.5);
+  // Interaction state
   const [isDragging, setIsDragging] = useState(false);
-  const [dragType, setDragType] = useState(null); // 'a', 'b', or 'interval'
+  const [dragType, setDragType] = useState(null);
+  const [hasInteracted, setHasInteracted] = useState(false);
   
-  // Calculated values
-  const [calculatedIntegralProb, setCalculatedIntegralProb] = useState(0);
-  const [cdfAValue, setCdfAValue] = useState(0);
-  const [cdfBValue, setCdfBValue] = useState(0);
-  const [meanVal, setMeanVal] = useState(0);
-
-  // Update selected distribution when stage changes
+  // Initialize parameters when stage changes
   useEffect(() => {
-    const stageDistValue = stages[currentStage].dist;
-    const newDist = distributionOptions.find(opt => opt.value === stageDistValue);
-    if (newDist) {
-      setSelectedDist(newDist);
-      setParams(newDist.params.map(p => p.default));
+    if (stage.distribution && stage.params) {
+      const dist = distributions[stage.distribution];
+      const paramValues = dist.paramConfig.map((config, i) => {
+        const paramName = config.name.split(' ')[0];
+        // Ensure we always have a defined value to prevent controlled/uncontrolled warning
+        const value = stage.params[paramName];
+        return value !== undefined ? value : config.default;
+      });
+      setParams(paramValues);
       
-      // Reset interval to reasonable defaults for the new distribution
-      if (stageDistValue === 'uniform') {
-        setIntervalA(-0.5);
-        setIntervalB(0.5);
-      } else if (stageDistValue === 'normal') {
+      // Set appropriate interval defaults
+      if (stage.distribution === 'uniform') {
+        setIntervalA(stage.params.a + (stage.params.b - stage.params.a) * 0.2);
+        setIntervalB(stage.params.a + (stage.params.b - stage.params.a) * 0.8);
+      } else if (stage.distribution === 'normal') {
         setIntervalA(-1);
         setIntervalB(1);
-      } else if (stageDistValue === 'exponential') {
+      } else if (stage.distribution === 'exponential') {
         setIntervalA(0.5);
         setIntervalB(2);
-      } else if (stageDistValue === 'gamma') {
-        setIntervalA(0.5);
-        setIntervalB(3);
-      } else if (stageDistValue === 'beta') {
-        setIntervalA(0.2);
-        setIntervalB(0.8);
       }
     }
-  }, [currentStage]);
-
-
-  // Calculate plot data and statistics
-  const calculatePlotDataAndStats = useCallback(() => {
-    let domain, data = [], mean, cdfA, cdfB, integralProb;
-    const numPoints = 500;
-
-    try {
-      // Validate interval parameters
-      if (intervalA >= intervalB) {
-        // Invalid interval: intervalA >= intervalB
-        return { domain: [-5, 5], data: [], mean: 0, cdfA: 0, cdfB: 0, integralProb: 0 };
-      }
-
-      switch (selectedDist.value) {
-        case "normal":
-          domain = [params[0] - 4 * params[1], params[0] + 4 * params[1]];
-          data = d3.range(domain[0], domain[1], (domain[1] - domain[0]) / numPoints).map(xVal => ({
-            x: xVal, y: jStat.normal.pdf(xVal, params[0], params[1])
-          }));
-          mean = jStat.normal.mean(params[0], params[1]);
-          cdfA = jStat.normal.cdf(intervalA, params[0], params[1]);
-          cdfB = jStat.normal.cdf(intervalB, params[0], params[1]);
-          break;
-          
-        case "exponential":
-          domain = [0, Math.max(5 / params[0], 5)];
-          data = d3.range(domain[0], domain[1], (domain[1] - domain[0]) / numPoints).map(xVal => ({
-            x: xVal, y: jStat.exponential.pdf(xVal, params[0])
-          }));
-          mean = jStat.exponential.mean(params[0]);
-          cdfA = jStat.exponential.cdf(intervalA, params[0]);
-          cdfB = jStat.exponential.cdf(intervalB, params[0]);
-          break;
-          
-        case "gamma":
-          // Validate gamma parameters
-          if (params[0] <= 0 || params[1] <= 0) {
-            // Invalid gamma parameters: shape or scale <= 0
-            return { domain: [0, 10], data: [], mean: 0, cdfA: 0, cdfB: 0, integralProb: 0 };
-          }
-          
-          const gammaMean = params[0] * params[1];
-          const gammaStdDev = Math.sqrt(params[0]) * params[1];
-          domain = [Math.max(0.0001, gammaMean - 4*gammaStdDev), Math.max(gammaMean + 4 * gammaStdDev, 5)];
-          if(domain[0] >= domain[1]) domain = [0.0001, domain[0]+1];
-          
-          data = d3.range(domain[0], domain[1], (domain[1] - domain[0]) / numPoints).map(xVal => {
-            try {
-              const pdfVal = jStat.gamma.pdf(xVal, params[0], params[1]);
-              return { x: xVal, y: isFinite(pdfVal) ? pdfVal : 0 };
-            } catch (e) {
-              return { x: xVal, y: 0 };
-            }
-          });
-          
-          try {
-            mean = jStat.gamma.mean(params[0], params[1]);
-            cdfA = Math.max(0, jStat.gamma.cdf(Math.max(0, intervalA), params[0], params[1]));
-            cdfB = Math.max(0, jStat.gamma.cdf(Math.max(0, intervalB), params[0], params[1]));
-          } catch (e) {
-            mean = gammaMean;
-            cdfA = 0;
-            cdfB = 1;
-          }
-          break;
-          
-        case "uniform":
-          let [ua, ub] = params;
-          // Ensure valid uniform parameters
-          if (ua >= ub) { 
-            ub = ua + 0.1;
-            // Update params to reflect the correction
-            params[1] = ub;
-          }
-          domain = [ua - (ub-ua)*0.2, ub + (ub-ua)*0.2];
-          data = d3.range(domain[0], domain[1], (domain[1] - domain[0]) / numPoints).map(xVal => ({
-            x: xVal, y: jStat.uniform.pdf(xVal, ua, ub)
-          }));
-          mean = jStat.uniform.mean(ua, ub);
-          cdfA = jStat.uniform.cdf(intervalA, ua, ub);
-          cdfB = jStat.uniform.cdf(intervalB, ua, ub);
-          break;
-          
-        case "beta":
-          domain = [0, 1];
-          if (params[0] <= 0 || params[1] <= 0) {
-            // Invalid beta parameters: alpha or beta <= 0
-            return { domain: [0, 1], data: [], mean: 0.5, cdfA: 0, cdfB: 0, integralProb: 0 };
-          }
-          
-          data = d3.range(0.001, 0.999, (0.999 - 0.001) / numPoints).map(xVal => {
-            try {
-              const pdfVal = jStat.beta.pdf(xVal, params[0], params[1]);
-              return { x: xVal, y: isFinite(pdfVal) ? pdfVal : 0 };
-            } catch (e) {
-              return { x: xVal, y: 0 };
-            }
-          });
-          
-          try {
-            mean = jStat.beta.mean(params[0], params[1]);
-            cdfA = jStat.beta.cdf(Math.max(0, Math.min(1, intervalA)), params[0], params[1]);
-            cdfB = jStat.beta.cdf(Math.max(0, Math.min(1, intervalB)), params[0], params[1]);
-          } catch (e) {
-            mean = 0.5;
-            cdfA = 0;
-            cdfB = 1;
-          }
-          break;
-          
-        default:
-          domain = [-5, 5]; data = []; mean = 0; cdfA = 0; cdfB = 0;
-      }
-      
-      integralProb = Math.max(0, cdfB - cdfA);
-      return { domain, data, mean, cdfA, cdfB, integralProb };
-
-    } catch (error) {
-      // Error calculating distribution data handled silently
-      return { domain: [-5,5], data: [], mean: 0, cdfA:0, cdfB:0, integralProb:0 };
-    }
-  }, [selectedDist.value, params, intervalA, intervalB]);
-
-  // Update calculated values
-  useEffect(() => {
-    const { mean, cdfA, cdfB, integralProb } = calculatePlotDataAndStats();
-    setMeanVal(mean);
-    setCdfAValue(cdfA);
-    setCdfBValue(cdfB);
-    setCalculatedIntegralProb(integralProb);
-  }, [calculatePlotDataAndStats]);
-
-  // D3 Visualization with drag functionality
-  useEffect(() => {
-    if (!svgRef.current || typeof window === 'undefined') return;
+    setHasInteracted(false);
+  }, [currentStage, stage]);
+  
+  // Calculate distribution data with fixed axis ranges
+  const calculateDistributionData = useCallback(() => {
+    if (!stage.distribution) return { data: [], fixedDomain: [-10, 10], mean: 0, probability: 0 };
     
-    const { domain, data: plotData } = calculatePlotDataAndStats();
+    const dist = distributions[stage.distribution];
+    
+    // Fixed domains for each distribution type for stable axes
+    let fixedDomain;
+    switch (stage.distribution) {
+      case 'uniform':
+        fixedDomain = [-6, 6];
+        break;
+      case 'normal':
+        fixedDomain = [-8, 8];
+        break;
+      case 'exponential':
+        fixedDomain = [-1, 10];
+        break;
+      default:
+        fixedDomain = [-10, 10];
+    }
+    
+    const numPoints = 500;
+    
+    // Calculate data across the full fixed domain
+    const data = d3.range(fixedDomain[0], fixedDomain[1], (fixedDomain[1] - fixedDomain[0]) / numPoints).map(x => ({
+      x,
+      y: dist.pdf(x, ...params)
+    }));
+    
+    const mean = dist.mean(...params);
+    const cdfA = dist.cdf(intervalA, ...params);
+    const cdfB = dist.cdf(intervalB, ...params);
+    const probability = Math.max(0, cdfB - cdfA);
+    
+    return { data, fixedDomain, mean, probability, cdfA, cdfB };
+  }, [stage.distribution, params, intervalA, intervalB]);
+  
+  // D3 Visualization with smooth transitions
+  useEffect(() => {
+    if (!svgRef.current || !stage.distribution) return;
+    
+    const { data, fixedDomain, mean, probability } = calculateDistributionData();
     const svg = d3.select(svgRef.current);
     const { width } = svgRef.current.getBoundingClientRect();
     const height = 400;
-    const margin = { top: 30, right: 30, bottom: 50, left: 50 };
+    const margin = { top: 30, right: 30, bottom: 50, left: 60 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
-    svg.selectAll("*").remove();
-    svg.attr("viewBox", `0 0 ${width} ${height}`);
+    const isFirstRender = svg.selectAll("g.main-group").empty();
+    // Disable transitions during dragging for smooth interaction
+    const transitionDuration = isFirstRender || isDragging ? 0 : 300;
     
-    // Background
-    svg.append("rect")
-      .attr("width", width)
-      .attr("height", height)
-      .attr("fill", "#0f172a");
+    if (isFirstRender) {
+      svg.selectAll("*").remove();
+      svg.attr("viewBox", `0 0 ${width} ${height}`);
+    }
     
-    const g = svg.append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
+    // Create or select main group
+    let g = svg.select("g.main-group");
+    if (g.empty()) {
+      g = svg.append("g")
+        .attr("class", "main-group")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+    }
     
-    // Scales
+    // Create gradient definitions for vibrant fills (only once)
+    let defs = svg.select("defs");
+    if (defs.empty()) {
+      defs = svg.append("defs");
+    }
+    
+    // Primary gradient - vibrant purple to blue
+    // Create gradients only if they don't exist
+    if (defs.select("#primaryGradient").empty()) {
+      const primaryGradient = defs.append("linearGradient")
+        .attr("id", "primaryGradient")
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "0%")
+        .attr("y2", "100%");
+      
+      primaryGradient.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", "#8b5cf6")
+        .attr("stop-opacity", 0.8);
+      
+      primaryGradient.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "#3b82f6")
+        .attr("stop-opacity", 0.3);
+    }
+    
+    if (defs.select("#secondaryGradient").empty()) {
+      const secondaryGradient = defs.append("linearGradient")
+        .attr("id", "secondaryGradient")
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "0%")
+        .attr("y2", "100%");
+      
+      secondaryGradient.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", "#14b8a6")
+        .attr("stop-opacity", 0.9);
+      
+      secondaryGradient.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "#06b6d4")
+        .attr("stop-opacity", 0.4);
+    }
+    
+    // Fixed scales for stable visualization
     const xScale = d3.scaleLinear()
-      .domain(domain)
+      .domain(fixedDomain)
       .range([0, innerWidth]);
     
-    const maxYValue = d3.max(plotData, d => d.y) || 1;
+    // Fixed y-scale based on distribution type
+    let yMax;
+    switch (stage.distribution) {
+      case 'uniform':
+        yMax = 1.5;  // Uniform can have high density for narrow intervals
+        break;
+      case 'normal':
+        yMax = 0.6;  // Normal PDF peak is ~0.4 for σ=1
+        break;
+      case 'exponential':
+        yMax = 2.5;  // Exponential can have high density at x=0
+        break;
+      default:
+        yMax = 1;
+    }
+    
     const yScale = d3.scaleLinear()
-      .domain([0, maxYValue * 1.1])
+      .domain([0, yMax])
       .range([innerHeight, 0]);
     
-    // Grid lines
-    g.append("g")
-      .attr("class", "grid")
-      .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(xScale)
-        .tickSize(-innerHeight)
-        .tickFormat("")
-      )
-      .style("stroke-dasharray", "3,3")
-      .style("opacity", 0.3);
+    // Grid lines (create only once)
+    if (g.select(".grid-x").empty()) {
+      g.append("g")
+        .attr("class", "grid grid-x")
+        .attr("transform", `translate(0,${innerHeight})`)
+        .call(d3.axisBottom(xScale)
+          .tickSize(-innerHeight)
+          .tickFormat("")
+        )
+        .style("stroke", "#374151")
+        .style("stroke-dasharray", "3,3")
+        .style("opacity", 0.5);
+      
+      g.append("g")
+        .attr("class", "grid grid-y")
+        .call(d3.axisLeft(yScale)
+          .tickSize(-innerWidth)
+          .tickFormat("")
+        )
+        .style("stroke", "#374151")
+        .style("stroke-dasharray", "3,3")
+        .style("opacity", 0.5);
+    }
     
-    g.append("g")
-      .attr("class", "grid")
-      .call(d3.axisLeft(yScale)
-        .tickSize(-innerWidth)
-        .tickFormat("")
-      )
-      .style("stroke-dasharray", "3,3")
-      .style("opacity", 0.3);
+    // Axes (create only once)
+    let xAxis = g.select(".x-axis");
+    if (xAxis.empty()) {
+      xAxis = g.append("g")
+        .attr("class", "x-axis")
+        .attr("transform", `translate(0,${innerHeight})`)
+        .call(d3.axisBottom(xScale).ticks(8));
+    }
     
-    // Axes
-    g.append("g")
-      .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(xScale).ticks(10))
-      .selectAll("text")
-      .attr("fill", "#e2e8f0")
-      .style("font-size", "12px");
+    xAxis.selectAll("text")
+      .style("font-size", "12px")
+      .style("fill", "#e5e7eb");
     
-    g.append("text")
-      .attr("text-anchor", "middle")
-      .attr("x", innerWidth / 2)
-      .attr("y", innerHeight + 40)
-      .attr("fill", "#e2e8f0")
-      .style("font-size", "14px")
-      .text("x");
+    xAxis.selectAll("line")
+      .style("stroke", "#6b7280");
     
-    g.append("g")
-      .call(d3.axisLeft(yScale).ticks(5))
-      .selectAll("text")
-      .attr("fill", "#e2e8f0")
-      .style("font-size", "12px");
+    xAxis.select(".domain")
+      .style("stroke", "#6b7280");
     
-    g.append("text")
-      .attr("text-anchor", "middle")
-      .attr("transform", "rotate(-90)")
-      .attr("x", -innerHeight / 2)
-      .attr("y", -35)
-      .attr("fill", "#e2e8f0")
-      .style("font-size", "14px")
-      .text("f(x)");
+    if (g.select(".x-label").empty()) {
+      g.append("text")
+        .attr("class", "x-label")
+        .attr("text-anchor", "middle")
+        .attr("x", innerWidth / 2)
+        .attr("y", innerHeight + 40)
+        .style("font-size", "14px")
+        .style("fill", "#e5e7eb")
+        .style("font-weight", "500")
+        .text("x");
+    }
+    
+    let yAxis = g.select(".y-axis");
+    if (yAxis.empty()) {
+      yAxis = g.append("g")
+        .attr("class", "y-axis")
+        .call(d3.axisLeft(yScale).ticks(5));
+    }
+    
+    yAxis.selectAll("text")
+      .style("font-size", "12px")
+      .style("fill", "#e5e7eb");
+    
+    yAxis.selectAll("line")
+      .style("stroke", "#6b7280");
+    
+    yAxis.select(".domain")
+      .style("stroke", "#6b7280");
+    
+    if (g.select(".y-label").empty()) {
+      g.append("text")
+        .attr("class", "y-label")
+        .attr("text-anchor", "middle")
+        .attr("transform", "rotate(-90)")
+        .attr("x", -innerHeight / 2)
+        .attr("y", -40)
+        .style("font-size", "14px")
+        .style("fill", "#e5e7eb")
+        .style("font-weight", "500")
+        .text("f(x)");
+    }
     
     // Area and line generators
     const line = d3.line()
@@ -403,80 +450,149 @@ const ContinuousDistributionsPDF = () => {
       .y(d => yScale(d.y))
       .curve(d3.curveBasis);
     
-    const areaGenerator = d3.area()
+    const area = d3.area()
       .x(d => xScale(d.x))
       .y0(innerHeight)
       .y1(d => yScale(d.y))
       .curve(d3.curveBasis);
     
-    // Full distribution area
-    g.append("path")
-      .datum(plotData)
-      .attr("fill", colorScheme.primary + "30")
-      .attr("d", areaGenerator);
+    // Create clip path (only once)
+    if (defs.select("#chart-area").empty()) {
+      defs.append("clipPath")
+        .attr("id", "chart-area")
+        .append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", innerWidth)
+        .attr("height", innerHeight);
+    }
     
-    // Distribution line
-    g.append("path")
-      .datum(plotData)
-      .attr("fill", "none")
-      .attr("stroke", colorScheme.primary)
-      .attr("stroke-width", 2.5)
+    // Apply clipping to distribution paths
+    let clippedGroup = g.select(".clipped-group");
+    if (clippedGroup.empty()) {
+      clippedGroup = g.append("g")
+        .attr("class", "clipped-group")
+        .attr("clip-path", "url(#chart-area)");
+    }
+    
+    // Full distribution area with gradient (update with transition)
+    let areaPath = clippedGroup.select(".distribution-area");
+    if (areaPath.empty()) {
+      areaPath = clippedGroup.append("path")
+        .attr("class", "distribution-area")
+        .attr("fill", "url(#primaryGradient)")
+        .attr("opacity", 0.7);
+    }
+    
+    areaPath
+      .datum(data)
+      .transition()
+      .duration(transitionDuration)
+      .attr("d", area);
+    
+    // Distribution line (update with transition)
+    let linePath = clippedGroup.select(".distribution-line");
+    if (linePath.empty()) {
+      linePath = clippedGroup.append("path")
+        .attr("class", "distribution-line")
+        .attr("fill", "none")
+        .attr("stroke", "#a855f7")
+        .attr("stroke-width", 3)
+        .attr("filter", "drop-shadow(0 0 8px rgba(168, 85, 247, 0.5))");
+    }
+    
+    linePath
+      .datum(data)
+      .transition()
+      .duration(transitionDuration)
       .attr("d", line);
     
-    // Highlighted integral area
-    const integralAreaData = plotData.filter(d => d.x >= intervalA && d.x <= intervalB);
-    if (integralAreaData.length > 0) {
-      g.append("path")
-        .datum(integralAreaData)
-        .attr("fill", colorScheme.secondary + "60")
-        .attr("stroke", colorScheme.secondary)
-        .attr("stroke-width", 1.5)
-        .attr("d", areaGenerator);
-    }
+    // Highlighted interval area (update with transition)
+    const intervalData = data.filter(d => d.x >= intervalA && d.x <= intervalB);
+    let intervalPath = clippedGroup.select(".interval-area");
     
-    // Mean line
-    if (meanVal !== undefined && xScale(meanVal) >= 0 && xScale(meanVal) <= innerWidth) {
-      g.append("line")
-        .attr("x1", xScale(meanVal))
-        .attr("x2", xScale(meanVal))
-        .attr("y1", yScale(0))
-        .attr("y2", yScale(maxYValue * 1.1))
-        .attr("stroke", colorScheme.accent)
-        .attr("stroke-width", 2)
-        .attr("stroke-dasharray", "4,4");
+    if (intervalData.length > 0) {
+      if (intervalPath.empty()) {
+        intervalPath = clippedGroup.append("path")
+          .attr("class", "interval-area")
+          .attr("fill", "url(#secondaryGradient)")
+          .attr("opacity", 0.8)
+          .attr("stroke", "#14b8a6")
+          .attr("stroke-width", 2)
+          .attr("filter", "drop-shadow(0 0 6px rgba(20, 184, 166, 0.4))");
+      }
       
-      g.append("text")
-        .attr("x", xScale(meanVal) + 5)
-        .attr("y", 20)
-        .attr("fill", colorScheme.accent)
-        .style("font-size", "12px")
-        .style("font-family", "monospace")
-        .text(`μ = ${meanVal.toFixed(2)}`);
+      intervalPath
+        .datum(intervalData)
+        .transition()
+        .duration(transitionDuration)
+        .attr("d", area);
+    } else {
+      intervalPath.remove();
     }
     
-    // Draggable interval markers
+    // Mean line - update with transition
+    const meanX = xScale(mean);
+    let meanLine = g.select(".mean-line");
+    let meanText = g.select(".mean-text");
+    
+    if (mean !== undefined && meanX >= 0 && meanX <= innerWidth) {
+      if (meanLine.empty()) {
+        meanLine = g.append("line")
+          .attr("class", "mean-line")
+          .attr("y1", 0)
+          .attr("y2", innerHeight)
+          .attr("stroke", "#fbbf24")
+          .attr("stroke-width", 2)
+          .attr("stroke-dasharray", "5,5")
+          .attr("filter", "drop-shadow(0 0 4px rgba(251, 191, 36, 0.5))");
+      }
+      
+      meanLine
+        .transition()
+        .duration(transitionDuration)
+        .attr("x1", meanX)
+        .attr("x2", meanX);
+      
+      if (meanText.empty()) {
+        meanText = g.append("text")
+          .attr("class", "mean-text")
+          .attr("y", 15)
+          .attr("fill", "#fbbf24")
+          .style("font-size", "12px")
+          .style("font-family", "monospace");
+      }
+      
+      meanText
+        .transition()
+        .duration(transitionDuration)
+        .attr("x", meanX + 5)
+        .text(`μ = ${mean.toFixed(2)}`);
+    } else {
+      meanLine.remove();
+      meanText.remove();
+    }
+    
+    // Drag behavior for interval markers
     const createDragBehavior = (type) => {
       return d3.drag()
         .on("start", () => {
           setIsDragging(true);
           setDragType(type);
+          setHasInteracted(true);
         })
         .on("drag", (event) => {
           const newX = Math.max(0, Math.min(innerWidth, event.x));
           const newValue = xScale.invert(newX);
           
           if (type === 'a') {
-            setIntervalA(Math.min(newValue, intervalB - 0.01));
+            // Ensure intervalA stays within the fixed domain
+            const constrainedValue = Math.max(fixedDomain[0], Math.min(fixedDomain[1], newValue));
+            setIntervalA(Math.min(constrainedValue, intervalB - 0.01));
           } else if (type === 'b') {
-            setIntervalB(Math.max(newValue, intervalA + 0.01));
-          } else if (type === 'interval') {
-            const dx = xScale.invert(event.dx) - xScale.invert(0);
-            const newA = intervalA + dx;
-            const newB = intervalB + dx;
-            if (newA >= domain[0] && newB <= domain[1]) {
-              setIntervalA(newA);
-              setIntervalB(newB);
-            }
+            // Ensure intervalB stays within the fixed domain
+            const constrainedValue = Math.max(fixedDomain[0], Math.min(fixedDomain[1], newValue));
+            setIntervalB(Math.max(constrainedValue, intervalA + 0.01));
           }
         })
         .on("end", () => {
@@ -485,265 +601,329 @@ const ContinuousDistributionsPDF = () => {
         });
     };
     
-    // Interval A marker
-    const markerA = g.append("g")
-      .attr("class", "marker-a")
-      .attr("cursor", "ew-resize")
-      .call(createDragBehavior('a'));
-    
-    markerA.append("line")
-      .attr("x1", xScale(intervalA))
-      .attr("x2", xScale(intervalA))
-      .attr("y1", 0)
-      .attr("y2", innerHeight)
-      .attr("stroke", colorScheme.secondary)
-      .attr("stroke-width", 2)
-      .attr("stroke-dasharray", "2,2");
-    
-    markerA.append("rect")
-      .attr("x", xScale(intervalA) - 10)
-      .attr("y", innerHeight - 30)
-      .attr("width", 20)
-      .attr("height", 30)
-      .attr("fill", colorScheme.secondary)
-      .attr("opacity", 0.8);
-    
-    markerA.append("text")
-      .attr("x", xScale(intervalA))
-      .attr("y", innerHeight - 10)
-      .attr("text-anchor", "middle")
-      .attr("fill", "white")
-      .style("font-size", "12px")
-      .style("font-weight", "bold")
-      .text("a");
-    
-    // Interval B marker
-    const markerB = g.append("g")
-      .attr("class", "marker-b")
-      .attr("cursor", "ew-resize")
-      .call(createDragBehavior('b'));
-    
-    markerB.append("line")
-      .attr("x1", xScale(intervalB))
-      .attr("x2", xScale(intervalB))
-      .attr("y1", 0)
-      .attr("y2", innerHeight)
-      .attr("stroke", colorScheme.secondary)
-      .attr("stroke-width", 2)
-      .attr("stroke-dasharray", "2,2");
-    
-    markerB.append("rect")
-      .attr("x", xScale(intervalB) - 10)
-      .attr("y", innerHeight - 30)
-      .attr("width", 20)
-      .attr("height", 30)
-      .attr("fill", colorScheme.secondary)
-      .attr("opacity", 0.8);
-    
-    markerB.append("text")
-      .attr("x", xScale(intervalB))
-      .attr("y", innerHeight - 10)
-      .attr("text-anchor", "middle")
-      .attr("fill", "white")
-      .style("font-size", "12px")
-      .style("font-weight", "bold")
-      .text("b");
-    
-    // Draggable interval area (for moving both)
-    if (integralAreaData.length > 0) {
-      const intervalRect = g.append("rect")
-        .attr("x", xScale(intervalA))
-        .attr("y", 0)
-        .attr("width", Math.max(0, xScale(intervalB) - xScale(intervalA)))
-        .attr("height", innerHeight)
-        .attr("fill", "transparent")
-        .attr("cursor", "move")
-        .call(createDragBehavior('interval'));
+    // Interval markers - update existing or create new
+    let markerA = g.select(".marker-a");
+    if (markerA.empty()) {
+      markerA = g.append("g")
+        .attr("class", "marker-a")
+        .attr("cursor", "ew-resize")
+        .call(createDragBehavior('a'));
+      
+      markerA.append("line")
+        .attr("class", "marker-a-line")
+        .attr("y1", 0)
+        .attr("y2", innerHeight)
+        .attr("stroke", "#06b6d4")
+        .attr("stroke-width", 3)
+        .attr("stroke-dasharray", "none")
+        .attr("filter", "drop-shadow(0 0 4px rgba(6, 182, 212, 0.6))");
+      
+      markerA.append("circle")
+        .attr("class", "marker-a-circle")
+        .attr("cy", innerHeight)
+        .attr("r", 10)
+        .attr("fill", "#06b6d4")
+        .attr("stroke", "#0e7490")
+        .attr("stroke-width", 2);
+      
+      markerA.append("text")
+        .attr("class", "marker-a-text")
+        .attr("y", innerHeight + 20)
+        .attr("text-anchor", "middle")
+        .attr("fill", "#06b6d4")
+        .style("font-size", "14px")
+        .style("font-weight", "bold")
+        .style("text-shadow", "0 0 8px rgba(6, 182, 212, 0.6)")
+        .text("a");
     }
     
-    // Probability display
-    g.append("text")
-      .attr("x", innerWidth - 10)
-      .attr("y", 20)
-      .attr("text-anchor", "end")
-      .attr("fill", colorScheme.secondary)
-      .style("font-size", "16px")
-      .style("font-weight", "bold")
-      .style("font-family", "monospace")
-      .text(`P(${intervalA.toFixed(2)} ≤ X ≤ ${intervalB.toFixed(2)}) = ${calculatedIntegralProb.toFixed(4)}`);
+    // Update marker A position (no transition during drag)
+    const markerALine = markerA.select(".marker-a-line");
+    const markerACircle = markerA.select(".marker-a-circle");
+    const markerAText = markerA.select(".marker-a-text");
     
-  }, [calculatePlotDataAndStats, intervalA, intervalB, calculatedIntegralProb, colorScheme]);
-
-
-  // Handle parameter change
+    if (isDragging && dragType === 'a') {
+      markerALine
+        .attr("x1", xScale(intervalA))
+        .attr("x2", xScale(intervalA));
+      markerACircle.attr("cx", xScale(intervalA));
+      markerAText.attr("x", xScale(intervalA));
+    } else {
+      markerALine
+        .transition()
+        .duration(transitionDuration)
+        .attr("x1", xScale(intervalA))
+        .attr("x2", xScale(intervalA));
+      markerACircle
+        .transition()
+        .duration(transitionDuration)
+        .attr("cx", xScale(intervalA));
+      markerAText
+        .transition()
+        .duration(transitionDuration)
+        .attr("x", xScale(intervalA));
+    }
+    
+    let markerB = g.select(".marker-b");
+    if (markerB.empty()) {
+      markerB = g.append("g")
+        .attr("class", "marker-b")
+        .attr("cursor", "ew-resize")
+        .call(createDragBehavior('b'));
+      
+      markerB.append("line")
+        .attr("class", "marker-b-line")
+        .attr("y1", 0)
+        .attr("y2", innerHeight)
+        .attr("stroke", "#06b6d4")
+        .attr("stroke-width", 3)
+        .attr("stroke-dasharray", "none")
+        .attr("filter", "drop-shadow(0 0 4px rgba(6, 182, 212, 0.6))");
+      
+      markerB.append("circle")
+        .attr("class", "marker-b-circle")
+        .attr("cy", innerHeight)
+        .attr("r", 10)
+        .attr("fill", "#06b6d4")
+        .attr("stroke", "#0e7490")
+        .attr("stroke-width", 2);
+      
+      markerB.append("text")
+        .attr("class", "marker-b-text")
+        .attr("y", innerHeight + 20)
+        .attr("text-anchor", "middle")
+        .attr("fill", "#06b6d4")
+        .style("font-size", "14px")
+        .style("font-weight", "bold")
+        .style("text-shadow", "0 0 8px rgba(6, 182, 212, 0.6)")
+        .text("b");
+    }
+    
+    // Update marker B position (no transition during drag)
+    const markerBLine = markerB.select(".marker-b-line");
+    const markerBCircle = markerB.select(".marker-b-circle");
+    const markerBText = markerB.select(".marker-b-text");
+    
+    if (isDragging && dragType === 'b') {
+      markerBLine
+        .attr("x1", xScale(intervalB))
+        .attr("x2", xScale(intervalB));
+      markerBCircle.attr("cx", xScale(intervalB));
+      markerBText.attr("x", xScale(intervalB));
+    } else {
+      markerBLine
+        .transition()
+        .duration(transitionDuration)
+        .attr("x1", xScale(intervalB))
+        .attr("x2", xScale(intervalB));
+      markerBCircle
+        .transition()
+        .duration(transitionDuration)
+        .attr("cx", xScale(intervalB));
+      markerBText
+        .transition()
+        .duration(transitionDuration)
+        .attr("x", xScale(intervalB));
+    }
+    
+    // Probability display - update existing or create new
+    let probGroup = g.select(".probability-display");
+    if (probability > 0) {
+      const probX = xScale((intervalA + intervalB) / 2);
+      const probY = 30;
+      
+      if (probGroup.empty()) {
+        probGroup = g.append("g")
+          .attr("class", "probability-display");
+        
+        probGroup.append("rect")
+          .attr("class", "prob-rect")
+          .attr("width", 200)
+          .attr("height", 30)
+          .attr("fill", "#1e293b")
+          .attr("stroke", "#06b6d4")
+          .attr("stroke-width", 2)
+          .attr("rx", 6)
+          .attr("filter", "drop-shadow(0 0 10px rgba(6, 182, 212, 0.4))");
+        
+        probGroup.append("text")
+          .attr("class", "prob-text")
+          .attr("text-anchor", "middle")
+          .attr("fill", "#67e8f9")
+          .style("font-size", "16px")
+          .style("font-family", "monospace")
+          .style("font-weight", "bold")
+          .style("text-shadow", "0 0 10px rgba(103, 232, 249, 0.6)");
+      }
+      
+      // Update positions
+      probGroup.select(".prob-rect")
+        .transition()
+        .duration(transitionDuration)
+        .attr("x", probX - 100)
+        .attr("y", probY - 15);
+      
+      probGroup.select(".prob-text")
+        .transition()
+        .duration(transitionDuration)
+        .attr("x", probX)
+        .attr("y", probY + 5)
+        .text(`P = ${probability.toFixed(4)}`);
+    } else {
+      probGroup.remove();
+    }
+    
+  }, [calculateDistributionData, intervalA, intervalB, stage.distribution, colorScheme]);
+  
+  // Handle parameter changes
   const handleParamChange = (index, value) => {
     const newParams = [...params];
-    const parsedValue = parseFloat(value);
+    newParams[index] = parseFloat(value);
     
-    // Validate parsed value
-    if (isNaN(parsedValue)) return;
-    
-    newParams[index] = parsedValue;
-    
-    // Distribution-specific validation
-    switch (selectedDist.value) {
-      case "uniform":
-        if (index === 0 && newParams[0] >= newParams[1]) {
-          newParams[1] = newParams[0] + 0.1;
-        } else if (index === 1 && newParams[1] <= newParams[0]) {
-          newParams[0] = newParams[1] - 0.1;
-        }
-        break;
-        
-      case "exponential":
-        if (newParams[0] <= 0) newParams[0] = 0.1;
-        break;
-        
-      case "gamma":
-        if (newParams[index] <= 0) newParams[index] = 0.1;
-        break;
-        
-      case "beta":
-        if (newParams[index] <= 0) newParams[index] = 0.1;
-        break;
-        
-      case "normal":
-        if (index === 1 && newParams[1] <= 0) newParams[1] = 0.1;
-        break;
+    // Validate parameters
+    if (stage.distribution === 'uniform' && index === 0 && newParams[0] >= newParams[1]) {
+      newParams[1] = newParams[0] + 0.1;
+    } else if (stage.distribution === 'uniform' && index === 1 && newParams[1] <= newParams[0]) {
+      newParams[0] = newParams[1] - 0.1;
     }
     
     setParams(newParams);
   };
-
-  // Reset function
-  const handleReset = () => {
-    setCurrentStage(0);
-    setSelectedDist(distributionOptions[0]);
-    setParams(distributionOptions[0].params.map(p => p.default));
-    setIntervalA(-0.5);
-    setIntervalB(0.5);
-    setShowIntro(true);
-  };
-
-  // MathJax processing
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.MathJax?.typesetPromise && componentRef.current) {
-      // Clear previous rendering
-      if (window.MathJax.typesetClear) {
-        window.MathJax.typesetClear([componentRef.current]);
-      }
-      window.MathJax.typesetPromise([componentRef.current]).catch(() => {
-        // MathJax error handled silently
-      });
+  
+  // Progress milestone check
+  const checkMilestone = () => {
+    if (hasInteracted && currentStage === 1) {
+      return "Great! You've discovered that probability = area under the curve!";
     }
-  }, [selectedDist, params, intervalA, intervalB, calculatedIntegralProb]);
-
+    if (currentStage === 4 && Math.abs(intervalB - intervalA - 2) < 0.1) {
+      return "Perfect! You found that P(μ-σ ≤ X ≤ μ+σ) ≈ 0.68";
+    }
+    return null;
+  };
+  
+  const milestone = checkMilestone();
+  
   return (
     <VisualizationContainer 
       ref={componentRef}
-      title="Continuous Probability Distributions"
-      className="min-h-screen"
+      title="Understanding Probability Density Functions"
+      subtitle="A guided journey through continuous distributions"
     >
-      {/* Introduction */}
-      {showIntro && (
-        <div className="mb-6 p-4 bg-gradient-to-r from-blue-900/30 to-emerald-900/30 rounded-lg border border-blue-700/50">
-          <div className="flex items-start gap-3">
-            <Info className="w-5 h-5 text-blue-400 mt-1 flex-shrink-0" />
-            <div className="space-y-2">
-              <h3 className="text-base font-semibold text-blue-300">
-                Why Continuous Distributions Matter
-              </h3>
-              <p className="text-sm text-gray-300">
-                Unlike discrete distributions that count individual outcomes, continuous distributions model 
-                measurements that can take any value within a range. They're essential for engineering 
-                because most real-world measurements are continuous.
-              </p>
-              <p className="text-sm text-gray-400">
-                Start exploring with the Uniform distribution below. Drag the interval markers to see how 
-                probability is calculated as the area under the curve!
-              </p>
-              <Button
-                onClick={() => setShowIntro(false)}
-                className="mt-2 text-xs"
-                variant="outline"
-              >
-                Got it!
-              </Button>
+      {/* Progress Bar */}
+      <div className="mb-6">
+        <ProgressBar 
+          current={currentStage + 1}
+          total={learningStages.length}
+          label="Learning Journey"
+          variant="emerald"
+        />
+      </div>
+      
+      {/* Stage Content */}
+      <VisualizationSection className="mb-6">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-white">{stage.title}</h2>
+              <p className="text-sm text-gray-400">{stage.subtitle}</p>
             </div>
+            {stage.distribution && (
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <BarChart3 className="w-4 h-4" />
+                <span className="capitalize">{stage.distribution} Distribution</span>
+              </div>
+            )}
           </div>
-        </div>
-      )}
-
-
-      {/* Main content grid */}
-      <div className="grid lg:grid-cols-[1fr,300px] gap-4">
-        {/* Visualization */}
-        <GraphContainer className="relative">
-          <svg ref={svgRef} className="w-full" />
-          {isDragging && (
-            <div className="absolute top-2 left-2 px-3 py-1 bg-black/80 rounded-md">
-              <span className="text-xs text-gray-300">
-                {dragType === 'interval' ? 'Moving interval' : `Adjusting ${dragType}`}
-              </span>
+          
+          {/* Stage-specific content */}
+          <div className="p-4 bg-gradient-to-r from-blue-900/20 to-emerald-900/20 rounded-lg border border-blue-700/30">
+            <p className="text-sm text-gray-300 mb-3">{stage.content.main}</p>
+            
+            {stage.content.points && (
+              <ul className="space-y-2 ml-4">
+                {stage.content.points.map((point, i) => (
+                  <li key={i} className="text-sm text-gray-400 flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            
+            {stage.content.realWorld && (
+              <div className="mt-3 p-3 bg-amber-900/20 rounded border border-amber-700/30">
+                <p className="text-xs text-amber-400 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" />
+                  Real-world example: {stage.content.realWorld}
+                </p>
+              </div>
+            )}
+            
+            {stage.content.activity && (
+              <p className="mt-3 text-sm text-emerald-400 flex items-center gap-2">
+                <Sparkles className="w-4 h-4" />
+                {stage.content.activity}
+              </p>
+            )}
+            
+            {stage.content.explore && (
+              <div className="mt-3 space-y-1">
+                <p className="text-xs text-gray-500 uppercase tracking-wide">Try these:</p>
+                {stage.content.explore.map((item, i) => (
+                  <p key={i} className="text-sm text-gray-400 ml-4">• {item}</p>
+                ))}
+              </div>
+            )}
+            
+            {stage.content.keyTakeaways && (
+              <div className="mt-3 space-y-2">
+                <p className="text-sm font-semibold text-emerald-400">Key Takeaways:</p>
+                {stage.content.keyTakeaways.map((takeaway, i) => (
+                  <p key={i} className="text-sm text-gray-300 ml-4 flex items-start gap-2">
+                    <span className="text-emerald-500">✓</span>
+                    {takeaway}
+                  </p>
+                ))}
+              </div>
+            )}
+          </div>
+          
+          {/* Milestone feedback */}
+          {milestone && (
+            <div className="p-3 bg-emerald-900/30 border border-emerald-700/50 rounded-lg">
+              <p className="text-sm text-emerald-400 flex items-center gap-2">
+                <CheckCircle className="w-4 h-4" />
+                {milestone}
+              </p>
             </div>
           )}
-        </GraphContainer>
-
-        {/* Controls */}
-        <ControlPanel className="space-y-4">
-          {/* Progress bar */}
-          <ProgressBar 
-            current={currentStage + 1}
-            total={stages.length}
-            label="Learning Progress"
-            variant="purple"
-          />
+        </div>
+      </VisualizationSection>
+      
+      {/* Main visualization */}
+      {stage.distribution && (
+        <div className="grid lg:grid-cols-[1fr,320px] gap-6">
+          <GraphContainer className="relative">
+            <svg ref={svgRef} className="w-full" />
+            {isDragging && (
+              <div className="absolute top-2 left-2 px-3 py-1 bg-black/80 rounded-md">
+                <span className="text-xs text-gray-300">
+                  Adjusting {dragType === 'a' ? 'lower' : 'upper'} bound
+                </span>
+              </div>
+            )}
+          </GraphContainer>
           
-          {/* Navigation */}
-          <ProgressNavigation
-            current={currentStage + 1}
-            total={stages.length}
-            onPrevious={() => setCurrentStage(Math.max(0, currentStage - 1))}
-            onNext={() => setCurrentStage(Math.min(stages.length - 1, currentStage + 1))}
-            variant="purple"
-          />
-
-          {/* Current Distribution Info */}
-          <ControlGroup title="Current Distribution">
-            <div className="p-3 bg-neutral-800 rounded-lg">
-              <h3 className="text-lg font-semibold text-white mb-1">{selectedDist.label}</h3>
-              <p className="text-sm text-gray-400">{stages[currentStage].description}</p>
-            </div>
-          </ControlGroup>
-
-          {/* Real-world context */}
-          <div className="p-3 bg-neutral-800/50 rounded-lg space-y-2">
-            <h4 className="text-sm font-semibold text-gray-300">
-              {selectedDist.realWorld.title}
-            </h4>
-            <p className="text-xs text-gray-400">
-              {selectedDist.realWorld.description}
-            </p>
-            <ul className="space-y-1">
-              {selectedDist.realWorld.examples.map((example, i) => (
-                <li key={i} className="text-xs text-gray-500 flex items-start gap-1">
-                  <span className="text-blue-400 mt-0.5">•</span>
-                  <span>{example}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Parameters */}
-          <div className="space-y-3">
-            {selectedDist.params.map((paramInfo, index) => (
-              <ControlGroup key={paramInfo.name} title={paramInfo.name}>
+          <ControlPanel className="space-y-4">
+            {/* Distribution parameters */}
+            {distributions[stage.distribution].paramConfig.map((config, index) => (
+              <ControlGroup key={config.name} title={config.name}>
                 <RangeSlider
                   value={params[index]}
                   onChange={(value) => handleParamChange(index, value)}
-                  min={paramInfo.min}
-                  max={paramInfo.max}
-                  step={paramInfo.step}
+                  min={config.min}
+                  max={config.max}
+                  step={config.step}
                   className="mb-1"
                 />
                 <span className="font-mono text-sm text-blue-400">
@@ -751,49 +931,68 @@ const ContinuousDistributionsPDF = () => {
                 </span>
               </ControlGroup>
             ))}
-          </div>
-
-          {/* PDF Formula */}
-          <div className="p-3 bg-neutral-800/50 rounded-lg">
-            <div className="text-xs text-gray-400 mb-1">PDF Formula:</div>
-            <div className="text-center my-2" dangerouslySetInnerHTML={{ 
-              __html: `\\[f(x) = ${selectedDist.pdfTex}\\]` 
-            }} />
-          </div>
-
-          {/* Stats */}
-          <StatsDisplay
-            stats={[
-              { label: "Mean (μ)", value: formatNumber(meanVal), color: colorScheme.accent },
-              { label: "P(a ≤ X ≤ b)", value: formatNumber(calculatedIntegralProb, 4), color: colorScheme.secondary }
-            ]}
-          />
-
-          {/* Reset button */}
-          <Button
-            onClick={handleReset}
-            variant="outline"
-            className="w-full text-sm"
-          >
-            <RotateCcw className="w-4 h-4 mr-2" />
-            Reset All
-          </Button>
-        </ControlPanel>
-      </div>
-
-      {/* Worked example */}
-      <VisualizationSection className="mt-6">
-        <IntegralWorkedExample
-          distName={selectedDist.value}
-          params={params}
-          intervalA={intervalA}
-          intervalB={intervalB}
-          probValue={calculatedIntegralProb}
-          pdfFormula={selectedDist.pdfTex}
-          cdfAValue={cdfAValue}
-          cdfBValue={cdfBValue}
+            
+            {/* PDF Formula */}
+            <PDFFormulaDisplay 
+              pdfTex={distributions[stage.distribution].pdfTex}
+              label={`${stage.distribution.charAt(0).toUpperCase() + stage.distribution.slice(1)} PDF`}
+            />
+            
+            {/* Statistics */}
+            <StatsDisplay
+              stats={[
+                { 
+                  label: "Mean (μ)", 
+                  value: formatNumber(calculateDistributionData().mean), 
+                  color: colorScheme.accent 
+                },
+                { 
+                  label: `P(${formatNumber(intervalA)} ≤ X ≤ ${formatNumber(intervalB)})`, 
+                  value: formatNumber(calculateDistributionData().probability, 4), 
+                  color: colorScheme.secondary 
+                }
+              ]}
+            />
+            
+            {/* Interval bounds display */}
+            <div className="p-3 bg-neutral-800/50 rounded-lg space-y-2">
+              <p className="text-xs text-gray-500 uppercase tracking-wide">Current Interval</p>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-mono">a = {formatNumber(intervalA)}</span>
+                <ArrowRight className="w-4 h-4 text-gray-600" />
+                <span className="text-sm font-mono">b = {formatNumber(intervalB)}</span>
+              </div>
+            </div>
+          </ControlPanel>
+        </div>
+      )}
+      
+      {/* Navigation */}
+      <div className="mt-6">
+        <ProgressNavigation
+          current={currentStage + 1}
+          total={learningStages.length}
+          onPrevious={() => setCurrentStage(Math.max(0, currentStage - 1))}
+          onNext={() => setCurrentStage(Math.min(learningStages.length - 1, currentStage + 1))}
+          variant="emerald"
         />
-      </VisualizationSection>
+      </div>
+      
+      {/* Worked example for applicable stages */}
+      {stage.distribution && currentStage > 0 && (
+        <VisualizationSection className="mt-8">
+          <IntegralWorkedExample
+            distName={stage.distribution}
+            params={params}
+            intervalA={intervalA}
+            intervalB={intervalB}
+            probValue={calculateDistributionData().probability}
+            pdfFormula={distributions[stage.distribution].pdfTex}
+            cdfAValue={calculateDistributionData().cdfA}
+            cdfBValue={calculateDistributionData().cdfB}
+          />
+        </VisualizationSection>
+      )}
     </VisualizationContainer>
   );
 };

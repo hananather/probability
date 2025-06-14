@@ -23,12 +23,7 @@ const OrderedSamples = lazy(() =>
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })
 );
-const UnorderedSamples = lazy(() => 
-  import('../../components/01-introduction-to-probabilities/1-4-1-UnorderedSamples.jsx')
-    .catch(() => {
-      return { default: () => <div className="text-red-500">Failed to load component</div> };
-    })
-);
+// UnorderedSamples - Now using MDX page at /chapter1/1-4
 const InteractiveLottery = lazy(() => 
   import('../../components/01-introduction-to-probabilities/1-4-2-InteractiveLottery.jsx')
     .catch(() => {
@@ -127,7 +122,8 @@ export default function Chapter1() {
     {
       id: 'unordered',
       title: '1.4 Unordered Samples (Combinations)',
-      component: UnorderedSamples,
+      component: null, // Will redirect to MDX page
+      redirect: '/chapter1/1-4',
       description: (
         <>
           <p>
@@ -198,8 +194,12 @@ export default function Chapter1() {
             <button
               key={section.id}
               onClick={() => {
-                setActiveSection(section.id);
-                router.push(`/chapter1?section=${section.id}`);
+                if (section.redirect) {
+                  router.push(section.redirect);
+                } else {
+                  setActiveSection(section.id);
+                  router.push(`/chapter1?section=${section.id}`);
+                }
               }}
               className={`px-4 py-2 rounded-lg transition-all ${
                 activeSection === section.id
@@ -223,12 +223,6 @@ export default function Chapter1() {
               <ErrorBoundary componentName={activeContent.title}>
                 <Suspense fallback={<LoadingComponent />}>
                   {ActiveComponent && <ActiveComponent />}
-                  {/* Show Interactive Lottery below Unordered Samples */}
-                  {activeSection === 'unordered' && (
-                    <Suspense fallback={<LoadingComponent />}>
-                      <InteractiveLottery />
-                    </Suspense>
-                  )}
                 </Suspense>
               </ErrorBoundary>
             </ConceptSection>

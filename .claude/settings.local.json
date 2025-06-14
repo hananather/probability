@@ -91,7 +91,17 @@
       "Bash(# Update imports in all client files\nfor file in *Client.jsx; do\n  # Update BridgeToContinuous import\n  sed -i '' 's/from \"\\.\\/BridgeToContinuous\"/from \".\\/3-0-1-BridgeToContinuous\"/' \"$file\"\n  \n  # Update ContinuousDistributionsPDF import\n  sed -i '' 's/from \"\\.\\/ContinuousDistributionsPDF\"/from \".\\/3-1-1-ContinuousDistributionsPDF\"/' \"$file\"\n  \n  # Update ContinuousExpectationVariance import\n  sed -i '' 's/from \"\\.\\/ContinuousExpectationVariance\"/from \".\\/3-2-1-ContinuousExpectationVariance\"/' \"$file\"\n  \n  # Update Normal distribution imports\n  sed -i '' 's/from \"\\.\\/NormalZScoreExplorer\"/from \".\\/3-3-1-NormalZScoreExplorer\"/' \"$file\"\n  sed -i '' 's/from \"\\.\\/EmpiricalRule\"/from \".\\/3-3-3-EmpiricalRule\"/' \"$file\"\n  sed -i '' 's/from \"\\.\\/ZTableLookupRedesigned\"/from \".\\/3-3-4-ZTableLookup\"/' \"$file\"\n  sed -i '' 's/from \"\\.\\/ZScorePracticeProblems\"/from \".\\/3-3-5-ZScorePracticeProblems\"/' \"$file\"\n  sed -i '' 's/from \"\\.\\/ProcessCapability\"/from \".\\/3-3-6-ProcessCapability\"/' \"$file\"\n  \n  # Update Exponential imports\n  sed -i '' 's/from \"\\.\\/ExponentialDistribution\"/from \".\\/3-4-1-ExponentialDistribution\"/' \"$file\"\n  \n  # Update Gamma imports\n  sed -i '' 's/from \"\\.\\/GammaDistribution\"/from \".\\/3-5-1-GammaDistribution\"/' \"$file\"\n  \n  # Update Normal Approximation imports\n  sed -i '' 's/from \"\\.\\/NormalApproxBinomial\"/from \".\\/3-7-1-NormalApproxBinomial\"/' \"$file\"\ndone)",
       "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -n \"(\\b\\d{2,}\\b)(?!px|ms|%|rem|em)\" /Users/hananather/Desktop/Javascript/prob-lab/src/components --type jsx)",
       "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -n \"(\\b\\d{2,}\\b)(?!px|ms|%|rem|em)\" /Users/hananather/Desktop/Javascript/prob-lab/src/components -g \"*.jsx\")",
-      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -n '\\b(30|40|50|60|70|80|90|100|150|200|250|300|400|500|600|700|800|900|1000)\\b' /Users/hananather/Desktop/Javascript/prob-lab/src/components -g \"*.jsx\")"
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -n '\\b(30|40|50|60|70|80|90|100|150|200|250|300|400|500|600|700|800|900|1000)\\b' /Users/hananather/Desktop/Javascript/prob-lab/src/components -g \"*.jsx\")",
+      "Bash(npm test:*)",
+      "Bash(npm run:*)",
+      "Bash(chmod:*)",
+      "Bash(for file in src/components/03-continuous-random-variables/*.jsx)",
+      "Bash(do if grep -q \"contentRef\\.\" \"$file\")",
+      "Bash(! grep -q \"const contentRef = useRef\" \"$file\")",
+      "Bash(then echo \"$file\")",
+      "Bash(fi)",
+      "Bash(done)",
+      "Bash(# Update all remaining files\nfor file in 3-5-1-GammaDistribution.jsx 3-5-2-GammaDistributionWorkedExample.jsx 3-7-1-NormalApproxBinomial.jsx 3-7-2-NormalApproxBinomialWorkedExample.jsx; do\n    echo \"Processing $file...\"\n    \n    # Add import if not already present\n    if ! grep -q \"useSafeMathJax\" \"$file\"; then\n        # Find the last import line and add our import after it\n        last_import=$(grep -n \"^import\" \"$file\" | tail -1 | cut -d: -f1)\n        if [ ! -z \"$last_import\" ]; then\n            sed -i '' \"${last_import}a\\\\\nimport { useSafeMathJax } from '../../utils/mathJaxFix';\" \"$file\"\n        fi\n    fi\ndone)"
     ],
     "deny": []
   }

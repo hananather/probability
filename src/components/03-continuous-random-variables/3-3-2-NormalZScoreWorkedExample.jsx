@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useRef } from "react";
+import { useSafeMathJax } from '../../utils/mathJaxFix';
 
 const NormalZScoreWorkedExample = React.memo(function NormalZScoreWorkedExample({ 
   mu = 100, 
@@ -10,23 +11,8 @@ const NormalZScoreWorkedExample = React.memo(function NormalZScoreWorkedExample(
 }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    // REQUIRED: MathJax timeout pattern to handle race conditions
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          // Silent error: MathJax error
-        });
-      }
-    };
-    
-    processMathJax(); // Try immediately
-    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
-    return () => clearTimeout(timeoutId);
-  }, [mu, sigma, xValue, zScore, probability]);
+  // Use safe MathJax processing with error handling
+  useSafeMathJax(contentRef, [mu, sigma, xValue, zScore, probability]);
   
   return (
     <div ref={contentRef} style={{
@@ -52,7 +38,8 @@ const NormalZScoreWorkedExample = React.memo(function NormalZScoreWorkedExample(
           1. Given:
         </p>
         <p style={{ marginLeft: '1rem' }}>
-          We have \(X \sim N(\mu={mu}, \sigma={sigma})\). We want to find \(P(X \leq {xValue.toFixed(1)})\).
+          We have <span dangerouslySetInnerHTML={{ __html: `\\(X \\sim N(\\mu=${mu}, \\sigma=${sigma})\\)` }} />. 
+          We want to find <span dangerouslySetInnerHTML={{ __html: `\\(P(X \\leq ${xValue.toFixed(1)})\\)` }} />.
         </p>
       </div>
       
@@ -65,7 +52,7 @@ const NormalZScoreWorkedExample = React.memo(function NormalZScoreWorkedExample(
       
       <div style={{ marginBottom: '1rem' }}>
         <p style={{ marginBottom: '0.25rem', fontWeight: '500' }}>
-          3. Calculate Z-Score for \(x = {xValue.toFixed(1)}\):
+          3. Calculate Z-Score for <span dangerouslySetInnerHTML={{ __html: `\\(x = ${xValue.toFixed(1)}\\)` }} />:
         </p>
         <div dangerouslySetInnerHTML={{ 
           __html: `\\[z = \\frac{${xValue.toFixed(1)} - ${mu}}{${sigma}} = \\frac{${(xValue - mu).toFixed(1)}}{${sigma}} = ${zScore.toFixed(4)}\\]` 
@@ -83,7 +70,7 @@ const NormalZScoreWorkedExample = React.memo(function NormalZScoreWorkedExample(
       
       <div style={{ marginBottom: '1rem' }}>
         <p style={{ marginBottom: '0.25rem', fontWeight: '500' }}>
-          5. Using Standard Normal CDF \(\\Phi(z)\):
+          5. Using Standard Normal CDF <span dangerouslySetInnerHTML={{ __html: `\\(\\Phi(z)\\)` }} />:
         </p>
         <div dangerouslySetInnerHTML={{ 
           __html: `\\[= \\Phi(${zScore.toFixed(4)}) = ${probability.toFixed(4)}\\]` 
@@ -98,7 +85,7 @@ const NormalZScoreWorkedExample = React.memo(function NormalZScoreWorkedExample(
         borderLeft: '3px solid #6366F1'
       }}>
         <p style={{ fontSize: '0.8125rem', fontStyle: 'italic' }}>
-          Interpretation: The value \(x = {xValue.toFixed(1)}\) is {Math.abs(zScore).toFixed(2)} standard deviations 
+          Interpretation: The value <span dangerouslySetInnerHTML={{ __html: `\\(x = ${xValue.toFixed(1)}\\)` }} /> is {Math.abs(zScore).toFixed(2)} standard deviations 
           {zScore >= 0 ? ' above' : ' below'} the mean. 
           {probability < 0.5 
             ? ` Only ${(probability * 100).toFixed(1)}% of values fall below this point.`

@@ -2,9 +2,60 @@
  * MathJax Initial Render Fix
  * 
  * This utility ensures LaTeX renders on initial page load
- * by implementing a robust retry mechanism
+ * by implementing a robust retry mechanism with proper error handling
  */
 import { useEffect } from 'react';
+
+/**
+ * Safe MathJax processing wrapper with error handling
+ * 
+ * @param {HTMLElement} element - The DOM element containing LaTeX
+ * @param {Object} options - Configuration options
+ * @returns {Promise} Promise that resolves when processing is complete or fails gracefully
+ */
+export const safeMathJaxProcess = async (element, options = {}) => {
+  const { silent = true, maxRetries = 3 } = options;
+  
+  if (!element || !document.contains(element)) {
+    if (!silent) console.warn('MathJax: Element not found or not in DOM');
+    return;
+  }
+  
+  if (typeof window === 'undefined' || !window.MathJax || !window.MathJax.typesetPromise) {
+    if (!silent) console.warn('MathJax: Library not loaded yet');
+    return;
+  }
+  
+  let attempt = 0;
+  
+  while (attempt < maxRetries) {
+    try {
+      // Clear previous rendering if available
+      if (window.MathJax.typesetClear) {
+        window.MathJax.typesetClear([element]);
+      }
+      
+      // Process the element
+      await window.MathJax.typesetPromise([element]);
+      return; // Success!
+      
+    } catch (error) {
+      attempt++;
+      if (!silent && attempt === maxRetries) {
+        console.warn(`MathJax: Failed to process after ${maxRetries} attempts`, {
+          error: error.message,
+          element: element.tagName,
+          content: element.textContent?.substring(0, 50) + '...'
+        });
+      }
+      
+      // Wait before retry
+      if (attempt < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, 100 * attempt));
+      }
+    }
+  }
+};
 
 /**
  * Enhanced MathJax processing with guaranteed initial render
@@ -40,12 +91,21 @@ export const processMathJaxWithRetry = (element, dependencies = []) => {
             timeoutIds.forEach(id => clearTimeout(id));
             timeoutIds = [];
           })
-          .catch(() => {
-            // MathJax processing error handled silently
+          .catch((error) => {
+            // Log warning on final attempt only
+            if (attempts >= maxAttempts - 1) {
+              console.warn('MathJax: Processing failed after maximum attempts', {
+                error: error.message,
+                element: element.tagName
+              });
+            }
             scheduleRetry();
           });
       } catch (err) {
-        // MathJax error handled silently
+        // Log warning on final attempt only
+        if (attempts >= maxAttempts - 1) {
+          console.warn('MathJax: Processing error', err.message);
+        }
         scheduleRetry();
       }
     } else {
@@ -128,8 +188,11 @@ export const initGlobalMathJaxProcessor = () => {
       });
       
       if (mathElements.length > 0) {
-        window.MathJax.typesetPromise(mathElements).catch(() => {
-          // MathJax error handled silently
+        window.MathJax.typesetPromise(mathElements).catch((error) => {
+          console.warn('MathJax: Global processing error', {
+            error: error.message,
+            elementCount: mathElements.length
+          });
         });
       }
     } else {
@@ -167,4 +230,53 @@ export const initGlobalMathJaxProcessor = () => {
     }
     processAllMath();
   }, 200);
+};
+
+/**
+ * Safe React hook for MathJax processing with error handling
+ * 
+ * @param {React.RefObject} ref - React ref to the element containing LaTeX
+ * @param {Array} dependencies - React dependencies for re-processing
+ * @param {Object} options - Configuration options
+ */
+export const useSafeMathJax = (ref, dependencies = [], options = {}) => {
+  useEffect(() => {
+    if (!ref.current) return;
+    
+    const element = ref.current;
+    let isMounted = true;
+    
+    // Process with error handling
+    const processElement = async () => {
+      if (!isMounted) return;
+      
+      try {
+        await safeMathJaxProcess(element, options);
+      } catch (error) {
+        console.warn('MathJax: Unexpected error in hook', error.message);
+      }
+    };
+    
+    // Initial processing
+    processElement();
+    
+    // Set up mutation observer for dynamic content
+    const observer = new MutationObserver(() => {
+      if (!isMounted) return;
+      processElement();
+    });
+    
+    observer.observe(element, {
+      characterData: true,
+      childList: true,
+      subtree: true
+    });
+    
+    // Cleanup
+    return () => {
+      isMounted = false;
+      observer.disconnect();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, dependencies);
 };

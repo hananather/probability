@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useRef } from "react";
+import { useSafeMathJax } from '../../utils/mathJaxFix';
 
 const ExponentialDistributionWorkedExample = React.memo(function ExponentialDistributionWorkedExample({
   lambda = 1,
@@ -11,23 +12,8 @@ const ExponentialDistributionWorkedExample = React.memo(function ExponentialDist
 }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          // Silent error: MathJax error in ExponentialDistributionWorkedExample
-        });
-      }
-    };
-    
-    processMathJax(); // Try immediately
-    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
-    
-    return () => clearTimeout(timeoutId);
-  }, [lambda, t, pdfValue, cdfValue, mean, variance]);
+  // Use safe MathJax processing with error handling
+  useSafeMathJax(contentRef, [lambda, t, pdfValue, cdfValue, mean, variance]);
   
   return (
     <div
@@ -57,10 +43,10 @@ const ExponentialDistributionWorkedExample = React.memo(function ExponentialDist
       
       <div style={{ marginBottom: '1rem' }}>
         <p style={{ marginBottom: '0.25rem', fontWeight: '500' }}>
-          {`1. Distribution: \(X \sim \text{Exp}(\lambda = ${lambda})\)`}
+          1. Distribution: <span dangerouslySetInnerHTML={{ __html: `\\(X \\sim \\text{Exp}(\\lambda = ${lambda})\\)` }} />
         </p>
         <p style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: '#a0a0a0' }}>
-          {`The exponential distribution models waiting times with constant hazard rate \(\lambda\).`}
+          The exponential distribution models waiting times with constant hazard rate <span dangerouslySetInnerHTML={{ __html: `\\(\\lambda\\)` }} />.
         </p>
       </div>
       
@@ -72,7 +58,7 @@ const ExponentialDistributionWorkedExample = React.memo(function ExponentialDist
           __html: `\\[f(t) = \\lambda e^{-\\lambda t} = ${lambda} e^{-${lambda} \\cdot ${t}} = ${pdfValue.toFixed(4)}\\]` 
         }} />
         <p style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: '#a0a0a0' }}>
-          {`for \(t \ge 0\), and \(f(t) = 0\) for \(t < 0\)`}
+          for <span dangerouslySetInnerHTML={{ __html: `\\(t \\ge 0\\)` }} />, and <span dangerouslySetInnerHTML={{ __html: `\\(f(t) = 0\\)` }} /> for <span dangerouslySetInnerHTML={{ __html: `\\(t < 0\\)` }} />
         </p>
       </div>
       
@@ -123,10 +109,10 @@ const ExponentialDistributionWorkedExample = React.memo(function ExponentialDist
           💡 Memoryless Property
         </p>
         <p style={{ fontSize: '0.8125rem' }}>
-          {`For any \\(s, t > 0\\): \\(P(T > s + t | T > s) = P(T > t) = e^{-\\lambda t}\\)`}
+          For any <span dangerouslySetInnerHTML={{ __html: `\\(s, t > 0\\)` }} />: <span dangerouslySetInnerHTML={{ __html: `\\(P(T > s + t | T > s) = P(T > t) = e^{-\\lambda t}\\)` }} />
         </p>
         <p style={{ fontSize: '0.8125rem', marginTop: '0.5rem' }}>
-          This means the probability of waiting an additional time \\(t\\) doesn't depend on how long you've already waited!
+          This means the probability of waiting an additional time <span dangerouslySetInnerHTML={{ __html: `\\(t\\)` }} /> doesn't depend on how long you've already waited!
         </p>
       </div>
       

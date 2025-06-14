@@ -4,6 +4,7 @@ import * as d3 from "d3";
 import jStat from "jstat";
 import { cn } from "../../lib/utils";
 import { RangeSlider } from "../ui/RangeSlider";
+import { useSafeMathJax } from '../../utils/mathJaxFix';
 import { colors, typography, components, formatNumber, createColorScheme } from '../../lib/design-system';
 import { VisualizationContainer, ControlGroup } from '../ui/VisualizationContainer';
 import { ProgressTracker } from '../ui/ProgressTracker';
@@ -286,28 +287,12 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
       .attr("text-anchor", "middle")
       .style("fill", colorScheme.secondary)
       .style("font-size", "12px")
-      .text(`μ = ${mu.toFixed(2)}`);
+      .text(`\u03bc = ${mu.toFixed(2)}`);
     
   }, [distributionData, k, mu, showCC, highlightedConcept, colorScheme]);
   
-  // MathJax processing
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          // Silent error: MathJax error in NormalApproxBinomialWorkedExample
-        });
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    
-    return () => clearTimeout(timeoutId);
-  }, [n, p, k, mu, sigma, probType, showCC, currentStep]);
+  // Use safe MathJax processing with error handling
+  useSafeMathJax(contentRef, [n, p, k, mu, sigma, probType, showCC, currentStep]);
   
   // Get dynamic insight based on current state
   const getDynamicInsight = () => {
@@ -356,6 +341,83 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
       case "eq": return `P(X = ${k})`;
     }
   };
+  
+  // Memoized Step 2 Component to prevent LaTeX re-rendering
+  const Step2NormalParameters = React.memo(function Step2NormalParameters({ n, p, mu, variance, sigma }) {
+    const stepRef = useRef(null);
+    
+    useEffect(() => {
+      const processMathJax = () => {
+        if (typeof window !== "undefined" && window.MathJax?.typesetPromise && stepRef.current) {
+          if (window.MathJax.typesetClear) {
+            window.MathJax.typesetClear([stepRef.current]);
+          }
+          window.MathJax.typesetPromise([stepRef.current]).catch(console.error);
+        }
+      };
+      processMathJax();
+      const timeoutId = setTimeout(processMathJax, 100);
+      return () => clearTimeout(timeoutId);
+    }, [n, p, mu, variance, sigma]);
+    
+    return (
+      <div ref={stepRef} className={cn(
+        "p-3 rounded-lg animate-fadeIn",
+        "bg-gray-800 border border-gray-700"
+      )}>
+        <h5 className="text-sm font-semibold mb-2">2. Normal Parameters</h5>
+        <div dangerouslySetInnerHTML={{ 
+          __html: `\\[\\begin{align}
+            \\mu &= np = ${n} \\times ${p} = ${mu.toFixed(2)} \\\\
+            \\sigma^2 &= np(1-p) = ${variance.toFixed(2)} \\\\
+            \\sigma &= ${sigma.toFixed(3)}
+          \\end{align}\\]` 
+        }} />
+      </div>
+    );
+  });
+  
+  // Memoized Z-Score Calculation Component
+  const ZScoreCalculation = React.memo(function ZScoreCalculation({ probType, showCC, k, mu, sigma }) {
+    const stepRef = useRef(null);
+    
+    useEffect(() => {
+      const processMathJax = () => {
+        if (typeof window !== "undefined" && window.MathJax?.typesetPromise && stepRef.current) {
+          if (window.MathJax.typesetClear) {
+            window.MathJax.typesetClear([stepRef.current]);
+          }
+          window.MathJax.typesetPromise([stepRef.current]).catch(console.error);
+        }
+      };
+      processMathJax();
+      const timeoutId = setTimeout(processMathJax, 100);
+      return () => clearTimeout(timeoutId);
+    }, [probType, showCC, k, mu, sigma]);
+    
+    return (
+      <div ref={stepRef}>
+        {probType !== "eq" ? (
+          <div dangerouslySetInnerHTML={{ 
+            __html: `\\[Z = \\frac{k' - \\mu}{\\sigma} = \\frac{${showCC ? (probType === "le" ? k + 0.5 : k - 0.5) : k} - ${mu.toFixed(2)}}{${sigma.toFixed(3)}} = ${(((showCC ? (probType === "le" ? k + 0.5 : k - 0.5) : k) - mu) / sigma).toFixed(3)}\\]` 
+          }} />
+        ) : (
+          showCC ? (
+            <div dangerouslySetInnerHTML={{ 
+              __html: `\\[\\begin{align}
+                Z_1 &= \\frac{${k - 0.5} - ${mu.toFixed(2)}}{${sigma.toFixed(3)}} = ${((k - 0.5 - mu) / sigma).toFixed(3)} \\\\
+                Z_2 &= \\frac{${k + 0.5} - ${mu.toFixed(2)}}{${sigma.toFixed(3)}} = ${((k + 0.5 - mu) / sigma).toFixed(3)}
+              \\end{align}\\]` 
+            }} />
+          ) : (
+            <p className="text-sm text-yellow-400">
+              Note: Without CC for P(X=k), we use the PDF at k
+            </p>
+          )
+        )}
+      </div>
+    );
+  });
   
   return (
     <VisualizationContainer
@@ -484,8 +546,8 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
               <label className="text-sm text-gray-400 mb-2 block">Probability Type</label>
               <div className="flex gap-2">
                 {[
-                  { value: "le", label: "P(X ≤ k)" },
-                  { value: "ge", label: "P(X ≥ k)" },
+                  { value: "le", label: "P(X \u2264 k)" },
+                  { value: "ge", label: "P(X \u2265 k)" },
                   { value: "eq", label: "P(X = k)" }
                 ].map(({ value, label }) => (
                   <button
@@ -561,26 +623,20 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
               )}>
                 <h5 className="text-sm font-semibold mb-2">1. Problem Setup</h5>
                 <p className="text-sm">
-                  Approximate {getProbabilityNotation()} for \(X \sim B(n={n}, p={p})\)
+                  Approximate <span dangerouslySetInnerHTML={{ __html: `\\(${getProbabilityNotation()}\\)` }} /> for <span dangerouslySetInnerHTML={{ __html: `\\(X \\sim B(n=${n}, p=${p})\\)` }} />
                 </p>
               </div>
             )}
             
             {/* Step 2: Normal Parameters */}
             {currentStep >= 2 && (
-              <div className={cn(
-                "p-3 rounded-lg animate-fadeIn",
-                "bg-gray-800 border border-gray-700"
-              )}>
-                <h5 className="text-sm font-semibold mb-2">2. Normal Parameters</h5>
-                <div dangerouslySetInnerHTML={{ 
-                  __html: `\\[\\begin{align}
-                    \\mu &= np = ${n} \\times ${p} = ${mu.toFixed(2)} \\\\
-                    \\sigma^2 &= np(1-p) = ${variance.toFixed(2)} \\\\
-                    \\sigma &= ${sigma.toFixed(3)}
-                  \\end{align}\\]` 
-                }} />
-              </div>
+              <Step2NormalParameters 
+                n={n} 
+                p={p} 
+                mu={mu} 
+                variance={variance} 
+                sigma={sigma} 
+              />
             )}
             
             {/* Step 3: Rule of Thumb */}
@@ -594,11 +650,11 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
                 <div className="space-y-1 text-sm">
                   <div className={cn("flex justify-between", np >= 10 ? "text-green-400" : "text-red-400")}>
                     <span>np = {np.toFixed(2)}</span>
-                    <span>{np >= 10 ? "✓ ≥ 10" : "✗ < 10"}</span>
+                    <span>{np >= 10 ? "\u2713 \u2265 10" : "\u2717 < 10"}</span>
                   </div>
                   <div className={cn("flex justify-between", nq >= 10 ? "text-green-400" : "text-red-400")}>
                     <span>n(1-p) = {nq.toFixed(2)}</span>
-                    <span>{nq >= 10 ? "✓ ≥ 10" : "✗ < 10"}</span>
+                    <span>{nq >= 10 ? "\u2713 \u2265 10" : "\u2717 < 10"}</span>
                   </div>
                 </div>
                 <p className={cn("text-xs mt-2", ruleOfThumbMet ? "text-green-400" : "text-red-400")}>
@@ -615,13 +671,13 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
               )}>
                 <h5 className="text-sm font-semibold mb-2">4. Continuity Correction</h5>
                 {probType === "le" && (
-                  <p className="text-sm">For {getProbabilityNotation()}, adjust: k' = {k} + 0.5 = {k + 0.5}</p>
+                  <p className="text-sm">For <span dangerouslySetInnerHTML={{ __html: `\\(${getProbabilityNotation()}\\)` }} />, adjust: <span dangerouslySetInnerHTML={{ __html: `\\(k' = ${k} + 0.5 = ${k + 0.5}\\)` }} /></p>
                 )}
                 {probType === "ge" && (
-                  <p className="text-sm">For {getProbabilityNotation()}, adjust: k' = {k} - 0.5 = {k - 0.5}</p>
+                  <p className="text-sm">For <span dangerouslySetInnerHTML={{ __html: `\\(${getProbabilityNotation()}\\)` }} />, adjust: <span dangerouslySetInnerHTML={{ __html: `\\(k' = ${k} - 0.5 = ${k - 0.5}\\)` }} /></p>
                 )}
                 {probType === "eq" && (
-                  <p className="text-sm">For {getProbabilityNotation()}, use interval: [{k - 0.5}, {k + 0.5}]</p>
+                  <p className="text-sm">For <span dangerouslySetInnerHTML={{ __html: `\\(${getProbabilityNotation()}\\)` }} />, use interval: <span dangerouslySetInnerHTML={{ __html: `\\([${k - 0.5}, ${k + 0.5}]\\)` }} /></p>
                 )}
               </div>
             )}
@@ -635,24 +691,13 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
                 <h5 className="text-sm font-semibold mb-2">
                   {showCC ? "5" : "4"}. Calculate Z-Score
                 </h5>
-                {probType !== "eq" ? (
-                  <div dangerouslySetInnerHTML={{ 
-                    __html: `\\[Z = \\frac{k' - \\mu}{\\sigma} = \\frac{${showCC ? (probType === "le" ? k + 0.5 : k - 0.5) : k} - ${mu.toFixed(2)}}{${sigma.toFixed(3)}} = ${(((showCC ? (probType === "le" ? k + 0.5 : k - 0.5) : k) - mu) / sigma).toFixed(3)}\\]` 
-                  }} />
-                ) : (
-                  showCC ? (
-                    <div dangerouslySetInnerHTML={{ 
-                      __html: `\\[\\begin{align}
-                        Z_1 &= \\frac{${k - 0.5} - ${mu.toFixed(2)}}{${sigma.toFixed(3)}} = ${((k - 0.5 - mu) / sigma).toFixed(3)} \\\\
-                        Z_2 &= \\frac{${k + 0.5} - ${mu.toFixed(2)}}{${sigma.toFixed(3)}} = ${((k + 0.5 - mu) / sigma).toFixed(3)}
-                      \\end{align}\\]` 
-                    }} />
-                  ) : (
-                    <p className="text-sm text-yellow-400">
-                      Note: Without CC for P(X=k), we use the PDF at k
-                    </p>
-                  )
-                )}
+                <ZScoreCalculation 
+                  probType={probType}
+                  showCC={showCC}
+                  k={k}
+                  mu={mu}
+                  sigma={sigma}
+                />
               </div>
             )}
             

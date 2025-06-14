@@ -1,8 +1,13 @@
 "use client";
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useSafeMathJax } from '../../utils/mathJaxFix';
 import * as d3 from "d3";
-import { createColorScheme, typography, spacing, components, layout } from "../../lib/design-system";
-import { ArrowRight, Search, HelpCircle, Sparkles, TrendingUp, Award, Calculator, BarChart3, ChevronDown, ChevronUp } from "lucide-react";
+import { createColorScheme, typography } from "../../lib/design-system";
+import { 
+  ArrowRight, Search, Calculator, BarChart3, BookOpen, 
+  Info, TrendingUp, Target, Award, ChevronLeft, ChevronRight,
+  Lightbulb, CheckCircle, AlertCircle
+} from "lucide-react";
 import * as jStat from "jstat";
 import { cn } from "../../lib/utils";
 import { 
@@ -11,118 +16,112 @@ import {
 } from "../ui/VisualizationContainer";
 import { RangeSlider } from "../ui/RangeSlider";
 import { Button } from "../ui/button";
+import { ProgressBar, ProgressNavigation } from "../ui/ProgressBar";
+import { Tutorial } from "../ui/Tutorial";
 
-const ZTableLookupRedesigned = () => {
+const ZTableLookup = () => {
   const colors = createColorScheme('inference');
   const svgRef = useRef(null);
+  const contentRef = useRef(null);
   
   // Core state
-  const [zValue, setZValue] = useState(0);
-  const [probability, setProbability] = useState(0.5);
+  const [zValue, setZValue] = useState(1.96);
+  const [probability, setProbability] = useState(0.975);
   const [lookupMode, setLookupMode] = useState('z-to-p');
   const [targetProbability, setTargetProbability] = useState(0.95);
   
+  // Learning flow state
+  const [learningStage, setLearningStage] = useState(1);
+  const totalStages = 5;
+  
+  // Table view state  
+  const [tableView, setTableView] = useState('positive'); // 'positive', 'negative', 'full'
+  const [tablePage, setTablePage] = useState(0);
+  const rowsPerPage = 10;
+  
   // UI state
-  const [showTable, setShowTable] = useState(false);
-  const [activeTab, setActiveTab] = useState('table');
   const [highlightedRow, setHighlightedRow] = useState(null);
   const [highlightedCol, setHighlightedCol] = useState(null);
   const [hoveredCell, setHoveredCell] = useState(null);
   const [searchValue, setSearchValue] = useState('');
+  const [showTutorial, setShowTutorial] = useState(false);
   
-  // Learning state
-  const [lookupHistory, setLookupHistory] = useState([]);
-  const [achievements, setAchievements] = useState([]);
-  const [currentInsight, setCurrentInsight] = useState(null);
+  // Use safe MathJax processing with error handling
+  useSafeMathJax(contentRef, [learningStage]);
   
-  // Learning stage calculation
-  const getLearningStage = useCallback((count) => {
-    if (count < 5) return 'foundation';
-    if (count < 15) return 'pattern';
-    if (count < 25) return 'application';
-    return 'mastery';
-  }, []);
-  
-  // Progressive insights system
-  const stageInsights = {
-    foundation: [
-      "The z-table shows cumulative probabilities: P(Z ≤ z)",
-      "Each row represents tenths, each column represents hundredths",
-      "Notice how probability increases as z moves from negative to positive",
-      "At z = 0, the probability is exactly 0.5000 - half the distribution!",
-      "Try negative z-values to see the symmetry pattern"
-    ],
-    pattern: [
-      "🎯 Pattern discovered: Φ(-z) = 1 - Φ(z) due to symmetry!",
-      "z = 1.96 gives ≈0.975, meaning 95% lies between -1.96 and 1.96",
-      "The 68-95-99.7 rule: Check probabilities at z = 1, 2, and 3",
-      "For quality control: z = 3 captures 99.7% - only 0.3% defect rate!",
-      "Engineering insight: ±2σ captures 95.45% of production values"
-    ],
-    application: [
-      "💡 Two-tailed test: For α = 0.05, split into 0.025 each tail at z = ±1.96",
-      "Process capability: If Cpk ≥ 1.33, then z ≥ 4, virtually no defects!",
-      "Hypothesis testing: p-value = P(Z > |z|) for one-tailed tests",
-      "Engineering tolerances: Set at ±3σ for 99.7% conformance",
-      "Six Sigma quality: z = 6 means 3.4 defects per million!"
-    ],
-    mastery: [
-      "🏆 Master level: You understand the full power of the normal distribution!",
-      "Challenge: Find z such that P(-z < Z < z) = 0.90",
-      "Real application: Machine tolerance ±0.005mm with σ = 0.002mm, what's the defect rate?",
-      "Advanced: Use inverse normal for setting specification limits",
-      "You're ready for hypothesis testing and confidence intervals!"
-    ]
-  };
-  
-  // Get context-aware insight
-  const getContextualInsight = useCallback(() => {
-    const stage = getLearningStage(lookupHistory.length);
-    const absZ = Math.abs(zValue);
-    
-    // Check for special milestones
-    if (lookupHistory.length === 10 && !achievements.includes('explorer')) {
-      setAchievements(prev => [...prev, 'explorer']);
-      return {
-        type: 'milestone',
-        icon: '🎉',
-        title: 'Explorer Milestone!',
-        message: "You've explored 10 z-values! You're discovering the patterns of the normal distribution.",
-        subMessage: "Next: Try both positive and negative z-values to discover symmetry"
-      };
+  // Tutorial steps
+  const tutorialSteps = [
+    {
+      title: "Welcome to Z-Table Lookup!",
+      content: (
+        <div className="space-y-2">
+          <p>This tool helps you master the standard normal distribution table.</p>
+          <p className="text-blue-300">You'll learn to:</p>
+          <ul className="list-disc list-inside space-y-1 ml-2">
+            <li>Convert z-scores to probabilities</li>
+            <li>Find critical values for confidence intervals</li>
+            <li>Understand real-world applications</li>
+          </ul>
+        </div>
+      )
+    },
+    {
+      target: '.z-visualization',
+      title: "Interactive Visualization",
+      content: "This graph shows the standard normal distribution. The shaded area represents the cumulative probability Φ(z).",
+      position: 'bottom'
+    },
+    {
+      target: '.z-controls',
+      title: "Controls",
+      content: "Use the slider or search box to explore different z-values. Try common values like 1.96 for 95% confidence.",
+      position: 'top'
+    },
+    {
+      target: '.z-table-section',
+      title: "Z-Table Reference",
+      content: "The table shows cumulative probabilities. Find your z-value by row (tenths) and column (hundredths).",
+      position: 'left'
     }
-    
-    // Check for critical value recognition
-    if (Math.abs(absZ - 1.96) < 0.01) {
-      return {
-        type: 'critical',
-        icon: '⭐',
-        title: 'Critical Value: 95% Confidence',
-        message: "z = ±1.96 captures 95% of the distribution",
-        subMessage: "This is the most common critical value in engineering specifications!"
-      };
+  ];
+  
+  // Critical values for quick reference
+  const criticalValues = [
+    { z: 1.282, confidence: "80%", alpha: "0.20", use: "Basic confidence" },
+    { z: 1.645, confidence: "90%", alpha: "0.10", use: "Standard testing" },
+    { z: 1.96, confidence: "95%", alpha: "0.05", use: "Most common" },
+    { z: 2.326, confidence: "98%", alpha: "0.02", use: "Higher confidence" },
+    { z: 2.576, confidence: "99%", alpha: "0.01", use: "High precision" },
+    { z: 3.090, confidence: "99.8%", alpha: "0.002", use: "Very high confidence" }
+  ];
+  
+  // Real-world examples
+  const practicalExamples = [
+    {
+      title: "Quality Control",
+      icon: <Target className="w-5 h-5" />,
+      description: "A factory produces batteries with mean life 500 hours, σ = 50 hours.",
+      question: "What percentage last more than 580 hours?",
+      solution: "z = (580-500)/50 = 1.6, P(Z > 1.6) = 1 - 0.9452 = 5.48%",
+      zValue: 1.6
+    },
+    {
+      title: "Medical Testing",
+      icon: <AlertCircle className="w-5 h-5" />,
+      description: "Blood pressure readings: mean 120 mmHg, σ = 15 mmHg.",
+      question: "What z-score defines the top 5% (hypertension)?",
+      solution: "Need P(Z > z) = 0.05, so Φ(z) = 0.95, z ≈ 1.645",
+      zValue: 1.645
+    },
+    {
+      title: "Six Sigma",
+      icon: <Award className="w-5 h-5" />,
+      description: "Process capability for near-zero defects.",
+      question: "What's the defect rate at 6σ quality?",
+      solution: "P(|Z| > 6) ≈ 2 × 10⁻⁹ or 2 defects per billion",
+      zValue: 6
     }
-    
-    // Engineering applications for large z
-    if (absZ >= 3) {
-      const defectRate = (1 - jStat.normal.cdf(absZ, 0, 1)) * 1000000;
-      return {
-        type: 'engineering',
-        icon: '🏭',
-        title: 'Six Sigma Territory',
-        message: `At z = ${absZ.toFixed(2)}, defect rate is ${defectRate.toFixed(1)} per million`,
-        subMessage: "This is why ±3σ is the gold standard for manufacturing!"
-      };
-    }
-    
-    // Return stage-appropriate insight
-    const insights = stageInsights[stage];
-    const index = Math.floor(lookupHistory.length / 3) % insights.length;
-    return {
-      type: 'learning',
-      message: insights[index]
-    };
-  }, [zValue, lookupHistory, achievements, getLearningStage]);
+  ];
   
   // Update probability when z changes
   useEffect(() => {
@@ -135,22 +134,17 @@ const ZTableLookupRedesigned = () => {
       const col = Math.round((zValue - row) * 100);
       setHighlightedRow(row);
       setHighlightedCol(col);
+    } else if (zValue < 0 && zValue >= -3.09) {
+      const absZ = Math.abs(zValue);
+      const row = Math.floor(absZ * 10) / 10;
+      const col = Math.round((absZ - row) * 100);
+      setHighlightedRow(row);
+      setHighlightedCol(col);
     } else {
       setHighlightedRow(null);
       setHighlightedCol(null);
     }
-    
-    // Update lookup history
-    if (lookupMode === 'z-to-p' && zValue !== 0) {
-      setLookupHistory(prev => {
-        const newHistory = [...prev, { z: zValue, p: p, timestamp: Date.now() }];
-        return newHistory.slice(-30); // Keep last 30
-      });
-    }
-    
-    // Update current insight
-    setCurrentInsight(getContextualInsight());
-  }, [zValue, lookupMode, getContextualInsight]);
+  }, [zValue]);
   
   // Update z when target probability changes (in p-to-z mode)
   useEffect(() => {
@@ -160,7 +154,7 @@ const ZTableLookupRedesigned = () => {
     }
   }, [targetProbability, lookupMode]);
   
-  // Enhanced D3 Visualization - Hero size
+  // Enhanced D3 Visualization
   useEffect(() => {
     if (!svgRef.current || typeof window === 'undefined') return;
     
@@ -170,11 +164,31 @@ const ZTableLookupRedesigned = () => {
     const container = svgRef.current.parentElement;
     const width = container.clientWidth;
     const height = container.clientHeight;
-    const margin = { top: 60, right: 80, bottom: 80, left: 80 };
+    const margin = { top: 40, right: 60, bottom: 60, left: 60 };
     
     svg.attr("width", width).attr("height", height);
     
     const g = svg.append("g");
+    
+    // Create gradient defs
+    const defs = svg.append("defs");
+    
+    // Area gradient - using color scheme
+    const areaGradient = defs.append("linearGradient")
+      .attr("id", "area-gradient")
+      .attr("gradientUnits", "userSpaceOnUse")
+      .attr("x1", 0).attr("y1", height)
+      .attr("x2", 0).attr("y2", 0);
+      
+    areaGradient.append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", colors.primary)
+      .attr("stop-opacity", 0.1);
+      
+    areaGradient.append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", colors.primary)
+      .attr("stop-opacity", 0.3);
     
     // Scales
     const xScale = d3.scaleLinear()
@@ -191,23 +205,20 @@ const ZTableLookupRedesigned = () => {
     // Generate curve data
     const curveData = d3.range(-4, 4.01, 0.01).map(x => ({ x, y: normalPDF(x) }));
     
-    // Create gradient for area fill
-    const gradient = svg.append("defs")
-      .append("linearGradient")
-      .attr("id", "area-gradient")
-      .attr("gradientUnits", "userSpaceOnUse")
-      .attr("x1", xScale(-4)).attr("y1", 0)
-      .attr("x2", xScale(zValue)).attr("y2", 0);
+    // Grid lines
+    const xGridlines = d3.axisBottom(xScale)
+      .tickSize(-height + margin.top + margin.bottom)
+      .tickValues([-3, -2, -1, 0, 1, 2, 3])
+      .tickFormat("");
       
-    gradient.append("stop")
-      .attr("offset", "0%")
-      .attr("stop-color", colors.primary)
-      .attr("stop-opacity", 0.1);
-      
-    gradient.append("stop")
-      .attr("offset", "100%")
-      .attr("stop-color", colors.primary)
-      .attr("stop-opacity", 0.4);
+    g.append("g")
+      .attr("class", "grid")
+      .attr("transform", `translate(0,${height - margin.bottom})`)
+      .call(xGridlines)
+      .style("stroke-dasharray", "3,3")
+      .style("opacity", 0.1)
+      .selectAll("line")
+      .style("stroke", "#6B7280");
     
     // Area under curve
     const area = d3.area()
@@ -227,42 +238,18 @@ const ZTableLookupRedesigned = () => {
       .duration(500)
       .style("opacity", 1);
     
-    // Draw PDF curve with glow effect
+    // Draw PDF curve
     const line = d3.line()
       .x(d => xScale(d.x))
       .y(d => yScale(d.y))
       .curve(d3.curveBasis);
     
-    // Glow effect
-    g.append("path")
-      .datum(curveData)
-      .attr("d", line)
-      .attr("stroke", colors.primary)
-      .attr("stroke-width", 6)
-      .attr("fill", "none")
-      .style("opacity", 0.3)
-      .style("filter", "blur(8px)");
-    
-    // Main curve
     g.append("path")
       .datum(curveData)
       .attr("d", line)
       .attr("stroke", colors.primary)
       .attr("stroke-width", 3)
       .attr("fill", "none");
-    
-    // Grid lines
-    const xGridlines = d3.axisBottom(xScale)
-      .tickSize(-height + margin.top + margin.bottom)
-      .tickValues([-3, -2, -1, 0, 1, 2, 3])
-      .tickFormat("");
-      
-    g.append("g")
-      .attr("class", "grid")
-      .attr("transform", `translate(0,${height - margin.bottom})`)
-      .call(xGridlines)
-      .style("stroke-dasharray", "3,3")
-      .style("opacity", 0.2);
     
     // Axes
     const xAxis = d3.axisBottom(xScale)
@@ -276,34 +263,46 @@ const ZTableLookupRedesigned = () => {
     g.append("g")
       .attr("transform", `translate(0,${height - margin.bottom})`)
       .call(xAxis)
-      .style("font-size", typography.label)
+      .style("font-size", "14px")
       .selectAll("text")
-      .style("font-family", "monospace");
+      .style("font-family", "monospace")
+      .style("fill", "#D1D5DB");
       
     g.append("g")
       .attr("transform", `translate(${margin.left},0)`)
       .call(yAxis)
-      .style("font-size", typography.label)
+      .style("font-size", "14px")
       .selectAll("text")
-      .style("font-family", "monospace");
+      .style("font-family", "monospace")
+      .style("fill", "#D1D5DB");
+    
+    // Style axis lines
+    g.selectAll(".domain")
+      .style("stroke", "#6B7280");
+    g.selectAll(".tick line")
+      .style("stroke", "#6B7280");
     
     // Axis labels
     g.append("text")
       .attr("x", width / 2)
-      .attr("y", height - 20)
+      .attr("y", height - 10)
       .attr("text-anchor", "middle")
-      .attr("class", typography.h3)
+      .style("font-size", "16px")
+      .style("font-weight", "600")
+      .style("fill", "#E5E7EB")
       .text("z-score");
       
     g.append("text")
       .attr("transform", "rotate(-90)")
       .attr("x", -height / 2)
-      .attr("y", 25)
+      .attr("y", 20)
       .attr("text-anchor", "middle")
-      .attr("class", typography.h3)
+      .style("font-size", "16px")
+      .style("font-weight", "600")
+      .style("fill", "#E5E7EB")
       .text("Probability Density");
     
-    // Z-value indicator with enhanced visuals
+    // Z-value indicator
     if (zValue >= -4 && zValue <= 4) {
       // Vertical line
       const zLine = g.append("line")
@@ -312,91 +311,78 @@ const ZTableLookupRedesigned = () => {
         .attr("x2", xScale(zValue))
         .attr("y2", yScale(normalPDF(zValue)))
         .attr("stroke", colors.accent)
-        .attr("stroke-width", 3)
-        .attr("stroke-dasharray", "8,4")
+        .attr("stroke-width", 2.5)
+        .attr("stroke-dasharray", "6,3")
         .style("opacity", 0);
         
       zLine.transition()
         .duration(300)
         .style("opacity", 1);
       
-      // Point at intersection with pulsing effect
-      const pulseCircle = g.append("circle")
-        .attr("cx", xScale(zValue))
-        .attr("cy", yScale(normalPDF(zValue)))
-        .attr("r", 8)
-        .attr("fill", colors.accent)
-        .style("opacity", 0.3);
-        
-      // Animate pulse
-      pulseCircle
-        .transition()
-        .duration(1000)
-        .attr("r", 20)
-        .style("opacity", 0)
-        .on("end", function repeat() {
-          d3.select(this)
-            .attr("r", 8)
-            .style("opacity", 0.3)
-            .transition()
-            .duration(1000)
-            .attr("r", 20)
-            .style("opacity", 0)
-            .on("end", repeat);
-        });
-      
-      // Main point
+      // Point on curve
       g.append("circle")
         .attr("cx", xScale(zValue))
         .attr("cy", yScale(normalPDF(zValue)))
         .attr("r", 6)
         .attr("fill", colors.accent)
-        .attr("stroke", "#0a0a0a")
+        .attr("stroke", "#FFFFFF")
         .attr("stroke-width", 2);
     }
     
-    // Large integrated stats display
+    // Stats display card
     const statsGroup = g.append("g")
-      .attr("transform", `translate(${width - margin.right - 200}, ${margin.top + 20})`);
+      .attr("transform", `translate(${width - margin.right - 200}, ${margin.top})`);
       
     // Stats background
     statsGroup.append("rect")
       .attr("x", -20)
       .attr("y", -20)
-      .attr("width", 220)
-      .attr("height", 120)
+      .attr("width", 200)
+      .attr("height", 110)
       .attr("rx", 12)
-      .attr("fill", "#0a0a0a")
-      .attr("fill-opacity", 0.9)
-      .attr("stroke", colors.primary)
-      .attr("stroke-width", 2);
+      .attr("fill", "#F9FAFB")
+      .attr("stroke", "#E5E7EB")
+      .attr("stroke-width", 1);
     
     // Z-value display
     statsGroup.append("text")
-      .attr("y", 10)
+      .attr("y", 5)
       .attr("text-anchor", "middle")
       .attr("x", 80)
-      .attr("class", "font-mono text-2xl font-bold")
+      .style("font-family", "monospace")
+      .style("font-size", "22px")
+      .style("font-weight", "700")
       .attr("fill", colors.primary)
       .text(`z = ${zValue.toFixed(3)}`);
     
     // Probability display
     statsGroup.append("text")
-      .attr("y", 45)
+      .attr("y", 35)
       .attr("text-anchor", "middle")
       .attr("x", 80)
-      .attr("class", "font-mono text-xl")
+      .style("font-family", "monospace")
+      .style("font-size", "18px")
+      .style("font-weight", "500")
       .attr("fill", colors.secondary)
       .text(`Φ(z) = ${probability.toFixed(4)}`);
     
     // Percentile display
     statsGroup.append("text")
-      .attr("y", 75)
+      .attr("y", 60)
       .attr("text-anchor", "middle")
       .attr("x", 80)
-      .attr("class", "text-base")
-      .attr("fill", colors.text)
+      .style("font-size", "14px")
+      .attr("fill", "#6B7280")
       .text(`${(probability * 100).toFixed(1)}th percentile`);
+    
+    // Right tail probability
+    statsGroup.append("text")
+      .attr("y", 80)
+      .attr("text-anchor", "middle")
+      .attr("x", 80)
+      .style("font-size", "13px")
+      .attr("fill", "#9CA3AF")
+      .text(`P(Z > z) = ${(1 - probability).toFixed(4)}`);
     
   }, [zValue, probability, colors]);
   
@@ -416,463 +402,800 @@ const ZTableLookupRedesigned = () => {
     return table;
   }, []);
   
+  // Paginated table data
+  const paginatedTable = useMemo(() => {
+    const startIdx = tablePage * rowsPerPage;
+    return zTable.slice(startIdx, startIdx + rowsPerPage);
+  }, [zTable, tablePage, rowsPerPage]);
+  
   // Search functionality
-  const handleSearch = useCallback((value) => {
+  const handleSearch = (value) => {
     const val = parseFloat(value);
     if (!isNaN(val) && val >= -3.5 && val <= 3.5) {
       setZValue(val);
-      // Auto-scroll table if visible
-      if (showTable && val >= 0) {
-        const row = Math.floor(val * 10) / 10;
-        setHighlightedRow(row);
-        setHighlightedCol(Math.round((val - row) * 100));
-      }
+      setSearchValue(value);
     }
-  }, [showTable]);
+  };
   
-  // Critical values
-  const criticalValues = [
-    { z: 1.645, confidence: "90%", alpha: "0.10", color: "amber" },
-    { z: 1.96, confidence: "95%", alpha: "0.05", color: "blue" },
-    { z: 2.576, confidence: "99%", alpha: "0.01", color: "purple" }
-  ];
-  
-  // Achievement definitions
-  const achievementDefs = [
-    { id: 'first_lookup', name: 'First Steps', icon: '🎯', condition: () => lookupHistory.length >= 1 },
-    { id: 'explorer', name: 'Explorer', icon: '🗺️', condition: () => lookupHistory.length >= 10 },
-    { id: 'symmetry', name: 'Symmetry Master', icon: '🔄', condition: () => 
-      lookupHistory.some(h => h.z > 0.5) && lookupHistory.some(h => h.z < -0.5) },
-    { id: 'critical', name: 'Critical Thinker', icon: '⭐', condition: () => 
-      lookupHistory.some(h => [1.645, 1.96, 2.576].some(cv => Math.abs(h.z - cv) < 0.01)) },
-    { id: 'engineer', name: 'Quality Engineer', icon: '🏭', condition: () => 
-      lookupHistory.some(h => Math.abs(h.z) >= 3) }
-  ];
-  
-  const earnedAchievements = achievementDefs.filter(a => a.condition());
-  
-  return (
-    <VisualizationContainer 
-      title="Interactive Z-Table Lookup Tool"
-      className="max-w-full"
-    >
-      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
-        {/* Main visualization column - 3/5 on xl screens */}
-        <div className="xl:col-span-3 space-y-4">
-          {/* Hero Visualization */}
-          <VisualizationSection className="p-0 overflow-hidden">
-            <div 
-              className="relative bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl"
-              style={{ height: 'calc(70vh - 120px)', minHeight: '500px' }}
-            >
-              <svg ref={svgRef} className="w-full h-full" />
-            </div>
-          </VisualizationSection>
-          
-          {/* Progressive Insight Box */}
-          {currentInsight && (
-            <div className={cn(
-              "p-6 rounded-xl border backdrop-blur-sm transition-all duration-500",
-              currentInsight.type === 'milestone' 
-                ? "bg-gradient-to-r from-green-900/30 to-emerald-900/30 border-green-600/50"
-                : currentInsight.type === 'critical'
-                ? "bg-gradient-to-r from-amber-900/30 to-orange-900/30 border-amber-600/50"
-                : currentInsight.type === 'engineering'
-                ? "bg-gradient-to-r from-purple-900/30 to-indigo-900/30 border-purple-600/50"
-                : "bg-gradient-to-r from-blue-900/30 to-cyan-900/30 border-blue-600/50"
-            )}>
-              <div className="flex items-start gap-4">
-                <div className="text-3xl">{currentInsight.icon || '💡'}</div>
-                <div className="flex-1">
-                  {currentInsight.title && (
-                    <h3 className={cn(typography.h3, "mb-2")}>{currentInsight.title}</h3>
-                  )}
-                  <p className="text-base leading-relaxed">{currentInsight.message}</p>
-                  {currentInsight.subMessage && (
-                    <p className="text-sm text-gray-400 mt-2">{currentInsight.subMessage}</p>
-                  )}
+  // Learning content for each stage
+  const renderLearningContent = () => {
+    switch (learningStage) {
+      case 1: // Introduction - What is a Z-Table?
+        return (
+          <div className="space-y-6">
+            <VisualizationSection className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-blue-100 rounded-lg">
+                    <Info className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900">What is a Z-Table?</h3>
+                    <p className="text-gray-600 mt-1">A lookup table for cumulative probabilities of the standard normal distribution</p>
+                  </div>
                 </div>
-              </div>
-            </div>
-          )}
-          
-          {/* Enhanced Control Strip */}
-          <VisualizationSection className="p-4">
-            <div className="space-y-4">
-              {/* Mode Switcher */}
-              <div className="relative p-1 bg-gray-900 rounded-xl">
-                <div 
-                  className="absolute inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg transition-transform duration-300"
-                  style={{ 
-                    transform: `translateX(${lookupMode === 'z-to-p' ? '0' : '50%'})`,
-                    width: 'calc(50% - 4px)'
-                  }}
-                />
-                <div className="relative flex gap-1">
-                  <button
-                    onClick={() => setLookupMode('z-to-p')}
-                    className={cn(
-                      "flex-1 px-4 py-3 rounded-lg transition-all duration-300",
-                      lookupMode === 'z-to-p' 
-                        ? "text-white font-semibold" 
-                        : "text-gray-400 hover:text-gray-200"
-                    )}
-                  >
-                    <div className="flex items-center justify-center gap-2">
-                      <span className="text-lg font-mono">Z</span>
-                      <ArrowRight className="w-4 h-4" />
-                      <span className="text-lg font-mono">P</span>
-                    </div>
-                    <div className="text-xs mt-1 opacity-70">Find probability</div>
-                  </button>
-                  <button
-                    onClick={() => setLookupMode('p-to-z')}
-                    className={cn(
-                      "flex-1 px-4 py-3 rounded-lg transition-all duration-300",
-                      lookupMode === 'p-to-z' 
-                        ? "text-white font-semibold" 
-                        : "text-gray-400 hover:text-gray-200"
-                    )}
-                  >
-                    <div className="flex items-center justify-center gap-2">
-                      <span className="text-lg font-mono">P</span>
-                      <ArrowRight className="w-4 h-4" />
-                      <span className="text-lg font-mono">Z</span>
-                    </div>
-                    <div className="text-xs mt-1 opacity-70">Find z-score</div>
-                  </button>
-                </div>
-              </div>
-              
-              {/* Enhanced Slider with Quick Values */}
-              <div className="space-y-3">
-                {lookupMode === 'z-to-p' ? (
-                  <>
-                    <div className="flex items-center gap-3">
-                      <Search className="w-4 h-4 text-gray-400" />
-                      <input
-                        type="text"
-                        placeholder="Jump to z-value..."
-                        value={searchValue}
-                        onChange={(e) => {
-                          setSearchValue(e.target.value);
-                          handleSearch(e.target.value);
-                        }}
-                        className="flex-1 px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg 
-                          focus:outline-none focus:border-blue-500 transition-colors duration-200
-                          font-mono text-sm"
-                      />
-                    </div>
-                    <RangeSlider
-                      label="Z-Score"
-                      value={zValue}
-                      onChange={setZValue}
-                      min={-3.5}
-                      max={3.5}
-                      step={0.01}
-                      formatValue={(v) => v.toFixed(2)}
-                      className="mb-2"
-                    />
-                    <div className="flex justify-between">
-                      {[-3, -2, -1, 0, 1, 2, 3].map(tick => (
-                        <button
-                          key={tick}
-                          onClick={() => setZValue(tick)}
-                          className={cn(
-                            "px-2 py-1 text-xs font-mono rounded transition-all duration-200",
-                            Math.abs(zValue - tick) < 0.01
-                              ? "bg-blue-600 text-white"
-                              : "text-gray-500 hover:text-white hover:bg-gray-800"
-                          )}
-                        >
-                          {tick}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <RangeSlider
-                    label="Target Probability"
-                    value={targetProbability}
-                    onChange={setTargetProbability}
-                    min={0.001}
-                    max={0.999}
-                    step={0.001}
-                    formatValue={(v) => `${(v * 100).toFixed(1)}%`}
-                  />
-                )}
                 
-                {/* Quick Critical Values */}
-                <div className="grid grid-cols-3 gap-2">
-                  {criticalValues.map((cv) => (
-                    <button
-                      key={cv.z}
-                      onClick={() => setZValue(cv.z)}
-                      className={cn(
-                        "p-3 rounded-lg border transition-all duration-300 hover:scale-105",
-                        Math.abs(zValue - cv.z) < 0.01
-                          ? `bg-${cv.color}-900/40 border-${cv.color}-600/60 shadow-lg`
-                          : "bg-gray-800/50 border-gray-700 hover:bg-gray-800"
-                      )}
-                    >
-                      <div className={cn("text-sm font-semibold", `text-${cv.color}-400`)}>
-                        {cv.confidence}
-                      </div>
-                      <div className="font-mono text-base mt-1">±{cv.z}</div>
-                      <div className="text-xs text-gray-500">α = {cv.alpha}</div>
-                    </button>
-                  ))}
+                <div className="space-y-4 mt-6">
+                  {/* What it represents */}
+                  <div className="p-4 bg-white rounded-lg border border-gray-200">
+                    <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                      <Calculator className="w-5 h-5 text-blue-600" />
+                      What a Z-Table Actually Represents
+                    </h4>
+                    <p className="text-gray-600 leading-relaxed mb-3">
+                      A Z-table contains pre-calculated values of the cumulative distribution function (CDF) for the standard normal distribution:
+                    </p>
+                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      <p className="text-center font-mono text-lg text-gray-800" dangerouslySetInnerHTML={{ __html: `\\(\\Phi(z) = P(Z \\leq z) = \\int_{-\\infty}^{z} \\frac{1}{\\sqrt{2\\pi}} e^{-t^2/2} dt\\)` }} />
+                    </div>
+                    <p className="text-sm text-gray-600 mt-3">
+                      Each entry tells you what percentage of the data falls below a given z-score. It's the area under the curve from negative infinity to z.
+                    </p>
+                  </div>
+                  
+                  {/* Historical context */}
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                      <h4 className="font-semibold text-amber-900 mb-2 flex items-center gap-2">
+                        <BookOpen className="w-5 h-5" />
+                        Historical Necessity
+                      </h4>
+                      <p className="text-amber-800 text-sm leading-relaxed">
+                        Before computers, calculating <span className="inline-block mx-1" dangerouslySetInnerHTML={{ __html: `\\(\\Phi(z)\\)` }} /> required complex numerical integration. 
+                        Tables were essential tools that saved hours of computation. Statisticians would carry these tables everywhere!
+                      </p>
+                    </div>
+                    
+                    <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                      <h4 className="font-semibold text-green-900 mb-2 flex items-center gap-2">
+                        <TrendingUp className="w-5 h-5" />
+                        Modern Relevance
+                      </h4>
+                      <p className="text-green-800 text-sm leading-relaxed">
+                        Today, computers can calculate these instantly. So why still learn tables? 
+                        Because understanding them builds deep intuition about probability distributions!
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </VisualizationSection>
-        </div>
+            </VisualizationSection>
+          </div>
+        );
         
-        {/* Reference Panel - 2/5 on xl screens */}
-        <div className="xl:col-span-2 space-y-4">
-          {/* Tabbed Reference Section */}
-          <VisualizationSection className="sticky top-4">
-            {/* Tab Navigation */}
-            <div className="flex gap-2 mb-4 p-1 bg-gray-900 rounded-lg">
-              {[
-                { id: 'table', label: 'Z-Table', icon: BarChart3 },
-                { id: 'formulas', label: 'Formulas', icon: Calculator },
-                { id: 'achievements', label: 'Progress', icon: Award }
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={cn(
-                    "flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-300",
-                    activeTab === tab.id
-                      ? "bg-gray-800 text-white"
-                      : "text-gray-400 hover:text-gray-200"
-                  )}
-                >
-                  <tab.icon className="w-4 h-4" />
-                  <span className="text-sm font-medium">{tab.label}</span>
-                </button>
-              ))}
-            </div>
-            
-            {/* Tab Content */}
-            <div className="relative">
-              {/* Z-Table Tab */}
-              {activeTab === 'table' && (
-                <div className="space-y-4">
-                  {/* Show/Hide Table Toggle */}
-                  <button
-                    onClick={() => setShowTable(!showTable)}
-                    className="w-full flex items-center justify-between p-3 bg-gray-800 hover:bg-gray-700 
-                      rounded-lg transition-all duration-200"
-                  >
-                    <span className="font-medium">Standard Normal Table</span>
-                    {showTable ? <ChevronUp /> : <ChevronDown />}
-                  </button>
+      case 2: // Why Z-tables STILL matter
+        return (
+          <div className="space-y-6">
+            <VisualizationSection>
+              <h3 className="text-lg font-semibold mb-4">Why Understanding Z-Tables Still Matters in the Modern Era</h3>
+              
+              <div className="space-y-4">
+                {/* Main argument */}
+                <div className="p-4 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg border border-indigo-200">
+                  <p className="text-indigo-900 font-medium mb-2">
+                    We're NOT promoting memorization — we're building intuition!
+                  </p>
+                  <p className="text-indigo-800 text-sm">
+                    While computers can instantly calculate any probability, understanding Z-tables helps you develop a "feel" for the normal distribution that no calculator can provide.
+                  </p>
+                </div>
+                
+                {/* Four key reasons */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="p-4 bg-white rounded-lg border border-gray-200">
+                    <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                      <Lightbulb className="w-5 h-5 text-yellow-600" />
+                      1. Builds Intuition
+                    </h4>
+                    <p className="text-gray-600 text-sm mb-2">
+                      Z-tables show how probability accumulates as you move along the distribution. You can literally see:
+                    </p>
+                    <ul className="space-y-1 text-sm text-gray-600 ml-4">
+                      <li>• How quickly probability grows near the mean</li>
+                      <li>• How slowly it changes in the tails</li>
+                      <li>• Why extreme events are so rare</li>
+                    </ul>
+                  </div>
                   
-                  {showTable && (
-                    <>
-                      {/* Table Guide */}
-                      <div className="p-4 bg-gradient-to-r from-blue-900/20 to-purple-900/20 
-                        border border-blue-600/30 rounded-lg">
-                        <h4 className="font-semibold text-blue-300 mb-2">How to Read:</h4>
-                        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-300">
-                          <li>Find row for tenths place</li>
-                          <li>Find column for hundredths</li>
-                          <li>Intersection gives Φ(z)</li>
-                        </ol>
-                        {highlightedRow !== null && (
-                          <div className="mt-3 p-2 bg-amber-900/30 rounded font-mono text-sm">
-                            Row {highlightedRow.toFixed(1)}, Col 0.0{highlightedCol}
-                          </div>
-                        )}
-                      </div>
-                      
-                      {/* Z-Table */}
-                      <div className="overflow-auto max-h-[500px] rounded-lg border border-gray-700">
-                        <table className="w-full text-sm">
-                          <thead className="sticky top-0 bg-gray-900 z-10">
-                            <tr>
-                              <th className="p-3 border-b border-r border-gray-700 font-semibold bg-gray-800">
-                                z
-                              </th>
-                              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(col => (
-                                <th key={col} className="p-3 border-b border-gray-700 font-mono text-blue-300 bg-gray-800">
-                                  .0{col}
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {zTable.slice(0, 31).map((row) => {
-                              const isRowHighlighted = highlightedRow === parseFloat(row.z);
-                              return (
-                                <tr 
-                                  key={row.z} 
-                                  className={cn(
-                                    "transition-all duration-200",
-                                    isRowHighlighted ? "bg-amber-900/20" : "hover:bg-gray-800/50"
-                                  )}
-                                >
-                                  <td className="p-3 border-r border-gray-700 font-semibold font-mono text-blue-300 bg-gray-800/50">
-                                    {row.z}
-                                  </td>
-                                  {row.values.map(({ col, p, zExact }) => {
-                                    const isCellHighlighted = isRowHighlighted && highlightedCol === col;
-                                    return (
-                                      <td 
-                                        key={col} 
-                                        className={cn(
-                                          "p-3 font-mono text-center transition-all duration-200 cursor-pointer",
-                                          isCellHighlighted
-                                            ? "bg-amber-500/40 font-bold text-amber-200 shadow-[0_0_10px_rgba(251,191,36,0.3)]"
-                                            : "hover:bg-blue-900/30 hover:text-blue-200"
-                                        )}
-                                        onMouseEnter={() => setHoveredCell({ z: zExact.toFixed(2), p })}
-                                        onMouseLeave={() => setHoveredCell(null)}
-                                        onClick={() => setZValue(zExact)}
-                                      >
-                                        {p}
-                                      </td>
-                                    );
-                                  })}
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                      
-                      {/* Hover info */}
-                      {hoveredCell && (
-                        <div className="p-3 bg-blue-900/30 border border-blue-600/30 rounded-lg">
-                          <p className="font-mono text-sm">
-                            z = {hoveredCell.z}, Φ(z) = {hoveredCell.p}
+                  <div className="p-4 bg-white rounded-lg border border-gray-200">
+                    <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                      <Target className="w-5 h-5 text-blue-600" />
+                      2. Quick Mental Estimates
+                    </h4>
+                    <p className="text-gray-600 text-sm mb-2">
+                      Knowing key values helps you make rapid assessments:
+                    </p>
+                    <ul className="space-y-1 text-sm text-gray-600 ml-4">
+                      <li>• "That's about 2 standard deviations" → ~95%</li>
+                      <li>• "z = 1.65" → roughly 90th percentile</li>
+                      <li>• Instant sanity checks on calculations</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="p-4 bg-white rounded-lg border border-gray-200">
+                    <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                      <BookOpen className="w-5 h-5 text-green-600" />
+                      3. Understanding Reports
+                    </h4>
+                    <p className="text-gray-600 text-sm mb-2">
+                      Statistical reports often reference z-scores:
+                    </p>
+                    <ul className="space-y-1 text-sm text-gray-600 ml-4">
+                      <li>• "Significant at z = 2.5" → What does this mean?</li>
+                      <li>• Medical test results in standard deviations</li>
+                      <li>• Quality control limits (e.g., Six Sigma)</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="p-4 bg-white rounded-lg border border-gray-200">
+                    <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5 text-purple-600" />
+                      4. Connection to CDF
+                    </h4>
+                    <p className="text-gray-600 text-sm mb-2">
+                      Tables reveal the CDF's behavior:
+                    </p>
+                    <ul className="space-y-1 text-sm text-gray-600 ml-4">
+                      <li>• Why <span dangerouslySetInnerHTML={{ __html: `\\(\\Phi(0) = 0.5\\)` }} /></li>
+                      <li>• How symmetry works: <span dangerouslySetInnerHTML={{ __html: `\\(\\Phi(-z) = 1 - \\Phi(z)\\)` }} /></li>
+                      <li>• The S-shaped cumulative curve</li>
+                    </ul>
+                  </div>
+                </div>
+                
+                {/* Key insight */}
+                <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-emerald-600 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-emerald-900 mb-1">The Real Goal</p>
+                      <p className="text-emerald-800 text-sm">
+                        After working with Z-tables, you'll have an intuitive sense for probabilities. 
+                        When someone says "that's a 3-sigma event," you'll instantly know it's extraordinarily rare (0.3%). 
+                        This intuition is invaluable in data science, quality control, and research.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </VisualizationSection>
+          </div>
+        );
+        
+      case 3: // How to read the table (step by step)
+        return (
+          <div className="space-y-6">
+            <VisualizationSection>
+              <h3 className="text-lg font-semibold mb-4">How to Read a Z-Table: Step-by-Step Guide</h3>
+              
+              <div className="space-y-4">
+                {/* Visual guide */}
+                <div className="p-4 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg">
+                  <h4 className="font-medium text-indigo-900 mb-3">The Three-Step Process</h4>
+                  <div className="space-y-3">
+                    {[
+                      { 
+                        step: 1, 
+                        title: "Split your z-value",
+                        desc: "Separate the tenths from hundredths. For z = 1.96: tenths = 1.9, hundredths = 0.06",
+                        example: "z = 1.96 → Row: 1.9, Column: 0.06"
+                      },
+                      { 
+                        step: 2, 
+                        title: "Navigate the table",
+                        desc: "Find the row labeled with your tenths value, then move to the column for hundredths",
+                        example: "Go to row 1.9, then move right to column 0.06"
+                      },
+                      { 
+                        step: 3, 
+                        title: "Read the probability",
+                        desc: "The value at the intersection is Φ(z) — the cumulative probability up to that z-score",
+                        example: "The cell shows 0.9750, meaning 97.5% of data falls below z = 1.96"
+                      }
+                    ].map((item) => (
+                      <div key={item.step} className="flex gap-3">
+                        <div className="w-10 h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-lg">
+                          {item.step}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-gray-800">{item.title}</p>
+                          <p className="text-gray-600 text-sm mt-1">{item.desc}</p>
+                          <p className="text-indigo-700 text-sm font-mono mt-1 bg-indigo-50 px-2 py-1 rounded inline-block">
+                            {item.example}
                           </p>
                         </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              )}
-              
-              {/* Formulas Tab */}
-              {activeTab === 'formulas' && (
-                <div className="space-y-4">
-                  <div className="p-4 bg-gray-800/50 rounded-lg space-y-3">
-                    {[
-                      { formula: "P(Z > z) = 1 - Φ(z)", desc: "Right tail probability" },
-                      { formula: "P(|Z| > z) = 2(1 - Φ(z))", desc: "Two-tailed probability" },
-                      { formula: "P(-z < Z < z) = 2Φ(z) - 1", desc: "Symmetric interval" },
-                      { formula: "z = Φ⁻¹(p)", desc: "Inverse normal (quantile)" },
-                      { formula: "Φ(-z) = 1 - Φ(z)", desc: "Symmetry property" }
-                    ].map((item, i) => (
-                      <div key={i} className="pb-3 border-b border-gray-700 last:border-0 last:pb-0">
-                        <p className="font-mono text-base text-blue-300">{item.formula}</p>
-                        <p className="text-xs text-gray-400 mt-1">{item.desc}</p>
                       </div>
                     ))}
                   </div>
+                </div>
+                
+                {/* Examples grid */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <h5 className="font-medium text-green-900 mb-3">✓ Worked Example: Φ(2.33)</h5>
+                    <ol className="space-y-2 text-sm text-green-800">
+                      <li className="flex items-start gap-2">
+                        <span className="font-bold">1.</span>
+                        <span>Split: 2.33 → Row 2.3, Column 0.03</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="font-bold">2.</span>
+                        <span>Find row 2.3 in the table</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="font-bold">3.</span>
+                        <span>Move to column 0.03</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="font-bold">4.</span>
+                        <span>Read: <span className="font-mono font-bold">0.9901</span></span>
+                      </li>
+                    </ol>
+                    <p className="text-green-700 text-sm mt-3 font-medium">
+                      Interpretation: 99.01% of values are below z = 2.33
+                    </p>
+                  </div>
                   
-                  {/* Engineering Applications */}
-                  <div className="p-4 bg-gradient-to-r from-purple-900/20 to-indigo-900/20 
-                    border border-purple-600/30 rounded-lg">
-                    <h4 className="font-semibold text-purple-300 mb-3">Engineering Applications</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span>Quality Control (±2σ)</span>
-                        <span className="font-mono">95.45%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>High Reliability (±3σ)</span>
-                        <span className="font-mono">99.73%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Six Sigma (±6σ)</span>
-                        <span className="font-mono">3.4 PPM</span>
-                      </div>
+                  <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                    <h5 className="font-medium text-purple-900 mb-3">🔄 The Symmetry Property</h5>
+                    <p className="text-sm text-purple-800 mb-3">
+                      For negative z-values, use the symmetry of the normal distribution:
+                    </p>
+                    <div className="p-3 bg-purple-100 rounded text-center">
+                      <span className="font-mono text-purple-900" dangerouslySetInnerHTML={{ __html: `\\(\\Phi(-z) = 1 - \\Phi(z)\\)` }} />
+                    </div>
+                    <div className="mt-3 space-y-1 text-sm text-purple-700">
+                      <p><strong>Example:</strong> Find Φ(-1.50)</p>
+                      <p>1. Look up Φ(1.50) = 0.9332</p>
+                      <p>2. Apply symmetry: Φ(-1.50) = 1 - 0.9332 = <span className="font-mono font-bold">0.0668</span></p>
                     </div>
                   </div>
                 </div>
-              )}
+                
+                {/* Common errors */}
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <h4 className="font-medium text-red-900 mb-3 flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5" />
+                    Common Errors to Avoid
+                  </h4>
+                  <div className="grid md:grid-cols-2 gap-3">
+                    {[
+                      {
+                        error: "Confusing rows and columns",
+                        fix: "Remember: First two digits → row, last digit → column"
+                      },
+                      {
+                        error: "Forgetting what the table shows",
+                        fix: "Z-table gives LEFT tail area (cumulative probability)"
+                      },
+                      {
+                        error: "Wrong calculation for P(Z > z)",
+                        fix: "Use P(Z > z) = 1 - Φ(z), not just Φ(z)"
+                      },
+                      {
+                        error: "Mishandling negative z-values",
+                        fix: "Always use symmetry: Φ(-z) = 1 - Φ(z)"
+                      }
+                    ].map((item, i) => (
+                      <div key={i} className="space-y-1">
+                        <p className="text-sm font-medium text-red-800">❌ {item.error}</p>
+                        <p className="text-xs text-red-700">✓ {item.fix}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </VisualizationSection>
+          </div>
+        );
+        
+      case 4: // Connection to CDF and practical use
+        return (
+          <div className="space-y-6">
+            <VisualizationSection>
+              <h3 className="text-lg font-semibold mb-4">The Deep Connection: Z-Table and the CDF</h3>
               
-              {/* Achievements Tab */}
-              {activeTab === 'achievements' && (
-                <div className="space-y-4">
-                  {/* Progress Stats */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 bg-gray-800 rounded-lg">
-                      <div className="text-2xl font-mono font-bold text-blue-400">
-                        {lookupHistory.length}
-                      </div>
-                      <div className="text-sm text-gray-400">Lookups</div>
+              <div className="space-y-4">
+                {/* CDF explanation */}
+                <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                  <h4 className="font-semibold text-blue-900 mb-3">Understanding What You're Really Looking At</h4>
+                  <p className="text-blue-800 mb-3">
+                    Every Z-table entry is a point on the cumulative distribution function (CDF) curve:
+                  </p>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="p-3 bg-white rounded border border-blue-200">
+                      <p className="font-medium text-gray-800 mb-2">The Mathematical Truth</p>
+                      <p className="text-sm text-gray-600">
+                        Each table value represents the integral of the probability density function from -∞ to z.
+                        This is why values start near 0 and approach 1.
+                      </p>
                     </div>
-                    <div className="p-3 bg-gray-800 rounded-lg">
-                      <div className="text-2xl font-mono font-bold text-green-400">
-                        {earnedAchievements.length}/{achievementDefs.length}
-                      </div>
-                      <div className="text-sm text-gray-400">Achievements</div>
-                    </div>
-                  </div>
-                  
-                  {/* Learning Stage */}
-                  <div className="p-4 bg-gradient-to-r from-indigo-900/20 to-purple-900/20 
-                    border border-indigo-600/30 rounded-lg">
-                    <h4 className="font-semibold text-indigo-300 mb-2">Learning Stage</h4>
-                    <div className="flex items-center gap-3">
-                      <TrendingUp className="w-5 h-5 text-indigo-400" />
-                      <span className="text-lg capitalize">
-                        {getLearningStage(lookupHistory.length)}
-                      </span>
+                    <div className="p-3 bg-white rounded border border-blue-200">
+                      <p className="font-medium text-gray-800 mb-2">The Visual Insight</p>
+                      <p className="text-sm text-gray-600">
+                        As you move right in the table (increasing z), you're accumulating more area under the bell curve.
+                        The S-shaped pattern shows how probability accumulates.
+                      </p>
                     </div>
                   </div>
-                  
-                  {/* Achievements Grid */}
-                  <div className="space-y-3">
-                    <h4 className="font-semibold">Achievements</h4>
-                    <div className="grid grid-cols-2 gap-2">
-                      {achievementDefs.map(achievement => {
-                        const earned = earnedAchievements.includes(achievement);
-                        return (
-                          <div 
-                            key={achievement.id}
-                            className={cn(
-                              "p-3 rounded-lg border transition-all duration-300",
-                              earned
-                                ? "bg-green-900/20 border-green-600/50"
-                                : "bg-gray-800/50 border-gray-700 opacity-50"
-                            )}
-                          >
-                            <div className="text-2xl mb-1">{achievement.icon}</div>
-                            <div className="text-sm font-medium">{achievement.name}</div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  
-                  {/* Recent Activity */}
-                  {lookupHistory.length > 0 && (
-                    <div className="space-y-2">
-                      <h4 className="font-semibold text-sm">Recent Lookups</h4>
-                      <div className="space-y-1">
-                        {lookupHistory.slice(-5).reverse().map((h, i) => (
-                          <div key={i} className="flex justify-between text-sm py-1">
-                            <span className="font-mono">z = {h.z.toFixed(2)}</span>
-                            <span className="text-gray-400">Φ = {h.p.toFixed(4)}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
-              )}
+                
+                {/* Key insights */}
+                <div className="grid md:grid-cols-3 gap-3">
+                  <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+                    <h5 className="font-medium text-amber-900 mb-2">Why Φ(0) = 0.5?</h5>
+                    <p className="text-sm text-amber-800">
+                      The standard normal is symmetric around 0. 
+                      Half the data lies below the mean, half above.
+                    </p>
+                  </div>
+                  <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                    <h5 className="font-medium text-green-900 mb-2">Why values near 0 and 1?</h5>
+                    <p className="text-sm text-green-800">
+                      CDF ranges from 0 to 1 because it represents probability. 
+                      You'll never see values outside this range.
+                    </p>
+                  </div>
+                  <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                    <h5 className="font-medium text-purple-900 mb-2">The tail behavior</h5>
+                    <p className="text-sm text-purple-800">
+                      Notice how slowly values change for |z| {'>'} 3. 
+                      This shows why extreme events are so rare.
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Practical examples with deeper explanation */}
+                <div className="mt-6">
+                  <h4 className="font-semibold text-gray-800 mb-3">See It In Action: Real-World Applications</h4>
+                  <div className="space-y-3">
+                    {practicalExamples.map((example, idx) => (
+                      <div key={idx} className="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-blue-300 transition-colors">
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
+                            {example.icon}
+                          </div>
+                          <div className="flex-1">
+                            <h5 className="font-semibold text-gray-800">{example.title}</h5>
+                            <p className="text-sm text-gray-600 mt-1">{example.description}</p>
+                            <p className="text-sm font-medium text-blue-700 mt-2">{example.question}</p>
+                            
+                            <div className="mt-3 p-3 bg-white rounded border border-gray-200">
+                              <p className="text-sm text-gray-700 font-mono">{example.solution}</p>
+                              <p className="text-xs text-gray-600 mt-2">
+                                <strong>Why this matters:</strong> Understanding z-tables helps you quickly assess 
+                                {idx === 0 ? " quality control limits" : idx === 1 ? " medical test significance" : " process capabilities"}.
+                              </p>
+                            </div>
+                            
+                            <Button
+                              variant="info"
+                              size="sm"
+                              className="mt-3"
+                              onClick={() => setZValue(example.zValue)}
+                            >
+                              Visualize this z-value
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Mental math tips */}
+                <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+                  <h4 className="font-medium text-indigo-900 mb-3 flex items-center gap-2">
+                    <Calculator className="w-5 h-5" />
+                    Quick Mental Estimates Using Z-Tables
+                  </h4>
+                  <div className="grid md:grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p className="font-medium text-indigo-800 mb-2">For positive z:</p>
+                      <ul className="space-y-1 text-indigo-700 ml-4">
+                        <li>• z ≈ 0 → Φ(z) ≈ 0.5 (50%)</li>
+                        <li>• z ≈ 1 → Φ(z) ≈ 0.84 (84%)</li>
+                        <li>• z ≈ 2 → Φ(z) ≈ 0.98 (98%)</li>
+                        <li>• z ≈ 3 → Φ(z) ≈ 0.999 (99.9%)</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <p className="font-medium text-indigo-800 mb-2">For finding percentiles:</p>
+                      <ul className="space-y-1 text-indigo-700 ml-4">
+                        <li>• 90th percentile → z ≈ 1.28</li>
+                        <li>• 95th percentile → z ≈ 1.65</li>
+                        <li>• 97.5th percentile → z ≈ 1.96</li>
+                        <li>• 99th percentile → z ≈ 2.33</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </VisualizationSection>
+          </div>
+        );
+        
+      case 5: // Full exploration
+        return (
+          <div className="space-y-6">
+            <VisualizationSection className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <Award className="w-6 h-6 text-green-600" />
+                  <h3 className="text-lg font-semibold text-gray-900">You're Ready to Explore!</h3>
+                </div>
+                <p className="text-gray-700">
+                  Now you can use the full Z-table lookup tool. Try different values, switch between modes, and master probability calculations.
+                </p>
+                <div className="grid md:grid-cols-3 gap-3 mt-4">
+                  <div className="p-3 bg-white rounded-lg border border-gray-200">
+                    <h4 className="font-medium text-gray-800 text-sm">Z → P Mode</h4>
+                    <p className="text-xs text-gray-600 mt-1">Enter z-score, get probability</p>
+                  </div>
+                  <div className="p-3 bg-white rounded-lg border border-gray-200">
+                    <h4 className="font-medium text-gray-800 text-sm">P → Z Mode</h4>
+                    <p className="text-xs text-gray-600 mt-1">Enter probability, get z-score</p>
+                  </div>
+                  <div className="p-3 bg-white rounded-lg border border-gray-200">
+                    <h4 className="font-medium text-gray-800 text-sm">Reference Table</h4>
+                    <p className="text-xs text-gray-600 mt-1">Browse the full Z-table</p>
+                  </div>
+                </div>
+              </div>
+            </VisualizationSection>
+          </div>
+        );
+    }
+  };
+  
+  return (
+    <VisualizationContainer 
+      title="Z-Table Lookup: Master the Standard Normal Distribution"
+      className="max-w-full"
+    >
+      <div ref={contentRef} className="space-y-6">
+        {/* Tutorial Component */}
+        {showTutorial && (
+          <Tutorial
+            steps={tutorialSteps}
+            onComplete={() => setShowTutorial(false)}
+            onSkip={() => setShowTutorial(false)}
+            persistKey="z-table-lookup"
+            mode="tooltip"
+          />
+        )}
+        
+        {/* Progress Bar */}
+        <div className="mb-6">
+          <ProgressBar
+            current={learningStage}
+            total={totalStages}
+            label="Learning Progress"
+            variant="blue"
+          />
+        </div>
+        
+        {/* Learning Content Section */}
+        {learningStage < 5 && (
+          <div className="mb-6">
+            {renderLearningContent()}
+            
+            {/* Navigation */}
+            <div className="mt-6">
+              <ProgressNavigation
+                current={learningStage}
+                total={totalStages}
+                onPrevious={() => setLearningStage(Math.max(1, learningStage - 1))}
+                onNext={() => setLearningStage(Math.min(totalStages, learningStage + 1))}
+                variant="blue"
+                nextLabel={learningStage === 4 ? "Start Exploring" : "Next"}
+                completeLabel="Explore Tool"
+              />
             </div>
-          </VisualizationSection>
+          </div>
+        )}
+        
+        {/* Main Tool (Stage 5) */}
+        {learningStage === 5 && (
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            {/* Visualization and Controls - 2/3 width */}
+            <div className="xl:col-span-2 space-y-4">
+              {/* Visualization */}
+              <VisualizationSection className="p-0 overflow-hidden z-visualization">
+                <div 
+                  className="relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl"
+                  style={{ height: '400px' }}
+                >
+                  <svg ref={svgRef} className="w-full h-full" />
+                </div>
+              </VisualizationSection>
+              
+              {/* Controls */}
+              <VisualizationSection className="z-controls">
+                <div className="space-y-4">
+                  {/* Mode Switcher */}
+                  <div className="flex gap-2 p-1 bg-gray-100 rounded-lg">
+                    <button
+                      onClick={() => setLookupMode('z-to-p')}
+                      className={cn(
+                        "flex-1 px-4 py-2.5 rounded-md transition-all duration-200 font-medium",
+                        lookupMode === 'z-to-p' 
+                          ? "bg-blue-600 text-white shadow-sm" 
+                          : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                      )}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="font-mono">Z → P</span>
+                        <span className="text-sm opacity-80">Find Probability</span>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => setLookupMode('p-to-z')}
+                      className={cn(
+                        "flex-1 px-4 py-2.5 rounded-md transition-all duration-200 font-medium",
+                        lookupMode === 'p-to-z' 
+                          ? "bg-blue-600 text-white shadow-sm" 
+                          : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                      )}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="font-mono">P → Z</span>
+                        <span className="text-sm opacity-80">Find Z-Score</span>
+                      </div>
+                    </button>
+                  </div>
+                  
+                  {/* Input Controls */}
+                  <div className="space-y-3">
+                    {lookupMode === 'z-to-p' ? (
+                      <>
+                        <div className="flex items-center gap-3">
+                          <Search className="w-5 h-5 text-gray-400" />
+                          <input
+                            type="text"
+                            placeholder="Enter z-value (e.g., 1.96)"
+                            value={searchValue}
+                            onChange={(e) => {
+                              setSearchValue(e.target.value);
+                              handleSearch(e.target.value);
+                            }}
+                            className="flex-1 px-4 py-2.5 bg-white border border-gray-300 rounded-lg 
+                              focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 
+                              transition-all duration-200 font-mono text-sm"
+                          />
+                        </div>
+                        <RangeSlider
+                          label="Z-Score"
+                          value={zValue}
+                          onChange={setZValue}
+                          min={-3.5}
+                          max={3.5}
+                          step={0.01}
+                          formatValue={(v) => v.toFixed(2)}
+                        />
+                      </>
+                    ) : (
+                      <RangeSlider
+                        label="Target Probability"
+                        value={targetProbability}
+                        onChange={setTargetProbability}
+                        min={0.001}
+                        max={0.999}
+                        step={0.001}
+                        formatValue={(v) => `${(v * 100).toFixed(1)}%`}
+                      />
+                    )}
+                  </div>
+                  
+                  {/* Quick Access Critical Values */}
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 mb-3">Common Critical Values</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {criticalValues.map((cv) => (
+                        <button
+                          key={cv.z}
+                          onClick={() => {
+                            setZValue(cv.z);
+                            setSearchValue(cv.z.toString());
+                          }}
+                          className={cn(
+                            "p-3 rounded-lg border-2 transition-all duration-200",
+                            Math.abs(zValue - cv.z) < 0.01
+                              ? "bg-blue-50 border-blue-400 text-blue-700"
+                              : "bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300 text-gray-700"
+                          )}
+                        >
+                          <div className="text-base font-semibold">{cv.confidence}</div>
+                          <div className="font-mono text-sm mt-0.5">z = ±{cv.z}</div>
+                          <div className="text-xs text-gray-500 mt-1">{cv.use}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </VisualizationSection>
+            </div>
+            
+            {/* Reference Table - 1/3 width */}
+            <div className="xl:col-span-1 z-table-section">
+              <VisualizationSection className="h-full">
+                <h3 className="text-lg font-semibold mb-4">Z-Table Reference</h3>
+                
+                {/* Table View Toggle */}
+                <div className="flex gap-1 p-1 bg-gray-100 rounded-lg mb-4">
+                  {[
+                    { id: 'positive', label: 'Positive Z' },
+                    { id: 'negative', label: 'Negative Z' }
+                  ].map(view => (
+                    <button
+                      key={view.id}
+                      onClick={() => {
+                        setTableView(view.id);
+                        setTablePage(0);
+                      }}
+                      className={cn(
+                        "flex-1 px-3 py-1.5 rounded text-sm font-medium transition-all duration-200",
+                        tableView === view.id
+                          ? "bg-white text-gray-900 shadow-sm"
+                          : "text-gray-600 hover:text-gray-900"
+                      )}
+                    >
+                      {view.label}
+                    </button>
+                  ))}
+                </div>
+                
+                {/* Table Instructions */}
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-4">
+                  <p className="text-sm text-blue-800">
+                    <strong>How to use:</strong> Find row (tenths), then column (hundredths). 
+                    {highlightedRow !== null && (
+                      <span className="block mt-1 font-mono">
+                        Currently: z = {highlightedRow.toFixed(1)}{highlightedCol}
+                      </span>
+                    )}
+                  </p>
+                </div>
+                
+                {/* Z-Table */}
+                <div className="overflow-hidden rounded-lg border border-gray-200">
+                  <div className="overflow-auto max-h-[400px]">
+                    <table className="w-full text-sm">
+                      <thead className="sticky top-0 bg-gray-100 z-10">
+                        <tr>
+                          <th className="p-2 border-b border-r border-gray-300 font-semibold bg-gray-200">
+                            z
+                          </th>
+                          {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(col => (
+                            <th key={col} className="p-2 border-b border-gray-300 font-mono text-xs">
+                              .0{col}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {paginatedTable.map((row) => {
+                          const isRowHighlighted = highlightedRow === parseFloat(row.z);
+                          const displayZ = tableView === 'negative' ? `-${row.z}` : row.z;
+                          
+                          return (
+                            <tr 
+                              key={row.z} 
+                              className={cn(
+                                "transition-all duration-200",
+                                isRowHighlighted ? "bg-blue-50" : "hover:bg-gray-50"
+                              )}
+                            >
+                              <td className="p-2 border-r border-gray-300 font-mono text-sm bg-gray-50 font-semibold">
+                                {displayZ}
+                              </td>
+                              {row.values.map(({ col, p, zExact }) => {
+                                const isCellHighlighted = isRowHighlighted && highlightedCol === col;
+                                const displayP = tableView === 'negative' ? (1 - parseFloat(p)).toFixed(4) : p;
+                                
+                                return (
+                                  <td 
+                                    key={col} 
+                                    className={cn(
+                                      "p-2 font-mono text-center text-xs transition-all duration-200 cursor-pointer",
+                                      isCellHighlighted
+                                        ? "bg-blue-500 text-white font-bold"
+                                        : "hover:bg-blue-100"
+                                    )}
+                                    onMouseEnter={() => setHoveredCell({ 
+                                      z: tableView === 'negative' ? `-${zExact.toFixed(2)}` : zExact.toFixed(2), 
+                                      p: displayP 
+                                    })}
+                                    onMouseLeave={() => setHoveredCell(null)}
+                                    onClick={() => setZValue(tableView === 'negative' ? -zExact : zExact)}
+                                  >
+                                    {displayP}
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                
+                {/* Pagination */}
+                <div className="flex items-center justify-between mt-4">
+                  <Button
+                    variant="neutral"
+                    size="sm"
+                    onClick={() => setTablePage(Math.max(0, tablePage - 1))}
+                    disabled={tablePage === 0}
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Previous
+                  </Button>
+                  
+                  <span className="text-sm text-gray-600">
+                    Page {tablePage + 1} of {Math.ceil(zTable.length / rowsPerPage)}
+                  </span>
+                  
+                  <Button
+                    variant="neutral"
+                    size="sm"
+                    onClick={() => setTablePage(Math.min(Math.ceil(zTable.length / rowsPerPage) - 1, tablePage + 1))}
+                    disabled={tablePage >= Math.ceil(zTable.length / rowsPerPage) - 1}
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+                
+                {/* Hover info */}
+                {hoveredCell && (
+                  <div className="mt-4 p-3 bg-gray-100 border border-gray-300 rounded-lg">
+                    <p className="font-mono text-sm">
+                      z = {hoveredCell.z}, Φ(z) = {hoveredCell.p}
+                    </p>
+                  </div>
+                )}
+              </VisualizationSection>
+            </div>
+          </div>
+        )}
+        
+        {/* Help Button */}
+        <div className="fixed bottom-6 right-6">
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => setShowTutorial(true)}
+            className="shadow-lg"
+          >
+            <Info className="w-4 h-4" />
+            Help
+          </Button>
         </div>
       </div>
     </VisualizationContainer>
   );
 };
 
-export default ZTableLookupRedesigned;
+export default ZTableLookup;

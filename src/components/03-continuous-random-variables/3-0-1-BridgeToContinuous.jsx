@@ -1,15 +1,37 @@
 'use client';
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { VisualizationContainer } from '../ui/VisualizationContainer';
 import { ProgressTracker } from '../ui/ProgressTracker';
 import * as d3 from 'd3';
-import { inlineMath } from '../../utils/latex';
 import { D3DragWrapper } from '../ui/D3DragWrapper';
 import { ProgressBar, ProgressNavigation } from '@/components/ui/ProgressBar';
 import { cn } from '../../lib/utils';
+import { useSafeMathJax } from '../../utils/mathJaxFix';
+
+// Memoized LaTeX component to prevent re-rendering
+const LaTeXFormula = React.memo(function LaTeXFormula({ formula, isBlock = false }) {
+  const contentRef = useRef(null);
+  
+  // Use safe MathJax hook with error handling
+  useSafeMathJax(contentRef, [formula]);
+  
+  if (isBlock) {
+    return (
+      <div ref={contentRef} className="text-center my-2">
+        <div dangerouslySetInnerHTML={{ __html: `\\[${formula}\\]` }} />
+      </div>
+    );
+  }
+  
+  return (
+    <span ref={contentRef}>
+      <span dangerouslySetInnerHTML={{ __html: `\\(${formula}\\)` }} />
+    </span>
+  );
+});
 
 const BridgeToContinuous = () => {
   // Constants
@@ -23,6 +45,12 @@ const BridgeToContinuous = () => {
   const [binCount, setBinCount] = useState(DEFAULT_BINS);
   const [showCurve, setShowCurve] = useState(false);
   const [selectedRange, setSelectedRange] = useState({ start: -1, end: 1 });
+  
+  // Ref for MathJax processing
+  const contentRef = useRef(null);
+  
+  // Use safe MathJax processing with error handling
+  useSafeMathJax(contentRef, [currentStep]);
 
   // Generate sample data
   const generateData = useCallback(() => {
@@ -111,10 +139,10 @@ const BridgeToContinuous = () => {
             <rect x="160" y="120" width="40" height="130" fill="#3b82f6" opacity="0.8"/>
             <rect x="220" y="170" width="40" height="80" fill="#3b82f6" opacity="0.8"/>
             
-            <text x="60" y="270" textAnchor="middle" className="text-xs">1</text>
-            <text x="120" y="270" textAnchor="middle" className="text-xs">2</text>
-            <text x="180" y="270" textAnchor="middle" className="text-xs">3</text>
-            <text x="240" y="270" textAnchor="middle" className="text-xs">4</text>
+            <text x="60" y="270" textAnchor="middle" className="text-xs" style={{ fontFamily: 'monospace' }}>1</text>
+            <text x="120" y="270" textAnchor="middle" className="text-xs" style={{ fontFamily: 'monospace' }}>2</text>
+            <text x="180" y="270" textAnchor="middle" className="text-xs" style={{ fontFamily: 'monospace' }}>3</text>
+            <text x="240" y="270" textAnchor="middle" className="text-xs" style={{ fontFamily: 'monospace' }}>4</text>
             
             <text x="160" y="290" textAnchor="middle" className="text-sm font-medium">
               Discrete: Countable outcomes
@@ -239,8 +267,8 @@ const BridgeToContinuous = () => {
               {/* Labels for advanced steps */}
               {currentStep >= 2 && (
                 <>
-                  <text x="-10" y="10" textAnchor="end" className="text-xs">f(x)</text>
-                  <text x="320" y="265" className="text-xs">x</text>
+                  <text x="-10" y="10" textAnchor="end" className="text-xs" style={{ fontStyle: 'italic' }}>f(x)</text>
+                  <text x="320" y="265" className="text-xs" style={{ fontStyle: 'italic' }}>x</text>
                 </>
               )}
             </>
@@ -260,36 +288,35 @@ const BridgeToContinuous = () => {
   }, []);
 
   const BinControl = () => (
-    <D3DragWrapper
-      render={(dragRef) => (
-        <svg width="320" height="60" ref={dragRef}>
-          <g transform="translate(10, 30)">
-            <line x1="0" y1="0" x2="300" y2="0" stroke="currentColor" strokeWidth="2"/>
-            
-            {/* Tick marks */}
-            {[MIN_BINS, 10, 20, 30, 40, MAX_BINS].map(val => (
-              <g key={val} transform={`translate(${(val - MIN_BINS) * BIN_DRAG_SCALE}, 0)`}>
-                <line y1="-5" y2="5" stroke="currentColor" strokeWidth="1"/>
-                <text y="20" textAnchor="middle" className="text-xs">{val}</text>
-              </g>
-            ))}
-            
-            {/* Draggable handle */}
-            <circle
-              cx={(binCount - MIN_BINS) * BIN_DRAG_SCALE}
-              cy="0"
-              r="8"
-              fill="#3b82f6"
-              stroke="white"
-              strokeWidth="2"
-              style={{ cursor: 'ew-resize' }}
-            />
+    <svg width="320" height="60">
+      <g transform="translate(10, 30)">
+        <line x1="0" y1="0" x2="300" y2="0" stroke="currentColor" strokeWidth="2"/>
+        
+        {/* Tick marks */}
+        {[MIN_BINS, 10, 20, 30, 40, MAX_BINS].map(val => (
+          <g key={val} transform={`translate(${(val - MIN_BINS) * BIN_DRAG_SCALE}, 0)`}>
+            <line y1="-5" y2="5" stroke="currentColor" strokeWidth="1"/>
+            <text y="20" textAnchor="middle" className="text-xs" style={{ fontFamily: 'monospace' }}>{val}</text>
           </g>
-        </svg>
-      )}
-      onDrag={handleDrag}
-      data={{ x: (binCount - MIN_BINS) * BIN_DRAG_SCALE }}
-    />
+        ))}
+        
+        {/* Draggable handle */}
+        <D3DragWrapper
+          onDrag={handleDrag}
+          initialPosition={{ x: (binCount - MIN_BINS) * BIN_DRAG_SCALE, y: 0 }}
+        >
+          <circle
+            cx="0"
+            cy="0"
+            r="8"
+            fill="#3b82f6"
+            stroke="white"
+            strokeWidth="2"
+            style={{ cursor: 'ew-resize' }}
+          />
+        </D3DragWrapper>
+      </g>
+    </svg>
   );
 
   const StepContent = () => {
@@ -300,12 +327,12 @@ const BridgeToContinuous = () => {
             <div className="bg-blue-900 p-4 rounded-lg">
               <h3 className="font-semibold mb-2">The Measurement Problem</h3>
               <p className="text-sm">
-                What's the probability that someone is exactly 170.000000... cm tall? 
+                What's the probability that someone is exactly <span className="font-mono">170.000000…</span> cm tall? 
                 With infinite decimal places, the probability of any exact value is effectively zero!
               </p>
             </div>
             <div className="text-sm space-y-2">
-              <p>• Discrete: "How many heads in 10 flips?"</p>
+              <p>• Discrete: "How many heads in <span className="font-mono">10</span> flips?"</p>
               <p>• Continuous: "What's your exact height?"</p>
             </div>
           </div>
@@ -322,7 +349,7 @@ const BridgeToContinuous = () => {
               </p>
             </div>
             <div className="space-y-2">
-              <p className="text-sm font-medium">Number of bins: {binCount}</p>
+              <p className="text-sm font-medium">Number of bins: <span className="font-mono">{binCount}</span></p>
               <BinControl />
             </div>
             <p className="text-sm text-gray-400 mt-2">
@@ -394,11 +421,11 @@ const BridgeToContinuous = () => {
               <div className="grid grid-cols-2 gap-4 mt-3">
                 <div>
                   <p className="text-xs font-medium mb-1">Discrete (Sum):</p>
-                  <span dangerouslySetInnerHTML={{ __html: inlineMath("P = \\sum_{x \\in S} p(x)") }} />
+                  <LaTeXFormula formula="P = \\sum_{x \\in S} p(x)" />
                 </div>
                 <div>
                   <p className="text-xs font-medium mb-1">Continuous (Integral):</p>
-                  <span dangerouslySetInnerHTML={{ __html: inlineMath("P = \\int_a^b f(x)dx") }} />
+                  <LaTeXFormula formula="P = \\int_a^b f(x)dx" />
                 </div>
               </div>
             </div>
@@ -432,7 +459,7 @@ const BridgeToContinuous = () => {
       title="Bridge to Continuous Random Variables"
       description="Understanding the transition from discrete to continuous distributions"
     >
-      <div className="space-y-6">
+      <div ref={contentRef} className="space-y-6">
         {/* Progress Bar */}
         <ProgressBar 
           current={currentStep + 1}

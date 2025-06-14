@@ -4,7 +4,208 @@ import * as d3 from "d3";
 import { VisualizationContainer } from "../ui/VisualizationContainer";
 import { RangeSlider } from "../ui/RangeSlider";
 import { createColorScheme, typography } from "../../lib/design-system";
+import { useSafeMathJax } from '../../utils/mathJaxFix';
 import { ExponentialDistributionWorkedExample } from "./3-4-2-ExponentialDistributionWorkedExample";
+
+// Memoized component for LaTeX formulas to prevent re-rendering
+const MemorylessFormula = React.memo(function MemorylessFormula() {
+  const ref = useRef(null);
+  
+  // Use safe MathJax processing with error handling
+  useSafeMathJax(ref, []);
+  
+  return (
+    <p ref={ref} className="text-xs text-purple-300 mt-2 font-mono">
+      <span dangerouslySetInnerHTML={{ __html: `\\(P(T > t_1 + t_2 | T > t_1) = P(T > t_2)\\)` }} />
+    </p>
+  );
+});
+
+// Memoized component for insights section
+const InsightsSection = React.memo(function InsightsSection({ interactionCount }) {
+  const contentRef = useRef(null);
+  
+  // Use safe MathJax processing with error handling
+  useSafeMathJax(contentRef, [interactionCount]);
+  
+  if (interactionCount === 0) {
+    return (
+      <div className="space-y-3">
+        <h3 className="text-base font-bold text-white">
+          Exponential Distribution
+        </h3>
+        <p className={typography.description}>
+          The exponential distribution models the time between events in a Poisson process. 
+          It's the continuous analog of the geometric distribution and has a unique "memoryless" property!
+        </p>
+        <div className="mt-3 p-3 bg-gradient-to-br from-purple-900/20 to-indigo-900/20 border border-purple-600/30 rounded">
+          <div className="text-xs text-purple-300">
+            🎯 Goal: Explore 20+ parameter combinations to master the exponential distribution!
+          </div>
+        </div>
+      </div>
+    );
+  } else if (interactionCount <= 5) {
+    return (
+      <div ref={contentRef} className="space-y-3">
+        <h3 className="text-base font-bold text-white">
+          Understanding λ (Rate Parameter)
+        </h3>
+        <p className={typography.description}>
+          Try different values of λ:
+        </p>
+        <ul className="text-xs text-gray-300 space-y-1 mt-2">
+          <li>• λ = 0.5: Events occur slowly (mean time = 2)</li>
+          <li>• λ = 1: Standard rate (mean time = 1)</li>
+          <li>• λ = 2: Events occur quickly (mean time = 0.5)</li>
+        </ul>
+        <div className="mt-3 p-3 bg-indigo-900/30 border border-indigo-600/30 rounded">
+          <div className="text-xs text-indigo-300">
+            💡 Tip: The mean <span dangerouslySetInnerHTML={{ __html: `\\(\\mu = 1/\\lambda\\)` }} />, so larger λ means shorter average wait times!
+          </div>
+        </div>
+      </div>
+    );
+  } else if (interactionCount <= 19) {
+    const progress = ((interactionCount - 5) / 15) * 100;
+    return (
+      <div className="space-y-3">
+        <h3 className="text-base font-bold text-white">
+          Discovering the Memoryless Property
+        </h3>
+        <p className={typography.description}>
+          Enable "Show Memoryless Property" to see something amazing:
+        </p>
+        <MemorylessFormula />
+        <p className="text-sm text-gray-300 mt-2">
+          This means if you've already waited t₁ time, the probability of waiting 
+          an additional t₂ time is the same as starting fresh!
+        </p>
+        <div className="mt-3 p-3 bg-gradient-to-br from-purple-900/20 to-indigo-900/20 border border-purple-600/30 rounded">
+          <div className="text-xs text-purple-300 mb-2">
+            🎯 Progress: Explore the memoryless property with different values!
+          </div>
+          <div className="w-full bg-purple-900/30 rounded-full h-1.5">
+            <div 
+              className="bg-purple-500 h-1.5 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <div className="text-center mt-1 text-purple-400 font-mono" style={{ fontSize: '10px' }}>
+            {interactionCount - 5}/15
+          </div>
+        </div>
+      </div>
+    );
+  } else {
+    return (
+      <div ref={contentRef} className="space-y-3">
+        <h3 className="text-base font-bold text-emerald-100">
+          ✨ Exponential Expert!
+        </h3>
+        <p className={typography.description}>
+          You've mastered the exponential distribution! Key insights:
+        </p>
+        <ul className="text-xs text-gray-300 space-y-1 mt-2">
+          <li>• Models time between random events (wait times, lifetimes)</li>
+          <li>• Only continuous distribution with the memoryless property</li>
+          <li>• CDF: <span dangerouslySetInnerHTML={{ __html: `\\(F(t) = 1 - e^{-\\lambda t}\\)` }} /> gives probability of event by time t</li>
+          <li>• Variance = <span dangerouslySetInnerHTML={{ __html: `\\(1/\\lambda^2\\)` }} />, so higher rates mean less variability</li>
+        </ul>
+        <div className="mt-3 p-3 bg-gradient-to-br from-emerald-900/20 to-emerald-900/10 border border-emerald-600/30 rounded">
+          <p className="text-xs text-emerald-300 font-semibold mb-2">
+            🔧 Engineering Example:
+          </p>
+          <p className="text-xs text-emerald-200">
+            A server receives requests at rate λ = 10/hour. The probability of waiting 
+            more than 6 minutes (0.1 hour) for the next request is <span dangerouslySetInnerHTML={{ __html: `\\(e^{-10 \\times 0.1} = e^{-1} \\approx 0.368\\)` }} />. 
+            This is crucial for capacity planning and queue management!
+          </p>
+        </div>
+      </div>
+    );
+  }
+});
+
+// Memoized component for probability calculations display
+const ProbabilityCalculations = React.memo(function ProbabilityCalculations({ t, pdfAtT, cdfAtT, memorylessT1, memorylessT2, showMemoryless, pGreaterThanT1, pGreaterThanT1PlusT2, pGreaterThanT1PlusT2GivenT1 }) {
+  const contentRef = useRef(null);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [t, pdfAtT, cdfAtT, memorylessT1, memorylessT2, showMemoryless]);
+  
+  return (
+    <div ref={contentRef}>
+      <div className="p-3 bg-gray-800/30 rounded-lg space-y-3">
+        <h3 className="text-sm font-semibold text-white">Probability Calculations</h3>
+        <div className="space-y-2 text-xs">
+          <div>
+            <span className="text-gray-400">f({t.toFixed(1)}):</span>
+            <span className="ml-2 font-mono text-emerald-400">{pdfAtT.toFixed(4)}</span>
+          </div>
+          <div>
+            <span className="text-gray-400">
+              <span dangerouslySetInnerHTML={{ __html: `\\(P(T \\leq ${t.toFixed(1)})\\)` }} />:
+            </span>
+            <span className="ml-2 font-mono text-purple-400">{cdfAtT.toFixed(4)}</span>
+          </div>
+          <div>
+            <span className="text-gray-400">
+              <span dangerouslySetInnerHTML={{ __html: `\\(P(T > ${t.toFixed(1)})\\)` }} />:
+            </span>
+            <span className="ml-2 font-mono text-amber-400">{(1 - cdfAtT).toFixed(4)}</span>
+          </div>
+        </div>
+      </div>
+      
+      {showMemoryless && (
+        <div className="p-3 bg-gradient-to-br from-purple-900/20 to-indigo-900/20 border border-purple-600/30 rounded-lg space-y-3 mt-4">
+          <h4 className="text-xs font-semibold text-purple-300">Memoryless Property Verification</h4>
+          <div className="space-y-2 text-xs">
+            <div>
+              <span className="text-gray-400">
+                <span dangerouslySetInnerHTML={{ __html: `\\(P(T > ${memorylessT1.toFixed(1)})\\)` }} />:
+              </span>
+              <span className="ml-2 font-mono text-purple-400">{pGreaterThanT1.toFixed(4)}</span>
+            </div>
+            <div>
+              <span className="text-gray-400">
+                <span dangerouslySetInnerHTML={{ __html: `\\(P(T > ${(memorylessT1 + memorylessT2).toFixed(1)})\\)` }} />:
+              </span>
+              <span className="ml-2 font-mono text-emerald-400">{pGreaterThanT1PlusT2.toFixed(4)}</span>
+            </div>
+            <div className="pt-2 border-t border-gray-700">
+              <span className="text-gray-400">
+                <span dangerouslySetInnerHTML={{ __html: `\\(P(T > ${(memorylessT1 + memorylessT2).toFixed(1)} | T > ${memorylessT1.toFixed(1)})\\)` }} />:
+              </span>
+              <span className="ml-2 font-mono text-purple-400">{pGreaterThanT1PlusT2GivenT1.toFixed(4)}</span>
+            </div>
+            <div>
+              <span className="text-gray-400">
+                <span dangerouslySetInnerHTML={{ __html: `\\(P(T > ${memorylessT2.toFixed(1)})\\)` }} />:
+              </span>
+              <span className="ml-2 font-mono text-purple-400">{pGreaterThanT1PlusT2GivenT1.toFixed(4)}</span>
+            </div>
+            <div className="mt-2 text-emerald-400 font-semibold">
+              ✓ They're equal! The memoryless property holds.
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+});
 
 const ExponentialDistribution = React.memo(function ExponentialDistribution() {
   // Core parameter states
@@ -473,109 +674,6 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
     };
   }, [lambda, memorylessT1, memorylessT2, showMemoryless, colors, safeLambda]);
   
-  // Educational insights based on interaction count
-  const getInsights = () => {
-    if (interactionCount === 0) {
-      return (
-        <div className="space-y-3">
-          <h3 className="text-base font-bold text-white">
-            Exponential Distribution
-          </h3>
-          <p className={typography.description}>
-            The exponential distribution models the time between events in a Poisson process. 
-            It's the continuous analog of the geometric distribution and has a unique "memoryless" property!
-          </p>
-          <div className="mt-3 p-3 bg-gradient-to-br from-purple-900/20 to-indigo-900/20 border border-purple-600/30 rounded">
-            <div className="text-xs text-purple-300">
-              🎯 Goal: Explore 20+ parameter combinations to master the exponential distribution!
-            </div>
-          </div>
-        </div>
-      );
-    } else if (interactionCount <= 5) {
-      return (
-        <div className="space-y-3">
-          <h3 className="text-base font-bold text-white">
-            Understanding λ (Rate Parameter)
-          </h3>
-          <p className={typography.description}>
-            Try different values of λ:
-          </p>
-          <ul className="text-xs text-gray-300 space-y-1 mt-2">
-            <li>• λ = 0.5: Events occur slowly (mean time = 2)</li>
-            <li>• λ = 1: Standard rate (mean time = 1)</li>
-            <li>• λ = 2: Events occur quickly (mean time = 0.5)</li>
-          </ul>
-          <div className="mt-3 p-3 bg-indigo-900/30 border border-indigo-600/30 rounded">
-            <div className="text-xs text-indigo-300">
-              💡 Tip: The mean μ = 1/λ, so larger λ means shorter average wait times!
-            </div>
-          </div>
-        </div>
-      );
-    } else if (interactionCount <= 19) {
-      const progress = ((interactionCount - 5) / 15) * 100;
-      return (
-        <div className="space-y-3">
-          <h3 className="text-base font-bold text-white">
-            Discovering the Memoryless Property
-          </h3>
-          <p className={typography.description}>
-            Enable "Show Memoryless Property" to see something amazing:
-          </p>
-          <p className="text-xs text-purple-300 mt-2 font-mono">
-            P(T {'>'} t₁ + t₂ | T {'>'} t₁) = P(T {'>'} t₂)
-          </p>
-          <p className="text-sm text-gray-300 mt-2">
-            This means if you've already waited t₁ time, the probability of waiting 
-            an additional t₂ time is the same as starting fresh!
-          </p>
-          <div className="mt-3 p-3 bg-gradient-to-br from-purple-900/20 to-indigo-900/20 border border-purple-600/30 rounded">
-            <div className="text-xs text-purple-300 mb-2">
-              🎯 Progress: Explore the memoryless property with different values!
-            </div>
-            <div className="w-full bg-purple-900/30 rounded-full h-1.5">
-              <div 
-                className="bg-purple-500 h-1.5 rounded-full transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <div className="text-center mt-1 text-purple-400 font-mono" style={{ fontSize: '10px' }}>
-              {interactionCount - 5}/15
-            </div>
-          </div>
-        </div>
-      );
-    } else {
-      return (
-        <div className="space-y-3">
-          <h3 className="text-base font-bold text-emerald-100">
-            ✨ Exponential Expert!
-          </h3>
-          <p className={typography.description}>
-            You've mastered the exponential distribution! Key insights:
-          </p>
-          <ul className="text-xs text-gray-300 space-y-1 mt-2">
-            <li>• Models time between random events (wait times, lifetimes)</li>
-            <li>• Only continuous distribution with the memoryless property</li>
-            <li>• CDF: F(t) = 1 - e^(-λt) gives probability of event by time t</li>
-            <li>• Variance = 1/λ², so higher rates mean less variability</li>
-          </ul>
-          <div className="mt-3 p-3 bg-gradient-to-br from-emerald-900/20 to-emerald-900/10 border border-emerald-600/30 rounded">
-            <p className="text-xs text-emerald-300 font-semibold mb-2">
-              🔧 Engineering Example:
-            </p>
-            <p className="text-xs text-emerald-200">
-              A server receives requests at rate λ = 10/hour. The probability of waiting 
-              more than 6 minutes (0.1 hour) for the next request is e^(-10×0.1) = e^(-1) ≈ 0.368. 
-              This is crucial for capacity planning and queue management!
-            </p>
-          </div>
-        </div>
-      );
-    }
-  };
-  
   const leftPanel = (
     <div className="space-y-6">
       <div>
@@ -649,23 +747,17 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
         </div>
       </div>
       
-      <div className="p-3 bg-gray-800/30 rounded-lg space-y-3">
-        <h3 className="text-sm font-semibold text-white">Probability Calculations</h3>
-        <div className="space-y-2 text-xs">
-          <div>
-            <span className="text-gray-400">f({t.toFixed(1)}):</span>
-            <span className="ml-2 font-mono text-emerald-400">{pdfAtT.toFixed(4)}</span>
-          </div>
-          <div>
-            <span className="text-gray-400">P(T ≤ {t.toFixed(1)}):</span>
-            <span className="ml-2 font-mono text-purple-400">{cdfAtT.toFixed(4)}</span>
-          </div>
-          <div>
-            <span className="text-gray-400">P(T {'>'} {t.toFixed(1)}):</span>
-            <span className="ml-2 font-mono text-amber-400">{(1 - cdfAtT).toFixed(4)}</span>
-          </div>
-        </div>
-      </div>
+      <ProbabilityCalculations 
+        t={t}
+        pdfAtT={pdfAtT}
+        cdfAtT={cdfAtT}
+        memorylessT1={memorylessT1}
+        memorylessT2={memorylessT2}
+        showMemoryless={showMemoryless}
+        pGreaterThanT1={pGreaterThanT1}
+        pGreaterThanT1PlusT2={pGreaterThanT1PlusT2}
+        pGreaterThanT1PlusT2GivenT1={pGreaterThanT1PlusT2GivenT1}
+      />
       
       {showMemoryless && (
         <>
@@ -690,36 +782,11 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
               color="emerald"
             />
           </div>
-          
-          <div className="p-3 bg-gradient-to-br from-purple-900/20 to-indigo-900/20 border border-purple-600/30 rounded-lg space-y-3">
-            <h4 className="text-xs font-semibold text-purple-300">Memoryless Property Verification</h4>
-            <div className="space-y-2 text-xs">
-              <div>
-                <span className="text-gray-400">P(T {'>'} {memorylessT1.toFixed(1)}):</span>
-                <span className="ml-2 font-mono text-purple-400">{pGreaterThanT1.toFixed(4)}</span>
-              </div>
-              <div>
-                <span className="text-gray-400">P(T {'>'} {(memorylessT1 + memorylessT2).toFixed(1)}):</span>
-                <span className="ml-2 font-mono text-emerald-400">{pGreaterThanT1PlusT2.toFixed(4)}</span>
-              </div>
-              <div className="pt-2 border-t border-gray-700">
-                <span className="text-gray-400">P(T {'>'} {(memorylessT1 + memorylessT2).toFixed(1)} | T {'>'} {memorylessT1.toFixed(1)}):</span>
-                <span className="ml-2 font-mono text-purple-400">{pGreaterThanT1PlusT2GivenT1.toFixed(4)}</span>
-              </div>
-              <div>
-                <span className="text-gray-400">P(T {'>'} {memorylessT2.toFixed(1)}):</span>
-                <span className="ml-2 font-mono text-purple-400">{pGreaterThanT1PlusT2GivenT1.toFixed(4)}</span>
-              </div>
-              <div className="mt-2 text-emerald-400 font-semibold">
-                ✓ They're equal! The memoryless property holds.
-              </div>
-            </div>
-          </div>
         </>
       )}
       
       <div className="mt-6">
-        {getInsights()}
+        <InsightsSection interactionCount={interactionCount} />
       </div>
       
       <ExponentialDistributionWorkedExample

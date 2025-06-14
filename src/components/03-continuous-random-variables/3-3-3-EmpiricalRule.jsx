@@ -1,12 +1,108 @@
 "use client";
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, memo } from "react";
+import { useSafeMathJax } from '../../utils/mathJaxFix';
 import * as d3 from "d3";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { createColorScheme, typography } from "../../lib/design-system";
 import { Button } from "../ui/button";
 import { Play, Pause, RotateCcw, BarChart } from "lucide-react";
 import * as jStat from "jstat";
-import { useMathJax, latexHTML, inlineMath } from "../../utils/latex";
+
+// LaTeX-containing components wrapped in React.memo to prevent re-renders
+const ParameterLabel = memo(function ParameterLabel({ label, symbol }) {
+  const labelRef = useRef(null);
+  
+  // Use safe MathJax processing with error handling
+  useSafeMathJax(labelRef, [symbol]);
+  
+  return (
+    <span ref={labelRef}>
+      {label} <span dangerouslySetInnerHTML={{ __html: `\\(${symbol}\\)` }} />:
+    </span>
+  );
+});
+
+const SigmaButton = memo(function SigmaButton({ sd, isSelected, onClick }) {
+  const buttonRef = useRef(null);
+  
+  // Use safe MathJax processing with error handling
+  useSafeMathJax(buttonRef, [sd]);
+  
+  return (
+    <Button
+      onClick={onClick}
+      variant={isSelected ? "default" : "outline"}
+      size="sm"
+      className="flex-1"
+    >
+      <span ref={buttonRef} dangerouslySetInnerHTML={{ __html: `\\(\\pm${sd}\\sigma\\)` }} />
+    </Button>
+  );
+});
+
+const StatisticRow = memo(function StatisticRow({ label, sigmaRange, count, percentage, color }) {
+  const rowRef = useRef(null);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && rowRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([rowRef.current]);
+        }
+        window.MathJax.typesetPromise([rowRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [sigmaRange]);
+  
+  return (
+    <div className="flex justify-between" ref={rowRef}>
+      <span>Within <span dangerouslySetInnerHTML={{ __html: `\\(\\pm ${sigmaRange}\\sigma\\)` }} />:</span>
+      <span className={`font-mono ${color}`}>
+        {count} ({percentage}%)
+      </span>
+    </div>
+  );
+});
+
+const RuleExplanation = memo(function RuleExplanation({ rule, sigmaRange, percentage, color, isSelected, range }) {
+  const ruleRef = useRef(null);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && ruleRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([ruleRef.current]);
+        }
+        window.MathJax.typesetPromise([ruleRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [sigmaRange]);
+  
+  return (
+    <div 
+      ref={ruleRef}
+      className={`p-2 rounded transition-all ${
+        isSelected ? `${color}/20 border border-${color}/30` : 'opacity-50'
+      }`}
+    >
+      <p className={`font-semibold ${color}`}>
+        {percentage}% Rule <span dangerouslySetInnerHTML={{ __html: `\\((\\pm ${sigmaRange}\\sigma)\\)` }} />
+      </p>
+      <p>≈{percentage}% of data within {rule} standard deviation{sigmaRange > 1 ? 's' : ''}</p>
+      <p className="text-xs opacity-80 mt-1 font-mono">
+        [{range[0].toFixed(1)}, {range[1].toFixed(1)}]
+      </p>
+    </div>
+  );
+});
 
 const EmpiricalRule = () => {
   // Use vibrant custom colors to reduce blue dominance
@@ -26,7 +122,6 @@ const EmpiricalRule = () => {
   
   const svgRef = useRef(null);
   const containerRef = useRef(null);
-  const mathRef = useRef(null);
   const intervalRef = useRef(null);
   const [dimensions, setDimensions] = useState({ width: 900, height: 500 });
   
@@ -43,9 +138,6 @@ const EmpiricalRule = () => {
     within3SD: 0,
     total: 0
   });
-  
-  // Use MathJax hook for LaTeX rendering - must be after state declarations
-  useMathJax(mathRef, [mu, sigma, selectedRule]);
   
   // Generate samples
   const generateSample = () => {
@@ -423,7 +515,7 @@ const EmpiricalRule = () => {
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-3" ref={mathRef}>
+        <CardContent className="p-3">
           {/* Main visualization area */}
           <div className="w-full mb-4">
             <svg 
@@ -442,7 +534,7 @@ const EmpiricalRule = () => {
               <div className="space-y-2">
                 <div>
                   <label className="flex items-center justify-between text-sm">
-                    <span>Mean <span {...latexHTML('\\mu')}></span>:</span>
+                    <ParameterLabel label="Mean" symbol="\\mu" />
                     <span className="font-mono text-sm">{mu}</span>
                   </label>
                   <input
@@ -457,7 +549,7 @@ const EmpiricalRule = () => {
                 
                 <div>
                   <label className="flex items-center justify-between text-sm">
-                    <span>Std Dev <span {...latexHTML('\\sigma')}></span>:</span>
+                    <ParameterLabel label="Std Dev" symbol="\\sigma" />
                     <span className="font-mono text-sm">{sigma}</span>
                   </label>
                   <input
@@ -473,15 +565,12 @@ const EmpiricalRule = () => {
               
               <div className="flex gap-2">
                 {[1, 2, 3].map(sd => (
-                  <Button
+                  <SigmaButton
                     key={sd}
+                    sd={sd}
+                    isSelected={selectedRule === sd}
                     onClick={() => setSelectedRule(sd)}
-                    variant={selectedRule === sd ? "default" : "outline"}
-                    size="sm"
-                    className="flex-1"
-                  >
-                    <span {...latexHTML(`\\pm${sd}\\sigma`)}></span>
-                  </Button>
+                  />
                 ))}
               </div>
             </div>
@@ -492,24 +581,27 @@ const EmpiricalRule = () => {
               <div className="space-y-1 text-sm bg-gray-800/50 p-3 rounded-lg">
                 <p>Total Samples: <span className="font-mono">{counts.total}</span></p>
                 <div className="mt-2 space-y-1">
-                  <div className="flex justify-between">
-                    <span>Within <span {...latexHTML('\\pm 1\\sigma')}></span>:</span>
-                    <span className="font-mono text-emerald-400">
-                      {counts.within1SD} ({percentages.actual1SD}%)
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Within <span {...latexHTML('\\pm 2\\sigma')}></span>:</span>
-                    <span className="font-mono text-amber-400">
-                      {counts.within2SD} ({percentages.actual2SD}%)
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Within <span {...latexHTML('\\pm 3\\sigma')}></span>:</span>
-                    <span className="font-mono text-red-400">
-                      {counts.within3SD} ({percentages.actual3SD}%)
-                    </span>
-                  </div>
+                  <StatisticRow
+                    label="Within"
+                    sigmaRange="1"
+                    count={counts.within1SD}
+                    percentage={percentages.actual1SD}
+                    color="text-emerald-400"
+                  />
+                  <StatisticRow
+                    label="Within"
+                    sigmaRange="2"
+                    count={counts.within2SD}
+                    percentage={percentages.actual2SD}
+                    color="text-amber-400"
+                  />
+                  <StatisticRow
+                    label="Within"
+                    sigmaRange="3"
+                    count={counts.within3SD}
+                    percentage={percentages.actual3SD}
+                    color="text-red-400"
+                  />
                 </div>
               </div>
               
@@ -529,35 +621,32 @@ const EmpiricalRule = () => {
             <div className="space-y-3">
               <h4 className="font-semibold text-sm">The Empirical Rule</h4>
               <div className="space-y-2 text-xs">
-                <div className={`p-2 rounded transition-all ${
-                  selectedRule >= 1 ? 'bg-emerald-500/20 border border-emerald-500/30' : 'opacity-50'
-                }`}>
-                  <p className="font-semibold text-emerald-400">68% Rule <span {...latexHTML('(\\pm 1\\sigma)')}></span></p>
-                  <p>≈68% of data within one standard deviation</p>
-                  <p className="text-xs opacity-80 mt-1 font-mono">
-                    [{(mu - sigma).toFixed(1)}, {(mu + sigma).toFixed(1)}]
-                  </p>
-                </div>
+                <RuleExplanation
+                  rule="one"
+                  sigmaRange="1"
+                  percentage="68"
+                  color="bg-emerald-500"
+                  isSelected={selectedRule >= 1}
+                  range={[mu - sigma, mu + sigma]}
+                />
                 
-                <div className={`p-2 rounded transition-all ${
-                  selectedRule >= 2 ? 'bg-amber-500/20 border border-amber-500/30' : 'opacity-50'
-                }`}>
-                  <p className="font-semibold text-amber-400">95% Rule <span {...latexHTML('(\\pm 2\\sigma)')}></span></p>
-                  <p>≈95% of data within two standard deviations</p>
-                  <p className="text-xs opacity-80 mt-1 font-mono">
-                    [{(mu - 2*sigma).toFixed(1)}, {(mu + 2*sigma).toFixed(1)}]
-                  </p>
-                </div>
+                <RuleExplanation
+                  rule="two"
+                  sigmaRange="2"
+                  percentage="95"
+                  color="bg-amber-500"
+                  isSelected={selectedRule >= 2}
+                  range={[mu - 2*sigma, mu + 2*sigma]}
+                />
                 
-                <div className={`p-2 rounded transition-all ${
-                  selectedRule >= 3 ? 'bg-red-500/20 border border-red-500/30' : 'opacity-50'
-                }`}>
-                  <p className="font-semibold text-red-400">99.7% Rule <span {...latexHTML('(\\pm 3\\sigma)')}></span></p>
-                  <p>≈99.7% of data within three standard deviations</p>
-                  <p className="text-xs opacity-80 mt-1 font-mono">
-                    [{(mu - 3*sigma).toFixed(1)}, {(mu + 3*sigma).toFixed(1)}]
-                  </p>
-                </div>
+                <RuleExplanation
+                  rule="three"
+                  sigmaRange="3"
+                  percentage="99.7"
+                  color="bg-red-500"
+                  isSelected={selectedRule >= 3}
+                  range={[mu - 3*sigma, mu + 3*sigma]}
+                />
               </div>
             </div>
           </div>

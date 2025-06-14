@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useRef } from "react";
+import { useSafeMathJax } from '../../utils/mathJaxFix';
 
 const IntegralWorkedExample = React.memo(function IntegralWorkedExample({
   distName = "Normal",
@@ -19,7 +20,7 @@ const IntegralWorkedExample = React.memo(function IntegralWorkedExample({
     beta: ["\\alpha", "\\beta"]
   };
 
-  const currentParamSymbols = paramSymbols[distName] || [];
+  const currentParamSymbols = paramSymbols[distName.toLowerCase()] || [];
   const paramsString = currentParamSymbols.map((sym, i) => `${sym}=${params[i]?.toFixed(2)}`).join(", ");
 
   const integralSetup = `P(${intervalA?.toFixed(2)} \\le X \\le ${intervalB?.toFixed(2)}) = \\int_{${intervalA?.toFixed(2)}}^{${intervalB?.toFixed(2)}} f(x; ${paramsString}) dx`;
@@ -40,17 +41,8 @@ const IntegralWorkedExample = React.memo(function IntegralWorkedExample({
   
   const contentRef = useRef(null);
 
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-      // Clear and re-process MathJax
-      if (window.MathJax.typesetClear) {
-        window.MathJax.typesetClear([contentRef.current]);
-      }
-      window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-        // Silent error: MathJax error in IntegralWorkedExample
-      });
-    }
-  }, [distName, params, intervalA, intervalB, probValue, pdfFormula, cdfAValue, cdfBValue]); // Retypeset when any relevant prop changes
+  // Use safe MathJax processing with error handling
+  useSafeMathJax(contentRef, [distName, params, intervalA, intervalB, probValue, pdfFormula, cdfAValue, cdfBValue]);
 
   return (
     <div
@@ -77,7 +69,7 @@ const IntegralWorkedExample = React.memo(function IntegralWorkedExample({
         </div>
         {specificPdfFormula && (
           <div style={{ marginBottom: '1rem' }}>
-            <p style={{ marginBottom: '0.25rem', fontWeight: '500' }}>2. Probability Density Function \(f(x)\) for {distName} distribution:</p>
+            <p style={{ marginBottom: '0.25rem', fontWeight: '500' }}>2. Probability Density Function <span dangerouslySetInnerHTML={{ __html: `\\(f(x)\\)` }} /> for {distName} distribution:</p>
             <div dangerouslySetInnerHTML={{ __html: `\\[f(x; ${paramsString}) = ${specificPdfFormula}\\]` }} />
           </div>
         )}

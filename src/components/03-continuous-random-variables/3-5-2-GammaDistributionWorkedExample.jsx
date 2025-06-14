@@ -4,6 +4,7 @@ import * as d3 from "d3";
 import jStat from "jstat";
 import { cn } from "../../lib/utils";
 import { RangeSlider } from "../ui/RangeSlider";
+import { useSafeMathJax } from '../../utils/mathJaxFix';
 import { colors, typography, components, formatNumber, createColorScheme } from '../../lib/design-system';
 import { VisualizationContainer, ControlGroup } from '../ui/VisualizationContainer';
 import { ProgressTracker } from '../ui/ProgressTracker';
@@ -215,24 +216,8 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
     
   }, [distributionData, shape, mean, mode, colorScheme]);
   
-  // MathJax processing
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          // Silent error: MathJax error in GammaDistributionWorkedExample
-        });
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    
-    return () => clearTimeout(timeoutId);
-  }, [shape, rate, scale, mean, variance, mode]);
+  // Use safe MathJax processing with error handling
+  useSafeMathJax(contentRef, [shape, rate, scale, mean, variance, mode]);
   
   // Engineering context based on parameters
   const getEngineeringContext = () => {
@@ -268,6 +253,27 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
   };
   
   const engineeringContext = getEngineeringContext();
+  
+  // Wrap formula sections in React.memo to prevent re-renders
+  const FormulaSection = React.memo(({ children, expanded }) => {
+    const ref = useRef(null);
+    
+    useEffect(() => {
+      const processMathJax = () => {
+        if (typeof window !== "undefined" && window.MathJax?.typesetPromise && ref.current) {
+          if (window.MathJax.typesetClear) {
+            window.MathJax.typesetClear([ref.current]);
+          }
+          window.MathJax.typesetPromise([ref.current]).catch(console.error);
+        }
+      };
+      processMathJax();
+      const timeoutId = setTimeout(processMathJax, 100);
+      return () => clearTimeout(timeoutId);
+    }, [expanded]);
+    
+    return <div ref={ref}>{children}</div>;
+  });
   
   return (
     <VisualizationContainer
@@ -355,12 +361,12 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
               </p>
               {isExponential && (
                 <p className="text-xs text-gray-300 mt-1">
-                  Gamma(1, θ) = Exponential(λ = 1/θ)
+                  <span dangerouslySetInnerHTML={{ __html: `\\(\\text{Gamma}(1, \\theta) = \\text{Exponential}(\\lambda = 1/\\theta)\\)` }} />
                 </p>
               )}
               {isChiSquared && (
                 <p className="text-xs text-gray-300 mt-1">
-                  Gamma({shape}, 2) = χ²(df = {2 * shape})
+                  <span dangerouslySetInnerHTML={{ __html: `\\(\\text{Gamma}(${shape}, 2) = \\chi^2(\\text{df} = ${2 * shape})\\)` }} />
                 </p>
               )}
             </div>
@@ -413,12 +419,14 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
                 </span>
               </div>
               {expandedStep === 1 && (
-                <div className="mt-3 text-sm space-y-2">
-                  <p>{`\(X \sim \text{Gamma}(k = ${shape.toFixed(1)}, \theta = ${scale.toFixed(3)})\)`}</p>
-                  <p className="text-xs text-gray-400">
-                    {`Alternative: \(\text{Gamma}(\alpha = ${shape.toFixed(1)}, \beta = ${rate.toFixed(1)})\) where \(\theta = 1/\beta\)`}
-                  </p>
-                </div>
+                <FormulaSection expanded={expandedStep === 1}>
+                  <div className="mt-3 text-sm space-y-2">
+                    <p><span dangerouslySetInnerHTML={{ __html: `\\(X \\sim \\text{Gamma}(k = ${shape.toFixed(1)}, \\theta = ${scale.toFixed(3)})\\)` }} /></p>
+                    <p className="text-xs text-gray-400">
+                      Alternative: <span dangerouslySetInnerHTML={{ __html: `\\(\\text{Gamma}(\\alpha = ${shape.toFixed(1)}, \\beta = ${rate.toFixed(1)})\\)` }} /> where <span dangerouslySetInnerHTML={{ __html: `\\(\\theta = 1/\\beta\\)` }} />
+                    </p>
+                  </div>
+                </FormulaSection>
               )}
             </div>
       
@@ -439,24 +447,26 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
                 </span>
               </div>
               {expandedStep === 2 && (
-                <div className="mt-3 text-sm">
-                  <div dangerouslySetInnerHTML={{ 
-                    __html: `\\[f(x; k, \\theta) = \\frac{1}{\\Gamma(k)\\theta^k} x^{k-1} e^{-x/\\theta}\\]` 
-                  }} />
-                  <p className="text-xs text-gray-400 mt-2">
-                    {`for \(x > 0\), where \(\Gamma(k)\) is the gamma function`}
-                  </p>
-                  {interactionCount >= 7 && (
-                    <div className="mt-2 p-2 bg-gray-700/50 rounded text-xs">
-                      <p className="text-yellow-400">💡 Shape Behavior:</p>
-                      <ul className="mt-1 space-y-1 text-gray-300">
-                        <li>• k &lt; 1: J-shaped, decreasing</li>
-                        <li>• k = 1: Exponential decay</li>
-                        <li>• k &gt; 1: Bell-shaped with mode</li>
-                      </ul>
-                    </div>
-                  )}
-                </div>
+                <FormulaSection expanded={expandedStep === 2}>
+                  <div className="mt-3 text-sm">
+                    <div dangerouslySetInnerHTML={{ 
+                      __html: `\\[f(x; k, \\theta) = \\frac{1}{\\Gamma(k)\\theta^k} x^{k-1} e^{-x/\\theta}\\]` 
+                    }} />
+                    <p className="text-xs text-gray-400 mt-2">
+                      for <span dangerouslySetInnerHTML={{ __html: `\\(x > 0\\)` }} />, where <span dangerouslySetInnerHTML={{ __html: `\\(\\Gamma(k)\\)` }} /> is the gamma function
+                    </p>
+                    {interactionCount >= 7 && (
+                      <div className="mt-2 p-2 bg-gray-700/50 rounded text-xs">
+                        <p className="text-yellow-400">💡 Shape Behavior:</p>
+                        <ul className="mt-1 space-y-1 text-gray-300">
+                          <li>• <span dangerouslySetInnerHTML={{ __html: `\\(k < 1\\)` }} />: J-shaped, decreasing</li>
+                          <li>• <span dangerouslySetInnerHTML={{ __html: `\\(k = 1\\)` }} />: Exponential decay</li>
+                          <li>• <span dangerouslySetInnerHTML={{ __html: `\\(k > 1\\)` }} />: Bell-shaped with mode</li>
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </FormulaSection>
               )}
             </div>
       
@@ -477,20 +487,22 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
                 </span>
               </div>
               {expandedStep === 3 && (
-                <div className="mt-3 text-sm">
-                  <div dangerouslySetInnerHTML={{ 
-                    __html: `\\[\\begin{align}
-                      E[X] &= k\\theta = ${shape.toFixed(1)} \\times ${scale.toFixed(3)} = ${mean.toFixed(3)} \\\\
-                      \\text{Var}(X) &= k\\theta^2 = ${shape.toFixed(1)} \\times ${scale.toFixed(3)}^2 = ${variance.toFixed(3)} \\\\
-                      \\text{Mode} &= ${shape > 1 ? `(k-1)\\theta = (${shape.toFixed(1)}-1) \\times ${scale.toFixed(3)} = ${mode.toFixed(3)}` : '\\text{0 (at boundary)'}
-                    \\end{align}\\]` 
-                  }} />
-                  {interactionCount >= 10 && (
-                    <p className="text-xs text-gray-400 mt-2">
-                      The mean shifts right as either k or θ increases
-                    </p>
-                  )}
-                </div>
+                <FormulaSection expanded={expandedStep === 3}>
+                  <div className="mt-3 text-sm">
+                    <div dangerouslySetInnerHTML={{ 
+                      __html: `\\[\\begin{align}
+                        E[X] &= k\\theta = ${shape.toFixed(1)} \\times ${scale.toFixed(3)} = ${mean.toFixed(3)} \\\\
+                        \\text{Var}(X) &= k\\theta^2 = ${shape.toFixed(1)} \\times ${scale.toFixed(3)}^2 = ${variance.toFixed(3)} \\\\
+                        \\text{Mode} &= ${shape > 1 ? `(k-1)\\theta = (${shape.toFixed(1)}-1) \\times ${scale.toFixed(3)} = ${mode.toFixed(3)}` : '\\text{0 (at boundary)'}
+                      \\end{align}\\]` 
+                    }} />
+                    {interactionCount >= 10 && (
+                      <p className="text-xs text-gray-400 mt-2">
+                        The mean shifts right as either <span dangerouslySetInnerHTML={{ __html: `\\(k\\)` }} /> or <span dangerouslySetInnerHTML={{ __html: `\\(\\theta\\)` }} /> increases
+                      </p>
+                    )}
+                  </div>
+                </FormulaSection>
               )}
             </div>
       
@@ -512,36 +524,38 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
                   </span>
                 </div>
                 {expandedStep === 4 && (
-                  <div className="mt-3 text-sm space-y-3">
-                    {/* Exponential Connection */}
-                    <div>
-                      <p className="font-semibold text-blue-400 mb-1">Exponential Distribution:</p>
-                      {isExponential ? (
-                        <div>
-                          <p className="text-emerald-400 mb-2">
-                            ✓ When k = 1, Gamma(1, θ) = Exponential(λ = 1/θ)
+                  <FormulaSection expanded={expandedStep === 4}>
+                    <div className="mt-3 text-sm space-y-3">
+                      {/* Exponential Connection */}
+                      <div>
+                        <p className="font-semibold text-blue-400 mb-1">Exponential Distribution:</p>
+                        {isExponential ? (
+                          <div>
+                            <p className="text-emerald-400 mb-2">
+                              ✓ When <span dangerouslySetInnerHTML={{ __html: `\\(k = 1\\)` }} />, <span dangerouslySetInnerHTML={{ __html: `\\(\\text{Gamma}(1, \\theta) = \\text{Exponential}(\\lambda = 1/\\theta)\\)` }} />
+                            </p>
+                            <div dangerouslySetInnerHTML={{ 
+                              __html: `\\[f(x) = \\frac{1}{\\theta} e^{-x/\\theta} = ${rate.toFixed(3)} e^{-${rate.toFixed(3)}x}\\]` 
+                            }} />
+                          </div>
+                        ) : (
+                          <p className="text-xs text-gray-400">
+                            Sum of {Math.floor(shape)} independent <span dangerouslySetInnerHTML={{ __html: `\\(\\text{Exp}(${rate.toFixed(1)})\\)` }} /> variables
                           </p>
-                          <div dangerouslySetInnerHTML={{ 
-                            __html: `\\[f(x) = \\frac{1}{\\theta} e^{-x/\\theta} = ${rate.toFixed(3)} e^{-${rate.toFixed(3)}x}\\]` 
-                          }} />
+                        )}
+                      </div>
+                      
+                      {/* Chi-Squared Connection */}
+                      {isChiSquared && (
+                        <div>
+                          <p className="font-semibold text-blue-400 mb-1">Chi-Squared Distribution:</p>
+                          <p className="text-emerald-400">
+                            ✓ <span dangerouslySetInnerHTML={{ __html: `\\(\\text{Gamma}(${shape}, 2) = \\chi^2(\\text{df} = ${2 * shape})\\)` }} />
+                          </p>
                         </div>
-                      ) : (
-                        <p className="text-xs text-gray-400">
-                          {`Sum of ${Math.floor(shape)} independent Exp(${rate.toFixed(1)}) variables`}
-                        </p>
                       )}
                     </div>
-                    
-                    {/* Chi-Squared Connection */}
-                    {isChiSquared && (
-                      <div>
-                        <p className="font-semibold text-blue-400 mb-1">Chi-Squared Distribution:</p>
-                        <p className="text-emerald-400">
-                          ✓ Gamma({shape}, 2) = χ²(df = {2 * shape})
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                  </FormulaSection>
                 )}
               </div>
             )}
@@ -558,9 +572,9 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
                 💡 Key Properties
               </p>
               <ul className="text-xs space-y-1 text-gray-300">
-                <li>• Shape k controls distribution form</li>
-                <li>• Scale θ stretches/compresses horizontally</li>
-                <li>• Becomes more symmetric as k increases</li>
+                <li>• Shape <span dangerouslySetInnerHTML={{ __html: `\\(k\\)` }} /> controls distribution form</li>
+                <li>• Scale <span dangerouslySetInnerHTML={{ __html: `\\(\\theta\\)` }} /> stretches/compresses horizontally</li>
+                <li>• Becomes more symmetric as <span dangerouslySetInnerHTML={{ __html: `\\(k\\)` }} /> increases</li>
                 {isExponential && <li className="text-yellow-400">• Memoryless property active!</li>}
               </ul>
             </div>

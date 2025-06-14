@@ -22,14 +22,14 @@ export function RangeSlider({
         min={min}
         max={max}
         step={step}
-        value={value}
+        value={value ?? min}
         onChange={(e) => onChange(Number(e.target.value))}
         className="slider flex-1"
         style={{ cursor: 'pointer' }}
       />
       {showValue && (
         <span className="text-sm min-w-[3rem] text-right text-foreground">
-          {formatValue(value)}
+          {formatValue(value ?? min)}
         </span>
       )}
     </div>

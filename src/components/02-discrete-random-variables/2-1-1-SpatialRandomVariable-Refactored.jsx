@@ -19,6 +19,9 @@ const SpatialRandomVariable = () => {
   const [isPainting, setIsPainting] = useState(false);
   const [paintMode, setPaintMode] = useState(null); // 'add' or 'remove'
   
+  // Ref for MathJax content container
+  const mathJaxContainerRef = useRef(null);
+  
   // Constants
   const WIDTH_GRID = 780;
   const HEIGHT_GRID = 648;
@@ -480,14 +483,16 @@ const SpatialRandomVariable = () => {
   
   // Process MathJax on mount and updates
   useEffect(() => {
-    const elements = document.querySelectorAll('.mathjax-content');
-    if (elements.length > 0) {
-      processMathJax(Array.from(elements));
+    if (mathJaxContainerRef.current) {
+      const elements = mathJaxContainerRef.current.querySelectorAll('.mathjax-content');
+      if (elements.length > 0) {
+        processMathJax(Array.from(elements));
+      }
     }
   }, [sampleData.total, processMathJax]);
   
   return (
-    <div className="bg-neutral-800 rounded-lg shadow-xl overflow-hidden w-full">
+    <div ref={mathJaxContainerRef} className="bg-neutral-800 rounded-lg shadow-xl overflow-hidden w-full">
       {/* Header */}
       <div className="bg-neutral-900 border-b border-neutral-700 px-4 py-3">
         <div className="flex items-center justify-between">

@@ -1,0 +1,171 @@
+---
+title: "Unordered Samples (Combinations)"
+description: "Understanding combinations through real-world examples and interactive visualizations"
+---
+
+import { ProgressiveContent, SectionBreak } from '@/components/mdx/ProgressiveContent';
+import { Definition, BulletList, Concept, Alert, KeyTakeaways, ExampleBlock } from '@/components/mdx/educational-components';
+import { LotteryExample } from '@/components/01-introduction-to-probabilities/1-4-1-LotteryExample';
+import { OrderedVsUnordered } from '@/components/01-introduction-to-probabilities/1-4-1-OrderedVsUnordered';
+import { CombinationBuilder } from '@/components/01-introduction-to-probabilities/1-4-1-CombinationBuilder';
+import { PascalsTriangleExplorer } from '@/components/01-introduction-to-probabilities/1-4-1-PascalsTriangleExplorer';
+import { CombinationApplications } from '@/components/01-introduction-to-probabilities/1-4-1-CombinationApplications';
+
+<ProgressiveContent>
+
+## The Lottery Problem
+
+Imagine you're playing Lotto 6/49. You need to choose 6 numbers from 1 to 49. The lottery officials draw 6 balls, but when they announce the results in the newspaper, they always list them in increasing order:
+
+**1 - 2 - 3 - 4 - 5 - 6**
+
+But wait – does this mean ball #1 was drawn first? Not necessarily! The balls could have been drawn in any order. When we look at the results, we have no way of knowing which ball came out first, second, or last.
+
+<Alert>
+**Key Insight**: When order doesn't matter, we're dealing with **combinations**, not permutations.
+</Alert>
+
+<SectionBreak />
+
+## Understanding the Difference
+
+Let's explore why order matters so much in counting:
+
+<OrderedVsUnordered />
+
+In the lottery example:
+- **Ordered samples**: Drawing 1-2-3 is different from 3-2-1 (permutations)
+- **Unordered samples**: {1, 2, 3} is the same as {3, 2, 1} (combinations)
+
+The newspaper reports unordered samples because they only care about *which* numbers were drawn, not *when* they were drawn.
+
+<SectionBreak />
+
+## Deriving the Combination Formula
+
+How many ways can we choose 6 numbers from 49? Let's think about this step by step:
+
+<LotteryExample />
+
+We can derive the formula by recognizing that these two processes are equivalent:
+
+1. **Take an ordered sample of size r** (there are P(n,r) ways)
+2. **Take an unordered sample of size r** (there are C(n,r) ways) **then rearrange the objects** (there are r! ways)
+
+This gives us:
+$$P(n,r) = C(n,r) \times r!$$
+
+Therefore:
+$$C(n,r) = \frac{P(n,r)}{r!} = \frac{n!}{r!(n-r)!} = \binom{n}{r}$$
+
+<SectionBreak />
+
+## Interactive Combination Builder
+
+Now let's build your intuition with an interactive tool:
+
+<CombinationBuilder />
+
+<Concept>
+**The Binomial Coefficient** $\binom{n}{r}$ (read as "n choose r") counts the number of ways to choose r items from n items when order doesn't matter.
+</Concept>
+
+<SectionBreak />
+
+## Pascal's Triangle Connection
+
+Combinations have a beautiful connection to Pascal's Triangle:
+
+<PascalsTriangleExplorer />
+
+Notice how:
+- Each number is the sum of the two numbers above it
+- Row n contains all values of $\binom{n}{r}$ for r = 0 to n
+- The triangle is symmetric: $\binom{n}{r} = \binom{n}{n-r}$
+
+<SectionBreak />
+
+## Real-World Applications
+
+Combinations appear everywhere in engineering and daily life:
+
+<CombinationApplications />
+
+<BulletList>
+- **Quality Control**: Selecting 5 items from a batch of 100 to test
+- **Team Formation**: Choosing 3 people from 10 for a committee
+- **Network Design**: Selecting 4 nodes from 20 to connect
+- **Card Games**: Being dealt 5 cards from a 52-card deck
+- **Feature Selection**: Choosing 3 features from 15 in machine learning
+</BulletList>
+
+<SectionBreak />
+
+## Key Properties of Combinations
+
+<Definition term="Symmetry Property">
+$\binom{n}{r} = \binom{n}{n-r}$
+
+Choosing r items to include is the same as choosing (n-r) items to exclude.
+</Definition>
+
+<Definition term="Pascal's Identity">
+$\binom{n}{r} = \binom{n-1}{r-1} + \binom{n-1}{r}$
+
+Each combination either includes or excludes a specific item.
+</Definition>
+
+<Definition term="Sum of Row">
+$\sum_{r=0}^{n} \binom{n}{r} = 2^n$
+
+The total number of subsets of n items (including the empty set).
+</Definition>
+
+<SectionBreak />
+
+## Practice Problems
+
+<ExampleBlock title="Committee Selection">
+A company has 12 engineers and needs to form a safety committee of 4 members.
+
+a) How many different committees are possible?
+b) If 2 specific engineers must be on the committee, how many ways can the remaining spots be filled?
+c) If at least 1 of 3 senior engineers must be included, how many committees are possible?
+
+**Solutions:**
+a) $\binom{12}{4} = \frac{12!}{4!8!} = 495$ committees
+
+b) 2 spots are fixed, choose 2 from remaining 10: $\binom{10}{2} = 45$ ways
+
+c) Use complement: Total - (committees with no seniors)
+   $\binom{12}{4} - \binom{9}{4} = 495 - 126 = 369$ committees
+</ExampleBlock>
+
+<ExampleBlock title="Network Connections">
+In a network of 8 servers, you need to establish direct connections between pairs of servers.
+
+a) How many connections are needed to connect every pair?
+b) If you can only afford 10 connections, how many ways can you choose which pairs to connect?
+
+**Solutions:**
+a) Each connection links 2 servers: $\binom{8}{2} = 28$ connections
+
+b) Choose 10 from 28 possible connections: $\binom{28}{10} = 13,123,110$ ways
+</ExampleBlock>
+
+<SectionBreak />
+
+## Summary and Key Takeaways
+
+<KeyTakeaways>
+- **Combinations count selections where order doesn't matter**
+- **Formula**: $\binom{n}{r} = \frac{n!}{r!(n-r)!}$
+- **Relationship to permutations**: $C(n,r) = \frac{P(n,r)}{r!}$
+- **Symmetry**: Choosing r items = choosing (n-r) items to exclude
+- **Pascal's Triangle** provides a visual way to compute combinations
+- **Applications** include team selection, quality control, network design
+</KeyTakeaways>
+
+Remember: Use combinations when you're selecting a group and the order of selection doesn't matter. If order matters, use permutations instead!
+
+</ProgressiveContent>
