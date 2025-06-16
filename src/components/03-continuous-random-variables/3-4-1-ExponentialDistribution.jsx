@@ -249,22 +249,22 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
   useEffect(() => {
     if (!pdfChartRef.current) return;
     
-    const margin = { top: 20, right: 40, bottom: 40, left: 60 };
-    const width = 700 - margin.left - margin.right;
-    const height = 400 - margin.top - margin.bottom;
+    const containerWidth = pdfChartRef.current.getBoundingClientRect().width;
+    const containerHeight = Math.min(500, window.innerHeight * 0.5);
+    const margin = { top: 20, right: 60, bottom: 60, left: 70 };
+    const width = containerWidth - margin.left - margin.right;
+    const height = containerHeight - margin.top - margin.bottom;
     
     // Clear previous content
     d3.select(pdfChartRef.current).selectAll("*").remove();
     
     const svg = d3.select(pdfChartRef.current)
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom);
+      .attr("width", containerWidth)
+      .attr("height", containerHeight)
+      .attr("viewBox", `0 0 ${containerWidth} ${containerHeight}`)
+      .attr("preserveAspectRatio", "xMidYMid meet");
     
-    // Add white background - following Chapter 2 pattern
-    svg.append("rect")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .attr("fill", "#ffffff");
+    // Remove white background for dark theme
     
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
@@ -300,7 +300,7 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
       )
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.3)
-      .style("stroke", "#e5e5e5");
+      .style("stroke", "#374151");
     
     g.append("g")
       .attr("class", "grid")
@@ -310,19 +310,19 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
       )
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.3)
-      .style("stroke", "#e5e5e5");
+      .style("stroke", "#374151");
     
     // Add axes with dark text for contrast
     g.append("g")
       .attr("transform", `translate(0,${height})`)
       .call(d3.axisBottom(x))
       .style("font-size", "12px")
-      .style("color", "#374151");
+      .style("color", "#9ca3af");
     
     g.append("g")
       .call(d3.axisLeft(y))
       .style("font-size", "12px")
-      .style("color", "#374151");
+      .style("color", "#9ca3af");
     
     // Add axis labels
     g.append("text")
@@ -332,14 +332,14 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
       .attr("dy", "1em")
       .style("text-anchor", "middle")
       .style("font-size", "14px")
-      .style("fill", "#374151")
+      .style("fill", "#e5e7eb")
       .text(showCDF ? "F(t) - Cumulative Probability" : "f(t) - Probability Density");
     
     g.append("text")
       .attr("transform", `translate(${width / 2}, ${height + margin.bottom})`)
       .style("text-anchor", "middle")
       .style("font-size", "14px")
-      .style("fill", "#374151")
+      .style("fill", "#e5e7eb")
       .text("Time (t)");
     
     // Draw the curve - using blue from Chapter 2
@@ -377,7 +377,7 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
         .attr("cy", y(yValue))
         .attr("r", 6)
         .attr("fill", "#F59E0B")
-        .attr("stroke", "#ffffff")
+        .attr("stroke", "#1f2937")
         .attr("stroke-width", 2);
       
       // Label
@@ -451,8 +451,16 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
           variant="purple"
         />
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Panel - Controls and Info */}
+        {/* Full Width Visualization */}
+        <div className="w-full mb-8">
+          <div className="p-6 bg-gray-800/50 rounded-xl border border-gray-700">
+            <svg ref={pdfChartRef} style={{ width: '100%', height: 'auto' }}></svg>
+          </div>
+        </div>
+        
+        {/* Controls and Content Below */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Stage Content and Controls */}
           <div className="space-y-6">
             {/* Stage Content */}
             <StageContent stage={stage} lambda={lambda} />
@@ -557,9 +565,11 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
                 </div>
               </div>
             </div>
-            
-            {/* Probability Calculations */}
-            {stage >= 2 && (
+          </div>
+          
+          {/* Probability Calculations in second column */}
+          {stage >= 2 && (
+            <div>
               <ProbabilityCalculations 
                 t={t}
                 pdfAtT={pdfAtT}
@@ -571,23 +581,20 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
                 pGreaterThanT1PlusT2={pGreaterThanT1PlusT2}
                 pGreaterThanT1PlusT2GivenT1={pGreaterThanT1PlusT2GivenT1}
               />
-            )}
-          </div>
-          
-          {/* Right Panel - Visualization */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="p-6 bg-white rounded-xl shadow-sm border border-neutral-200">
-              <svg ref={pdfChartRef}></svg>
             </div>
-            
-            {/* Show worked example in stage 4 */}
-            {stage === 4 && (
-              <div className="mt-6">
-                <ExponentialDistributionWorkedExample />
-              </div>
-            )}
-          </div>
+          )}
         </div>
+        
+        {/* Show worked example as a separate section in stage 4 */}
+        {stage === 4 && (
+          <div className="mt-8">
+            <ExponentialDistributionWorkedExample 
+              lambda={lambda}
+              t={t}
+              className="w-full"
+            />
+          </div>
+        )}
       </div>
     </VisualizationContainer>
   );
