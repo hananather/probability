@@ -7,7 +7,6 @@ import { ProgressBar, ProgressNavigation } from "../ui/ProgressBar";
 import { useSafeMathJax } from '../../utils/mathJaxFix';
 import { createColorScheme, typography } from "../../lib/design-system";
 import { jStat } from "jstat";
-import { GammaDistributionWorkedExample } from "./3-5-2-GammaDistributionWorkedExample";
 import { Tutorial } from "../ui/Tutorial";
 import { ChevronDown, ChevronRight, AlertCircle, TrendingUp, Package, Heart, Cloud, Clock, Zap, ChartBar, Info, Lightbulb, Target, HelpCircle } from "lucide-react";
 
@@ -45,21 +44,8 @@ const GammaDistribution = React.memo(function GammaDistribution() {
   const buildSvgRef = useRef(null);
   const contentRef = useRef(null);
   
-  // Color scheme - using Chapter 2 patterns
-  const colors = {
-    primary: '#3B82F6',      // Blue (like Chapter 2)
-    secondary: '#10B981',    // Green/Emerald
-    tertiary: '#F59E0B',     // Amber
-    accent: '#8B5CF6',       // Purple for contrast
-    grid: '#e5e5e5',         // Light gray for better visibility
-    text: {
-      primary: '#374151',    // Dark gray for white backgrounds
-      secondary: '#6B7280',  // Medium gray
-      light: '#9CA3AF'       // Light gray
-    },
-    background: '#ffffff',
-    backgroundAlt: '#f9fafb'
-  };
+  // Color scheme - using Chapter 2 patterns with dark theme
+  const colors = createColorScheme('probability');
   
   // Ensure rate is positive
   const safeRate = Math.max(0.1, rate);
@@ -126,11 +112,6 @@ const GammaDistribution = React.memo(function GammaDistribution() {
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom);
     
-    // Add white background
-    svg.append("rect")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .attr("fill", "#ffffff");
     
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
@@ -140,7 +121,7 @@ const GammaDistribution = React.memo(function GammaDistribution() {
       .attr("x", width / 2)
       .attr("y", -20)
       .attr("text-anchor", "middle")
-      .attr("fill", colors.text.primary)
+      .attr("fill", "#e5e7eb")
       .style("font-size", "16px")
       .style("font-weight", "600")
       .text(`Visualizing ${Math.floor(shape)} Exponential Wait Times`);
@@ -231,7 +212,7 @@ const GammaDistribution = React.memo(function GammaDistribution() {
       .attr("x", width / 2)
       .attr("y", height + 50)
       .attr("text-anchor", "middle")
-      .attr("fill", colors.text.secondary)
+      .attr("fill", "#9ca3af")
       .style("font-size", "14px")
       .style("font-weight", "600")
       .text("Sum of these wait times → Gamma distribution")
@@ -247,9 +228,11 @@ const GammaDistribution = React.memo(function GammaDistribution() {
   useEffect(() => {
     if (!mainSvgRef.current) return;
     
-    const margin = { top: 40, right: 60, bottom: 70, left: 80 };
-    const width = 900 - margin.left - margin.right;
-    const height = 500 - margin.top - margin.bottom;
+    const containerWidth = mainSvgRef.current.getBoundingClientRect().width;
+    const containerHeight = Math.max(600, window.innerHeight * 0.6);
+    const margin = { top: 60, right: 80, bottom: 80, left: 80 };
+    const width = containerWidth - margin.left - margin.right;
+    const height = containerHeight - margin.top - margin.bottom;
     
     // Clear previous content
     d3.select(mainSvgRef.current).selectAll("*").remove();
@@ -258,11 +241,6 @@ const GammaDistribution = React.memo(function GammaDistribution() {
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom);
     
-    // Add white background
-    svg.append("rect")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .attr("fill", "#ffffff");
     
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
@@ -329,12 +307,12 @@ const GammaDistribution = React.memo(function GammaDistribution() {
         .tickSizeOuter(0)
         .ticks(8))
       .style("font-size", "13px")
-      .style("color", colors.text.secondary);
+      .style("color", "#9ca3af");
     
     xAxis.append("text")
       .attr("x", width / 2)
       .attr("y", 50)
-      .attr("fill", colors.text.primary)
+      .attr("fill", "#e5e7eb")
       .style("text-anchor", "middle")
       .style("font-size", "15px")
       .style("font-weight", "500")
@@ -345,13 +323,13 @@ const GammaDistribution = React.memo(function GammaDistribution() {
         .tickSizeOuter(0)
         .ticks(6))
       .style("font-size", "13px")
-      .style("color", colors.text.secondary);
+      .style("color", "#9ca3af");
     
     yAxis.append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", -55)
       .attr("x", -height / 2)
-      .attr("fill", colors.text.primary)
+      .attr("fill", "#e5e7eb")
       .style("text-anchor", "middle")
       .style("font-size", "15px")
       .style("font-weight", "500")
@@ -370,12 +348,12 @@ const GammaDistribution = React.memo(function GammaDistribution() {
       
       gradient.append("stop")
         .attr("offset", "0%")
-        .attr("stop-color", colors.primary)
+        .attr("stop-color", colors.chart.primary)
         .attr("stop-opacity", 0.4);
       
       gradient.append("stop")
         .attr("offset", "100%")
-        .attr("stop-color", colors.secondary)
+        .attr("stop-color", "#10B981")
         .attr("stop-opacity", 0.1);
       
       const area = d3.area()
@@ -423,7 +401,7 @@ const GammaDistribution = React.memo(function GammaDistribution() {
         .attr("x2", x(mean))
         .attr("y1", 0)
         .attr("y2", height)
-        .attr("stroke", colors.accent)
+        .attr("stroke", "#8B5CF6")
         .attr("stroke-width", 2)
         .attr("stroke-dasharray", "6,3");
       
@@ -434,7 +412,7 @@ const GammaDistribution = React.memo(function GammaDistribution() {
         .attr("x", x(mean))
         .attr("y", -8)
         .attr("text-anchor", "middle")
-        .attr("fill", colors.accent)
+        .attr("fill", "#8B5CF6")
         .style("font-size", "13px")
         .style("font-weight", "600")
         .text(`μ = ${mean.toFixed(1)}`);
@@ -446,7 +424,7 @@ const GammaDistribution = React.memo(function GammaDistribution() {
         .attr("y", bbox.y - 2)
         .attr("width", bbox.width + 8)
         .attr("height", bbox.height + 4)
-        .attr("fill", "white")
+        .attr("fill", "#1f2937")
         .attr("rx", 3);
       
       meanGroup.transition()
@@ -465,7 +443,7 @@ const GammaDistribution = React.memo(function GammaDistribution() {
         .attr("x2", x(mode))
         .attr("y1", 0)
         .attr("y2", height)
-        .attr("stroke", colors.tertiary)
+        .attr("stroke", "#F59E0B")
         .attr("stroke-width", 2)
         .attr("stroke-dasharray", "3,3");
       
@@ -487,7 +465,7 @@ const GammaDistribution = React.memo(function GammaDistribution() {
         .attr("y", bbox.y - 2)
         .attr("width", bbox.width + 8)
         .attr("height", bbox.height + 4)
-        .attr("fill", "white")
+        .attr("fill", "#1f2937")
         .attr("rx", 3);
       
       modeGroup.transition()
@@ -523,11 +501,6 @@ const GammaDistribution = React.memo(function GammaDistribution() {
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom);
     
-    // Add white background
-    svg.append("rect")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .attr("fill", "#ffffff");
     
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
@@ -546,7 +519,7 @@ const GammaDistribution = React.memo(function GammaDistribution() {
       .attr("x", width / 2)
       .attr("y", -20)
       .attr("text-anchor", "middle")
-      .attr("fill", colors.text.primary)
+      .attr("fill", "#e5e7eb")
       .style("font-size", "16px")
       .style("font-weight", "600")
       .text(getExampleTitle());
@@ -642,7 +615,7 @@ const GammaDistribution = React.memo(function GammaDistribution() {
         g.append("path")
           .datum(gammaData)
           .attr("fill", "none")
-          .attr("stroke", colors.accent)
+          .attr("stroke", "#8B5CF6")
           .attr("stroke-width", 3)
           .attr("d", line)
           .attr("opacity", 0)
@@ -675,7 +648,7 @@ const GammaDistribution = React.memo(function GammaDistribution() {
         legend.append("text")
           .attr("x", 20)
           .attr("y", 12)
-          .attr("fill", colors.text.primary)
+          .attr("fill", "#e5e7eb")
           .style("font-size", "12px")
           .text("Observed Data");
         
@@ -684,13 +657,13 @@ const GammaDistribution = React.memo(function GammaDistribution() {
           .attr("x2", 15)
           .attr("y1", 30)
           .attr("y2", 30)
-          .attr("stroke", colors.accent)
+          .attr("stroke", "#8B5CF6")
           .attr("stroke-width", 3);
         
         legend.append("text")
           .attr("x", 20)
           .attr("y", 34)
-          .attr("fill", colors.text.primary)
+          .attr("fill", "#e5e7eb")
           .style("font-size", "12px")
           .text(`Gamma(${gammaParams.shape}, ${gammaParams.scale})`);
         
@@ -810,8 +783,8 @@ const GammaDistribution = React.memo(function GammaDistribution() {
               </div>
             </div>
             
-            <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-              <p className="text-sm text-purple-900">
+            <div className="bg-purple-900/20 p-4 rounded-lg border border-purple-700/30">
+              <p className="text-sm text-purple-300">
                 <strong className="flex items-center gap-2 mb-1">
                   <Zap className="w-4 h-4" />
                   Key Pattern:
@@ -826,13 +799,13 @@ const GammaDistribution = React.memo(function GammaDistribution() {
       case 3:
         return (
           <div className="space-y-4 animate-fadeIn">
-            <div className="bg-gradient-to-br from-teal-50 to-cyan-50 p-5 rounded-xl border border-teal-200 shadow-sm parameter-controls">
+            <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700 parameter-controls">
               <h3 className="text-lg font-bold text-teal-900 mb-3 flex items-center gap-2">
                 <ChartBar className="w-5 h-5" />
                 Understanding the Parameters
               </h3>
               <div className="space-y-4">
-                <div className="bg-white/70 p-3 rounded-lg">
+                <div className="bg-gray-900/50 p-3 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-sm font-semibold text-teal-800">
                       Shape (k) = {shape.toFixed(1)}
@@ -853,7 +826,7 @@ const GammaDistribution = React.memo(function GammaDistribution() {
                   </p>
                 </div>
                 
-                <div className="bg-white/70 p-3 rounded-lg">
+                <div className="bg-gray-900/50 p-3 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-sm font-semibold text-teal-800">
                       Rate (λ) = {rate.toFixed(1)}
@@ -876,34 +849,18 @@ const GammaDistribution = React.memo(function GammaDistribution() {
               </div>
             </div>
             
-            <div className="grid grid-cols-3 gap-3">
-              <div className="bg-cyan-50 p-3 rounded-lg border border-cyan-200 text-center">
-                <p className="text-xs text-cyan-700 font-medium">Mean</p>
-                <p className="text-lg font-mono text-cyan-900">{mean.toFixed(2)}</p>
-              </div>
-              <div className="bg-cyan-50 p-3 rounded-lg border border-cyan-200 text-center">
-                <p className="text-xs text-cyan-700 font-medium">Variance</p>
-                <p className="text-lg font-mono text-cyan-900">{variance.toFixed(2)}</p>
-              </div>
-              <div className="bg-cyan-50 p-3 rounded-lg border border-cyan-200 text-center">
-                <p className="text-xs text-cyan-700 font-medium">Mode</p>
-                <p className="text-lg font-mono text-cyan-900">
-                  {shape > 1 ? mode.toFixed(2) : "0"}
-                </p>
-              </div>
-            </div>
           </div>
         );
         
       case 4:
         return (
           <div className="space-y-4 animate-fadeIn">
-            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-5 rounded-xl border border-indigo-200 shadow-sm">
+            <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700">
               <h3 className="text-lg font-bold text-indigo-900 mb-3">
                 Mathematical Deep Dive
               </h3>
               <div className="space-y-3 text-sm" ref={contentRef}>
-                <div className="bg-white/70 p-3 rounded-lg">
+                <div className="bg-gray-900/50 p-3 rounded-lg">
                   <p className="font-semibold text-indigo-800 mb-2">Probability Density Function:</p>
                   <div className="text-center py-2">
                     <LatexFormula formula={`$$f(x; k, \\theta) = \\frac{1}{\\Gamma(k)\\theta^k} x^{k-1} e^{-x/\\theta}$$`} />
@@ -913,23 +870,6 @@ const GammaDistribution = React.memo(function GammaDistribution() {
                   </p>
                 </div>
                 
-                <div className="bg-white/70 p-3 rounded-lg">
-                  <p className="font-semibold text-indigo-800 mb-2">Key Properties:</p>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                      <LatexFormula formula={`Mean: $\\mu = k\\theta = \\frac{k}{\\lambda}$`} />
-                    </div>
-                    <div>
-                      <LatexFormula formula={`Variance: $\\sigma^2 = k\\theta^2 = \\frac{k}{\\lambda^2}$`} />
-                    </div>
-                    <div>
-                      <LatexFormula formula={`Mode: $(k-1)\\theta$ if $k > 1$`} />
-                    </div>
-                    <div>
-                      <LatexFormula formula={`Skewness: $\\frac{2}{\\sqrt{k}}$`} />
-                    </div>
-                  </div>
-                </div>
                 
                 <Button
                   variant="neutral"
@@ -1020,8 +960,8 @@ const GammaDistribution = React.memo(function GammaDistribution() {
             </div>
             
             {showRealExample && (
-              <div className="bg-green-50 p-4 rounded-lg border border-green-200 animate-fadeIn">
-                <p className="text-sm text-green-900">
+              <div className="bg-green-900/20 p-4 rounded-lg border border-green-700/30 animate-fadeIn">
+                <p className="text-sm text-green-300">
                   <strong>Understanding the model:</strong>
                   {exampleType === 'waiting' && 
                     " Each stage (queue, service, payment) follows an exponential distribution. The total time is their sum - a Gamma distribution!"}
@@ -1043,10 +983,10 @@ const GammaDistribution = React.memo(function GammaDistribution() {
   const leftPanel = (
     <div className="space-y-5" ref={contentRef}>
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <h2 className="text-2xl font-bold text-gray-100 mb-2">
           The Gamma Distribution
         </h2>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-400">
           From waiting times to real-world applications - a progressive learning journey
         </p>
       </div>
@@ -1131,30 +1071,45 @@ const GammaDistribution = React.memo(function GammaDistribution() {
         </Button>
       </div>
       
-      {/* Worked Example - Show on Stage 3+ */}
-      {stage >= 3 && (
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <GammaDistributionWorkedExample
-            initialShape={shape}
-            initialRate={rate}
-          />
-        </div>
-      )}
     </div>
   );
   
   const rightPanel = (
     <div className="space-y-4">
-      {/* Main Visualization - Clean white background */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 gamma-main-viz" style={{ minHeight: '600px' }}>
-        <svg ref={mainSvgRef}></svg>
+      {/* Main Visualization */}
+      <div className="bg-gray-800/50 p-6 rounded-xl border border-gray-700 gamma-main-viz relative">
+        {/* Key Properties Display */}
+        <div className="absolute top-6 right-6 bg-gray-900/80 backdrop-blur-sm p-4 rounded-lg border border-gray-700 z-10">
+          <h4 className="text-sm font-semibold text-gray-300 mb-3">Key Properties</h4>
+          <div className="grid grid-cols-1 gap-2 text-sm">
+            <div className="flex justify-between items-center gap-6">
+              <span className="text-gray-400">Mean (μ)</span>
+              <span className="font-mono text-emerald-400">{mean.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between items-center gap-6">
+              <span className="text-gray-400">Variance (σ²)</span>
+              <span className="font-mono text-amber-400">{variance.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between items-center gap-6">
+              <span className="text-gray-400">Mode</span>
+              <span className="font-mono text-purple-400">
+                {shape > 1 ? mode.toFixed(2) : "0"}
+              </span>
+            </div>
+            <div className="flex justify-between items-center gap-6">
+              <span className="text-gray-400">Std Dev (σ)</span>
+              <span className="font-mono text-blue-400">{stdDev.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+        <svg ref={mainSvgRef} style={{ width: '100%', minHeight: '600px' }}></svg>
       </div>
       
       {/* Real-World Example Visualization */}
       {showRealExample && stage === 5 && (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 animate-fadeIn">
+        <div className="bg-gray-800/50 p-6 rounded-xl border border-gray-700 animate-fadeIn">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-lg font-semibold text-gray-100">
               Real Data vs. Gamma Model
             </h3>
             {isAnimating && (
