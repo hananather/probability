@@ -809,18 +809,26 @@ const ContinuousDistributionsPDF = () => {
       title="Understanding Probability Density Functions"
       subtitle="A guided journey through continuous distributions"
     >
-      {/* Progress Bar */}
-      <div className="mb-6">
+      <div className="space-y-6">
+        {/* Progress Bar */}
         <ProgressBar 
           current={currentStage + 1}
           total={learningStages.length}
           label="Learning Journey"
           variant="emerald"
         />
-      </div>
-      
-      {/* Stage Content */}
-      <VisualizationSection className="mb-6">
+        
+        {/* Navigation Buttons */}
+        <ProgressNavigation
+          current={currentStage + 1}
+          total={learningStages.length}
+          onPrevious={() => setCurrentStage(Math.max(0, currentStage - 1))}
+          onNext={() => setCurrentStage(Math.min(learningStages.length - 1, currentStage + 1))}
+          variant="emerald"
+        />
+        
+        {/* Stage Content */}
+        <VisualizationSection className="mb-6">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
@@ -967,17 +975,6 @@ const ContinuousDistributionsPDF = () => {
         </div>
       )}
       
-      {/* Navigation */}
-      <div className="mt-6">
-        <ProgressNavigation
-          current={currentStage + 1}
-          total={learningStages.length}
-          onPrevious={() => setCurrentStage(Math.max(0, currentStage - 1))}
-          onNext={() => setCurrentStage(Math.min(learningStages.length - 1, currentStage + 1))}
-          variant="emerald"
-        />
-      </div>
-      
       {/* Worked example for applicable stages */}
       {stage.distribution && currentStage > 0 && (
         <VisualizationSection className="mt-8">
@@ -993,6 +990,7 @@ const ContinuousDistributionsPDF = () => {
           />
         </VisualizationSection>
       )}
+      </div>
     </VisualizationContainer>
   );
 };

@@ -886,32 +886,28 @@ const ZTableLookup = () => {
         )}
         
         {/* Progress Bar */}
-        <div className="mb-6">
-          <ProgressBar
-            current={learningStage}
-            total={totalStages}
-            label="Learning Progress"
-            variant="blue"
-          />
-        </div>
+        <ProgressBar
+          current={learningStage}
+          total={totalStages}
+          label="Learning Progress"
+          variant="blue"
+        />
+        
+        {/* Navigation Buttons */}
+        <ProgressNavigation
+          current={learningStage}
+          total={totalStages}
+          onPrevious={() => setLearningStage(Math.max(1, learningStage - 1))}
+          onNext={() => setLearningStage(Math.min(totalStages, learningStage + 1))}
+          variant="blue"
+          nextLabel={learningStage === 4 ? "Start Exploring" : "Next"}
+          completeLabel="Explore Tool"
+        />
         
         {/* Learning Content Section */}
         {learningStage < 5 && (
           <div className="mb-6">
             {renderLearningContent()}
-            
-            {/* Navigation */}
-            <div className="mt-6">
-              <ProgressNavigation
-                current={learningStage}
-                total={totalStages}
-                onPrevious={() => setLearningStage(Math.max(1, learningStage - 1))}
-                onNext={() => setLearningStage(Math.min(totalStages, learningStage + 1))}
-                variant="blue"
-                nextLabel={learningStage === 4 ? "Start Exploring" : "Next"}
-                completeLabel="Explore Tool"
-              />
-            </div>
           </div>
         )}
         

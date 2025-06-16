@@ -474,15 +474,23 @@ const ContinuousExpectationVariance = () => {
       title="From Discrete to Continuous: Expectation & Variance"
       subtitle="Understanding how summation becomes integration"
     >
-      {/* Progress Bar */}
-      <div className="mb-6">
-        <ProgressBar 
+      <div className="space-y-6">
+        {/* Progress Bar */}
+        <ProgressBar
           current={stage + 1}
           total={stages.length}
           label="Learning Progress"
           variant="teal"
         />
-      </div>
+        
+        {/* Navigation Buttons */}
+        <ProgressNavigation
+          current={stage + 1}
+          total={stages.length}
+          onPrevious={() => setStage(Math.max(0, stage - 1))}
+          onNext={() => setStage(Math.min(stages.length - 1, stage + 1))}
+          variant="teal"
+        />
       
       {/* Stage Content */}
       <VisualizationSection className="mb-6">
@@ -566,17 +574,6 @@ const ContinuousExpectationVariance = () => {
       </GraphContainer>
       
       
-      {/* Navigation */}
-      <div className="mt-8">
-        <ProgressNavigation
-          current={stage + 1}
-          total={stages.length}
-          onPrevious={() => setStage(Math.max(0, stage - 1))}
-          onNext={() => setStage(Math.min(stages.length - 1, stage + 1))}
-          variant="teal"
-        />
-      </div>
-      
       {/* Key Insight Box */}
       <div className="mt-6 p-4 bg-neutral-800 rounded-lg border border-neutral-700">
         <p className="text-sm text-amber-400 flex items-center gap-2">
@@ -588,6 +585,7 @@ const ContinuousExpectationVariance = () => {
           {stage === 1 && "Notice how the discrete sum approximates the continuous integral. As we add more discrete points, we approach the true value."}
           {stage === 2 && "As we increase the number of discrete points, the histogram approaches the smooth continuous curve. This is the fundamental bridge from discrete to continuous."}
         </p>
+      </div>
       </div>
     </VisualizationContainer>
   );
