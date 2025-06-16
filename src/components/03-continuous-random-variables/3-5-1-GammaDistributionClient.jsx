@@ -2,7 +2,7 @@
 import dynamic from 'next/dynamic';
 
 const GammaDistribution = dynamic(
-  () => import('./3-5-1-GammaDistribution').then(mod => ({ default: mod.GammaDistribution })),
+  () => import('./3-5-1-GammaDistribution'),
   { 
     ssr: false,
     loading: () => (

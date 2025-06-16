@@ -6,6 +6,32 @@ import { RangeSlider } from "../ui/RangeSlider";
 import { createColorScheme, typography } from "../../lib/design-system";
 import { useSafeMathJax } from '../../utils/mathJaxFix';
 import { ExponentialDistributionWorkedExample } from "./3-4-2-ExponentialDistributionWorkedExample";
+import { ProgressBar, ProgressNavigation } from "../ui/ProgressBar";
+import { Button } from "../ui/button";
+
+// Define learning stages
+const learningStages = [
+  {
+    id: 1,
+    title: "Introduction to Exponential Distribution",
+    description: "Understanding the basics of exponential distribution"
+  },
+  {
+    id: 2,
+    title: "Understanding λ (Rate Parameter)",
+    description: "Explore how the rate parameter affects the distribution"
+  },
+  {
+    id: 3,
+    title: "Discovering the Memoryless Property",
+    description: "Learn about the unique memoryless property"
+  },
+  {
+    id: 4,
+    title: "Applications & Mastery",
+    description: "Real-world applications and advanced concepts"
+  }
+];
 
 // Memoized component for LaTeX formulas to prevent re-rendering
 const MemorylessFormula = React.memo(function MemorylessFormula() {
@@ -15,20 +41,20 @@ const MemorylessFormula = React.memo(function MemorylessFormula() {
   useSafeMathJax(ref, []);
   
   return (
-    <p ref={ref} className="text-xs text-purple-300 mt-2 font-mono">
+    <p ref={ref} className="text-xs text-neutral-300 mt-2 font-mono">
       <span dangerouslySetInnerHTML={{ __html: `\\(P(T > t_1 + t_2 | T > t_1) = P(T > t_2)\\)` }} />
     </p>
   );
 });
 
-// Memoized component for insights section
-const InsightsSection = React.memo(function InsightsSection({ interactionCount }) {
+// Memoized component for stage content
+const StageContent = React.memo(function StageContent({ stage, lambda }) {
   const contentRef = useRef(null);
   
   // Use safe MathJax processing with error handling
-  useSafeMathJax(contentRef, [interactionCount]);
+  useSafeMathJax(contentRef, [stage, lambda]);
   
-  if (interactionCount === 0) {
+  if (stage === 1) {
     return (
       <div className="space-y-3">
         <h3 className="text-base font-bold text-white">
@@ -38,14 +64,14 @@ const InsightsSection = React.memo(function InsightsSection({ interactionCount }
           The exponential distribution models the time between events in a Poisson process. 
           It's the continuous analog of the geometric distribution and has a unique "memoryless" property!
         </p>
-        <div className="mt-3 p-3 bg-gradient-to-br from-purple-900/20 to-indigo-900/20 border border-purple-600/30 rounded">
-          <div className="text-xs text-purple-300">
-            🎯 Goal: Explore 20+ parameter combinations to master the exponential distribution!
+        <div className="mt-3 p-3 bg-neutral-900 border border-neutral-700 rounded">
+          <div className="text-xs text-neutral-300">
+            📊 Key features: Models waiting times, always positive values, characterized by rate parameter λ
           </div>
         </div>
       </div>
     );
-  } else if (interactionCount <= 5) {
+  } else if (stage === 2) {
     return (
       <div ref={contentRef} className="space-y-3">
         <h3 className="text-base font-bold text-white">
@@ -54,20 +80,19 @@ const InsightsSection = React.memo(function InsightsSection({ interactionCount }
         <p className={typography.description}>
           Try different values of λ:
         </p>
-        <ul className="text-xs text-gray-300 space-y-1 mt-2">
+        <ul className="text-xs text-neutral-300 space-y-1 mt-2">
           <li>• λ = 0.5: Events occur slowly (mean time = 2)</li>
           <li>• λ = 1: Standard rate (mean time = 1)</li>
           <li>• λ = 2: Events occur quickly (mean time = 0.5)</li>
         </ul>
-        <div className="mt-3 p-3 bg-indigo-900/30 border border-indigo-600/30 rounded">
-          <div className="text-xs text-indigo-300">
+        <div className="mt-3 p-3 bg-neutral-900 border border-neutral-700 rounded">
+          <div className="text-xs text-neutral-300">
             💡 Tip: The mean <span dangerouslySetInnerHTML={{ __html: `\\(\\mu = 1/\\lambda\\)` }} />, so larger λ means shorter average wait times!
           </div>
         </div>
       </div>
     );
-  } else if (interactionCount <= 19) {
-    const progress = ((interactionCount - 5) / 15) * 100;
+  } else if (stage === 3) {
     return (
       <div className="space-y-3">
         <h3 className="text-base font-bold text-white">
@@ -77,22 +102,13 @@ const InsightsSection = React.memo(function InsightsSection({ interactionCount }
           Enable "Show Memoryless Property" to see something amazing:
         </p>
         <MemorylessFormula />
-        <p className="text-sm text-gray-300 mt-2">
+        <p className="text-sm text-neutral-300 mt-2">
           This means if you've already waited t₁ time, the probability of waiting 
           an additional t₂ time is the same as starting fresh!
         </p>
-        <div className="mt-3 p-3 bg-gradient-to-br from-purple-900/20 to-indigo-900/20 border border-purple-600/30 rounded">
-          <div className="text-xs text-purple-300 mb-2">
-            🎯 Progress: Explore the memoryless property with different values!
-          </div>
-          <div className="w-full bg-purple-900/30 rounded-full h-1.5">
-            <div 
-              className="bg-purple-500 h-1.5 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <div className="text-center mt-1 text-purple-400 font-mono" style={{ fontSize: '10px' }}>
-            {interactionCount - 5}/15
+        <div className="mt-3 p-3 bg-neutral-900 border border-neutral-700 rounded">
+          <div className="text-xs text-neutral-300">
+            🔍 Try adjusting t₁ and t₂ values to verify the memoryless property holds for any values!
           </div>
         </div>
       </div>
@@ -100,26 +116,22 @@ const InsightsSection = React.memo(function InsightsSection({ interactionCount }
   } else {
     return (
       <div ref={contentRef} className="space-y-3">
-        <h3 className="text-base font-bold text-emerald-100">
-          ✨ Exponential Expert!
+        <h3 className="text-base font-bold text-white">
+          Applications in Real World
         </h3>
         <p className={typography.description}>
-          You've mastered the exponential distribution! Key insights:
+          The exponential distribution is used in:
         </p>
-        <ul className="text-xs text-gray-300 space-y-1 mt-2">
-          <li>• Models time between random events (wait times, lifetimes)</li>
-          <li>• Only continuous distribution with the memoryless property</li>
-          <li>• CDF: <span dangerouslySetInnerHTML={{ __html: `\\(F(t) = 1 - e^{-\\lambda t}\\)` }} /> gives probability of event by time t</li>
-          <li>• Variance = <span dangerouslySetInnerHTML={{ __html: `\\(1/\\lambda^2\\)` }} />, so higher rates mean less variability</li>
+        <ul className="text-xs text-neutral-300 space-y-1 mt-2">
+          <li>• Reliability engineering (component lifetimes)</li>
+          <li>• Queueing theory (service times)</li>
+          <li>• Network analysis (packet arrival times)</li>
         </ul>
-        <div className="mt-3 p-3 bg-gradient-to-br from-emerald-900/20 to-emerald-900/10 border border-emerald-600/30 rounded">
-          <p className="text-xs text-emerald-300 font-semibold mb-2">
-            🔧 Engineering Example:
-          </p>
-          <p className="text-xs text-emerald-200">
-            A server receives requests at rate λ = 10/hour. The probability of waiting 
+        <div className="mt-3 p-3 bg-neutral-900 border border-neutral-700 rounded">
+          <p className="text-xs text-neutral-300">
+            <strong>Example:</strong> A server receives requests at rate λ = 10/hour. The probability of waiting 
             more than 6 minutes (0.1 hour) for the next request is <span dangerouslySetInnerHTML={{ __html: `\\(e^{-10 \\times 0.1} = e^{-1} \\approx 0.368\\)` }} />. 
-            This is crucial for capacity planning and queue management!
+            This is crucial for capacity planning!
           </p>
         </div>
       </div>
@@ -147,21 +159,21 @@ const ProbabilityCalculations = React.memo(function ProbabilityCalculations({ t,
   
   return (
     <div ref={contentRef}>
-      <div className="p-3 bg-gray-800/30 rounded-lg space-y-3">
+      <div className="p-3 bg-neutral-900 rounded-lg space-y-3">
         <h3 className="text-sm font-semibold text-white">Probability Calculations</h3>
         <div className="space-y-2 text-xs">
           <div>
-            <span className="text-gray-400">f({t.toFixed(1)}):</span>
+            <span className="text-neutral-400">f({t.toFixed(1)}):</span>
             <span className="ml-2 font-mono text-emerald-400">{pdfAtT.toFixed(4)}</span>
           </div>
           <div>
-            <span className="text-gray-400">
+            <span className="text-neutral-400">
               <span dangerouslySetInnerHTML={{ __html: `\\(P(T \\leq ${t.toFixed(1)})\\)` }} />:
             </span>
             <span className="ml-2 font-mono text-purple-400">{cdfAtT.toFixed(4)}</span>
           </div>
           <div>
-            <span className="text-gray-400">
+            <span className="text-neutral-400">
               <span dangerouslySetInnerHTML={{ __html: `\\(P(T > ${t.toFixed(1)})\\)` }} />:
             </span>
             <span className="ml-2 font-mono text-amber-400">{(1 - cdfAtT).toFixed(4)}</span>
@@ -170,29 +182,29 @@ const ProbabilityCalculations = React.memo(function ProbabilityCalculations({ t,
       </div>
       
       {showMemoryless && (
-        <div className="p-3 bg-gradient-to-br from-purple-900/20 to-indigo-900/20 border border-purple-600/30 rounded-lg space-y-3 mt-4">
-          <h4 className="text-xs font-semibold text-purple-300">Memoryless Property Verification</h4>
+        <div className="p-3 bg-neutral-900 border border-neutral-700 rounded-lg space-y-3 mt-4">
+          <h4 className="text-xs font-semibold text-neutral-300">Memoryless Property Verification</h4>
           <div className="space-y-2 text-xs">
             <div>
-              <span className="text-gray-400">
+              <span className="text-neutral-400">
                 <span dangerouslySetInnerHTML={{ __html: `\\(P(T > ${memorylessT1.toFixed(1)})\\)` }} />:
               </span>
               <span className="ml-2 font-mono text-purple-400">{pGreaterThanT1.toFixed(4)}</span>
             </div>
             <div>
-              <span className="text-gray-400">
+              <span className="text-neutral-400">
                 <span dangerouslySetInnerHTML={{ __html: `\\(P(T > ${(memorylessT1 + memorylessT2).toFixed(1)})\\)` }} />:
               </span>
               <span className="ml-2 font-mono text-emerald-400">{pGreaterThanT1PlusT2.toFixed(4)}</span>
             </div>
-            <div className="pt-2 border-t border-gray-700">
-              <span className="text-gray-400">
+            <div className="pt-2 border-t border-neutral-700">
+              <span className="text-neutral-400">
                 <span dangerouslySetInnerHTML={{ __html: `\\(P(T > ${(memorylessT1 + memorylessT2).toFixed(1)} | T > ${memorylessT1.toFixed(1)})\\)` }} />:
               </span>
               <span className="ml-2 font-mono text-purple-400">{pGreaterThanT1PlusT2GivenT1.toFixed(4)}</span>
             </div>
             <div>
-              <span className="text-gray-400">
+              <span className="text-neutral-400">
                 <span dangerouslySetInnerHTML={{ __html: `\\(P(T > ${memorylessT2.toFixed(1)})\\)` }} />:
               </span>
               <span className="ml-2 font-mono text-purple-400">{pGreaterThanT1PlusT2GivenT1.toFixed(4)}</span>
@@ -215,86 +227,70 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
   const [memorylessT1, setMemorylessT1] = useState(1);
   const [memorylessT2, setMemorylessT2] = useState(2);
   const [showMemoryless, setShowMemoryless] = useState(false);
-  const [interactionCount, setInteractionCount] = useState(0);
+  const [stage, setStage] = useState(1); // Sequential stage instead of interaction count
   
-  // Refs for D3
-  const svgRef = useRef(null);
-  const memorylessSvgRef = useRef(null);
+  // Chart ref
+  const pdfChartRef = useRef(null);
   
-  // Color scheme
+  // Create color scheme - using 'estimation' scheme for consistency
   const colors = createColorScheme('estimation');
   
-  // Ensure lambda is positive to avoid division by zero
-  const safeLambda = Math.max(0.001, lambda);
+  // Calculate mean
+  const meanValue = 1/lambda;
   
-  // Calculate probabilities
-  const pdfAtT = safeLambda * Math.exp(-safeLambda * t);
-  const cdfAtT = 1 - Math.exp(-safeLambda * t);
-  const meanValue = 1 / safeLambda;
-  const variance = 1 / (safeLambda * safeLambda);
-  const stdDev = Math.sqrt(variance);
+  // Calculate probability values
+  const pdfAtT = lambda * Math.exp(-lambda * t);
+  const cdfAtT = 1 - Math.exp(-lambda * t);
+  const pGreaterThanT1 = Math.exp(-lambda * memorylessT1);
+  const pGreaterThanT1PlusT2 = Math.exp(-lambda * (memorylessT1 + memorylessT2));
+  const pGreaterThanT1PlusT2GivenT1 = memorylessT1 > 0 ? pGreaterThanT1PlusT2 / pGreaterThanT1 : 0;
   
-  // Memoryless property calculations
-  const pGreaterThanT1 = Math.exp(-safeLambda * memorylessT1);
-  const pGreaterThanT1PlusT2GivenT1 = Math.exp(-safeLambda * memorylessT2);
-  const pGreaterThanT1PlusT2 = Math.exp(-safeLambda * (memorylessT1 + memorylessT2));
-  
-  // Track interactions
+  // Update chart when parameters change
   useEffect(() => {
-    setInteractionCount(prev => prev + 1);
-  }, [lambda, showCDF, t, memorylessT1, memorylessT2, showMemoryless]);
-  
-  // Main visualization effect
-  useEffect(() => {
-    if (!svgRef.current) return;
+    if (!pdfChartRef.current) return;
     
-    const margin = { top: 20, right: 30, bottom: 50, left: 60 };
+    const margin = { top: 20, right: 40, bottom: 40, left: 60 };
     const width = 700 - margin.left - margin.right;
     const height = 400 - margin.top - margin.bottom;
     
     // Clear previous content
-    d3.select(svgRef.current).selectAll("*").remove();
+    d3.select(pdfChartRef.current).selectAll("*").remove();
     
-    const svg = d3.select(svgRef.current)
+    const svg = d3.select(pdfChartRef.current)
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom);
     
-    // Dark background with subtle gradient
-    const defs = svg.append("defs");
-    const gradient = defs.append("linearGradient")
-      .attr("id", "bgGradient")
-      .attr("x1", "0%")
-      .attr("y1", "0%")
-      .attr("x2", "100%")
-      .attr("y2", "100%");
-    gradient.append("stop")
-      .attr("offset", "0%")
-      .attr("stop-color", "#0a0a0a");
-    gradient.append("stop")
-      .attr("offset", "100%")
-      .attr("stop-color", "#0f0f0f");
-    
+    // Add white background - following Chapter 2 pattern
     svg.append("rect")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
-      .attr("fill", "url(#bgGradient)");
+      .attr("fill", "#ffffff");
     
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
     
-    // X scale - show up to 5/lambda for good visualization
-    const xMax = Math.min(10, 5 / safeLambda);
+    // Set up scales
+    const xMax = Math.min(10, 5/lambda);
     const x = d3.scaleLinear()
       .domain([0, xMax])
       .range([0, width]);
     
-    // Y scale
-    const yMax = showCDF ? 1.1 : Math.min(2, lambda * 1.1);
+    const yMax = showCDF ? 1.1 : Math.min(2, lambda * 1.2);
     const y = d3.scaleLinear()
       .domain([0, yMax])
       .range([height, 0]);
     
-    // Grid lines
+    // Generate data points
+    const data = [];
+    for (let i = 0; i <= 200; i++) {
+      const xValue = (i / 200) * xMax;
+      const yValue = showCDF ? 
+        1 - Math.exp(-lambda * xValue) :
+        lambda * Math.exp(-lambda * xValue);
+      data.push({ x: xValue, y: yValue });
+    }
+    
+    // Add grid lines - using lighter colors like Chapter 2
     g.append("g")
       .attr("class", "grid")
       .attr("transform", `translate(0,${height})`)
@@ -303,8 +299,8 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
         .tickFormat("")
       )
       .style("stroke-dasharray", "3,3")
-      .style("opacity", 0.15)
-      .style("stroke", colors.chart.grid);
+      .style("opacity", 0.3)
+      .style("stroke", "#e5e5e5");
     
     g.append("g")
       .attr("class", "grid")
@@ -313,89 +309,57 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
         .tickFormat("")
       )
       .style("stroke-dasharray", "3,3")
-      .style("opacity", 0.15)
-      .style("stroke", colors.chart.grid);
+      .style("opacity", 0.3)
+      .style("stroke", "#e5e5e5");
     
-    // Axes
+    // Add axes with dark text for contrast
     g.append("g")
       .attr("transform", `translate(0,${height})`)
       .call(d3.axisBottom(x))
-      .append("text")
-      .attr("x", width / 2)
-      .attr("y", 40)
-      .attr("fill", "white")
-      .style("text-anchor", "middle")
-      .text("Time (t)");
+      .style("font-size", "12px")
+      .style("color", "#374151");
     
     g.append("g")
       .call(d3.axisLeft(y))
-      .append("text")
+      .style("font-size", "12px")
+      .style("color", "#374151");
+    
+    // Add axis labels
+    g.append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", -40)
-      .attr("x", -height / 2)
-      .attr("fill", "white")
+      .attr("y", 0 - margin.left)
+      .attr("x", 0 - (height / 2))
+      .attr("dy", "1em")
       .style("text-anchor", "middle")
-      .text(showCDF ? "F(t) = P(T ≤ t)" : "f(t)");
+      .style("font-size", "14px")
+      .style("fill", "#374151")
+      .text(showCDF ? "F(t) - Cumulative Probability" : "f(t) - Probability Density");
     
-    // Generate data points
-    const data = [];
-    const step = xMax / 200;
-    for (let i = 0; i <= xMax; i += step) {
-      if (showCDF) {
-        data.push({ x: i, y: 1 - Math.exp(-lambda * i) });
-      } else {
-        data.push({ x: i, y: safeLambda * Math.exp(-safeLambda * i) });
-      }
-    }
+    g.append("text")
+      .attr("transform", `translate(${width / 2}, ${height + margin.bottom})`)
+      .style("text-anchor", "middle")
+      .style("font-size", "14px")
+      .style("fill", "#374151")
+      .text("Time (t)");
     
-    // Draw the curve with glow effect
+    // Draw the curve - using blue from Chapter 2
     const line = d3.line()
       .x(d => x(d.x))
       .y(d => y(d.y))
       .curve(d3.curveMonotoneX);
     
-    // Add glow filter
-    const filter = defs.append("filter")
-      .attr("id", "glow");
-    filter.append("feGaussianBlur")
-      .attr("stdDeviation", "3")
-      .attr("result", "coloredBlur");
-    const feMerge = filter.append("feMerge");
-    feMerge.append("feMergeNode")
-      .attr("in", "coloredBlur");
-    feMerge.append("feMergeNode")
-      .attr("in", "SourceGraphic");
-    
-    // Background glow path
     g.append("path")
       .datum(data)
       .attr("fill", "none")
-      .attr("stroke", colors.chart.primary)
-      .attr("stroke-width", 4)
-      .attr("opacity", 0.25)
-      .attr("filter", "url(#glow)")
+      .attr("stroke", "#3B82F6") // Blue like Chapter 2
+      .attr("stroke-width", 3)
       .attr("d", line);
     
-    const path = g.append("path")
-      .datum(data)
-      .attr("fill", "none")
-      .attr("stroke", colors.chart.primary)
-      .attr("stroke-width", 2.5)
-      .attr("d", line);
-    
-    // Animate the path
-    const totalLength = path.node().getTotalLength();
-    path
-      .attr("stroke-dasharray", totalLength + " " + totalLength)
-      .attr("stroke-dashoffset", totalLength)
-      .transition()
-      .duration(800)
-      .ease(d3.easeQuadInOut)
-      .attr("stroke-dashoffset", 0);
-    
-    // Highlight the point at t
+    // Add point at t with better visibility
     if (t <= xMax) {
-      const yValue = showCDF ? cdfAtT : pdfAtT;
+      const yValue = showCDF ? 
+        1 - Math.exp(-lambda * t) :
+        lambda * Math.exp(-lambda * t);
       
       // Vertical line at t
       g.append("line")
@@ -403,65 +367,31 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
         .attr("x2", x(t))
         .attr("y1", height)
         .attr("y2", y(yValue))
-        .attr("stroke", colors.chart.accent)
+        .attr("stroke", "#F59E0B") // Amber accent
         .attr("stroke-width", 2)
         .attr("stroke-dasharray", "5,5");
       
-      // Point on curve with pulse animation
-      const pointGroup = g.append("g");
-      
-      // Outer pulse circle
-      pointGroup.append("circle")
+      // Point on curve
+      g.append("circle")
         .attr("cx", x(t))
         .attr("cy", y(yValue))
-        .attr("r", 5)
-        .attr("fill", "none")
-        .attr("stroke", colors.chart.accent)
-        .attr("stroke-width", 2)
-        .attr("opacity", 0.5)
-        .transition()
-        .duration(1500)
-        .ease(d3.easeLinear)
-        .attr("r", 15)
-        .attr("opacity", 0)
-        .transition()
-        .duration(0)
-        .attr("r", 5)
-        .attr("opacity", 0.5)
-        .on("end", function repeat() {
-          d3.select(this)
-            .transition()
-            .duration(1500)
-            .ease(d3.easeLinear)
-            .attr("r", 15)
-            .attr("opacity", 0)
-            .transition()
-            .duration(0)
-            .attr("r", 5)
-            .attr("opacity", 0.5)
-            .on("end", repeat);
-        });
-      
-      // Inner point
-      pointGroup.append("circle")
-        .attr("cx", x(t))
-        .attr("cy", y(yValue))
-        .attr("r", 5)
-        .attr("fill", colors.chart.accent)
-        .attr("stroke", "white")
-        .attr("stroke-width", 1.5);
+        .attr("r", 6)
+        .attr("fill", "#F59E0B")
+        .attr("stroke", "#ffffff")
+        .attr("stroke-width", 2);
       
       // Label
       g.append("text")
         .attr("x", x(t))
         .attr("y", y(yValue) - 10)
         .attr("text-anchor", "middle")
-        .attr("fill", colors.chart.accent)
+        .attr("fill", "#F59E0B")
         .style("font-size", "12px")
+        .style("font-weight", "bold")
         .text(`(${t.toFixed(1)}, ${yValue.toFixed(3)})`);
       
       // Shade area under PDF up to t
-      if (!showCDF) {
+      if (!showCDF && stage >= 2) {
         const areaData = data.filter(d => d.x <= t);
         const area = d3.area()
           .x(d => x(d.x))
@@ -470,24 +400,20 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
         
         g.append("path")
           .datum(areaData)
-          .attr("fill", colors.chart.secondary)
-          .attr("opacity", 0)
-          .attr("d", area)
-          .transition()
-          .delay(800)
-          .duration(500)
-          .attr("opacity", 0.3);
+          .attr("fill", "#10B981") // Green for area
+          .attr("opacity", 0.3)
+          .attr("d", area);
       }
     }
     
     // Add mean line
-    if (meanValue <= xMax) {
+    if (meanValue <= xMax && stage >= 2) {
       g.append("line")
         .attr("x1", x(meanValue))
         .attr("x2", x(meanValue))
         .attr("y1", 0)
         .attr("y2", height)
-        .attr("stroke", colors.chart.tertiary)
+        .attr("stroke", "#8B5CF6") // Purple for mean
         .attr("stroke-width", 2)
         .attr("stroke-dasharray", "10,5");
       
@@ -495,326 +421,176 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
         .attr("x", x(meanValue))
         .attr("y", -5)
         .attr("text-anchor", "middle")
-        .attr("fill", colors.chart.tertiary)
+        .attr("fill", "#8B5CF6")
         .style("font-size", "12px")
-        .style("font-weight", "600")
-        .text(`μ = ${meanValue.toFixed(2)}`)
-        .attr("opacity", 0)
-        .transition()
-        .delay(1000)
-        .duration(300)
-        .attr("opacity", 1);
+        .style("font-weight", "bold")
+        .text(`μ = ${meanValue.toFixed(2)}`);
     }
-    
-    // Add distribution label with gradient background
-    const labelGroup = g.append("g");
-    
-    // Create gradient for label background
-    const labelGradient = defs.append("linearGradient")
-      .attr("id", "labelGradient")
-      .attr("x1", "0%")
-      .attr("y1", "0%")
-      .attr("x2", "100%")
-      .attr("y2", "100%");
-    labelGradient.append("stop")
-      .attr("offset", "0%")
-      .attr("stop-color", "#1a1a2e")
-      .attr("stop-opacity", 0.9);
-    labelGradient.append("stop")
-      .attr("offset", "100%")
-      .attr("stop-color", "#16213e")
-      .attr("stop-opacity", 0.9);
-    
-    labelGroup.append("rect")
-      .attr("x", 10)
-      .attr("y", 10)
-      .attr("width", 180)
-      .attr("height", 50)
-      .attr("fill", "url(#labelGradient)")
-      .attr("stroke", colors.chart.grid)
-      .attr("stroke-opacity", 0.3)
-      .attr("rx", 6);
-    
-    labelGroup.append("text")
-      .attr("x", 20)
-      .attr("y", 30)
-      .attr("fill", colors.chart.primary)
-      .style("font-size", "14px")
-      .style("font-weight", "600")
-      .text(`Exponential(λ = ${lambda.toFixed(2)})`);
-    
-    labelGroup.append("text")
-      .attr("x", 20)
-      .attr("y", 50)
-      .attr("fill", colors.chart.secondary)
-      .style("font-size", "12px")
-      .style("opacity", 0.9)
-      .text(showCDF ? "Cumulative Distribution" : "Probability Density");
-    
-    // Cleanup D3 transitions on unmount
-    return () => {
-      if (svgRef.current) {
-        d3.select(svgRef.current).selectAll("*").interrupt();
-      }
-    };
-  }, [lambda, showCDF, t, colors, safeLambda]);
+  }, [lambda, showCDF, t, meanValue, colors.chart, stage]);
   
-  // Memoryless property visualization
-  useEffect(() => {
-    if (!memorylessSvgRef.current || !showMemoryless) return;
-    
-    const margin = { top: 20, right: 30, bottom: 50, left: 60 };
-    const width = 700 - margin.left - margin.right;
-    const height = 300 - margin.top - margin.bottom;
-    
-    // Clear previous content
-    d3.select(memorylessSvgRef.current).selectAll("*").remove();
-    
-    const svg = d3.select(memorylessSvgRef.current)
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom);
-    
-    // Dark background with subtle gradient
-    const defs = svg.append("defs");
-    const gradient = defs.append("linearGradient")
-      .attr("id", "bgGradient")
-      .attr("x1", "0%")
-      .attr("y1", "0%")
-      .attr("x2", "100%")
-      .attr("y2", "100%");
-    gradient.append("stop")
-      .attr("offset", "0%")
-      .attr("stop-color", "#0a0a0a");
-    gradient.append("stop")
-      .attr("offset", "100%")
-      .attr("stop-color", "#0f0f0f");
-    
-    svg.append("rect")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .attr("fill", "url(#bgGradient)");
-    
-    const g = svg.append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
-    
-    // Timeline visualization
-    const timelineY = height / 2;
-    const maxTime = memorylessT1 + memorylessT2 + 1;
-    const x = d3.scaleLinear()
-      .domain([0, maxTime])
-      .range([0, width]);
-    
-    // Draw timeline
-    g.append("line")
-      .attr("x1", 0)
-      .attr("x2", width)
-      .attr("y1", timelineY)
-      .attr("y2", timelineY)
-      .attr("stroke", "#666")
-      .attr("stroke-width", 2);
-    
-    // Mark t1
-    g.append("line")
-      .attr("x1", x(memorylessT1))
-      .attr("x2", x(memorylessT1))
-      .attr("y1", timelineY - 20)
-      .attr("y2", timelineY + 20)
-      .attr("stroke", colors.chart.primary)
-      .attr("stroke-width", 3);
-    
-    g.append("text")
-      .attr("x", x(memorylessT1))
-      .attr("y", timelineY - 30)
-      .attr("text-anchor", "middle")
-      .attr("fill", colors.chart.primary)
-      .text(`t₁ = ${memorylessT1}`);
-    
-    // Mark t1 + t2
-    g.append("line")
-      .attr("x1", x(memorylessT1 + memorylessT2))
-      .attr("x2", x(memorylessT1 + memorylessT2))
-      .attr("y1", timelineY - 20)
-      .attr("y2", timelineY + 20)
-      .attr("stroke", colors.chart.secondary)
-      .attr("stroke-width", 3);
-    
-    g.append("text")
-      .attr("x", x(memorylessT1 + memorylessT2))
-      .attr("y", timelineY - 30)
-      .attr("text-anchor", "middle")
-      .attr("fill", colors.chart.secondary)
-      .text(`t₁ + t₂ = ${memorylessT1 + memorylessT2}`);
-    
-    // Show intervals
-    g.append("rect")
-      .attr("x", x(memorylessT1))
-      .attr("y", timelineY - 10)
-      .attr("width", x(memorylessT2) - x(0))
-      .attr("height", 20)
-      .attr("fill", colors.chart.accent)
-      .attr("opacity", 0.3);
-    
-    g.append("text")
-      .attr("x", x(memorylessT1 + memorylessT2 / 2))
-      .attr("y", timelineY + 40)
-      .attr("text-anchor", "middle")
-      .attr("fill", colors.chart.accent)
-      .text(`Additional t₂ = ${memorylessT2}`);
-    
-    // X axis
-    g.append("g")
-      .attr("transform", `translate(0,${height - 20})`)
-      .call(d3.axisBottom(x));
-    
-    // Cleanup D3 transitions on unmount
-    return () => {
-      if (memorylessSvgRef.current) {
-        d3.select(memorylessSvgRef.current).selectAll("*").interrupt();
-      }
-    };
-  }, [lambda, memorylessT1, memorylessT2, showMemoryless, colors, safeLambda]);
-  
-  const leftPanel = (
-    <div className="space-y-6">
-      <div>
-        <h2 className={typography.h2}>Exponential Distribution</h2>
-        <p className={typography.description}>
-          Explore the exponential distribution, which models the time between events in a Poisson 
-          process. Discover its unique memoryless property and applications in reliability engineering 
-          and queueing theory.
-        </p>
-      </div>
-      
-      <div className="space-y-4">
-        <RangeSlider
-          label="Rate parameter (λ)"
-          value={lambda}
-          onChange={setLambda}
-          min={0.1}
-          max={3}
-          step={0.1}
-          color="violet"
+  return (
+    <VisualizationContainer 
+      title="Understanding the Exponential Distribution"
+      subtitle="Modeling time between events in continuous processes"
+    >
+      <div className="space-y-6">
+        {/* Progress Bar */}
+        <ProgressBar 
+          current={stage}
+          total={learningStages.length}
+          label="Learning Progress"
+          variant="purple"
         />
         
-        <RangeSlider
-          label="Time value (t)"
-          value={t}
-          onChange={setT}
-          min={0}
-          max={5}
-          step={0.1}
-          color="cyan"
+        {/* Navigation Buttons */}
+        <ProgressNavigation
+          current={stage}
+          total={learningStages.length}
+          onPrevious={() => setStage(Math.max(1, stage - 1))}
+          onNext={() => setStage(Math.min(learningStages.length, stage + 1))}
+          variant="purple"
         />
         
-        <div className="flex flex-wrap gap-3">
-          <label className="flex items-center space-x-2 cursor-pointer group">
-            <input
-              type="checkbox"
-              checked={showCDF}
-              onChange={(e) => setShowCDF(e.target.checked)}
-              className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-violet-500 focus:ring-violet-500 focus:ring-offset-0"
-            />
-            <span className="text-sm text-gray-300 group-hover:text-white transition-colors">Show CDF</span>
-          </label>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Panel - Controls and Info */}
+          <div className="space-y-6">
+            {/* Stage Content */}
+            <StageContent stage={stage} lambda={lambda} />
+            
+            {/* Parameters */}
+            <div className="p-4 bg-neutral-900 rounded-lg space-y-4">
+              <h3 className="text-sm font-semibold text-white">Parameters</h3>
+              
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-medium text-neutral-300">
+                    Rate Parameter (λ): {lambda.toFixed(1)}
+                  </label>
+                  <RangeSlider
+                    value={lambda}
+                    onChange={setLambda}
+                    min={0.1}
+                    max={5}
+                    step={0.1}
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-neutral-400 mt-1">
+                    Mean waiting time: {meanValue.toFixed(2)}
+                  </p>
+                </div>
+                
+                {stage >= 2 && (
+                  <div>
+                    <label className="text-xs font-medium text-neutral-300">
+                      Time t: {t.toFixed(1)}
+                    </label>
+                    <RangeSlider
+                      value={t}
+                      onChange={setT}
+                      min={0}
+                      max={Math.min(10, 5/lambda)}
+                      step={0.1}
+                      className="mt-1"
+                    />
+                  </div>
+                )}
+                
+                {stage >= 3 && (
+                  <>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="showMemoryless"
+                        checked={showMemoryless}
+                        onChange={(e) => setShowMemoryless(e.target.checked)}
+                        className="rounded border-neutral-600 bg-neutral-700 text-purple-600 focus:ring-purple-500"
+                      />
+                      <label htmlFor="showMemoryless" className="text-xs text-neutral-300">
+                        Show Memoryless Property
+                      </label>
+                    </div>
+                    
+                    {showMemoryless && (
+                      <>
+                        <div>
+                          <label className="text-xs font-medium text-neutral-300">
+                            t₁: {memorylessT1.toFixed(1)}
+                          </label>
+                          <RangeSlider
+                            value={memorylessT1}
+                            onChange={setMemorylessT1}
+                            min={0}
+                            max={5}
+                            step={0.1}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-neutral-300">
+                            t₂: {memorylessT2.toFixed(1)}
+                          </label>
+                          <RangeSlider
+                            value={memorylessT2}
+                            onChange={setMemorylessT2}
+                            min={0}
+                            max={5}
+                            step={0.1}
+                            className="mt-1"
+                          />
+                        </div>
+                      </>
+                    )}
+                  </>
+                )}
+                
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="showCDF"
+                    checked={showCDF}
+                    onChange={(e) => setShowCDF(e.target.checked)}
+                    className="rounded border-neutral-600 bg-neutral-700 text-purple-600 focus:ring-purple-500"
+                  />
+                  <label htmlFor="showCDF" className="text-xs text-neutral-300">
+                    Show CDF instead of PDF
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            {/* Probability Calculations */}
+            {stage >= 2 && (
+              <ProbabilityCalculations 
+                t={t}
+                pdfAtT={pdfAtT}
+                cdfAtT={cdfAtT}
+                memorylessT1={memorylessT1}
+                memorylessT2={memorylessT2}
+                showMemoryless={showMemoryless && stage >= 3}
+                pGreaterThanT1={pGreaterThanT1}
+                pGreaterThanT1PlusT2={pGreaterThanT1PlusT2}
+                pGreaterThanT1PlusT2GivenT1={pGreaterThanT1PlusT2GivenT1}
+              />
+            )}
+          </div>
           
-          <label className="flex items-center space-x-2 cursor-pointer group">
-            <input
-              type="checkbox"
-              checked={showMemoryless}
-              onChange={(e) => setShowMemoryless(e.target.checked)}
-              className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-violet-500 focus:ring-violet-500 focus:ring-offset-0"
-            />
-            <span className="text-sm text-gray-300 group-hover:text-white transition-colors">Show Memoryless Property</span>
-          </label>
-        </div>
-      </div>
-      
-      <div className="p-3 bg-gray-800/30 rounded-lg space-y-3">
-        <h3 className="text-sm font-semibold text-white">Distribution Properties</h3>
-        <div className="space-y-2 text-xs">
-          <div>
-            <span className="text-gray-400">Mean (μ):</span>
-            <span className="ml-2 font-mono text-emerald-400">{meanValue.toFixed(3)}</span>
-          </div>
-          <div>
-            <span className="text-gray-400">Variance (σ²):</span>
-            <span className="ml-2 font-mono text-purple-400">{variance.toFixed(3)}</span>
-          </div>
-          <div>
-            <span className="text-gray-400">Std Dev (σ):</span>
-            <span className="ml-2 font-mono text-amber-400">{stdDev.toFixed(3)}</span>
+          {/* Right Panel - Visualization */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="p-6 bg-white rounded-xl shadow-sm border border-neutral-200">
+              <svg ref={pdfChartRef}></svg>
+            </div>
+            
+            {/* Show worked example in stage 4 */}
+            {stage === 4 && (
+              <div className="mt-6">
+                <ExponentialDistributionWorkedExample />
+              </div>
+            )}
           </div>
         </div>
       </div>
-      
-      <ProbabilityCalculations 
-        t={t}
-        pdfAtT={pdfAtT}
-        cdfAtT={cdfAtT}
-        memorylessT1={memorylessT1}
-        memorylessT2={memorylessT2}
-        showMemoryless={showMemoryless}
-        pGreaterThanT1={pGreaterThanT1}
-        pGreaterThanT1PlusT2={pGreaterThanT1PlusT2}
-        pGreaterThanT1PlusT2GivenT1={pGreaterThanT1PlusT2GivenT1}
-      />
-      
-      {showMemoryless && (
-        <>
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-gray-300">Memoryless Property Demo</h3>
-            <RangeSlider
-              label="Initial time (t₁)"
-              value={memorylessT1}
-              onChange={setMemorylessT1}
-              min={0.1}
-              max={3}
-              step={0.1}
-              color="blue"
-            />
-            <RangeSlider
-              label="Additional time (t₂)"
-              value={memorylessT2}
-              onChange={setMemorylessT2}
-              min={0.1}
-              max={3}
-              step={0.1}
-              color="emerald"
-            />
-          </div>
-        </>
-      )}
-      
-      <div className="mt-6">
-        <InsightsSection interactionCount={interactionCount} />
-      </div>
-      
-      <ExponentialDistributionWorkedExample
-        lambda={lambda}
-        t={t}
-        pdfValue={pdfAtT}
-        cdfValue={cdfAtT}
-        mean={meanValue}
-        variance={variance}
-      />
-    </div>
+    </VisualizationContainer>
   );
-  
-  const rightPanel = (
-    <div className="space-y-4">
-      <div className="bg-gray-900/50 p-6 rounded-lg" style={{ height: '450px' }}>
-        <svg ref={svgRef}></svg>
-      </div>
-      {showMemoryless && (
-        <div className="bg-gray-900/50 p-6 rounded-lg" style={{ height: '350px' }}>
-          <h3 className="text-sm font-bold text-white mb-4">Memoryless Property Visualization</h3>
-          <svg ref={memorylessSvgRef}></svg>
-        </div>
-      )}
-    </div>
-  );
-  
-  return <VisualizationContainer leftPanel={leftPanel} rightPanel={rightPanel} />;
 });
 
-export { ExponentialDistribution };
+export default ExponentialDistribution;

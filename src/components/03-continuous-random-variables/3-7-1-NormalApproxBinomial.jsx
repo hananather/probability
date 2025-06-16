@@ -144,7 +144,11 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
       .attr("width", containerWidth)
       .attr("height", containerHeight);
     
-    // No dark background - clean design
+    // Add white background for clean design
+    svg.append("rect")
+      .attr("width", containerWidth)
+      .attr("height", containerHeight)
+      .attr("fill", "#ffffff");
     
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
@@ -181,7 +185,8 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
         .tickFormat("")
       )
       .style("stroke-dasharray", "3,3")
-      .style("opacity", 0.3);
+      .style("opacity", 0.4)
+      .style("stroke", "#e5e5e5");
     
     g.append("g")
       .attr("class", "grid")
@@ -190,7 +195,8 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
         .tickFormat("")
       )
       .style("stroke-dasharray", "3,3")
-      .style("opacity", 0.3);
+      .style("opacity", 0.4)
+      .style("stroke", "#e5e5e5");
     
     // Axes
     g.append("g")
@@ -199,7 +205,7 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
       .append("text")
       .attr("x", width / 2)
       .attr("y", 40)
-      .attr("fill", "white")
+      .attr("fill", "#374151")
       .style("text-anchor", "middle")
       .text("x");
     
@@ -209,7 +215,7 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
       .attr("transform", "rotate(-90)")
       .attr("y", -40)
       .attr("x", -height / 2)
-      .attr("fill", "white")
+      .attr("fill", "#374151")
       .style("text-anchor", "middle")
       .text("Probability");
     
@@ -226,22 +232,22 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
       .attr("height", 0)
       .attr("fill", d => {
         switch (probType) {
-          case "le": return d.x <= k ? colors.chart.primary : "#374151";
-          case "ge": return d.x >= k ? colors.chart.primary : "#374151";
-          case "eq": return d.x === k ? colors.chart.primary : "#374151";
-          default: return "#374151";
+          case "le": return d.x <= k ? "#14B8A6" : "#e5e7eb"; // Bright teal for selected
+          case "ge": return d.x >= k ? "#14B8A6" : "#e5e7eb"; // Bright teal for selected
+          case "eq": return d.x === k ? "#14B8A6" : "#e5e7eb"; // Bright teal for selected
+          default: return "#e5e7eb";
         }
       })
       .attr("stroke", d => {
         switch (probType) {
-          case "le": return d.x <= k ? colors.chart.primary : "transparent";
-          case "ge": return d.x >= k ? colors.chart.primary : "transparent";
-          case "eq": return d.x === k ? colors.chart.primary : "transparent";
+          case "le": return d.x <= k ? "#14B8A6" : "transparent";
+          case "ge": return d.x >= k ? "#14B8A6" : "transparent";
+          case "eq": return d.x === k ? "#14B8A6" : "transparent";
           default: return "transparent";
         }
       })
       .attr("stroke-width", 2)
-      .attr("opacity", 0.8);
+      .attr("opacity", 0.95);
     
     // Animate bars on mount
     bars.transition()
@@ -268,7 +274,7 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
     const path = g.append("path")
       .datum(normalData)
       .attr("fill", "none")
-      .attr("stroke", colors.chart.secondary)
+      .attr("stroke", "#F59E0B") // Bright amber/orange for normal curve
       .attr("stroke-width", 3)
       .attr("d", normalLine)
       .attr("opacity", 0);
@@ -392,7 +398,7 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
     legend.append("text")
       .attr("x", 20)
       .attr("y", 12)
-      .attr("fill", "white")
+      .attr("fill", "#374151")
       .style("font-size", "13px")
       .style("font-weight", "500")
       .text(`Binomial B(${n}, ${p.toFixed(2)})`);
@@ -409,7 +415,7 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
     legend.append("text")
       .attr("x", 20)
       .attr("y", 34)
-      .attr("fill", "white")
+      .attr("fill", "#374151")
       .style("font-size", "13px")
       .style("font-weight", "500")
       .text(`Normal N(${mu.toFixed(1)}, ${sigma.toFixed(1)})`);
@@ -843,9 +849,24 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
         persistKey="normal-approx-binomial"
         mode="tooltip"
       />
-      <VisualizationContainer leftPanel={leftPanel} rightPanel={rightPanel} />
+      <VisualizationContainer 
+        title="Normal Approximation to Binomial Distribution"
+        className="max-w-full"
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Panel */}
+          <div className="lg:col-span-1">
+            {leftPanel}
+          </div>
+          
+          {/* Right Panel */}
+          <div className="lg:col-span-2">
+            {rightPanel}
+          </div>
+        </div>
+      </VisualizationContainer>
     </div>
   );
 });
 
-export { NormalApproxBinomial };
+export default NormalApproxBinomial;

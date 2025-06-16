@@ -45,20 +45,20 @@ const GammaDistribution = React.memo(function GammaDistribution() {
   const buildSvgRef = useRef(null);
   const contentRef = useRef(null);
   
-  // Color scheme - using warm colors for main visualization
+  // Color scheme - using Chapter 2 patterns
   const colors = {
-    primary: '#ff6b6b',      // Warm red
-    secondary: '#ffa502',    // Orange
-    tertiary: '#ff4757',     // Pink red
-    accent: '#5f27cd',       // Purple for contrast
-    grid: '#e0e0e0',         // Light gray
+    primary: '#3B82F6',      // Blue (like Chapter 2)
+    secondary: '#10B981',    // Green/Emerald
+    tertiary: '#F59E0B',     // Amber
+    accent: '#8B5CF6',       // Purple for contrast
+    grid: '#e5e5e5',         // Light gray for better visibility
     text: {
-      primary: '#2c3e50',
-      secondary: '#7f8c8d',
-      light: '#95a5a6'
+      primary: '#374151',    // Dark gray for white backgrounds
+      secondary: '#6B7280',  // Medium gray
+      light: '#9CA3AF'       // Light gray
     },
     background: '#ffffff',
-    backgroundAlt: '#f8f9fa'
+    backgroundAlt: '#f9fafb'
   };
   
   // Ensure rate is positive
@@ -125,6 +125,12 @@ const GammaDistribution = React.memo(function GammaDistribution() {
     const svg = d3.select(buildSvgRef.current)
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom);
+    
+    // Add white background
+    svg.append("rect")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .attr("fill", "#ffffff");
     
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
@@ -251,6 +257,12 @@ const GammaDistribution = React.memo(function GammaDistribution() {
     const svg = d3.select(mainSvgRef.current)
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom);
+    
+    // Add white background
+    svg.append("rect")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .attr("fill", "#ffffff");
     
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
@@ -387,7 +399,7 @@ const GammaDistribution = React.memo(function GammaDistribution() {
     const path = g.append("path")
       .datum(data)
       .attr("fill", "none")
-      .attr("stroke", showCDF ? colors.secondary : colors.primary)
+      .attr("stroke", showCDF ? "#F59E0B" : "#3B82F6") // Bright amber for CDF, bright blue for PDF
       .attr("stroke-width", 3)
       .attr("d", line);
     
@@ -511,6 +523,12 @@ const GammaDistribution = React.memo(function GammaDistribution() {
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom);
     
+    // Add white background
+    svg.append("rect")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .attr("fill", "#ffffff");
+    
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
     
@@ -596,8 +614,8 @@ const GammaDistribution = React.memo(function GammaDistribution() {
         .attr("y", height)
         .attr("width", d => Math.max(0, xScale(d.x1) - xScale(d.x0) - 1))
         .attr("height", 0)
-        .attr("fill", colors.primary)
-        .attr("opacity", 0.6)
+        .attr("fill", "#10B981") // Bright emerald green
+        .attr("opacity", 0.8)
         .transition()
         .duration(800)
         .delay((d, i) => i * 20)
@@ -651,8 +669,8 @@ const GammaDistribution = React.memo(function GammaDistribution() {
           .attr("y", 0)
           .attr("width", 15)
           .attr("height", 15)
-          .attr("fill", colors.primary)
-          .attr("opacity", 0.6);
+          .attr("fill", "#10B981") // Bright emerald green
+          .attr("opacity", 0.8);
         
         legend.append("text")
           .attr("x", 20)
@@ -1152,7 +1170,24 @@ const GammaDistribution = React.memo(function GammaDistribution() {
     </div>
   );
   
-  return <VisualizationContainer leftPanel={leftPanel} rightPanel={rightPanel} />;
+  return (
+    <VisualizationContainer 
+      title="Understanding the Gamma Distribution"
+      className="max-w-full"
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Panel */}
+        <div className="lg:col-span-1">
+          {leftPanel}
+        </div>
+        
+        {/* Right Panel */}
+        <div className="lg:col-span-2">
+          {rightPanel}
+        </div>
+      </div>
+    </VisualizationContainer>
+  );
 });
 
-export { GammaDistribution };
+export default GammaDistribution;
