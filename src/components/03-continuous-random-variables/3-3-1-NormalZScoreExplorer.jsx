@@ -13,7 +13,6 @@ import { NormalZScoreWorkedExample } from "./3-3-2-NormalZScoreWorkedExample";
 import { RotateCcw } from "lucide-react";
 import * as jStat from "jstat";
 import { useSafeMathJax } from '../../utils/mathJaxFix';
-import { D3DragWrapper } from '../ui/D3DragWrapper';
 
 // LaTeX content wrapper component to prevent re-renders
 const LatexContent = memo(function LatexContent({ children }) {
@@ -49,27 +48,45 @@ const NormalVisualization = memo(({
     
     const svg = d3.select(svgRef.current);
     const { width } = svgRef.current.getBoundingClientRect();
-    const height = 600;
-    const margin = { top: 40, right: 60, bottom: 60, left: 60 };
-    const plotHeight = (height - margin.top - margin.bottom - 80) / 2;
+    const height = 800; // Increased height for better spacing
+    const margin = { top: 80, right: 60, bottom: 80, left: 60 }; // More generous margins
+    const plotHeight = (height - margin.top - margin.bottom - 140) / 2; // More space between plots
     const innerWidth = width - margin.left - margin.right;
     
     svg.attr("viewBox", `0 0 ${width} ${height}`);
     
-    // Gradient background
+    // Gradient definitions
     const defs = svg.append("defs");
-    const gradient = defs.append("linearGradient")
+    
+    // Background gradient
+    const bgGradient = defs.append("linearGradient")
       .attr("id", "bgGradient")
       .attr("x1", "0%").attr("y1", "0%")
       .attr("x2", "0%").attr("y2", "100%");
     
-    gradient.append("stop")
+    bgGradient.append("stop")
       .attr("offset", "0%")
       .attr("style", "stop-color:#0f172a;stop-opacity:1");
     
-    gradient.append("stop")
+    bgGradient.append("stop")
       .attr("offset", "100%")
       .attr("style", "stop-color:#1e293b;stop-opacity:1");
+    
+    // Primary gradient (for shaded areas)
+    const primaryGradient = defs.append("linearGradient")
+      .attr("id", "primaryGradientNormal")
+      .attr("x1", "0%").attr("y1", "0%")
+      .attr("x2", "0%").attr("y2", "100%");
+    
+    primaryGradient.append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", "#06b6d4")
+      .attr("stop-opacity", 0.8);
+    
+    primaryGradient.append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", "#0891b2")
+      .attr("stop-opacity", 0.3);
     
     svg.append("rect")
       .attr("width", width)
@@ -92,7 +109,7 @@ const NormalVisualization = memo(({
     
     g.append("rect")
       .attr("x", margin.left)
-      .attr("y", margin.top + plotHeight + 80)
+      .attr("y", margin.top + plotHeight + 140) // Increased gap between plots
       .attr("width", innerWidth)
       .attr("height", plotHeight)
       .attr("fill", "#1a1a1a")
@@ -100,22 +117,22 @@ const NormalVisualization = memo(({
       .attr("stroke-width", 1)
       .attr("rx", 4);
     
-    // Titles
+    // Titles with better spacing
     elementsRef.current.topTitle = g.append("text")
       .attr("x", width / 2)
-      .attr("y", margin.top - 10)
+      .attr("y", margin.top - 35) // Move up to avoid overlap with x value label
       .attr("text-anchor", "middle")
-      .style("font-size", "16px")
-      .style("font-weight", "600")
-      .style("fill", colors.chart.text);
+      .style("font-size", "14px")
+      .style("font-weight", "500")
+      .style("fill", "#f3f4f6");
     
     elementsRef.current.bottomTitle = g.append("text")
       .attr("x", width / 2)
-      .attr("y", margin.top + plotHeight + 70)
+      .attr("y", margin.top + plotHeight + 105) // Slightly closer
       .attr("text-anchor", "middle")
-      .style("font-size", "16px")
-      .style("font-weight", "600")
-      .style("fill", colors.chart.text)
+      .style("font-size", "14px") // Reduced from 18px
+      .style("font-weight", "500")
+      .style("fill", "#f3f4f6")
       .text("Standard Normal: Z ~ N(0, 1)");
     
     // Axes groups
@@ -123,7 +140,7 @@ const NormalVisualization = memo(({
       .attr("transform", `translate(0,${margin.top + plotHeight})`);
     
     elementsRef.current.xAxisBottom = g.append("g")
-      .attr("transform", `translate(0,${margin.top + plotHeight + 80 + plotHeight})`);
+      .attr("transform", `translate(0,${margin.top + plotHeight + 140 + plotHeight})`);
     
     elementsRef.current.yAxisTop = g.append("g")
       .attr("transform", `translate(${margin.left},0)`);
@@ -134,18 +151,20 @@ const NormalVisualization = memo(({
     // Axis labels
     g.append("text")
       .attr("x", width / 2)
-      .attr("y", margin.top + plotHeight + 35)
+      .attr("y", margin.top + plotHeight + 50) // More space for x-axis label
       .attr("text-anchor", "middle")
-      .style("font-size", "12px")
-      .style("fill", colors.chart.text)
+      .style("font-size", "14px")
+      .style("font-weight", "500")
+      .style("fill", "#e5e7eb")
       .text("x");
     
     g.append("text")
       .attr("x", width / 2)
-      .attr("y", margin.top + plotHeight + 80 + plotHeight + 35)
+      .attr("y", margin.top + plotHeight + 140 + plotHeight + 50) // More space for z-axis label
       .attr("text-anchor", "middle")
-      .style("font-size", "12px")
-      .style("fill", colors.chart.text)
+      .style("font-size", "14px")
+      .style("font-weight", "500")
+      .style("fill", "#e5e7eb")
       .text("z");
     
     // Distribution paths
@@ -166,41 +185,23 @@ const NormalVisualization = memo(({
     elementsRef.current.xLabel = g.append("text");
     elementsRef.current.zLabel = g.append("text");
     
-    // Transformation arrow
-    const arrowG = g.append("g");
-    const transformY = margin.top + plotHeight + 40;
+    // Draggable marker will be added here
+    elementsRef.current.draggableMarker = null;
     
-    arrowG.append("path")
-      .attr("d", `M${width/2 - 50} ${transformY} L${width/2 + 50} ${transformY}`)
-      .attr("stroke", colors.chart.secondary)
-      .attr("stroke-width", 2)
-      .attr("marker-end", "url(#arrowhead)");
-    
-    defs.append("marker")
-      .attr("id", "arrowhead")
-      .attr("viewBox", "0 -5 10 10")
-      .attr("refX", 8)
-      .attr("refY", 0)
-      .attr("markerWidth", 8)
-      .attr("markerHeight", 8)
-      .attr("orient", "auto")
-      .append("path")
-      .attr("d", "M0,-5L10,0L0,5")
-      .attr("fill", colors.chart.secondary);
-    
-    arrowG.append("text")
+    // Add transformation formula as subtle text between plots (no arrow box)
+    g.append("text")
       .attr("x", width / 2)
-      .attr("y", transformY - 10)
+      .attr("y", margin.top + plotHeight + 70)
       .attr("text-anchor", "middle")
-      .style("font-size", "14px")
-      .style("font-weight", "600")
-      .style("fill", colors.chart.secondary)
-      .text("z = (x - μ) / σ");
+      .style("font-size", "12px")
+      .style("font-weight", "400")
+      .style("fill", "#9ca3af")
+      .style("opacity", 0.8)
+      .text("Transform: z = (x - μ) / σ");
     
     // Store dimensions
     scalesRef.current.dimensions = { 
-      width, height, margin, plotHeight, innerWidth,
-      transformY
+      width, height, margin, plotHeight, innerWidth
     };
     
     elementsRef.current.g = g;
@@ -230,7 +231,7 @@ const NormalVisualization = memo(({
     
     const yScaleBottom = d3.scaleLinear()
       .domain([0, 0.45])
-      .range([margin.top + plotHeight + 80 + plotHeight, margin.top + plotHeight + 80]);
+      .range([margin.top + plotHeight + 140 + plotHeight, margin.top + plotHeight + 140]);
     
     // Store scales
     scalesRef.current.xScaleTop = xScaleTop;
@@ -287,7 +288,7 @@ const NormalVisualization = memo(({
     
     const areaBottom = d3.area()
       .x(d => xScaleBottom(d.x))
-      .y0(margin.top + plotHeight + 80 + plotHeight)
+      .y0(margin.top + plotHeight + 140 + plotHeight)
       .y1(d => yScaleBottom(d.y))
       .curve(d3.curveBasis);
     
@@ -303,29 +304,33 @@ const NormalVisualization = memo(({
     elementsRef.current.areaTop
       .datum(areaDataTop)
       .attr("d", areaTop)
-      .attr("fill", colorScheme.chart.primary)
-      .attr("opacity", 0.3);
+      .attr("fill", "url(#primaryGradientNormal)")
+      .attr("opacity", 0.8)
+      .attr("filter", "drop-shadow(0 0 10px rgba(6, 182, 212, 0.3))");
     
     elementsRef.current.areaBottom
       .datum(areaDataBottom)
       .attr("d", areaBottom)
-      .attr("fill", colorScheme.chart.primary)
-      .attr("opacity", 0.3);
+      .attr("fill", "url(#primaryGradientNormal)")
+      .attr("opacity", 0.8)
+      .attr("filter", "drop-shadow(0 0 10px rgba(6, 182, 212, 0.3))");
     
     // Update lines
     elementsRef.current.lineTop
       .datum(topData)
       .attr("d", lineTop)
-      .attr("stroke", colorScheme.chart.primaryLight)
-      .attr("stroke-width", 2)
-      .attr("fill", "none");
+      .attr("stroke", "#06b6d4")
+      .attr("stroke-width", 3)
+      .attr("fill", "none")
+      .attr("filter", "drop-shadow(0 0 8px rgba(6, 182, 212, 0.5))");
     
     elementsRef.current.lineBottom
       .datum(bottomData)
       .attr("d", lineBottom)
-      .attr("stroke", colorScheme.chart.primaryLight)
-      .attr("stroke-width", 2)
-      .attr("fill", "none");
+      .attr("stroke", "#06b6d4")
+      .attr("stroke-width", 3)
+      .attr("fill", "none")
+      .attr("filter", "drop-shadow(0 0 8px rgba(6, 182, 212, 0.5))");
     
     // Update mean line
     elementsRef.current.meanLine
@@ -333,10 +338,11 @@ const NormalVisualization = memo(({
       .attr("y1", margin.top)
       .attr("x2", xScaleTop(mu))
       .attr("y2", margin.top + plotHeight)
-      .attr("stroke", colorScheme.chart.text)
-      .attr("stroke-width", 1)
-      .attr("opacity", 0.3)
-      .attr("stroke-dasharray", "3,3");
+      .attr("stroke", "#fbbf24")
+      .attr("stroke-width", 2)
+      .attr("opacity", 0.6)
+      .attr("stroke-dasharray", "5,5")
+      .attr("filter", "drop-shadow(0 0 4px rgba(251, 191, 36, 0.5))");
     
     // Update sigma markers
     const sigmaData = [-3, -2, -1, 1, 2, 3]
@@ -362,11 +368,13 @@ const NormalVisualization = memo(({
     
     sigmaMarkers.merge(sigmaEnter).select("text")
       .attr("x", d => xScaleTop(d.x))
-      .attr("y", margin.top + plotHeight + 20)
+      .attr("y", margin.top + plotHeight + 25) // Slightly lower to avoid overlap
       .attr("text-anchor", "middle")
-      .style("font-size", "10px")
-      .style("fill", colorScheme.chart.text)
-      .style("opacity", 0.7)
+      .style("font-size", "12px")
+      .style("font-family", "monospace")
+      .style("font-weight", "500")
+      .style("fill", "#fbbf24")
+      .style("opacity", 0.8)
       .text(d => `${d.n > 0 ? '+' : ''}${d.n}σ`);
     
     sigmaMarkers.exit().remove();
@@ -377,75 +385,90 @@ const NormalVisualization = memo(({
       .attr("y1", margin.top)
       .attr("x2", xScaleTop(xValue))
       .attr("y2", margin.top + plotHeight)
-      .attr("stroke", colorScheme.chart.secondary)
-      .attr("stroke-width", 2)
-      .attr("stroke-dasharray", "5,5");
+      .attr("stroke", "#f97316")
+      .attr("stroke-width", 3)
+      .attr("stroke-dasharray", "5,5")
+      .attr("filter", "drop-shadow(0 0 6px rgba(249, 115, 22, 0.5))");
     
     elementsRef.current.zLine
       .attr("x1", xScaleBottom(zScore))
-      .attr("y1", margin.top + plotHeight + 80)
+      .attr("y1", margin.top + plotHeight + 140) // Updated for new spacing
       .attr("x2", xScaleBottom(zScore))
-      .attr("y2", margin.top + plotHeight + 80 + plotHeight)
-      .attr("stroke", colorScheme.chart.secondary)
-      .attr("stroke-width", 2)
-      .attr("stroke-dasharray", "5,5");
+      .attr("y2", margin.top + plotHeight + 140 + plotHeight)
+      .attr("stroke", "#f97316")
+      .attr("stroke-width", 3)
+      .attr("stroke-dasharray", "5,5")
+      .attr("filter", "drop-shadow(0 0 6px rgba(249, 115, 22, 0.5))");
     
     // Update labels
     elementsRef.current.xLabel
       .attr("x", xScaleTop(xValue))
-      .attr("y", margin.top - 5)
+      .attr("y", margin.top - 10) // More clearance from plot
       .attr("text-anchor", "middle")
-      .style("font-size", "14px")
+      .style("font-size", "16px")
+      .style("font-family", "monospace")
       .style("font-weight", "600")
-      .style("fill", colorScheme.chart.secondary)
+      .style("fill", "#f97316")
+      .style("filter", "drop-shadow(0 0 6px rgba(249, 115, 22, 0.5))")
       .text(`x = ${xValue.toFixed(1)}`);
     
     elementsRef.current.zLabel
       .attr("x", xScaleBottom(zScore))
-      .attr("y", margin.top + plotHeight + 75)
+      .attr("y", margin.top + plotHeight + 125) // Updated for new spacing
       .attr("text-anchor", "middle")
-      .style("font-size", "14px")
+      .style("font-size", "16px")
+      .style("font-family", "monospace")
       .style("font-weight", "600")
-      .style("fill", colorScheme.chart.secondary)
+      .style("fill", "#f97316")
+      .style("filter", "drop-shadow(0 0 6px rgba(249, 115, 22, 0.5))")
       .text(`z = ${zScore.toFixed(3)}`);
     
   }, [mu, sigma, xValue, zScore]);
   
-  // Drag handler
-  const handleDrag = useCallback((x, y) => {
-    if (!scalesRef.current.xScaleTop) return;
-    const newX = scalesRef.current.xScaleTop.invert(x);
-    const clampedX = Math.max(0, Math.min(200, newX));
-    onXValueChange(clampedX);
-  }, [onXValueChange]);
-  
-  // Create draggable marker
-  if (isInitialized.current && scalesRef.current.xScaleTop) {
-    const { margin, plotHeight } = scalesRef.current.dimensions;
+  // Add draggable marker after SVG is initialized
+  useEffect(() => {
+    if (!isInitialized.current || !scalesRef.current.xScaleTop || !elementsRef.current.g) return;
+    
+    const g = elementsRef.current.g;
     const xScaleTop = scalesRef.current.xScaleTop;
+    const { margin, plotHeight } = scalesRef.current.dimensions;
     const colorScheme = createColorScheme('inference');
     
-    return (
-      <svg ref={svgRef} style={{ width: "100%", height: 680 }}>
-        <D3DragWrapper
-          onDrag={handleDrag}
-          onStart={onDragStart}
-          onEnd={onDragEnd}
-          initialPosition={{ x: xScaleTop(xValue), y: margin.top + plotHeight }}
-        >
-          <circle
-            r={8}
-            fill={colorScheme.chart.secondary}
-            stroke={colorScheme.chart.secondaryLight}
-            strokeWidth={2}
-            style={{ cursor: 'ew-resize' }}
-          />
-        </D3DragWrapper>
-      </svg>
-    );
-  }
+    // Remove existing marker if any
+    if (elementsRef.current.draggableMarker) {
+      elementsRef.current.draggableMarker.remove();
+    }
+    
+    // Create draggable marker
+    const marker = g.append('g')
+      .attr('class', 'draggable-marker')
+      .attr('transform', `translate(${xScaleTop(xValue)}, ${margin.top + plotHeight})`);
+    
+    marker.append('circle')
+      .attr('r', 8)
+      .attr('fill', colorScheme.chart.secondary)
+      .attr('stroke', colorScheme.chart.secondaryLight)
+      .attr('stroke-width', 2)
+      .style('cursor', 'ew-resize');
+    
+    // Add drag behavior
+    const drag = d3.drag()
+      .on('start', onDragStart)
+      .on('drag', (event) => {
+        const newX = xScaleTop.invert(event.x);
+        const clampedX = Math.max(0, Math.min(200, newX));
+        onXValueChange(clampedX);
+      })
+      .on('end', onDragEnd);
+    
+    marker.call(drag);
+    
+    // Store reference
+    elementsRef.current.draggableMarker = marker;
+    
+  }, [xValue, onXValueChange, onDragStart, onDragEnd]);
   
-  return <svg ref={svgRef} style={{ width: "100%", height: 680 }} />;
+  return <svg ref={svgRef} style={{ width: "100%", height: 800 }} />;
 });
 
 const NormalZScoreExplorer = () => {

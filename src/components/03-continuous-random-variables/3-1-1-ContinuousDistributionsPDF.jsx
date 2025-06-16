@@ -17,7 +17,6 @@ import { IntegralWorkedExample } from "./3-1-2-IntegralWorkedExample";
 import { Info, Sparkles, ArrowRight, CheckCircle, BarChart3, TrendingUp } from "lucide-react";
 import { ProgressBar, ProgressNavigation } from '@/components/ui/ProgressBar';
 import { useSafeMathJax } from '../../utils/mathJaxFix';
-import { D3DragWrapper } from '../ui/D3DragWrapper';
 
 // Color scheme for the visualization - using vibrant colors
 const colorScheme = createColorScheme('estimation'); // Violet/Cyan/Amber for better visibility
@@ -44,7 +43,7 @@ const learningStages = [
     title: 'The Uniform Distribution',
     subtitle: 'Equal probability across an interval',
     distribution: 'uniform',
-    params: { a: 0, b: 1 },
+    params: { a: -2, b: 3 },
     content: {
       main: "The simplest continuous distribution: every value in the interval [a, b] is equally likely.",
       realWorld: "Computer random number generators produce uniform values between 0 and 1",
@@ -497,111 +496,113 @@ const PDFVisualization = memo(({
     // Update probability display
     if (probability > 0) {
       const probX = xScale((intervalA + intervalB) / 2);
+      const probY = 60; // Move down to avoid collision with μ
       elementsRef.current.probRect
         .attr("x", probX - 100)
-        .attr("y", 15);
+        .attr("y", probY);
       
       elementsRef.current.probText
         .attr("x", probX)
-        .attr("y", 35)
+        .attr("y", probY + 20)
         .text(`P = ${probability.toFixed(4)}`);
     }
   }, [calculateData, stage.distribution, params, intervalA, intervalB]);
   
-  // Drag handlers
-  const handleDragA = useCallback((x, y) => {
-    if (!scalesRef.current.xScale) return;
-    const newValue = scalesRef.current.xScale.invert(x);
-    const domain = scalesRef.current.xScale.domain();
-    const constrainedValue = Math.max(domain[0], Math.min(domain[1], newValue));
-    onIntervalAChange(Math.min(constrainedValue, intervalB - 0.01));
-  }, [intervalB, onIntervalAChange]);
   
-  const handleDragB = useCallback((x, y) => {
-    if (!scalesRef.current.xScale) return;
-    const newValue = scalesRef.current.xScale.invert(x);
-    const domain = scalesRef.current.xScale.domain();
-    const constrainedValue = Math.max(domain[0], Math.min(domain[1], newValue));
-    onIntervalBChange(Math.max(constrainedValue, intervalA + 0.01));
-  }, [intervalA, onIntervalBChange]);
-  
-  // Create draggable markers
-  if (isInitialized.current && scalesRef.current.xScale) {
-    const { innerHeight } = scalesRef.current.dimensions;
-    const xScale = scalesRef.current.xScale;
+  // Add interval markers after SVG is initialized
+  useEffect(() => {
+    if (!isInitialized.current || !scalesRef.current.xScale || !elementsRef.current.g) return;
     
-    return (
-      <svg ref={svgRef} className="w-full">
-        {/* Marker A */}
-        <D3DragWrapper
-          onDrag={handleDragA}
-          onStart={() => onInteraction('dragStart', 'a')}
-          onEnd={() => onInteraction('dragEnd')}
-          initialPosition={{ x: xScale(intervalA) + 60, y: 30 + innerHeight }}
-        >
-          <line
-            x1={0}
-            y1={-innerHeight}
-            x2={0}
-            y2={0}
-            stroke="#06b6d4"
-            strokeWidth="3"
-            filter="drop-shadow(0 0 4px rgba(6, 182, 212, 0.6))"
-          />
-          <circle
-            cy={0}
-            r={10}
-            fill="#06b6d4"
-            stroke="#0e7490"
-            strokeWidth={2}
-            style={{ cursor: 'ew-resize' }}
-          />
-          <text
-            y={20}
-            textAnchor="middle"
-            fill="#06b6d4"
-            style={{ fontSize: '14px', fontWeight: 'bold', textShadow: '0 0 8px rgba(6, 182, 212, 0.6)' }}
-          >
-            a
-          </text>
-        </D3DragWrapper>
-        
-        {/* Marker B */}
-        <D3DragWrapper
-          onDrag={handleDragB}
-          onStart={() => onInteraction('dragStart', 'b')}
-          onEnd={() => onInteraction('dragEnd')}
-          initialPosition={{ x: xScale(intervalB) + 60, y: 30 + innerHeight }}
-        >
-          <line
-            x1={0}
-            y1={-innerHeight}
-            x2={0}
-            y2={0}
-            stroke="#06b6d4"
-            strokeWidth="3"
-            filter="drop-shadow(0 0 4px rgba(6, 182, 212, 0.6))"
-          />
-          <circle
-            cy={0}
-            r={10}
-            fill="#06b6d4"
-            stroke="#0e7490"
-            strokeWidth={2}
-            style={{ cursor: 'ew-resize' }}
-          />
-          <text
-            y={20}
-            textAnchor="middle"
-            fill="#06b6d4"
-            style={{ fontSize: '14px', fontWeight: 'bold', textShadow: '0 0 8px rgba(6, 182, 212, 0.6)' }}
-          >
-            b
-          </text>
-        </D3DragWrapper>
-      </svg>
-    );
-  }
+    const g = elementsRef.current.g;
+    const xScale = scalesRef.current.xScale;
+    const { innerHeight } = scalesRef.current.dimensions;
+    
+    // Remove existing markers
+    g.selectAll('.interval-marker').remove();
+    
+    // Create marker A
+    const markerA = g.append('g')
+      .attr('class', 'interval-marker marker-a')
+      .attr('transform', `translate(${xScale(intervalA)}, ${innerHeight})`);
+    
+    markerA.append('line')
+      .attr('y1', 0)
+      .attr('y2', -innerHeight)
+      .attr('stroke', '#06b6d4')
+      .attr('stroke-width', 3)
+      .attr('filter', 'drop-shadow(0 0 4px rgba(6, 182, 212, 0.6))');
+    
+    markerA.append('circle')
+      .attr('cy', 0)
+      .attr('r', 10)
+      .attr('fill', '#06b6d4')
+      .attr('stroke', '#0e7490')
+      .attr('stroke-width', 2)
+      .style('cursor', 'ew-resize');
+    
+    markerA.append('text')
+      .attr('y', 20)
+      .attr('text-anchor', 'middle')
+      .attr('fill', '#06b6d4')
+      .style('font-size', '14px')
+      .style('font-weight', 'bold')
+      .style('text-shadow', '0 0 8px rgba(6, 182, 212, 0.6)')
+      .text('a');
+    
+    // Create marker B
+    const markerB = g.append('g')
+      .attr('class', 'interval-marker marker-b')
+      .attr('transform', `translate(${xScale(intervalB)}, ${innerHeight})`);
+    
+    markerB.append('line')
+      .attr('y1', 0)
+      .attr('y2', -innerHeight)
+      .attr('stroke', '#06b6d4')
+      .attr('stroke-width', 3)
+      .attr('filter', 'drop-shadow(0 0 4px rgba(6, 182, 212, 0.6))');
+    
+    markerB.append('circle')
+      .attr('cy', 0)
+      .attr('r', 10)
+      .attr('fill', '#06b6d4')
+      .attr('stroke', '#0e7490')
+      .attr('stroke-width', 2)
+      .style('cursor', 'ew-resize');
+    
+    markerB.append('text')
+      .attr('y', 20)
+      .attr('text-anchor', 'middle')
+      .attr('fill', '#06b6d4')
+      .style('font-size', '14px')
+      .style('font-weight', 'bold')
+      .style('text-shadow', '0 0 8px rgba(6, 182, 212, 0.6)')
+      .text('b');
+    
+    // Add drag behavior
+    const dragA = d3.drag()
+      .on('start', () => onInteraction('dragStart', 'a'))
+      .on('drag', (event) => {
+        const newValue = xScale.invert(event.x);
+        const domain = xScale.domain();
+        const constrainedValue = Math.max(domain[0], Math.min(domain[1], newValue));
+        onIntervalAChange(Math.min(constrainedValue, intervalB - 0.01));
+      })
+      .on('end', () => onInteraction('dragEnd'));
+    
+    const dragB = d3.drag()
+      .on('start', () => onInteraction('dragStart', 'b'))
+      .on('drag', (event) => {
+        const newValue = xScale.invert(event.x);
+        const domain = xScale.domain();
+        const constrainedValue = Math.max(domain[0], Math.min(domain[1], newValue));
+        onIntervalBChange(Math.max(constrainedValue, intervalA + 0.01));
+      })
+      .on('end', () => onInteraction('dragEnd'));
+    
+    markerA.call(dragA);
+    markerB.call(dragB);
+    
+  }, [intervalA, intervalB, onIntervalAChange, onIntervalBChange, onInteraction]);
   
   return <svg ref={svgRef} className="w-full" />;
 });
@@ -637,8 +638,8 @@ const ContinuousDistributionsPDF = () => {
       
       // Set appropriate interval defaults
       if (stage.distribution === 'uniform') {
-        setIntervalA(stage.params.a + (stage.params.b - stage.params.a) * 0.2);
-        setIntervalB(stage.params.a + (stage.params.b - stage.params.a) * 0.8);
+        setIntervalA(stage.params.a + (stage.params.b - stage.params.a) * 0.25);
+        setIntervalB(stage.params.a + (stage.params.b - stage.params.a) * 0.75);
       } else if (stage.distribution === 'normal') {
         if (currentStage === 4) {
           const μ = stage.params.μ || paramValues[0];

@@ -1,6 +1,7 @@
 import { ProgressiveContent, SectionBreak } from '../components/mdx/ProgressiveContent';
 import SampleSpacesEvents from '../components/01-introduction-to-probabilities/1-1-1-SampleSpacesEvents';
 import ConceptSection from '../components/shared/ConceptSection';
+import { QuizBreak } from '../components/mdx/QuizBreak';
 
 <ProgressiveContent>
 
@@ -9,9 +10,9 @@ import ConceptSection from '../components/shared/ConceptSection';
   <p className="text-xl text-neutral-400">Chapter 1, Section 1</p>
 </div>
 
-<p className="text-lg leading-relaxed text-neutral-300">
+<div className="text-lg leading-relaxed text-neutral-300">
   Let's start with a fundamental question: How do we mathematically describe all possible outcomes of an experiment?
-</p>
+</div>
 
 <SectionBreak />
 
@@ -20,6 +21,35 @@ import ConceptSection from '../components/shared/ConceptSection';
 In probability theory, we use a **sample space** to represent all possible outcomes.
 
 > **Definition:** A sample space $S$ is the set of all possible outcomes of a random experiment.
+
+<SectionBreak />
+
+<QuizBreak 
+  questions={[
+    {
+      question: "Which of the following best describes a sample space?",
+      options: [
+        "A subset of possible outcomes",
+        "The set of all possible outcomes of a random experiment",
+        "The most likely outcome of an experiment",
+        "The probability of an event occurring"
+      ],
+      correctIndex: 1,
+      explanation: "A sample space contains ALL possible outcomes of a random experiment, not just some of them."
+    },
+    {
+      question: "If you flip a coin twice, how many outcomes are in the sample space?",
+      options: [
+        "2 outcomes",
+        "3 outcomes",
+        "4 outcomes",
+        "6 outcomes"
+      ],
+      correctIndex: 2,
+      explanation: "The sample space is {HH, HT, TH, TT}, which contains 4 outcomes."
+    }
+  ]}
+/>
 
 <SectionBreak />
 
@@ -46,6 +76,35 @@ Notice how the sample space depends on the experiment!
 
 <SectionBreak />
 
+<QuizBreak 
+  questions={[
+    {
+      question: "What is the sample space for rolling a standard six-sided die?",
+      options: [
+        "S = {1, 2, 3}",
+        "S = {1, 2, 3, 4, 5, 6}",
+        "S = {0, 1, 2, 3, 4, 5}",
+        "S = {1, 6}"
+      ],
+      correctIndex: 1,
+      explanation: "A standard die has faces numbered 1 through 6, so the sample space includes all these outcomes."
+    },
+    {
+      question: "For the experiment of flipping two coins, which outcome is NOT in the sample space?",
+      options: [
+        "HH (both heads)",
+        "HT (first heads, second tails)",
+        "H (just one head)",
+        "TT (both tails)"
+      ],
+      correctIndex: 2,
+      explanation: "When flipping two coins, each outcome must specify the result of BOTH flips. 'H' alone doesn't tell us about both coins."
+    }
+  ]}
+/>
+
+<SectionBreak />
+
 ## What are Events?
 
 An **event** is any subset of the sample space. It represents a collection of outcomes we're interested in.
@@ -65,6 +124,46 @@ For example, when rolling a die:
 
 <SectionBreak />
 
+<QuizBreak 
+  questions={[
+    {
+      question: "If the sample space for a die roll is S = {1, 2, 3, 4, 5, 6}, which of the following is an event?",
+      options: [
+        "E = {7}",
+        "E = {2, 4, 6}",
+        "E = 3",
+        "E = {1, 2, 3, 4, 5, 6, 7}"
+      ],
+      correctIndex: 1,
+      explanation: "An event must be a subset of the sample space. {2, 4, 6} represents the event 'rolling an even number'."
+    },
+    {
+      question: "True or False: An event can contain outcomes that are not in the sample space.",
+      options: [
+        "True - events can include any outcomes we want",
+        "False - events must be subsets of the sample space",
+        "True - but only if the probability is zero",
+        "It depends on the experiment"
+      ],
+      correctIndex: 1,
+      explanation: "By definition, an event is a subset of the sample space, so it can only contain outcomes that are in S."
+    },
+    {
+      question: "For a die roll, the event 'rolling less than 3' would be written as:",
+      options: [
+        "E = {3}",
+        "E = {1, 2}",
+        "E = {0, 1, 2}",
+        "E = {1, 2, 3}"
+      ],
+      correctIndex: 1,
+      explanation: "The outcomes less than 3 on a standard die are 1 and 2, so E = {1, 2}."
+    }
+  ]}
+/>
+
+<SectionBreak />
+
 ## Combining Events
 
 We can combine events using set operations:
@@ -73,25 +172,25 @@ We can combine events using set operations:
   <div className="border-l-4 border-blue-500 pl-6">
     <h3 className="text-lg font-semibold text-white mb-2">Union ($A \cup B$)</h3>
     <p className="text-neutral-300 mb-2">Either A or B occurs</p>
-    <p className="text-sm bg-neutral-900 rounded p-3 font-mono">
+    <div className="text-sm bg-neutral-900 rounded p-3 font-mono">
       Example: $\{2, 4, 6\} \cup \{1, 2\} = \{1, 2, 4, 6\}$
-    </p>
+    </div>
   </div>
   
   <div className="border-l-4 border-green-500 pl-6">
     <h3 className="text-lg font-semibold text-white mb-2">Intersection ($A \cap B$)</h3>
     <p className="text-neutral-300 mb-2">Both A and B occur</p>
-    <p className="text-sm bg-neutral-900 rounded p-3 font-mono">
+    <div className="text-sm bg-neutral-900 rounded p-3 font-mono">
       Example: $\{2, 4, 6\} \cap \{1, 2\} = \{2\}$
-    </p>
+    </div>
   </div>
   
   <div className="border-l-4 border-red-500 pl-6">
     <h3 className="text-lg font-semibold text-white mb-2">Complement ($A'$)</h3>
     <p className="text-neutral-300 mb-2">A does not occur</p>
-    <p className="text-sm bg-neutral-900 rounded p-3 font-mono">
+    <div className="text-sm bg-neutral-900 rounded p-3 font-mono">
       Example: $\{2, 4, 6\}' = \{1, 3, 5\}$
-    </p>
+    </div>
   </div>
 </div>
 

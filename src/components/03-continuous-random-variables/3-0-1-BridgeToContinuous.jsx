@@ -6,7 +6,6 @@ import { Button } from '../ui/button';
 import { VisualizationContainer } from '../ui/VisualizationContainer';
 import { ProgressTracker } from '../ui/ProgressTracker';
 import * as d3 from 'd3';
-import { D3DragWrapper } from '../ui/D3DragWrapper';
 import { ProgressBar, ProgressNavigation } from '@/components/ui/ProgressBar';
 import { cn } from '../../lib/utils';
 import { useSafeMathJax } from '../../utils/mathJaxFix';
@@ -39,21 +38,21 @@ const BridgeToContinuous = () => {
   const MAX_BINS = 50;
   const DEFAULT_BINS = 10;
   const SAMPLES_COUNT = 1000;
-  const BIN_DRAG_SCALE = 6;
   
   const [currentStep, setCurrentStep] = useState(0);
   const [binCount, setBinCount] = useState(DEFAULT_BINS);
   const [showCurve, setShowCurve] = useState(false);
   const [selectedRange, setSelectedRange] = useState({ start: -1, end: 1 });
   
-  // Ref for MathJax processing
+  // Refs
   const contentRef = useRef(null);
+  const sliderRef = useRef(null);
   
   // Use safe MathJax processing with error handling
   useSafeMathJax(contentRef, [currentStep]);
 
-  // Generate sample data
-  const generateData = useCallback(() => {
+  // Generate sample data once on mount
+  const data = useMemo(() => {
     // Generate normally distributed data
     const samples = [];
     for (let i = 0; i < SAMPLES_COUNT; i++) {
@@ -64,17 +63,13 @@ const BridgeToContinuous = () => {
       samples.push(z0 * 0.5 + 0); // mean=0, std=0.5
     }
     return samples;
-  }, []);
-
-  const data = useMemo(() => generateData(), [generateData]);
+  }, []); // Empty dependency array - generate only once
 
   // Create histogram bins
-  const histogram = useMemo(() => {
-    const bins = d3.histogram()
-      .domain([-2, 2])
-      .thresholds(binCount);
-    return bins(data);
-  }, [data, binCount]);
+  const bins = d3.histogram()
+    .domain([-2, 2])
+    .thresholds(binCount);
+  const histogram = bins(data);
 
   // Calculate probabilities
   const discreteProb = useMemo(() => {
@@ -167,7 +162,6 @@ const BridgeToContinuous = () => {
                   height={barHeight}
                   fill={isSelected ? "#10b981" : "#3b82f6"}
                   opacity="0.8"
-                  style={{ transition: 'all 0.3s ease' }}
                 />
               );
             })}
@@ -282,42 +276,6 @@ const BridgeToContinuous = () => {
     );
   };
 
-  const handleDrag = useCallback((x, y, event) => {
-    const newBinCount = Math.max(MIN_BINS, Math.min(MAX_BINS, Math.round(x / BIN_DRAG_SCALE)));
-    setBinCount(newBinCount);
-  }, []);
-
-  const BinControl = () => (
-    <svg width="320" height="60">
-      <g transform="translate(10, 30)">
-        <line x1="0" y1="0" x2="300" y2="0" stroke="currentColor" strokeWidth="2"/>
-        
-        {/* Tick marks */}
-        {[MIN_BINS, 10, 20, 30, 40, MAX_BINS].map(val => (
-          <g key={val} transform={`translate(${(val - MIN_BINS) * BIN_DRAG_SCALE}, 0)`}>
-            <line y1="-5" y2="5" stroke="currentColor" strokeWidth="1"/>
-            <text y="20" textAnchor="middle" className="text-xs" style={{ fontFamily: 'monospace' }}>{val}</text>
-          </g>
-        ))}
-        
-        {/* Draggable handle */}
-        <D3DragWrapper
-          onDrag={handleDrag}
-          initialPosition={{ x: (binCount - MIN_BINS) * BIN_DRAG_SCALE, y: 0 }}
-        >
-          <circle
-            cx="0"
-            cy="0"
-            r="8"
-            fill="#3b82f6"
-            stroke="white"
-            strokeWidth="2"
-            style={{ cursor: 'ew-resize' }}
-          />
-        </D3DragWrapper>
-      </g>
-    </svg>
-  );
 
   const StepContent = () => {
     switch(currentStep) {
@@ -349,8 +307,22 @@ const BridgeToContinuous = () => {
               </p>
             </div>
             <div className="space-y-2">
-              <p className="text-sm font-medium">Number of bins: <span className="font-mono">{binCount}</span></p>
-              <BinControl />
+              <div className="flex items-center gap-3">
+                <label htmlFor="bin-slider" className="text-sm font-medium whitespace-nowrap">
+                  Number of bins:
+                </label>
+                <input
+                  id="bin-slider"
+                  type="range"
+                  min={MIN_BINS}
+                  max={MAX_BINS}
+                  step={1}
+                  value={binCount}
+                  onInput={(e) => setBinCount(Number(e.target.value))}
+                  className="flex-1"
+                />
+                <span className="text-sm font-mono min-w-[2rem] text-right">{binCount}</span>
+              </div>
             </div>
             <p className="text-sm text-gray-400 mt-2">
               Notice how more bins make the histogram approach a smooth curve!

@@ -6,3 +6,6 @@ export { KeyTakeaways } from './KeyTakeaways';
 export { PageHeader } from './PageHeader';
 export { Concept } from './Concept';
 export { Alert } from './Alert';
+
+// Export quiz and section components from parent directory
+export { QuizBreak, SectionBreak, MultipleChoiceQuestion, QuizGate } from '../QuizBreak';
