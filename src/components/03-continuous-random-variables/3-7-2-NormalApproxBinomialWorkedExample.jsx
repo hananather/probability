@@ -7,7 +7,6 @@ import { RangeSlider } from "../ui/RangeSlider";
 import { useSafeMathJax } from '../../utils/mathJaxFix';
 import { colors, typography, components, formatNumber, createColorScheme } from '../../lib/design-system';
 import { VisualizationContainer, ControlGroup } from '../ui/VisualizationContainer';
-import { ProgressTracker } from '../ui/ProgressTracker';
 
 // Use probability color scheme
 const colorScheme = createColorScheme('probability');
@@ -216,9 +215,9 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
       .attr("y", d => yScale(d.y))
       .attr("width", barWidth)
       .attr("height", d => height - margin.bottom - yScale(d.y))
-      .attr("fill", colorScheme.primary)
+      .attr("fill", "#3b82f6")
       .attr("opacity", 0.6)
-      .attr("stroke", colorScheme.primary)
+      .attr("stroke", "#3b82f6")
       .attr("stroke-width", 1);
     
     // Highlight selected k
@@ -230,9 +229,9 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
           .attr("y", yScale(kData.y))
           .attr("width", barWidth)
           .attr("height", height - margin.bottom - yScale(kData.y))
-          .attr("fill", colorScheme.secondary)
+          .attr("fill", "#3b82f6")
           .attr("opacity", 0.8)
-          .attr("stroke", colorScheme.secondary)
+          .attr("stroke", "#3b82f6")
           .attr("stroke-width", 2);
         
         // Show continuity correction boundaries if enabled
@@ -242,7 +241,7 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
             .attr("x2", xScale(k - 0.5))
             .attr("y1", yScale(0))
             .attr("y2", yScale(kData.y))
-            .attr("stroke", colorScheme.tertiary)
+            .attr("stroke", "#3b82f6")
             .attr("stroke-width", 2)
             .attr("stroke-dasharray", "5,5");
           
@@ -251,7 +250,7 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
             .attr("x2", xScale(k + 0.5))
             .attr("y1", yScale(0))
             .attr("y2", yScale(kData.y))
-            .attr("stroke", colorScheme.tertiary)
+            .attr("stroke", "#3b82f6")
             .attr("stroke-width", 2)
             .attr("stroke-dasharray", "5,5");
         }
@@ -267,8 +266,8 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
     svg.append("path")
       .datum(normalData)
       .attr("fill", "none")
-      .attr("stroke", colorScheme.tertiary)
-      .attr("stroke-width", 2)
+      .attr("stroke", "#3b82f6")
+      .attr("stroke-width", 3)
       .attr("d", line);
     
     // Add mean line
@@ -277,7 +276,7 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
       .attr("x2", xScale(mu))
       .attr("y1", margin.top)
       .attr("y2", height - margin.bottom)
-      .attr("stroke", colorScheme.secondary)
+      .attr("stroke", "#3b82f6")
       .attr("stroke-width", 2)
       .attr("stroke-dasharray", "5,5");
     
@@ -285,7 +284,7 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
       .attr("x", xScale(mu))
       .attr("y", margin.top - 5)
       .attr("text-anchor", "middle")
-      .style("fill", colorScheme.secondary)
+      .style("fill", "#3b82f6")
       .style("font-size", "12px")
       .text(`\u03bc = ${mu.toFixed(2)}`);
     
@@ -363,7 +362,7 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
     return (
       <div ref={stepRef} className={cn(
         "p-3 rounded-lg animate-fadeIn",
-        "bg-gray-800 border border-gray-700"
+        "bg-neutral-800 border border-neutral-700"
       )}>
         <h5 className="text-sm font-semibold mb-2">2. Normal Parameters</h5>
         <div dangerouslySetInnerHTML={{ 
@@ -424,21 +423,14 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
       title="Interactive Normal Approximation to Binomial"
       description="Explore when and how the normal distribution approximates the binomial distribution"
     >
-      {/* Progress Tracker */}
-      <ProgressTracker 
-        current={interactionCount}
-        goal={20}
-        label="Exploration Progress"
-        className="mb-6"
-      />
       
       {/* Main Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Visualization (60% width on desktop) */}
         <div className="lg:col-span-3">
           <div className={cn(
-            "bg-gray-900 rounded-lg p-4",
-            "border border-gray-700"
+            "bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-lg p-4",
+            "border border-neutral-700"
           )}>
             {/* Distribution Comparison */}
             <div className="mb-4">
@@ -560,7 +552,7 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
                       "flex-1 py-2 px-3 rounded text-sm transition-all",
                       probType === value
                         ? "bg-teal-600 text-white"
-                        : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                        : "bg-neutral-700 text-neutral-300 hover:bg-neutral-600"
                     )}
                   >
                     {label}
@@ -585,15 +577,15 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
           </ControlGroup>
           
           {/* Step Navigation */}
-          <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+          <div className="flex items-center justify-between p-3 bg-neutral-800 rounded-lg">
             <button
               onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
               disabled={currentStep === 1}
               className={cn(
                 "px-3 py-1 rounded text-sm",
                 currentStep === 1
-                  ? "bg-gray-700 text-gray-500 cursor-not-allowed"
-                  : "bg-gray-600 text-white hover:bg-gray-500"
+                  ? "bg-neutral-700 text-neutral-500 cursor-not-allowed"
+                  : "bg-neutral-600 text-white hover:bg-neutral-500"
               )}
             >
               Previous Step
@@ -605,8 +597,8 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
               className={cn(
                 "px-3 py-1 rounded text-sm",
                 currentStep === 7
-                  ? "bg-gray-700 text-gray-500 cursor-not-allowed"
-                  : "bg-gray-600 text-white hover:bg-gray-500"
+                  ? "bg-neutral-700 text-neutral-500 cursor-not-allowed"
+                  : "bg-neutral-600 text-white hover:bg-neutral-500"
               )}
             >
               Next Step
@@ -619,7 +611,7 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
             {currentStep >= 1 && (
               <div className={cn(
                 "p-3 rounded-lg animate-fadeIn",
-                "bg-gray-800 border border-gray-700"
+                "bg-neutral-800 border border-neutral-700"
               )}>
                 <h5 className="text-sm font-semibold mb-2">1. Problem Setup</h5>
                 <p className="text-sm">
@@ -643,7 +635,7 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
             {currentStep >= 3 && (
               <div className={cn(
                 "p-3 rounded-lg animate-fadeIn",
-                "bg-gray-800 border",
+                "bg-neutral-800 border",
                 ruleOfThumbMet ? "border-green-700" : "border-red-700"
               )}>
                 <h5 className="text-sm font-semibold mb-2">3. Rule of Thumb Check</h5>
@@ -667,7 +659,7 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
             {currentStep >= 4 && showCC && (
               <div className={cn(
                 "p-3 rounded-lg animate-fadeIn",
-                "bg-gray-800 border border-gray-700"
+                "bg-neutral-800 border border-neutral-700"
               )}>
                 <h5 className="text-sm font-semibold mb-2">4. Continuity Correction</h5>
                 {probType === "le" && (
@@ -686,7 +678,7 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
             {currentStep >= 5 && (
               <div className={cn(
                 "p-3 rounded-lg animate-fadeIn",
-                "bg-gray-800 border border-gray-700"
+                "bg-neutral-800 border border-neutral-700"
               )}>
                 <h5 className="text-sm font-semibold mb-2">
                   {showCC ? "5" : "4"}. Calculate Z-Score
@@ -705,7 +697,7 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
             {currentStep >= 6 && (
               <div className={cn(
                 "p-3 rounded-lg animate-fadeIn",
-                "bg-gray-800 border border-gray-700"
+                "bg-neutral-800 border border-neutral-700"
               )}>
                 <h5 className="text-sm font-semibold mb-2">
                   {showCC ? "6" : "5"}. Probability Result
@@ -721,7 +713,7 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
               <div className={cn(
                 "p-4 rounded-lg animate-fadeIn",
                 "bg-gradient-to-r from-gray-800 to-gray-700",
-                "border border-gray-600"
+                "border border-neutral-600"
               )}>
                 <h5 className="text-sm font-semibold mb-3">7. Comparison</h5>
                 <div className="grid grid-cols-2 gap-4 mb-3">
@@ -745,7 +737,7 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
                     <span className="text-gray-400">Absolute Error</span>
                     <span className="font-mono text-yellow-400">{error.toFixed(6)}</span>
                   </div>
-                  <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-2 bg-neutral-700 rounded-full overflow-hidden">
                     <div 
                       className={cn(
                         "h-full transition-all duration-300",

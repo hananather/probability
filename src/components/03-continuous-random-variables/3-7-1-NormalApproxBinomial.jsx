@@ -1,8 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import * as d3 from "d3";
-import { VisualizationContainer } from "../ui/VisualizationContainer";
-import { RangeSlider } from "../ui/RangeSlider";
 import { createColorScheme, typography, cn } from "../../lib/design-system";
 import { useSafeMathJax } from '../../utils/mathJaxFix';
 import { jStat } from "jstat";
@@ -10,6 +8,64 @@ import { NormalApproxBinomialWorkedExample } from "./3-7-2-NormalApproxBinomialW
 import { Tutorial } from "../ui/Tutorial";
 import { ProgressBar, ProgressNavigation } from "../ui/ProgressBar";
 import { Button } from "../ui/button";
+
+// Add custom styles for the sliders
+const sliderStyles = `
+  .slider-teal::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #10B981;
+    cursor: pointer;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  }
+  .slider-amber::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #F59E0B;
+    cursor: pointer;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  }
+  .slider-orange::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #F97316;
+    cursor: pointer;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  }
+  .slider-teal::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #10B981;
+    cursor: pointer;
+    border-radius: 50%;
+    border: none;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  }
+  .slider-amber::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #F59E0B;
+    cursor: pointer;
+    border-radius: 50%;
+    border: none;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  }
+  .slider-orange::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #F97316;
+    cursor: pointer;
+    border-radius: 50%;
+    border: none;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  }
+`;
 
 const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
   // Core parameter states
@@ -24,6 +80,14 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
   // Refs for D3 and content
   const svgRef = useRef(null);
   const contentRef = useRef(null);
+  
+  // Inject custom slider styles
+  useEffect(() => {
+    const styleElement = document.createElement('style');
+    styleElement.textContent = sliderStyles;
+    document.head.appendChild(styleElement);
+    return () => document.head.removeChild(styleElement);
+  }, []);
   
   // Color scheme - use distinct colors for clarity
   const colors = createColorScheme('hypothesis'); // Teal/Amber/Orange for better contrast
@@ -131,9 +195,9 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
   useEffect(() => {
     if (!svgRef.current) return;
     
-    const margin = { top: 30, right: 40, bottom: 60, left: 70 };
+    const margin = { top: 20, right: 30, bottom: 50, left: 50 };
     const containerWidth = svgRef.current.getBoundingClientRect().width;
-    const containerHeight = svgRef.current.getBoundingClientRect().height;
+    const containerHeight = svgRef.current.getBoundingClientRect().height || 500;
     const width = containerWidth - margin.left - margin.right;
     const height = containerHeight - margin.top - margin.bottom;
     
@@ -144,11 +208,11 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
       .attr("width", containerWidth)
       .attr("height", containerHeight);
     
-    // Add white background for clean design
+    // Add transparent background for clean design
     svg.append("rect")
       .attr("width", containerWidth)
       .attr("height", containerHeight)
-      .attr("fill", "#ffffff");
+      .attr("fill", "transparent");
     
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
@@ -185,8 +249,8 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
         .tickFormat("")
       )
       .style("stroke-dasharray", "3,3")
-      .style("opacity", 0.4)
-      .style("stroke", "#e5e5e5");
+      .style("opacity", 0.3)
+      .style("stroke", "#374151");
     
     g.append("g")
       .attr("class", "grid")
@@ -195,8 +259,8 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
         .tickFormat("")
       )
       .style("stroke-dasharray", "3,3")
-      .style("opacity", 0.4)
-      .style("stroke", "#e5e5e5");
+      .style("opacity", 0.3)
+      .style("stroke", "#374151");
     
     // Axes
     g.append("g")
@@ -205,7 +269,7 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
       .append("text")
       .attr("x", width / 2)
       .attr("y", 40)
-      .attr("fill", "#374151")
+      .attr("fill", "#9ca3af")
       .style("text-anchor", "middle")
       .text("x");
     
@@ -215,7 +279,7 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
       .attr("transform", "rotate(-90)")
       .attr("y", -40)
       .attr("x", -height / 2)
-      .attr("fill", "#374151")
+      .attr("fill", "#9ca3af")
       .style("text-anchor", "middle")
       .text("Probability");
     
@@ -232,17 +296,17 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
       .attr("height", 0)
       .attr("fill", d => {
         switch (probType) {
-          case "le": return d.x <= k ? "#14B8A6" : "#e5e7eb"; // Bright teal for selected
-          case "ge": return d.x >= k ? "#14B8A6" : "#e5e7eb"; // Bright teal for selected
-          case "eq": return d.x === k ? "#14B8A6" : "#e5e7eb"; // Bright teal for selected
+          case "le": return d.x <= k ? "#3B82F6" : "#e5e7eb"; // Blue for selected
+          case "ge": return d.x >= k ? "#3B82F6" : "#e5e7eb"; // Blue for selected
+          case "eq": return d.x === k ? "#3B82F6" : "#e5e7eb"; // Blue for selected
           default: return "#e5e7eb";
         }
       })
       .attr("stroke", d => {
         switch (probType) {
-          case "le": return d.x <= k ? "#14B8A6" : "transparent";
-          case "ge": return d.x >= k ? "#14B8A6" : "transparent";
-          case "eq": return d.x === k ? "#14B8A6" : "transparent";
+          case "le": return d.x <= k ? "#3B82F6" : "transparent";
+          case "ge": return d.x >= k ? "#3B82F6" : "transparent";
+          case "eq": return d.x === k ? "#3B82F6" : "transparent";
           default: return "transparent";
         }
       })
@@ -274,7 +338,7 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
     const path = g.append("path")
       .datum(normalData)
       .attr("fill", "none")
-      .attr("stroke", "#F59E0B") // Bright amber/orange for normal curve
+      .attr("stroke", "#F59E0B") // Amber for normal curve
       .attr("stroke-width", 3)
       .attr("d", normalLine)
       .attr("opacity", 0);
@@ -392,15 +456,15 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
       .attr("y", 0)
       .attr("width", 15)
       .attr("height", 15)
-      .attr("fill", colors.chart.primary)
-      .attr("opacity", 0.8);
+      .attr("fill", "#3B82F6")
+      .attr("opacity", 0.9);
     
     legend.append("text")
       .attr("x", 20)
       .attr("y", 12)
-      .attr("fill", "#374151")
-      .style("font-size", "13px")
-      .style("font-weight", "500")
+      .attr("fill", "#e5e7eb")
+      .style("font-size", "12px")
+      .style("font-weight", "600")
       .text(`Binomial B(${n}, ${p.toFixed(2)})`);
     
     // Normal legend
@@ -409,15 +473,15 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
       .attr("y1", 30)
       .attr("x2", 15)
       .attr("y2", 30)
-      .attr("stroke", colors.chart.secondary)
+      .attr("stroke", "#F59E0B")
       .attr("stroke-width", 3);
     
     legend.append("text")
       .attr("x", 20)
       .attr("y", 34)
-      .attr("fill", "#374151")
-      .style("font-size", "13px")
-      .style("font-weight", "500")
+      .attr("fill", "#e5e7eb")
+      .style("font-size", "12px")
+      .style("font-weight", "600")
       .text(`Normal N(${mu.toFixed(1)}, ${sigma.toFixed(1)})`);
     
   }, [n, p, k, probType, showCC, colors]);
@@ -572,249 +636,252 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
     }
   };
   
-  // Probability type buttons component
-  const ProbabilityTypeSelector = () => {
-    const types = [
-      { value: "le", label: "P(X ≤ k)", description: "At most k successes" },
-      { value: "ge", label: "P(X ≥ k)", description: "At least k successes" },
-      { value: "eq", label: "P(X = k)", description: "Exactly k successes" }
-    ];
-    
-    return (
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-300">Probability Type</label>
-        <div className="grid grid-cols-1 gap-2">
-          {types.map(type => (
-            <button
-              key={type.value}
-              onClick={() => setProbType(type.value)}
-              className={cn(
-                "p-3 rounded-lg border transition-all text-left",
-                probType === type.value
-                  ? "bg-teal-900/30 border-teal-600/50 text-teal-300"
-                  : "bg-gray-800/50 border-gray-700 text-gray-400 hover:bg-gray-800/70"
-              )}
-            >
-              <div className="font-mono text-sm">{type.label}</div>
-              <div className="text-xs mt-0.5">{type.description}</div>
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  };
-  
-  // Clean comparison display
-  const ComparisonDisplay = () => {
-    const approximationQuality = ruleOfThumbMet 
-      ? error < 0.01 ? "Excellent" : error < 0.05 ? "Good" : "Fair"
-      : "Poor";
-    
-    const qualityColor = ruleOfThumbMet
-      ? error < 0.01 ? "text-green-400" : error < 0.05 ? "text-yellow-400" : "text-orange-400"
-      : "text-red-400";
-    
-    return (
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="p-3 bg-gray-800/50 rounded-lg">
-            <div className="text-xs text-gray-400 mb-1">Binomial (Exact)</div>
-            <div className="font-mono text-lg text-teal-400">{binomialProb.toFixed(4)}</div>
-          </div>
-          <div className="p-3 bg-gray-800/50 rounded-lg">
-            <div className="text-xs text-gray-400 mb-1">Normal (Approx)</div>
-            <div className="font-mono text-lg text-amber-400">{normalProb.toFixed(4)}</div>
-          </div>
-        </div>
-        
-        <div className="p-3 bg-gray-800/50 rounded-lg">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-400">Approximation Quality</span>
-            <span className={cn("text-sm font-semibold", qualityColor)}>
-              {approximationQuality}
-            </span>
-          </div>
-          <div className="mt-2">
-            <div className="text-xs text-gray-400 mb-1">Absolute Error</div>
-            <div className="font-mono text-sm">{error.toFixed(6)}</div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-  
-  // Rule of thumb display
-  const RuleOfThumbDisplay = () => {
-    return (
-      <div className="rule-of-thumb space-y-3">
-        <h3 className="text-sm font-semibold text-gray-300">Approximation Conditions</h3>
-        <div className="space-y-2">
-          <div className={cn(
-            "flex items-center justify-between p-2 rounded-lg",
-            condition1Met ? "bg-green-900/20" : "bg-red-900/20"
-          )}>
-            <span className="text-sm">np ≥ 5</span>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-sm">{np.toFixed(2)}</span>
-              {condition1Met ? (
-                <svg className="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              ) : (
-                <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              )}
-            </div>
-          </div>
-          
-          <div className={cn(
-            "flex items-center justify-between p-2 rounded-lg",
-            condition2Met ? "bg-green-900/20" : "bg-red-900/20"
-          )}>
-            <span className="text-sm">n(1-p) ≥ 5</span>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-sm">{nq.toFixed(2)}</span>
-              {condition2Met ? (
-                <svg className="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              ) : (
-                <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              )}
-            </div>
-          </div>
-        </div>
-        
-        {!ruleOfThumbMet && (
-          <div className="mt-2 p-2 bg-amber-900/20 border border-amber-600/30 rounded-lg">
-            <p className="text-xs text-amber-300">
-              <strong>Warning:</strong> Approximation may be poor. Try increasing n or adjusting p.
-            </p>
-          </div>
-        )}
-      </div>
-    );
-  };
   
   const stageContent = getStageContent();
   
-  const leftPanel = (
-    <div className="space-y-6">
-      <div>
-        <h2 className={typography.h2}>Normal Approximation to Binomial</h2>
-        <p className={typography.description}>
-          Discover when and how the normal distribution can approximate binomial probabilities, 
-          making complex calculations simple and efficient.
-        </p>
-      </div>
+  return (
+    <div ref={contentRef} className="min-h-screen flex flex-col bg-gradient-to-br from-neutral-900 to-neutral-950">
+      <Tutorial
+        steps={tutorialSteps}
+        persistKey="normal-approx-binomial"
+        mode="tooltip"
+      />
       
-      {/* Progress and Navigation */}
-      <div className="space-y-3">
-        <ProgressBar
-          current={stage}
-          total={4}
-          label="Learning Journey"
-          variant="teal"
-        />
-        <ProgressNavigation
-          current={stage}
-          total={4}
-          onPrevious={() => setStage(Math.max(1, stage - 1))}
-          onNext={() => setStage(Math.min(4, stage + 1))}
-          variant="teal"
-        />
-      </div>
-      
-      {/* Stage Content */}
-      <div className="p-4 bg-gray-800/50 rounded-lg">
-        <h3 className="text-base font-semibold mb-3">{stageContent.title}</h3>
-        {stageContent.content}
-      </div>
-      
-      {/* Parameters */}
-      <div className="parameter-controls space-y-4">
-        <h3 className="text-sm font-semibold text-gray-300">Parameters</h3>
-        
-        <RangeSlider
-          label="Number of trials (n)"
-          value={n}
-          onChange={setN}
-          min={10}
-          max={200}
-          step={5}
-          color="teal"
-        />
-        
-        <RangeSlider
-          label="Probability of success (p)"
-          value={p}
-          onChange={setP}
-          min={0.05}
-          max={0.95}
-          step={0.05}
-          color="amber"
-        />
-        
-        <RangeSlider
-          label="Value of interest (k)"
-          value={k}
-          onChange={setK}
-          min={0}
-          max={n}
-          step={1}
-          color="orange"
-        />
-        
-        <ProbabilityTypeSelector />
-        
-        <div className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg">
-          <label htmlFor="showCC" className="text-sm text-gray-300">
-            Show Continuity Correction
-          </label>
-          <input
-            type="checkbox"
-            id="showCC"
-            checked={showCC}
-            onChange={(e) => setShowCC(e.target.checked)}
-            className="w-4 h-4 accent-teal-500"
-          />
+      {/* Strip 1: Header & Key Controls */}
+      <div className="bg-neutral-900 border-b border-neutral-700 px-4 sm:px-6 py-4 sm:py-5">
+        <div className="max-w-7xl mx-auto">
+          {/* Title Row */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div className="flex-1">
+              <h2 className="text-xl sm:text-2xl font-semibold text-white">Normal Approximation to Binomial Distribution</h2>
+              <p className="text-sm text-neutral-400 mt-1">
+                Discover when and how the normal distribution can approximate binomial probabilities
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+              <ProgressBar
+                current={stage}
+                total={4}
+                label="Learning Journey"
+                variant="teal"
+              />
+              <ProgressNavigation
+                current={stage}
+                total={4}
+                onPrevious={() => setStage(Math.max(1, stage - 1))}
+                onNext={() => setStage(Math.min(4, stage + 1))}
+                variant="teal"
+              />
+            </div>
+          </div>
+          
+          {/* Primary Controls Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+            <div className="parameter-controls">
+              <label className="text-sm text-neutral-300 block mb-1">Trials (n)</label>
+              <input
+                type="range"
+                value={n}
+                onChange={(e) => setN(Number(e.target.value))}
+                min={10}
+                max={200}
+                step={5}
+                className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer slider-teal"
+              />
+              <div className="flex justify-between text-xs text-neutral-400 mt-1">
+                <span>10</span>
+                <span className="font-mono text-emerald-400">{n}</span>
+                <span>200</span>
+              </div>
+            </div>
+            
+            <div>
+              <label className="text-sm text-neutral-300 block mb-1">Success probability (p)</label>
+              <input
+                type="range"
+                value={p}
+                onChange={(e) => setP(Number(e.target.value))}
+                min={0.05}
+                max={0.95}
+                step={0.05}
+                className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer slider-amber"
+              />
+              <div className="flex justify-between text-xs text-neutral-400 mt-1">
+                <span>0.05</span>
+                <span className="font-mono text-amber-400">{p.toFixed(2)}</span>
+                <span>0.95</span>
+              </div>
+            </div>
+            
+            <div>
+              <label className="text-sm text-neutral-300 block mb-1">Value of interest (k)</label>
+              <input
+                type="range"
+                value={k}
+                onChange={(e) => setK(Number(e.target.value))}
+                min={0}
+                max={n}
+                step={1}
+                className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer slider-orange"
+              />
+              <div className="flex justify-between text-xs text-neutral-400 mt-1">
+                <span>0</span>
+                <span className="font-mono text-orange-400">{k}</span>
+                <span>{n}</span>
+              </div>
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className="text-sm text-neutral-300 block mb-1">Stage Insight</label>
+              <div className="p-3 bg-gradient-to-r from-blue-900/30 to-indigo-900/30 rounded-lg text-sm text-neutral-200 min-h-[52px] max-h-[80px] overflow-y-auto border border-neutral-700">
+                {stageContent.title}: {(() => {
+                  // Extract key message from stage content
+                  switch(stage) {
+                    case 1: return "Adjust n to see binomial approach normal shape";
+                    case 2: return `Rule of thumb: ${ruleOfThumbMet ? '✓ Met' : '✗ Not met'} (np=${np.toFixed(1)}, nq=${nq.toFixed(1)})`;
+                    case 3: return "Continuity correction improves approximation accuracy";
+                    case 4: return "Try the worked example for real-world applications";
+                    default: return "";
+                  }
+                })()}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       
-      {/* Rule of Thumb Check */}
-      <RuleOfThumbDisplay />
+      {/* Strip 2: Main Visualization */}
+      <div className="flex-1 min-h-0 px-4 sm:px-6 py-4 sm:py-6 visualization-area">
+        <div className="h-full bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-lg border border-neutral-700 p-4">
+          <svg ref={svgRef} className="w-full h-full" style={{ minHeight: '400px' }}></svg>
+        </div>
+      </div>
       
-      {/* Probability Comparison */}
-      <ComparisonDisplay />
-      
-      {/* Distribution Info */}
-      <div className="p-3 bg-gray-800/50 rounded-lg space-y-2">
-        <h3 className="text-sm font-semibold text-gray-300">Distribution Parameters</h3>
-        <div className="grid grid-cols-3 gap-2 text-xs">
-          <div>
-            <div className="text-gray-400">Mean (μ)</div>
-            <div className="font-mono text-teal-400">{mu.toFixed(2)}</div>
-          </div>
-          <div>
-            <div className="text-gray-400">Std Dev (σ)</div>
-            <div className="font-mono text-amber-400">{sigma.toFixed(2)}</div>
-          </div>
-          <div>
-            <div className="text-gray-400">Z-score</div>
-            <div className="font-mono text-orange-400">{zScore.toFixed(2)}</div>
+      {/* Strip 3: Secondary Controls & Results */}
+      <div className="bg-neutral-900 border-t border-neutral-700 px-4 sm:px-6 py-4 sm:py-5">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {/* Probability Type */}
+            <div className="space-y-2">
+              <h4 className="text-sm font-semibold text-neutral-300 mb-2">Probability Type</h4>
+              <div className="grid grid-cols-3 gap-1">
+                {[
+                  { value: "le", label: "P(X ≤ k)" },
+                  { value: "ge", label: "P(X ≥ k)" },
+                  { value: "eq", label: "P(X = k)" }
+                ].map(type => (
+                  <button
+                    key={type.value}
+                    onClick={() => setProbType(type.value)}
+                    className={cn(
+                      "px-3 py-1.5 rounded text-xs font-mono transition-all duration-200",
+                      probType === type.value
+                        ? "bg-emerald-900/30 text-emerald-400 border border-emerald-700/50"
+                        : "bg-neutral-800 text-neutral-400 hover:bg-neutral-700 border border-neutral-700"
+                    )}
+                  >
+                    {type.label}
+                  </button>
+                ))}
+              </div>
+              <label className="flex items-center gap-2 text-sm text-neutral-300 mt-3">
+                <input
+                  type="checkbox"
+                  checked={showCC}
+                  onChange={(e) => setShowCC(e.target.checked)}
+                  className="w-4 h-4 accent-emerald-500 rounded"
+                />
+                Continuity Correction
+              </label>
+            </div>
+            
+            {/* Rule of Thumb */}
+            <div className="rule-of-thumb space-y-2">
+              <h4 className="text-sm font-semibold text-neutral-300 mb-2">Approximation Check</h4>
+              <div className="grid grid-cols-2 gap-2">
+                <div className={cn(
+                  "p-3 rounded-lg border transition-all duration-200",
+                  condition1Met 
+                    ? "bg-emerald-900/30 text-emerald-400 border-emerald-700/50" 
+                    : "bg-red-900/30 text-red-400 border-red-700/50"
+                )}>
+                  <div className="font-mono text-sm">np = {np.toFixed(1)}</div>
+                  <div className="text-xs mt-1">{condition1Met ? "≥ 5 ✓" : "< 5 ✗"}</div>
+                </div>
+                <div className={cn(
+                  "p-3 rounded-lg border transition-all duration-200",
+                  condition2Met 
+                    ? "bg-emerald-900/30 text-emerald-400 border-emerald-700/50" 
+                    : "bg-red-900/30 text-red-400 border-red-700/50"
+                )}>
+                  <div className="font-mono text-sm">n(1-p) = {nq.toFixed(1)}</div>
+                  <div className="text-xs mt-1">{condition2Met ? "≥ 5 ✓" : "< 5 ✗"}</div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Probability Comparison */}
+            <div className="space-y-2">
+              <h4 className="text-sm font-semibold text-neutral-300 mb-2">Probability Values</h4>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-3 bg-neutral-800 rounded-lg border border-neutral-700">
+                  <div className="text-xs text-neutral-400">Binomial (Exact)</div>
+                  <div className="font-mono text-base text-blue-400 mt-1">{binomialProb.toFixed(4)}</div>
+                </div>
+                <div className="p-3 bg-neutral-800 rounded-lg border border-neutral-700">
+                  <div className="text-xs text-neutral-400">Normal (Approx)</div>
+                  <div className="font-mono text-base text-amber-400 mt-1">{normalProb.toFixed(4)}</div>
+                </div>
+              </div>
+              <div className="text-sm text-neutral-300 mt-2">
+                Error: <span className="font-mono text-orange-400">{error.toFixed(6)}</span>
+                <span className={cn(
+                  "ml-2 font-medium",
+                  ruleOfThumbMet
+                    ? error < 0.01 ? "text-emerald-400" : error < 0.05 ? "text-yellow-400" : "text-orange-400"
+                    : "text-red-400"
+                )}>
+                  ({ruleOfThumbMet ? error < 0.01 ? "Excellent" : error < 0.05 ? "Good" : "Fair" : "Poor"})
+                </span>
+              </div>
+            </div>
+            
+            {/* Distribution Parameters & Actions */}
+            <div className="space-y-2">
+              <h4 className="text-sm font-semibold text-neutral-300 mb-2">Distribution Info</h4>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="text-center p-2 bg-neutral-800 rounded-lg border border-neutral-700">
+                  <div className="text-xs text-neutral-400">μ</div>
+                  <div className="font-mono text-sm text-blue-400 mt-1">{mu.toFixed(1)}</div>
+                </div>
+                <div className="text-center p-2 bg-neutral-800 rounded-lg border border-neutral-700">
+                  <div className="text-xs text-neutral-400">σ</div>
+                  <div className="font-mono text-sm text-amber-400 mt-1">{sigma.toFixed(2)}</div>
+                </div>
+                <div className="text-center p-2 bg-neutral-800 rounded-lg border border-neutral-700">
+                  <div className="text-xs text-neutral-400">z</div>
+                  <div className="font-mono text-sm text-orange-400 mt-1">{zScore.toFixed(2)}</div>
+                </div>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setShowWorkedExample(true)}
+                className="w-full mt-2"
+              >
+                Try Example
+              </Button>
+            </div>
           </div>
         </div>
       </div>
       
-      {/* Worked Example (conditionally shown) */}
+      {/* Worked Example Modal */}
       {showWorkedExample && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-gray-900 p-6 rounded-lg max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-gradient-to-br from-neutral-900 to-neutral-950 p-6 rounded-xl border border-neutral-700 shadow-2xl max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Worked Example</h3>
+              <h3 className="text-lg font-semibold text-white">Worked Example</h3>
               <Button
                 variant="neutral"
                 size="sm"
@@ -833,38 +900,6 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
           </div>
         </div>
       )}
-    </div>
-  );
-  
-  const rightPanel = (
-    <div className="visualization-area h-full flex items-center justify-center p-4">
-      <svg ref={svgRef} className="w-full h-full" style={{ maxHeight: '600px' }}></svg>
-    </div>
-  );
-  
-  return (
-    <div ref={contentRef}>
-      <Tutorial
-        steps={tutorialSteps}
-        persistKey="normal-approx-binomial"
-        mode="tooltip"
-      />
-      <VisualizationContainer 
-        title="Normal Approximation to Binomial Distribution"
-        className="max-w-full"
-      >
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Panel */}
-          <div className="lg:col-span-1">
-            {leftPanel}
-          </div>
-          
-          {/* Right Panel */}
-          <div className="lg:col-span-2">
-            {rightPanel}
-          </div>
-        </div>
-      </VisualizationContainer>
     </div>
   );
 });

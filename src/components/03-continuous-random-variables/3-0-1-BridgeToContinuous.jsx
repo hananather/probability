@@ -282,8 +282,8 @@ const BridgeToContinuous = () => {
     );
   };
 
-  const handleDrag = useCallback((event, d) => {
-    const newBinCount = Math.max(MIN_BINS, Math.min(MAX_BINS, Math.round(d.x / BIN_DRAG_SCALE)));
+  const handleDrag = useCallback((x, y, event) => {
+    const newBinCount = Math.max(MIN_BINS, Math.min(MAX_BINS, Math.round(x / BIN_DRAG_SCALE)));
     setBinCount(newBinCount);
   }, []);
 
@@ -421,11 +421,11 @@ const BridgeToContinuous = () => {
               <div className="grid grid-cols-2 gap-4 mt-3">
                 <div>
                   <p className="text-xs font-medium mb-1">Discrete (Sum):</p>
-                  <LaTeXFormula formula="P = \\sum_{x \\in S} p(x)" />
+                  <LaTeXFormula key="discrete-sum" formula="P = \\sum_{x \\in S} p(x)" isBlock={true} />
                 </div>
                 <div>
                   <p className="text-xs font-medium mb-1">Continuous (Integral):</p>
-                  <LaTeXFormula formula="P = \\int_a^b f(x)dx" />
+                  <LaTeXFormula key="continuous-integral" formula="P = \\int_a^b f(x)dx" isBlock={true} />
                 </div>
               </div>
             </div>
@@ -505,23 +505,6 @@ const BridgeToContinuous = () => {
         <Card className="p-4">
           <StepContent />
         </Card>
-        
-        {/* Navigation */}
-        <div className="flex justify-between">
-          <Button
-            onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
-            disabled={currentStep === 0}
-            variant="outline"
-          >
-            Previous
-          </Button>
-          <Button
-            onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}
-            disabled={currentStep === steps.length - 1}
-          >
-            Next
-          </Button>
-        </div>
       </div>
     </VisualizationContainer>
   );

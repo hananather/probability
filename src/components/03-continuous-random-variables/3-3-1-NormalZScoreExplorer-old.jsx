@@ -13,7 +13,6 @@ import { NormalZScoreWorkedExample } from "./3-3-2-NormalZScoreWorkedExample";
 import { RotateCcw } from "lucide-react";
 import * as jStat from "jstat";
 import { useSafeMathJax } from '../../utils/mathJaxFix';
-import { D3DragWrapper } from '../ui/D3DragWrapper';
 
 // LaTeX content wrapper component to prevent re-renders
 const LatexContent = memo(function LatexContent({ children }) {
@@ -25,431 +24,10 @@ const LatexContent = memo(function LatexContent({ children }) {
   return <span ref={contentRef}>{children}</span>;
 });
 
-// Separated visualization component to prevent re-renders
-const NormalVisualization = memo(({ 
-  mu, 
-  sigma, 
-  xValue, 
-  onXValueChange,
-  onDragStart,
-  onDragEnd
-}) => {
-  const svgRef = useRef(null);
-  const isInitialized = useRef(false);
-  const scalesRef = useRef({});
-  const elementsRef = useRef({});
-  
-  // Calculate derived values
-  const zScore = (xValue - mu) / sigma;
-  const probability = jStat.normal.cdf(zScore, 0, 1);
-  
-  // Initialize SVG structure (only once)
-  useEffect(() => {
-    if (!svgRef.current || isInitialized.current) return;
-    
-    const svg = d3.select(svgRef.current);
-    const { width } = svgRef.current.getBoundingClientRect();
-    const height = 600;
-    const margin = { top: 40, right: 60, bottom: 60, left: 60 };
-    const plotHeight = (height - margin.top - margin.bottom - 80) / 2;
-    const innerWidth = width - margin.left - margin.right;
-    
-    svg.attr("viewBox", `0 0 ${width} ${height}`);
-    
-    // Gradient background
-    const defs = svg.append("defs");
-    const gradient = defs.append("linearGradient")
-      .attr("id", "bgGradient")
-      .attr("x1", "0%").attr("y1", "0%")
-      .attr("x2", "0%").attr("y2", "100%");
-    
-    gradient.append("stop")
-      .attr("offset", "0%")
-      .attr("style", "stop-color:#0f172a;stop-opacity:1");
-    
-    gradient.append("stop")
-      .attr("offset", "100%")
-      .attr("style", "stop-color:#1e293b;stop-opacity:1");
-    
-    svg.append("rect")
-      .attr("width", width)
-      .attr("height", height)
-      .attr("fill", "url(#bgGradient)");
-    
-    // Create main group
-    const g = svg.append("g");
-    
-    // Plot backgrounds
-    g.append("rect")
-      .attr("x", margin.left)
-      .attr("y", margin.top)
-      .attr("width", innerWidth)
-      .attr("height", plotHeight)
-      .attr("fill", "#1a1a1a")
-      .attr("stroke", colors.chart.grid)
-      .attr("stroke-width", 1)
-      .attr("rx", 4);
-    
-    g.append("rect")
-      .attr("x", margin.left)
-      .attr("y", margin.top + plotHeight + 80)
-      .attr("width", innerWidth)
-      .attr("height", plotHeight)
-      .attr("fill", "#1a1a1a")
-      .attr("stroke", colors.chart.grid)
-      .attr("stroke-width", 1)
-      .attr("rx", 4);
-    
-    // Titles
-    elementsRef.current.topTitle = g.append("text")
-      .attr("x", width / 2)
-      .attr("y", margin.top - 10)
-      .attr("text-anchor", "middle")
-      .style("font-size", "16px")
-      .style("font-weight", "600")
-      .style("fill", colors.chart.text);
-    
-    elementsRef.current.bottomTitle = g.append("text")
-      .attr("x", width / 2)
-      .attr("y", margin.top + plotHeight + 70)
-      .attr("text-anchor", "middle")
-      .style("font-size", "16px")
-      .style("font-weight", "600")
-      .style("fill", colors.chart.text)
-      .text("Standard Normal: Z ~ N(0, 1)");
-    
-    // Axes groups
-    elementsRef.current.xAxisTop = g.append("g")
-      .attr("transform", `translate(0,${margin.top + plotHeight})`);
-    
-    elementsRef.current.xAxisBottom = g.append("g")
-      .attr("transform", `translate(0,${margin.top + plotHeight + 80 + plotHeight})`);
-    
-    elementsRef.current.yAxisTop = g.append("g")
-      .attr("transform", `translate(${margin.left},0)`);
-    
-    elementsRef.current.yAxisBottom = g.append("g")
-      .attr("transform", `translate(${margin.left},0)`);
-    
-    // Axis labels
-    g.append("text")
-      .attr("x", width / 2)
-      .attr("y", margin.top + plotHeight + 35)
-      .attr("text-anchor", "middle")
-      .style("font-size", "12px")
-      .style("fill", colors.chart.text)
-      .text("x");
-    
-    g.append("text")
-      .attr("x", width / 2)
-      .attr("y", margin.top + plotHeight + 80 + plotHeight + 35)
-      .attr("text-anchor", "middle")
-      .style("font-size", "12px")
-      .style("fill", colors.chart.text)
-      .text("z");
-    
-    // Distribution paths
-    elementsRef.current.areaTop = g.append("path");
-    elementsRef.current.lineTop = g.append("path");
-    elementsRef.current.areaBottom = g.append("path");
-    elementsRef.current.lineBottom = g.append("path");
-    
-    // Mean line
-    elementsRef.current.meanLine = g.append("line");
-    
-    // Sigma markers group
-    elementsRef.current.sigmaMarkers = g.append("g");
-    
-    // Value lines and labels
-    elementsRef.current.xLine = g.append("line");
-    elementsRef.current.zLine = g.append("line");
-    elementsRef.current.xLabel = g.append("text");
-    elementsRef.current.zLabel = g.append("text");
-    
-    // Transformation arrow
-    const arrowG = g.append("g");
-    const transformY = margin.top + plotHeight + 40;
-    
-    arrowG.append("path")
-      .attr("d", `M${width/2 - 50} ${transformY} L${width/2 + 50} ${transformY}`)
-      .attr("stroke", colors.chart.secondary)
-      .attr("stroke-width", 2)
-      .attr("marker-end", "url(#arrowhead)");
-    
-    defs.append("marker")
-      .attr("id", "arrowhead")
-      .attr("viewBox", "0 -5 10 10")
-      .attr("refX", 8)
-      .attr("refY", 0)
-      .attr("markerWidth", 8)
-      .attr("markerHeight", 8)
-      .attr("orient", "auto")
-      .append("path")
-      .attr("d", "M0,-5L10,0L0,5")
-      .attr("fill", colors.chart.secondary);
-    
-    arrowG.append("text")
-      .attr("x", width / 2)
-      .attr("y", transformY - 10)
-      .attr("text-anchor", "middle")
-      .style("font-size", "14px")
-      .style("font-weight", "600")
-      .style("fill", colors.chart.secondary)
-      .text("z = (x - μ) / σ");
-    
-    // Store dimensions
-    scalesRef.current.dimensions = { 
-      width, height, margin, plotHeight, innerWidth,
-      transformY
-    };
-    
-    elementsRef.current.g = g;
-    
-    isInitialized.current = true;
-  }, []);
-  
-  // Update visualization when parameters change
-  useEffect(() => {
-    if (!isInitialized.current) return;
-    
-    const { margin, plotHeight, innerWidth } = scalesRef.current.dimensions;
-    const colorScheme = createColorScheme('inference');
-    
-    // Fixed scales
-    const xScaleTop = d3.scaleLinear()
-      .domain([0, 200])
-      .range([margin.left, margin.left + innerWidth]);
-    
-    const xScaleBottom = d3.scaleLinear()
-      .domain([-4, 4])
-      .range([margin.left, margin.left + innerWidth]);
-    
-    const yScaleTop = d3.scaleLinear()
-      .domain([0, 0.03])
-      .range([margin.top + plotHeight, margin.top]);
-    
-    const yScaleBottom = d3.scaleLinear()
-      .domain([0, 0.45])
-      .range([margin.top + plotHeight + 80 + plotHeight, margin.top + plotHeight + 80]);
-    
-    // Store scales
-    scalesRef.current.xScaleTop = xScaleTop;
-    scalesRef.current.xScaleBottom = xScaleBottom;
-    scalesRef.current.yScaleTop = yScaleTop;
-    scalesRef.current.yScaleBottom = yScaleBottom;
-    
-    // Normal PDF function
-    const normalPDF = (x, mean, sd) => {
-      const exp = -0.5 * Math.pow((x - mean) / sd, 2);
-      return (1 / (sd * Math.sqrt(2 * Math.PI))) * Math.exp(exp);
-    };
-    
-    // Generate data
-    const topData = d3.range(0, 200, 0.5)
-      .map(x => ({ x, y: normalPDF(x, mu, sigma) }));
-    
-    const bottomData = d3.range(-4, 4, 0.05)
-      .map(z => ({ x: z, y: normalPDF(z, 0, 1) }));
-    
-    // Update title
-    elementsRef.current.topTitle
-      .text(`Original Distribution: X ~ N(μ=${mu}, σ=${sigma})`);
-    
-    // Update axes
-    const xAxisTop = d3.axisBottom(xScaleTop).ticks(10).tickFormat(d => d.toFixed(0));
-    const xAxisBottom = d3.axisBottom(xScaleBottom).tickValues([-3, -2, -1, 0, 1, 2, 3]);
-    const yAxisTop = d3.axisLeft(yScaleTop).ticks(5);
-    const yAxisBottom = d3.axisLeft(yScaleBottom).ticks(5);
-    
-    elementsRef.current.xAxisTop.call(xAxisTop);
-    elementsRef.current.xAxisBottom.call(xAxisBottom);
-    elementsRef.current.yAxisTop.call(yAxisTop);
-    elementsRef.current.yAxisBottom.call(yAxisBottom);
-    
-    // Style axes
-    [elementsRef.current.xAxisTop, elementsRef.current.xAxisBottom, 
-     elementsRef.current.yAxisTop, elementsRef.current.yAxisBottom].forEach(axis => {
-      axis.selectAll("path, line").attr("stroke", colorScheme.chart.grid);
-      axis.selectAll("text").attr("fill", colorScheme.chart.text);
-    });
-    
-    // Area and line generators
-    const areaTop = d3.area()
-      .x(d => xScaleTop(d.x))
-      .y0(margin.top + plotHeight)
-      .y1(d => yScaleTop(d.y))
-      .curve(d3.curveBasis);
-    
-    const lineTop = d3.line()
-      .x(d => xScaleTop(d.x))
-      .y(d => yScaleTop(d.y))
-      .curve(d3.curveBasis);
-    
-    const areaBottom = d3.area()
-      .x(d => xScaleBottom(d.x))
-      .y0(margin.top + plotHeight + 80 + plotHeight)
-      .y1(d => yScaleBottom(d.y))
-      .curve(d3.curveBasis);
-    
-    const lineBottom = d3.line()
-      .x(d => xScaleBottom(d.x))
-      .y(d => yScaleBottom(d.y))
-      .curve(d3.curveBasis);
-    
-    // Update areas (shaded up to current value)
-    const areaDataTop = topData.filter(d => d.x <= xValue);
-    const areaDataBottom = bottomData.filter(d => d.x <= zScore);
-    
-    elementsRef.current.areaTop
-      .datum(areaDataTop)
-      .attr("d", areaTop)
-      .attr("fill", colorScheme.chart.primary)
-      .attr("opacity", 0.3);
-    
-    elementsRef.current.areaBottom
-      .datum(areaDataBottom)
-      .attr("d", areaBottom)
-      .attr("fill", colorScheme.chart.primary)
-      .attr("opacity", 0.3);
-    
-    // Update lines
-    elementsRef.current.lineTop
-      .datum(topData)
-      .attr("d", lineTop)
-      .attr("stroke", colorScheme.chart.primaryLight)
-      .attr("stroke-width", 2)
-      .attr("fill", "none");
-    
-    elementsRef.current.lineBottom
-      .datum(bottomData)
-      .attr("d", lineBottom)
-      .attr("stroke", colorScheme.chart.primaryLight)
-      .attr("stroke-width", 2)
-      .attr("fill", "none");
-    
-    // Update mean line
-    elementsRef.current.meanLine
-      .attr("x1", xScaleTop(mu))
-      .attr("y1", margin.top)
-      .attr("x2", xScaleTop(mu))
-      .attr("y2", margin.top + plotHeight)
-      .attr("stroke", colorScheme.chart.text)
-      .attr("stroke-width", 1)
-      .attr("opacity", 0.3)
-      .attr("stroke-dasharray", "3,3");
-    
-    // Update sigma markers
-    const sigmaData = [-3, -2, -1, 1, 2, 3]
-      .map(n => ({ n, x: mu + n * sigma }))
-      .filter(d => d.x >= 0 && d.x <= 200);
-    
-    const sigmaMarkers = elementsRef.current.sigmaMarkers
-      .selectAll("g")
-      .data(sigmaData);
-    
-    const sigmaEnter = sigmaMarkers.enter().append("g");
-    sigmaEnter.append("line");
-    sigmaEnter.append("text");
-    
-    sigmaMarkers.merge(sigmaEnter).select("line")
-      .attr("x1", d => xScaleTop(d.x))
-      .attr("y1", margin.top + plotHeight - 5)
-      .attr("x2", d => xScaleTop(d.x))
-      .attr("y2", margin.top + plotHeight)
-      .attr("stroke", colorScheme.chart.text)
-      .attr("stroke-width", 1)
-      .attr("opacity", 0.5);
-    
-    sigmaMarkers.merge(sigmaEnter).select("text")
-      .attr("x", d => xScaleTop(d.x))
-      .attr("y", margin.top + plotHeight + 20)
-      .attr("text-anchor", "middle")
-      .style("font-size", "10px")
-      .style("fill", colorScheme.chart.text)
-      .style("opacity", 0.7)
-      .text(d => `${d.n > 0 ? '+' : ''}${d.n}σ`);
-    
-    sigmaMarkers.exit().remove();
-    
-    // Update value lines
-    elementsRef.current.xLine
-      .attr("x1", xScaleTop(xValue))
-      .attr("y1", margin.top)
-      .attr("x2", xScaleTop(xValue))
-      .attr("y2", margin.top + plotHeight)
-      .attr("stroke", colorScheme.chart.secondary)
-      .attr("stroke-width", 2)
-      .attr("stroke-dasharray", "5,5");
-    
-    elementsRef.current.zLine
-      .attr("x1", xScaleBottom(zScore))
-      .attr("y1", margin.top + plotHeight + 80)
-      .attr("x2", xScaleBottom(zScore))
-      .attr("y2", margin.top + plotHeight + 80 + plotHeight)
-      .attr("stroke", colorScheme.chart.secondary)
-      .attr("stroke-width", 2)
-      .attr("stroke-dasharray", "5,5");
-    
-    // Update labels
-    elementsRef.current.xLabel
-      .attr("x", xScaleTop(xValue))
-      .attr("y", margin.top - 5)
-      .attr("text-anchor", "middle")
-      .style("font-size", "14px")
-      .style("font-weight", "600")
-      .style("fill", colorScheme.chart.secondary)
-      .text(`x = ${xValue.toFixed(1)}`);
-    
-    elementsRef.current.zLabel
-      .attr("x", xScaleBottom(zScore))
-      .attr("y", margin.top + plotHeight + 75)
-      .attr("text-anchor", "middle")
-      .style("font-size", "14px")
-      .style("font-weight", "600")
-      .style("fill", colorScheme.chart.secondary)
-      .text(`z = ${zScore.toFixed(3)}`);
-    
-  }, [mu, sigma, xValue, zScore]);
-  
-  // Drag handler
-  const handleDrag = useCallback((x, y) => {
-    if (!scalesRef.current.xScaleTop) return;
-    const newX = scalesRef.current.xScaleTop.invert(x);
-    const clampedX = Math.max(0, Math.min(200, newX));
-    onXValueChange(clampedX);
-  }, [onXValueChange]);
-  
-  // Create draggable marker
-  if (isInitialized.current && scalesRef.current.xScaleTop) {
-    const { margin, plotHeight } = scalesRef.current.dimensions;
-    const xScaleTop = scalesRef.current.xScaleTop;
-    const colorScheme = createColorScheme('inference');
-    
-    return (
-      <svg ref={svgRef} style={{ width: "100%", height: 680 }}>
-        <D3DragWrapper
-          onDrag={handleDrag}
-          onStart={onDragStart}
-          onEnd={onDragEnd}
-          initialPosition={{ x: xScaleTop(xValue), y: margin.top + plotHeight }}
-        >
-          <circle
-            r={8}
-            fill={colorScheme.chart.secondary}
-            stroke={colorScheme.chart.secondaryLight}
-            strokeWidth={2}
-            style={{ cursor: 'ew-resize' }}
-          />
-        </D3DragWrapper>
-      </svg>
-    );
-  }
-  
-  return <svg ref={svgRef} style={{ width: "100%", height: 680 }} />;
-});
-
 const NormalZScoreExplorer = () => {
   const colorScheme = createColorScheme('inference');
+  const svgRef = useRef(null);
+  const dragLineRef = useRef(null);
   
   // Parameters
   const [mu, setMu] = useState(100);
@@ -488,17 +66,406 @@ const NormalZScoreExplorer = () => {
     lastParams.current = { mu: 100, sigma: 15 };
   };
   
-  // Drag handlers
-  const handleDragStart = useCallback(() => {
-    if (!hasDragged.current) {
-      hasDragged.current = true;
-      setInteractionCount(1);
+  // D3 Visualization with fixed axes
+  useEffect(() => {
+    if (!svgRef.current || typeof window === 'undefined') return;
+    
+    const svg = d3.select(svgRef.current);
+    const { width } = svgRef.current.getBoundingClientRect();
+    const height = 600;
+    const margin = { top: 40, right: 60, bottom: 60, left: 60 };
+    const plotHeight = (height - margin.top - margin.bottom - 80) / 2;
+    
+    svg.selectAll("*").remove();
+    svg.attr("viewBox", `0 0 ${width} ${height}`);
+    
+    // Subtle gradient background
+    const defs = svg.append("defs");
+    const gradient = defs.append("linearGradient")
+      .attr("id", "bgGradient")
+      .attr("x1", "0%")
+      .attr("y1", "0%")
+      .attr("x2", "0%")
+      .attr("y2", "100%");
+    
+    gradient.append("stop")
+      .attr("offset", "0%")
+      .attr("style", "stop-color:#0f172a;stop-opacity:1");
+    
+    gradient.append("stop")
+      .attr("offset", "100%")
+      .attr("style", "stop-color:#1e293b;stop-opacity:1");
+    
+    svg.append("rect")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("fill", "url(#bgGradient)");
+    
+    // Create main group
+    const g = svg.append("g");
+    
+    // Fixed X scales for better stability
+    const fixedXMin = 0;
+    const fixedXMax = 200;
+    const xScaleTop = d3.scaleLinear()
+      .domain([fixedXMin, fixedXMax])
+      .range([margin.left, width - margin.right]);
+      
+    const xScaleBottom = d3.scaleLinear()
+      .domain([-4, 4])
+      .range([margin.left, width - margin.right]);
+    
+    // Fixed Y scales
+    const yScaleTop = d3.scaleLinear()
+      .domain([0, 0.03])  // Fixed to accommodate all reasonable distributions
+      .range([margin.top + plotHeight, margin.top]);
+      
+    const yScaleBottom = d3.scaleLinear()
+      .domain([0, 0.45])
+      .range([margin.top + plotHeight + 80 + plotHeight, margin.top + plotHeight + 80]);
+    
+    // Normal PDF functions
+    const normalPDF = (x, mean, sd) => {
+      const exp = -0.5 * Math.pow((x - mean) / sd, 2);
+      return (1 / (sd * Math.sqrt(2 * Math.PI))) * Math.exp(exp);
+    };
+    
+    // Generate data points for the entire visible range
+    const topData = d3.range(fixedXMin, fixedXMax, 0.5)
+      .map(x => ({ x, y: normalPDF(x, mu, sigma) }));
+      
+    const bottomData = d3.range(-4, 4, 0.05)
+      .map(z => ({ x: z, y: normalPDF(z, 0, 1) }));
+    
+    // Line generators
+    const lineTop = d3.line()
+      .x(d => xScaleTop(d.x))
+      .y(d => yScaleTop(d.y))
+      .curve(d3.curveBasis);
+      
+    const lineBottom = d3.line()
+      .x(d => xScaleBottom(d.x))
+      .y(d => yScaleBottom(d.y))
+      .curve(d3.curveBasis);
+    
+    // Top plot background
+    g.append("rect")
+      .attr("x", margin.left)
+      .attr("y", margin.top)
+      .attr("width", width - margin.left - margin.right)
+      .attr("height", plotHeight)
+      .attr("fill", "#1a1a1a")
+      .attr("stroke", colorScheme.chart.grid)
+      .attr("stroke-width", 1)
+      .attr("rx", 4);
+    
+    // Bottom plot background
+    g.append("rect")
+      .attr("x", margin.left)
+      .attr("y", margin.top + plotHeight + 80)
+      .attr("width", width - margin.left - margin.right)
+      .attr("height", plotHeight)
+      .attr("fill", "#1a1a1a")
+      .attr("stroke", colorScheme.chart.grid)
+      .attr("stroke-width", 1)
+      .attr("rx", 4);
+    
+    // Titles
+    g.append("text")
+      .attr("x", width / 2)
+      .attr("y", margin.top - 10)
+      .attr("text-anchor", "middle")
+      .style("font-size", "16px")
+      .style("font-weight", "600")
+      .style("fill", colorScheme.chart.text)
+      .text(`Original Distribution: X ~ N(\u03BC=${mu}, \u03C3=${sigma})`);
+      
+    g.append("text")
+      .attr("x", width / 2)
+      .attr("y", margin.top + plotHeight + 70)
+      .attr("text-anchor", "middle")
+      .style("font-size", "16px")
+      .style("font-weight", "600")
+      .style("fill", colorScheme.chart.text)
+      .text("Standard Normal: Z ~ N(0, 1)");
+    
+    // X axes with fixed tick positions
+    const xAxisTop = d3.axisBottom(xScaleTop)
+      .ticks(10)
+      .tickFormat(d => d.toFixed(0));
+      
+    const xAxisBottom = d3.axisBottom(xScaleBottom)
+      .tickValues([-3, -2, -1, 0, 1, 2, 3]);
+    
+    const xAxisTopG = g.append("g")
+      .attr("transform", `translate(0,${margin.top + plotHeight})`)
+      .call(xAxisTop);
+      
+    xAxisTopG.selectAll("path, line").attr("stroke", colorScheme.chart.grid);
+    xAxisTopG.selectAll("text").attr("fill", colorScheme.chart.text);
+      
+    const xAxisBottomG = g.append("g")
+      .attr("transform", `translate(0,${margin.top + plotHeight + 80 + plotHeight})`)
+      .call(xAxisBottom);
+      
+    xAxisBottomG.selectAll("path, line").attr("stroke", colorScheme.chart.grid);
+    xAxisBottomG.selectAll("text").attr("fill", colorScheme.chart.text);
+    
+    // Y axes
+    const yAxisTop = d3.axisLeft(yScaleTop).ticks(5);
+    const yAxisBottom = d3.axisLeft(yScaleBottom).ticks(5);
+    
+    const yAxisTopG = g.append("g")
+      .attr("transform", `translate(${margin.left},0)`)
+      .call(yAxisTop);
+      
+    yAxisTopG.selectAll("path, line").attr("stroke", colorScheme.chart.grid);
+    yAxisTopG.selectAll("text").attr("fill", colorScheme.chart.text).style("font-size", "11px");
+      
+    const yAxisBottomG = g.append("g")
+      .attr("transform", `translate(${margin.left},0)`)
+      .call(yAxisBottom);
+      
+    yAxisBottomG.selectAll("path, line").attr("stroke", colorScheme.chart.grid);
+    yAxisBottomG.selectAll("text").attr("fill", colorScheme.chart.text).style("font-size", "11px");
+    
+    // Axis labels
+    g.append("text")
+      .attr("x", width / 2)
+      .attr("y", margin.top + plotHeight + 35)
+      .attr("text-anchor", "middle")
+      .style("font-size", "12px")
+      .style("fill", colorScheme.chart.text)
+      .text("x");
+      
+    g.append("text")
+      .attr("x", width / 2)
+      .attr("y", margin.top + plotHeight + 80 + plotHeight + 35)
+      .attr("text-anchor", "middle")
+      .style("font-size", "12px")
+      .style("fill", colorScheme.chart.text)
+      .text("z");
+    
+    // Area under curve for top plot
+    const areaTop = d3.area()
+      .x(d => xScaleTop(d.x))
+      .y0(margin.top + plotHeight)
+      .y1(d => yScaleTop(d.y))
+      .curve(d3.curveBasis);
+      
+    const areaDataTop = topData.filter(d => d.x <= xValue);
+    
+    g.append("path")
+      .datum(areaDataTop)
+      .attr("d", areaTop)
+      .attr("fill", colorScheme.chart.primary)
+      .attr("opacity", 0.3);
+    
+    // Area under curve for bottom plot
+    const areaBottom = d3.area()
+      .x(d => xScaleBottom(d.x))
+      .y0(margin.top + plotHeight + 80 + plotHeight)
+      .y1(d => yScaleBottom(d.y))
+      .curve(d3.curveBasis);
+      
+    const areaDataBottom = bottomData.filter(d => d.x <= zScore);
+    
+    g.append("path")
+      .datum(areaDataBottom)
+      .attr("d", areaBottom)
+      .attr("fill", colorScheme.chart.primary)
+      .attr("opacity", 0.3);
+    
+    // Draw PDFs
+    g.append("path")
+      .datum(topData)
+      .attr("d", lineTop)
+      .attr("stroke", colorScheme.chart.primaryLight)
+      .attr("stroke-width", 2)
+      .attr("fill", "none");
+      
+    g.append("path")
+      .datum(bottomData)
+      .attr("d", lineBottom)
+      .attr("stroke", colorScheme.chart.primaryLight)
+      .attr("stroke-width", 2)
+      .attr("fill", "none");
+    
+    // Add mean line on top plot
+    g.append("line")
+      .attr("x1", xScaleTop(mu))
+      .attr("y1", margin.top)
+      .attr("x2", xScaleTop(mu))
+      .attr("y2", margin.top + plotHeight)
+      .attr("stroke", colorScheme.chart.text)
+      .attr("stroke-width", 1)
+      .attr("opacity", 0.3)
+      .attr("stroke-dasharray", "3,3");
+    
+    // Add sigma markers on top plot
+    [-3, -2, -1, 1, 2, 3].forEach(n => {
+      const x = mu + n * sigma;
+      if (x >= fixedXMin && x <= fixedXMax) {
+        g.append("line")
+          .attr("x1", xScaleTop(x))
+          .attr("y1", margin.top + plotHeight - 5)
+          .attr("x2", xScaleTop(x))
+          .attr("y2", margin.top + plotHeight)
+          .attr("stroke", colorScheme.chart.text)
+          .attr("stroke-width", 1)
+          .attr("opacity", 0.5);
+          
+        g.append("text")
+          .attr("x", xScaleTop(x))
+          .attr("y", margin.top + plotHeight + 20)
+          .attr("text-anchor", "middle")
+          .style("font-size", "10px")
+          .style("fill", colorScheme.chart.text)
+          .style("opacity", 0.7)
+          .text(`${n > 0 ? '+' : ''}${n}\u03C3`);
+      }
+    });
+    
+    // Vertical lines for current x and z
+    const xLine = g.append("line")
+      .attr("x1", xScaleTop(xValue))
+      .attr("y1", margin.top)
+      .attr("x2", xScaleTop(xValue))
+      .attr("y2", margin.top + plotHeight)
+      .attr("stroke", colorScheme.chart.secondary)
+      .attr("stroke-width", 2)
+      .attr("stroke-dasharray", "5,5");
+      
+    const zLine = g.append("line")
+      .attr("x1", xScaleBottom(zScore))
+      .attr("y1", margin.top + plotHeight + 80)
+      .attr("x2", xScaleBottom(zScore))
+      .attr("y2", margin.top + plotHeight + 80 + plotHeight)
+      .attr("stroke", colorScheme.chart.secondary)
+      .attr("stroke-width", 2)
+      .attr("stroke-dasharray", "5,5");
+    
+    // Draggable circle on top plot
+    const dragCircle = g.append("circle")
+      .attr("cx", xScaleTop(xValue))
+      .attr("cy", margin.top + plotHeight)
+      .attr("r", 8)
+      .attr("fill", colorScheme.chart.secondary)
+      .attr("stroke", colorScheme.chart.secondaryLight)
+      .attr("stroke-width", 2)
+      .attr("cursor", "ew-resize");
+    
+    // Value labels
+    const xLabel = g.append("text")
+      .attr("x", xScaleTop(xValue))
+      .attr("y", margin.top - 5)
+      .attr("text-anchor", "middle")
+      .style("font-size", "14px")
+      .style("font-weight", "600")
+      .style("fill", colorScheme.chart.secondary)
+      .text(`x = ${xValue.toFixed(1)}`);
+      
+    const zLabel = g.append("text")
+      .attr("x", xScaleBottom(zScore))
+      .attr("y", margin.top + plotHeight + 75)
+      .attr("text-anchor", "middle")
+      .style("font-size", "14px")
+      .style("font-weight", "600")
+      .style("fill", colorScheme.chart.secondary)
+      .text(`z = ${zScore.toFixed(3)}`);
+    
+    // Drag behavior
+    const drag = d3.drag()
+      .on("start", () => {
+        if (!hasDragged.current) {
+          hasDragged.current = true;
+          setInteractionCount(1);
+        }
+      })
+      .on("drag", (event) => {
+        const newX = xScaleTop.invert(event.x);
+        const clampedX = Math.max(fixedXMin, Math.min(fixedXMax, newX));
+        setXValue(clampedX);
+      });
+    
+    dragCircle.call(drag);
+    
+    // Add transformation arrow and formula
+    const transformY = margin.top + plotHeight + 40;
+    
+    // Arrow
+    const arrowG = g.append("g");
+    arrowG.append("path")
+      .attr("d", `M${width/2 - 50} ${transformY} L${width/2 + 50} ${transformY}`)
+      .attr("stroke", colorScheme.chart.secondary)
+      .attr("stroke-width", 2)
+      .attr("marker-end", "url(#arrowhead)");
+    
+    // Arrow marker
+    defs.append("marker")
+      .attr("id", "arrowhead")
+      .attr("viewBox", "0 -5 10 10")
+      .attr("refX", 8)
+      .attr("refY", 0)
+      .attr("markerWidth", 8)
+      .attr("markerHeight", 8)
+      .attr("orient", "auto")
+      .append("path")
+      .attr("d", "M0,-5L10,0L0,5")
+      .attr("fill", colorScheme.chart.secondary);
+    
+    // Transformation formula
+    g.append("text")
+      .attr("x", width / 2)
+      .attr("y", transformY - 10)
+      .attr("text-anchor", "middle")
+      .style("font-size", "14px")
+      .style("font-weight", "600")
+      .style("fill", colorScheme.chart.secondary)
+      .text("z = (x - \u03BC) / \u03C3");
+    
+    // Add animated connection for visual feedback
+    if (showTransformation) {
+      g.append("circle")
+        .attr("cx", xScaleTop(xValue))
+        .attr("cy", margin.top + plotHeight)
+        .attr("r", 4)
+        .attr("fill", colorScheme.chart.secondary)
+        .transition()
+        .duration(1000)
+        .attr("cx", xScaleBottom(zScore))
+        .attr("cy", margin.top + plotHeight + 80)
+        .on("end", () => setShowTransformation(false));
     }
-  }, []);
-  
-  const handleDragEnd = useCallback(() => {
-    // Could add any end-of-drag logic here
-  }, []);
+    
+    // Add grid lines
+    svg.append("g")
+      .attr("class", "grid")
+      .attr("transform", `translate(${margin.left},0)`)
+      .call(d3.axisLeft(yScaleTop)
+        .ticks(5)
+        .tickSize(-(width - margin.left - margin.right))
+        .tickFormat("")
+      )
+      .style("stroke-dasharray", "3,3")
+      .style("opacity", 0.3)
+      .selectAll("line")
+      .style("stroke", colorScheme.chart.grid);
+      
+    svg.append("g")
+      .attr("class", "grid")
+      .attr("transform", `translate(${margin.left},0)`)
+      .call(d3.axisLeft(yScaleBottom)
+        .ticks(5)
+        .tickSize(-(width - margin.left - margin.right))
+        .tickFormat("")
+      )
+      .style("stroke-dasharray", "3,3")
+      .style("opacity", 0.3)
+      .selectAll("line")
+      .style("stroke", colorScheme.chart.grid);
+    
+  }, [mu, sigma, xValue, zScore, colorScheme]);
   
   // Educational insights
   const getInsight = () => {
@@ -559,7 +526,7 @@ const NormalZScoreExplorer = () => {
               <div className="space-y-3">
                 <div>
                   <label className="text-sm text-gray-300 mb-1 block">
-                    Mean (μ): {mu}
+                    Mean (\u03BC): {mu}
                   </label>
                   <RangeSlider
                     value={mu}
@@ -573,7 +540,7 @@ const NormalZScoreExplorer = () => {
                 
                 <div>
                   <label className="text-sm text-gray-300 mb-1 block">
-                    Standard Deviation (σ): {sigma}
+                    Standard Deviation (\u03C3): {sigma}
                   </label>
                   <RangeSlider
                     value={sigma}
@@ -615,7 +582,6 @@ const NormalZScoreExplorer = () => {
               </div>
             </ControlGroup>
           </VisualizationSection>
-          
           {/* Statistics Display */}
           <VisualizationSection className="p-3">
             <h4 className="text-base font-bold text-white mb-3">Calculated Values</h4>
@@ -652,7 +618,6 @@ const NormalZScoreExplorer = () => {
               </div>
             </div>
           </VisualizationSection>
-          
           {/* Educational Insights - 4 Stage System */}
           <VisualizationSection className="p-3 bg-gradient-to-br from-teal-900/20 to-cyan-900/20 border-teal-600/30">
             <h4 className="text-base font-bold text-teal-300 mb-3">Learning Insights</h4>
@@ -711,7 +676,6 @@ const NormalZScoreExplorer = () => {
             </div>
           </VisualizationSection>
         </div>
-        
         {/* Right side - Visualization */}
         <div className="lg:w-2/3">
           <GraphContainer height="700px">
@@ -719,14 +683,7 @@ const NormalZScoreExplorer = () => {
               Normal Distribution Standardization
               <span className="text-xs font-normal text-gray-400 ml-2">(drag the orange point to explore)</span>
             </h4>
-            <NormalVisualization
-              mu={mu}
-              sigma={sigma}
-              xValue={xValue}
-              onXValueChange={setXValue}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-            />
+            <svg ref={svgRef} style={{ width: "100%", height: 680 }} />
           </GraphContainer>
         </div>
       </div>

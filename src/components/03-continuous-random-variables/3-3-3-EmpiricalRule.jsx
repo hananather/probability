@@ -12,8 +12,23 @@ import * as jStat from "jstat";
 const ParameterLabel = memo(function ParameterLabel({ label, symbol }) {
   const labelRef = useRef(null);
   
-  // Use safe MathJax processing with error handling
-  useSafeMathJax(labelRef, [symbol]);
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && labelRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([labelRef.current]);
+        }
+        window.MathJax.typesetPromise([labelRef.current]).catch(console.error);
+      }
+    };
+    
+    // Process immediately
+    processMathJax();
+    // Process again after a delay to catch any timing issues
+    const timeoutId = setTimeout(processMathJax, 500);
+    
+    return () => clearTimeout(timeoutId);
+  }, [symbol]);
   
   return (
     <span ref={labelRef}>
@@ -25,8 +40,23 @@ const ParameterLabel = memo(function ParameterLabel({ label, symbol }) {
 const SigmaButton = memo(function SigmaButton({ sd, isSelected, onClick }) {
   const buttonRef = useRef(null);
   
-  // Use safe MathJax processing with error handling
-  useSafeMathJax(buttonRef, [sd]);
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && buttonRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([buttonRef.current]);
+        }
+        window.MathJax.typesetPromise([buttonRef.current]).catch(console.error);
+      }
+    };
+    
+    // Process immediately
+    processMathJax();
+    // Process again after a delay to catch any timing issues
+    const timeoutId = setTimeout(processMathJax, 500);
+    
+    return () => clearTimeout(timeoutId);
+  }, [sd]);
   
   return (
     <Button
@@ -155,6 +185,12 @@ const EmpiricalRule = () => {
       clearInterval(intervalRef.current);
     } else {
       intervalRef.current = setInterval(generateSample, 50);
+      // Force MathJax re-render when starting simulation
+      setTimeout(() => {
+        if (typeof window !== "undefined" && window.MathJax?.typesetPromise) {
+          window.MathJax.typesetPromise().catch(console.error);
+        }
+      }, 100);
     }
     setIsGenerating(!isGenerating);
   };
@@ -174,6 +210,20 @@ const EmpiricalRule = () => {
       }
     };
   }, []);
+
+  // Ensure MathJax is processed on key state changes
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise) {
+        window.MathJax.typesetPromise().catch(console.error);
+      }
+    };
+    
+    // Process after a short delay to ensure DOM is updated
+    const timeoutId = setTimeout(processMathJax, 100);
+    
+    return () => clearTimeout(timeoutId);
+  }, [isGenerating, selectedRule, showHistogram]);
 
   // Handle responsive sizing
   useEffect(() => {

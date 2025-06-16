@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useRef } from "react";
-import { useSafeMathJax } from '../../utils/mathJaxFix';
 import { cn } from '../../lib/utils';
 
 const ExponentialDistributionWorkedExample = React.memo(function ExponentialDistributionWorkedExample({
@@ -18,8 +17,26 @@ const ExponentialDistributionWorkedExample = React.memo(function ExponentialDist
   const stdDev = Math.sqrt(variance);
   const survivalProb = Math.exp(-lambda * t);
   
-  // Use safe MathJax processing with error handling
-  useSafeMathJax(contentRef, [lambda, t]);
+  // Use the standard MathJax processing pattern with multiple retries
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax(); // Try immediately
+    const timeoutId1 = setTimeout(processMathJax, 100); // Retry after 100ms
+    const timeoutId2 = setTimeout(processMathJax, 500); // Additional retry after 500ms
+    
+    return () => {
+      clearTimeout(timeoutId1);
+      clearTimeout(timeoutId2);
+    };
+  }, [lambda, t]);
   
   return (
     <div

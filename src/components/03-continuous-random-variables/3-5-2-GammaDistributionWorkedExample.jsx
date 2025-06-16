@@ -7,7 +7,6 @@ import { RangeSlider } from "../ui/RangeSlider";
 import { useSafeMathJax } from '../../utils/mathJaxFix';
 import { colors, typography, components, formatNumber, createColorScheme } from '../../lib/design-system';
 import { VisualizationContainer, ControlGroup } from '../ui/VisualizationContainer';
-import { ProgressTracker } from '../ui/ProgressTracker';
 
 // Use probability color scheme
 const colorScheme = createColorScheme('probability');
@@ -107,12 +106,12 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
     
     gradient.append("stop")
       .attr("offset", "0%")
-      .attr("stop-color", colorScheme.primary)
+      .attr("stop-color", "#3b82f6")
       .attr("stop-opacity", 0.8);
     
     gradient.append("stop")
       .attr("offset", "100%")
-      .attr("stop-color", colorScheme.primary)
+      .attr("stop-color", "#3b82f6")
       .attr("stop-opacity", 0.1);
     
     // Add grid
@@ -160,7 +159,8 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
     
     svg.append("path")
       .datum(distributionData)
-      .attr("fill", "url(#gamma-gradient)")
+      .attr("fill", "#3b82f6")
+      .attr("opacity", 0.3)
       .attr("d", area);
     
     // Line
@@ -172,7 +172,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
     svg.append("path")
       .datum(distributionData)
       .attr("fill", "none")
-      .attr("stroke", colorScheme.primary)
+      .attr("stroke", "#3b82f6")
       .attr("stroke-width", 2)
       .attr("d", line);
     
@@ -182,7 +182,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
       .attr("x2", xScale(mean))
       .attr("y1", margin.top)
       .attr("y2", height - margin.bottom)
-      .attr("stroke", colorScheme.secondary)
+      .attr("stroke", "#3b82f6")
       .attr("stroke-width", 2)
       .attr("stroke-dasharray", "5,5");
     
@@ -190,7 +190,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
       .attr("x", xScale(mean))
       .attr("y", margin.top - 5)
       .attr("text-anchor", "middle")
-      .style("fill", colorScheme.secondary)
+      .style("fill", "#3b82f6")
       .style("font-size", "12px")
       .text(`μ = ${mean.toFixed(2)}`);
     
@@ -201,7 +201,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
         .attr("x2", xScale(mode))
         .attr("y1", margin.top)
         .attr("y2", height - margin.bottom)
-        .attr("stroke", colorScheme.tertiary)
+        .attr("stroke", "#3b82f6")
         .attr("stroke-width", 2)
         .attr("stroke-dasharray", "3,3");
       
@@ -209,7 +209,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
         .attr("x", xScale(mode))
         .attr("y", margin.top - 5)
         .attr("text-anchor", "middle")
-        .style("fill", colorScheme.tertiary)
+        .style("fill", "#3b82f6")
         .style("font-size", "12px")
         .text(`Mode = ${mode.toFixed(2)}`);
     }
@@ -280,21 +280,14 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
       title="Interactive Gamma Distribution Explorer"
       description="Explore how shape and rate parameters affect the Gamma distribution"
     >
-      {/* Progress Tracker */}
-      <ProgressTracker 
-        current={interactionCount}
-        goal={20}
-        label="Exploration Progress"
-        className="mb-6"
-      />
       
       {/* Main Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Visualization (60% width on desktop) */}
         <div className="lg:col-span-3">
           <div className={cn(
-            "bg-gray-900 rounded-lg p-4",
-            "border border-gray-700"
+            "bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-lg p-4",
+            "border border-neutral-700"
           )}>
             <svg
               ref={svgRef}
@@ -375,7 +368,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
           {/* Statistics Display */}
           <div className={cn(
             "p-4 rounded-lg",
-            "bg-gray-800 border border-gray-700"
+            "bg-neutral-800 border border-neutral-700"
           )}>
             <h4 className="text-base font-semibold mb-3">Distribution Statistics</h4>
             <div className="space-y-2">
@@ -406,8 +399,8 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
             <div 
               className={cn(
                 "p-3 rounded-lg cursor-pointer transition-all",
-                "bg-gray-800 border border-gray-700",
-                "hover:border-gray-600",
+                "bg-neutral-800 border border-neutral-700",
+                "hover:border-neutral-600",
                 expandedStep === 1 && "border-teal-600"
               )}
               onClick={() => setExpandedStep(expandedStep === 1 ? null : 1)}
@@ -434,8 +427,8 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
             <div 
               className={cn(
                 "p-3 rounded-lg cursor-pointer transition-all",
-                "bg-gray-800 border border-gray-700",
-                "hover:border-gray-600",
+                "bg-neutral-800 border border-neutral-700",
+                "hover:border-neutral-600",
                 expandedStep === 2 && "border-teal-600"
               )}
               onClick={() => setExpandedStep(expandedStep === 2 ? null : 2)}
@@ -456,7 +449,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
                       for <span dangerouslySetInnerHTML={{ __html: `\\(x > 0\\)` }} />, where <span dangerouslySetInnerHTML={{ __html: `\\(\\Gamma(k)\\)` }} /> is the gamma function
                     </p>
                     {interactionCount >= 7 && (
-                      <div className="mt-2 p-2 bg-gray-700/50 rounded text-xs">
+                      <div className="mt-2 p-2 bg-neutral-700/50 rounded text-xs">
                         <p className="text-yellow-400">💡 Shape Behavior:</p>
                         <ul className="mt-1 space-y-1 text-gray-300">
                           <li>• <span dangerouslySetInnerHTML={{ __html: `\\(k < 1\\)` }} />: J-shaped, decreasing</li>
@@ -474,8 +467,8 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
             <div 
               className={cn(
                 "p-3 rounded-lg cursor-pointer transition-all",
-                "bg-gray-800 border border-gray-700",
-                "hover:border-gray-600",
+                "bg-neutral-800 border border-neutral-700",
+                "hover:border-neutral-600",
                 expandedStep === 3 && "border-teal-600"
               )}
               onClick={() => setExpandedStep(expandedStep === 3 ? null : 3)}
@@ -511,8 +504,8 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
               <div 
                 className={cn(
                   "p-3 rounded-lg cursor-pointer transition-all animate-fadeIn",
-                  "bg-gray-800 border border-gray-700",
-                  "hover:border-gray-600",
+                  "bg-neutral-800 border border-neutral-700",
+                  "hover:border-neutral-600",
                   expandedStep === 4 && "border-teal-600"
                 )}
                 onClick={() => setExpandedStep(expandedStep === 4 ? null : 4)}
@@ -584,7 +577,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
           {interactionCount >= 15 && (
             <div className={cn(
               "p-4 rounded-lg animate-fadeIn",
-              "bg-gray-800 border border-gray-700"
+              "bg-neutral-800 border border-neutral-700"
             )}>
               <p className="text-sm font-semibold mb-2">
                 📊 Applications

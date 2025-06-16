@@ -11,10 +11,11 @@ export function RangeSlider({
   showValue = true,
   formatValue = (v) => v,
   className = "",
-  id
+  id,
+  disabled = false
 }) {
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
+    <div className={`flex items-center gap-2 ${className} ${disabled ? 'opacity-50' : ''}`}>
       {label && <label htmlFor={id} className="text-sm text-foreground">{label}:</label>}
       <input
         id={id}
@@ -25,7 +26,8 @@ export function RangeSlider({
         value={value ?? min}
         onChange={(e) => onChange(Number(e.target.value))}
         className="slider flex-1"
-        style={{ cursor: 'pointer' }}
+        style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
+        disabled={disabled}
       />
       {showValue && (
         <span className="text-sm min-w-[3rem] text-right text-foreground">
