@@ -63,6 +63,7 @@ export const FDistributionExplorer = () => {
   const svgRef = useRef(null);
   const localFValuesRef = useRef([]);
   const animationIdRef = useRef(null);
+  const isCancelledRef = useRef(false);
   
   // Calculate degrees of freedom
   const df1 = sampleSizeN1 - 1;
@@ -75,8 +76,10 @@ export const FDistributionExplorer = () => {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      isCancelledRef.current = true;
       if (animationIdRef.current) {
         clearTimeout(animationIdRef.current);
+        animationIdRef.current = null;
       }
     };
   }, []);
@@ -132,6 +135,7 @@ export const FDistributionExplorer = () => {
     if (isGenerating) return;
     
     setIsGenerating(true);
+    isCancelledRef.current = false;
     const numSamples = 100;
     const newFValues = [];
     
@@ -139,52 +143,56 @@ export const FDistributionExplorer = () => {
       newFValues.push(generateSingleFStatistic());
     }
     
-    let isCancelled = false;
-    
     // Animate addition of values
     const animateAddition = (index) => {
-      if (isCancelled || index >= newFValues.length) {
-        if (!isCancelled) {
+      if (isCancelledRef.current || index >= newFValues.length) {
+        if (!isCancelledRef.current) {
           setSimulatedFValues(prev => {
             const combined = [...prev, ...newFValues];
             return combined.length > MAX_STORED_VALUES 
               ? combined.slice(-MAX_STORED_VALUES)
               : combined;
           });
-          setIsGenerating(false);
+          localFValuesRef.current = [...localFValuesRef.current, ...newFValues].slice(-MAX_STORED_VALUES);
         }
+        setIsGenerating(false);
+        animationIdRef.current = null;
         return;
       }
       
-      // Memory management for local ref
-      if (localFValuesRef.current.length >= MAX_STORED_VALUES) {
-        localFValuesRef.current = localFValuesRef.current.slice(-MAX_STORED_VALUES + 1);
-      }
-      localFValuesRef.current = [...localFValuesRef.current, newFValues[index]];
+      // Update state incrementally for visual feedback
+      setSimulatedFValues(prev => {
+        const updated = [...prev, newFValues[index]];
+        return updated.length > MAX_STORED_VALUES 
+          ? updated.slice(-MAX_STORED_VALUES)
+          : updated;
+      });
       
-      const timeoutId = setTimeout(() => {
+      // Memory management for local ref
+      localFValuesRef.current = [...localFValuesRef.current, newFValues[index]].slice(-MAX_STORED_VALUES);
+      
+      animationIdRef.current = setTimeout(() => {
         animateAddition(index + 1);
       }, Math.max(20, 200 / Math.sqrt(index + 1)));
-      
-      animationIdRef.current = timeoutId;
     };
     
     animateAddition(0);
-    
-    // Cleanup function
-    return () => {
-      isCancelled = true;
-      if (animationIdRef.current) {
-        clearTimeout(animationIdRef.current);
-      }
-    };
   }, [generateSingleFStatistic, isGenerating]);
   
   // Reset function
   const handleReset = useCallback(() => {
+    // Cancel any ongoing animations
+    isCancelledRef.current = true;
+    if (animationIdRef.current) {
+      clearTimeout(animationIdRef.current);
+      animationIdRef.current = null;
+    }
+    
+    // Reset state
     setSimulatedFValues([]);
     localFValuesRef.current = [];
     setLastGeneratedF(null);
+    setIsGenerating(false);
   }, []);
   
   // Get insights based on current state
@@ -493,10 +501,19 @@ export const FDistributionExplorer = () => {
   
   // Cleanup animation on parameter change
   useEffect(() => {
+    isCancelledRef.current = true;
     if (animationIdRef.current) {
       clearTimeout(animationIdRef.current);
+      animationIdRef.current = null;
     }
     setIsGenerating(false);
+    
+    // Reset cancel flag after cleanup
+    const timer = setTimeout(() => {
+      isCancelledRef.current = false;
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, [sampleSizeN1, sampleSizeN2]);
   
   return (

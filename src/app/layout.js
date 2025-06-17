@@ -1,13 +1,11 @@
 import './globals.css';
 import 'katex/dist/katex.min.css';
-import { SidebarProvider, SidebarTrigger } from '../components/ui/sidebar';
-import { AppSidebar } from '../components/shared/AppSidebar';
-import { ContentWrapper } from '../components/shared/ContentWrapper';
 import { MathJaxProvider } from '../components/shared/MathJaxProvider';
+import { LayoutWrapper } from '../components/shared/LayoutWrapper';
 
 export const metadata = {
   title: 'Probability Lab - MAT 2377',
-  description: 'Interactive probability and statistics learning platform',
+  description: 'Interactive probability and statistics learning platform for engineering students',
 };
 
 export default function RootLayout({ children }) {
@@ -15,13 +13,9 @@ export default function RootLayout({ children }) {
     <html lang="en" className="scroll-smooth antialiased">
       <body>
         <MathJaxProvider>
-          <SidebarProvider>
-            <AppSidebar />
-            <SidebarTrigger />
-            <ContentWrapper>
-              {children}
-            </ContentWrapper>
-          </SidebarProvider>
+          <LayoutWrapper>
+            {children}
+          </LayoutWrapper>
         </MathJaxProvider>
       </body>
     </html>

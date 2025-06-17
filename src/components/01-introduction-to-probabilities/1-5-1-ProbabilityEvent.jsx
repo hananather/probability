@@ -156,8 +156,10 @@ function ProbabilityEvent() {
   useEffect(() => {
     if (!svgRef.current) return;
     
+    // Store the bounding rect immediately to prevent race conditions
+    const boundingRect = svgRef.current.getBoundingClientRect();
     const svg = d3.select(svgRef.current);
-    const { width } = svgRef.current.getBoundingClientRect();
+    const { width } = boundingRect;
     const height = 500; // Increased from 400 to 500
     const margin = { top: 120, right: 40, bottom: 60, left: 60 }; // Increased top margin from 80 to 120
     

@@ -1,14 +1,10 @@
-"use client";
-/*
-  MDX-driven home page for Probability Concepts.
-  Imports the MDX file which itself loads content and simulations.
-*/
-import Probability from "../content/probability.mdx";
+import LandingAcademic from '@/components/landing/LandingAcademic';
+
+export const metadata = {
+  title: 'Probability Lab - Interactive Learning Platform',
+  description: 'Master probability, statistics, and linear regression through interactive visualizations. An educational platform for engineering students.',
+};
 
 export default function Home() {
-  return (
-    <div className="space-y-8">
-      <Probability />
-    </div>
-  );
+  return <LandingAcademic />;
 }

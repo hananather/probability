@@ -4,11 +4,39 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Sidebar, SidebarContent } from '../ui/sidebar';
 import { ChevronDownIcon, ChevronRightIcon } from '@radix-ui/react-icons';
+import { cn } from '@/lib/utils';
+
+// Map component names to section IDs
+const sectionIdMap = {
+  'SampleSpacesEvents': 'sample-spaces',
+  'CountingTechniques': 'counting',
+  'OrderedSamples': 'ordered',
+  'UnorderedSamples': 'unordered',
+  'ProbabilityEvent': 'probability',
+  'ConditionalProbability': 'conditional',
+  'MeanMedianMode': 'measures-central',
+  'HistogramShapeExplorer': 'histograms',
+  'DescriptiveStatsExplorer': 'stats-explorer',
+  'TDistributionExplorer': 't-distribution',
+  'FDistributionExplorer': 'f-distribution',
+  'PointEstimation': 'point-estimation',
+  'ConfidenceInterval': 'confidence-intervals',
+  'Bootstrapping': 'bootstrapping',
+  'HypothesisTestingGame': 'hypothesis-game',
+  'SpatialRandomVariable': 'random-variables',
+  'ExpectationVariance': 'expectation-variance',
+  'Transformations': 'transformations'
+};
+
+// Helper function to get section ID from component name
+const getSectionId = (componentName) => {
+  return sectionIdMap[componentName] || componentName.toLowerCase();
+};
 
 const chapters = [
   {
     title: 'Overview',
-    path: '/',
+    path: '/overview',
     sections: [
       { title: 'Chance Events', url: '#chance-events' },
       { title: 'Expectation & Variance', url: '#expectation-variance' },
@@ -103,12 +131,12 @@ function AppSidebarInner() {
   const [expandedChapters, setExpandedChapters] = useState(() => {
     // Expand current chapter by default
     const currentChapter = chapters.find(ch => ch.path === pathname);
-    return currentChapter ? [currentChapter.path] : ['/'];
+    return currentChapter ? [currentChapter.path] : ['/overview'];
   });
 
   useEffect(() => {
-    // Only use intersection observer on the main page
-    if (pathname === '/') {
+    // Only use intersection observer on the overview page
+    if (pathname === '/overview') {
       const handleIntersect = (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
@@ -135,6 +163,18 @@ function AppSidebarInner() {
     <Sidebar>
       <SidebarContent>
         <nav className="space-y-1 p-2">
+          {/* Course Overview Link */}
+          <Link
+            href="/"
+            className="flex items-center px-3 py-2 mb-4 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800 rounded transition-colors"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            Course Overview
+          </Link>
+          <div className="border-t border-neutral-700 mb-2"></div>
+          
           {chapters.map((chapter) => {
             const isExpanded = expandedChapters.includes(chapter.path);
             const isActive = pathname === chapter.path;
@@ -156,11 +196,12 @@ function AppSidebarInner() {
                   </button>
                   <Link
                     href={chapter.path}
-                    className={`flex-1 px-2 py-1.5 rounded text-sm font-medium transition-colors ${
+                    className={cn(
+                      "flex-1 px-2 py-1.5 rounded text-sm font-medium transition-colors",
                       isActive 
-                        ? 'bg-neutral-700 text-white' 
-                        : 'hover:bg-neutral-800 text-neutral-300 hover:text-white'
-                    }`}
+                        ? "bg-neutral-700 text-white" 
+                        : "hover:bg-neutral-800 text-neutral-300 hover:text-white"
+                    )}
                   >
                     {chapter.title.replace(/Chapter \d+: /, '')}
                   </Link>
@@ -181,27 +222,7 @@ function AppSidebarInner() {
                           isActiveSection = activeId === sectionId;
                         } else if (section.component) {
                           // For component-based sections, check search param
-                          const sectionIdMap = {
-                            'SampleSpacesEvents': 'sample-spaces',
-                            'CountingTechniques': 'counting',
-                            'OrderedSamples': 'ordered',
-                            'UnorderedSamples': 'unordered',
-                            'ProbabilityEvent': 'probability',
-                            'ConditionalProbability': 'conditional',
-                            'MeanMedianMode': 'measures-central',
-                            'HistogramShapeExplorer': 'histograms',
-                            'DescriptiveStatsExplorer': 'stats-explorer',
-                            'TDistributionExplorer': 't-distribution',
-                            'FDistributionExplorer': 'f-distribution',
-                            'PointEstimation': 'point-estimation',
-                            'ConfidenceInterval': 'confidence-intervals',
-                            'Bootstrapping': 'bootstrapping',
-                            'HypothesisTestingGame': 'hypothesis-game',
-                            'SpatialRandomVariable': 'random-variables',
-                            'ExpectationVariance': 'expectation-variance',
-                            'Transformations': 'transformations'
-                          };
-                          const mappedSectionId = sectionIdMap[section.component] || section.component.toLowerCase();
+                          const mappedSectionId = getSectionId(section.component);
                           isActiveSection = currentSection === mappedSectionId || 
                                           (!currentSection && section === chapter.sections[0]); // Default to first section
                         }
@@ -224,32 +245,11 @@ function AppSidebarInner() {
                         // For sections with custom paths (like MDX pages)
                         href = section.customPath;
                       } else if (section.url) {
-                        // For hash-based sections (main page and chapter 3)
-                        href = `${chapter.path === '/' ? '' : chapter.path}${section.url}`;
+                        // For hash-based sections (overview page and chapter 3)
+                        href = `${chapter.path}${section.url}`;
                       } else if (section.component) {
                         // For component-based sections (chapters with button navigation)
-                        // Map component names to section IDs
-                        const sectionIdMap = {
-                          'SampleSpacesEvents': 'sample-spaces',
-                          'CountingTechniques': 'counting',
-                          'OrderedSamples': 'ordered',
-                          'UnorderedSamples': 'unordered',
-                          'ProbabilityEvent': 'probability',
-                          'ConditionalProbability': 'conditional',
-                          'MeanMedianMode': 'measures-central',
-                          'HistogramShapeExplorer': 'histograms',
-                          'DescriptiveStatsExplorer': 'stats-explorer',
-                          'TDistributionExplorer': 't-distribution',
-                          'FDistributionExplorer': 'f-distribution',
-                          'PointEstimation': 'point-estimation',
-                          'ConfidenceInterval': 'confidence-intervals',
-                          'Bootstrapping': 'bootstrapping',
-                          'HypothesisTestingGame': 'hypothesis-game',
-                          'SpatialRandomVariable': 'random-variables',
-                          'ExpectationVariance': 'expectation-variance',
-                          'Transformations': 'transformations'
-                        };
-                        const sectionId = sectionIdMap[section.component] || section.component.toLowerCase();
+                        const sectionId = getSectionId(section.component);
                         href = `${chapter.path}?section=${sectionId}`;
                       } else {
                         href = chapter.path;
@@ -259,11 +259,12 @@ function AppSidebarInner() {
                         <Link
                           key={section.title}
                           href={href}
-                          className={`block px-3 py-1.5 rounded text-xs transition-colors ${
+                          className={cn(
+                            "block px-3 py-1.5 rounded text-xs transition-colors",
                             isActiveSection
-                              ? 'bg-neutral-700 text-white font-medium' 
-                              : 'text-neutral-400 hover:bg-neutral-800 hover:text-white'
-                          }`}
+                              ? "bg-neutral-700 text-white font-medium" 
+                              : "text-neutral-400 hover:bg-neutral-800 hover:text-white"
+                          )}
                         >
                           {section.title}
                         </Link>

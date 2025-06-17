@@ -101,7 +101,16 @@
       "Bash(then echo \"$file\")",
       "Bash(fi)",
       "Bash(done)",
-      "Bash(# Update all remaining files\nfor file in 3-5-1-GammaDistribution.jsx 3-5-2-GammaDistributionWorkedExample.jsx 3-7-1-NormalApproxBinomial.jsx 3-7-2-NormalApproxBinomialWorkedExample.jsx; do\n    echo \"Processing $file...\"\n    \n    # Add import if not already present\n    if ! grep -q \"useSafeMathJax\" \"$file\"; then\n        # Find the last import line and add our import after it\n        last_import=$(grep -n \"^import\" \"$file\" | tail -1 | cut -d: -f1)\n        if [ ! -z \"$last_import\" ]; then\n            sed -i '' \"${last_import}a\\\\\nimport { useSafeMathJax } from '../../utils/mathJaxFix';\" \"$file\"\n        fi\n    fi\ndone)"
+      "Bash(# Update all remaining files\nfor file in 3-5-1-GammaDistribution.jsx 3-5-2-GammaDistributionWorkedExample.jsx 3-7-1-NormalApproxBinomial.jsx 3-7-2-NormalApproxBinomialWorkedExample.jsx; do\n    echo \"Processing $file...\"\n    \n    # Add import if not already present\n    if ! grep -q \"useSafeMathJax\" \"$file\"; then\n        # Find the last import line and add our import after it\n        last_import=$(grep -n \"^import\" \"$file\" | tail -1 | cut -d: -f1)\n        if [ ! -z \"$last_import\" ]; then\n            sed -i '' \"${last_import}a\\\\\nimport { useSafeMathJax } from '../../utils/mathJaxFix';\" \"$file\"\n        fi\n    fi\ndone)",
+      "Bash(npm ls:*)",
+      "Bash(npm outdated)",
+      "Bash(for:*)",
+      "Bash(do)",
+      "Bash(if ! grep -q \"import.*VisualizationContainer.*from\" \"$file\")",
+      "Bash(then)",
+      "Bash(/dev/null)",
+      "Bash(git fetch:*)",
+      "Bash(git merge:*)"
     ],
     "deny": []
   }

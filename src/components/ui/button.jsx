@@ -27,6 +27,7 @@ const buttonVariants = cva(
         warning: "bg-orange-600 text-white hover:bg-orange-700 focus:ring-orange-500",
         info: "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
         neutral: "bg-neutral-600 text-white hover:bg-neutral-700 focus:ring-neutral-500 disabled:bg-neutral-600",
+        tutorial: "bg-violet-600 text-white hover:bg-violet-700 focus:ring-violet-500 shadow-md hover:shadow-lg",
       },
       size: {
         default: "h-9 px-4 py-2",
