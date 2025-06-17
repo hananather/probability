@@ -9,8 +9,8 @@ import {
 } from '../ui/VisualizationContainer';
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
 import { ProgressTracker } from '../ui/ProgressTracker';
-import { Tutorial } from '../ui/Tutorial';
 import { Button } from '../ui/button';
+import { tutorial_1_6_1 } from '@/tutorials/chapter1';
 
 // Use probability color scheme
 const colorScheme = createColorScheme('probability');
@@ -1299,115 +1299,13 @@ function ConditionalProbability() {
 
   const educationalInsight = getEducationalInsight();
 
-  // Tutorial steps for conditional probability
-  const tutorialSteps = [
-    {
-      title: "Welcome to Conditional Probability! 🎯",
-      content: (
-        <div className="space-y-2">
-          <p>Conditional probability answers the question: "What's the probability of event B happening, given that event A has already occurred?"</p>
-          <p className="text-blue-400">P(B|A) = P(A∩B) / P(A)</p>
-          <p>This interactive visualization will help you master this fundamental concept through hands-on exploration.</p>
-        </div>
-      )
-    },
-    {
-      target: '.event-A',
-      title: "Interactive Events",
-      content: (
-        <div className="space-y-2">
-          <p>These colored rectangles represent events A, B, and C. You can:</p>
-          <ul className="list-disc list-inside space-y-1 text-sm">
-            <li><strong>Drag</strong> the rectangle to move it</li>
-            <li><strong>Resize</strong> by dragging the white handles on the sides</li>
-            <li><strong>Overlap</strong> events to create intersections</li>
-          </ul>
-          <p className="text-yellow-400 text-sm">Try dragging event A now!</p>
-        </div>
-      ),
-      position: 'bottom'
-    },
-    {
-      title: "Understanding Perspectives 🔍",
-      content: (
-        <div className="space-y-2">
-          <p>The power of conditional probability lies in changing perspectives:</p>
-          <ul className="list-disc list-inside space-y-1 text-sm">
-            <li><strong>Universe:</strong> Shows all probabilities P(A), P(B), P(C)</li>
-            <li><strong>Given A:</strong> Shows P(B|A), P(C|A) - only considering outcomes in A</li>
-            <li><strong>Given B/C:</strong> Similar conditional views</li>
-          </ul>
-          <p className="text-green-400 text-sm">Switch between perspectives to see how probabilities change!</p>
-        </div>
-      )
-    },
-    {
-      title: "Sampling and the Law of Large Numbers",
-      content: (
-        <div className="space-y-2">
-          <p>Click "Start Sampling" to drop random samples through your events.</p>
-          <p>Watch as empirical probabilities converge to theoretical values - this is the Law of Large Numbers in action!</p>
-          <p className="text-purple-400 text-sm">Goal: Collect 30 samples to see patterns emerge clearly.</p>
-        </div>
-      )
-    },
-    {
-      title: "Discovering Independence 🎲",
-      content: (
-        <div className="space-y-2">
-          <p>Two events A and B are <strong>independent</strong> when:</p>
-          <p className="text-blue-400 font-mono">P(B|A) = P(B)</p>
-          <p>In other words, knowing A occurred doesn't change the probability of B!</p>
-          <p className="text-yellow-400 text-sm">Challenge: Can you arrange the events to make A and B independent?</p>
-        </div>
-      )
-    },
-    {
-      title: "Mathematical Analysis Tab 📊",
-      content: (
-        <div className="space-y-2">
-          <p>Click the "Mathematical Analysis" tab to explore:</p>
-          <ul className="list-disc list-inside space-y-1 text-sm">
-            <li><strong>Bayes' Theorem:</strong> Reverse conditional probabilities</li>
-            <li><strong>Joint Probability Tables:</strong> See all combinations</li>
-            <li><strong>Law of Total Probability:</strong> Partition the sample space</li>
-            <li><strong>Chain Rule:</strong> Handle multiple events</li>
-          </ul>
-          <p className="text-green-400 text-sm">Real engineering applications included!</p>
-        </div>
-      )
-    },
-    {
-      title: "Ready to Explore! 🚀",
-      content: (
-        <div className="space-y-2">
-          <p>You're all set to master conditional probability!</p>
-          <p>Remember:</p>
-          <ul className="list-disc list-inside space-y-1 text-sm">
-            <li>Experiment freely - drag, resize, and overlap events</li>
-            <li>Watch for the independence indicator</li>
-            <li>Collect samples to see convergence</li>
-            <li>Switch perspectives to build intuition</li>
-          </ul>
-          <p className="text-blue-400 font-semibold">Let's begin your probability journey!</p>
-        </div>
-      )
-    }
-  ];
-
-  // State for showing tutorial
-  const [showTutorial, setShowTutorial] = useState(false);
 
   return (
-    <VisualizationContainer title="Conditional Probability and Independence (Fixed)">
-      <Tutorial
-        steps={tutorialSteps}
-        onComplete={() => setShowTutorial(false)}
-        onSkip={() => setShowTutorial(false)}
-        showOnMount={true}
-        persistKey="conditional-probability-1-6-1-fixed"
-        mode="modal"
-      />
+    <VisualizationContainer 
+      title="Conditional Probability and Independence (Fixed)"
+      tutorialSteps={tutorial_1_6_1}
+      tutorialKey="conditional-probability-1-6-1"
+    >
       <div className="flex flex-col lg:flex-row gap-6 h-full">
         {/* Left Panel */}
         <div className="lg:w-1/3 flex flex-col gap-3">
@@ -1435,19 +1333,6 @@ function ConditionalProbability() {
                   <strong>Watch patterns</strong> emerge as samples accumulate
                 </div>
               </div>
-            </div>
-            <div className="mt-4">
-              <Button
-                variant="info"
-                size="sm"
-                onClick={() => {
-                  localStorage.removeItem('tutorial-conditional-probability-1-6-1-fixed-completed');
-                  window.location.reload();
-                }}
-                className="w-full"
-              >
-                Show Tutorial Again
-              </Button>
             </div>
           </VisualizationSection>
 

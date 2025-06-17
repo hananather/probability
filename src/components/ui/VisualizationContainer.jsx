@@ -1,6 +1,8 @@
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { layout, spacing, typography, colors, cn } from '../../lib/design-system';
+import { TutorialButton } from './TutorialButton';
+import { Tutorial } from './Tutorial';
 
 /**
  * Unified container for all visualization components
@@ -9,13 +11,53 @@ import { layout, spacing, typography, colors, cn } from '../../lib/design-system
 export const VisualizationContainer = ({ 
   title, 
   children, 
-  className = '' 
+  className = '',
+  tutorialSteps = null,
+  tutorialKey = null,
+  showTutorialOnMount = true
 }) => {
+  const [tutorialResetKey, setTutorialResetKey] = useState(0);
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  
+  const handleTutorialRestart = () => {
+    if (tutorialKey && typeof window !== 'undefined') {
+      localStorage.removeItem(`tutorial-${tutorialKey}-completed`);
+      // Force re-render by updating a key
+      setTutorialResetKey(prev => prev + 1);
+    }
+  };
   return (
-    <div className={cn(layout.container, className)}>
-      {title && (
-        <h2 className={typography.h2}>{title}</h2>
+    <div className={cn(layout.container, 'relative', className)}>
+      {/* Tutorial Modal - Only render on client */}
+      {isClient && tutorialSteps && (
+        <Tutorial
+          key={tutorialResetKey}
+          steps={tutorialSteps}
+          onComplete={() => {}}
+          onSkip={() => {}}
+          showOnMount={showTutorialOnMount}
+          persistKey={tutorialKey}
+          mode="modal"
+        />
       )}
+      
+      {/* Title Bar with Tutorial Button */}
+      {title && (
+        <div className="flex items-center justify-between mb-4">
+          <h2 className={typography.h2}>{title}</h2>
+          {isClient && tutorialSteps && (
+            <TutorialButton 
+              onClick={handleTutorialRestart}
+              position="inline"
+            />
+          )}
+        </div>
+      )}
+      
       <div className={spacing.section}>
         {children}
       </div>

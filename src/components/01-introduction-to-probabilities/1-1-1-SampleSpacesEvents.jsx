@@ -10,6 +10,7 @@ import {
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
 import { Button } from '../ui/button';
 import { ProgressBar } from '../ui/ProgressBar';
+import { tutorial_1_1_1 } from '@/tutorials/chapter1';
 // Removed KeyboardSetBuilder - using simple input instead
 
 // Use probability color scheme for set theory
@@ -708,7 +709,12 @@ function SampleSpacesEvents() {
   }
 
   return (
-    <VisualizationContainer title="Sample Spaces and Set Operations" className="p-2">
+    <VisualizationContainer 
+      title="Sample Spaces and Set Operations" 
+      className="p-2"
+      tutorialSteps={tutorial_1_1_1}
+      tutorialKey="sample-spaces-1-1-1"
+    >
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Simplified Left Panel - Only 3 sections */}
         <div className="lg:w-1/4 space-y-4">

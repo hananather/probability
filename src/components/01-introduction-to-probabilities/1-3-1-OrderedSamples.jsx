@@ -10,6 +10,7 @@ import {
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
 import { Button } from '../ui/button';
 import { ProgressTracker } from '../ui/ProgressTracker';
+import { tutorial_1_3_1 } from '@/tutorials/chapter1';
 
 // Use probability color scheme
 const colorScheme = createColorScheme('probability');
@@ -172,8 +173,19 @@ function OrderedSamples() {
     if (!svgRef.current) return;
     
     const svg = d3.select(svgRef.current);
-    const { width } = svgRef.current.getBoundingClientRect();
+    
+    let width = 600; // Default width
     const height = 500;
+    
+    try {
+      const rect = svgRef.current.getBoundingClientRect();
+      if (rect && rect.width > 0) {
+        width = rect.width;
+      }
+    } catch (error) {
+      console.warn('Failed to get SVG dimensions, using default:', error);
+    }
+    
     const margin = { top: 50, right: 50, bottom: 50, left: 50 };
     
     svg.selectAll("*").remove();
@@ -508,7 +520,12 @@ function OrderedSamples() {
   }
 
   return (
-    <VisualizationContainer title="Ordered Samples (Permutations)" className="p-2">
+    <VisualizationContainer 
+      title="Ordered Samples (Permutations)" 
+      className="p-2"
+      tutorialSteps={tutorial_1_3_1}
+      tutorialKey="ordered-samples-1-3-1"
+    >
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Left Panel */}
         <div className="lg:w-1/3 space-y-3">

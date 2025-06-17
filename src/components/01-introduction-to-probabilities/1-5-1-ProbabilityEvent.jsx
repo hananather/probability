@@ -9,6 +9,7 @@ import {
 } from '../ui/VisualizationContainer';
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
 import { ProgressTracker } from '../ui/ProgressTracker';
+import { tutorial_1_5_1 } from '@/tutorials/chapter1';
 
 // Use probability color scheme
 const colorScheme = createColorScheme('probability');
@@ -411,7 +412,12 @@ function ProbabilityEvent() {
   }, []);
 
   return (
-    <VisualizationContainer title="Probability of an Event" className="p-2">
+    <VisualizationContainer 
+      title="Probability of an Event" 
+      className="p-2"
+      tutorialSteps={tutorial_1_5_1}
+      tutorialKey="probability-event-1-5-1"
+    >
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Left Panel */}
         <div className="lg:w-1/3 space-y-3">
