@@ -15,6 +15,7 @@ export function OrderedVsUnordered() {
   const [mode, setMode] = useState('ordered'); // 'ordered' or 'unordered'
   const [animating, setAnimating] = useState(false);
   const svgRef = useRef(null);
+  const timeoutRef = useRef(null);
 
   useEffect(() => {
     if (!svgRef.current) return;
@@ -342,13 +343,35 @@ export function OrderedVsUnordered() {
         .style("opacity", 1);
     }
     
+    // Cleanup function
+    return () => {
+      // Clear any existing timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      
+      // Interrupt all D3 transitions
+      if (svgRef.current) {
+        d3.select(svgRef.current).selectAll("*").interrupt();
+        d3.select(svgRef.current).selectAll("*").remove();
+      }
+    };
   }, [mode, animating]);
 
   const handleModeChange = (newMode) => {
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    
     if (newMode === 'unordered' && mode === 'ordered') {
       setAnimating(true);
       setMode(newMode);
-      setTimeout(() => setAnimating(false), 3000);
+      timeoutRef.current = setTimeout(() => {
+        setAnimating(false);
+        timeoutRef.current = null;
+      }, 3000);
     } else {
       setAnimating(false);
       setMode(newMode);

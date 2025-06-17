@@ -224,6 +224,13 @@ export function CombinationBuilder() {
         .text(`{${selectedArray.join(', ')}}`);
     }
     
+    // Cleanup function
+    return () => {
+      if (svgRef.current) {
+        d3.select(svgRef.current).selectAll("*").interrupt();
+        d3.select(svgRef.current).selectAll("*").remove();
+      }
+    };
   }, [n, r, selectedItems]);
 
   // Generate all combinations for display

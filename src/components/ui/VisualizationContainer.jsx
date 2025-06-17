@@ -14,10 +14,11 @@ export const VisualizationContainer = ({
   className = '',
   tutorialSteps = null,
   tutorialKey = null,
-  showTutorialOnMount = true
+  showTutorialOnMount = false
 }) => {
   const [tutorialResetKey, setTutorialResetKey] = useState(0);
   const [isClient, setIsClient] = useState(false);
+  const [showTutorialManually, setShowTutorialManually] = useState(false);
   
   useEffect(() => {
     setIsClient(true);
@@ -28,6 +29,8 @@ export const VisualizationContainer = ({
       localStorage.removeItem(`tutorial-${tutorialKey}-completed`);
       // Force re-render by updating a key
       setTutorialResetKey(prev => prev + 1);
+      // Trigger tutorial to show manually
+      setShowTutorialManually(true);
     }
   };
   return (
@@ -37,9 +40,9 @@ export const VisualizationContainer = ({
         <Tutorial
           key={tutorialResetKey}
           steps={tutorialSteps}
-          onComplete={() => {}}
-          onSkip={() => {}}
-          showOnMount={showTutorialOnMount}
+          onComplete={() => setShowTutorialManually(false)}
+          onSkip={() => setShowTutorialManually(false)}
+          showOnMount={showTutorialOnMount || showTutorialManually}
           persistKey={tutorialKey}
           mode="modal"
         />

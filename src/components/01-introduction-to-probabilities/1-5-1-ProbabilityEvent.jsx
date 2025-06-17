@@ -157,10 +157,19 @@ function ProbabilityEvent() {
     if (!svgRef.current) return;
     
     // Store the bounding rect immediately to prevent race conditions
-    const boundingRect = svgRef.current.getBoundingClientRect();
+    let width = 800; // Default width
+    let height = 500; // Default height
+    
+    try {
+      const boundingRect = svgRef.current.getBoundingClientRect();
+      if (boundingRect && boundingRect.width > 0) {
+        width = boundingRect.width;
+      }
+    } catch (error) {
+      console.warn('Failed to get SVG dimensions, using defaults:', error);
+    }
+    
     const svg = d3.select(svgRef.current);
-    const { width } = boundingRect;
-    const height = 500; // Increased from 400 to 500
     const margin = { top: 120, right: 40, bottom: 60, left: 60 }; // Increased top margin from 80 to 120
     
     svg.selectAll("*").remove();

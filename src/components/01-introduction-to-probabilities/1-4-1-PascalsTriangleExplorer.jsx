@@ -193,6 +193,13 @@ export function PascalsTriangleExplorer() {
         .text(explanation);
     }
     
+    // Cleanup function
+    return () => {
+      if (svgRef.current) {
+        d3.select(svgRef.current).selectAll("*").interrupt();
+        d3.select(svgRef.current).selectAll("*").remove();
+      }
+    };
   }, [rows, highlightN, highlightR, showPattern, hoveredCell]);
 
   return (
