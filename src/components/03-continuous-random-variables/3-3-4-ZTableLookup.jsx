@@ -16,6 +16,7 @@ import { Button } from "../ui/button";
 import { ProgressBar, ProgressNavigation } from "../ui/ProgressBar";
 import { Tutorial } from "../ui/Tutorial";
 import ZTableExplorer from "./ZTableExplorer";
+import { tutorial_3_3_4 } from '@/tutorials/chapter3';
 
 const ZTableLookup = () => {
   const colors = createColorScheme('hypothesis'); // Using hypothesis scheme for better vibrancy
@@ -525,6 +526,8 @@ const ZTableLookup = () => {
     <VisualizationContainer 
       title="Z-Table Lookup: Master the Standard Normal Distribution"
       className="max-w-full"
+      tutorialSteps={tutorial_3_3_4}
+      tutorialKey="z-table-lookup-3-3-4"
     >
       <div ref={contentRef} className="space-y-6">
         {/* Tutorial Component */}

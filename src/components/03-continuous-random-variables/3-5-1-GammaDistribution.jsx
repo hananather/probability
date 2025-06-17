@@ -9,6 +9,7 @@ import { createColorScheme, typography } from "../../lib/design-system";
 import { jStat } from "jstat";
 import { Tutorial } from "../ui/Tutorial";
 import { Clock, Zap, ChartBar, Target } from "lucide-react";
+import { tutorial_3_5_1 } from '@/tutorials/chapter3';
 
 const GammaDistribution = React.memo(function GammaDistribution() {
   // Core state
@@ -405,6 +406,8 @@ const GammaDistribution = React.memo(function GammaDistribution() {
     <VisualizationContainer 
       title="Understanding the Gamma Distribution"
       className="max-w-7xl mx-auto"
+      tutorialSteps={tutorial_3_5_1}
+      tutorialKey="gamma-distribution-3-5-1"
     >
       <Tutorial
         steps={tutorialSteps}

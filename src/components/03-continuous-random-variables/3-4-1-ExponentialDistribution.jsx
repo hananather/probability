@@ -8,6 +8,7 @@ import { useSafeMathJax } from '../../utils/mathJaxFix';
 import { ExponentialDistributionWorkedExample } from "./3-4-2-ExponentialDistributionWorkedExample";
 import { ProgressBar, ProgressNavigation } from "../ui/ProgressBar";
 import { Button } from "../ui/button";
+import { tutorial_3_4_1 } from '@/tutorials/chapter3';
 
 // Define learning stages
 const learningStages = [
@@ -432,6 +433,8 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
     <VisualizationContainer 
       title="Understanding the Exponential Distribution"
       subtitle="Modeling time between events in continuous processes"
+      tutorialSteps={tutorial_3_4_1}
+      tutorialKey="exponential-distribution-3-4-1"
     >
       <div className="space-y-6">
         {/* Progress Bar */}

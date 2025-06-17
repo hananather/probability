@@ -13,6 +13,7 @@ import { NormalZScoreWorkedExample } from "./3-3-2-NormalZScoreWorkedExample";
 import { RotateCcw } from "lucide-react";
 import * as jStat from "jstat";
 import { useSafeMathJax } from '../../utils/mathJaxFix';
+import { tutorial_3_3_1 } from '@/tutorials/chapter3';
 
 // LaTeX content wrapper component to prevent re-renders
 const LatexContent = memo(function LatexContent({ children }) {
@@ -572,6 +573,8 @@ const NormalZScoreExplorer = () => {
           </p>
         </>
       }
+      tutorialSteps={tutorial_3_3_1}
+      tutorialKey="normal-z-score-explorer-3-3-1"
     >
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Left side - Controls and Stats */}

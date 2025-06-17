@@ -8,6 +8,8 @@ import { NormalApproxBinomialWorkedExample } from "./3-7-2-NormalApproxBinomialW
 import { Tutorial } from "../ui/Tutorial";
 import { ProgressBar, ProgressNavigation } from "../ui/ProgressBar";
 import { Button } from "../ui/button";
+import { VisualizationContainer } from '../ui/VisualizationContainer';
+import { tutorial_3_7_1 } from '@/tutorials/chapter3';
 
 // Add custom styles for the sliders
 const sliderStyles = `
@@ -640,12 +642,17 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
   const stageContent = getStageContent();
   
   return (
-    <div ref={contentRef} className="min-h-screen flex flex-col bg-gradient-to-br from-neutral-900 to-neutral-950">
-      <Tutorial
-        steps={tutorialSteps}
-        persistKey="normal-approx-binomial"
-        mode="tooltip"
-      />
+    <VisualizationContainer 
+      title="Normal Approximation to Binomial Distribution"
+      tutorialSteps={tutorial_3_7_1}
+      tutorialKey="normal-approx-binomial-3-7-1"
+    >
+      <div ref={contentRef} className="min-h-screen flex flex-col bg-gradient-to-br from-neutral-900 to-neutral-950">
+        <Tutorial
+          steps={tutorialSteps}
+          persistKey="normal-approx-binomial"
+          mode="tooltip"
+        />
       
       {/* Strip 1: Header & Key Controls */}
       <div className="bg-neutral-900 border-b border-neutral-700 px-4 sm:px-6 py-4 sm:py-5">
@@ -653,7 +660,7 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
           {/* Title Row */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
             <div className="flex-1">
-              <h2 className="text-xl sm:text-2xl font-semibold text-white">Normal Approximation to Binomial Distribution</h2>
+              <h2 className="text-xl sm:text-2xl font-semibold text-white">Interactive Visualization</h2>
               <p className="text-sm text-neutral-400 mt-1">
                 Discover when and how the normal distribution can approximate binomial probabilities
               </p>
@@ -900,7 +907,8 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </VisualizationContainer>
   );
 });
 

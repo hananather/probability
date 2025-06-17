@@ -9,6 +9,7 @@ import * as d3 from 'd3';
 import { ProgressBar, ProgressNavigation } from '@/components/ui/ProgressBar';
 import { cn } from '../../lib/utils';
 import { useSafeMathJax } from '../../utils/mathJaxFix';
+import { tutorial_3_0_1 } from '@/tutorials/chapter3';
 
 // Memoized LaTeX component to prevent re-rendering
 const LaTeXFormula = React.memo(function LaTeXFormula({ formula, isBlock = false }) {
@@ -430,6 +431,8 @@ const BridgeToContinuous = () => {
     <VisualizationContainer
       title="Bridge to Continuous Random Variables"
       description="Understanding the transition from discrete to continuous distributions"
+      tutorialSteps={tutorial_3_0_1}
+      tutorialKey="bridge-to-continuous-3-0-1"
     >
       <div ref={contentRef} className="space-y-6">
         {/* Progress Bar */}

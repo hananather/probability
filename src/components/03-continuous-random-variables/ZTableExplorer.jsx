@@ -8,6 +8,7 @@ import {
 import * as jStat from "jstat";
 import { cn } from "../../lib/utils";
 import { 
+  VisualizationContainer,
   VisualizationSection
 } from "../ui/VisualizationContainer";
 import { RangeSlider } from "../ui/RangeSlider";

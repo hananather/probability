@@ -7,6 +7,8 @@ import { createColorScheme, typography } from "../../lib/design-system";
 import { Button } from "../ui/button";
 import { Play, Pause, RotateCcw, BarChart } from "lucide-react";
 import * as jStat from "jstat";
+import { VisualizationContainer } from "../ui/VisualizationContainer";
+import { tutorial_3_3_3 } from '@/tutorials/chapter3';
 
 // LaTeX-containing components wrapped in React.memo to prevent re-renders
 const ParameterLabel = memo(function ParameterLabel({ label, symbol }) {
@@ -529,11 +531,16 @@ const EmpiricalRule = () => {
   const percentages = getPercentages();
   
   return (
-    <div className="w-full" ref={containerRef}>
-      <Card className="overflow-hidden">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center justify-between">
-            <span className="text-xl">The Empirical Rule (68-95-99.7 Rule)</span>
+    <VisualizationContainer 
+      title="The Empirical Rule (68-95-99.7 Rule)"
+      tutorialSteps={tutorial_3_3_3}
+      tutorialKey="empirical-rule-3-3-3"
+    >
+      <div className="w-full" ref={containerRef}>
+        <Card className="overflow-hidden">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center justify-between">
+              <span className="text-xl">Interactive Visualization</span>
             <div className="flex gap-2">
               <Button
                 onClick={() => setShowHistogram(!showHistogram)}
@@ -703,6 +710,7 @@ const EmpiricalRule = () => {
         </CardContent>
       </Card>
     </div>
+    </VisualizationContainer>
   );
 };
 

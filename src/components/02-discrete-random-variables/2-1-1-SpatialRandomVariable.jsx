@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { hexbin as d3Hexbin } from 'd3-hexbin';
+import { VisualizationContainer } from '../ui/VisualizationContainer';
+import { tutorial_2_1_1 } from '@/tutorials/chapter2';
 
 const SpatialRandomVariable = () => {
   const statsRef = useRef(null);
@@ -715,7 +717,11 @@ const SpatialRandomVariable = () => {
   };
   
   return (
-    <div className="bg-neutral-800 rounded-lg shadow-xl overflow-hidden w-full">
+    <VisualizationContainer
+      tutorialSteps={tutorial_2_1_1}
+      tutorialKey="spatial-random-variable-2-1-1"
+    >
+      <div className="bg-neutral-800 rounded-lg shadow-xl overflow-hidden w-full">
       {/* Top: Header with Instructions */}
       <div className="bg-neutral-900 border-b border-neutral-700 px-4 py-2">
         <div className="flex items-center justify-between">
@@ -871,6 +877,7 @@ const SpatialRandomVariable = () => {
         </div>
       </div>
     </div>
+    </VisualizationContainer>
   );
 };
 

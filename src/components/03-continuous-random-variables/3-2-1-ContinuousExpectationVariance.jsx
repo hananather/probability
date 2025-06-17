@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { jStat } from "jstat";
 import { useSafeMathJax } from '../../utils/mathJaxFix';
 import { Info, TrendingUp, Calculator, BarChart3 } from 'lucide-react';
+import { tutorial_3_2_1 } from '@/tutorials/chapter3';
 
 // Memoized LaTeX components to prevent re-rendering
 const FormulaDisplay = React.memo(function FormulaDisplay({ formula, color = "text-white", className = "" }) {
@@ -473,6 +474,8 @@ const ContinuousExpectationVariance = () => {
     <VisualizationContainer 
       title="From Discrete to Continuous: Expectation & Variance"
       subtitle="Understanding how summation becomes integration"
+      tutorialSteps={tutorial_3_2_1}
+      tutorialKey="continuous-expectation-variance-3-2-1"
     >
       <div className="space-y-6">
         {/* Progress Bar */}

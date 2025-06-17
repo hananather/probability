@@ -6,6 +6,8 @@ import { createColorScheme, typography } from "../../lib/design-system";
 import { Button } from "../ui/button";
 import { CheckCircle, XCircle, RefreshCw, HelpCircle, ChevronRight } from "lucide-react";
 import * as jStat from "jstat";
+import { VisualizationContainer } from "../ui/VisualizationContainer";
+import { tutorial_3_3_5 } from '@/tutorials/chapter3';
 
 // Memoized component for problem type buttons to prevent re-renders
 const ProblemTypeButton = React.memo(({ type, isSelected, onClick }) => {
@@ -325,15 +327,17 @@ const ZScorePracticeProblems = () => {
   });
   
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-4">
-      {/* Header with Streak and New Problem */}
+    <VisualizationContainer 
+      title="Z-Score Practice Problems"
+      tutorialSteps={tutorial_3_3_5}
+      tutorialKey="z-score-practice-3-3-5"
+    >
+      <div className="w-full max-w-6xl mx-auto space-y-4">
+        {/* Header with Streak and New Problem */}
       <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between mb-2">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
-          <h2 className="text-xl sm:text-2xl font-bold">Z-Score Practice Problems</h2>
-          <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-            <span className="text-sm text-muted-foreground">Streak</span>
-            <span className="text-xl sm:text-2xl font-bold font-mono text-emerald-400">{streak}</span>
-          </div>
+        <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+          <span className="text-sm text-muted-foreground">Streak</span>
+          <span className="text-xl sm:text-2xl font-bold font-mono text-emerald-400">{streak}</span>
         </div>
         <Button
           onClick={() => generateProblem()}
@@ -514,8 +518,9 @@ const ZScorePracticeProblems = () => {
             )}
           </CardContent>
         </Card>
+        </div>
       </div>
-    </div>
+    </VisualizationContainer>
   );
 };
 

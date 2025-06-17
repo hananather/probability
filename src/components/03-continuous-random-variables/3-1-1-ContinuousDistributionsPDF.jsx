@@ -17,6 +17,7 @@ import { IntegralWorkedExample } from "./3-1-2-IntegralWorkedExample";
 import { Info, Sparkles, ArrowRight, CheckCircle, BarChart3, TrendingUp } from "lucide-react";
 import { ProgressBar, ProgressNavigation } from '@/components/ui/ProgressBar';
 import { useSafeMathJax } from '../../utils/mathJaxFix';
+import { tutorial_3_1_1 } from '@/tutorials/chapter3';
 
 // Color scheme for the visualization - using vibrant colors
 const colorScheme = createColorScheme('estimation'); // Violet/Cyan/Amber for better visibility
@@ -738,6 +739,8 @@ const ContinuousDistributionsPDF = () => {
       ref={componentRef}
       title="Understanding Probability Density Functions"
       subtitle="A guided journey through continuous distributions"
+      tutorialSteps={tutorial_3_1_1}
+      tutorialKey="continuous-distributions-pdf-3-1-1"
     >
       <div className="space-y-6">
         {/* Progress Bar */}

@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
+import { VisualizationContainer } from '../ui/VisualizationContainer';
+import { tutorial_2_3_1 } from '@/tutorials/chapter2';
 
 const LinearTransformations = () => {
   // State for transformation parameters
@@ -362,7 +364,11 @@ const LinearTransformations = () => {
   const transformedStats = calculateStats(getTransformedDistribution());
   
   return (
-    <div className="bg-neutral-800 rounded-lg shadow-xl overflow-hidden">
+    <VisualizationContainer
+      tutorialSteps={tutorial_2_3_1}
+      tutorialKey="linear-transformations-2-3-1"
+    >
+      <div className="bg-neutral-800 rounded-lg shadow-xl overflow-hidden">
       {/* Header */}
       <div className="bg-neutral-900 border-b border-neutral-700 px-6 py-4">
         <h3 className="text-xl font-bold text-white">Linear Transformations: Y = aX + b</h3>
@@ -519,6 +525,7 @@ const LinearTransformations = () => {
         </div>
       </div>
     </div>
+    </VisualizationContainer>
   );
 };
 
