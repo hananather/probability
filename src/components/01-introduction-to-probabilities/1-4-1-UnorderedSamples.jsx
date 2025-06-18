@@ -64,7 +64,7 @@ export default function UnorderedSamples() {
       <div className="max-w-4xl mx-auto">
         {/* Tab Navigation */}
         <div className="mb-4">
-          <div className="flex items-center justify-between bg-gray-800/50 rounded-lg p-1">
+          <div className="flex items-center justify-between bg-gradient-to-r from-gray-800/50 to-gray-700/50 rounded-lg p-1 backdrop-blur-sm">
             <div className="flex gap-1 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {TABS.map((tab) => (
                 <button
@@ -73,8 +73,8 @@ export default function UnorderedSamples() {
                   className={cn(
                     "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 whitespace-nowrap",
                     activeTab === tab.id
-                      ? "bg-teal-600 text-white shadow-sm"
-                      : "text-gray-400 hover:text-gray-200 hover:bg-gray-700/50"
+                      ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-lg"
+                      : "text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-600"
                   )}
                 >
                   {tab.icon}
@@ -120,7 +120,7 @@ export default function UnorderedSamples() {
         </div>
 
         {/* Content Area - Fixed Height */}
-        <div className="bg-gray-900/50 rounded-lg relative" style={{ minHeight: '350px', height: 'calc(100vh - 380px)', maxHeight: '450px' }}>
+        <div className="bg-gradient-to-br from-gray-900/50 to-gray-800/30 rounded-lg relative border border-gray-700/50" style={{ minHeight: '350px', height: 'calc(100vh - 380px)', maxHeight: '450px' }}>
           {/* Lottery Tab */}
           <div className={cn(
             "absolute inset-0 transition-all duration-300 overflow-y-auto",
@@ -183,7 +183,7 @@ export default function UnorderedSamples() {
         </div>
 
         {/* Info Bar */}
-        <div className="mt-4 flex items-center justify-between bg-gray-800/30 rounded-lg p-3">
+        <div className="mt-4 flex items-center justify-between bg-gradient-to-r from-gray-800/40 to-gray-700/40 rounded-lg p-3 border border-gray-700/50">
           <div className="flex items-center gap-6 text-sm">
             <div>
               <span className="text-gray-400">Permutations: </span>
@@ -200,14 +200,14 @@ export default function UnorderedSamples() {
           </div>
           <div className="flex gap-2">
             <Button
-              variant="neutral"
+              variant="info"
               size="xs"
               onClick={() => { setN(6); setR(3); }}
             >
               Simple (6,3)
             </Button>
             <Button
-              variant="neutral"
+              variant="primary"
               size="xs"
               onClick={() => { setN(49); setR(6); }}
             >
@@ -325,7 +325,7 @@ const LotteryVisualization = React.memo(function LotteryVisualization({ n, r }) 
           <span className="text-gray-300">Show order matters</span>
         </label>
         <Button
-          variant="neutral"
+          variant="danger"
           size="sm"
           onClick={resetSelection}
           disabled={selectedBalls.size === 0}
@@ -338,7 +338,7 @@ const LotteryVisualization = React.memo(function LotteryVisualization({ n, r }) 
       <div className="relative">
         <div 
           className={cn(
-            "grid gap-2 p-4 bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-xl",
+            "grid gap-2 p-4 bg-gradient-to-br from-indigo-900/20 to-purple-900/10 rounded-xl border border-indigo-700/30",
             n <= 10 ? "grid-cols-5" : 
             n <= 20 ? "grid-cols-6 sm:grid-cols-8" : 
             n <= 30 ? "grid-cols-7 sm:grid-cols-10" : 
@@ -360,7 +360,7 @@ const LotteryVisualization = React.memo(function LotteryVisualization({ n, r }) 
                   n <= 20 ? "w-14 h-14" : n <= 30 ? "w-12 h-12" : "w-10 h-10",
                   isSelected 
                     ? "bg-gradient-to-br from-cyan-400 to-cyan-600 scale-105 shadow-cyan-500/50 focus:ring-cyan-500" 
-                    : "bg-gradient-to-br from-gray-600 to-gray-700 hover:from-gray-500 hover:to-gray-600 focus:ring-gray-500",
+                    : "bg-gradient-to-br from-indigo-600 to-purple-700 hover:from-indigo-500 hover:to-purple-600 focus:ring-indigo-500",
                   selectedBalls.size >= r && !isSelected && "opacity-50 cursor-not-allowed"
                 )}
                 disabled={selectedBalls.size >= r && !isSelected}
@@ -369,7 +369,7 @@ const LotteryVisualization = React.memo(function LotteryVisualization({ n, r }) 
                 <span className={cn(
                   "font-bold font-mono",
                   n <= 20 ? "text-lg" : n <= 30 ? "text-base" : "text-sm",
-                  isSelected ? "text-white" : "text-gray-200"
+                  isSelected ? "text-white" : "text-indigo-100"
                 )}>
                   {ball}
                 </span>
@@ -445,7 +445,7 @@ const LotteryVisualization = React.memo(function LotteryVisualization({ n, r }) 
 
       {/* Live calculation display */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-gray-800/50 rounded-lg p-4">
+        <div className="bg-gradient-to-br from-cyan-900/20 to-blue-900/20 rounded-lg p-4 border border-cyan-700/30">
           <h5 className="text-sm font-semibold text-gray-400 mb-2">Current Selection</h5>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -464,7 +464,7 @@ const LotteryVisualization = React.memo(function LotteryVisualization({ n, r }) 
         </div>
 
         {showOrderMatters && selectedBalls.size > 0 && (
-          <div className="bg-gray-800/50 rounded-lg p-4">
+          <div className="bg-gradient-to-br from-green-900/20 to-emerald-900/20 rounded-lg p-4 border border-green-700/30">
             <h5 className="text-sm font-semibold text-gray-400 mb-2">Order Information</h5>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -514,7 +514,7 @@ const LotteryVisualization = React.memo(function LotteryVisualization({ n, r }) 
 
       {/* Show some example permutations when complete and order matters */}
       {selectedBalls.size === r && showOrderMatters && r <= 4 && (
-        <div className="bg-gray-800/50 rounded-lg p-4">
+        <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-lg p-4 border border-purple-700/30">
           <h5 className="text-sm font-semibold text-gray-400 mb-3">Sample Arrangements of Your Selection</h5>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {generatePermutations(Array.from(selectedBalls).sort((a, b) => a - b))
@@ -649,10 +649,10 @@ const PascalTriangle = React.memo(function PascalTriangle({ n, r, onCellClick })
           .style("cursor", "pointer");
 
         // Determine cell color based on patterns
-        let fillColor = "#1a1a1a";
-        let strokeColor = "#333";
+        let fillColor = "#1e293b"; // slate-800
+        let strokeColor = "#475569"; // slate-600
         let strokeWidth = 1;
-        let textColor = "#ccc";
+        let textColor = "#e2e8f0"; // slate-200
         let fontWeight = "normal";
 
         if (cell.isHighlighted) {
@@ -853,8 +853,9 @@ const PascalTriangle = React.memo(function PascalTriangle({ n, r, onCellClick })
         .attr("y", -15)
         .attr("width", 200)
         .attr("height", 30)
-        .attr("fill", "#1a1a1a")
+        .attr("fill", "#1e293b")
         .attr("stroke", colorScheme.chart.primary)
+        .attr("stroke-width", 2)
         .attr("rx", 15);
       
       infoGroup.append("text")
@@ -895,11 +896,11 @@ const PascalTriangle = React.memo(function PascalTriangle({ n, r, onCellClick })
   return (
     <div className="space-y-4">
       {/* Pattern Discovery Controls */}
-      <div className="bg-gray-800/50 rounded-lg p-4">
+      <div className="bg-gradient-to-br from-indigo-900/20 to-purple-900/20 rounded-lg p-4 border border-indigo-700/30">
         <div className="flex items-center justify-between mb-3">
           <h5 className="text-sm font-semibold text-gray-300">Pattern Discovery</h5>
           <Button
-            variant="neutral"
+            variant="info"
             size="xs"
             onClick={() => setShowHints(!showHints)}
           >
@@ -912,7 +913,10 @@ const PascalTriangle = React.memo(function PascalTriangle({ n, r, onCellClick })
             variant={showPattern === 'symmetry' ? 'info' : 'neutral'}
             size="xs"
             onClick={() => setShowPattern(showPattern === 'symmetry' ? 'none' : 'symmetry')}
-            className={cn(!discoveredPatterns.has('symmetry') && "opacity-50")}
+            className={cn(
+              !discoveredPatterns.has('symmetry') && "opacity-50",
+              showPattern === 'symmetry' && "shadow-lg shadow-blue-500/20"
+            )}
           >
             {discoveredPatterns.has('symmetry') ? '✓ ' : ''}Symmetry
           </Button>
@@ -923,7 +927,10 @@ const PascalTriangle = React.memo(function PascalTriangle({ n, r, onCellClick })
               setShowPattern(showPattern === 'hockey' ? 'none' : 'hockey');
               checkPatternDiscovery('hockey');
             }}
-            className={cn(!discoveredPatterns.has('hockey') && "opacity-50")}
+            className={cn(
+              !discoveredPatterns.has('hockey') && "opacity-50",
+              showPattern === 'hockey' && "shadow-lg shadow-green-500/20"
+            )}
           >
             {discoveredPatterns.has('hockey') ? '✓ ' : ''}Hockey Stick
           </Button>
@@ -934,7 +941,10 @@ const PascalTriangle = React.memo(function PascalTriangle({ n, r, onCellClick })
               setShowPattern(showPattern === 'powers' ? 'none' : 'powers');
               checkPatternDiscovery('powers');
             }}
-            className={cn(!discoveredPatterns.has('powers') && "opacity-50")}
+            className={cn(
+              !discoveredPatterns.has('powers') && "opacity-50",
+              showPattern === 'powers' && "shadow-lg shadow-orange-500/20"
+            )}
           >
             {discoveredPatterns.has('powers') ? '✓ ' : ''}Row Sums
           </Button>
@@ -945,7 +955,10 @@ const PascalTriangle = React.memo(function PascalTriangle({ n, r, onCellClick })
               setAnimateRecursive(!animateRecursive);
               if (!animateRecursive) checkPatternDiscovery('recursive');
             }}
-            className={cn(!discoveredPatterns.has('recursive') && "opacity-50")}
+            className={cn(
+              !discoveredPatterns.has('recursive') && "opacity-50",
+              animateRecursive && "shadow-lg shadow-teal-500/20"
+            )}
           >
             {discoveredPatterns.has('recursive') ? '✓ ' : ''}Recursive
           </Button>
@@ -987,7 +1000,7 @@ const PascalTriangle = React.memo(function PascalTriangle({ n, r, onCellClick })
       </div>
 
       {/* Triangle Visualization */}
-      <div className="bg-gradient-to-br from-gray-800/30 to-gray-900/30 rounded-xl p-4">
+      <div className="bg-gradient-to-br from-slate-800/40 to-indigo-900/20 rounded-xl p-4 border border-slate-700/50">
         <svg ref={triangleRef} className="w-full" style={{ height: Math.min(350, triangleRows * 35 + 50) }} />
       </div>
 
@@ -1236,7 +1249,7 @@ const FormulaDerivation = React.memo(function FormulaDerivation({ n, r }) {
 
       {/* Step 0: The Problem */}
       <FormulaStep visible={step >= 0}>
-        <div className="bg-gray-800/50 rounded-lg p-4">
+        <div className="bg-gradient-to-br from-blue-900/20 to-indigo-900/20 rounded-lg p-4 border border-blue-700/30">
           <h6 className="text-sm font-semibold text-cyan-400 mb-3">The Problem</h6>
           <p className="text-sm text-gray-300 mb-3">
             We want to count the number of ways to choose {r} items from {n} items where <strong>order doesn't matter</strong>.
@@ -1253,7 +1266,7 @@ const FormulaDerivation = React.memo(function FormulaDerivation({ n, r }) {
 
       {/* Step 1: Start with Permutations */}
       <FormulaStep visible={step >= 1}>
-        <div className="bg-gray-800/50 rounded-lg p-4">
+        <div className="bg-gradient-to-br from-green-900/20 to-emerald-900/20 rounded-lg p-4 border border-green-700/30">
           <h6 className="text-sm font-semibold text-green-400 mb-3">Step 1: Count Ordered Arrangements (Permutations)</h6>
           <p className="text-sm text-gray-300 mb-3">
             First, let's count arrangements where order <strong>does matter</strong>:
@@ -1278,7 +1291,7 @@ const FormulaDerivation = React.memo(function FormulaDerivation({ n, r }) {
 
       {/* Step 2: Group by Combination */}
       <FormulaStep visible={step >= 2} highlight={step === 2}>
-        <div className="bg-gray-800/50 rounded-lg p-4">
+        <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-lg p-4 border border-purple-700/30">
           <h6 className="text-sm font-semibold text-purple-400 mb-3">Step 2: Each Combination Appears r! Times</h6>
           <p className="text-sm text-gray-300 mb-3">
             Each unique combination of {r} items can be arranged in {r}! = {factorial(r)} different orders:
@@ -1299,7 +1312,7 @@ const FormulaDerivation = React.memo(function FormulaDerivation({ n, r }) {
 
       {/* Step 3: Derive the Formula */}
       <FormulaStep visible={step >= 3}>
-        <div className="bg-gray-800/50 rounded-lg p-4">
+        <div className="bg-gradient-to-br from-cyan-900/20 to-teal-900/20 rounded-lg p-4 border border-cyan-700/30">
           <h6 className="text-sm font-semibold text-cyan-400 mb-3">Step 3: Derive the Combination Formula</h6>
           <p className="text-sm text-gray-300 mb-3">
             Since each combination appears {r}! times in our permutation count:
@@ -1328,7 +1341,7 @@ const FormulaDerivation = React.memo(function FormulaDerivation({ n, r }) {
 
       {/* Step 4: Verify and Apply */}
       <FormulaStep visible={step >= 4}>
-        <div className="bg-gray-800/50 rounded-lg p-4">
+        <div className="bg-gradient-to-br from-amber-900/20 to-orange-900/20 rounded-lg p-4 border border-amber-700/30">
           <h6 className="text-sm font-semibold text-yellow-400 mb-3">Step 4: Verification & Properties</h6>
           <div className="space-y-3">
             <div className="p-3 bg-gray-900/50 rounded">
@@ -1362,16 +1375,16 @@ const FormulaDerivation = React.memo(function FormulaDerivation({ n, r }) {
       {/* Navigation */}
       <div className="flex items-center justify-between pt-4">
         <Button
-          variant="neutral"
+          variant="info"
           size="sm"
           onClick={handlePrevious}
           disabled={step === 0}
         >
           Previous Step
         </Button>
-        <span className="text-sm text-gray-400">Step {step + 1} of {maxSteps}</span>
+        <span className="text-sm text-gray-400 font-medium">Step {step + 1} of {maxSteps}</span>
         <Button
-          variant="primary"
+          variant="success"
           size="sm"
           onClick={handleNext}
           disabled={step === maxSteps - 1}
@@ -1565,7 +1578,7 @@ const CombinationBuilder = React.memo(function CombinationBuilder({ n, r }) {
             <span className="text-gray-300">Compare with permutations</span>
           </label>
           <Button
-            variant="neutral"
+            variant="warning"
             size="sm"
             onClick={resetBuilder}
             disabled={selectedItems.length === 0}
@@ -1583,7 +1596,7 @@ const CombinationBuilder = React.memo(function CombinationBuilder({ n, r }) {
             Available Items ({availableItems.length})
           </h6>
           <div 
-            className="bg-gray-800/50 rounded-lg p-4 min-h-[200px]"
+            className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 rounded-lg p-4 min-h-[200px] border border-slate-600/30"
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, false)}
           >
@@ -1603,7 +1616,7 @@ const CombinationBuilder = React.memo(function CombinationBuilder({ n, r }) {
                       "hover:scale-105 hover:shadow-lg select-none touch-manipulation",
                       isSelected 
                         ? "bg-gray-700/50 opacity-30 cursor-not-allowed" 
-                        : "bg-gradient-to-br from-gray-600 to-gray-700 hover:from-gray-500 hover:to-gray-600"
+                        : "bg-gradient-to-br from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-md"
                     )}
                     style={{ 
                       opacity: isSelected ? 0.3 : 1,
@@ -1630,7 +1643,7 @@ const CombinationBuilder = React.memo(function CombinationBuilder({ n, r }) {
             Selected Combination ({selectedItems.length}/{r})
           </h6>
           <div 
-            className="bg-cyan-900/20 border-2 border-dashed border-cyan-500/50 rounded-lg p-4 min-h-[200px]"
+            className="bg-gradient-to-br from-cyan-900/30 to-teal-900/20 border-2 border-dashed border-cyan-500/50 rounded-lg p-4 min-h-[200px] shadow-inner"
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, true)}
           >
@@ -1648,8 +1661,8 @@ const CombinationBuilder = React.memo(function CombinationBuilder({ n, r }) {
                       onDragStart={(e) => handleDragStart(e, item, true)}
                       onClick={() => handleItemClick(item, true)}
                       className="w-12 h-12 rounded-lg flex items-center justify-center cursor-pointer transition-all
-                               bg-gradient-to-br from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500
-                               hover:scale-105 select-none"
+                               bg-gradient-to-br from-cyan-500 to-teal-600 hover:from-cyan-400 hover:to-teal-500
+                               hover:scale-105 select-none shadow-lg shadow-cyan-500/30"
                     >
                       <span className={cn(
                         "font-bold text-white",
@@ -1680,7 +1693,7 @@ const CombinationBuilder = React.memo(function CombinationBuilder({ n, r }) {
             <div className="mt-3">
               <div className="w-full bg-gray-700 rounded-full h-2">
                 <div 
-                  className="bg-cyan-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-gradient-to-r from-cyan-500 to-teal-500 h-2 rounded-full transition-all duration-300 shadow-sm"
                   style={{ width: `${(selectedItems.length / r) * 100}%` }}
                 />
               </div>
@@ -1697,7 +1710,7 @@ const CombinationBuilder = React.memo(function CombinationBuilder({ n, r }) {
 
       {/* Comparison with Permutations */}
       {showComparison && selectedItems.length === r && (
-        <div className="bg-gray-800/50 rounded-lg p-4">
+        <div className="bg-gradient-to-br from-gray-800/60 to-gray-700/40 rounded-lg p-4 border border-gray-700/50">
           <h6 className="text-sm font-semibold text-gray-300 mb-3">
             Permutations vs Combinations
           </h6>
@@ -1831,12 +1844,12 @@ const RealWorldApplications = React.memo(function RealWorldApplications({ n, r, 
   };
 
   const colorClasses = {
-    purple: 'bg-purple-900/20 border-purple-500/30 hover:bg-purple-900/30',
-    orange: 'bg-orange-900/20 border-orange-500/30 hover:bg-orange-900/30',
-    green: 'bg-green-900/20 border-green-500/30 hover:bg-green-900/30',
-    blue: 'bg-blue-900/20 border-blue-500/30 hover:bg-blue-900/30',
-    red: 'bg-red-900/20 border-red-500/30 hover:bg-red-900/30',
-    indigo: 'bg-indigo-900/20 border-indigo-500/30 hover:bg-indigo-900/30'
+    purple: 'bg-gradient-to-br from-purple-900/30 to-pink-900/20 border-purple-500/40 hover:from-purple-900/40 hover:to-pink-900/30',
+    orange: 'bg-gradient-to-br from-orange-900/30 to-red-900/20 border-orange-500/40 hover:from-orange-900/40 hover:to-red-900/30',
+    green: 'bg-gradient-to-br from-green-900/30 to-emerald-900/20 border-green-500/40 hover:from-green-900/40 hover:to-emerald-900/30',
+    blue: 'bg-gradient-to-br from-blue-900/30 to-cyan-900/20 border-blue-500/40 hover:from-blue-900/40 hover:to-cyan-900/30',
+    red: 'bg-gradient-to-br from-red-900/30 to-rose-900/20 border-red-500/40 hover:from-red-900/40 hover:to-rose-900/30',
+    indigo: 'bg-gradient-to-br from-indigo-900/30 to-purple-900/20 border-indigo-500/40 hover:from-indigo-900/40 hover:to-purple-900/30'
   };
 
   return (
@@ -1849,9 +1862,9 @@ const RealWorldApplications = React.memo(function RealWorldApplications({ n, r, 
             onClick={() => handleApplicationClick(app)}
             className={cn(
               "border rounded-lg p-4 text-left transition-all duration-200",
-              "hover:scale-105 hover:shadow-lg",
+              "hover:scale-105 hover:shadow-xl backdrop-blur-sm",
               colorClasses[app.color],
-              selectedApp?.id === app.id && "ring-2 ring-offset-2 ring-offset-gray-900"
+              selectedApp?.id === app.id && "ring-2 ring-offset-2 ring-offset-gray-900 shadow-lg"
             )}
           >
             <div className="flex items-start gap-3">
@@ -1868,7 +1881,7 @@ const RealWorldApplications = React.memo(function RealWorldApplications({ n, r, 
 
       {/* Selected Application Details */}
       {showDetails && selectedApp && (
-        <div className="bg-gray-800/50 rounded-lg p-6">
+        <div className="bg-gradient-to-br from-gray-800/60 to-gray-700/40 rounded-lg p-6 border border-gray-700/50">
           <div className="flex items-start gap-4 mb-4">
             <div className="text-4xl">{selectedApp.icon}</div>
             <div className="flex-1">
@@ -1876,19 +1889,19 @@ const RealWorldApplications = React.memo(function RealWorldApplications({ n, r, 
               <p className="text-sm text-gray-300 mb-3">{selectedApp.details}</p>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-gray-900/50 rounded p-3">
+                <div className="bg-gradient-to-br from-cyan-900/20 to-blue-900/20 rounded p-3 border border-cyan-700/30">
                   <p className="text-xs text-gray-400 mb-1">Formula</p>
                   <p className="font-mono text-sm text-cyan-400">
                     C({selectedApp.n},{selectedApp.r})
                   </p>
                 </div>
-                <div className="bg-gray-900/50 rounded p-3">
+                <div className="bg-gradient-to-br from-green-900/20 to-emerald-900/20 rounded p-3 border border-green-700/30">
                   <p className="text-xs text-gray-400 mb-1">Calculation</p>
                   <p className="font-mono text-sm text-green-400">
                     {formatNumber(combination(selectedApp.n, selectedApp.r))}
                   </p>
                 </div>
-                <div className="bg-gray-900/50 rounded p-3">
+                <div className="bg-gradient-to-br from-amber-900/20 to-yellow-900/20 rounded p-3 border border-amber-700/30">
                   <p className="text-xs text-gray-400 mb-1">Result</p>
                   <p className="text-sm text-yellow-400">
                     {selectedApp.variations || selectedApp.probability}

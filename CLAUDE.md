@@ -1,266 +1,58 @@
 # Claude.md
 
-This file provides guidance to Claude code when working with code in this repository.
+## Project
+Educational statistics platform with interactive visualizations.
 
-## Project Context
-Educational statistics platform with interactive visualizations for engineering students. Focus on maximizing learning of statistics and probability concepts through interactive diagrams.
+## Core Principles
+1. **Educational First**: Every feature teaches
+2. **Simplicity**: Reduce code, be concise
+3. **Mathematical Rigor**: Use LaTeX (see `/docs/latex-guide.md`)
 
+## Use Existing Components
+- **Progress bars**: `/src/components/ui/ProgressBar.jsx`
+- **Buttons**: `/src/components/ui/button.jsx`
+- Never create inline UI elements
 
-## Instructions
-1. Ultrathink and think hard before making any changes.
-2. Launch multiple Claude Code Agents to gather context and plan out the changes before making any changes.
-3. **Educational First**: Every feature should teach something
-4. **Mathematical Rigor**: Use LaTeX for expressions (see `/docs/latex-guide.md`)
+## Design Principles
 
-Always leverage existing knowledge when planning out and designing a new component or refactoring an existing component.
+1. **Content-first**: Let content shape layout
+2. **80-90% rule**: Visualizations fill their space
+3. **Layout by content type**:
+   - Wide content → Horizontal layout
+   - Tall content → Vertical flow
+   - Dense data → Grid
+   - Single focus → Hero with minimal controls
 
-## IMPORTANT: Use Reusable UI Components
+## Visual System
 
-**NEVER create inline progress bars, buttons, or other UI elements. We have reusable components for these:**
+**Typography**: Headers (text-lg), Labels (text-sm), Numbers (font-mono), Max 3 sizes
 
-### Progress Bar Component
-Use `/src/components/ui/ProgressBar.jsx` for ALL progress indicators:
+**Spacing**: Sections (p-3/p-4), Between controls (space-y-3), Major gaps (gap-4/gap-6)
 
-```jsx
-import { ProgressBar, ProgressNavigation } from '@/components/ui/ProgressBar';
+**Colors**: Bright for data, semantic for status, clear hover states
 
-// Basic progress bar
-<ProgressBar
-  current={stage}
-  total={4}
-  label="Learning Progress"
-  variant="emerald" // Options: "emerald", "purple", "teal", "blue", "orange", "pink"
-/>
+## Layout Patterns
 
-// Navigation buttons that match the progress bar
-<ProgressNavigation
-  current={stage}
-  total={4}
-  onPrevious={() => setStage(Math.max(1, stage - 1))}
-  onNext={() => setStage(Math.min(4, stage + 1))}
-  variant="emerald" // Matches progress bar color
-/>
-```
+1. **Exploration**: Large viz (80-90%) + minimal controls
+2. **Progressive**: Viz + insights revealed at milestones  
+3. **Guided**: Step 1 → Step 2 → Step 3
+4. **Comparison**: Side-by-side views + shared controls
 
-### Button Component
-Use `/src/components/ui/button.jsx` for ALL buttons:
+## Good Examples
+See Chapter 1 and 2 components
 
-```jsx
-import { Button } from '@/components/ui/button';
+## Checklist
+- Content shape drives layout
+- 80-90% space usage
+- Numbers in font-mono
+- Progressive disclosure
+- Hover states
 
-<Button variant="primary" size="sm" onClick={handleClick}>
-  Submit
-</Button>
-
-// Variants: "primary" (teal), "success" (green), "danger" (red), "warning" (orange), "info" (blue), "neutral" (gray)
-// Sizes: "xs", "sm", "default", "lg"
-```
-
-**Rule: If you need a progress bar or button, ALWAYS use these components. Do not create new ones inline.**
-
-## UI Design Philosophy
-
-**Core Principle**: Let content shape the interface. Design decisions should emerge from understanding what you're teaching, not from applying rigid templates.
-
-## The Design Thinking Process
-
-When creating or refactoring a component, follow this structured approach:
-
-### 1. Understand Your Content First
-Ask yourself:
-- What concept are we teaching? What's the learning objective?
-- What's the primary visualization or interaction?
-- What supporting elements are essential vs. nice-to-have?
-- How much space does the content naturally require?
-
-### 2. Let Content Shape Layout
-Based on your content analysis:
-- **Wide content** (distributions, timelines, intervals) → Maximize horizontal space
-- **Tall content** (decision trees, step-by-step processes) → Vertical flow
-- **Dense data** (multiple related charts) → Grid layout
-- **Single focus** (one main visualization) → Hero layout with minimal controls
-
-### 3. Apply the 80-90% Space Utilization Principle
-Your visualization should command attention:
-- The actual content (not just container) should fill 80-90% of allocated space
-- Minimize empty borders and gray areas
-- If your viz looks small, either enlarge it or reduce container size
-- Think of it as "information density" - maximize signal, minimize chrome
-
-## Visual Design System
-
-### Typography Hierarchy
-Create clarity through consistent type treatment:
-```
-Headers:     text-base to text-lg (16-18px), font-semibold
-Labels:      text-sm (14px), regular weight
-Data/Numbers: font-mono ALWAYS - no exceptions
-Captions:    text-xs (12px), text-gray-500
-```
-**Rule**: Maximum 3 distinct font sizes per component
-
-### Spacing Rhythm
-Create breathing room without waste:
-```
-Section padding:    p-3 or p-4
-Between controls:   space-y-3
-Major sections:     gap-4 or gap-6
-Inline elements:    gap-2
-```
-
-### Color Strategy
-- **Primary data**: Use bright, saturated theme colors
-- **Interactive elements**: Clear hover/active states
-- **Status indicators**: Semantic (green=success, red=error)
-- **Background hierarchy**: Base dark → section slightly lighter
-
-## Design Patterns Based on Learning Goals
-
-### Pattern 1: Exploration-First
-When the visualization teaches through interaction:
-```
-┌─────────────────────────────────┐
-│   Main Visualization (80-90%)    │
-├─────────────────────────────────┤
-│   Minimal Controls (grouped)     │
-└─────────────────────────────────┘
-```
-**Examples**: CLTSimulation, ConfidenceInterval
-
-### Pattern 2: Progressive Understanding
-When building concepts step-by-step:
-```
-┌─────────────────────────────────┐
-│   Current State/Visualization    │
-│   Progressive Insights           │
-│   (appear at milestones)         │
-└─────────────────────────────────┘
-```
-**Examples**: ExpectationVariance with milestone revelations
-
-### Pattern 3: Guided Process
-When teaching a method or calculation:
-```
-Step 1: Setup → Step 2: Process → Step 3: Interpret
-(Each step gets adequate space for its content)
-```
-**Examples**: IntegralWorkedExample
-
-### Pattern 4: Comparison View
-When contrasting approaches or outcomes:
-```
-┌────────────┬────────────┐
-│   View A   │   View B   │
-├────────────┴────────────┤
-│    Shared Controls      │
-└─────────────────────────┘
-```
-
-## Gold Standard Components
-Study these exemplars:
-- `/src/components/CLTSimulation.jsx` - Maximizes viz space, progressive milestones
-- `/src/components/02-discrete-random-variables/ExpectationVariance.jsx` - Clear hierarchy, educational progression
-- `/src/components/ConfidenceInterval.jsx` - Wide visualization, responsive design
-- `/src/components/03-continuous-random-variables/IntegralWorkedExample.jsx` - Step-by-step clarity
-
-## Pre-Implementation Checklist
-Before coding, ensure you can answer:
-- [ ] What's the natural shape/orientation of my content?
-- [ ] Which layout pattern best supports the learning goal?
-- [ ] How can I achieve 80-90% space utilization?
-- [ ] Where will progressive insights appear?
-- [ ] What's the visual hierarchy (what should users see first/second/third)?
-
-## Red Flags to Avoid
-- Tiny visualizations swimming in gray space
-- Forcing horizontal content into vertical layouts (or vice versa)
-- Numbers not in monospace font
-- Visuals dominating over educational content
-- Missing hover states and transitions
-- Cramming instead of using progressive disclosure
-
-
-
-
-## Key Design Patterns
-
-### Progressive Learning with Milestones
-Build understanding through guided interaction:
-- Track progress with visual indicators
-- Reveal different insights at different stages
-
-### Responsive Design Patterns
-Always provide great experiences across devices:
-```jsx
-// Mobile-first responsive classes
-"flex flex-col lg:flex-row"     // Stack on mobile, side-by-side on desktop
-"grid md:grid-cols-2"            // Single column mobile, 2 columns tablet+
-"w-full lg:w-2/3"               // Full width mobile, 2/3 on desktop
-```
-
-### Interactive Feedback
-Every action should have immediate visual response:
-- Hover states on all interactive elements
-- Smooth transitions (transition-all duration-200)
-- Loading states during calculations
-- Clear indication of current values/selections
-
-
-
-
-### Color Schemes
-Use `createColorScheme()` from design system:
-- `'probability'`: Blue/Emerald/Amber
-- `'hypothesis'`: Teal/Amber/Orange
-- `'estimation'`: Violet/Cyan/Amber
-- `'inference'`: Teal/Orange/Yellow
-
-
-
-## Development Workflow
-
-### Commands
+## Commands
 ```bash
-npm run dev              # Start development
-npm run build && npm run lint  # Run before committing (ALWAYS!)
+npm run dev                    # Start
+npm run build && npm run lint  # Before commit
 ```
 
-### Key Files to Reference
-- `/src/components/CLTSimulation.jsx` - Maximizes viz space, progressive milestones
-- `/src/components/02-discrete-random-variables/ExpectationVariance.jsx` - Clear hierarchy
-- `/src/components/ConfidenceInterval.jsx` - Wide visualization, responsive design
-- `/src/components/03-continuous-random-variables/IntegralWorkedExample.jsx` - Step-by-step clarity
-- `/src/lib/design-system.js` - Colors and utilities
-
-### Documentation
-When working on specific topics, load additional context:
-- `/docs/latex-guide.md` - LaTeX rendering patterns and troubleshooting
-- `/docs/troubleshooting.md` - Common pitfalls and solutions
-- `/docs/course-structure.md` - Course table of contents
-- `/course-materials/` - Detailed course materials
-
-## Refactoring Checklist
-
-When refactoring a visualization:
-
-1. **Assess Current State**
-   - [ ] What percentage of container does the viz use? (Target: 80-90%)
-   - [ ] Is the content naturally horizontal or vertical?
-   - [ ] Count distinct font sizes (Target: ≤3)
-   - [ ] Identify wasted gray space
-
-2. **Plan Layout**
-   - [ ] Choose appropriate pattern based on learning goal
-   - [ ] Consider aspect ratio of main content
-   - [ ] Plan for LaTeX stability (React.memo where needed)
-
-3. **Execute Systematically**
-   - [ ] Apply typography system consistently
-   - [ ] Ensure numbers use font-mono
-   - [ ] Add progressive insights based on interaction
-   - [ ] Include proper hover states and transitions
-
-4. **Validate**
-   - [ ] npm run build && npm run lint
-   - [ ] Check LaTeX renders during state changes
-   - [ ] Verify viz fills its container properly
+## Resources
+See `/docs/` folder for all best practices and guides. Claude will select relevant docs based on your task.

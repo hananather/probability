@@ -48,6 +48,22 @@ svg text {
   fill: var(--foreground) !important;
 }
 
+/* Slide in animation for notifications */
+@keyframes slide-in-bottom {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-bottom {
+  animation: slide-in-bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
 /* Range input styling */
 /* Webkit browsers */
 input[type="range"]::-webkit-slider-thumb {

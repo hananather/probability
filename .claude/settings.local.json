@@ -114,7 +114,8 @@
       "Bash(npm view:*)",
       "Bash(npm uninstall:*)",
       "Bash(do grep -o \"d3\\.\\w\\+\" \"$file\")",
-      "Bash(timeout 10 npm run dev:*)"
+      "Bash(timeout 10 npm run dev:*)",
+      "WebFetch(domain:brilliant.org)"
     ],
     "deny": []
   }

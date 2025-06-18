@@ -1,5 +1,9 @@
 # Course Structure
 
+**Note:** This is our target structure. We're actively building towards this.
+
+**Source Materials:** See `/course-materials/content/` for chapter PDFs.
+
 ## Table of Contents
 
 ### 1. Introduction to Probabilities

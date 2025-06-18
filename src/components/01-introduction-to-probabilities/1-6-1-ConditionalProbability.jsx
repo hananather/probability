@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef, memo } from "react";
+import React, { useState, useEffect, useRef, memo, useMemo } from "react";
 import * as d3 from "@/utils/d3-utils";
 import { 
   VisualizationContainer, 
@@ -8,7 +8,6 @@ import {
   ControlGroup
 } from '../ui/VisualizationContainer';
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
-import { ProgressTracker } from '../ui/ProgressTracker';
 import { Button } from '../ui/button';
 import { tutorial_1_6_1 } from '@/tutorials/chapter1';
 
@@ -383,6 +382,11 @@ function ConditionalProbability() {
   
   // One-time setup for static elements
   useEffect(() => {
+    // Reset initialization flag when activeTab changes to visualization
+    if (activeTab === 'visualization' && !svgBallRef.current) {
+      isInitializedRef.current = false;
+    }
+    
     if (!svgBallRef.current || isInitializedRef.current) return;
     
     try {
@@ -575,11 +579,11 @@ function ConditionalProbability() {
     } catch (error) {
       // Error in ConditionalProbability setup handled silently
     }
-  }, []); // Only run once
+  }, [activeTab]); // Re-run when activeTab changes
   
   // Update dynamic elements when data or perspective changes
   useEffect(() => {
-    if (!d3ContainerRef.current || !scalesRef.current || !isInitializedRef.current) return;
+    if (!d3ContainerRef.current || !scalesRef.current || !isInitializedRef.current || activeTab !== 'visualization') return;
     
     try {
       const g = d3ContainerRef.current;
@@ -796,7 +800,7 @@ function ConditionalProbability() {
     } catch (error) {
       // Error in ConditionalProbability update handled silently
     }
-  }, [eventsData, currentPerspective, highlightOverlaps]);
+  }, [eventsData, currentPerspective, highlightOverlaps, activeTab]);
   
   // FIXED drag behavior setup
   function setupDragBehaviors() {
@@ -1199,6 +1203,8 @@ function ConditionalProbability() {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
+      // Reset initialization flag on unmount
+      isInitializedRef.current = false;
     };
   }, []);
   
@@ -1215,126 +1221,17 @@ function ConditionalProbability() {
     return Math.abs(p2Given1 - p2) < 0.01;
   }
   
-  // Get educational insight based on current state - 4-stage progressive learning
-  function getEducationalInsight() {
-    const totalSamples = Object.values(eventHistory).reduce((a, b) => a + b, 0);
-    
-    if (samplesDropped === 0) {
-      return {
-        title: "🎯 Ready to Master Conditional Probability?",
-        content: "Click 'Start Sampling' to begin your journey to 30 samples — where the magic of independence reveals itself!",
-        hint: "💡 Pro tip: Drag event rectangles to explore different probability relationships.",
-        stage: "initial"
-      };
-    } else if (samplesDropped < 10) {
-      const independentPairs = [];
-      [['A', 'B'], ['A', 'C'], ['B', 'C']].forEach(([e1, e2]) => {
-        if (checkIndependence(e1, e2)) independentPairs.push(`${e1}-${e2}`);
-      });
-      
-      return {
-        title: "🌱 Building Intuition...",
-        content: `You've collected ${samplesDropped} sample${samplesDropped !== 1 ? 's' : ''}. Watch how balls fall through overlapping events!`,
-        hint: currentPerspective === 'universe' ? 
-          "Switch to 'Given A' perspective to see how probabilities change when we condition on event A." :
-          `In '${currentPerspective.toUpperCase()}' view, we only consider outcomes that fall within event ${currentPerspective.toUpperCase()}.`,
-        progress: `${independentPairs.length > 0 ? `✓ Found independent events: ${independentPairs.join(', ')}` : '🔍 No independent events yet - try adjusting rectangles!'}`,
-        stage: "early"
-      };
-    } else if (samplesDropped < 30) {
-      const independentPairs = [];
-      [['A', 'B'], ['A', 'C'], ['B', 'C']].forEach(([e1, e2]) => {
-        if (checkIndependence(e1, e2)) independentPairs.push(`${e1}-${e2}`);
-      });
-      
-      // Calculate empirical probabilities
-      const empiricalProbs = totalSamples > 0 ? {
-        A: (eventHistory.A + eventHistory.AB + eventHistory.AC + eventHistory.ABC) / totalSamples,
-        B: (eventHistory.B + eventHistory.AB + eventHistory.BC + eventHistory.ABC) / totalSamples,
-        C: (eventHistory.C + eventHistory.AC + eventHistory.BC + eventHistory.ABC) / totalSamples
-      } : { A: 0, B: 0, C: 0 };
-      
-      return {
-        title: "📊 Patterns Emerging!",
-        content: `With ${samplesDropped} samples, the Law of Large Numbers is taking effect. Keep going to reach the 30-sample milestone!`,
-        hint: independentPairs.length > 0 ?
-          `✨ Independence discovered! For ${independentPairs.join(', ')}: P(B|A) ≈ P(B)` :
-          "🎯 Challenge: Arrange events so that P(B|A) = P(B) to create independence!",
-        progress: `Empirical vs Theoretical: P(A) = ${empiricalProbs.A.toFixed(3)} vs ${eventsData[0].width.toFixed(3)}`,
-        stage: "developing"
-      };
-    } else {
-      const independentPairs = [];
-      [['A', 'B'], ['A', 'C'], ['B', 'C']].forEach(([e1, e2]) => {
-        if (checkIndependence(e1, e2)) independentPairs.push(`${e1}-${e2}`);
-      });
-      
-      const empiricalProbs = {
-        A: (eventHistory.A + eventHistory.AB + eventHistory.AC + eventHistory.ABC) / totalSamples,
-        B: (eventHistory.B + eventHistory.AB + eventHistory.BC + eventHistory.ABC) / totalSamples,
-        C: (eventHistory.C + eventHistory.AC + eventHistory.BC + eventHistory.ABC) / totalSamples
-      };
-      
-      // Calculate convergence errors
-      const errors = {
-        A: Math.abs(empiricalProbs.A - eventsData[0].width),
-        B: Math.abs(empiricalProbs.B - eventsData[1].width),
-        C: Math.abs(empiricalProbs.C - eventsData[2].width)
-      };
-      const avgError = (errors.A + errors.B + errors.C) / 3;
-      
-      return {
-        title: "🎉 Conditional Probability Master!",
-        content: `Incredible! With ${samplesDropped} samples, you've unlocked deep insights into probability relationships.`,
-        hint: avgError < 0.01 ? 
-          "🏆 Near-perfect convergence achieved! The empirical probabilities match theory beautifully." :
-          `📈 Average error: ${avgError.toFixed(3)} — keep sampling for even better convergence!`,
-        progress: independentPairs.length > 0 ?
-          `✅ Independent pairs: ${independentPairs.join(', ')} | 🎯 Try different arrangements!` :
-          "🔬 No independent events — this shows how most real-world events are dependent!",
-        stage: "expert"
-      };
-    }
-  }
-
-  const educationalInsight = getEducationalInsight();
 
 
   return (
     <VisualizationContainer 
-      title="Conditional Probability and Independence (Fixed)"
+      title="Conditional Probability and Independence"
       tutorialSteps={tutorial_1_6_1}
       tutorialKey="conditional-probability-1-6-1"
     >
       <div className="flex flex-col lg:flex-row gap-6 h-full">
         {/* Left Panel */}
         <div className="lg:w-1/3 flex flex-col gap-3">
-          {/* Description */}
-          <VisualizationSection className="p-4">
-            <p className={cn(typography.description, "text-sm leading-relaxed")}>
-              Master conditional probability through interactive visualization. Drag events, change perspectives, and discover when events are independent.
-            </p>
-            <div className="mt-3 space-y-2">
-              <div className="flex items-start gap-2 text-xs">
-                <span className="text-blue-400">▸</span>
-                <div className="text-neutral-300">
-                  <strong>Drag rectangles</strong> to reposition and resize events
-                </div>
-              </div>
-              <div className="flex items-start gap-2 text-xs">
-                <span className="text-green-400">▸</span>
-                <div className="text-neutral-300">
-                  <strong>Change perspective</strong> to see conditional probabilities
-                </div>
-              </div>
-              <div className="flex items-start gap-2 text-xs">
-                <span className="text-purple-400">▸</span>
-                <div className="text-neutral-300">
-                  <strong>Watch patterns</strong> emerge as samples accumulate
-                </div>
-              </div>
-            </div>
-          </VisualizationSection>
 
           <VisualizationSection className="p-3">
             <h4 className="text-base font-bold text-white mb-3">Perspective</h4>
@@ -1458,27 +1355,14 @@ function ConditionalProbability() {
             </div>
           </VisualizationSection>
 
-          {/* Learning Progress - Takes remaining space */}
-          <VisualizationSection className="p-4 flex-1 flex flex-col">
-            <h4 className="text-sm font-semibold text-purple-400 mb-2">Learning Progress</h4>
-            
-            <ProgressTracker 
-              current={samplesDropped} 
-              goal={100} 
-              label="Sample Goal"
-              color="purple"
-            />
-            
-            <div className="mt-3 p-3 bg-purple-900/20 border border-purple-600/30 rounded flex-1">
-              <div className="text-sm font-semibold text-purple-300 mb-1">
-                {educationalInsight.title}
-              </div>
-              <div className="text-xs text-neutral-300 space-y-1">
-                <p>{educationalInsight.content}</p>
-                {educationalInsight.hint && (
-                  <p className="text-purple-400 mt-2">💡 {educationalInsight.hint}</p>
-                )}
-              </div>
+          {/* Simple Sample Counter */}
+          <VisualizationSection className="p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-neutral-300">Samples collected:</span>
+              <span className="font-mono text-lg font-semibold text-teal-400">
+                {samplesDropped}
+                {samplesDropped >= 30 && <span className="text-sm text-green-400 ml-2">✓ Converged</span>}
+              </span>
             </div>
           </VisualizationSection>
         </div>
@@ -1511,30 +1395,30 @@ function ConditionalProbability() {
             </button>
           </div>
           
-          {/* Tab Content */}
-          {activeTab === 'visualization' ? (
-            <>
-              <GraphContainer height="400px">
-                <svg ref={svgBallRef} style={{ width: "100%", height: 400 }} />
+          {/* Tab Content - Using visibility toggle to preserve SVG and D3 state */}
+          <div style={{ display: activeTab === 'visualization' ? 'block' : 'none' }}>
+            <GraphContainer height="400px">
+              <svg ref={svgBallRef} style={{ width: "100%", height: 400 }} />
+            </GraphContainer>
+            
+            {showProbabilities && (
+              <GraphContainer height="180px">
+                <svg ref={svgProbRef} style={{ width: "100%", height: 180 }} />
               </GraphContainer>
-              
-              {showProbabilities && (
-                <GraphContainer height="180px">
-                  <svg ref={svgProbRef} style={{ width: "100%", height: 180 }} />
-                </GraphContainer>
-              )}
-              
-              {/* Worked Example */}
-              {showWorkedExample && samplesDropped > 0 && (
-                <ConditionalProbWorkedExample 
-                  eventA={eventsData[currentPerspective === 'a' ? 0 : currentPerspective === 'b' ? 1 : currentPerspective === 'c' ? 2 : 0]}
-                  eventB={eventsData[1]}
-                  overlap={currentPerspective === 'universe' ? calcEventOverlap(eventsData[0], eventsData[1]) : calcOverlap(1, currentPerspective)}
-                  perspective={currentPerspective}
-                />
-              )}
-            </>
-          ) : (
+            )}
+            
+            {/* Worked Example */}
+            {showWorkedExample && samplesDropped > 0 && (
+              <ConditionalProbWorkedExample 
+                eventA={eventsData[currentPerspective === 'a' ? 0 : currentPerspective === 'b' ? 1 : currentPerspective === 'c' ? 2 : 0]}
+                eventB={eventsData[1]}
+                overlap={currentPerspective === 'universe' ? calcEventOverlap(eventsData[0], eventsData[1]) : calcOverlap(1, currentPerspective)}
+                perspective={currentPerspective}
+              />
+            )}
+          </div>
+          
+          <div style={{ display: activeTab === 'mathematical' ? 'block' : 'none' }}>
             <div className="space-y-4">
               {/* Bayes' Theorem */}
               <BayesTheoremExample eventsData={eventsData} />
@@ -1638,7 +1522,7 @@ function ConditionalProbability() {
                 </div>
               )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </VisualizationContainer>
