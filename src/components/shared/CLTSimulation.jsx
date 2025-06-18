@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import React, { memo } from "react";
-import * as d3 from "d3";
+import * as d3 from "@/utils/d3-utils";
 import { jStat } from "jstat";
 import { 
   VisualizationContainer, 

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import * as d3 from "d3";
+import * as d3 from "@/utils/d3-utils";
 import ExpectationVarianceWorkedExample from './2-2-2-ExpectationVarianceWorkedExample';
 import { 
   VisualizationContainer, 

@@ -112,7 +112,9 @@
       "Bash(git fetch:*)",
       "Bash(git merge:*)",
       "Bash(npm view:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(do grep -o \"d3\\.\\w\\+\" \"$file\")",
+      "Bash(timeout 10 npm run dev:*)"
     ],
     "deny": []
   }

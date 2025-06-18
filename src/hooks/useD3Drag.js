@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import * as d3 from 'd3';
+import * as d3 from "@/utils/d3-utils";
 
 /**
  * A reusable hook for smooth D3 dragging functionality

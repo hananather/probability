@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import * as d3 from 'd3';
+import * as d3 from "@/utils/d3-utils";
 import { VisualizationContainer } from '../ui/VisualizationContainer';
 import { tutorial_2_3_2 } from '@/tutorials/chapter2';
 

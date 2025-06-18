@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import * as d3 from 'd3';
+import * as d3 from "@/utils/d3-utils";
 
 // Journey dots visualization - shows progress as user scrolls
 const JourneyPath = ({ currentSection }) => {

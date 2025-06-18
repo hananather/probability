@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import * as d3 from "d3";
+import * as d3 from "@/utils/d3-utils";
 import { jStat } from "jstat";
 import { cn, createColorScheme, typography, colors } from "@/lib/design-system";
 import { 

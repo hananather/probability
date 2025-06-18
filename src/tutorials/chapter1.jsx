@@ -1,6 +1,9 @@
 // Chapter 1 Tutorial Content
 // Academic tone, concise explanations focused on mathematical concepts
 
+// Export the unordered samples tutorial
+export { tutorial_1_4_unordered } from './chapter1/tutorial_1_4_unordered';
+
 export const tutorial_1_6_1 = [
   {
     title: "Mastering Conditional Probability",

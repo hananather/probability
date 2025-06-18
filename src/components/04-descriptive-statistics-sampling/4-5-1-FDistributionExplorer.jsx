@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import * as d3 from "d3";
+import * as d3 from "@/utils/d3-utils";
 import { jStat } from "jstat";
 import { VisualizationContainer } from "../ui/VisualizationContainer";
 import { createColorScheme, cn, typography } from "../../lib/design-system";

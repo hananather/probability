@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import * as d3 from "d3";
+import * as d3 from "@/utils/d3-utils";
 import jStat from "jstat";
 import { cn } from "../../lib/utils";
 import { RangeSlider } from "../ui/RangeSlider";

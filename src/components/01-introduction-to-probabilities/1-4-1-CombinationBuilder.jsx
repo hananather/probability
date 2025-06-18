@@ -1,15 +1,9 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import * as d3 from "d3";
-import { 
-  VisualizationContainer, 
-  VisualizationSection,
-  GraphContainer,
-  ControlGroup
-} from '../ui/VisualizationContainer';
+import * as d3 from "@/utils/d3-utils";
 import { colors, typography, cn, createColorScheme } from '../../lib/design-system';
-import { ProgressBar } from '../ui/ProgressBar';
-import { Tutorial } from '../ui/Tutorial';
+import { Button } from '../ui/button';
+import { ArrowRight, Shuffle, RotateCcw } from 'lucide-react';
 
 const colorScheme = createColorScheme('probability');
 
@@ -35,399 +29,424 @@ function nPr(n, r) {
   return result;
 }
 
-// Tutorial steps
-const tutorialSteps = [
-  {
-    target: '.selection-circle',
-    title: 'Interactive Selection',
-    content: 'Click on the numbered items to select them. Notice how the order of selection doesn\'t affect the final combination.',
-    position: 'bottom'
-  },
-  {
-    target: '.parameter-controls',
-    title: 'Adjust Parameters',
-    content: 'Use these sliders to change n (total items) and r (items to choose). Watch how the formula updates!',
-    position: 'top'
-  },
-  {
-    target: '.calculation-display',
-    title: 'Live Calculation',
-    content: 'This shows the binomial coefficient formula and its calculation. For small values, you can see the step-by-step computation.',
-    position: 'left'
-  },
-  {
-    target: '.milestone-insights',
-    title: 'Learning Milestones',
-    content: 'As you explore different combinations, you\'ll unlock insights about the mathematics behind combinations.',
-    position: 'top'
+// Generate all permutations of selected items
+function generatePermutations(items) {
+  if (items.length <= 1) return [items];
+  
+  const result = [];
+  for (let i = 0; i < items.length; i++) {
+    const current = items[i];
+    const remaining = items.filter((_, idx) => idx !== i);
+    const remainingPerms = generatePermutations(remaining);
+    
+    for (const perm of remainingPerms) {
+      result.push([current, ...perm]);
+    }
   }
-];
+  return result;
+}
 
-export function CombinationBuilder() {
-  const [n, setN] = useState(5);
+function CombinationBuilder() {
+  const [n, setN] = useState(6);
   const [r, setR] = useState(3);
-  const [selectedItems, setSelectedItems] = useState(new Set());
-  const [totalCombinationsExplored, setTotalCombinationsExplored] = useState(0);
-  const [showTutorial, setShowTutorial] = useState(true);
-  const [discoveredInsights, setDiscoveredInsights] = useState(new Set());
-  const svgRef = useRef(null);
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [draggedItem, setDraggedItem] = useState(null);
+  const [showPermutations, setShowPermutations] = useState(true);
+  const availableRef = useRef(null);
+  const selectedRef = useRef(null);
+  const permutationsRef = useRef(null);
 
-  // Learning milestones
-  const milestones = [
-    { 
-      threshold: 1, 
-      title: "First Combination",
-      insight: "You've created your first combination! Notice how the items form a set where order doesn't matter."
-    },
-    {
-      threshold: 5,
-      title: "Pattern Recognition",
-      insight: "Try changing r while keeping n fixed. See how C(n,r) changes? There's a pattern here!"
-    },
-    {
-      threshold: 10,
-      title: "Symmetry Discovery",
-      insight: "Have you noticed that C(n,r) = C(n,n-r)? Choosing items to include is the same as choosing items to exclude!"
-    },
-    {
-      threshold: 20,
-      title: "Combinatorial Master",
-      insight: "You're getting the hang of it! Combinations are fundamental to probability calculations."
+  // Get available items (not selected)
+  const availableItems = Array.from({ length: n }, (_, i) => i + 1)
+    .filter(item => !selectedItems.includes(item));
+
+  // Get all permutations of selected items
+  const permutations = selectedItems.length > 0 ? generatePermutations(selectedItems) : [];
+
+  // Handle drag and drop
+  const handleDragStart = (item, source) => {
+    setDraggedItem({ item, source });
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e, target) => {
+    e.preventDefault();
+    if (!draggedItem) return;
+
+    const { item, source } = draggedItem;
+
+    if (source === 'available' && target === 'selected' && selectedItems.length < r) {
+      setSelectedItems([...selectedItems, item]);
+    } else if (source === 'selected' && target === 'available') {
+      setSelectedItems(selectedItems.filter(i => i !== item));
     }
-  ];
 
-  // Check for new milestones
-  useEffect(() => {
-    milestones.forEach(milestone => {
-      if (totalCombinationsExplored >= milestone.threshold && !discoveredInsights.has(milestone.threshold)) {
-        setDiscoveredInsights(prev => new Set([...prev, milestone.threshold]));
-      }
-    });
-  }, [totalCombinationsExplored]);
+    setDraggedItem(null);
+  };
 
-  // Track when a complete combination is selected
-  useEffect(() => {
-    if (selectedItems.size === r && r > 0) {
-      setTotalCombinationsExplored(prev => prev + 1);
+  // Click handlers for touch/mobile
+  const handleItemClick = (item, source) => {
+    if (source === 'available' && selectedItems.length < r) {
+      setSelectedItems([...selectedItems, item]);
+    } else if (source === 'selected') {
+      setSelectedItems(selectedItems.filter(i => i !== item));
     }
-  }, [selectedItems, r]);
+  };
 
-  // Main visualization
+  const resetSelection = () => {
+    setSelectedItems([]);
+  };
+
+  const randomSelection = () => {
+    const shuffled = Array.from({ length: n }, (_, i) => i + 1)
+      .sort(() => Math.random() - 0.5);
+    setSelectedItems(shuffled.slice(0, r));
+  };
+
+  // Draw items in each column
   useEffect(() => {
-    if (!svgRef.current) return;
-    
-    const svg = d3.select(svgRef.current);
-    const { width } = svgRef.current.getBoundingClientRect();
-    const height = 400;
-    
-    svg.selectAll("*").remove();
-    svg.attr("viewBox", `0 0 ${width} ${height}`);
-    
-    // Background
-    svg.append("rect")
-      .attr("width", width)
-      .attr("height", height)
-      .attr("fill", "#0a0a0a");
-    
-    const g = svg.append("g")
-      .attr("transform", `translate(${width/2}, ${height/2})`)
-      .attr("class", "selection-circle");
-    
-    // Draw items in a circle - maximizing space usage (80-90% principle)
-    const radius = Math.min(width, height) * 0.4;
-    const itemRadius = Math.min(35, radius / n * 1.8);
-    const items = Array.from({length: n}, (_, i) => i + 1);
-    
-    items.forEach((item, i) => {
-      const angle = (2 * Math.PI * i) / n - Math.PI / 2;
-      const x = radius * Math.cos(angle);
-      const y = radius * Math.sin(angle);
-      const isSelected = selectedItems.has(item);
+    // Draw available items
+    if (availableRef.current) {
+      const svg = d3.select(availableRef.current);
+      svg.selectAll("*").remove();
       
-      const group = g.append("g")
-        .attr("transform", `translate(${x}, ${y})`);
+      const width = availableRef.current.clientWidth;
+      const height = 340;
+      svg.attr("viewBox", `0 0 ${width} ${height}`);
       
-      // Circle with hover effect
-      const circle = group.append("circle")
-        .attr("r", itemRadius)
-        .attr("fill", isSelected ? colorScheme.chart.primary : "#1a1a1a")
-        .attr("stroke", isSelected ? colorScheme.chart.primary : colors.chart.grid)
-        .attr("stroke-width", 2)
-        .attr("cursor", "pointer")
-        .style("transition", "all 200ms ease-in-out");
+      const itemSize = Math.min(45, (height - 20) / Math.max(6, n));
+      const spacing = itemSize * 0.3;
       
-      // Number (monospace as per design system)
-      group.append("text")
+      availableItems.forEach((item, i) => {
+        const y = 10 + i * (itemSize + spacing);
+        const group = svg.append("g")
+          .attr("transform", `translate(${width/2}, ${y + itemSize/2})`);
+        
+        // Item circle
+        const circle = group.append("circle")
+          .attr("r", itemSize/2)
+          .attr("fill", "#1a1a1a")
+          .attr("stroke", colorScheme.chart.secondary)
+          .attr("stroke-width", 2)
+          .attr("cursor", "pointer")
+          .style("transition", "all 200ms ease");
+        
+        // Item number
+        group.append("text")
+          .attr("text-anchor", "middle")
+          .attr("dy", "0.35em")
+          .attr("fill", colors.chart.text)
+          .style("font-size", "16px")
+          .style("font-weight", "600")
+          .style("font-family", "monospace")
+          .style("pointer-events", "none")
+          .text(item);
+        
+        // Hover effect
+        group.on("mouseenter", function() {
+          circle.attr("fill", "#2a2a2a")
+                .attr("stroke", colorScheme.chart.primary);
+        })
+        .on("mouseleave", function() {
+          circle.attr("fill", "#1a1a1a")
+                .attr("stroke", colorScheme.chart.secondary);
+        })
+        .on("click", () => handleItemClick(item, 'available'))
+        .attr("draggable", true)
+        .on("dragstart", () => handleDragStart(item, 'available'));
+      });
+    }
+
+    // Draw selected items
+    if (selectedRef.current) {
+      const svg = d3.select(selectedRef.current);
+      svg.selectAll("*").remove();
+      
+      const width = selectedRef.current.clientWidth;
+      const height = 340;
+      svg.attr("viewBox", `0 0 ${width} ${height}`);
+      
+      const itemSize = Math.min(50, (height - 40) / r);
+      const spacing = itemSize * 0.3;
+      
+      // Draw combination notation
+      svg.append("text")
+        .attr("x", width/2)
+        .attr("y", 25)
         .attr("text-anchor", "middle")
-        .attr("dy", "0.35em")
-        .attr("fill", isSelected ? "white" : colors.chart.text)
+        .attr("fill", colorScheme.chart.primary)
         .style("font-size", "18px")
         .style("font-weight", "600")
         .style("font-family", "monospace")
-        .style("pointer-events", "none")
-        .text(item);
+        .text(selectedItems.length === r ? `{${selectedItems.sort((a,b) => a-b).join(', ')}}` : '{ }');
       
-      // Hover effects
-      group.on("mouseenter", function() {
-        if (!isSelected) {
-          circle.attr("fill", "#2a2a2a")
-               .attr("stroke", colorScheme.chart.secondary);
-        }
-      })
-      .on("mouseleave", function() {
-        if (!isSelected) {
-          circle.attr("fill", "#1a1a1a")
-               .attr("stroke", colors.chart.grid);
-        }
-      })
-      .on("click", () => {
-        const newSelected = new Set(selectedItems);
-        if (newSelected.has(item)) {
-          newSelected.delete(item);
-        } else if (newSelected.size < r) {
-          newSelected.add(item);
-        }
-        setSelectedItems(newSelected);
+      selectedItems.forEach((item, i) => {
+        const y = 50 + i * (itemSize + spacing);
+        const group = svg.append("g")
+          .attr("transform", `translate(${width/2}, ${y + itemSize/2})`);
+        
+        // Item circle
+        const circle = group.append("circle")
+          .attr("r", itemSize/2)
+          .attr("fill", colorScheme.chart.primary + "20")
+          .attr("stroke", colorScheme.chart.primary)
+          .attr("stroke-width", 2)
+          .attr("cursor", "pointer")
+          .style("transition", "all 200ms ease");
+        
+        // Item number
+        group.append("text")
+          .attr("text-anchor", "middle")
+          .attr("dy", "0.35em")
+          .attr("fill", "white")
+          .style("font-size", "18px")
+          .style("font-weight", "600")
+          .style("font-family", "monospace")
+          .style("pointer-events", "none")
+          .text(item);
+        
+        // Hover effect
+        group.on("mouseenter", function() {
+          circle.attr("fill", colorScheme.chart.primary + "40");
+        })
+        .on("mouseleave", function() {
+          circle.attr("fill", colorScheme.chart.primary + "20");
+        })
+        .on("click", () => handleItemClick(item, 'selected'))
+        .attr("draggable", true)
+        .on("dragstart", () => handleDragStart(item, 'selected'));
       });
-    });
-    
-    // Center information
-    const centerGroup = g.append("g");
-    
-    centerGroup.append("text")
-      .attr("text-anchor", "middle")
-      .attr("dy", "-0.5em")
-      .attr("fill", colors.chart.text)
-      .style("font-size", "16px")
-      .style("font-weight", "600")
-      .text(`Select ${r} items`);
-    
-    centerGroup.append("text")
-      .attr("text-anchor", "middle")
-      .attr("dy", "1.5em")
-      .attr("fill", colorScheme.chart.secondary)
-      .style("font-size", "14px")
-      .style("font-family", "monospace")
-      .text(`${selectedItems.size} / ${r} selected`);
-    
-    // Show selected combination
-    if (selectedItems.size === r && r > 0) {
-      const selectedArray = Array.from(selectedItems).sort((a, b) => a - b);
       
-      g.append("text")
-        .attr("text-anchor", "middle")
-        .attr("y", height/2 - 40)
-        .attr("fill", colorScheme.chart.primary)
-        .style("font-size", "20px")
-        .style("font-weight", "600")
-        .style("font-family", "monospace")
-        .text(`{${selectedArray.join(', ')}}`);
-    }
-    
-    // Cleanup function
-    return () => {
-      if (svgRef.current) {
-        d3.select(svgRef.current).selectAll("*").interrupt();
-        d3.select(svgRef.current).selectAll("*").remove();
-      }
-    };
-  }, [n, r, selectedItems]);
-
-  // Generate all combinations for display
-  function getAllCombinations() {
-    if (n > 8 || r > 5 || nCr(n, r) > 35) return null; // Too many to display
-    
-    const result = [];
-    const items = Array.from({length: n}, (_, i) => i + 1);
-    
-    function generateCombinations(start, current) {
-      if (current.length === r) {
-        result.push([...current]);
-        return;
-      }
-      
-      for (let i = start; i < items.length; i++) {
-        current.push(items[i]);
-        generateCombinations(i + 1, current);
-        current.pop();
+      // Drop zone indicator
+      if (selectedItems.length < r) {
+        svg.append("rect")
+          .attr("x", width/2 - 60)
+          .attr("y", 50 + selectedItems.length * (itemSize + spacing))
+          .attr("width", 120)
+          .attr("height", itemSize)
+          .attr("fill", "none")
+          .attr("stroke", colors.chart.grid)
+          .attr("stroke-width", 1)
+          .attr("stroke-dasharray", "4,4")
+          .attr("rx", itemSize/2);
       }
     }
-    
-    generateCombinations(0, []);
-    return result;
-  }
 
-  const allCombinations = getAllCombinations();
-  const currentMilestone = milestones.filter(m => totalCombinationsExplored >= m.threshold).pop();
+    // Draw permutations
+    if (permutationsRef.current && showPermutations) {
+      const svg = d3.select(permutationsRef.current);
+      svg.selectAll("*").remove();
+      
+      const width = permutationsRef.current.clientWidth;
+      const height = 340;
+      svg.attr("viewBox", `0 0 ${width} ${height}`);
+      
+      if (permutations.length > 0) {
+        const maxPerms = Math.min(24, permutations.length); // Show max 24 permutations
+        const cols = Math.min(3, Math.ceil(Math.sqrt(maxPerms)));
+        const rows = Math.ceil(maxPerms / cols);
+        const cellWidth = (width - 20) / cols;
+        const cellHeight = Math.min(40, (height - 40) / rows);
+        
+        svg.append("text")
+          .attr("x", width/2)
+          .attr("y", 20)
+          .attr("text-anchor", "middle")
+          .attr("fill", colorScheme.chart.tertiary)
+          .style("font-size", "14px")
+          .style("font-weight", "600")
+          .text(`${permutations.length} Permutations`);
+        
+        permutations.slice(0, maxPerms).forEach((perm, i) => {
+          const col = i % cols;
+          const row = Math.floor(i / cols);
+          const x = 10 + col * cellWidth + cellWidth/2;
+          const y = 35 + row * cellHeight + cellHeight/2;
+          
+          const group = svg.append("g")
+            .attr("transform", `translate(${x}, ${y})`);
+          
+          group.append("rect")
+            .attr("x", -cellWidth/2 + 5)
+            .attr("y", -cellHeight/2 + 2)
+            .attr("width", cellWidth - 10)
+            .attr("height", cellHeight - 4)
+            .attr("fill", "#1a1a1a")
+            .attr("stroke", colorScheme.chart.tertiary + "60")
+            .attr("stroke-width", 1)
+            .attr("rx", 4);
+          
+          group.append("text")
+            .attr("text-anchor", "middle")
+            .attr("dy", "0.35em")
+            .attr("fill", colorScheme.chart.tertiary)
+            .style("font-size", "14px")
+            .style("font-family", "monospace")
+            .text(`[${perm.join(',')}]`);
+        });
+        
+        if (permutations.length > maxPerms) {
+          svg.append("text")
+            .attr("x", width/2)
+            .attr("y", height - 10)
+            .attr("text-anchor", "middle")
+            .attr("fill", colors.chart.text)
+            .style("font-size", "12px")
+            .text(`... and ${permutations.length - maxPerms} more`);
+        }
+      }
+    }
+  }, [availableItems, selectedItems, permutations, showPermutations, n, r]);
 
   return (
-    <VisualizationContainer 
-      title="Interactive Combination Builder"
-      className="p-2"
-    >
-      <Tutorial
-        steps={tutorialSteps}
-        isOpen={showTutorial}
-        onClose={() => setShowTutorial(false)}
-        persistKey="combination-builder"
-      />
-      
-      <div className="flex flex-col lg:flex-row gap-4">
-        {/* Left Panel */}
-        <div className="lg:w-1/3 space-y-3">
-          <VisualizationSection className="p-3 parameter-controls">
-            <h4 className="text-base font-bold text-white mb-3">Parameters</h4>
-            
-            <ControlGroup>
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-sm text-neutral-300">Total items (n)</label>
-                  <span className="text-sm font-mono text-yellow-400">{n}</span>
-                </div>
-                <input
-                  type="range"
-                  min="1"
-                  max="8"
-                  value={n}
-                  onChange={(e) => {
-                    const newN = Number(e.target.value);
-                    setN(newN);
-                    setR(Math.min(r, newN));
-                    setSelectedItems(new Set());
-                  }}
-                  className="w-full"
-                />
-              </div>
-              
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-sm text-neutral-300">Items to choose (r)</label>
-                  <span className="text-sm font-mono text-purple-400">{r}</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max={n}
-                  value={r}
-                  onChange={(e) => {
-                    setR(Number(e.target.value));
-                    setSelectedItems(new Set());
-                  }}
-                  className="w-full"
-                />
-              </div>
-            </ControlGroup>
-          </VisualizationSection>
-
-          <VisualizationSection className="p-3 calculation-display">
-            <h4 className="text-base font-bold text-white mb-3">Calculation</h4>
-            
-            <div className="bg-neutral-800 rounded-lg p-3 border border-yellow-600/50">
-              <div className="text-center">
-                <div className="text-lg font-mono font-bold text-yellow-400 mb-2">
-                  C({n},{r}) = {nCr(n, r)}
-                </div>
-                <div className="text-sm text-neutral-300 space-y-1">
-                  <div className="font-mono">
-                    {n}! / ({r}! × {n-r}!) = {nCr(n, r)}
-                  </div>
-                  {r <= 3 && r > 0 && (
-                    <div className="text-xs font-mono text-neutral-400">
-                      = {Array.from({length: r}, (_, i) => n-i).join(' × ')} / {Array.from({length: r}, (_, i) => r-i).join(' × ')}
-                    </div>
-                  )}
-                </div>
-              </div>
+    <div className="w-full" style={{ height: '450px' }}>
+      {/* Item Selector Bar - 60px */}
+      <div className="h-[60px] bg-neutral-800/50 rounded-t-lg border-b border-neutral-700 px-4 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <h3 className="text-sm font-semibold text-white">Combination Builder</h3>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-neutral-400">n =</label>
+              <input
+                type="range"
+                min="3"
+                max="8"
+                value={n}
+                onChange={(e) => {
+                  const newN = Number(e.target.value);
+                  setN(newN);
+                  setR(Math.min(r, newN));
+                  setSelectedItems([]);
+                }}
+                className="w-20"
+              />
+              <span className="text-sm font-mono text-yellow-400 w-4">{n}</span>
             </div>
-            
-            {/* Comparison with permutations */}
-            <div className="mt-3 p-3 bg-neutral-800 rounded-lg border border-purple-600/50">
-              <div className="text-sm">
-                <div className="text-purple-400 font-semibold mb-1">
-                  Permutations vs Combinations
-                </div>
-                <div className="text-neutral-300 space-y-1 font-mono text-xs">
-                  <div>P({n},{r}) = {nPr(n, r)} arrangements</div>
-                  <div>C({n},{r}) = {nCr(n, r)} selections</div>
-                  {r > 0 && (
-                    <div className="text-neutral-400">
-                      Factor: {r}! = {Array.from({length: r}, (_, i) => r-i).join('×')} = {nPr(n, r) / nCr(n, r)}
-                    </div>
-                  )}
-                </div>
-              </div>
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-neutral-400">r =</label>
+              <input
+                type="range"
+                min="1"
+                max={n}
+                value={r}
+                onChange={(e) => {
+                  setR(Number(e.target.value));
+                  setSelectedItems([]);
+                }}
+                className="w-20"
+              />
+              <span className="text-sm font-mono text-purple-400 w-4">{r}</span>
             </div>
-          </VisualizationSection>
-
-          <VisualizationSection className="p-3 milestone-insights">
-            <h4 className="text-base font-bold text-white mb-3">Learning Progress</h4>
-            
-            <ProgressBar
-              current={totalCombinationsExplored}
-              total={20}
-              label="Combinations Explored"
-              variant="emerald"
-            />
-            
-            {currentMilestone && (
-              <div className="mt-3 p-3 bg-emerald-900/30 rounded-lg border border-emerald-600/50">
-                <div className="text-sm font-semibold text-emerald-400 mb-1">
-                  {currentMilestone.title}
-                </div>
-                <div className="text-xs text-neutral-300">
-                  {currentMilestone.insight}
-                </div>
-              </div>
-            )}
-            
-            {/* Show all combinations if not too many */}
-            {allCombinations && (
-              <div className="mt-3">
-                <h5 className="text-sm font-semibold text-neutral-300 mb-2">
-                  All {nCr(n, r)} combinations:
-                </h5>
-                <div className="grid grid-cols-3 gap-1 text-xs font-mono text-neutral-400 max-h-32 overflow-y-auto">
-                  {allCombinations.map((combo, i) => (
-                    <div 
-                      key={i}
-                      className={cn(
-                        "transition-colors",
-                        JSON.stringify(combo) === JSON.stringify(Array.from(selectedItems).sort((a, b) => a - b))
-                          ? "text-yellow-400 font-semibold"
-                          : ""
-                      )}
-                    >
-                      {`{${combo.join(',')}}`}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </VisualizationSection>
+          </div>
         </div>
-
-        {/* Right Panel - Visualization */}
-        <div className="lg:w-2/3">
-          <GraphContainer height="400px">
-            <svg ref={svgRef} style={{ width: "100%", height: 400 }} />
-          </GraphContainer>
-          
-          {/* Quick facts */}
-          <VisualizationSection className="p-3 mt-4">
-            <h4 className="text-sm font-semibold text-neutral-300 mb-2">Key Properties</h4>
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="bg-neutral-800 rounded p-2">
-                <div className="text-blue-400 font-semibold mb-1">Symmetry</div>
-                <div className="font-mono">C({n},{r}) = C({n},{n-r}) = {nCr(n, r)}</div>
-              </div>
-              <div className="bg-neutral-800 rounded p-2">
-                <div className="text-purple-400 font-semibold mb-1">Edge Cases</div>
-                <div className="font-mono">C({n},0) = C({n},{n}) = 1</div>
-              </div>
-            </div>
-          </VisualizationSection>
+        
+        <div className="flex items-center gap-3">
+          <div className="text-sm font-mono text-neutral-300">
+            C({n},{r}) = <span className="text-yellow-400 font-semibold">{nCr(n, r)}</span>
+          </div>
+          <div className="text-xs text-neutral-500">|</div>
+          <div className="text-sm font-mono text-neutral-300">
+            P({n},{r}) = <span className="text-purple-400 font-semibold">{nPr(n, r)}</span>
+          </div>
         </div>
       </div>
-    </VisualizationContainer>
+      
+      {/* Main Area - 340px (3 columns) */}
+      <div 
+        className="h-[340px] bg-neutral-900/30 flex"
+        onDragOver={handleDragOver}
+      >
+        {/* Available Items Column */}
+        <div 
+          className="flex-1 border-r border-neutral-700 relative"
+          onDrop={(e) => handleDrop(e, 'available')}
+        >
+          <div className="absolute top-2 left-2 right-2 text-center">
+            <h4 className="text-xs font-semibold text-neutral-400 uppercase tracking-wide">
+              Available Items
+            </h4>
+            <p className="text-xs text-neutral-500 mt-1">Click or drag →</p>
+          </div>
+          <svg ref={availableRef} className="w-full h-full pt-12" />
+        </div>
+        
+        {/* Selected Items Column */}
+        <div 
+          className="flex-1 border-r border-neutral-700 relative bg-neutral-800/20"
+          onDrop={(e) => handleDrop(e, 'selected')}
+        >
+          <div className="absolute top-2 left-2 right-2 text-center">
+            <h4 className="text-xs font-semibold text-neutral-400 uppercase tracking-wide">
+              Combination (Order Doesn't Matter)
+            </h4>
+            <p className="text-xs text-neutral-500 mt-1">
+              {selectedItems.length}/{r} selected
+            </p>
+          </div>
+          <svg ref={selectedRef} className="w-full h-full pt-12" />
+        </div>
+        
+        {/* Permutations Column */}
+        <div className="flex-1 relative">
+          <div className="absolute top-2 left-2 right-2 text-center">
+            <h4 className="text-xs font-semibold text-neutral-400 uppercase tracking-wide">
+              All Permutations (Order Matters)
+            </h4>
+            <p className="text-xs text-neutral-500 mt-1">
+              {selectedItems.length === r ? `${r}! = ${permutations.length} arrangements` : 'Select items to see'}
+            </p>
+          </div>
+          {showPermutations && (
+            <svg ref={permutationsRef} className="w-full h-full pt-12" />
+          )}
+        </div>
+      </div>
+      
+      {/* Action Bar - 50px */}
+      <div className="h-[50px] bg-neutral-800/30 rounded-b-lg border-t border-neutral-700 px-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="neutral"
+            size="xs"
+            onClick={resetSelection}
+            disabled={selectedItems.length === 0}
+            className="flex items-center gap-1"
+          >
+            <RotateCcw className="w-3 h-3" />
+            Reset
+          </Button>
+          <Button
+            variant="primary"
+            size="xs"
+            onClick={randomSelection}
+            className="flex items-center gap-1"
+          >
+            <Shuffle className="w-3 h-3" />
+            Random
+          </Button>
+        </div>
+        
+        <div className="flex items-center gap-4 text-xs">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-yellow-400" />
+            <span className="text-neutral-300">
+              <span className="font-mono">{nCr(n, r)}</span> ways to choose
+            </span>
+          </div>
+          <div className="text-neutral-600">×</div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-purple-400" />
+            <span className="text-neutral-300">
+              <span className="font-mono">{r}!</span> ways to arrange = <span className="font-mono">{nPr(n, r)}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
+
+export default CombinationBuilder;

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import * as d3 from "d3";
+import * as d3 from "@/utils/d3-utils";
 import { VisualizationContainer } from "../ui/VisualizationContainer";
 import { Button } from "../ui/button";
 import { ProgressBar, ProgressNavigation } from "../ui/ProgressBar";

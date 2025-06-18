@@ -2,7 +2,7 @@
 // This significantly reduces bundle size compared to importing all of D3
 
 // Selection and manipulation
-import { select, selectAll, selection } from 'd3-selection';
+import { select, selectAll, selection, pointer } from 'd3-selection';
 
 // Scales
 import {
@@ -12,7 +12,8 @@ import {
   scaleSequential,
   scaleDiverging,
   scaleQuantize,
-  scaleTime
+  scaleTime,
+  scaleLog
 } from 'd3-scale';
 
 // Axes
@@ -34,9 +35,11 @@ import {
   curveCardinal,
   curveMonotoneX,
   curveMonotoneY,
+  curveNatural,
   symbol,
   symbolCircle,
-  symbolSquare
+  symbolSquare,
+  linkHorizontal
 } from 'd3-shape';
 
 // Transitions
@@ -59,7 +62,10 @@ import {
   range,
   quantile,
   deviation,
-  variance
+  variance,
+  histogram,
+  rollup,
+  shuffle
 } from 'd3-array';
 
 // Interpolation
@@ -73,12 +79,14 @@ import {
 import {
   interpolateBlues,
   interpolateRdBu,
-  schemeCategory10
+  schemeCategory10,
+  interpolateWarm
 } from 'd3-scale-chromatic';
 
 // Easing
 import {
   easeLinear,
+  easeQuad,
   easeQuadIn,
   easeQuadOut,
   easeQuadInOut,
@@ -94,12 +102,25 @@ import { randomNormal, randomUniform } from 'd3-random';
 // Time
 import { timeFormat, timeParse } from 'd3-time-format';
 
+// Hierarchy
+import { hierarchy, tree } from 'd3-hierarchy';
+
+// Color
+import { color } from 'd3-color';
+
+// Timer
+import { interval } from 'd3-timer';
+
+// Hexbin
+import { hexbin } from 'd3-hexbin';
+
 // Re-export everything
 export {
   // Selection
   select,
   selectAll,
   selection,
+  pointer,
   // Scales
   scaleLinear,
   scaleOrdinal,
@@ -108,6 +129,7 @@ export {
   scaleDiverging,
   scaleQuantize,
   scaleTime,
+  scaleLog,
   // Axes
   axisBottom,
   axisLeft,
@@ -123,9 +145,11 @@ export {
   curveCardinal,
   curveMonotoneX,
   curveMonotoneY,
+  curveNatural,
   symbol,
   symbolCircle,
   symbolSquare,
+  linkHorizontal,
   // Transitions
   transition,
   // Drag
@@ -144,6 +168,9 @@ export {
   quantile,
   deviation,
   variance,
+  histogram,
+  rollup,
+  shuffle,
   // Interpolation
   interpolate,
   interpolateRgb,
@@ -152,8 +179,10 @@ export {
   interpolateBlues,
   interpolateRdBu,
   schemeCategory10,
+  interpolateWarm,
   // Easing
   easeLinear,
+  easeQuad,
   easeQuadIn,
   easeQuadOut,
   easeQuadInOut,
@@ -166,7 +195,16 @@ export {
   randomUniform,
   // Time
   timeFormat,
-  timeParse
+  timeParse,
+  // Hierarchy
+  hierarchy,
+  tree,
+  // Color
+  color,
+  // Timer
+  interval,
+  // Hexbin
+  hexbin
 };
 
 // Utility to check if we missed any d3 functions
@@ -183,18 +221,34 @@ const d3 = {
   scaleLinear,
   scaleOrdinal,
   scaleBand,
+  scaleLog,
   axisBottom,
   axisLeft,
   line,
   drag,
+  pointer,
   format,
   min,
   max,
   extent,
   mean,
+  median,
+  deviation,
+  histogram,
+  rollup,
+  shuffle,
   transition,
+  easeQuad,
   easeQuadInOut,
-  easeCubicInOut
+  easeCubicInOut,
+  hierarchy,
+  tree,
+  linkHorizontal,
+  color,
+  interval,
+  curveNatural,
+  hexbin,
+  interpolateWarm
 };
 
 export default d3;

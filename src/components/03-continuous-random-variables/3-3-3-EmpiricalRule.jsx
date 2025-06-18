@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef, useMemo, memo } from "react";
 import { useSafeMathJax } from '../../utils/mathJaxFix';
-import * as d3 from "d3";
+import * as d3 from "@/utils/d3-utils";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { createColorScheme, typography } from "../../lib/design-system";
 import { Button } from "../ui/button";

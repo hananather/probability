@@ -3,7 +3,7 @@
 "use client";
 
 import React, { useRef, useEffect, useState } from "react";
-import * as d3 from "d3";
+import * as d3 from "@/utils/d3-utils";
 import PriorPlot from "../shared/PriorPlot";
 
 function round(val, digits = 2) {

@@ -226,7 +226,19 @@ export const createColorScheme = (scheme = 'default') => {
 // Helper function to format numbers consistently
 export const formatNumber = (value, decimals = 2) => {
   if (typeof value !== 'number') return '—';
-  return value.toFixed(decimals);
+  
+  // For large integers, use comma formatting
+  if (Number.isInteger(value) && value >= 1000) {
+    return value.toLocaleString();
+  }
+  
+  // For decimals, use fixed decimal places
+  if (!Number.isInteger(value)) {
+    return value.toFixed(decimals);
+  }
+  
+  // For small integers, return as-is
+  return value.toString();
 };
 
 // Helper function to combine classes

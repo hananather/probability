@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import * as d3 from 'd3';
+import * as d3 from "@/utils/d3-utils";
 import { hexbin as d3Hexbin } from 'd3-hexbin';
 import { Button } from '@/components/ui/button';
 

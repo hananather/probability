@@ -4,7 +4,7 @@
  * Based on the drag patterns from BayesSimulation.jsx
  */
 
-import * as d3 from 'd3';
+import * as d3 from "@/utils/d3-utils";
 
 /**
  * Creates a D3-based slider

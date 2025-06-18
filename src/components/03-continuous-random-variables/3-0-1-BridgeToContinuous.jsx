@@ -5,7 +5,7 @@ import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { VisualizationContainer } from '../ui/VisualizationContainer';
 import { ProgressTracker } from '../ui/ProgressTracker';
-import * as d3 from 'd3';
+import * as d3 from "@/utils/d3-utils";
 import { ProgressBar, ProgressNavigation } from '@/components/ui/ProgressBar';
 import { cn } from '../../lib/utils';
 import { useSafeMathJax } from '../../utils/mathJaxFix';

@@ -54,7 +54,7 @@ const chapters = [
       { title: 'Sample Spaces & Events', component: 'SampleSpacesEvents' },
       { title: 'Counting Techniques', component: 'CountingTechniques' },
       { title: 'Ordered Samples (Permutations)', component: 'OrderedSamples' },
-      { title: 'Unordered Samples (Combinations)', component: 'UnorderedSamples', customPath: '/chapter1/1-4' },
+      { title: 'Unordered Samples (Combinations)', component: 'UnorderedSamples' },
       { title: 'Probability of an Event', component: 'ProbabilityEvent' },
       { title: 'Conditional Probability', component: 'ConditionalProbability' },
     ]
