@@ -718,6 +718,7 @@ const SpatialRandomVariable = () => {
   
   return (
     <VisualizationContainer
+      title="Spatial Random Variable"
       tutorialSteps={tutorial_2_1_1}
       tutorialKey="spatial-random-variable-2-1-1"
     >

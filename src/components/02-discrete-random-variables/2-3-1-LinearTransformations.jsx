@@ -365,6 +365,7 @@ const LinearTransformations = () => {
   
   return (
     <VisualizationContainer
+      title="Linear Transformations"
       tutorialSteps={tutorial_2_3_1}
       tutorialKey="linear-transformations-2-3-1"
     >

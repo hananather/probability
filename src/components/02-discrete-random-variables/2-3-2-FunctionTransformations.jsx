@@ -380,6 +380,7 @@ const FunctionTransformations = () => {
   
   return (
     <VisualizationContainer
+      title="Function Transformations"
       tutorialSteps={tutorial_2_3_2}
       tutorialKey="function-transformations-2-3-2"
     >
