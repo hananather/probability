@@ -4,8 +4,22 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import ConceptSection from '../../components/shared/ConceptSection.jsx';
 
+// Existing components
 const BayesianInference = dynamic(
   () => import('../../components/05-estimation/5-1-1-BayesianInference.jsx').then(mod => ({ default: mod.BayesianInference })),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+// New high-quality components
+const InteractiveInferenceJourney = dynamic(
+  () => import('../../components/05-estimation/5-1-2-InteractiveInferenceJourney.jsx'),
   { 
     ssr: false,
     loading: () => (
@@ -28,6 +42,18 @@ const PointEstimation = dynamic(
   }
 );
 
+const ConfidenceIntervalMasterclass = dynamic(
+  () => import('../../components/05-estimation/5-2-2-ConfidenceIntervalMasterclass.jsx'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
 const ConfidenceInterval = dynamic(
   () => import('../../components/05-estimation/5-3-1-ConfidenceInterval.jsx'),
   { 
@@ -40,8 +66,44 @@ const ConfidenceInterval = dynamic(
   }
 );
 
+const SampleSizeLaboratory = dynamic(
+  () => import('../../components/05-estimation/5-3-2-SampleSizeLaboratory.jsx'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
 const Bootstrapping = dynamic(
   () => import('../../components/05-estimation/5-4-1-Bootstrapping.jsx'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const TDistributionShowcase = dynamic(
+  () => import('../../components/05-estimation/5-4-2-TDistributionShowcase.jsx'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const ProportionEstimationStudio = dynamic(
+  () => import('../../components/05-estimation/5-5-1-ProportionEstimationStudio.jsx'),
   { 
     ssr: false,
     loading: () => (
@@ -85,6 +147,24 @@ export default function Chapter5() {
       )
     },
     {
+      id: 'inference-journey',
+      title: '5.1 Interactive Inference Journey',
+      component: InteractiveInferenceJourney,
+      description: (
+        <>
+          <p>
+            Statistical inference is the process of drawing conclusions about a population
+            based on sample data. This fundamental concept underlies all of statistical
+            estimation and hypothesis testing.
+          </p>
+          <p>
+            Explore the beautiful journey from population to sample to statistic, and see
+            how sampling distributions emerge through interactive animations.
+          </p>
+        </>
+      )
+    },
+    {
       id: 'point-estimation',
       title: '5.2 Point Estimation',
       component: PointEstimation,
@@ -103,8 +183,26 @@ export default function Chapter5() {
       )
     },
     {
-      id: 'confidence-intervals',
-      title: '5.3 Confidence Intervals',
+      id: 'ci-masterclass',
+      title: '5.2 Confidence Interval Masterclass',
+      component: ConfidenceIntervalMasterclass,
+      description: (
+        <>
+          <p>
+            Master the construction and interpretation of confidence intervals with this
+            comprehensive three-panel visualization. Explore critical values, the 68-95-99.7
+            rule, and see confidence intervals in action.
+          </p>
+          <p>
+            Build intervals, compare methods, and understand the long-run coverage behavior
+            that makes confidence intervals such a powerful statistical tool.
+          </p>
+        </>
+      )
+    },
+    {
+      id: 'ci-simulation',
+      title: '5.3 Confidence Interval Simulation',
       component: ConfidenceInterval,
       description: (
         <>
@@ -116,6 +214,24 @@ export default function Chapter5() {
           <p>
             Build intuition by generating multiple confidence intervals and observing
             their coverage properties in real-time.
+          </p>
+        </>
+      )
+    },
+    {
+      id: 'sample-size-lab',
+      title: '5.3 Sample Size Laboratory',
+      component: SampleSizeLaboratory,
+      description: (
+        <>
+          <p>
+            Explore the critical relationship between sample size, margin of error, and
+            confidence level. This interactive laboratory features stunning 3D visualizations
+            and practical cost-benefit analysis.
+          </p>
+          <p>
+            Calculate optimal sample sizes for means and proportions, discover the square
+            root law, and apply your knowledge to real-world scenarios.
           </p>
         </>
       )
@@ -134,6 +250,42 @@ export default function Chapter5() {
           <p>
             See how resampling with replacement creates a distribution of statistics,
             enabling confidence interval construction without assumptions.
+          </p>
+        </>
+      )
+    },
+    {
+      id: 't-distribution',
+      title: '5.4 t-Distribution Showcase',
+      component: TDistributionShowcase,
+      description: (
+        <>
+          <p>
+            When the population standard deviation σ is unknown, we use the t-distribution
+            and the sample standard deviation s to construct confidence intervals.
+            Watch the beautiful animation as t approaches normal.
+          </p>
+          <p>
+            Compare t-intervals with z-intervals, explore small sample scenarios, and
+            understand when each distribution is appropriate.
+          </p>
+        </>
+      )
+    },
+    {
+      id: 'proportion-studio',
+      title: '5.5 Proportion Estimation Studio',
+      component: ProportionEstimationStudio,
+      description: (
+        <>
+          <p>
+            Apply confidence intervals to real-world proportion problems including election
+            polling, quality control, and A/B testing. Compare different CI methods and
+            understand when each is appropriate.
+          </p>
+          <p>
+            Interactive scenarios bring statistical concepts to life with beautiful
+            visualizations and practical insights.
           </p>
         </>
       )

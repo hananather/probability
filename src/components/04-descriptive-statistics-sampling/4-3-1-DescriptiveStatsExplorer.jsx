@@ -49,56 +49,72 @@ const DescriptiveStatsWorkedExample = React.memo(function DescriptiveStatsWorked
   const outliers = data.filter(x => x < lowerBound || x > upperBound);
   
   return (
-    <div ref={contentRef} style={{
-      backgroundColor: '#2A303C',
-      padding: '1.5rem',
-      borderRadius: '8px',
-      color: '#e0e0e0',
-      border: '1px solid #4A5568'
-    }}>
-      <h4 style={{ fontSize: '1.125rem', fontWeight: '600', borderBottom: '1px solid #4A5568', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
-        Complete Statistical Analysis
+    <div ref={contentRef} className="bg-gradient-to-br from-violet-900/20 to-purple-900/20 p-6 rounded-xl text-neutral-200 border border-violet-600/30 shadow-lg shadow-violet-900/20">
+      <h4 className="text-lg font-semibold border-b border-violet-600/30 pb-2 mb-4 text-white bg-gradient-to-r from-violet-400 to-purple-400 bg-clip-text text-transparent">
+        📊 Complete Statistical Analysis
       </h4>
       
-      <div style={{ marginBottom: '1rem' }}>
-        <p style={{ marginBottom: '0.25rem', fontWeight: '500' }}>1. Measures of Central Tendency:</p>
-        <div dangerouslySetInnerHTML={{ __html: `\\[\\text{Mean} = \\bar{x} = \\frac{\\sum x_i}{n} = ${mean.toFixed(2)}\\]` }} />
-        <p style={{ fontSize: '0.875rem', marginLeft: '1rem', color: '#CBD5E0' }}>
-          Median = {median.toFixed(2)}, Mode = {mode.length === 0 ? 'None' : mode.join(', ')}
-        </p>
+      <div className="mb-4">
+        <p className="mb-1 font-medium text-purple-400">1. Measures of Central Tendency:</p>
+        <div className="bg-gradient-to-r from-purple-900/30 to-violet-900/30 p-3 rounded-lg">
+          <div className="text-center py-2">
+            <span className="font-mono text-sm">Mean = x̄ = Σxᵢ/n = {mean.toFixed(2)}</span>
+          </div>
+          <p className="text-sm mt-2 text-purple-200">
+            Median = {median.toFixed(2)}, Mode = {mode.length === 0 ? 'None' : mode.join(', ')}
+          </p>
+        </div>
       </div>
       
-      <div style={{ marginBottom: '1rem' }}>
-        <p style={{ marginBottom: '0.25rem', fontWeight: '500' }}>2. Measures of Dispersion:</p>
-        <div dangerouslySetInnerHTML={{ __html: `\\[\\text{Range} = x_{max} - x_{min} = ${(Math.max(...data) - Math.min(...data)).toFixed(2)}\\]` }} />
-        <div dangerouslySetInnerHTML={{ __html: `\\[\\text{Variance} = \\sigma^2 = \\frac{\\sum (x_i - \\bar{x})^2}{n} = ${variance.toFixed(2)}\\]` }} />
-        <div dangerouslySetInnerHTML={{ __html: `\\[\\text{Std Dev} = \\sigma = \\sqrt{\\sigma^2} = ${stdDev.toFixed(2)}\\]` }} />
+      <div className="mb-4">
+        <p className="mb-1 font-medium text-blue-400">2. Measures of Dispersion:</p>
+        <div className="bg-gradient-to-r from-blue-900/30 to-cyan-900/30 p-3 rounded-lg space-y-2">
+          <div className="text-center">
+            <span className="font-mono text-sm">Range = xₘₐₓ - xₘᵢₙ = {(Math.max(...data) - Math.min(...data)).toFixed(2)}</span>
+          </div>
+          <div className="text-center">
+            <span className="font-mono text-sm">Variance = σ² = Σ(xᵢ - x̄)²/n = {variance.toFixed(2)}</span>
+          </div>
+          <div className="text-center">
+            <span className="font-mono text-sm">Std Dev = σ = √σ² = {stdDev.toFixed(2)}</span>
+          </div>
+        </div>
       </div>
       
-      <div style={{ marginBottom: '1rem' }}>
-        <p style={{ marginBottom: '0.25rem', fontWeight: '500' }}>3. Five-Number Summary & IQR:</p>
-        <p style={{ fontSize: '0.875rem', marginLeft: '1rem', color: '#CBD5E0' }}>
-          Min = {Math.min(...data).toFixed(2)}, Q1 = {q1.toFixed(2)}, Median = {median.toFixed(2)}, Q3 = {q3.toFixed(2)}, Max = {Math.max(...data).toFixed(2)}
-        </p>
-        <div dangerouslySetInnerHTML={{ __html: `\\[\\text{IQR} = Q_3 - Q_1 = ${q3.toFixed(2)} - ${q1.toFixed(2)} = ${iqr.toFixed(2)}\\]` }} />
+      <div className="mb-4">
+        <p className="mb-1 font-medium text-emerald-400">3. Five-Number Summary & IQR:</p>
+        <div className="bg-gradient-to-r from-emerald-900/30 to-teal-900/30 p-3 rounded-lg">
+          <p className="text-sm text-emerald-200">
+            Min = {Math.min(...data).toFixed(2)}, Q1 = {q1.toFixed(2)}, Median = {median.toFixed(2)}, Q3 = {q3.toFixed(2)}, Max = {Math.max(...data).toFixed(2)}
+          </p>
+          <div className="text-center mt-2">
+            <span className="font-mono text-sm">IQR = Q₃ - Q₁ = {q3.toFixed(2)} - {q1.toFixed(2)} = {iqr.toFixed(2)}</span>
+          </div>
+        </div>
       </div>
       
-      <div style={{ marginBottom: '1rem' }}>
-        <p style={{ marginBottom: '0.25rem', fontWeight: '500' }}>4. Outlier Detection ({outlierMultiplier}×IQR Rule):</p>
-        <div dangerouslySetInnerHTML={{ __html: `\\[\\text{Lower Fence} = Q_1 - ${outlierMultiplier} \\times \\text{IQR} = ${lowerBound.toFixed(2)}\\]` }} />
-        <div dangerouslySetInnerHTML={{ __html: `\\[\\text{Upper Fence} = Q_3 + ${outlierMultiplier} \\times \\text{IQR} = ${upperBound.toFixed(2)}\\]` }} />
-        <p style={{ fontSize: '0.875rem', marginLeft: '1rem', color: outliers.length > 0 ? '#F59E0B' : '#10B981' }}>
-          {outliers.length > 0 ? `Outliers detected: ${outliers.map(x => x.toFixed(2)).join(', ')}` : 'No outliers detected'}
-        </p>
+      <div className="mb-4">
+        <p className="mb-1 font-medium text-orange-400">4. Outlier Detection ({outlierMultiplier}×IQR Rule):</p>
+        <div className="bg-gradient-to-r from-orange-900/30 to-red-900/30 p-3 rounded-lg">
+          <div className="text-center">
+            <span className="font-mono text-sm">Lower Fence = Q₁ - {outlierMultiplier} × IQR = {lowerBound.toFixed(2)}</span>
+          </div>
+          <div className="text-center mt-1">
+            <span className="font-mono text-sm">Upper Fence = Q₃ + {outlierMultiplier} × IQR = {upperBound.toFixed(2)}</span>
+          </div>
+          <p className={cn("text-sm mt-2", outliers.length > 0 ? "text-orange-400" : "text-emerald-400")}>
+            {outliers.length > 0 ? `Outliers detected: ${outliers.map(x => x.toFixed(2)).join(', ')}` : 'No outliers detected'}
+          </p>
+        </div>
       </div>
       
-      <div style={{ backgroundColor: '#1F2937', padding: '0.75rem', borderRadius: '4px', fontSize: '0.875rem' }}>
-        <strong style={{ color: '#10B981' }}>Robustness Analysis:</strong>
-        <p style={{ marginTop: '0.5rem', fontSize: '0.8rem' }}>
-          • Mean is {Math.abs(mean - median) > stdDev * 0.5 ? 'significantly' : 'slightly'} affected by outliers<br/>
-          • Median remains stable (robust measure)<br/>
-          • IQR is unaffected by extreme values
-        </p>
+      <div className="bg-gradient-to-r from-teal-900/30 to-cyan-900/30 p-3 rounded-lg text-sm border border-teal-600/30">
+        <strong className="text-teal-400">🔍 Robustness Analysis:</strong>
+        <div className="mt-2 space-y-1 text-xs text-teal-200">
+          <p>• Mean is {Math.abs(mean - median) > stdDev * 0.5 ? 'significantly' : 'slightly'} affected by outliers</p>
+          <p>• Median remains stable (robust measure)</p>
+          <p>• IQR is unaffected by extreme values</p>
+        </div>
       </div>
     </div>
   );
@@ -266,44 +282,79 @@ function DescriptiveStatsExplorer() {
       .attr("fill", colors.chart.text);
     
     // Draw statistical markers
+    const meanX = showMean ? xScale(stats.mean) : null;
+    const medianX = showMedian ? xScale(stats.median) : null;
+    const labelDistance = meanX && medianX ? Math.abs(meanX - medianX) : Infinity;
+    
     if (showMean) {
       svg.append("line")
-        .attr("x1", xScale(stats.mean))
-        .attr("x2", xScale(stats.mean))
-        .attr("y1", margin.top - 20)
+        .attr("x1", meanX)
+        .attr("x2", meanX)
+        .attr("y1", margin.top)
         .attr("y2", height - margin.bottom)
         .attr("stroke", colorScheme.chart.primary)
         .attr("stroke-width", 2)
         .attr("stroke-dasharray", "5,5");
-      
-      svg.append("text")
-        .attr("x", xScale(stats.mean))
-        .attr("y", margin.top - 25)
-        .attr("text-anchor", "middle")
-        .attr("fill", colorScheme.chart.primary)
-        .style("font-size", "12px")
-        .style("font-weight", "600")
-        .text(`Mean: ${stats.mean.toFixed(2)}`);
     }
     
     if (showMedian) {
       svg.append("line")
-        .attr("x1", xScale(stats.median))
-        .attr("x2", xScale(stats.median))
-        .attr("y1", margin.top - 10)
+        .attr("x1", medianX)
+        .attr("x2", medianX)
+        .attr("y1", margin.top)
         .attr("y2", height - margin.bottom)
         .attr("stroke", colorScheme.chart.secondary)
         .attr("stroke-width", 2)
         .attr("stroke-dasharray", "3,3");
+    }
+    
+    // Position labels to avoid overlap
+    if (labelDistance < 60) {
+      // Stack labels when close
+      if (showMean) {
+        svg.append("text")
+          .attr("x", meanX)
+          .attr("y", margin.top - 25)
+          .attr("text-anchor", "middle")
+          .attr("fill", colorScheme.chart.primary)
+          .style("font-size", "11px")
+          .style("font-weight", "600")
+          .text(`Mean: ${stats.mean.toFixed(2)}`);
+      }
       
-      svg.append("text")
-        .attr("x", xScale(stats.median))
-        .attr("y", margin.top - 15)
-        .attr("text-anchor", "middle")
-        .attr("fill", colorScheme.chart.secondary)
-        .style("font-size", "11px")
-        .style("font-weight", "600")
-        .text(`Median: ${stats.median.toFixed(2)}`);
+      if (showMedian) {
+        svg.append("text")
+          .attr("x", medianX)
+          .attr("y", margin.top - 10)
+          .attr("text-anchor", "middle")
+          .attr("fill", colorScheme.chart.secondary)
+          .style("font-size", "11px")
+          .style("font-weight", "600")
+          .text(`Median: ${stats.median.toFixed(2)}`);
+      }
+    } else {
+      // Normal positioning when far apart
+      if (showMean) {
+        svg.append("text")
+          .attr("x", meanX)
+          .attr("y", margin.top - 10)
+          .attr("text-anchor", "middle")
+          .attr("fill", colorScheme.chart.primary)
+          .style("font-size", "11px")
+          .style("font-weight", "600")
+          .text(`Mean: ${stats.mean.toFixed(2)}`);
+      }
+      
+      if (showMedian) {
+        svg.append("text")
+          .attr("x", medianX)
+          .attr("y", margin.top - 10)
+          .attr("text-anchor", "middle")
+          .attr("fill", colorScheme.chart.secondary)
+          .style("font-size", "11px")
+          .style("font-weight", "600")
+          .text(`Median: ${stats.median.toFixed(2)}`);
+      }
     }
     
     // Draw data points with drag behavior
@@ -532,57 +583,57 @@ function DescriptiveStatsExplorer() {
   }, [dataPoints, outlierMultiplier, showQuartiles, stats]);
   
   return (
-    <VisualizationContainer title="Interactive Descriptive Statistics Explorer" className="p-2">
-      <div className="flex flex-col lg:flex-row gap-4">
+    <VisualizationContainer title="Interactive Descriptive Statistics Explorer" className="p-6">
+      <div className="flex flex-col lg:flex-row gap-6">
         {/* Left Panel */}
-        <div className="lg:w-1/3 space-y-3">
-          <VisualizationSection className="p-3">
-            <p className={cn(typography.description, "text-sm leading-relaxed")}>
+        <div className="lg:w-1/3 space-y-4">
+          <VisualizationSection className="p-4">
+            <p className={cn(typography.description, "text-sm leading-relaxed text-neutral-300")}>
               Explore how different statistics describe data. Drag points on the number line, 
               toggle calculations, and observe how outliers affect different measures.
             </p>
           </VisualizationSection>
           
-          <VisualizationSection className="p-3">
-            <h4 className="text-base font-bold text-white mb-3">Data Input</h4>
+          <VisualizationSection className="p-4">
+            <h4 className="text-base font-bold text-white mb-4">Data Input</h4>
             
             <ControlGroup label="Add Data Points">
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-stretch">
                 <input
                   type="text"
                   placeholder="e.g., 5, 10, 15"
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && addDataPoint()}
-                  className={cn(components.input, "flex-1")}
+                  className={cn(components.input, "flex-1 min-w-0")}
                 />
                 <button
                   onClick={addDataPoint}
                   disabled={!inputValue.trim()}
-                  className={cn(components.button.base, components.button.primary, "px-4")}
+                  className={cn(components.button.base, components.button.primary, "px-6 flex-shrink-0")}
                 >
                   Add
                 </button>
               </div>
             </ControlGroup>
             
-            <ControlGroup label="Sample Datasets">
-              <div className="grid grid-cols-1 gap-2">
+            <ControlGroup label="Sample Datasets" className="mt-4">
+              <div className="grid grid-cols-1 gap-2.5">
                 <button
                   onClick={() => generateDataset('symmetric')}
-                  className={cn(components.button.base, components.button.secondary, "text-xs")}
+                  className={cn(components.button.base, components.button.secondary, "text-sm py-2.5")}
                 >
                   Generate Symmetric Data
                 </button>
                 <button
                   onClick={() => generateDataset('right-skewed')}
-                  className={cn(components.button.base, components.button.secondary, "text-xs")}
+                  className={cn(components.button.base, components.button.secondary, "text-sm py-2.5")}
                 >
                   Generate Right-Skewed Data
                 </button>
                 <button
                   onClick={() => generateDataset('with-outlier')}
-                  className={cn(components.button.base, components.button.secondary, "text-xs")}
+                  className={cn(components.button.base, components.button.secondary, "text-sm py-2.5")}
                 >
                   Generate Data with Outliers
                 </button>
@@ -592,55 +643,55 @@ function DescriptiveStatsExplorer() {
             <button
               onClick={clearData}
               disabled={dataPoints.length === 0}
-              className={cn(components.button.base, components.button.danger, "w-full")}
+              className={cn(components.button.base, components.button.danger, "w-full mt-3 py-2.5")}
             >
               Clear All Data
             </button>
           </VisualizationSection>
           
-          <VisualizationSection className="p-3">
-            <h4 className="text-base font-bold text-white mb-3">Calculation Toggles</h4>
+          <VisualizationSection className="p-4">
+            <h4 className="text-base font-bold text-white mb-4">Calculation Toggles</h4>
             
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm">
+            <div className="space-y-3">
+              <label className="flex items-center gap-3 text-sm cursor-pointer hover:bg-white/5 p-2 rounded-md transition-colors">
                 <input
                   type="checkbox"
                   checked={showMean}
                   onChange={(e) => setShowMean(e.target.checked)}
-                  className="w-4 h-4"
+                  className="w-4 h-4 text-purple-500 rounded focus:ring-purple-500 focus:ring-2"
                 />
                 <span className="text-neutral-300">Show Mean</span>
               </label>
-              <label className="flex items-center gap-2 text-sm">
+              <label className="flex items-center gap-3 text-sm cursor-pointer hover:bg-white/5 p-2 rounded-md transition-colors">
                 <input
                   type="checkbox"
                   checked={showMedian}
                   onChange={(e) => setShowMedian(e.target.checked)}
-                  className="w-4 h-4"
+                  className="w-4 h-4 text-purple-500 rounded focus:ring-purple-500 focus:ring-2"
                 />
                 <span className="text-neutral-300">Show Median</span>
               </label>
-              <label className="flex items-center gap-2 text-sm">
+              <label className="flex items-center gap-3 text-sm cursor-pointer hover:bg-white/5 p-2 rounded-md transition-colors">
                 <input
                   type="checkbox"
                   checked={showStdDev}
                   onChange={(e) => setShowStdDev(e.target.checked)}
-                  className="w-4 h-4"
+                  className="w-4 h-4 text-purple-500 rounded focus:ring-purple-500 focus:ring-2"
                 />
                 <span className="text-neutral-300">Show Standard Deviation</span>
               </label>
-              <label className="flex items-center gap-2 text-sm">
+              <label className="flex items-center gap-3 text-sm cursor-pointer hover:bg-white/5 p-2 rounded-md transition-colors">
                 <input
                   type="checkbox"
                   checked={showQuartiles}
                   onChange={(e) => setShowQuartiles(e.target.checked)}
-                  className="w-4 h-4"
+                  className="w-4 h-4 text-purple-500 rounded focus:ring-purple-500 focus:ring-2"
                 />
                 <span className="text-neutral-300">Show Quartiles & IQR</span>
               </label>
             </div>
             
-            <ControlGroup label="Outlier Detection Multiplier" className="mt-3">
+            <ControlGroup label="Outlier Detection Multiplier" className="mt-4">
               <RangeSlider
                 min={1}
                 max={3}
@@ -652,11 +703,12 @@ function DescriptiveStatsExplorer() {
             </ControlGroup>
           </VisualizationSection>
           
-          <VisualizationSection className="p-3">
-            <h4 className="text-base font-bold text-white mb-3">Numerical Summary</h4>
+          <VisualizationSection className="p-4">
+            <h4 className="text-base font-bold text-white mb-4">Numerical Summary</h4>
             
-            <div className="space-y-2 text-sm font-mono">
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+            <div className="bg-black/30 rounded-lg p-3 border border-white/10">
+              <div className="space-y-2 text-sm font-mono">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                 <div className="text-neutral-400">n:</div>
                 <div className="text-white">{dataPoints.length}</div>
                 
@@ -705,11 +757,12 @@ function DescriptiveStatsExplorer() {
                     <div className="text-white">{stats.range.toFixed(2)}</div>
                   </>
                 )}
+                </div>
               </div>
             </div>
           </VisualizationSection>
           
-          <VisualizationSection className="p-3">
+          <VisualizationSection className="p-4">
             <h4 className="text-sm font-semibold text-purple-400 mb-2">Learning Progress</h4>
             
             <ProgressTracker 
@@ -719,7 +772,7 @@ function DescriptiveStatsExplorer() {
               color="purple"
             />
             
-            <div className="space-y-2 text-xs text-neutral-300 mt-3">
+            <div className="space-y-2 text-xs text-neutral-300 mt-4">
               {interactionCount === 0 && (
                 <div>
                   <p>🎯 Ready to explore descriptive statistics?</p>
@@ -768,7 +821,7 @@ function DescriptiveStatsExplorer() {
         </div>
         
         {/* Right Panel - Visualizations */}
-        <div className="lg:w-2/3 space-y-4">
+        <div className="lg:w-2/3 space-y-5">
           <GraphContainer height="300px">
             <svg ref={svgRef} style={{ width: "100%", height: 250 }} />
           </GraphContainer>
@@ -779,7 +832,7 @@ function DescriptiveStatsExplorer() {
           
           {dataPoints.length > 0 && (
             <>
-              <VisualizationSection className="p-3 bg-amber-900/20 border border-amber-600/30">
+              <VisualizationSection className="p-4 bg-amber-900/20 border border-amber-600/30">
                 <h4 className="text-sm font-semibold text-amber-400 mb-2">
                   📈 Error/Robustness Zone
                 </h4>

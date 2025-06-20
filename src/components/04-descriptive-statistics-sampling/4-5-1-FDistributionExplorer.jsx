@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import * as d3 from "@/utils/d3-utils";
 import { jStat } from "jstat";
-import { VisualizationContainer } from "../ui/VisualizationContainer";
-import { createColorScheme, cn, typography } from "../../lib/design-system";
+import { VisualizationContainer, GraphContainer, VisualizationSection } from "../ui/VisualizationContainer";
+import { createColorScheme, cn, typography, colors } from "../../lib/design-system";
 import { Button } from "../ui/button";
 import { RangeSlider } from "../ui/RangeSlider";
 import { FDistributionWorkedExample } from "./4-5-2-FDistributionWorkedExample";
@@ -48,7 +48,7 @@ const getColorClasses = (scheme) => {
   return colorMap[scheme] || colorMap.hypothesis;
 };
 
-export const FDistributionExplorer = () => {
+const FDistributionExplorer = () => {
   // State management
   const [sampleSizeN1, setSampleSizeN1] = useState(10);
   const [sampleSizeN2, setSampleSizeN2] = useState(10);
@@ -291,7 +291,8 @@ export const FDistributionExplorer = () => {
     if (!svgRef.current) return;
     
     const margin = { top: 20, right: 30, bottom: 50, left: 60 };
-    const width = 700;
+    const containerWidth = svgRef.current.parentElement?.offsetWidth || 800;
+    const width = containerWidth;
     const height = 500;
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
@@ -300,8 +301,34 @@ export const FDistributionExplorer = () => {
     d3.select(svgRef.current).selectAll("*").remove();
     
     const svg = d3.select(svgRef.current)
+      .attr("viewBox", `0 0 ${width} ${height}`)
+      .attr("preserveAspectRatio", "xMidYMid meet");
+    
+    // Add gradient background
+    const defs = svg.append("defs");
+    const bgGradient = defs.append("linearGradient")
+      .attr("id", "f-dist-bg-gradient")
+      .attr("x1", "0%")
+      .attr("y1", "0%")
+      .attr("x2", "100%")
+      .attr("y2", "100%");
+    
+    bgGradient.append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", "#0a0a2e");
+    
+    bgGradient.append("stop")
+      .attr("offset", "50%")
+      .attr("stop-color", "#1a0a3e");
+    
+    bgGradient.append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", "#2a0a4e");
+    
+    svg.append("rect")
       .attr("width", width)
-      .attr("height", height);
+      .attr("height", height)
+      .attr("fill", "url(#f-dist-bg-gradient)");
     
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
@@ -327,8 +354,10 @@ export const FDistributionExplorer = () => {
       .append("text")
       .attr("x", innerWidth / 2)
       .attr("y", 40)
-      .attr("fill", colorScheme.text.secondary)
+      .attr("fill", colors.chart.text)
       .style("text-anchor", "middle")
+      .style("font-size", "14px")
+      .style("font-weight", "600")
       .text("F-value");
     
     g.append("g")
@@ -337,8 +366,10 @@ export const FDistributionExplorer = () => {
       .attr("transform", "rotate(-90)")
       .attr("y", -40)
       .attr("x", -innerHeight / 2)
-      .attr("fill", colorScheme.text.secondary)
+      .attr("fill", colors.chart.text)
       .style("text-anchor", "middle")
+      .style("font-size", "14px")
+      .style("font-weight", "600")
       .text("Density");
     
     // Generate F-distribution curve points
@@ -419,9 +450,12 @@ export const FDistributionExplorer = () => {
       
       const bins = histogram(localFValuesRef.current);
       
-      // Proper histogram normalization
-      const binWidth = bins[0] ? bins[0].x1 - bins[0].x0 : 1;
+      // Proper histogram normalization to match probability density
+      const binWidth = bins.length > 0 && bins[0].x1 !== undefined ? bins[0].x1 - bins[0].x0 : 1;
       const totalArea = localFValuesRef.current.length * binWidth;
+      
+      // Ensure totalArea is valid
+      const normalizedTotalArea = totalArea > 0 ? totalArea : 1;
       
       // Draw histogram bars
       const bars = g.selectAll(".bar")
@@ -438,8 +472,8 @@ export const FDistributionExplorer = () => {
         .attr("opacity", 0.6)
         .transition()
         .duration(getAnimationDuration(localFValuesRef.current.length))
-        .attr("y", d => yScale(d.length / totalArea))
-        .attr("height", d => innerHeight - yScale(d.length / totalArea));
+        .attr("y", d => yScale(d.length / normalizedTotalArea))
+        .attr("height", d => innerHeight - yScale(d.length / normalizedTotalArea));
     }
     
     // Highlight last generated F-value
@@ -521,12 +555,12 @@ export const FDistributionExplorer = () => {
       title="F-Distribution Explorer"
       description="Explore how the ratio of sample variances follows the F-distribution"
     >
-      <div className="grid grid-cols-3 gap-6">
+      <div className="flex flex-col lg:flex-row gap-6">
         {/* Left Panel - Controls and Insights */}
-        <div className="col-span-1 space-y-4">
+        <div className="lg:w-1/3 space-y-4">
           {/* Controls Section */}
-          <div className={cn("p-4 rounded-lg", colorClasses.bg, colorClasses.border)}>
-            <h3 className={cn(typography.h4, "mb-4")}>Parameters</h3>
+          <VisualizationSection className="p-4">
+            <h3 className="text-base font-bold bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent mb-4">Parameters</h3>
             
             <div className="space-y-4">
               <div>
@@ -535,8 +569,8 @@ export const FDistributionExplorer = () => {
                   <span className="text-xs ml-2 text-gray-500">ν₁ = {df1}</span>
                 </label>
                 <RangeSlider
-                  value={[sampleSizeN1]}
-                  onValueChange={([value]) => {
+                  value={sampleSizeN1}
+                  onChange={(value) => {
                     setSampleSizeN1(value);
                     handleReset();
                   }}
@@ -553,8 +587,8 @@ export const FDistributionExplorer = () => {
                   <span className="text-xs ml-2 text-gray-500">ν₂ = {df2}</span>
                 </label>
                 <RangeSlider
-                  value={[sampleSizeN2]}
-                  onValueChange={([value]) => {
+                  value={sampleSizeN2}
+                  onChange={(value) => {
                     setSampleSizeN2(value);
                     handleReset();
                   }}
@@ -565,10 +599,11 @@ export const FDistributionExplorer = () => {
                 />
               </div>
             </div>
-          </div>
+          </VisualizationSection>
           
           {/* Action Buttons */}
-          <div className="space-y-2">
+          <VisualizationSection className="p-4">
+            <div className="space-y-2">
             <Button
               onClick={handleGenerateSingle}
               disabled={isGenerating}
@@ -595,11 +630,12 @@ export const FDistributionExplorer = () => {
             >
               Reset
             </Button>
-          </div>
+            </div>
+          </VisualizationSection>
           
           {/* Visualization Options */}
-          <div className={cn("p-4 rounded-lg", colorClasses.bg, colorClasses.border)}>
-            <h3 className={cn(typography.h4, "mb-3")}>Visualization Options</h3>
+          <VisualizationSection className="p-4">
+            <h3 className="text-base font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-3">Visualization Options</h3>
             <div className="space-y-2">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -620,12 +656,12 @@ export const FDistributionExplorer = () => {
                 <span className={typography.caption}>Show Variance Calculations</span>
               </label>
             </div>
-          </div>
+          </VisualizationSection>
           
           {/* Statistics Display */}
           {simulatedFValues.length > 0 && (
-            <div className={cn("p-4 rounded-lg", colorClasses.bg, colorClasses.border)}>
-              <h3 className={cn(typography.h4, "mb-3")}>Sample Statistics</h3>
+            <VisualizationSection className="p-4">
+              <h3 className="text-base font-bold bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent mb-3">Sample Statistics</h3>
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className={typography.caption}>Sample Mean:</span>
@@ -646,24 +682,24 @@ export const FDistributionExplorer = () => {
                   </span>
                 </div>
               </div>
-            </div>
+            </VisualizationSection>
           )}
           
           {/* Variance Details */}
           {showVarianceDetails && lastGeneratedF && (
-            <div className={cn("p-4 rounded-lg", "bg-purple-900/20 border border-purple-600/30")}>
-              <h3 className={cn(typography.h4, "mb-3")}>Variance Calculations</h3>
+            <VisualizationSection className="p-4">
+              <h3 className="text-base font-bold bg-gradient-to-r from-violet-400 to-purple-400 bg-clip-text text-transparent mb-3">Variance Calculations</h3>
               <div className="space-y-2 text-sm font-mono">
                 <p>Latest F-statistic: {lastGeneratedF.toFixed(4)}</p>
                 <p className="text-xs text-gray-400">F = S₁²/S₂²</p>
                 <p className="text-xs text-gray-400">where S₁² and S₂² are sample variances</p>
               </div>
-            </div>
+            </VisualizationSection>
           )}
           
           {/* Mathematical Formula */}
-          <div className={cn("p-4 rounded-lg", "bg-indigo-900/20 border border-indigo-600/30")}>
-            <h3 className={cn(typography.h4, "mb-3")}>Mathematical Definition</h3>
+          <VisualizationSection className="p-4">
+            <h3 className="text-base font-bold bg-gradient-to-r from-indigo-400 to-blue-400 bg-clip-text text-transparent mb-3">Mathematical Definition</h3>
             <div className="text-sm space-y-2">
               <p>The F-distribution PDF:</p>
               <p className="text-xs font-mono text-center py-2">
@@ -675,15 +711,15 @@ export const FDistributionExplorer = () => {
                 where ν₁ = {df1} and ν₂ = {df2} are degrees of freedom
               </p>
             </div>
-          </div>
+          </VisualizationSection>
           
           {/* Educational Insights */}
           <div className={cn(
             "p-4 rounded-lg transition-all duration-300",
-            insights.stage === 0 ? "bg-gray-800/50 border border-gray-600/30" :
-            insights.stage === 1 ? "bg-teal-900/20 border border-teal-600/30" :
-            insights.stage === 2 ? "bg-blue-900/20 border border-blue-600/30" :
-            "bg-green-900/20 border border-green-600/30"
+            insights.stage === 0 ? "bg-gradient-to-br from-gray-900/40 to-gray-800/40 border border-gray-600/40" :
+            insights.stage === 1 ? "bg-gradient-to-br from-teal-900/30 to-cyan-900/30 border border-teal-600/40" :
+            insights.stage === 2 ? "bg-gradient-to-br from-blue-900/30 to-indigo-900/30 border border-blue-600/40" :
+            "bg-gradient-to-br from-emerald-900/30 to-green-900/30 border border-emerald-600/40"
           )}>
             <h3 className={cn(typography.h4, "mb-3 flex items-center gap-2")}>
               {insights.stage === 0 && "🎯"}
@@ -719,16 +755,15 @@ export const FDistributionExplorer = () => {
         </div>
         
         {/* Right Panel - Visualization */}
-        <div className="col-span-2">
-          <div className={cn("p-4 rounded-lg", "bg-gray-800/50 border border-gray-700")}>
-            <svg ref={svgRef}></svg>
-          </div>
+        <div className="lg:w-2/3">
+          <GraphContainer height="500px">
+            <svg ref={svgRef} style={{ width: "100%", height: "500px" }} />
+          </GraphContainer>
         </div>
       </div>
       
       {/* Worked Example Section */}
-      <div className="mt-8">
-        <h3 className={cn(typography.h3, "mb-4")}>Worked Example: F-Test for Variance Comparison</h3>
+      <div className="mt-6">
         <FDistributionWorkedExample 
           n1={sampleSizeN1}
           n2={sampleSizeN2}
@@ -740,3 +775,5 @@ export const FDistributionExplorer = () => {
     </VisualizationContainer>
   );
 };
+
+export { FDistributionExplorer };

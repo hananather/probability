@@ -6,14 +6,21 @@ import ErrorBoundary from '../../components/shared/ErrorBoundary.jsx';
 
 // Lazy load all components with error handling
 const SpatialRandomVariable = lazy(() => 
-  import('@/components/02-discrete-random-variables/2-1-1-SpatialRandomVariable')
+  import('@/components/02-discrete-random-variables/2-1-1-SpatialRandomVariable.jsx')
     .catch(() => {
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })
 );
 
 const ExpectationVariance = lazy(() => 
-  import('@/components/02-discrete-random-variables/2-2-1-ExpectationVariance')
+  import('@/components/02-discrete-random-variables/2-2-1-ExpectationVariance.jsx')
+    .catch(() => {
+      return { default: () => <div className="text-red-500">Failed to load component</div> };
+    })
+);
+
+const ExpectationVarianceWorkedExample = lazy(() => 
+  import('@/components/02-discrete-random-variables/2-2-2-ExpectationVarianceWorkedExample.jsx')
     .catch(() => {
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })
@@ -21,14 +28,49 @@ const ExpectationVariance = lazy(() =>
 
 
 const LinearTransformations = lazy(() => 
-  import('@/components/02-discrete-random-variables/2-3-1-LinearTransformations')
+  import('@/components/02-discrete-random-variables/2-3-1-LinearTransformations.jsx')
     .catch(() => {
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })
 );
 
 const FunctionTransformations = lazy(() => 
-  import('@/components/02-discrete-random-variables/2-3-2-FunctionTransformations')
+  import('@/components/02-discrete-random-variables/2-3-2-FunctionTransformations.jsx')
+    .catch(() => {
+      return { default: () => <div className="text-red-500">Failed to load component</div> };
+    })
+);
+
+const GeometricDistribution = lazy(() => 
+  import('@/components/02-discrete-random-variables/2-4-1-GeometricDistribution.jsx')
+    .catch(() => {
+      return { default: () => <div className="text-red-500">Failed to load component</div> };
+    })
+);
+
+const BinomialDistribution = lazy(() => 
+  import('@/components/02-discrete-random-variables/2-3-3-BinomialDistribution.jsx')
+    .catch(() => {
+      return { default: () => <div className="text-red-500">Failed to load component</div> };
+    })
+);
+
+const NegativeBinomialDistribution = lazy(() => 
+  import('@/components/02-discrete-random-variables/2-5-1-NegativeBinomialDistribution.jsx')
+    .catch(() => {
+      return { default: () => <div className="text-red-500">Failed to load component</div> };
+    })
+);
+
+const PoissonDistribution = lazy(() => 
+  import('@/components/02-discrete-random-variables/2-6-1-PoissonDistribution.jsx')
+    .catch(() => {
+      return { default: () => <div className="text-red-500">Failed to load component</div> };
+    })
+);
+
+const DistributionComparison = lazy(() => 
+  import('@/components/02-discrete-random-variables/2-7-1-DistributionComparison.jsx')
     .catch(() => {
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })
@@ -125,11 +167,11 @@ export default function Chapter2() {
           </ul>
         </>
       ),
-      components: [ExpectationVariance]
+      components: [ExpectationVariance, ExpectationVarianceWorkedExample]
     },
     {
       id: 'transformations',
-      title: '2.3 Transformations of Random Variables',
+      title: '2.2.4 Transformations of Random Variables',
       description: (
         <>
           <p className="text-base text-neutral-300 mb-3">
@@ -156,6 +198,171 @@ export default function Chapter2() {
         </>
       ),
       components: [LinearTransformations, FunctionTransformations]
+    },
+    {
+      id: 'binomial-distribution',
+      title: '2.3 Binomial Distribution',
+      description: (
+        <>
+          <p className="text-base text-neutral-300 mb-3">
+            The <span className="text-cyan-400 font-semibold">Binomial Distribution</span> models the number of successes 
+            in <span dangerouslySetInnerHTML={{ __html: `\\(n\\)` }} /> independent trials, each with success probability <span dangerouslySetInnerHTML={{ __html: `\\(p\\)` }} />.
+          </p>
+          
+          <p className="text-sm text-neutral-300 mb-2">
+            Key characteristics:
+          </p>
+          <ul className="list-disc list-inside space-y-0.5 text-sm text-neutral-300 ml-4 mb-3">
+            <li>Fixed number of trials <span dangerouslySetInnerHTML={{ __html: `\\(n\\)` }} /></li>
+            <li>Each trial is independent with constant probability <span dangerouslySetInnerHTML={{ __html: `\\(p\\)` }} /></li>
+            <li>Probability of exactly <span dangerouslySetInnerHTML={{ __html: `\\(k\\)` }} /> successes: <span dangerouslySetInnerHTML={{ __html: `\\(P(X=k) = \\binom{n}{k}p^k(1-p)^{n-k}\\)` }} /></li>
+            <li>Expected value: <span dangerouslySetInnerHTML={{ __html: `\\(E[X] = np\\)` }} />, Variance: <span dangerouslySetInnerHTML={{ __html: `\\(\\text{Var}(X) = np(1-p)\\)` }} /></li>
+          </ul>
+          
+          <div className="bg-neutral-900 rounded-md p-3 mt-3">
+            <h5 className="text-sm font-medium text-cyan-400 mb-2">Common Applications</h5>
+            <ul className="list-disc list-inside space-y-0.5 text-xs text-neutral-300">
+              <li>Quality control: defective items in a batch</li>
+              <li>Medical trials: treatment success rates</li>
+              <li>Network reliability: successful transmissions</li>
+              <li>Manufacturing: yield rates in production</li>
+            </ul>
+          </div>
+        </>
+      ),
+      components: [BinomialDistribution]
+    },
+    {
+      id: 'geometric-distribution',
+      title: '2.4 Geometric Distribution',
+      description: (
+        <>
+          <p className="text-base text-neutral-300 mb-3">
+            The <span className="text-orange-400 font-semibold">Geometric Distribution</span> models the number of trials 
+            needed until the first success occurs. It&apos;s the discrete analogue of &ldquo;waiting time.&rdquo;
+          </p>
+          
+          <p className="text-sm text-neutral-300 mb-2">
+            Key characteristics:
+          </p>
+          <ul className="list-disc list-inside space-y-0.5 text-sm text-neutral-300 ml-4 mb-3">
+            <li>Models repeated independent trials with constant success probability <span dangerouslySetInnerHTML={{ __html: `\\(p\\)` }} /></li>
+            <li>Probability of first success on trial <span dangerouslySetInnerHTML={{ __html: `\\(k\\)` }} />: <span dangerouslySetInnerHTML={{ __html: `\\(P(X=k) = (1-p)^{k-1}p\\)` }} /></li>
+            <li>Expected number of trials: <span dangerouslySetInnerHTML={{ __html: `\\(E[X] = 1/p\\)` }} /></li>
+            <li>Memoryless property: past failures don&apos;t affect future probabilities</li>
+          </ul>
+          
+          <div className="bg-neutral-900 rounded-md p-3 mt-3">
+            <h5 className="text-sm font-medium text-orange-400 mb-2">Real-world Applications</h5>
+            <ul className="list-disc list-inside space-y-0.5 text-xs text-neutral-300">
+              <li>Quality control: inspections until finding a defect</li>
+              <li>Network packets: transmissions until successful delivery</li>
+              <li>Manufacturing: items produced until first failure</li>
+              <li>Clinical trials: patients treated until first success</li>
+            </ul>
+          </div>
+        </>
+      ),
+      components: [GeometricDistribution]
+    },
+    {
+      id: 'negative-binomial-distribution',
+      title: '2.5 Negative Binomial Distribution',
+      description: (
+        <>
+          <p className="text-base text-neutral-300 mb-3">
+            The <span className="text-violet-400 font-semibold">Negative Binomial Distribution</span> extends the geometric distribution, 
+            modeling the number of trials needed to achieve <span dangerouslySetInnerHTML={{ __html: `\\(r\\)` }} /> successes.
+          </p>
+          
+          <p className="text-sm text-neutral-300 mb-2">
+            Key characteristics:
+          </p>
+          <ul className="list-disc list-inside space-y-0.5 text-sm text-neutral-300 ml-4 mb-3">
+            <li>Generalizes geometric distribution (which is the special case <span dangerouslySetInnerHTML={{ __html: `\\(r=1\\)` }} />)</li>
+            <li>Probability of <span dangerouslySetInnerHTML={{ __html: `\\(r\\)` }} />th success on trial <span dangerouslySetInnerHTML={{ __html: `\\(k\\)` }} />: <span dangerouslySetInnerHTML={{ __html: `\\(P(X=k) = \\binom{k-1}{r-1}p^r(1-p)^{k-r}\\)` }} /></li>
+            <li>Expected trials: <span dangerouslySetInnerHTML={{ __html: `\\(E[X] = r/p\\)` }} /></li>
+            <li>Variance: <span dangerouslySetInnerHTML={{ __html: `\\(\\text{Var}(X) = r(1-p)/p^2\\)` }} /></li>
+          </ul>
+          
+          <div className="bg-neutral-900 rounded-md p-3 mt-3">
+            <h5 className="text-sm font-medium text-violet-400 mb-2">Applications</h5>
+            <ul className="list-disc list-inside space-y-0.5 text-xs text-neutral-300">
+              <li>Quality assurance: items inspected to find <span dangerouslySetInnerHTML={{ __html: `\\(r\\)` }} /> defects</li>
+              <li>Sports: games played until <span dangerouslySetInnerHTML={{ __html: `\\(r\\)` }} /> wins</li>
+              <li>Polling: people surveyed until <span dangerouslySetInnerHTML={{ __html: `\\(r\\)` }} /> agree</li>
+              <li>Sales: calls made until <span dangerouslySetInnerHTML={{ __html: `\\(r\\)` }} /> sales</li>
+            </ul>
+          </div>
+        </>
+      ),
+      components: [NegativeBinomialDistribution]
+    },
+    {
+      id: 'poisson-distribution',
+      title: '2.6 Poisson Distribution',
+      description: (
+        <>
+          <p className="text-base text-neutral-300 mb-3">
+            The <span className="text-emerald-400 font-semibold">Poisson Distribution</span> models the number of events 
+            occurring in a fixed interval of time or space, when events occur at a constant average rate <span dangerouslySetInnerHTML={{ __html: `\\(\\lambda\\)` }} />.
+          </p>
+          
+          <p className="text-sm text-neutral-300 mb-2">
+            Key characteristics:
+          </p>
+          <ul className="list-disc list-inside space-y-0.5 text-sm text-neutral-300 ml-4 mb-3">
+            <li>Events occur independently at constant rate <span dangerouslySetInnerHTML={{ __html: `\\(\\lambda\\)` }} /></li>
+            <li>Probability of <span dangerouslySetInnerHTML={{ __html: `\\(k\\)` }} /> events: <span dangerouslySetInnerHTML={{ __html: `\\(P(X=k) = \\frac{\\lambda^k e^{-\\lambda}}{k!}\\)` }} /></li>
+            <li className="text-yellow-400">Unique property: <span dangerouslySetInnerHTML={{ __html: `\\(E[X] = \\text{Var}(X) = \\lambda\\)` }} /></li>
+            <li>Approximates binomial when <span dangerouslySetInnerHTML={{ __html: `\\(n \\to \\infty\\)` }} />, <span dangerouslySetInnerHTML={{ __html: `\\(p \\to 0\\)` }} />, <span dangerouslySetInnerHTML={{ __html: `\\(np = \\lambda\\)` }} /></li>
+          </ul>
+          
+          <div className="bg-neutral-900 rounded-md p-3 mt-3">
+            <h5 className="text-sm font-medium text-emerald-400 mb-2">Common Applications</h5>
+            <ul className="list-disc list-inside space-y-0.5 text-xs text-neutral-300">
+              <li>Call centers: calls per hour</li>
+              <li>Server requests: hits per minute</li>
+              <li>Radioactive decay: particles per second</li>
+              <li>Manufacturing defects: flaws per meter</li>
+            </ul>
+          </div>
+        </>
+      ),
+      components: [PoissonDistribution]
+    },
+    {
+      id: 'distribution-comparison',
+      title: '2.7 Distribution Comparison',
+      description: (
+        <>
+          <p className="text-base text-neutral-300 mb-3">
+            Compare different discrete distributions side-by-side to understand their relationships and 
+            when to use each one.
+          </p>
+          
+          <p className="text-sm text-neutral-300 mb-2">
+            Key insights to explore:
+          </p>
+          <ul className="list-disc list-inside space-y-0.5 text-sm text-neutral-300 ml-4 mb-3">
+            <li>Negative Binomial with <span dangerouslySetInnerHTML={{ __html: `\\(r=1\\)` }} /> equals Geometric</li>
+            <li>Poisson approximates Binomial for large <span dangerouslySetInnerHTML={{ __html: `\\(n\\)` }} />, small <span dangerouslySetInnerHTML={{ __html: `\\(p\\)` }} /></li>
+            <li>Compare shapes, spreads, and tail behaviors</li>
+            <li>Understand parameter effects across distributions</li>
+          </ul>
+          
+          <div className="bg-neutral-900 rounded-md p-3 mt-3">
+            <h5 className="text-sm font-medium text-purple-400 mb-2">Selection Guide</h5>
+            <ul className="list-disc list-inside space-y-0.5 text-xs text-neutral-300">
+              <li><strong>Fixed trials, count successes:</strong> Binomial</li>
+              <li><strong>Trials until first success:</strong> Geometric</li>
+              <li><strong>Trials until r successes:</strong> Negative Binomial</li>
+              <li><strong>Events in fixed interval:</strong> Poisson</li>
+            </ul>
+          </div>
+        </>
+      ),
+      components: [DistributionComparison]
     }
   ];
 

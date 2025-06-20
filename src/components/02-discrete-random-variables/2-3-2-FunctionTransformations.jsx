@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from "@/utils/d3-utils";
 import { VisualizationContainer } from '../ui/VisualizationContainer';
-import { tutorial_2_3_2 } from '@/tutorials/chapter2';
+import { tutorial_2_3_2 } from '@/tutorials/chapter2.jsx';
 
 const FunctionTransformations = () => {
   // State for function selection and display options

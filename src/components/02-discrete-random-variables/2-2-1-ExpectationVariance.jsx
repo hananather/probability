@@ -10,7 +10,7 @@ import {
 } from '../ui/VisualizationContainer';
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
 import { RangeSlider } from '../ui/RangeSlider';
-import { tutorial_2_2_1 } from '@/tutorials/chapter2';
+import { tutorial_2_2_1 } from '@/tutorials/chapter2.jsx';
 
 // Use probability color scheme for discrete distributions
 const colorScheme = createColorScheme('probability');

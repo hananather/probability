@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from "@/utils/d3-utils";
 import { hexbin as d3Hexbin } from 'd3-hexbin';
 import { VisualizationContainer } from '../ui/VisualizationContainer';
-import { tutorial_2_1_1 } from '@/tutorials/chapter2';
+import { tutorial_2_1_1 } from '@/tutorials/chapter2.jsx';
 
 const SpatialRandomVariable = () => {
   const statsRef = useRef(null);

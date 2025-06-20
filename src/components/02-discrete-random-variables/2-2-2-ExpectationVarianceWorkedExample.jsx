@@ -2,7 +2,7 @@
 import React, { useEffect, useRef } from "react";
 
 const ExpectationVarianceWorkedExample = React.memo(function ExpectationVarianceWorkedExample({
-  probs
+  probs = Array(6).fill(1/6) // Default to fair die if probs is undefined
 }) {
   const contentRef = useRef(null);
 

@@ -1,4 +1,42 @@
-# Claude.md
+1. Deep Analysis Phase
+Before writing any code, thoroughly analyze the problem:
+
+Break down the objective into core components
+Identify potential edge cases and constraints
+Consider multiple architectural approaches
+
+2. Multi-Perspective Evaluation
+When tackling complex problems:
+
+Approach the issue from different angles (user experience, performance, maintainability, scalability)
+Consider trade-offs between different solutions
+Think about both immediate needs and future extensibility
+
+3. Simplicity First Principle
+
+Start with the simplest solution that could possibly work
+Add complexity only when proven necessary
+Prefer clarity over cleverness in implementation
+
+4. Continuous Simplification Check
+At each decision point, ask:
+
+"Is this the simplest way to achieve our goal?"
+"What can we remove while maintaining functionality?"
+"Are we solving problems we don't actually have?"
+
+5. Avoid Premature Optimization
+
+Don't over-engineer for hypothetical future requirements
+Build for current needs with reasonable flexibility
+Refactor when requirements actually change, not before
+
+6. Implementation Only After Understanding
+
+Ensure you have a complete mental model of the solution
+Validate your approach against the requirements
+Have evaluated and compared multiple implementation strategies
+Can clearly articulate why your chosen approach is optimal
 
 ## Project
 Educational statistics platform with interactive visualizations.

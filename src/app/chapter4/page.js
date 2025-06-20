@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 
-const MeanMedianMode = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/4-1-1-MeanMedianMode'),
+const ComprehensiveStats = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/4-1-1-ComprehensiveStats'),
   { 
     ssr: false,
     loading: () => (
@@ -63,6 +63,42 @@ const FDistributionExplorer = dynamic(
     )
   }
 );
+
+const SamplingDistributions = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/4-3-1-SamplingDistributions'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const BoxplotQuartilesExplorer = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/4-6-1-BoxplotQuartilesExplorer'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const CLTSimulation = dynamic(
+  () => import('@/components/shared/CLTSimulation'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
 import ConceptSection from '@/components/shared/ConceptSection';
 
 export default function Chapter4Page() {
@@ -74,11 +110,14 @@ export default function Chapter4Page() {
   useEffect(() => {
     // Map section IDs to indices
     const sectionIdToIndex = {
-      'measures-central': 0,
+      'comprehensive-stats': 0,
       'histograms': 1,
       'stats-explorer': 2,
       't-distribution': 3,
-      'f-distribution': 4
+      'f-distribution': 4,
+      'sampling-distributions': 5,
+      'boxplot-quartiles': 6,
+      'central-limit-theorem': 7
     };
     
     const section = searchParams.get('section');
@@ -89,10 +128,10 @@ export default function Chapter4Page() {
 
   const sections = [
     {
-      id: 'measures-central',
-      title: "Measures of Central Tendency",
-      description: "Learn about mean, median, and mode - the three fundamental ways to describe the center of a dataset.",
-      component: <MeanMedianMode />
+      id: 'comprehensive-stats',
+      title: "Comprehensive Descriptive Statistics",
+      description: "Master all fundamental statistics: mean, median, mode, variance, quartiles, and outliers in one interactive experience.",
+      component: <ComprehensiveStats />
     },
     {
       id: 'histograms',
@@ -117,6 +156,24 @@ export default function Chapter4Page() {
       title: "F-Distribution Explorer",
       description: "Compare variances from two samples using the F-distribution. Essential for ANOVA and variance ratio tests.",
       component: <FDistributionExplorer />
+    },
+    {
+      id: 'sampling-distributions',
+      title: "Sampling Distributions",
+      description: "Discover how sample means form predictable patterns. Experience the Central Limit Theorem in action as you build sampling distributions.",
+      component: <SamplingDistributions />
+    },
+    {
+      id: 'boxplot-quartiles',
+      title: "Boxplots & Quartiles",
+      description: "Master the five-number summary and boxplot visualization. Learn to identify outliers and understand data distribution at a glance.",
+      component: <BoxplotQuartilesExplorer />
+    },
+    {
+      id: 'central-limit-theorem',
+      title: "Central Limit Theorem",
+      description: "Experience the most important theorem in statistics. Watch how sample means always form a normal distribution, regardless of the original data shape.",
+      component: <CLTSimulation />
     }
   ];
 
@@ -152,14 +209,6 @@ export default function Chapter4Page() {
               {section.title}
             </button>
           ))}
-          
-          {/* Coming Soon buttons */}
-          <button
-            disabled
-            className="px-4 py-2 rounded-lg bg-neutral-900 text-neutral-500 cursor-not-allowed"
-          >
-            Sampling Distributions (Coming Soon)
-          </button>
         </div>
 
         {/* Current Section */}
@@ -177,7 +226,7 @@ export default function Chapter4Page() {
           </p>
           <p className="text-sm text-neutral-300">
             This chapter is actively being developed. More visualizations for variance, 
-            standard deviation, quartiles, and sampling distributions will be added soon!
+            standard deviation, and chi-squared distributions will be added soon!
           </p>
         </div>
       </div>

@@ -21,7 +21,7 @@ export function TDistributionExplorer() {
   const [confidenceLevel, setConfidenceLevel] = useState(0.95);
   const [showDifferenceArea, setShowDifferenceArea] = useState(false);
   const [hoveredPoint, setHoveredPoint] = useState(null);
-  const [animationSpeed, setAnimationSpeed] = useState(500);
+  const [animationSpeed, setAnimationSpeed] = useState(800);
   
   const svgRef = useRef(null);
   const transitionRef = useRef(null);
@@ -97,16 +97,21 @@ export function TDistributionExplorer() {
     }
   };
 
-  // Cleanup function for D3 transitions
+  // Simplified cleanup function for D3 transitions and animations
   const cleanup = useCallback(() => {
     if (transitionRef.current) {
-      // Check if interrupt method exists before calling
-      if (typeof transitionRef.current.interrupt === 'function') {
-        transitionRef.current.interrupt();
-      }
+      // Cancel any ongoing transitions or intervals
+      clearInterval(transitionRef.current);
       transitionRef.current = null;
     }
   }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanup();
+    };
+  }, [cleanup]);
 
   useEffect(() => {
     if (!svgRef.current) return;
@@ -227,10 +232,11 @@ export function TDistributionExplorer() {
       .y(d => yScale(d.y))
       .curve(d3.curveMonotoneX);
 
-    // Add gradient for t-distribution using colorScheme
+    // Add gradient for t-distribution using colorScheme with unique ID
+    const gradientId = `t-gradient-${Date.now()}`;
     const gradient = svg.append("defs")
       .append("linearGradient")
-      .attr("id", "t-gradient-enhanced")
+      .attr("id", gradientId)
       .attr("x1", "0%")
       .attr("y1", "0%")
       .attr("x2", "100%")
@@ -239,17 +245,17 @@ export function TDistributionExplorer() {
     gradient.append("stop")
       .attr("offset", "0%")
       .attr("stop-color", colorScheme.chart.primary)
-      .attr("stop-opacity", 0.9);
+      .attr("stop-opacity", 1);
 
     gradient.append("stop")
       .attr("offset", "50%")
-      .attr("stop-color", colorScheme.chart.primaryLight)
-      .attr("stop-opacity", 0.9);
+      .attr("stop-color", colorScheme.chart.primaryLight || colorScheme.chart.primary)
+      .attr("stop-opacity", 1);
 
     gradient.append("stop")
       .attr("offset", "100%")
       .attr("stop-color", colorScheme.chart.primary)
-      .attr("stop-opacity", 0.9);
+      .attr("stop-opacity", 1);
 
     // Add confidence interval shading if enabled
     if (showConfidenceInterval) {
@@ -351,22 +357,20 @@ export function TDistributionExplorer() {
         .style("opacity", 1);
     }
 
-    // Draw t-distribution with animation
+    // Draw t-distribution with animation - with fallback color
     const tPath = g.append("path")
       .datum(tData)
       .attr("fill", "none")
-      .attr("stroke", "url(#t-gradient-enhanced)")
-      .attr("stroke-width", 2.5)
+      .attr("stroke", colorScheme.chart.primary) // Fallback color
+      .attr("stroke", `url(#${gradientId})`) // Gradient if available
+      .attr("stroke-width", 3)
       .attr("d", line)
       .style("opacity", 0);
 
-    // Store the transition, not the selection
-    const transition = tPath.transition()
+    // Animate path appearance
+    tPath.transition()
       .duration(animationSpeed)
       .style("opacity", 1);
-    
-    // Store reference to the transition
-    transitionRef.current = transition;
 
     // Draw normal distribution if toggled
     if (showNormalOverlay) {
@@ -405,7 +409,7 @@ export function TDistributionExplorer() {
         .attr("x2", 25)
         .attr("y1", 10)
         .attr("y2", 10)
-        .attr("stroke", "url(#t-gradient-enhanced)")
+        .attr("stroke", `url(#${gradientId})`)
         .attr("stroke-width", 2.5);
 
       legend.append("text")
@@ -503,16 +507,57 @@ export function TDistributionExplorer() {
     };
   }, [sampleSize, showNormalOverlay, showConfidenceInterval, confidenceLevel, showDifferenceArea, degreesOfFreedom, animationSpeed, cleanup]);
 
-  // Animation controls
+  // Animation controls with cleanup
   const handleAnimateConvergence = () => {
+    // Clear any existing animation
+    if (transitionRef.current) {
+      clearInterval(transitionRef.current);
+      transitionRef.current = null;
+    }
+    
+    // Auto-enable all visualization options for full effect
+    setShowNormalOverlay(true);
+    setShowConfidenceInterval(true);
+    setShowDifferenceArea(true);
+    
     let n = 2;
-    const interval = setInterval(() => {
-      setSampleSize(n);
-      n += 1;
-      if (n > 50) {
-        clearInterval(interval);
+    setSampleSize(2); // Start from 2
+    
+    const targetN = 50;
+    const totalDuration = 5000; // 5 seconds for the full animation
+    const frameInterval = 50; // Update every 50ms for smooth animation
+    const totalFrames = totalDuration / frameInterval;
+    
+    let frame = 0;
+    
+    transitionRef.current = setInterval(() => {
+      frame++;
+      const progress = frame / totalFrames;
+      
+      // Custom easing: slow start, moderate middle, slow end for "aha" moment
+      let easeProgress;
+      if (progress < 0.2) {
+        // Very slow start (first 20% takes longer)
+        easeProgress = progress * progress * 2.5;
+      } else if (progress < 0.8) {
+        // Normal speed in middle
+        easeProgress = 0.1 + (progress - 0.2) * 1.5;
+      } else {
+        // Slow down for the "aha" moment at the end
+        const endProgress = (progress - 0.8) / 0.2;
+        easeProgress = 1 - Math.pow(1 - endProgress, 3) * 0.1;
       }
-    }, 100);
+      
+      n = Math.round(2 + easeProgress * (targetN - 2));
+      
+      if (frame >= totalFrames || n >= targetN) {
+        setSampleSize(targetN);
+        clearInterval(transitionRef.current);
+        transitionRef.current = null;
+      } else if (n !== sampleSize) { // Only update if value changed
+        setSampleSize(n);
+      }
+    }, frameInterval);
   };
 
   return (
