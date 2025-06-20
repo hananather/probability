@@ -148,16 +148,27 @@ export default function ProportionEstimationStudio() {
   
   // Initialize poll visualization
   useEffect(() => {
-    const svg = d3.select(pollRef.current);
-    svg.selectAll("*").remove();
+    if (!pollRef.current) return;
     
-    const width = pollRef.current.clientWidth;
-    const height = 400;
-    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
-    
-    // Create gradients
+    const timer = setTimeout(() => {
+      const svg = d3.select(pollRef.current);
+      svg.selectAll("*").remove();
+      
+      const container = pollRef.current.parentElement;
+      const width = Math.max(container ? container.offsetWidth : 800, 400);
+      const height = 400;
+      const margin = { top: 40, right: 40, bottom: 60, left: 70 };
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
+      
+      // Set SVG dimensions explicitly
+      svg.attr("width", width)
+         .attr("height", height)
+         .attr("viewBox", `0 0 ${width} ${height}`)
+         .attr("preserveAspectRatio", "xMidYMid meet")
+         .style("display", "block");
+      
+      // Create gradients
     const defs = svg.append("defs");
     
     // Candidate gradients
@@ -198,13 +209,18 @@ export default function ProportionEstimationStudio() {
     // Store dimensions
     scalesRef.current.poll = { g, innerWidth, innerHeight };
     
+    }, 100); // 100ms delay
+    
+    return () => clearTimeout(timer);
   }, []);
   
   // Update poll visualization based on scenario
   useEffect(() => {
     if (!scalesRef.current.poll) return;
     
-    const { g, innerWidth, innerHeight } = scalesRef.current.poll;
+    // Small delay to ensure initialization completes first
+    const timer = setTimeout(() => {
+      const { g, innerWidth, innerHeight } = scalesRef.current.poll;
     
     // Update title
     const titles = {
@@ -467,23 +483,37 @@ export default function ProportionEstimationStudio() {
       });
     }
     
+    }, 150); // Small delay for initial render
+    
+    return () => clearTimeout(timer);
   }, [scenario, calculations, observedCount, sampleSize, conversionA, conversionB, ciMethod]);
   
   // Initialize method comparison
   useEffect(() => {
-    const svg = d3.select(methodComparisonRef.current);
-    svg.selectAll("*").remove();
+    if (!methodComparisonRef.current) return;
     
-    const width = methodComparisonRef.current.clientWidth;
-    const height = 150;
-    const margin = { top: 20, right: 30, bottom: 40, left: 100 };
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
-    
-    const g = svg.append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
-    
-    // Scales
+    const timer = setTimeout(() => {
+      const svg = d3.select(methodComparisonRef.current);
+      svg.selectAll("*").remove();
+      
+      const container = methodComparisonRef.current.parentElement;
+      const width = Math.max(container ? container.offsetWidth : 800, 400);
+      const height = 150;
+      const margin = { top: 20, right: 30, bottom: 40, left: 110 };
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
+      
+      // Set SVG dimensions explicitly
+      svg.attr("width", width)
+         .attr("height", height)
+         .attr("viewBox", `0 0 ${width} ${height}`)
+         .attr("preserveAspectRatio", "xMidYMid meet")
+         .style("display", "block");
+      
+      const g = svg.append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+      
+      // Scales
     const x = d3.scaleLinear()
       .range([0, innerWidth]);
     
@@ -501,14 +531,19 @@ export default function ProportionEstimationStudio() {
     
     scalesRef.current.methodComparison = { g, x, y, innerWidth, innerHeight };
     
+    }, 100); // 100ms delay
+    
+    return () => clearTimeout(timer);
   }, []);
   
   // Update method comparison
   useEffect(() => {
     if (!scalesRef.current.methodComparison) return;
     
-    const { g, x, y } = scalesRef.current.methodComparison;
-    const { waldCI, wilsonCI, agrestiCI, p } = calculations;
+    // Small delay to ensure initialization completes first
+    const timer = setTimeout(() => {
+      const { g, x, y } = scalesRef.current.methodComparison;
+      const { waldCI, wilsonCI, agrestiCI, p } = calculations;
     
     const data = [
       { method: 'Wald', ci: waldCI, color: proportionTheme.colors.primary },
@@ -565,6 +600,9 @@ export default function ProportionEstimationStudio() {
     
     intervals.exit().remove();
     
+    }, 150); // Small delay for initial render
+    
+    return () => clearTimeout(timer);
   }, [calculations, ciMethod]);
   
   // Simulate sampling
@@ -716,7 +754,7 @@ export default function ProportionEstimationStudio() {
               className="bg-neutral-800"
             >
               <GraphContainer height="400px">
-                <svg ref={pollRef} className="w-full h-full" />
+                <svg ref={pollRef} style={{ width: "100%", height: "100%", display: "block" }} />
               </GraphContainer>
               
               {/* Results summary */}
@@ -773,7 +811,7 @@ export default function ProportionEstimationStudio() {
               className="bg-neutral-800 mt-6"
             >
               <GraphContainer height="150px">
-                <svg ref={methodComparisonRef} className="w-full h-full" />
+                <svg ref={methodComparisonRef} style={{ width: "100%", height: "100%", display: "block" }} />
               </GraphContainer>
               
               <div className="mt-4 grid grid-cols-3 gap-3">

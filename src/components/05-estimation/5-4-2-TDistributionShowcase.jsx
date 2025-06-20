@@ -113,16 +113,27 @@ export default function TDistributionShowcase() {
   
   // Initialize distribution comparison
   useEffect(() => {
-    const svg = d3.select(distributionRef.current);
-    svg.selectAll("*").remove();
+    if (!distributionRef.current) return;
     
-    const width = distributionRef.current.clientWidth;
-    const height = 350;
-    const margin = { top: 20, right: 50, bottom: 50, left: 50 };
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
-    
-    // Create gradients
+    const timer = setTimeout(() => {
+      const svg = d3.select(distributionRef.current);
+      svg.selectAll("*").remove();
+      
+      const container = distributionRef.current.parentElement;
+      const width = Math.max(container ? container.offsetWidth : 800, 400);
+      const height = 350;
+      const margin = { top: 20, right: 50, bottom: 50, left: 60 };
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
+      
+      // Set SVG dimensions explicitly
+      svg.attr("width", width)
+         .attr("height", height)
+         .attr("viewBox", `0 0 ${width} ${height}`)
+         .attr("preserveAspectRatio", "xMidYMid meet")
+         .style("display", "block");
+      
+      // Create gradients
     const defs = svg.append("defs");
     
     const normalGradient = defs.append("linearGradient")
@@ -216,14 +227,19 @@ export default function TDistributionShowcase() {
     // Store scales
     scalesRef.current.distribution = { x, y, g, innerWidth, innerHeight };
     
+    }, 100); // 100ms delay
+    
+    return () => clearTimeout(timer);
   }, []);
   
   // Update distribution comparison
   useEffect(() => {
     if (!scalesRef.current.distribution) return;
     
-    const { x, y, g, innerHeight } = scalesRef.current.distribution;
-    const currentDf = showAnimation ? animationDf : df;
+    // Small delay to ensure initialization completes first
+    const timer = setTimeout(() => {
+      const { x, y, g, innerHeight } = scalesRef.current.distribution;
+      const currentDf = showAnimation ? animationDf : df;
     
     // Generate data
     const xValues = d3.range(-5, 5.01, 0.01);
@@ -324,28 +340,42 @@ export default function TDistributionShowcase() {
         .attr("fill", tTheme.colors.difference);
     }
     
+    }, 150); // Small delay for initial render
+    
+    return () => clearTimeout(timer);
   }, [df, animationDf, showAnimation, compareMode, calculations]);
   
   // Initialize CI comparison
   useEffect(() => {
-    const svg = d3.select(ciComparisonRef.current);
-    svg.selectAll("*").remove();
+    if (!ciComparisonRef.current) return;
     
-    const width = ciComparisonRef.current.clientWidth;
-    const height = 200;
-    const margin = { top: 40, right: 30, bottom: 50, left: 30 };
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
-    
-    const g = svg.append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
-    
-    // Background
-    g.append("rect")
-      .attr("width", innerWidth)
-      .attr("height", innerHeight)
-      .attr("fill", tTheme.colors.background)
-      .attr("rx", 8);
+    const timer = setTimeout(() => {
+      const svg = d3.select(ciComparisonRef.current);
+      svg.selectAll("*").remove();
+      
+      const container = ciComparisonRef.current.parentElement;
+      const width = Math.max(container ? container.offsetWidth : 800, 400);
+      const height = 200;
+      const margin = { top: 40, right: 30, bottom: 50, left: 30 };
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
+      
+      // Set SVG dimensions explicitly
+      svg.attr("width", width)
+         .attr("height", height)
+         .attr("viewBox", `0 0 ${width} ${height}`)
+         .attr("preserveAspectRatio", "xMidYMid meet")
+         .style("display", "block");
+      
+      const g = svg.append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+      
+      // Background
+      g.append("rect")
+        .attr("width", innerWidth)
+        .attr("height", innerHeight)
+        .attr("fill", tTheme.colors.background)
+        .attr("rx", 8);
     
     // Scale
     const x = d3.scaleLinear()
@@ -358,14 +388,19 @@ export default function TDistributionShowcase() {
     
     scalesRef.current.ciComparison = { g, x, innerWidth, innerHeight };
     
+    }, 100); // 100ms delay
+    
+    return () => clearTimeout(timer);
   }, []);
   
   // Update CI comparison
   useEffect(() => {
     if (!scalesRef.current.ciComparison) return;
     
-    const { g, x, innerHeight } = scalesRef.current.ciComparison;
-    const { zInterval, tInterval } = calculations;
+    // Small delay to ensure initialization completes first
+    const timer = setTimeout(() => {
+      const { g, x, innerHeight } = scalesRef.current.ciComparison;
+      const { zInterval, tInterval } = calculations;
     
     // Update scale
     const padding = Math.max(zInterval.width, tInterval.width) * 0.3;
@@ -480,6 +515,9 @@ export default function TDistributionShowcase() {
         .text(`${calculations.percentWider}% wider`);
     }
     
+    }, 150); // Small delay for initial render
+    
+    return () => clearTimeout(timer);
   }, [calculations, sampleMean]);
   
   // Animation loop
@@ -550,7 +588,7 @@ export default function TDistributionShowcase() {
               className="bg-neutral-800"
             >
               <GraphContainer height="350px">
-                <svg ref={distributionRef} className="w-full h-full" />
+                <svg ref={distributionRef} style={{ width: "100%", height: "100%", display: "block" }} />
               </GraphContainer>
               
               <div className="mt-4 flex justify-between items-center">
@@ -672,7 +710,7 @@ export default function TDistributionShowcase() {
           </div>
           
           <GraphContainer height="200px">
-            <svg ref={ciComparisonRef} className="w-full h-full" />
+            <svg ref={ciComparisonRef} style={{ width: "100%", height: "100%", display: "block" }} />
           </GraphContainer>
           
           {/* Formulas */}

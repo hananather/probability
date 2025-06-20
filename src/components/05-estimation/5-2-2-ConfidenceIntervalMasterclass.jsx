@@ -93,14 +93,25 @@ export default function ConfidenceIntervalMasterclass() {
   
   // Initialize normal curve visualization
   useEffect(() => {
-    const svg = d3.select(normalCurveRef.current);
-    svg.selectAll("*").remove();
+    if (!normalCurveRef.current) return;
     
-    const width = normalCurveRef.current.clientWidth;
-    const height = 280;
-    const margin = { top: 20, right: 30, bottom: 50, left: 50 };
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
+    const timer = setTimeout(() => {
+      const svg = d3.select(normalCurveRef.current);
+      svg.selectAll("*").remove();
+      
+      const container = normalCurveRef.current.parentElement;
+      const width = Math.max(container ? container.offsetWidth : 800, 400);
+      const height = 280;
+      const margin = { top: 20, right: 30, bottom: 50, left: 60 };
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
+      
+      // Set SVG dimensions explicitly
+      svg.attr("width", width)
+         .attr("height", height)
+         .attr("viewBox", `0 0 ${width} ${height}`)
+         .attr("preserveAspectRatio", "xMidYMid meet")
+         .style("display", "block");
     
     // Create gradients
     const defs = svg.append("defs");
@@ -176,6 +187,9 @@ export default function ConfidenceIntervalMasterclass() {
     // Store scales
     scalesRef.current.normalCurve = { x, y, g, innerWidth, innerHeight, normalData, line };
     
+    }, 100); // 100ms delay
+    
+    return () => clearTimeout(timer);
   }, []);
   
   // Update normal curve based on confidence level
@@ -244,24 +258,35 @@ export default function ConfidenceIntervalMasterclass() {
   
   // Initialize CI builder
   useEffect(() => {
-    const svg = d3.select(ciBuilderRef.current);
-    svg.selectAll("*").remove();
+    if (!ciBuilderRef.current) return;
     
-    const width = ciBuilderRef.current.clientWidth;
-    const height = 200;
-    const margin = { top: 40, right: 30, bottom: 40, left: 30 };
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
-    
-    const g = svg.append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
-    
-    // Background
-    g.append("rect")
-      .attr("width", innerWidth)
-      .attr("height", innerHeight)
-      .attr("fill", ciTheme.colors.background)
-      .attr("rx", 8);
+    const timer = setTimeout(() => {
+      const svg = d3.select(ciBuilderRef.current);
+      svg.selectAll("*").remove();
+      
+      const container = ciBuilderRef.current.parentElement;
+      const width = Math.max(container ? container.offsetWidth : 800, 400);
+      const height = 200;
+      const margin = { top: 40, right: 30, bottom: 40, left: 30 };
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
+      
+      // Set SVG dimensions explicitly
+      svg.attr("width", width)
+         .attr("height", height)
+         .attr("viewBox", `0 0 ${width} ${height}`)
+         .attr("preserveAspectRatio", "xMidYMid meet")
+         .style("display", "block");
+      
+      const g = svg.append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+      
+      // Background
+      g.append("rect")
+        .attr("width", innerWidth)
+        .attr("height", innerHeight)
+        .attr("fill", ciTheme.colors.background)
+        .attr("rx", 8);
     
     // Scale (will be updated based on data)
     const x = d3.scaleLinear()
@@ -284,6 +309,9 @@ export default function ConfidenceIntervalMasterclass() {
     
     scalesRef.current.ciBuilder = { g, x, innerWidth, innerHeight };
     
+    }, 100); // 100ms delay
+    
+    return () => clearTimeout(timer);
   }, []);
   
   // Update CI builder
@@ -444,22 +472,33 @@ export default function ConfidenceIntervalMasterclass() {
   
   // Initialize coverage simulation
   useEffect(() => {
-    const svg = d3.select(coverageRef.current);
-    svg.selectAll("*").remove();
+    if (!coverageRef.current) return;
     
-    const width = coverageRef.current.clientWidth;
-    const height = 300;
-    const margin = { top: 20, right: 30, bottom: 40, left: 50 };
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
-    
-    const g = svg.append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
-    
-    // Scales
-    const x = d3.scaleLinear()
-      .domain([70, 130])
-      .range([0, innerWidth]);
+    const timer = setTimeout(() => {
+      const svg = d3.select(coverageRef.current);
+      svg.selectAll("*").remove();
+      
+      const container = coverageRef.current.parentElement;
+      const width = Math.max(container ? container.offsetWidth : 800, 400);
+      const height = 300;
+      const margin = { top: 20, right: 30, bottom: 40, left: 60 };
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
+      
+      // Set SVG dimensions explicitly
+      svg.attr("width", width)
+         .attr("height", height)
+         .attr("viewBox", `0 0 ${width} ${height}`)
+         .attr("preserveAspectRatio", "xMidYMid meet")
+         .style("display", "block");
+      
+      const g = svg.append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+      
+      // Scales
+      const x = d3.scaleLinear()
+        .domain([70, 130])
+        .range([0, innerWidth]);
     
     const y = d3.scaleBand()
       .range([0, innerHeight])
@@ -487,6 +526,9 @@ export default function ConfidenceIntervalMasterclass() {
     
     scalesRef.current.coverage = { g, x, y, innerWidth, innerHeight };
     
+    }, 100); // 100ms delay
+    
+    return () => clearTimeout(timer);
   }, []);
   
   // Update coverage simulation
@@ -642,7 +684,7 @@ export default function ConfidenceIntervalMasterclass() {
               className="bg-neutral-800"
             >
               <GraphContainer height="280px">
-                <svg ref={normalCurveRef} className="w-full h-full" />
+                <svg ref={normalCurveRef} style={{ width: "100%", height: "100%", display: "block" }} />
               </GraphContainer>
               
               {/* Quick select buttons */}
@@ -735,7 +777,7 @@ export default function ConfidenceIntervalMasterclass() {
           className="bg-neutral-800"
         >
           <GraphContainer height="200px">
-            <svg ref={ciBuilderRef} className="w-full h-full" />
+            <svg ref={ciBuilderRef} style={{ width: "100%", height: "100%", display: "block" }} />
           </GraphContainer>
           
           <div className="mt-4 grid grid-cols-3 gap-4">
@@ -768,7 +810,7 @@ export default function ConfidenceIntervalMasterclass() {
               className="bg-neutral-800"
             >
               <GraphContainer height="300px">
-                <svg ref={coverageRef} className="w-full h-full" />
+                <svg ref={coverageRef} style={{ width: "100%", height: "100%", display: "block" }} />
               </GraphContainer>
               
               <div className="mt-4 flex justify-between items-center">

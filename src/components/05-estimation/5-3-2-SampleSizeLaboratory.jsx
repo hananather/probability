@@ -127,19 +127,30 @@ export default function SampleSizeLaboratory() {
   
   // Initialize margin of error visualization
   useEffect(() => {
-    const svg = d3.select(marginErrorRef.current);
-    svg.selectAll("*").remove();
+    if (!marginErrorRef.current) return;
     
-    const width = marginErrorRef.current.clientWidth;
-    const height = 250;
-    const margin = { top: 30, right: 30, bottom: 50, left: 60 };
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
-    
-    const g = svg.append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
-    
-    // Create gradient
+    const timer = setTimeout(() => {
+      const svg = d3.select(marginErrorRef.current);
+      svg.selectAll("*").remove();
+      
+      const container = marginErrorRef.current.parentElement;
+      const width = Math.max(container ? container.offsetWidth : 800, 400);
+      const height = 250;
+      const margin = { top: 30, right: 30, bottom: 50, left: 70 };
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
+      
+      // Set SVG dimensions explicitly
+      svg.attr("width", width)
+         .attr("height", height)
+         .attr("viewBox", `0 0 ${width} ${height}`)
+         .attr("preserveAspectRatio", "xMidYMid meet")
+         .style("display", "block");
+      
+      const g = svg.append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+      
+      // Create gradient
     const defs = svg.append("defs");
     const gradient = defs.append("linearGradient")
       .attr("id", "error-gradient")
@@ -158,6 +169,23 @@ export default function SampleSizeLaboratory() {
     g.append("g").attr("class", "x-axis").attr("transform", `translate(0,${innerHeight})`);
     g.append("g").attr("class", "y-axis");
     
+    // Add axis labels once during initialization
+    g.append("text")
+      .attr("class", "x-axis-label")
+      .attr("x", innerWidth / 2)
+      .attr("y", innerHeight + 40)
+      .attr("fill", sampleSizeTheme.colors.text)
+      .style("text-anchor", "middle");
+    
+    g.append("text")
+      .attr("class", "y-axis-label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", -45)
+      .attr("x", -innerHeight / 2)
+      .attr("fill", sampleSizeTheme.colors.text)
+      .style("text-anchor", "middle")
+      .text("Required Sample Size");
+    
     // Path group
     g.append("path").attr("class", "error-curve");
     
@@ -167,6 +195,9 @@ export default function SampleSizeLaboratory() {
     // Store scales
     marginErrorRef.current.scales = { x, y, g, innerWidth, innerHeight };
     
+    }, 100); // 100ms delay
+    
+    return () => clearTimeout(timer);
   }, []);
   
   // Update margin of error visualization
@@ -184,25 +215,16 @@ export default function SampleSizeLaboratory() {
     g.select(".x-axis")
       .transition()
       .duration(300)
-      .call(d3.axisBottom(x).ticks(8))
-      .append("text")
-      .attr("x", innerHeight / 2)
-      .attr("y", 40)
-      .attr("fill", sampleSizeTheme.colors.text)
-      .style("text-anchor", "middle")
-      .text(calculationType === 'mean' ? "Margin of Error" : "Margin of Error (%)");
+      .call(d3.axisBottom(x).ticks(8));
     
     g.select(".y-axis")
       .transition()
       .duration(300)
-      .call(d3.axisLeft(y).ticks(6))
-      .append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("y", -45)
-      .attr("x", -innerHeight / 2)
-      .attr("fill", sampleSizeTheme.colors.text)
-      .style("text-anchor", "middle")
-      .text("Required Sample Size");
+      .call(d3.axisLeft(y).ticks(6));
+    
+    // Update axis labels text
+    g.select(".x-axis-label")
+      .text(calculationType === 'mean' ? "Margin of Error" : "Margin of Error (%)");
     
     // Update curve
     const line = d3.line()
@@ -235,21 +257,30 @@ export default function SampleSizeLaboratory() {
   
   // Initialize cost analysis
   useEffect(() => {
-    if (!showCostAnalysis) return;
+    if (!showCostAnalysis || !costAnalysisRef.current) return;
     
-    const svg = d3.select(costAnalysisRef.current);
-    svg.selectAll("*").remove();
-    
-    const width = costAnalysisRef.current.clientWidth;
-    const height = 200;
-    const margin = { top: 30, right: 80, bottom: 50, left: 60 };
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
-    
-    const g = svg.append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
-    
-    // Scales
+    const timer = setTimeout(() => {
+      const svg = d3.select(costAnalysisRef.current);
+      svg.selectAll("*").remove();
+      
+      const container = costAnalysisRef.current.parentElement;
+      const width = Math.max(container ? container.offsetWidth : 800, 400);
+      const height = 200;
+      const margin = { top: 30, right: 80, bottom: 50, left: 70 };
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
+      
+      // Set SVG dimensions explicitly
+      svg.attr("width", width)
+         .attr("height", height)
+         .attr("viewBox", `0 0 ${width} ${height}`)
+         .attr("preserveAspectRatio", "xMidYMid meet")
+         .style("display", "block");
+      
+      const g = svg.append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+      
+      // Scales
     const x = d3.scaleLinear().range([0, innerWidth]);
     const y1 = d3.scaleLinear().range([innerHeight, 0]);
     const y2 = d3.scaleLinear().range([innerHeight, 0]);
@@ -266,6 +297,9 @@ export default function SampleSizeLaboratory() {
     // Store scales
     costAnalysisRef.current.scales = { x, y1, y2, g, innerWidth, innerHeight };
     
+    }, 100); // 100ms delay
+    
+    return () => clearTimeout(timer);
   }, [showCostAnalysis]);
   
   // Update cost analysis
@@ -389,7 +423,7 @@ export default function SampleSizeLaboratory() {
               className="bg-neutral-800"
             >
               <GraphContainer height="250px">
-                <svg ref={marginErrorRef} className="w-full h-full" />
+                <svg ref={marginErrorRef} style={{ width: "100%", height: "100%", display: "block" }} />
               </GraphContainer>
               
               {/* Formula display */}
@@ -437,7 +471,7 @@ export default function SampleSizeLaboratory() {
                 className="bg-neutral-800 mt-6"
               >
                 <GraphContainer height="200px">
-                  <svg ref={costAnalysisRef} className="w-full h-full" />
+                  <svg ref={costAnalysisRef} style={{ width: "100%", height: "100%", display: "block" }} />
                 </GraphContainer>
                 
                 <div className="mt-4 flex items-center justify-between text-sm">

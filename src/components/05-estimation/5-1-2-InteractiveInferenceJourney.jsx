@@ -101,14 +101,23 @@ export default function InteractiveInferenceJourney() {
   
   // Initialize main visualization
   useEffect(() => {
+    if (!mainSvgRef.current) return;
+    
     const svg = d3.select(mainSvgRef.current);
     svg.selectAll("*").remove();
     
-    const width = mainSvgRef.current.clientWidth;
+    const containerWidth = mainSvgRef.current.parentElement?.clientWidth || 800;
+    const width = containerWidth;
     const height = 400;
-    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
+    const margin = { top: 40, right: 40, bottom: 60, left: 100 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
+    
+    // Set SVG dimensions explicitly
+    svg.attr("width", width)
+       .attr("height", height)
+       .attr("viewBox", `0 0 ${width} ${height}`)
+       .attr("preserveAspectRatio", "xMidYMid meet");
     
     // Create gradients
     const defs = svg.append("defs");
@@ -141,17 +150,20 @@ export default function InteractiveInferenceJourney() {
     feMerge.append("feMergeNode").attr("in", "coloredBlur");
     feMerge.append("feMergeNode").attr("in", "SourceGraphic");
     
+    // Create main group with margin translation
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
     
     // Population circle
+    const circleRadius = 60;
+    const populationX = innerWidth * 0.3;
     const populationGroup = g.append("g")
       .attr("class", "population-group")
-      .attr("transform", `translate(${innerWidth * 0.25}, ${innerHeight * 0.5})`);
+      .attr("transform", `translate(${populationX}, ${innerHeight * 0.5})`);
     
     populationGroup.append("circle")
       .attr("class", "population-circle")
-      .attr("r", 80)
+      .attr("r", 60)
       .attr("fill", "url(#population-gradient)")
       .attr("stroke", estimationTheme.colors.population)
       .attr("stroke-width", 2)
@@ -174,9 +186,10 @@ export default function InteractiveInferenceJourney() {
       .style("font-size", "14px");
     
     // Sample area
+    const sampleX = innerWidth * 0.7;
     const sampleGroup = g.append("g")
       .attr("class", "sample-group")
-      .attr("transform", `translate(${innerWidth * 0.75}, ${innerHeight * 0.5})`);
+      .attr("transform", `translate(${sampleX}, ${innerHeight * 0.5})`);
     
     sampleGroup.append("rect")
       .attr("class", "sample-area")
@@ -205,7 +218,7 @@ export default function InteractiveInferenceJourney() {
     
     arrow.append("path")
       .attr("class", "arrow-path")
-      .attr("d", `M${innerWidth * 0.25 + 90},${innerHeight * 0.5} L${innerWidth * 0.75 - 70},${innerHeight * 0.5}`)
+      .attr("d", `M${populationX + 65},${innerHeight * 0.5} L${sampleX - 65},${innerHeight * 0.5}`)
       .attr("fill", "none")
       .attr("stroke", estimationTheme.colors.variation)
       .attr("stroke-width", 2)
@@ -227,11 +240,13 @@ export default function InteractiveInferenceJourney() {
     // Particle container
     g.append("g").attr("class", "particles");
     
-    // Store refs
+    // Store refs including calculated positions
     scalesRef.current = {
       width: innerWidth,
       height: innerHeight,
-      g: g
+      g: g,
+      populationX: populationX,
+      sampleX: sampleX
     };
     
   }, []);
@@ -245,21 +260,35 @@ export default function InteractiveInferenceJourney() {
   
   // Initialize sampling distribution
   useEffect(() => {
-    const svg = d3.select(samplingDistRef.current);
-    svg.selectAll("*").remove();
+    if (!samplingDistRef.current) return;
     
-    const width = samplingDistRef.current.clientWidth;
-    const height = 300;
-    const margin = { top: 20, right: 30, bottom: 40, left: 50 };
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
-    
-    const g = svg.append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
-    
-    // Scales
-    const xExtent = [populationMean - 4 * populationSD / Math.sqrt(sampleSize), 
-                     populationMean + 4 * populationSD / Math.sqrt(sampleSize)];
+    // Add a small delay to ensure DOM is ready
+    const timer = setTimeout(() => {
+      const svg = d3.select(samplingDistRef.current);
+      svg.selectAll("*").remove();
+      
+      // Get container width from the parent GraphContainer
+      const container = samplingDistRef.current.parentElement;
+      const containerWidth = container ? container.offsetWidth : 800;
+      const width = Math.max(containerWidth, 400); // Ensure minimum width
+      const height = 350;
+      const margin = { top: 20, right: 30, bottom: 40, left: 60 };
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
+      
+      // Set SVG dimensions explicitly
+      svg.attr("width", width)
+         .attr("height", height)
+         .attr("viewBox", `0 0 ${width} ${height}`)
+         .attr("preserveAspectRatio", "xMidYMid meet")
+         .style("display", "block");
+      
+      const g = svg.append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+      
+      // Scales
+      const xExtent = [populationMean - 4 * populationSD / Math.sqrt(sampleSize), 
+                       populationMean + 4 * populationSD / Math.sqrt(sampleSize)];
     
     const x = d3.scaleLinear()
       .domain(xExtent)
@@ -278,27 +307,37 @@ export default function InteractiveInferenceJourney() {
       .style("opacity", 0.3);
     
     // Axes
-    g.append("g")
+    const xAxis = g.append("g")
       .attr("class", "x-axis")
       .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(x).ticks(6))
-      .append("text")
+      .call(d3.axisBottom(x).ticks(6));
+      
+    xAxis.append("text")
       .attr("x", innerWidth / 2)
       .attr("y", 35)
       .attr("fill", estimationTheme.colors.text)
       .style("text-anchor", "middle")
+      .style("font-size", "12px")
       .text("Sample Mean");
     
-    g.append("g")
+    const yAxis = g.append("g")
       .attr("class", "y-axis")
-      .call(d3.axisLeft(y).ticks(5))
-      .append("text")
+      .call(d3.axisLeft(y).ticks(5));
+      
+    yAxis.append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", -35)
+      .attr("y", -40)
       .attr("x", -innerHeight / 2)
       .attr("fill", estimationTheme.colors.text)
       .style("text-anchor", "middle")
+      .style("font-size", "12px")
       .text("Density");
+      
+    // Style axis lines and ticks
+    xAxis.selectAll("line,path").style("stroke", estimationTheme.colors.grid);
+    yAxis.selectAll("line,path").style("stroke", estimationTheme.colors.grid);
+    xAxis.selectAll("text").style("fill", estimationTheme.colors.textSecondary);
+    yAxis.selectAll("text").style("fill", estimationTheme.colors.textSecondary);
     
     // Theoretical distribution line
     const se = populationSD / Math.sqrt(sampleSize);
@@ -329,6 +368,9 @@ export default function InteractiveInferenceJourney() {
     // Store scales
     scalesRef.current.samplingDist = { x, y, innerWidth, innerHeight, g };
     
+    }, 100); // 100ms delay
+    
+    return () => clearTimeout(timer);
   }, [populationMean, populationSD, sampleSize]);
   
   // Update sampling distribution
@@ -380,15 +422,15 @@ export default function InteractiveInferenceJourney() {
   
   // Particle animation for sampling
   const animateParticles = useCallback((sampleData) => {
-    const { g, width, height } = scalesRef.current;
+    const { g, width, height, populationX, sampleX } = scalesRef.current;
     const particleGroup = g.select(".particles");
     
     const particles = sampleData.map((value, i) => ({
       id: `particle-${Date.now()}-${i}`,
       value: value,
-      startX: width * 0.25 + (Math.random() - 0.5) * 80,
-      startY: height * 0.5 + (Math.random() - 0.5) * 80,
-      endX: width * 0.75 + (Math.random() - 0.5) * 100,
+      startX: populationX + (Math.random() - 0.5) * 60,
+      startY: height * 0.5 + (Math.random() - 0.5) * 60,
+      endX: sampleX + (Math.random() - 0.5) * 100,
       endY: height * 0.5 + (Math.random() - 0.5) * 100
     }));
     
@@ -474,21 +516,17 @@ export default function InteractiveInferenceJourney() {
   }, []);
   
   return (
-    <VisualizationContainer
-      title="Interactive Statistical Inference Journey"
-      description="Explore how samples from a population create a sampling distribution"
-      className="bg-neutral-900"
-    >
-      <div className="grid lg:grid-cols-3 gap-6">
+    <div className="bg-neutral-800 p-5 shadow-xl">
+      <h2 className="text-xl font-semibold text-teal-400 mb-4">Interactive Statistical Inference Journey</h2>
+      <p className="text-neutral-300 mb-6">Explore how samples from a population create a sampling distribution</p>
+      <div className="grid lg:grid-cols-[1fr,320px] gap-6">
         {/* Main visualization */}
-        <div className="lg:col-span-2 space-y-4">
-          <VisualizationSection 
-            title="Population → Sample → Statistic"
-            className="bg-neutral-800"
-          >
-            <GraphContainer height="400px">
-              <svg ref={mainSvgRef} className="w-full h-full" />
-            </GraphContainer>
+        <div className="space-y-6">
+          <div className="bg-neutral-900 p-4 rounded-lg" style={{ overflow: "visible" }}>
+            <h3 className="text-lg font-medium text-white mb-4">Population → Sample → Statistic</h3>
+            <div style={{ minHeight: "400px", width: "100%", overflow: "visible" }}>
+              <svg ref={mainSvgRef} style={{ width: "100%", height: "400px", overflow: "visible", display: "block" }} />
+            </div>
             
             {currentSample && (
               <div className="mt-4 p-4 bg-gradient-to-r from-orange-900/20 to-pink-900/20 rounded-lg border border-orange-500/30">
@@ -501,26 +539,26 @@ export default function InteractiveInferenceJourney() {
                   <div>
                     <span className="text-neutral-400">Mean:</span>
                     <span className="ml-2 font-mono text-orange-400">
-                      {currentSample.mean.toFixed(2)}
+                      {currentSample.mean ? currentSample.mean.toFixed(2) : '—'}
                     </span>
                   </div>
                   <div>
                     <span className="text-neutral-400">SD:</span>
                     <span className="ml-2 font-mono text-pink-400">
-                      {currentSample.sd.toFixed(2)}
+                      {currentSample.sd ? currentSample.sd.toFixed(2) : '—'}
                     </span>
                   </div>
                 </div>
               </div>
             )}
-          </VisualizationSection>
+          </div>
           
           <VisualizationSection 
             title="Sampling Distribution of X̄"
-            className="bg-neutral-800"
+            className="bg-neutral-900"
           >
-            <GraphContainer height="300px">
-              <svg ref={samplingDistRef} className="w-full h-full" />
+            <GraphContainer height="350px">
+              <svg ref={samplingDistRef} style={{ width: "100%", height: "100%", display: "block" }} />
             </GraphContainer>
             
             {statistics && (
@@ -530,25 +568,25 @@ export default function InteractiveInferenceJourney() {
                   <div>
                     <span className="text-neutral-400">Mean of sample means:</span>
                     <span className="ml-2 font-mono text-purple-400">
-                      {statistics.meanOfMeans.toFixed(2)}
+                      {statistics.meanOfMeans ? statistics.meanOfMeans.toFixed(2) : '—'}
                     </span>
                   </div>
                   <div>
                     <span className="text-neutral-400">SD of sample means:</span>
                     <span className="ml-2 font-mono text-pink-400">
-                      {statistics.sdOfMeans.toFixed(2)}
+                      {statistics.sdOfMeans ? statistics.sdOfMeans.toFixed(2) : '—'}
                     </span>
                   </div>
                   <div>
                     <span className="text-neutral-400">Theoretical SE:</span>
                     <span className="ml-2 font-mono text-purple-400">
-                      {statistics.theoreticalSE.toFixed(2)}
+                      {statistics.theoreticalSE ? statistics.theoreticalSE.toFixed(2) : '—'}
                     </span>
                   </div>
                   <div>
                     <span className="text-neutral-400">Total samples:</span>
                     <span className="ml-2 font-mono text-white">
-                      {statistics.samples}
+                      {statistics.samples || 0}
                     </span>
                   </div>
                 </div>
@@ -700,6 +738,6 @@ export default function InteractiveInferenceJourney() {
           }
         }
       `}</style>
-    </VisualizationContainer>
+    </div>
   );
 }
