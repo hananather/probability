@@ -116,6 +116,12 @@ import { interval } from 'd3-timer';
 // Hexbin
 import { hexbin } from 'd3-hexbin';
 
+// Contour
+import { contours } from 'd3-contour';
+
+// Geo
+import { geoPath, geoTransform } from 'd3-geo';
+
 // Re-export everything
 export {
   // Selection
@@ -208,7 +214,12 @@ export {
   // Timer
   interval,
   // Hexbin
-  hexbin
+  hexbin,
+  // Contour
+  contours,
+  // Geo
+  geoPath,
+  geoTransform
 };
 
 // Utility to check if we missed any d3 functions
@@ -252,7 +263,15 @@ const d3 = {
   interval,
   curveNatural,
   hexbin,
-  interpolateWarm
+  interpolateWarm,
+  contours,
+  geoPath,
+  geoTransform,
+  interpolateBlues,
+  area,
+  curveBasis,
+  range,
+  interpolateRgb
 };
 
 export default d3;

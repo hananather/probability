@@ -166,6 +166,43 @@ const GammaDistributionWorkedExample = dynamic(
   }
 );
 
+// Section 3.6 - Joint Distributions
+const JointDistributions = dynamic(
+  () => import('@/components/03-continuous-random-variables/3-6-1-JointDistributionsClient').then(mod => ({ default: mod.default })),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const JointDistributionWorkedExample = dynamic(
+  () => import('@/components/03-continuous-random-variables/3-6-2-JointDistributionWorkedExample').then(mod => ({ default: mod.JointDistributionWorkedExample })),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const JointProbabilityCalculator = dynamic(
+  () => import('@/components/03-continuous-random-variables/3-6-3-JointProbabilityCalculatorClient').then(mod => ({ default: mod.default })),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
 // Section 3.7 - Normal Approximation
 const NormalApproxBinomial = dynamic(
   () => import('@/components/03-continuous-random-variables/3-7-1-NormalApproxBinomialClient').then(mod => ({ default: mod.default })),
@@ -285,11 +322,12 @@ export default function Chapter3Page() {
     {
       id: 'joint',
       title: "3.6 Joint Distributions",
-      description: "Explore relationships between multiple continuous random variables.",
+      description: "Explore relationships between multiple continuous random variables through interactive visualizations of joint PDFs, marginal distributions, and conditional probabilities.",
       component: (
-        <div className="p-8 bg-yellow-900/20 border border-yellow-600/30 rounded-lg text-center">
-          <p className="text-yellow-400 font-semibold mb-2">🚧 Section Under Development</p>
-          <p className="text-neutral-300">Joint distributions visualization coming soon!</p>
+        <div className="space-y-8">
+          <JointDistributions />
+          <JointProbabilityCalculator />
+          <JointDistributionWorkedExample />
         </div>
       )
     },

@@ -1756,6 +1756,137 @@ export const tutorial_3_5_2 = [
   }
 ];
 
+export const tutorial_3_6_1 = [
+  {
+    title: "Joint Continuous Distributions",
+    content: (
+      <div className="space-y-3">
+        <p className="text-base">Two continuous random variables <em className="text-blue-400">X</em> and <em className="text-green-400">Y</em> have a joint PDF:</p>
+        <div className="bg-neutral-900 p-4 rounded-lg border border-cyan-500/20">
+          <p className="text-cyan-400 font-mono text-lg text-center mb-2">f(x,y) ≥ 0</p>
+          <p className="text-cyan-400 font-mono text-lg text-center">∫∫ f(x,y) dx dy = 1</p>
+          <p className="text-sm text-neutral-400 text-center mt-2">
+            Probability is volume under the surface
+          </p>
+        </div>
+        <div className="mt-3 p-3 bg-neutral-800 rounded">
+          <p className="text-yellow-400 text-sm mb-1">💡 Key Insight:</p>
+          <p className="text-xs text-neutral-300">
+            Joint PDFs extend the concept of density to multiple dimensions
+          </p>
+        </div>
+      </div>
+    )
+  },
+  {
+    title: "Visualizing Joint Distributions",
+    content: (
+      <div className="space-y-3">
+        <p>Joint distributions can be visualized in multiple ways:</p>
+        <div className="space-y-2 text-sm">
+          <div className="flex items-start gap-2">
+            <span className="text-blue-400">📊</span>
+            <div>
+              <strong>Contour plots:</strong> Show level curves of constant density
+              <p className="text-xs text-neutral-500">Like a topographic map of probability</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="text-green-400">📈</span>
+            <div>
+              <strong>3D surfaces:</strong> Height represents probability density
+              <p className="text-xs text-neutral-500">Volume under surface = probability</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="text-purple-400">🎯</span>
+            <div>
+              <strong>Click to explore:</strong> Select points to see density values
+              <p className="text-xs text-neutral-500">Observe how density changes with correlation</p>
+            </div>
+          </div>
+        </div>
+        <p className="text-sm text-cyan-400 mt-2">
+          🎯 Try it: Adjust the correlation slider and watch the shape change!
+        </p>
+      </div>
+    ),
+    position: 'bottom'
+  },
+  {
+    title: "Marginal Distributions",
+    content: (
+      <div className="space-y-3">
+        <p className="text-base mb-2">Extract individual distributions from the joint:</p>
+        <div className="bg-gradient-to-r from-blue-900/20 to-green-900/20 p-4 rounded-lg border border-neutral-600">
+          <p className="text-center font-mono text-lg mb-2">
+            f<sub>X</sub>(x) = ∫ f(x,y) dy
+          </p>
+          <p className="text-center font-mono text-lg">
+            f<sub>Y</sub>(y) = ∫ f(x,y) dx
+          </p>
+        </div>
+        <div className="mt-3 p-3 bg-neutral-800 rounded">
+          <p className="text-yellow-400 text-sm mb-1">💡 Visual Interpretation:</p>
+          <p className="text-xs text-neutral-300">
+            Marginals are the "shadows" of the joint distribution on each axis
+          </p>
+        </div>
+      </div>
+    )
+  },
+  {
+    title: "Conditional Distributions",
+    content: (
+      <div className="space-y-3">
+        <p className="text-base">Given X = x, what's the distribution of Y?</p>
+        <div className="bg-neutral-900 p-4 rounded-lg border border-purple-500/20">
+          <p className="text-purple-400 font-mono text-lg text-center">
+            f<sub>Y|X</sub>(y|x) = f(x,y) / f<sub>X</sub>(x)
+          </p>
+          <p className="text-sm text-neutral-400 text-center mt-2">
+            A "slice" through the joint distribution
+          </p>
+        </div>
+        <div className="space-y-2 text-sm mt-3">
+          <p className="text-neutral-300">Click on the plot to:</p>
+          <ul className="ml-4 space-y-1 text-xs">
+            <li>• Fix X at the clicked value</li>
+            <li>• See the conditional distribution of Y given that X</li>
+            <li>• Notice how the shape changes based on correlation</li>
+          </ul>
+        </div>
+      </div>
+    )
+  },
+  {
+    title: "Independence vs Correlation",
+    content: (
+      <div className="space-y-3">
+        <p className="text-base">How correlation affects joint distributions:</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-blue-900/20 p-3 rounded border border-blue-500/30">
+            <p className="text-blue-400 font-semibold text-sm mb-1">Independent (ρ = 0)</p>
+            <p className="font-mono text-xs mt-1">f(x,y) = f<sub>X</sub>(x)f<sub>Y</sub>(y)</p>
+            <p className="text-xs text-neutral-500 mt-1">Circular contours</p>
+          </div>
+          <div className="bg-green-900/20 p-3 rounded border border-green-500/30">
+            <p className="text-green-400 font-semibold text-sm mb-1">Correlated (ρ ≠ 0)</p>
+            <p className="font-mono text-xs mt-1">f(x,y) ≠ f<sub>X</sub>(x)f<sub>Y</sub>(y)</p>
+            <p className="text-xs text-neutral-500 mt-1">Elliptical contours</p>
+          </div>
+        </div>
+        <div className="mt-3 p-3 bg-neutral-800 rounded">
+          <p className="text-yellow-400 text-sm mb-1">🎯 Experiment:</p>
+          <p className="text-xs text-neutral-300">
+            Move the correlation slider from -0.9 to 0.9 and observe the transformation!
+          </p>
+        </div>
+      </div>
+    )
+  }
+];
+
 export const tutorial_3_7_1 = [
   {
     title: "Normal Approximation to Binomial",
