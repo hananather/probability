@@ -20,15 +20,12 @@ const CIWorkedExample = memo(function CIWorkedExample({ sampleMean, sampleSize, 
   const contentRef = useRef(null);
   
   useEffect(() => {
-    // MathJax timeout pattern
     const processMathJax = () => {
       if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          // Silent error: MathJax error
-        });
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
       }
     };
     
@@ -76,22 +73,22 @@ const CIWorkedExample = memo(function CIWorkedExample({ sampleMean, sampleSize, 
         
         <div>
           <p className="mb-2 font-medium text-purple-400">Step 2: Find Critical Value</p>
-          <div dangerouslySetInnerHTML={{ __html: `\\[z_{\\alpha/2} = z_{${(alpha/2).toFixed(3)}} = ${zCritical.toFixed(3)}\\]` }} />
+          <div dangerouslySetInnerHTML={{ __html: `\[z_{\alpha/2} = z_{${(alpha/2).toFixed(3)}} = ${zCritical.toFixed(3)}\]` }} />
         </div>
         
         <div>
           <p className="mb-2 font-medium text-purple-400">Step 3: Calculate Standard Error</p>
-          <div dangerouslySetInnerHTML={{ __html: `\\[SE = \\frac{\\sigma}{\\sqrt{n}} = \\frac{${populationStd}}{\\sqrt{${sampleSize}}} = ${standardError.toFixed(3)}\\]` }} />
+          <div dangerouslySetInnerHTML={{ __html: `\[SE = \frac{\sigma}{\sqrt{n}} = \frac{${populationStd}}{\sqrt{${sampleSize}}} = ${standardError.toFixed(3)}\]` }} />
         </div>
         
         <div>
           <p className="mb-2 font-medium text-purple-400">Step 4: Calculate Margin of Error</p>
-          <div dangerouslySetInnerHTML={{ __html: `\\[ME = z_{\\alpha/2} \\times SE = ${zCritical.toFixed(3)} \\times ${standardError.toFixed(3)} = ${marginOfError.toFixed(3)}\\]` }} />
+          <div dangerouslySetInnerHTML={{ __html: `\[ME = z_{\alpha/2} \times SE = ${zCritical.toFixed(3)} \times ${standardError.toFixed(3)} = ${marginOfError.toFixed(3)}\]` }} />
         </div>
         
         <div>
           <p className="mb-2 font-medium text-purple-400">Step 5: Construct Confidence Interval</p>
-          <div dangerouslySetInnerHTML={{ __html: `\\[CI = \\bar{x} \\pm ME = ${sampleMean.toFixed(2)} \\pm ${marginOfError.toFixed(3)}\\]` }} />
+          <div dangerouslySetInnerHTML={{ __html: `\[CI = \bar{x} \pm ME = ${sampleMean.toFixed(2)} \pm ${marginOfError.toFixed(3)}\]` }} />
           <div className="bg-purple-900/20 border border-purple-600/30 rounded p-3 mt-2">
             <p className="text-center text-purple-300 font-semibold">
               {confidenceLevel * 100}% CI: [{lowerBound.toFixed(2)}, {upperBound.toFixed(2)}]

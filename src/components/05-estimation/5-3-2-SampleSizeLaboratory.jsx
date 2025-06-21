@@ -64,7 +64,6 @@ export default function SampleSizeLaboratory() {
   
   // State
   const [calculationType, setCalculationType] = useState('mean'); // 'mean' or 'proportion'
-  const [showCostAnalysis, setShowCostAnalysis] = useState(true);
   const [achievements, setAchievements] = useState([]);
   
   // Refs
@@ -129,28 +128,27 @@ export default function SampleSizeLaboratory() {
   useEffect(() => {
     if (!marginErrorRef.current) return;
     
-    const timer = setTimeout(() => {
-      const svg = d3.select(marginErrorRef.current);
-      svg.selectAll("*").remove();
-      
-      const container = marginErrorRef.current.parentElement;
-      const width = Math.max(container ? container.offsetWidth : 800, 400);
-      const height = 250;
-      const margin = { top: 30, right: 30, bottom: 50, left: 70 };
-      const innerWidth = width - margin.left - margin.right;
-      const innerHeight = height - margin.top - margin.bottom;
-      
-      // Set SVG dimensions explicitly
-      svg.attr("width", width)
-         .attr("height", height)
-         .attr("viewBox", `0 0 ${width} ${height}`)
-         .attr("preserveAspectRatio", "xMidYMid meet")
-         .style("display", "block");
-      
-      const g = svg.append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
-      
-      // Create gradient
+    const svg = d3.select(marginErrorRef.current);
+    svg.selectAll("*").remove();
+    
+    const container = marginErrorRef.current.parentElement;
+    const width = Math.max(container ? container.offsetWidth : 800, 400);
+    const height = 250;
+    const margin = { top: 30, right: 30, bottom: 50, left: 70 };
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
+    
+    // Set SVG dimensions explicitly
+    svg.attr("width", width)
+       .attr("height", height)
+       .attr("viewBox", `0 0 ${width} ${height}`)
+       .attr("preserveAspectRatio", "xMidYMid meet")
+       .style("display", "block");
+    
+    const g = svg.append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+    
+    // Create gradient
     const defs = svg.append("defs");
     const gradient = defs.append("linearGradient")
       .attr("id", "error-gradient")
@@ -194,10 +192,6 @@ export default function SampleSizeLaboratory() {
     
     // Store scales
     marginErrorRef.current.scales = { x, y, g, innerWidth, innerHeight };
-    
-    }, 100); // 100ms delay
-    
-    return () => clearTimeout(timer);
   }, []);
   
   // Update margin of error visualization
@@ -257,30 +251,29 @@ export default function SampleSizeLaboratory() {
   
   // Initialize cost analysis
   useEffect(() => {
-    if (!showCostAnalysis || !costAnalysisRef.current) return;
+    if (!costAnalysisRef.current) return;
     
-    const timer = setTimeout(() => {
-      const svg = d3.select(costAnalysisRef.current);
-      svg.selectAll("*").remove();
-      
-      const container = costAnalysisRef.current.parentElement;
-      const width = Math.max(container ? container.offsetWidth : 800, 400);
-      const height = 200;
-      const margin = { top: 30, right: 80, bottom: 50, left: 70 };
-      const innerWidth = width - margin.left - margin.right;
-      const innerHeight = height - margin.top - margin.bottom;
-      
-      // Set SVG dimensions explicitly
-      svg.attr("width", width)
-         .attr("height", height)
-         .attr("viewBox", `0 0 ${width} ${height}`)
-         .attr("preserveAspectRatio", "xMidYMid meet")
-         .style("display", "block");
-      
-      const g = svg.append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
-      
-      // Scales
+    const svg = d3.select(costAnalysisRef.current);
+    svg.selectAll("*").remove();
+    
+    const container = costAnalysisRef.current.parentElement;
+    const width = Math.max(container ? container.offsetWidth : 800, 400);
+    const height = 200;
+    const margin = { top: 30, right: 80, bottom: 50, left: 70 };
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
+    
+    // Set SVG dimensions explicitly
+    svg.attr("width", width)
+       .attr("height", height)
+       .attr("viewBox", `0 0 ${width} ${height}`)
+       .attr("preserveAspectRatio", "xMidYMid meet")
+       .style("display", "block");
+    
+    const g = svg.append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+    
+    // Scales
     const x = d3.scaleLinear().range([0, innerWidth]);
     const y1 = d3.scaleLinear().range([innerHeight, 0]);
     const y2 = d3.scaleLinear().range([innerHeight, 0]);
@@ -296,15 +289,11 @@ export default function SampleSizeLaboratory() {
     
     // Store scales
     costAnalysisRef.current.scales = { x, y1, y2, g, innerWidth, innerHeight };
-    
-    }, 100); // 100ms delay
-    
-    return () => clearTimeout(timer);
-  }, [showCostAnalysis]);
+  }, []);
   
   // Update cost analysis
   useEffect(() => {
-    if (!showCostAnalysis || !costAnalysisRef.current.scales) return;
+    if (!costAnalysisRef.current || !costAnalysisRef.current.scales) return;
     
     const { x, y1, y2, g, innerWidth, innerHeight } = costAnalysisRef.current.scales;
     const { scenarios } = calculations;
@@ -354,7 +343,7 @@ export default function SampleSizeLaboratory() {
       .attr("stroke-width", 2)
       .attr("stroke-dasharray", "5,3");
     
-  }, [calculations, showCostAnalysis]);
+  }, [calculations]);
   
   // Check for achievements
   useEffect(() => {
@@ -428,16 +417,16 @@ export default function SampleSizeLaboratory() {
               
               {/* Formula display */}
               <div className="mt-4 p-4 bg-neutral-900 rounded-lg">
-                <div className="text-center">
-                  {`\\[${calculations.formula} = \\frac{(${calculations.z.toFixed(3)})^2 \\times ${
-                    calculationType === 'mean' 
-                      ? `(${sigma})^2` 
-                      : `${estimatedP} \\times ${(1-estimatedP).toFixed(2)}`
-                  }}{${
-                    calculationType === 'mean' 
-                      ? `(${marginError})^2` 
-                      : `(${proportionError})^2`
-                  }} = ${calculations.n}\\]`}
+                <div className="text-center font-mono text-sm text-neutral-300">
+                  {calculationType === 'mean' ? (
+                    <div>
+                      n = ({calculations.z.toFixed(3)} × {sigma} / {marginError})² = {calculations.n}
+                    </div>
+                  ) : (
+                    <div>
+                      n = {calculations.z.toFixed(3)}² × {estimatedP} × {(1-estimatedP).toFixed(2)} / {proportionError}² = {calculations.n}
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -465,35 +454,25 @@ export default function SampleSizeLaboratory() {
             </VisualizationSection>
             
             {/* Cost Analysis */}
-            {showCostAnalysis && (
-              <VisualizationSection 
-                title="Cost vs. Precision Trade-off"
-                className="bg-neutral-800 mt-6"
-              >
-                <GraphContainer height="200px">
-                  <svg ref={costAnalysisRef} style={{ width: "100%", height: "100%", display: "block" }} />
-                </GraphContainer>
-                
-                <div className="mt-4 flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-0.5 bg-green-500" />
-                      <span className="text-neutral-400">Total Cost</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-0.5 bg-pink-500" style={{ borderTop: '2px dashed' }} />
-                      <span className="text-neutral-400">Margin of Error</span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setShowCostAnalysis(false)}
-                    className="text-neutral-400 hover:text-white"
-                  >
-                    Hide
-                  </button>
+            <VisualizationSection 
+              title="Cost vs. Precision Trade-off"
+              className="bg-neutral-800 mt-6"
+            >
+              <GraphContainer height="200px">
+                <svg ref={costAnalysisRef} style={{ width: "100%", height: "100%", display: "block" }} />
+              </GraphContainer>
+              
+              <div className="mt-4 flex items-center gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-0.5 bg-green-500" />
+                  <span className="text-neutral-400">Total Cost</span>
                 </div>
-              </VisualizationSection>
-            )}
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-0.5 bg-pink-500" style={{ borderTop: '2px dashed' }} />
+                  <span className="text-neutral-400">Margin of Error</span>
+                </div>
+              </div>
+            </VisualizationSection>
           </div>
           
           {/* Controls and scenarios */}
@@ -697,7 +676,7 @@ export default function SampleSizeLaboratory() {
         </div>
         
         {/* Key insights */}
-        <div className="bg-gradient-to-br from-orange-900/20 to-purple-900/20 rounded-lg p-6 border border-orange-500/30">
+        <div className="bg-gradient-to-br from-orange-900/20 to-purple-900/20 rounded-lg p-6 border border-orange-500/30 mt-6">
           <h3 className="text-xl font-semibold text-orange-400 mb-4">The Square Root Law</h3>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
@@ -709,7 +688,7 @@ export default function SampleSizeLaboratory() {
             </div>
             <div>
               <h4 className="text-lg font-medium text-white mb-2">Example</h4>
-              <div className="text-sm text-neutral-300 space-y-1">
+              <div className="text-sm text-neutral-300 space-y-1 font-mono">
                 <div>• E = 10 → n = 96</div>
                 <div>• E = 5 → n = 384 (4× larger)</div>
                 <div>• E = 2.5 → n = 1,536 (16× larger)</div>

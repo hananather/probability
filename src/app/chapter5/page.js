@@ -55,7 +55,7 @@ const ConfidenceIntervalMasterclass = dynamic(
 );
 
 const ConfidenceInterval = dynamic(
-  () => import('../../components/05-estimation/5-3-1-ConfidenceInterval.jsx'),
+  () => import('../../components/05-estimation/5-2-3-ConfidenceIntervalSimulation.jsx'),
   { 
     ssr: false,
     loading: () => (
