@@ -42,19 +42,19 @@ const estimationTheme = {
 // Button styles with gradients
 const buttonStyles = {
   sample: cn(
-    "px-6 py-3 rounded-lg font-medium transition-all duration-300 transform",
+    "w-full px-4 py-2 rounded-lg font-medium transition-all duration-300",
     "bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600",
-    "text-white shadow-lg hover:shadow-xl hover:scale-[1.02]",
-    "disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+    "text-white shadow-md hover:shadow-lg text-sm",
+    "disabled:opacity-50 disabled:cursor-not-allowed"
   ),
   play: cn(
-    "px-4 py-2 rounded-lg font-medium transition-all duration-300",
+    "w-full px-3 py-2 rounded-lg font-medium transition-all duration-300",
     "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600",
-    "text-white shadow-md hover:shadow-lg"
+    "text-white shadow-md hover:shadow-lg text-sm"
   ),
   reset: cn(
-    "px-4 py-2 rounded-lg font-medium transition-all duration-300",
-    "bg-neutral-700 hover:bg-neutral-600 text-white shadow-md"
+    "w-full px-3 py-2 rounded-lg font-medium transition-all duration-300",
+    "bg-neutral-700 hover:bg-neutral-600 text-white shadow-md text-sm"
   )
 };
 
@@ -516,89 +516,14 @@ export default function InteractiveInferenceJourney() {
   }, []);
   
   return (
-    <div className="bg-neutral-800 p-5 shadow-xl">
-      <h2 className="text-xl font-semibold text-teal-400 mb-4">Interactive Statistical Inference Journey</h2>
-      <p className="text-neutral-300 mb-6">Explore how samples from a population create a sampling distribution</p>
-      <div className="grid lg:grid-cols-[1fr,320px] gap-6">
-        {/* Main visualization */}
-        <div className="space-y-6">
-          <div className="bg-neutral-900 p-4 rounded-lg" style={{ overflow: "visible" }}>
-            <h3 className="text-lg font-medium text-white mb-4">Population → Sample → Statistic</h3>
-            <div style={{ minHeight: "400px", width: "100%", overflow: "visible" }}>
-              <svg ref={mainSvgRef} style={{ width: "100%", height: "400px", overflow: "visible", display: "block" }} />
-            </div>
-            
-            {currentSample && (
-              <div className="mt-4 p-4 bg-gradient-to-r from-orange-900/20 to-pink-900/20 rounded-lg border border-orange-500/30">
-                <h4 className="text-sm font-medium text-orange-400 mb-2">Current Sample</h4>
-                <div className="grid grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <span className="text-neutral-400">Size:</span>
-                    <span className="ml-2 font-mono text-white">{sampleSize}</span>
-                  </div>
-                  <div>
-                    <span className="text-neutral-400">Mean:</span>
-                    <span className="ml-2 font-mono text-orange-400">
-                      {currentSample.mean ? currentSample.mean.toFixed(2) : '—'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-neutral-400">SD:</span>
-                    <span className="ml-2 font-mono text-pink-400">
-                      {currentSample.sd ? currentSample.sd.toFixed(2) : '—'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-          
-          <VisualizationSection 
-            title="Sampling Distribution of X̄"
-            className="bg-neutral-900"
-          >
-            <GraphContainer height="350px">
-              <svg ref={samplingDistRef} style={{ width: "100%", height: "100%", display: "block" }} />
-            </GraphContainer>
-            
-            {statistics && (
-              <div className="mt-4 p-4 bg-gradient-to-r from-purple-900/20 to-pink-900/20 rounded-lg border border-purple-500/30">
-                <h4 className="text-sm font-medium text-purple-400 mb-2">Sampling Statistics</h4>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-neutral-400">Mean of sample means:</span>
-                    <span className="ml-2 font-mono text-purple-400">
-                      {statistics.meanOfMeans ? statistics.meanOfMeans.toFixed(2) : '—'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-neutral-400">SD of sample means:</span>
-                    <span className="ml-2 font-mono text-pink-400">
-                      {statistics.sdOfMeans ? statistics.sdOfMeans.toFixed(2) : '—'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-neutral-400">Theoretical SE:</span>
-                    <span className="ml-2 font-mono text-purple-400">
-                      {statistics.theoreticalSE ? statistics.theoreticalSE.toFixed(2) : '—'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-neutral-400">Total samples:</span>
-                    <span className="ml-2 font-mono text-white">
-                      {statistics.samples || 0}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </VisualizationSection>
-        </div>
-        
-        {/* Controls */}
-        <div className="space-y-4">
-          <ControlPanel className="bg-neutral-800">
-            <h3 className="text-lg font-semibold text-white mb-4">Population Parameters</h3>
+    <div className="bg-neutral-800 p-4 shadow-xl">
+      <h2 className="text-xl font-semibold text-teal-400 mb-3">Interactive Statistical Inference Journey</h2>
+      <p className="text-neutral-300 mb-4 text-sm">Explore how samples from a population create a sampling distribution</p>
+      <div className="flex flex-col lg:flex-row gap-4">
+        {/* Controls - Left side on desktop */}
+        <div className="lg:w-1/3 space-y-3">
+          <VisualizationSection className="bg-neutral-900 p-3">
+            <h3 className="text-base font-bold text-white mb-3">Population Parameters</h3>
             
             <ControlGroup label="Population Mean (μ)">
               <RangeSlider
@@ -633,7 +558,7 @@ export default function InteractiveInferenceJourney() {
               />
             </ControlGroup>
             
-            <div className="mt-6 space-y-3">
+            <div className="mt-4 space-y-2">
               <button
                 onClick={takeSample}
                 disabled={isAnimating || isContinuousSampling}
@@ -670,12 +595,12 @@ export default function InteractiveInferenceJourney() {
                 Reset
               </button>
             </div>
-          </ControlPanel>
+          </VisualizationSection>
           
           {/* Insights */}
-          <div className="bg-gradient-to-br from-orange-900/20 to-purple-900/20 rounded-lg p-4 border border-orange-500/30">
-            <h3 className="text-lg font-semibold text-orange-400 mb-3">Key Insights</h3>
-            <div className="space-y-3 text-sm text-neutral-300">
+          <VisualizationSection className="bg-gradient-to-br from-orange-900/20 to-purple-900/20 p-3 border border-orange-500/30">
+            <h3 className="text-base font-bold text-orange-400 mb-3">Key Insights</h3>
+            <div className="space-y-2 text-sm text-neutral-300">
               <div className="flex items-start gap-2">
                 <div className="w-2 h-2 rounded-full bg-orange-500 mt-1.5 flex-shrink-0" />
                 <p>The <span className="text-orange-400 font-medium">sampling distribution</span> shows where sample means tend to fall</p>
@@ -689,7 +614,80 @@ export default function InteractiveInferenceJourney() {
                 <p>Larger samples (higher n) lead to <span className="text-pink-400 font-medium">more precise estimates</span> with smaller SE</p>
               </div>
             </div>
-          </div>
+          </VisualizationSection>
+        </div>
+        
+        {/* Visualization - Right side on desktop */}
+        <div className="lg:w-2/3 space-y-4">
+          <VisualizationSection className="bg-neutral-900 p-3">
+            <h3 className="text-base font-bold text-white mb-3">Population → Sample → Statistic</h3>
+            <div style={{ minHeight: "400px", width: "100%", overflow: "visible" }}>
+              <svg ref={mainSvgRef} style={{ width: "100%", height: "400px", overflow: "visible", display: "block" }} />
+            </div>
+            
+            {currentSample && (
+              <div className="mt-3 p-3 bg-gradient-to-r from-orange-900/20 to-pink-900/20 rounded-lg border border-orange-500/30">
+                <h4 className="text-sm font-medium text-orange-400 mb-2">Current Sample</h4>
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="text-neutral-400">Size:</span>
+                    <span className="ml-2 font-mono text-white">{sampleSize}</span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-400">Mean:</span>
+                    <span className="ml-2 font-mono text-orange-400">
+                      {currentSample.mean ? currentSample.mean.toFixed(2) : '—'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-400">SD:</span>
+                    <span className="ml-2 font-mono text-pink-400">
+                      {currentSample.sd ? currentSample.sd.toFixed(2) : '—'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </VisualizationSection>
+          
+          <VisualizationSection className="bg-neutral-900 p-3">
+            <h3 className="text-base font-bold text-white mb-3">Sampling Distribution of X̄</h3>
+            <GraphContainer height="350px">
+              <svg ref={samplingDistRef} style={{ width: "100%", height: "100%", display: "block" }} />
+            </GraphContainer>
+            
+            {statistics && (
+              <div className="mt-3 p-3 bg-gradient-to-r from-purple-900/20 to-pink-900/20 rounded-lg border border-purple-500/30">
+                <h4 className="text-sm font-medium text-purple-400 mb-2">Sampling Statistics</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-neutral-400">Mean of sample means:</span>
+                    <span className="ml-2 font-mono text-purple-400">
+                      {statistics.meanOfMeans ? statistics.meanOfMeans.toFixed(2) : '—'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-400">SD of sample means:</span>
+                    <span className="ml-2 font-mono text-pink-400">
+                      {statistics.sdOfMeans ? statistics.sdOfMeans.toFixed(2) : '—'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-400">Theoretical SE:</span>
+                    <span className="ml-2 font-mono text-purple-400">
+                      {statistics.theoreticalSE ? statistics.theoreticalSE.toFixed(2) : '—'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-400">Total samples:</span>
+                    <span className="ml-2 font-mono text-white">
+                      {statistics.samples || 0}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </VisualizationSection>
         </div>
       </div>
       

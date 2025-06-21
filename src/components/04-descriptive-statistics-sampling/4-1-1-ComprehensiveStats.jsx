@@ -55,6 +55,8 @@ const measureColors = {
   quartile: '#f97316', // Orange - for Q1 and Q3
 };
 
+// This component serves as a comprehensive practice tool after students have learned
+// the basic concepts through the interactive journey components
 function ComprehensiveStats() {
   const [selectedScenario, setSelectedScenario] = useState('income');
   const [showOutliers, setShowOutliers] = useState(false);
@@ -354,16 +356,22 @@ function ComprehensiveStats() {
   const medianChange = outlierStats ? ((outlierStats.median - normalStats.median) / normalStats.median * 100).toFixed(1) : 0;
   
   return (
-    <VisualizationContainer title="Central Tendency: Mean, Median, Mode">
+    <VisualizationContainer title="Stats Lab: Real-World Applications">
       <div className="flex flex-col gap-6">
         {/* Learning Objective */}
-        <VisualizationSection className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-600/30">
+        <VisualizationSection className="bg-gradient-to-r from-amber-900/20 to-orange-900/20 border border-amber-600/30">
           <div className="p-4">
-            <h3 className="text-lg font-semibold text-white mb-2">Learning Objective</h3>
+            <h3 className="text-lg font-semibold text-white mb-2">🧪 Practice Lab</h3>
             <p className="text-neutral-300">
-              Understand how different measures of central tendency respond to outliers and distribution changes.
-              The mean is sensitive to extreme values while the median remains robust.
+              Apply your knowledge of central tendency to real-world scenarios. 
+              Explore how outliers affect different measures and when to use each one.
             </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className="px-2 py-1 bg-yellow-900/30 border border-yellow-600/30 rounded text-xs text-yellow-400">Mean</span>
+              <span className="px-2 py-1 bg-teal-900/30 border border-teal-600/30 rounded text-xs text-teal-400">Median</span>
+              <span className="px-2 py-1 bg-purple-900/30 border border-purple-600/30 rounded text-xs text-purple-400">Mode</span>
+              <span className="px-2 py-1 bg-orange-900/30 border border-orange-600/30 rounded text-xs text-orange-400">IQR</span>
+            </div>
           </div>
         </VisualizationSection>
         
@@ -484,14 +492,14 @@ function ComprehensiveStats() {
           </div>
         </VisualizationSection>
         
-        {/* Show Calculations */}
+        {/* Show Calculations - Enhanced with visual steps */}
         {showCalculations && (
           <VisualizationSection className="p-4">
-            <h4 className="text-lg font-semibold text-white mb-3">Step-by-Step Calculations</h4>
+            <h4 className="text-lg font-semibold text-white mb-3">📐 Step-by-Step Calculations</h4>
             
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <p className="font-semibold text-yellow-400 mb-2">Mean Calculation:</p>
+                <p className="font-semibold text-yellow-400 mb-2">⚖️ Mean Calculation:</p>
                 <div className="bg-neutral-900/50 p-3 rounded font-mono text-sm">
                   <div>Sum = {currentData.slice(0, 5).join(' + ')} ... + {currentData[currentData.length - 1]} = {stats?.sum.toFixed(1)}</div>
                   <div className="mt-1">Mean = {stats?.sum.toFixed(1)} ÷ {stats?.count} = {stats?.mean.toFixed(1)}</div>
@@ -499,7 +507,7 @@ function ComprehensiveStats() {
               </div>
               
               <div>
-                <p className="font-semibold text-teal-400 mb-2">Median Calculation:</p>
+                <p className="font-semibold text-teal-400 mb-2">🎯 Median Calculation:</p>
                 <div className="bg-neutral-900/50 p-3 rounded font-mono text-sm">
                   <div>Sorted: [{[...currentData].sort((a, b) => a - b).slice(0, 5).join(', ')} ... {[...currentData].sort((a, b) => a - b).slice(-3).join(', ')}]</div>
                   <div className="mt-1">

@@ -4,6 +4,18 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 
+const DescriptiveStatsJourney = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/4-1-1-DescriptiveStatsJourney'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
 const ComprehensiveStats = dynamic(
   () => import('@/components/04-descriptive-statistics-sampling/4-1-1-ComprehensiveStats'),
   { 
@@ -110,14 +122,15 @@ export default function Chapter4Page() {
   useEffect(() => {
     // Map section IDs to indices
     const sectionIdToIndex = {
-      'comprehensive-stats': 0,
-      'histograms': 1,
-      'stats-explorer': 2,
-      't-distribution': 3,
-      'f-distribution': 4,
-      'sampling-distributions': 5,
-      'boxplot-quartiles': 6,
-      'central-limit-theorem': 7
+      'descriptive-journey': 0,
+      'comprehensive-stats': 1,
+      'histograms': 2,
+      'stats-explorer': 3,
+      't-distribution': 4,
+      'f-distribution': 5,
+      'sampling-distributions': 6,
+      'boxplot-quartiles': 7,
+      'central-limit-theorem': 8
     };
     
     const section = searchParams.get('section');
@@ -128,9 +141,15 @@ export default function Chapter4Page() {
 
   const sections = [
     {
+      id: 'descriptive-journey',
+      title: "📚 Interactive Learning Journey",
+      description: "Start here! Learn descriptive statistics through an engaging, progressive journey with interactive challenges and gamification.",
+      component: <DescriptiveStatsJourney />
+    },
+    {
       id: 'comprehensive-stats',
-      title: "Comprehensive Descriptive Statistics",
-      description: "Master all fundamental statistics: mean, median, mode, variance, quartiles, and outliers in one interactive experience.",
+      title: "Stats Lab: Practice & Apply",
+      description: "Practice with real-world scenarios. Master mean, median, mode, and see how outliers affect different measures.",
       component: <ComprehensiveStats />
     },
     {

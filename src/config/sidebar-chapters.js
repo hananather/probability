@@ -23,6 +23,10 @@ export const chapters = [
       { title: 'Unordered Samples (Combinations)', component: 'UnorderedSamples' },
       { title: 'Probability of an Event', component: 'ProbabilityEvent' },
       { title: 'Conditional Probability', component: 'ConditionalProbability' },
+      { title: 'Monty Hall Problem', component: 'MontyHallProblem' },
+      { title: "Bayes' Theorem Visualizer", component: 'BayesTheoremVisualizer' },
+      { title: 'Probabilistic Fallacies', component: 'ProbabilisticFallacies' },
+      { title: 'Monty Hall Masterclass', component: 'MontyHallMasterclass' },
     ]
   },
   {

@@ -45,13 +45,28 @@ const generateDistributionData = (type, size = 30) => {
 
 function MeanMedianMode() {
   const [dataPoints, setDataPoints] = useState([3, 5, 5, 7, 8, 9, 9, 9, 10, 12]);
-  const [draggingIndex, setDraggingIndex] = useState(null);
   const [hoveredValue, setHoveredValue] = useState(null);
   const [stage, setStage] = useState(1);
   const [totalInteractions, setTotalInteractions] = useState(0);
   
   const svgRef = useRef(null);
   const d3Container = useRef(null);
+  const isInitialized = useRef(false);
+  const scalesRef = useRef({ xScale: null, yScale: null });
+  const elementsRef = useRef({
+    dotsGroup: null,
+    measuresGroup: null,
+    xAxis: null,
+    yAxis: null
+  });
+  
+  // Store drag state in refs to avoid re-renders
+  const dragState = useRef({
+    isDragging: false,
+    draggedIndex: null,
+    initialMouseX: 0,
+    initialValue: 0
+  });
   
   // Calculate descriptive statistics
   const calculateStats = (data) => {
@@ -91,24 +106,21 @@ function MeanMedianMode() {
   
   // Handle click on visualization to add point
   const handleVisualizationClick = useCallback((event) => {
-    if (!d3Container.current || draggingIndex !== null) return;
+    if (!d3Container.current || dragState.current.isDragging) return;
     
     const rect = d3Container.current.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const margin = { top: 40, right: 40, bottom: 80, left: 60 };
-    const innerWidth = rect.width - margin.left - margin.right;
     
-    // Calculate value from x position
-    const xScale = d3.scaleLinear()
-      .domain([0, 20])
-      .range([0, innerWidth]);
-    
-    const value = Math.round(xScale.invert(x - margin.left));
-    if (value >= 0 && value <= 20) {
-      setDataPoints([...dataPoints, value]);
-      setTotalInteractions(prev => prev + 1);
+    // Use stored scale
+    if (scalesRef.current.xScale) {
+      const value = Math.round(scalesRef.current.xScale.invert(x - margin.left));
+      if (value >= 0 && value <= 20) {
+        setDataPoints(prev => [...prev, value]);
+        setTotalInteractions(prev => prev + 1);
+      }
     }
-  }, [dataPoints, draggingIndex]);
+  }, []);
   
   // Update stage based on interactions
   useEffect(() => {
@@ -117,18 +129,17 @@ function MeanMedianMode() {
     else if (totalInteractions >= 5) setStage(2);
   }, [totalInteractions]);
   
-  // Main visualization (dot plot)
+  // Initialize visualization once
   useEffect(() => {
-    if (!svgRef.current) return;
+    if (!svgRef.current || isInitialized.current) return;
     
     const svg = d3.select(svgRef.current);
     const { width } = svgRef.current.getBoundingClientRect();
-    const height = 500; // Increased height for better space utilization
+    const height = 500;
     const margin = { top: 40, right: 40, bottom: 80, left: 60 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
-    svg.selectAll("*").remove();
     svg.attr("viewBox", `0 0 ${width} ${height}`);
     
     // Background
@@ -140,51 +151,108 @@ function MeanMedianMode() {
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
     
-    // Fixed scales for consistency
-    const xScale = d3.scaleLinear()
+    // Create scales and store them
+    scalesRef.current.xScale = d3.scaleLinear()
       .domain([0, 20])
       .range([0, innerWidth]);
     
-    // Count occurrences for y scale
-    const valueCounts = dataPoints.length > 0 
-      ? d3.rollup(dataPoints, v => v.length, d => d)
-      : new Map();
-    const maxCount = Math.max(8, ...Array.from(valueCounts.values()));
-    
-    const yScale = d3.scaleLinear()
-      .domain([0, maxCount])
+    scalesRef.current.yScale = d3.scaleLinear()
+      .domain([0, 8])
       .range([innerHeight, 0]);
     
     // Grid lines
     g.append("g")
       .attr("class", "grid")
       .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(xScale)
+      .call(d3.axisBottom(scalesRef.current.xScale)
         .tickSize(-innerHeight)
         .tickFormat(""))
       .style("stroke-dasharray", "3,3")
-      .style("opacity", 0.3);
+      .style("opacity", 0.3)
+      .selectAll("line")
+      .style("stroke", colors.chart.grid);
     
-    // Draw vertical lines for mean, median, mode with smooth transitions
-    const measureGroup = g.selectAll(".measure-line-group")
-      .data(dataPoints.length > 0 ? [
-        { value: mean, color: colorScheme.chart.primary, label: 'Mean' },
-        { value: median, color: colorScheme.chart.secondary, label: 'Median' },
-        ...(mode.length === 1 ? [{ value: mode[0], color: colorScheme.chart.tertiary, label: 'Mode' }] : [])
-      ] : []);
+    // Create groups for dynamic elements
+    elementsRef.current.measuresGroup = g.append("g").attr("class", "measures");
+    elementsRef.current.dotsGroup = g.append("g").attr("class", "dots");
     
-    const measureEnter = measureGroup.enter()
+    // X axis
+    elementsRef.current.xAxis = g.append("g")
+      .attr("transform", `translate(0,${innerHeight})`)
+      .call(d3.axisBottom(scalesRef.current.xScale));
+    
+    elementsRef.current.xAxis.selectAll("path, line").attr("stroke", colors.chart.grid);
+    elementsRef.current.xAxis.selectAll("text")
+      .style("font-size", "12px")
+      .style("font-family", "monospace")
+      .attr("fill", colors.chart.text);
+    
+    // Y axis (hidden)
+    elementsRef.current.yAxis = g.append("g")
+      .call(d3.axisLeft(scalesRef.current.yScale).ticks(0));
+    
+    // Axis labels
+    g.append("text")
+      .attr("transform", `translate(${innerWidth / 2}, ${innerHeight + 50})`)
+      .style("text-anchor", "middle")
+      .style("font-size", "16px")
+      .style("font-weight", "600")
+      .attr("fill", colors.chart.text)
+      .text("Value");
+    
+    // Empty state text
+    elementsRef.current.emptyText = g.append("text")
+      .attr("class", "empty-text")
+      .attr("x", innerWidth / 2)
+      .attr("y", innerHeight / 2)
+      .attr("text-anchor", "middle")
+      .style("font-size", "18px")
+      .attr("fill", colors.chart.text)
+      .attr("opacity", 0.5)
+      .text("Click anywhere to add data points");
+    
+    isInitialized.current = true;
+  }, []);
+  
+  // Update only the dynamic elements
+  useEffect(() => {
+    if (!isInitialized.current || !scalesRef.current.xScale) return;
+    
+    const { xScale, yScale } = scalesRef.current;
+    const { measuresGroup, dotsGroup, emptyText } = elementsRef.current;
+    
+    // Update empty state visibility
+    emptyText.style("display", dataPoints.length === 0 ? null : "none");
+    
+    // Update y scale domain based on data
+    const valueCounts = dataPoints.length > 0 
+      ? d3.rollup(dataPoints, v => v.length, d => d)
+      : new Map();
+    const maxCount = Math.max(8, ...Array.from(valueCounts.values()));
+    yScale.domain([0, maxCount]);
+    
+    // Update measure lines
+    const measuresData = dataPoints.length > 0 ? [
+      { value: mean, color: colorScheme.chart.primary, label: 'Mean' },
+      { value: median, color: colorScheme.chart.secondary, label: 'Median' },
+      ...(mode.length === 1 ? [{ value: mode[0], color: colorScheme.chart.tertiary, label: 'Mode' }] : [])
+    ] : [];
+    
+    const measures = measuresGroup.selectAll(".measure-group")
+      .data(measuresData, d => d.label);
+    
+    const measuresEnter = measures.enter()
       .append("g")
-      .attr("class", "measure-line-group");
+      .attr("class", "measure-group");
     
-    measureEnter.append("line")
+    measuresEnter.append("line")
       .attr("class", "measure-line")
       .attr("y1", 0)
-      .attr("y2", innerHeight)
+      .attr("y2", yScale(0))
       .attr("stroke-width", 3)
       .attr("opacity", 0);
     
-    measureEnter.append("text")
+    measuresEnter.append("text")
       .attr("class", "measure-label")
       .attr("y", -15)
       .attr("text-anchor", "middle")
@@ -193,7 +261,7 @@ function MeanMedianMode() {
       .style("font-family", "monospace");
     
     // Update
-    measureGroup.merge(measureEnter)
+    measures.merge(measuresEnter)
       .select(".measure-line")
       .transition()
       .duration(500)
@@ -202,7 +270,7 @@ function MeanMedianMode() {
       .attr("stroke", d => d.color)
       .attr("opacity", 0.9);
     
-    measureGroup.merge(measureEnter)
+    measures.merge(measuresEnter)
       .select(".measure-label")
       .transition()
       .duration(500)
@@ -210,54 +278,96 @@ function MeanMedianMode() {
       .attr("fill", d => d.color)
       .text(d => `${d.label}: ${d.value.toFixed(1)}`);
     
-    measureGroup.exit()
+    measures.exit()
       .transition()
       .duration(300)
       .style("opacity", 0)
       .remove();
     
-    // Prepare data for dots with indices
+    // Prepare dot data with stacking
     const dotData = [];
     dataPoints.forEach((value, originalIndex) => {
       const count = dotData.filter(d => d.value === value).length;
       dotData.push({ value, stackIndex: count, originalIndex });
     });
     
-    // Draw dots with drag functionality
-    const dots = g.selectAll(".data-dot")
+    // Update dots
+    const dots = dotsGroup.selectAll(".data-dot")
       .data(dotData, d => d.originalIndex);
+    
+    // Define drag behavior with proper delta calculation
+    const drag = d3.drag()
+      .on("start", function(event, d) {
+        dragState.current.isDragging = true;
+        dragState.current.draggedIndex = d.originalIndex;
+        dragState.current.initialMouseX = event.x;
+        dragState.current.initialValue = d.value;
+        
+        d3.select(this)
+          .raise()
+          .attr("opacity", 1)
+          .attr("r", 12);
+      })
+      .on("drag", function(event, d) {
+        // Calculate delta from start position
+        const deltaX = event.x - dragState.current.initialMouseX;
+        
+        // Apply delta to initial value
+        const newValue = Math.round(
+          xScale.invert(xScale(dragState.current.initialValue) + deltaX)
+        );
+        
+        // Constrain to valid range
+        if (newValue >= 0 && newValue <= 20 && newValue !== dataPoints[d.originalIndex]) {
+          const newPoints = [...dataPoints];
+          newPoints[d.originalIndex] = newValue;
+          setDataPoints(newPoints);
+        }
+      })
+      .on("end", function() {
+        dragState.current.isDragging = false;
+        dragState.current.draggedIndex = null;
+        setTotalInteractions(prev => prev + 1);
+        
+        d3.select(this)
+          .attr("opacity", 0.85)
+          .attr("r", 8);
+      });
     
     // Enter
     const dotsEnter = dots.enter()
       .append("circle")
       .attr("class", "data-dot")
       .attr("cx", d => xScale(d.value))
-      .attr("cy", innerHeight)
+      .attr("cy", yScale(0))
       .attr("r", 0)
       .attr("fill", colorScheme.chart.primary)
       .attr("stroke", "white")
       .attr("stroke-width", 2)
-      .style("cursor", "pointer")
+      .style("cursor", "grab")
       .on("mouseenter", function(event, d) {
-        d3.select(this)
-          .transition()
-          .duration(200)
-          .attr("r", 12)
-          .attr("opacity", 1);
-        setHoveredValue(d.value);
+        if (!dragState.current.isDragging) {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr("r", 10)
+            .attr("opacity", 1);
+          setHoveredValue(d.value);
+        }
       })
       .on("mouseleave", function() {
-        if (draggingIndex === null) {
+        if (!dragState.current.isDragging) {
           d3.select(this)
             .transition()
             .duration(200)
             .attr("r", 8)
             .attr("opacity", 0.85);
+          setHoveredValue(null);
         }
-        setHoveredValue(null);
-      });
+      })
+      .call(drag);
     
-    // Update
+    // Update positions
     dots.merge(dotsEnter)
       .transition()
       .duration(500)
@@ -273,65 +383,7 @@ function MeanMedianMode() {
       .attr("r", 0)
       .remove();
     
-    // Add drag behavior
-    const drag = d3.drag()
-      .on("start", function(event, d) {
-        setDraggingIndex(d.originalIndex);
-        d3.select(this).attr("opacity", 1).attr("r", 12);
-      })
-      .on("drag", function(event, d) {
-        const newValue = Math.round(xScale.invert(event.x));
-        if (newValue >= 0 && newValue <= 20) {
-          const newPoints = [...dataPoints];
-          newPoints[d.originalIndex] = newValue;
-          setDataPoints(newPoints);
-        }
-      })
-      .on("end", function() {
-        setDraggingIndex(null);
-        setTotalInteractions(prev => prev + 1);
-        d3.select(this).attr("opacity", 0.85).attr("r", 8);
-      });
-    
-    g.selectAll(".data-dot").call(drag);
-    
-    // X axis
-    const xAxis = g.append("g")
-      .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(xScale));
-    
-    xAxis.selectAll("path, line").attr("stroke", colors.chart.grid);
-    xAxis.selectAll("text")
-      .style("font-size", "12px")
-      .style("font-family", "monospace")
-      .attr("fill", colors.chart.text);
-    
-    // Y axis (hidden for cleaner look)
-    g.append("g")
-      .call(d3.axisLeft(yScale).ticks(0));
-    
-    // Axis labels
-    g.append("text")
-      .attr("transform", `translate(${innerWidth / 2}, ${innerHeight + 50})`)
-      .style("text-anchor", "middle")
-      .style("font-size", "16px")
-      .style("font-weight", "600")
-      .attr("fill", colors.chart.text)
-      .text("Value");
-    
-    // Add instruction text
-    if (dataPoints.length === 0) {
-      g.append("text")
-        .attr("x", innerWidth / 2)
-        .attr("y", innerHeight / 2)
-        .attr("text-anchor", "middle")
-        .style("font-size", "18px")
-        .attr("fill", colors.chart.text)
-        .attr("opacity", 0.5)
-        .text("Click anywhere to add data points");
-    }
-    
-  }, [dataPoints, mean, median, mode, draggingIndex, handleVisualizationClick]);
+  }, [dataPoints, mean, median, mode]);
   
   // Get milestone message based on stage
   const getMilestoneMessage = () => {

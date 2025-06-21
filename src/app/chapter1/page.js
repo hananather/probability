@@ -41,6 +41,30 @@ const ConditionalProbability = lazy(() =>
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })
 );
+const MontyHallInteractive = lazy(() => 
+  import('../../components/01-introduction-to-probabilities/1-7-1-MontyHallInteractive.jsx')
+    .catch(() => {
+      return { default: () => <div className="text-red-500">Failed to load component</div> };
+    })
+);
+const MontyHallBayesian = lazy(() => 
+  import('../../components/01-introduction-to-probabilities/1-7-2-MontyHallBayesian.jsx')
+    .catch(() => {
+      return { default: () => <div className="text-red-500">Failed to load component</div> };
+    })
+);
+const MontyHallSimulation = lazy(() => 
+  import('../../components/01-introduction-to-probabilities/1-7-3-MontyHallSimulation.jsx')
+    .catch(() => {
+      return { default: () => <div className="text-red-500">Failed to load component</div> };
+    })
+);
+const MontyHallMasterclass = lazy(() => 
+  import('../../components/01-introduction-to-probabilities/1-7-4-MontyHallMasterclass.jsx')
+    .catch(() => {
+      return { default: () => <div className="text-red-500">Failed to load component</div> };
+    })
+);
 
 // Loading component
 const LoadingComponent = () => (
@@ -168,6 +192,82 @@ export default function Chapter1() {
             Drag the events below to change their overlap and observe how conditional
             probabilities change. Switch perspectives to see probabilities from different
             viewpoints.
+          </p>
+        </>
+      )
+    },
+    {
+      id: 'monty-hall',
+      title: '1.7 The Monty Hall Problem',
+      component: MontyHallInteractive,
+      description: (
+        <>
+          <p>
+            The Monty Hall problem is a famous probability puzzle that demonstrates how
+            our intuition about probability can be wrong. Named after the host of the TV
+            game show &quot;Let&apos;s Make a Deal,&quot; it shows why switching doors gives you a 2/3
+            chance of winning.
+          </p>
+          <p>
+            Play the game below and watch how the statistics confirm that switching is
+            the better strategy. Use auto-play to quickly see the pattern emerge!
+          </p>
+        </>
+      )
+    },
+    {
+      id: 'bayes-theorem',
+      title: '1.7 Bayes\' Theorem Visualizer',
+      component: MontyHallBayesian,
+      description: (
+        <>
+          <p>
+            Bayes&apos; Theorem provides a way to update our beliefs based on new evidence.
+            It shows how to calculate P(hypothesis|data) from P(data|hypothesis), P(hypothesis),
+            and P(data).
+          </p>
+          <p>
+            Explore different scenarios below to see how prior probabilities, likelihood,
+            and evidence combine to form posterior probabilities. Try the medical testing
+            scenario to understand why rare diseases often lead to false positives.
+          </p>
+        </>
+      )
+    },
+    {
+      id: 'fallacies',
+      title: '1.7 Probabilistic Fallacies',
+      component: MontyHallSimulation,
+      description: (
+        <>
+          <p>
+            Understanding common probability mistakes helps us make better decisions.
+            These fallacies occur when we misinterpret statistical information or rely
+            on faulty intuition.
+          </p>
+          <p>
+            Explore interactive demonstrations of the Gambler&apos;s Fallacy, Simpson&apos;s Paradox,
+            Base Rate Fallacy, and Prosecutor&apos;s Fallacy. See how proper statistical
+            thinking can help avoid these traps.
+          </p>
+        </>
+      )
+    },
+    {
+      id: 'monty-hall-masterclass',
+      title: '1.7 Monty Hall Masterclass',
+      component: MontyHallMasterclass,
+      description: (
+        <>
+          <p>
+            Experience the complete Monty Hall learning journey! This masterclass combines
+            interactive gameplay, mathematical proofs, and large-scale simulations into
+            a unified learning experience.
+          </p>
+          <p>
+            Progress through four stages: discover the paradox, play and learn, understand
+            the mathematics with Bayes&apos; theorem, and witness the Law of Large Numbers in action.
+            Track your progress, unlock achievements, and share your insights!
           </p>
         </>
       )

@@ -3,6 +3,10 @@
 
 // Export the unordered samples tutorial
 export { tutorial_1_4_unordered } from './chapter1/tutorial_1_4_unordered';
+// Export the Monty Hall tutorial
+export { tutorial_1_7_monty_hall } from './chapter1/tutorial_1_7_monty_hall';
+// Export individual Monty Hall component tutorials
+export { tutorial_1_7_1, tutorial_1_7_2, tutorial_1_7_3 } from './monty-hall-tutorials';
 
 export const tutorial_1_6_1 = [
   {
