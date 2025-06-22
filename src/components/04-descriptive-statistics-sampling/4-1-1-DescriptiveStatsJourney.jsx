@@ -77,7 +77,7 @@ function DescriptiveStatsJourney() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-2xl font-bold text-white mb-2">
-              📚 Descriptive Statistics Learning Journey
+              4.1 Descriptive Stats Journey
             </h2>
             <p className="text-neutral-300">
               Master the fundamentals of data analysis through interactive exploration

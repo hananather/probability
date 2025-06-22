@@ -688,7 +688,7 @@ const FDistributionMasterclass = () => {
   
   return (
     <VisualizationContainer
-      title="F-Distribution Masterclass"
+      title="4.5 F-Distribution Masterclass"
       subtitle="A comprehensive journey through variance comparison"
       tutorialSteps={[]}
       tutorialKey="f-distribution-masterclass"

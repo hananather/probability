@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef, useCallback, memo } from "react";
+import React, { useState, useEffect, useRef, useCallback, memo, useMemo } from "react";
 import * as d3 from "@/utils/d3-utils";
 import { jStat } from "jstat";
 import { 
@@ -11,59 +11,201 @@ import {
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '@/lib/design-system';
 import { ProgressBar } from '../ui/ProgressBar';
 import { Button } from '../ui/button';
-import { tutorial_4_3_1 } from '@/tutorials/chapter4';
+import { tutorial_4_3_1_enhanced } from '@/tutorials/chapter4';
 
 // Use sampling color scheme
 const colorScheme = createColorScheme('sampling');
 
-// Worked Example Component
-const SamplingWorkedExample = memo(function SamplingWorkedExample({ sampleSize, populationStd }) {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    // MathJax timeout pattern
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          // Silent error: MathJax error
-        });
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [sampleSize, populationStd]);
-  
-  const standardError = populationStd / Math.sqrt(sampleSize);
+// Milestones for progressive learning
+const MILESTONES = [
+  { samples: 1, message: "First sample collected!", icon: "🎯" },
+  { samples: 10, message: "Pattern starting to emerge...", icon: "📊" },
+  { samples: 30, message: "The bell shape appears!", icon: "🔔" },
+  { samples: 100, message: "Central Limit Theorem in action!", icon: "✨" },
+  { samples: 500, message: "Perfect normal distribution achieved!", icon: "🏆" }
+];
+
+// Interactive challenges
+const CHALLENGES = [
+  {
+    id: "predict-se",
+    trigger: 5,
+    prompt: "Can you predict the Standard Error?",
+    question: "If σ = 15 and n = 25, what's SE?",
+    answer: 3,
+    tolerance: 0.1
+  },
+  {
+    id: "sample-size-effect", 
+    trigger: 50,
+    prompt: "How does sample size affect spread?",
+    question: "Double the sample size. What happens to SE?",
+    requiresAction: "change-n"
+  }
+];
+
+
+// Milestone tracker component
+const MilestoneTracker = memo(function MilestoneTracker({ numSamples }) {
+  const currentMilestone = MILESTONES.filter(m => numSamples >= m.samples).pop();
+  const nextMilestone = MILESTONES.find(m => numSamples < m.samples);
   
   return (
-    <div ref={contentRef} className="bg-neutral-800 p-6 rounded-lg text-neutral-200">
-      <h4 className="text-lg font-semibold border-b border-neutral-600 pb-2 mb-4 text-white">
-        Standard Error Calculation
-      </h4>
+    <div className="bg-neutral-800 rounded-lg p-4">
+      <h4 className="text-purple-400 font-semibold mb-3 text-sm">Learning Progress</h4>
       
-      <div className="mb-4">
-        <p className="mb-2 font-medium text-purple-400">Formula & Calculation:</p>
-        <div>
-          <div dangerouslySetInnerHTML={{ __html: `\\[SE = \\frac{\\sigma}{\\sqrt{n}} = \\frac{${populationStd}}{\\sqrt{${sampleSize}}} = ${standardError.toFixed(3)}\\]` }} />
-        </div>
+      <div className="space-y-2">
+        {MILESTONES.map((milestone, idx) => {
+          const isCompleted = numSamples >= milestone.samples;
+          const isCurrent = currentMilestone?.samples === milestone.samples;
+          
+          return (
+            <div 
+              key={milestone.samples}
+              className={cn(
+                "flex items-center gap-3 p-2 rounded transition-all",
+                isCompleted && "bg-green-900/20",
+                isCurrent && "ring-2 ring-green-500/50"
+              )}
+            >
+              <span className={cn(
+                "text-lg transition-all",
+                isCompleted ? "scale-110" : "opacity-50 grayscale"
+              )}>
+                {milestone.icon}
+              </span>
+              <div className="flex-1">
+                <p className={cn(
+                  "text-xs font-medium",
+                  isCompleted ? "text-green-400" : "text-neutral-500"
+                )}>
+                  {milestone.samples} sample{milestone.samples > 1 ? 's' : ''}
+                </p>
+                <p className={cn(
+                  "text-xs",
+                  isCompleted ? "text-neutral-300" : "text-neutral-600"
+                )}>
+                  {milestone.message}
+                </p>
+              </div>
+              {isCompleted && (
+                <span className="text-green-400">✓</span>
+              )}
+            </div>
+          );
+        })}
       </div>
       
-      <div className="bg-neutral-900 p-3 rounded text-sm">
-        <p className="text-yellow-400 font-medium mb-2">💡 What this means:</p>
-        <p className="text-neutral-300">
-          Sample means typically vary by about {standardError.toFixed(2)} points from the population mean.
-          {sampleSize > 30 ? " With n > 30, the Central Limit Theorem ensures normality!" : " Increase sample size for more precision."}
+      {nextMilestone && (
+        <div className="mt-3 pt-3 border-t border-neutral-700">
+          <p className="text-xs text-neutral-400">
+            Next: {nextMilestone.samples - numSamples} more sample{nextMilestone.samples - numSamples > 1 ? 's' : ''} to {nextMilestone.message.toLowerCase()}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+});
+
+// Challenge component
+const ChallengeBox = memo(function ChallengeBox({ 
+  challenge, 
+  onComplete,
+  sampleSize,
+  populationStd 
+}) {
+  const [userAnswer, setUserAnswer] = useState('');
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+  
+  const handleSubmit = () => {
+    if (challenge.answer) {
+      const answer = parseFloat(userAnswer);
+      const correct = Math.abs(answer - challenge.answer) <= challenge.tolerance;
+      setIsCorrect(correct);
+      setShowFeedback(true);
+      if (correct) {
+        setTimeout(() => onComplete(challenge.id), 1500);
+      }
+    }
+  };
+  
+  return (
+    <div className="bg-purple-900/20 border border-purple-600/30 rounded-lg p-4">
+      <h4 className="text-purple-400 font-semibold text-sm mb-2">
+        💡 Challenge: {challenge.prompt}
+      </h4>
+      <p className="text-sm text-neutral-300 mb-3">{challenge.question}</p>
+      
+      {challenge.answer && (
+        <div className="flex gap-2">
+          <input
+            type="number"
+            value={userAnswer}
+            onChange={(e) => setUserAnswer(e.target.value)}
+            className="flex-1 px-3 py-1.5 bg-neutral-800 border border-neutral-600 rounded text-sm"
+            placeholder="Your answer..."
+            step="0.1"
+          />
+          <button
+            onClick={handleSubmit}
+            className="px-4 py-1.5 bg-purple-600 hover:bg-purple-700 rounded text-sm font-medium"
+          >
+            Check
+          </button>
+        </div>
+      )}
+      
+      {showFeedback && (
+        <div className={cn(
+          "mt-2 p-2 rounded text-xs",
+          isCorrect ? "bg-green-900/30 text-green-400" : "bg-red-900/30 text-red-400"
+        )}>
+          {isCorrect ? "Correct! Well done!" : `Not quite. The answer is ${challenge.answer}`}
+        </div>
+      )}
+      
+      {challenge.requiresAction && (
+        <p className="text-xs text-yellow-400 mt-2">
+          Action required: {challenge.requiresAction === 'change-n' ? 'Try changing the sample size' : challenge.requiresAction}
         </p>
+      )}
+    </div>
+  );
+});
+
+// Interactive formula display
+const InteractiveFormula = memo(function InteractiveFormula({ 
+  sigma, 
+  n, 
+  se,
+  showCalculation 
+}) {
+  return (
+    <div className="bg-neutral-900 p-4 rounded-lg border border-cyan-500/20">
+      <div className="text-center">
+        <p className="text-cyan-400 font-mono text-lg mb-2">
+          SE = σ / √n
+        </p>
+        {showCalculation && (
+          <div className="space-y-1">
+            <p className="text-sm text-neutral-400">
+              = {sigma} / √{n}
+            </p>
+            <p className="text-sm text-neutral-400">
+              = {sigma} / {Math.sqrt(n).toFixed(2)}
+            </p>
+            <p className="text-sm font-semibold text-cyan-400">
+              = {se.toFixed(3)}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
 });
 
+// Main component
 function SamplingDistributions() {
   // State management
   const [sampleSize, setSampleSize] = useState(10);
@@ -74,23 +216,44 @@ function SamplingDistributions() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [showTheoretical, setShowTheoretical] = useState(false);
   const [currentSample, setCurrentSample] = useState([]);
-  const [showWorkedExample, setShowWorkedExample] = useState(true);
-  const [totalInteractions, setTotalInteractions] = useState(0);
+  const [showFormula, setShowFormula] = useState(true);
+  const [completedChallenges, setCompletedChallenges] = useState(new Set());
+  const [animationSpeed, setAnimationSpeed] = useState('normal');
   
+  // Refs for D3 and animations
   const svgRef = useRef(null);
   const animationRef = useRef(null);
+  const isInitialized = useRef(false);
+  const histogramRef = useRef(null);
+  const theoreticalCurveRef = useRef(null);
+  const meanLinesRef = useRef(null);
+  
+  // Calculate statistics
+  const standardError = populationStd / Math.sqrt(sampleSize);
+  const samplingStats = useMemo(() => ({
+    mean: sampleMeans.length > 0 ? jStat.mean(sampleMeans) : 0,
+    std: sampleMeans.length > 1 ? jStat.stdev(sampleMeans, true) : 0,
+    theoreticalMean: populationMean,
+    theoreticalStd: standardError
+  }), [sampleMeans, populationMean, standardError]);
+  
+  // Get current challenge
+  const currentChallenge = useMemo(() => {
+    return CHALLENGES.find(c => 
+      numSamples >= c.trigger && !completedChallenges.has(c.id)
+    );
+  }, [numSamples, completedChallenges]);
   
   // Generate a sample from the population
   const generateSample = useCallback(() => {
     const sample = [];
     for (let i = 0; i < sampleSize; i++) {
-      // Generate from normal distribution
       sample.push(jStat.normal.sample(populationMean, populationStd));
     }
     return sample;
   }, [sampleSize, populationMean, populationStd]);
   
-  // Take one sample and calculate its mean
+  // Take single sample with animation
   const takeSingleSample = useCallback(() => {
     if (isAnimating) return;
     
@@ -99,87 +262,68 @@ function SamplingDistributions() {
     const sampleMean = jStat.mean(sample);
     
     setCurrentSample(sample);
-    setSampleMeans(prev => [...prev, sampleMean]);
-    setNumSamples(prev => prev + 1);
-    setTotalInteractions(prev => prev + 1);
     
+    // Animate the sample collection
     setTimeout(() => {
-      setIsAnimating(false);
-    }, 500);
+      setSampleMeans(prev => [...prev, sampleMean]);
+      setNumSamples(prev => prev + 1);
+      setTimeout(() => setIsAnimating(false), 300);
+    }, 200);
   }, [generateSample, isAnimating]);
   
-  // Take many samples
+  // Take many samples with smooth animation
   const takeManySamples = useCallback(() => {
     if (isAnimating) return;
     
     setIsAnimating(true);
-    const newMeans = [];
     const samplesToTake = 100;
-    setTotalInteractions(prev => prev + 1);
+    let samplesAdded = 0;
     
-    const animateAddition = (index) => {
-      if (index >= samplesToTake) {
-        setIsAnimating(false);
-        return;
+    const addBatch = () => {
+      const batchSize = Math.min(10, samplesToTake - samplesAdded);
+      const newMeans = [];
+      
+      for (let i = 0; i < batchSize; i++) {
+        const sample = generateSample();
+        newMeans.push(jStat.mean(sample));
       }
       
-      const sample = generateSample();
-      const sampleMean = jStat.mean(sample);
-      newMeans.push(sampleMean);
+      setSampleMeans(prev => [...prev, ...newMeans]);
+      setNumSamples(prev => prev + batchSize);
+      samplesAdded += batchSize;
       
-      setSampleMeans(prev => [...prev, sampleMean]);
-      setNumSamples(prev => prev + 1);
-      
-      if (index === 0) setCurrentSample(sample);
-      
-      animationRef.current = setTimeout(() => {
-        animateAddition(index + 1);
-      }, Math.max(10, 100 / Math.sqrt(index + 1)));
+      if (samplesAdded < samplesToTake) {
+        const delay = animationSpeed === 'fast' ? 50 : animationSpeed === 'slow' ? 200 : 100;
+        animationRef.current = setTimeout(addBatch, delay);
+      } else {
+        setIsAnimating(false);
+      }
     };
     
-    animateAddition(0);
-  }, [generateSample, isAnimating]);
+    addBatch();
+  }, [generateSample, isAnimating, animationSpeed]);
   
   // Reset everything
-  const reset = () => {
+  const reset = useCallback(() => {
     setSampleMeans([]);
     setNumSamples(0);
     setCurrentSample([]);
+    setCompletedChallenges(new Set());
     if (animationRef.current) {
       clearTimeout(animationRef.current);
     }
     setIsAnimating(false);
-  };
-  
-  // Cleanup animation on unmount
-  useEffect(() => {
-    return () => {
-      if (animationRef.current) {
-        clearTimeout(animationRef.current);
-      }
-    };
   }, []);
   
-  // Calculate statistics for the sampling distribution
-  const samplingStats = {
-    mean: sampleMeans.length > 0 ? jStat.mean(sampleMeans) : 0,
-    std: sampleMeans.length > 1 ? jStat.stdev(sampleMeans, true) : 0,
-    theoreticalMean: populationMean,
-    theoreticalStd: populationStd / Math.sqrt(sampleSize)
-  };
-  
-  // Main visualization
+  // Initialize static SVG elements once
   useEffect(() => {
-    if (!svgRef.current) return;
+    if (!svgRef.current || isInitialized.current) return;
     
     const svg = d3.select(svgRef.current);
     const { width } = svgRef.current.getBoundingClientRect();
     const height = 500;
     const margin = { top: 60, right: 40, bottom: 80, left: 60 };
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
     
-    svg.selectAll("*").remove();
     svg.attr("viewBox", `0 0 ${width} ${height}`);
     
     // Background
@@ -188,12 +332,23 @@ function SamplingDistributions() {
       .attr("height", height)
       .attr("fill", "#0a0a0a");
     
+    // Main group
     const g = svg.append("g")
+      .attr("class", "main-group")
       .attr("transform", `translate(${margin.left},${margin.top})`);
+    
+    // Create groups for different elements
+    g.append("g").attr("class", "grid-group");
+    g.append("g").attr("class", "histogram-group");
+    g.append("g").attr("class", "curve-group");
+    g.append("g").attr("class", "mean-lines-group");
+    g.append("g").attr("class", "dots-group");
+    g.append("g").attr("class", "axes-group");
     
     // Title
     g.append("text")
-      .attr("x", innerWidth / 2)
+      .attr("class", "chart-title")
+      .attr("x", (width - margin.left - margin.right) / 2)
       .attr("y", -30)
       .attr("text-anchor", "middle")
       .style("font-size", "18px")
@@ -201,9 +356,34 @@ function SamplingDistributions() {
       .attr("fill", colors.chart.text)
       .text("Sampling Distribution of Sample Means");
     
+    histogramRef.current = g.select(".histogram-group");
+    theoreticalCurveRef.current = g.select(".curve-group");
+    meanLinesRef.current = g.select(".mean-lines-group");
+    
+    isInitialized.current = true;
+  }, []);
+  
+  // Update visualization when data changes
+  useEffect(() => {
+    if (!svgRef.current || !isInitialized.current) return;
+    
+    const svg = d3.select(svgRef.current);
+    const { width } = svgRef.current.getBoundingClientRect();
+    const height = 500;
+    const margin = { top: 60, right: 40, bottom: 80, left: 60 };
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
+    
+    const g = svg.select(".main-group");
+    
+    // Clear dynamic elements
+    g.select(".grid-group").selectAll("*").remove();
+    g.select(".axes-group").selectAll("*").remove();
+    
     if (sampleMeans.length === 0) {
-      // Show instruction text
-      g.append("text")
+      // Show instruction
+      histogramRef.current.selectAll("*").remove();
+      histogramRef.current.append("text")
         .attr("x", innerWidth / 2)
         .attr("y", innerHeight / 2)
         .attr("text-anchor", "middle")
@@ -224,7 +404,7 @@ function SamplingDistributions() {
       ])
       .range([0, innerWidth]);
     
-    // Create histogram
+    // Create histogram bins
     const numBins = Math.min(30, Math.max(10, Math.floor(Math.sqrt(sampleMeans.length))));
     const histogram = d3.histogram()
       .domain(xScale.domain())
@@ -237,7 +417,8 @@ function SamplingDistributions() {
       .range([innerHeight, 0]);
     
     // Grid lines
-    g.append("g")
+    const gridGroup = g.select(".grid-group");
+    gridGroup.append("g")
       .attr("class", "grid")
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(xScale)
@@ -248,10 +429,12 @@ function SamplingDistributions() {
       .selectAll("line")
       .style("stroke", colors.chart.grid);
     
-    // Draw histogram bars
-    g.selectAll("rect.bar")
-      .data(bins)
-      .enter().append("rect")
+    // Update histogram bars
+    const bars = histogramRef.current.selectAll("rect.bar")
+      .data(bins, d => d.x0);
+    
+    bars.enter()
+      .append("rect")
       .attr("class", "bar")
       .attr("x", d => xScale(d.x0))
       .attr("y", innerHeight)
@@ -260,12 +443,23 @@ function SamplingDistributions() {
       .attr("fill", colorScheme.chart.primary)
       .attr("opacity", 0.7)
       .attr("rx", 2)
+      .merge(bars)
       .transition()
       .duration(300)
+      .attr("x", d => xScale(d.x0))
       .attr("y", d => yScale(d.length))
+      .attr("width", d => Math.max(0, xScale(d.x1) - xScale(d.x0) - 1))
       .attr("height", d => innerHeight - yScale(d.length));
     
-    // Draw theoretical normal curve if enabled
+    bars.exit()
+      .transition()
+      .duration(300)
+      .attr("height", 0)
+      .attr("y", innerHeight)
+      .remove();
+    
+    // Update theoretical normal curve
+    theoreticalCurveRef.current.selectAll("*").remove();
     if (showTheoretical && sampleMeans.length > 5) {
       const xValues = d3.range(xScale.domain()[0], xScale.domain()[1], 
         (xScale.domain()[1] - xScale.domain()[0]) / 200);
@@ -281,7 +475,7 @@ function SamplingDistributions() {
         .y(d => yScale(d.y))
         .curve(d3.curveMonotoneX);
       
-      g.append("path")
+      theoreticalCurveRef.current.append("path")
         .datum(normalData)
         .attr("fill", "none")
         .attr("stroke", colorScheme.chart.secondary)
@@ -294,9 +488,11 @@ function SamplingDistributions() {
         .attr("opacity", 0.8);
     }
     
-    // Draw mean lines
-    // Population mean
-    g.append("line")
+    // Update mean lines
+    meanLinesRef.current.selectAll("*").remove();
+    
+    // Population mean line
+    meanLinesRef.current.append("line")
       .attr("x1", xScale(populationMean))
       .attr("x2", xScale(populationMean))
       .attr("y1", 0)
@@ -305,7 +501,7 @@ function SamplingDistributions() {
       .attr("stroke-width", 2)
       .attr("stroke-dasharray", "5,5");
     
-    g.append("text")
+    meanLinesRef.current.append("text")
       .attr("x", xScale(populationMean))
       .attr("y", -5)
       .attr("text-anchor", "middle")
@@ -316,7 +512,7 @@ function SamplingDistributions() {
     
     // Sample mean of means
     if (sampleMeans.length > 0) {
-      g.append("line")
+      meanLinesRef.current.append("line")
         .attr("x1", xScale(samplingStats.mean))
         .attr("x2", xScale(samplingStats.mean))
         .attr("y1", 0)
@@ -324,7 +520,7 @@ function SamplingDistributions() {
         .attr("stroke", colorScheme.chart.primary)
         .attr("stroke-width", 2);
       
-      g.append("text")
+      meanLinesRef.current.append("text")
         .attr("x", xScale(samplingStats.mean))
         .attr("y", -20)
         .attr("text-anchor", "middle")
@@ -334,8 +530,11 @@ function SamplingDistributions() {
         .text(`x̄̄ = ${samplingStats.mean.toFixed(2)}`);
     }
     
+    // Axes
+    const axesGroup = g.select(".axes-group");
+    
     // X axis
-    const xAxis = g.append("g")
+    const xAxis = axesGroup.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(xScale));
     
@@ -346,7 +545,7 @@ function SamplingDistributions() {
       .attr("fill", colors.chart.text);
     
     // Y axis
-    const yAxis = g.append("g")
+    const yAxis = axesGroup.append("g")
       .call(d3.axisLeft(yScale).ticks(5));
     
     yAxis.selectAll("path, line").attr("stroke", colors.chart.grid);
@@ -356,7 +555,7 @@ function SamplingDistributions() {
       .attr("fill", colors.chart.text);
     
     // Axis labels
-    g.append("text")
+    axesGroup.append("text")
       .attr("transform", `translate(${innerWidth / 2}, ${innerHeight + 50})`)
       .style("text-anchor", "middle")
       .style("font-size", "16px")
@@ -364,7 +563,7 @@ function SamplingDistributions() {
       .attr("fill", colors.chart.text)
       .text("Sample Mean");
     
-    g.append("text")
+    axesGroup.append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", 0 - margin.left)
       .attr("x", 0 - (innerHeight / 2))
@@ -375,13 +574,51 @@ function SamplingDistributions() {
       .attr("fill", colors.chart.text)
       .text("Frequency");
     
-  }, [sampleMeans, populationMean, populationStd, samplingStats, showTheoretical]);
+    // Add animated dots for latest samples
+    if (isAnimating && sampleMeans.length > 0) {
+      const dotsGroup = g.select(".dots-group");
+      dotsGroup.selectAll("*").remove();
+      
+      // Animate dots flowing into histogram
+      const latestSamples = sampleMeans.slice(-5);
+      
+      const dots = dotsGroup.selectAll("circle")
+        .data(latestSamples)
+        .enter()
+        .append("circle")
+        .attr("cx", d => xScale(d))
+        .attr("cy", -20)
+        .attr("r", 4)
+        .attr("fill", colorScheme.chart.secondary)
+        .attr("opacity", 0);
+      
+      dots.transition()
+        .duration(500)
+        .delay((d, i) => i * 100)
+        .attr("cy", innerHeight)
+        .attr("opacity", 0.8)
+        .transition()
+        .duration(300)
+        .attr("opacity", 0)
+        .remove();
+    }
+    
+  }, [sampleMeans, populationMean, samplingStats, showTheoretical, isAnimating]);
+  
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      if (animationRef.current) {
+        clearTimeout(animationRef.current);
+      }
+    };
+  }, []);
   
   return (
     <VisualizationContainer 
-      title="Sampling Distribution of the Mean"
+      title="4.3 Sampling Distributions"
       className="p-2"
-      tutorialSteps={tutorial_4_3_1}
+      tutorialSteps={tutorial_4_3_1_enhanced}
       tutorialKey="sampling-distributions-4-3-1"
     >
       <div className="flex flex-col lg:flex-row gap-4">
@@ -389,28 +626,22 @@ function SamplingDistributions() {
         <div className="lg:w-1/3 space-y-3">
           <VisualizationSection className="p-3">
             <p className={cn(typography.description, "text-sm leading-relaxed")}>
-              Explore how sample means form a predictable pattern. This demonstrates the Central Limit Theorem in action.
+              Discover how sample means create a predictable pattern - the foundation of statistical inference!
             </p>
             
-            <div className="mt-3 space-y-2 text-xs">
-              <div className="p-2 bg-blue-900/20 border border-blue-600/30 rounded">
-                <p className="font-semibold text-blue-400 mb-1">Central Limit Theorem</p>
-                <p className="text-neutral-300">
-                  Sample means follow a normal distribution with mean μ and standard error σ/√n
-                </p>
-              </div>
-              
-              <div className="p-2 bg-green-900/20 border border-green-600/30 rounded">
-                <p className="font-semibold text-green-400 mb-1">Standard Error Formula</p>
-                <p className="text-neutral-300">
-                  SE = σ/√n decreases as sample size increases
-                </p>
-              </div>
-            </div>
+            <InteractiveFormula 
+              sigma={populationStd}
+              n={sampleSize}
+              se={standardError}
+              showCalculation={showFormula}
+            />
             
-            <div className="mt-2 text-xs text-neutral-400">
-              <span className="font-semibold">Tip:</span> Take many samples to see the bell curve emerge!
-            </div>
+            <button
+              onClick={() => setShowFormula(!showFormula)}
+              className="text-xs text-cyan-400 hover:text-cyan-300 mt-2"
+            >
+              {showFormula ? 'Hide' : 'Show'} calculation
+            </button>
           </VisualizationSection>
 
           {/* Controls */}
@@ -435,8 +666,31 @@ function SamplingDistributions() {
                   className="w-full accent-cyan-500"
                 />
                 <div className="flex justify-between text-xs text-neutral-500 mt-1">
-                  <span>5</span>
-                  <span>50</span>
+                  <span>Small (5)</span>
+                  <span>Large (50)</span>
+                </div>
+              </div>
+              
+              {/* Animation speed */}
+              <div>
+                <label className="text-sm text-neutral-300 mb-1.5 block">
+                  Animation Speed
+                </label>
+                <div className="flex gap-2">
+                  {['slow', 'normal', 'fast'].map(speed => (
+                    <button
+                      key={speed}
+                      onClick={() => setAnimationSpeed(speed)}
+                      className={cn(
+                        "flex-1 px-2 py-1 rounded text-xs capitalize",
+                        animationSpeed === speed
+                          ? "bg-cyan-600 text-white"
+                          : "bg-neutral-700 text-neutral-300 hover:bg-neutral-600"
+                      )}
+                    >
+                      {speed}
+                    </button>
+                  ))}
                 </div>
               </div>
               
@@ -447,13 +701,13 @@ function SamplingDistributions() {
                   disabled={isAnimating}
                   data-tutorial="take-sample"
                   className={cn(
-                    "w-full px-3 py-2 rounded text-sm font-medium transition-colors",
+                    "w-full px-3 py-2 rounded text-sm font-medium transition-all",
                     isAnimating
                       ? "bg-neutral-600 text-neutral-400 cursor-not-allowed"
-                      : "bg-cyan-600 hover:bg-cyan-700 text-white"
+                      : "bg-cyan-600 hover:bg-cyan-700 text-white transform hover:scale-[1.02]"
                   )}
                 >
-                  Take Single Sample
+                  {isAnimating ? 'Sampling...' : 'Take Single Sample'}
                 </button>
                 
                 <button
@@ -461,13 +715,13 @@ function SamplingDistributions() {
                   disabled={isAnimating}
                   data-tutorial="take-many"
                   className={cn(
-                    "w-full px-3 py-2 rounded text-sm font-medium transition-colors",
+                    "w-full px-3 py-2 rounded text-sm font-medium transition-all",
                     isAnimating
                       ? "bg-neutral-600 text-neutral-400 cursor-not-allowed"
-                      : "bg-purple-600 hover:bg-purple-700 text-white"
+                      : "bg-purple-600 hover:bg-purple-700 text-white transform hover:scale-[1.02]"
                   )}
                 >
-                  Take 100 Samples
+                  {isAnimating ? 'Taking samples...' : 'Take 100 Samples'}
                 </button>
                 
                 <button
@@ -478,161 +732,109 @@ function SamplingDistributions() {
                     "bg-neutral-700 hover:bg-neutral-600 text-white"
                   )}
                 >
-                  Reset
+                  Reset All
                 </button>
               </div>
               
-              {/* Show theoretical toggle */}
-              <label className="flex items-center gap-2 text-sm mt-3">
-                <input 
-                  type="checkbox" 
-                  checked={showTheoretical} 
-                  onChange={e => setShowTheoretical(e.target.checked)}
-                  className="w-4 h-4"
-                />
-                <span className="text-neutral-300">Show theoretical normal curve</span>
-              </label>
-              
-              {/* Show worked example toggle */}
-              <label className="flex items-center gap-2 text-sm">
-                <input 
-                  type="checkbox" 
-                  checked={showWorkedExample} 
-                  onChange={e => setShowWorkedExample(e.target.checked)}
-                  className="w-4 h-4"
-                />
-                <span className="text-neutral-300">Show worked example</span>
-              </label>
-            </div>
-          </VisualizationSection>
-
-          {/* Statistics Display */}
-          <VisualizationSection className="p-4" data-tutorial="statistics">
-            <h4 className="text-base font-bold text-white mb-3">Statistics</h4>
-            
-            <div className="space-y-3">
-              {/* Population parameters */}
-              <div className="bg-neutral-800 rounded p-3">
-                <h5 className="text-sm font-semibold text-purple-400 mb-2">Population Parameters</h5>
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-neutral-300">Mean (μ)</span>
-                    <span className="font-mono text-white">{populationMean}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-300">Std Dev (σ)</span>
-                    <span className="font-mono text-white">{populationStd}</span>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Sampling distribution stats */}
-              {numSamples > 0 && (
-                <div className="bg-neutral-800 rounded p-3">
-                  <h5 className="text-sm font-semibold text-cyan-400 mb-2">Sampling Distribution</h5>
-                  <div className="space-y-1 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-neutral-300">Mean of Means</span>
-                      <span className="font-mono text-cyan-400">{samplingStats.mean.toFixed(3)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-neutral-300">Observed SE</span>
-                      <span className="font-mono text-cyan-400">{samplingStats.std.toFixed(3)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-neutral-300">Theoretical SE</span>
-                      <span className="font-mono text-yellow-400">{samplingStats.theoreticalStd.toFixed(3)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-neutral-300">Samples Taken</span>
-                      <span className="font-mono text-white">{numSamples}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </VisualizationSection>
-
-          {/* Learning Insights */}
-          <VisualizationSection className="p-4 flex-1 flex flex-col">
-            <h4 className="text-sm font-semibold text-purple-400 mb-2">Sampling Insights</h4>
-            <div className="space-y-2 text-xs text-neutral-300">
-              {totalInteractions === 0 && (
-                <div>
-                  <p>🎯 Ready to explore sampling distributions?</p>
-                  <p className="text-purple-300 mt-1">
-                    Start by taking a single sample to see how it works!
-                  </p>
-                </div>
-              )}
-              {totalInteractions > 0 && numSamples < 10 && (
-                <div>
-                  <p>📊 Building the distribution:</p>
-                  <ul className="ml-3 mt-1 space-y-1">
-                    <li>• Each sample mean is one point in the histogram</li>
-                    <li>• Take more samples to see the pattern</li>
-                  </ul>
-                </div>
-              )}
-              {numSamples >= 10 && numSamples < 100 && (
-                <div>
-                  <p>🎓 Pattern emerging!</p>
-                  <p className="mt-1">
-                    Notice how sample means cluster around μ = {populationMean}. The bell shape is starting to appear!
-                  </p>
-                </div>
-              )}
-              {numSamples >= 100 && (
-                <div>
-                  <p className="text-green-400 font-semibold mb-1">
-                    ✨ Central Limit Theorem demonstrated! {numSamples} samples taken.
-                  </p>
-                  <p>The sampling distribution is clearly normal with SE ≈ {samplingStats.theoreticalStd.toFixed(2)}</p>
-                  {numSamples < 500 && (
-                    <p className="text-blue-400 mt-2">
-                      💡 Try different sample sizes to see how SE changes!
-                    </p>
-                  )}
-                </div>
-              )}
-              
-              {/* Progress bar */}
-              {numSamples > 0 && (
-                <div className="mt-3">
-                  <ProgressBar 
-                    current={Math.min(numSamples, 500)} 
-                    total={500} 
-                    label="Sampling Progress"
-                    variant="cyan"
+              {/* Options */}
+              <div className="space-y-2 pt-2 border-t border-neutral-700">
+                <label className="flex items-center gap-2 text-sm">
+                  <input 
+                    type="checkbox" 
+                    checked={showTheoretical} 
+                    onChange={e => setShowTheoretical(e.target.checked)}
+                    className="w-4 h-4 accent-cyan-500"
                   />
-                </div>
-              )}
-              
-              {/* Current sample preview */}
-              {currentSample.length > 0 && (
-                <div className="mt-3 p-2 bg-neutral-800/50 rounded">
-                  <div className="text-neutral-400">Last sample:</div>
-                  <div className="font-mono text-neutral-300 mt-1">
-                    [{currentSample.slice(0, 3).map(v => v.toFixed(1)).join(', ')}...] → x̄ = {jStat.mean(currentSample).toFixed(2)}
-                  </div>
-                </div>
-              )}
+                  <span className="text-neutral-300">Show theoretical curve</span>
+                </label>
+              </div>
             </div>
           </VisualizationSection>
-        </div>
 
-        {/* Right Panel - Visualization */}
-        <div className="lg:w-2/3 flex flex-col gap-4">
-          <GraphContainer height="600px" data-tutorial="visualization">
-            <svg ref={svgRef} style={{ width: "100%", height: 600 }} />
-          </GraphContainer>
+          {/* Milestone Tracker */}
+          <MilestoneTracker numSamples={numSamples} />
           
-          {/* Worked Example */}
-          {showWorkedExample && (
-            <SamplingWorkedExample 
-              sampleSize={sampleSize} 
+          {/* Challenge Box */}
+          {currentChallenge && (
+            <ChallengeBox
+              challenge={currentChallenge}
+              onComplete={(id) => setCompletedChallenges(prev => new Set([...prev, id]))}
+              sampleSize={sampleSize}
               populationStd={populationStd}
             />
+          )}
+        </div>
+
+        {/* Right Panel - Visualization & Stats */}
+        <div className="lg:w-2/3 space-y-4">
+          <GraphContainer height="500px" data-tutorial="visualization">
+            <svg ref={svgRef} style={{ width: "100%", height: 500 }} />
+          </GraphContainer>
+          
+          {/* Statistics Display */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <VisualizationSection className="p-4">
+              <h4 className="text-sm font-bold text-purple-400 mb-3">Population Parameters</h4>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-neutral-400">Mean (μ)</span>
+                  <span className="font-mono text-white">{populationMean}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-neutral-400">Std Dev (σ)</span>
+                  <span className="font-mono text-white">{populationStd}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-neutral-400">Sample Size (n)</span>
+                  <span className="font-mono text-white">{sampleSize}</span>
+                </div>
+              </div>
+            </VisualizationSection>
+            
+            <VisualizationSection className="p-4">
+              <h4 className="text-sm font-bold text-cyan-400 mb-3">Sampling Distribution</h4>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-neutral-400">Mean of Means</span>
+                  <span className="font-mono text-cyan-400">
+                    {numSamples > 0 ? samplingStats.mean.toFixed(3) : '---'}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-neutral-400">Observed SE</span>
+                  <span className="font-mono text-cyan-400">
+                    {numSamples > 1 ? samplingStats.std.toFixed(3) : '---'}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-neutral-400">Theoretical SE</span>
+                  <span className="font-mono text-yellow-400">{samplingStats.theoreticalStd.toFixed(3)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-neutral-400">Samples Taken</span>
+                  <span className="font-mono text-white">{numSamples}</span>
+                </div>
+              </div>
+            </VisualizationSection>
+          </div>
+          
+          {/* Current Sample Display */}
+          {currentSample.length > 0 && (
+            <VisualizationSection className="p-4">
+              <h4 className="text-sm font-bold text-green-400 mb-2">Latest Sample</h4>
+              <div className="bg-neutral-800 rounded p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-neutral-400">Values:</span>
+                  <span className="text-xs font-mono text-neutral-300">
+                    [{currentSample.slice(0, 5).map(v => v.toFixed(1)).join(', ')}{currentSample.length > 5 ? '...' : ''}]
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-neutral-400">Sample Mean:</span>
+                  <span className="text-sm font-mono text-green-400">{jStat.mean(currentSample).toFixed(3)}</span>
+                </div>
+              </div>
+            </VisualizationSection>
           )}
         </div>
       </div>

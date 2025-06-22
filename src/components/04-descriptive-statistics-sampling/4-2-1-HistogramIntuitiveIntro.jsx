@@ -82,10 +82,22 @@ const HistogramIntuitiveIntro = () => {
     setIsAnimating(true);
     
     const svg = d3.select(svgRef.current);
-    const { width, height } = svgRef.current.getBoundingClientRect();
+    const rect = svgRef.current.getBoundingClientRect();
+    const width = rect.width || 800;
+    const height = rect.height || 500;
+    
+    console.log('Stage 1 - SVG dimensions:', { width, height });
     
     // Clear previous content
     svg.selectAll("*").remove();
+    
+    // Add a subtle background to ensure visibility
+    svg.append("rect")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("fill", "transparent")
+      .attr("stroke", "#374151")
+      .attr("stroke-width", 1);
     
     // Title
     svg.append("text")
@@ -93,7 +105,7 @@ const HistogramIntuitiveIntro = () => {
       .attr("y", 40)
       .attr("text-anchor", "middle")
       .attr("class", "text-xl font-semibold")
-      .attr("fill", colors.text.primary)
+      .attr("fill", "#ffffff")
       .text("Measuring Heights of 100 Students");
     
     // Generate and show individual measurements
@@ -104,41 +116,72 @@ const HistogramIntuitiveIntro = () => {
       .domain([140, 200])
       .range([height - 100, 100]);
     
-    // Animate numbers appearing
+    // Animate numbers appearing with better spacing
     const textGroup = svg.append("g");
     
-    data.forEach((d, i) => {
+    // Show only first 24 values with much better spacing to avoid overlap
+    data.slice(0, 24).forEach((d, i) => {
       textGroup.append("text")
-        .attr("x", 100 + (i % 10) * 65)
-        .attr("y", 100 + Math.floor(i / 10) * 30)
+        .attr("x", 120 + (i % 6) * 100)  // 6 columns with more spacing
+        .attr("y", 120 + Math.floor(i / 6) * 50)  // 4 rows with 50px spacing
         .attr("text-anchor", "middle")
         .attr("font-family", "monospace")
-        .attr("font-size", "12px")
-        .attr("fill", colorScheme.chart.primary)
+        .attr("font-size", "14px")
+        .attr("fill", "#14b8a6")
         .attr("opacity", 0)
-        .text(`${d.value.toFixed(1)}cm`)
+        .text(`${d.value.toFixed(0)}cm`)
         .transition()
-        .delay(i * 30)
-        .duration(300)
+        .delay(i * 20)
+        .duration(200)
         .attr("opacity", 1);
     });
     
-    // Add overwhelming message after animation
+    // Add "...and 76 more" indicator
     setTimeout(() => {
-      svg.append("text")
+      textGroup.append("text")
         .attr("x", width / 2)
-        .attr("y", height - 40)
+        .attr("y", 340)  // Clear position below the numbers
+        .attr("text-anchor", "middle")
+        .attr("font-size", "16px")
+        .attr("fill", "#d1d5db")
+        .attr("opacity", 0)
+        .text("...and 76 more students")
+        .transition()
+        .duration(500)
+        .attr("opacity", 1);
+    }, 800);
+    
+    // Add overwhelming message with background for better readability
+    setTimeout(() => {
+      const messageGroup = svg.append("g");
+      
+      // Add semi-transparent background
+      messageGroup.append("rect")
+        .attr("x", width / 2 - 280)
+        .attr("y", 410)  // Clear position with proper margin
+        .attr("width", 560)
+        .attr("height", 50)
+        .attr("rx", 8)
+        .attr("fill", "rgba(0, 0, 0, 0.8)")
+        .attr("opacity", 0)
+        .transition()
+        .duration(500)
+        .attr("opacity", 1);
+      
+      messageGroup.append("text")
+        .attr("x", width / 2)
+        .attr("y", 440)  // Centered in the background rect
         .attr("text-anchor", "middle")
         .attr("class", "text-lg")
-        .attr("fill", colors.text.secondary)
+        .attr("fill", "white")
         .attr("opacity", 0)
         .text("This is overwhelming! Can we organize this data better?")
         .transition()
-        .duration(800)
+        .duration(500)
         .attr("opacity", 1);
       
       setIsAnimating(false);
-    }, 3500);
+    }, 1800);  // Reduced from 3500ms
   }, [generateHeightData]);
   
   // Stage 2: Sorting into Buckets
@@ -147,7 +190,11 @@ const HistogramIntuitiveIntro = () => {
     setIsAnimating(true);
     
     const svg = d3.select(svgRef.current);
-    const { width, height } = svgRef.current.getBoundingClientRect();
+    const rect = svgRef.current.getBoundingClientRect();
+    const width = rect.width || 800;
+    const height = rect.height || 500;
+    
+    console.log('Stage 2 - SVG dimensions:', { width, height });
     
     // Clear previous content with fade
     svg.selectAll("*")
@@ -163,13 +210,13 @@ const HistogramIntuitiveIntro = () => {
         .attr("y", 40)
         .attr("text-anchor", "middle")
         .attr("class", "text-xl font-semibold")
-        .attr("fill", colors.text.primary)
+        .attr("fill", "#ffffff")
         .text("Let's Sort Heights into Buckets!");
       
-      // Create bins/buckets
+      // Create bins/buckets with adjusted height
       const numBins = 10;
       const binWidth = (width - 200) / numBins;
-      const binHeight = height - 200;
+      const binHeight = 250;  // Fixed height to leave room for text
       
       const bins = d3.range(numBins).map(i => ({
         id: i,
@@ -192,7 +239,7 @@ const HistogramIntuitiveIntro = () => {
           .attr("width", bin.width)
           .attr("height", binHeight)
           .attr("fill", "none")
-          .attr("stroke", colors.border.subtle)
+          .attr("stroke", "#6b7280")
           .attr("stroke-width", 2)
           .attr("stroke-dasharray", "5,5")
           .attr("opacity", 0)
@@ -201,19 +248,21 @@ const HistogramIntuitiveIntro = () => {
           .duration(500)
           .attr("opacity", 1);
         
-        // Bucket label
-        buckets.append("text")
-          .attr("x", bin.x + bin.width / 2)
-          .attr("y", height - 50)
-          .attr("text-anchor", "middle")
-          .attr("font-size", "12px")
-          .attr("fill", colors.text.secondary)
-          .attr("opacity", 0)
-          .text(bin.label + " cm")
-          .transition()
-          .delay(i * 100 + 200)
-          .duration(500)
-          .attr("opacity", 1);
+        // Bucket label - only show every other label to avoid overlap
+        if (i % 2 === 0) {
+          buckets.append("text")
+            .attr("x", bin.x + bin.width / 2)
+            .attr("y", 365)  // Just below the fixed height buckets
+            .attr("text-anchor", "middle")
+            .attr("font-size", "12px")
+            .attr("fill", "#d1d5db")
+            .attr("opacity", 0)
+            .text(bin.label + " cm")
+            .transition()
+            .delay(i * 100 + 200)
+            .duration(500)
+            .attr("opacity", 1);
+        }
       });
       
       // Animate data points falling into buckets
@@ -226,78 +275,125 @@ const HistogramIntuitiveIntro = () => {
         bin.count++;
         
         const targetX = bin.x + bin.width / 2 + (Math.random() - 0.5) * bin.width * 0.8;
-        const targetY = height - 70 - bin.count * 4;
+        const targetY = 350 - bin.count * 3;  // Adjusted to fit within bucket height
         
-        particles.append("circle")
-          .attr("cx", d.x)
-          .attr("cy", -20)
-          .attr("r", 3)
-          .attr("fill", colorScheme.chart.primary)
-          .attr("opacity", 0)
-          .transition()
-          .delay(2000 + i * 20)
-          .duration(800)
-          .attr("cy", 200 + Math.random() * 100)
-          .attr("opacity", 1)
-          .transition()
-          .duration(600)
-          .ease(d3.easeCubicInOut)
-          .attr("cx", targetX)
-          .attr("cy", targetY);
+        // Only animate first 30 points for performance
+        if (i < 30) {
+          particles.append("circle")
+            .attr("cx", d.x)
+            .attr("cy", -20)
+            .attr("r", 4)  // Slightly larger for visibility
+            .attr("fill", "#14b8a6")
+            .attr("opacity", 0)
+            .transition()
+            .delay(1000 + i * 40)  // Staggered but faster
+            .duration(600)
+            .attr("cy", 250)
+            .attr("opacity", 0.8)
+            .transition()
+            .duration(400)
+            .ease(d3.easeCubicInOut)
+            .attr("cx", targetX)
+            .attr("cy", targetY);
+        }
       });
       
-      // Show insight after animation
+      // Show bar counts in buckets for visual feedback
       setTimeout(() => {
-        svg.append("text")
+        bins.forEach((bin, i) => {
+          if (bin.count > 0) {
+            buckets.append("rect")
+              .attr("x", bin.x + 2)
+              .attr("y", height - 70)
+              .attr("width", bin.width - 4)
+              .attr("height", 0)
+              .attr("fill", "#14b8a6")
+              .attr("opacity", 0.3)
+              .transition()
+              .delay(i * 50)
+              .duration(500)
+              .attr("y", 350 - bin.count * 3)
+              .attr("height", bin.count * 3);
+          }
+        });
+      }, 2800);
+      
+      // Show insight after animation with proper positioning
+      setTimeout(() => {
+        // Add background for better readability
+        const insightGroup = svg.append("g");
+        
+        insightGroup.append("rect")
+          .attr("x", width / 2 - 300)
+          .attr("y", 395)
+          .attr("width", 600)
+          .attr("height", 50)
+          .attr("rx", 8)
+          .attr("fill", "rgba(0, 0, 0, 0.8)")
+          .attr("opacity", 0)
+          .transition()
+          .duration(500)
+          .attr("opacity", 1);
+        
+        insightGroup.append("text")
           .attr("x", width / 2)
-          .attr("y", 80)
+          .attr("y", 425)  // Well below the buckets
           .attr("text-anchor", "middle")
           .attr("class", "text-lg")
-          .attr("fill", colorScheme.chart.accent)
+          .attr("fill", "white")
           .attr("opacity", 0)
           .text("Now we can see the pattern! Most students are around 170cm tall.")
           .transition()
-          .duration(800)
+          .duration(500)
           .attr("opacity", 1);
         
         setIsAnimating(false);
         setBinCount(numBins);
-      }, 5000);
+      }, 3500);
     }, 600);
   }, [dataPoints]);
   
   // Stage 3: Transform to Histogram
   const stage3Animation = useCallback(() => {
-    if (!svgRef.current || binCount === 0) return;
+    if (!svgRef.current || dataPoints.length === 0) return;
     setIsAnimating(true);
     
     const svg = d3.select(svgRef.current);
     const { width, height } = svgRef.current.getBoundingClientRect();
     
-    // Fade out particles and buckets
-    svg.selectAll(".particles, .buckets")
+    // Clear all previous content
+    svg.selectAll("*")
       .transition()
-      .duration(800)
+      .duration(500)
       .attr("opacity", 0)
       .remove();
     
     // Create histogram
     setTimeout(() => {
-      const margin = { top: 80, right: 60, bottom: 80, left: 60 };
+      const margin = { top: 80, right: 60, bottom: 100, left: 60 };
       const innerWidth = width - margin.left - margin.right;
       const innerHeight = height - margin.top - margin.bottom;
       
       const g = svg.append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
       
+      // Add title first
+      svg.append("text")
+        .attr("x", width / 2)
+        .attr("y", 30)
+        .attr("text-anchor", "middle")
+        .attr("class", "text-xl font-semibold")
+        .attr("fill", "#ffffff")
+        .text("This is a Histogram!");
+      
       // Create histogram bins
       const xScale = d3.scaleLinear()
-        .domain([150, 200])
+        .domain([140, 200])
         .range([0, innerWidth]);
       
       const histogram = d3.histogram()
         .domain(xScale.domain())
-        .thresholds(xScale.ticks(binCount));
+        .thresholds(xScale.ticks(12));  // Use fixed number of bins
       
       const bins = histogram(dataPoints.map(d => d.value));
       
@@ -306,44 +402,62 @@ const HistogramIntuitiveIntro = () => {
         .range([innerHeight, 0]);
       
       // Draw bars with animation
-      g.selectAll("rect")
+      const bars = g.selectAll("rect")
         .data(bins)
         .enter().append("rect")
-        .attr("x", d => xScale(d.x0))
+        .attr("x", d => xScale(d.x0) + 1)
         .attr("y", innerHeight)
-        .attr("width", d => Math.max(0, xScale(d.x1) - xScale(d.x0) - 1))
+        .attr("width", d => Math.max(0, xScale(d.x1) - xScale(d.x0) - 2))
         .attr("height", 0)
-        .attr("fill", colorScheme.chart.primary)
-        .attr("opacity", 0.8)
-        .transition()
-        .duration(1000)
-        .delay((d, i) => i * 100)
+        .attr("fill", "#14b8a6")
+        .attr("stroke", "#14b8a6")
+        .attr("stroke-width", 1)
+        .attr("opacity", 0.7);
+      
+      bars.transition()
+        .duration(800)
+        .delay((d, i) => i * 50)
         .attr("y", d => yScale(d.length))
         .attr("height", d => innerHeight - yScale(d.length));
       
       // Add axes
-      g.append("g")
+      const xAxis = g.append("g")
         .attr("transform", `translate(0,${innerHeight})`)
         .attr("opacity", 0)
-        .call(d3.axisBottom(xScale).ticks(10))
-        .transition()
+        .call(d3.axisBottom(xScale).ticks(6));
+      
+      xAxis.selectAll("line").attr("stroke", "#9ca3af");
+      xAxis.selectAll("path").attr("stroke", "#9ca3af");
+      xAxis.selectAll("text")
+        .attr("fill", "#e5e7eb")
+        .style("text-anchor", "end")
+        .attr("dx", "-.8em")
+        .attr("dy", ".15em")
+        .attr("transform", "rotate(-45)");
+      
+      xAxis.transition()
         .delay(1500)
         .duration(500)
         .attr("opacity", 1);
       
-      g.append("g")
+      const yAxis = g.append("g")
         .attr("opacity", 0)
-        .call(d3.axisLeft(yScale).ticks(5))
-        .transition()
+        .call(d3.axisLeft(yScale).ticks(5));
+      
+      yAxis.selectAll("line").attr("stroke", "#9ca3af");
+      yAxis.selectAll("path").attr("stroke", "#9ca3af");
+      yAxis.selectAll("text").attr("fill", "#e5e7eb");
+      
+      yAxis.transition()
         .delay(1500)
         .duration(500)
         .attr("opacity", 1);
       
       // Labels
       g.append("text")
-        .attr("transform", `translate(${innerWidth / 2}, ${innerHeight + 50})`)
+        .attr("transform", `translate(${innerWidth / 2}, ${innerHeight + 75})`)
         .style("text-anchor", "middle")
-        .attr("fill", colors.text.primary)
+        .attr("fill", "#ffffff")
         .attr("opacity", 0)
         .text("Height (cm)")
         .transition()
@@ -357,7 +471,7 @@ const HistogramIntuitiveIntro = () => {
         .attr("x", 0 - (innerHeight / 2))
         .attr("dy", "1em")
         .style("text-anchor", "middle")
-        .attr("fill", colors.text.primary)
+        .attr("fill", "#ffffff")
         .attr("opacity", 0)
         .text("Number of Students")
         .transition()
@@ -365,29 +479,11 @@ const HistogramIntuitiveIntro = () => {
         .duration(500)
         .attr("opacity", 1);
       
-      // Update title
-      svg.select("text")
-        .transition()
-        .duration(800)
-        .text("This is a Histogram!");
-      
-      // Final message
-      svg.append("text")
-        .attr("x", width / 2)
-        .attr("y", height - 20)
-        .attr("text-anchor", "middle")
-        .attr("class", "text-lg")
-        .attr("fill", colorScheme.chart.accent)
-        .attr("opacity", 0)
-        .text("Histograms help us see patterns in continuous data!")
-        .transition()
-        .delay(2500)
-        .duration(800)
-        .attr("opacity", 1);
+      // Don't add the final message here - we'll show it outside the SVG
       
       setIsAnimating(false);
-    }, 1000);
-  }, [dataPoints, binCount]);
+    }, 600);
+  }, [dataPoints]);
   
   // Handle stage progression
   const handleNextStage = () => {
@@ -396,17 +492,20 @@ const HistogramIntuitiveIntro = () => {
     const newStage = stage + 1;
     setStage(newStage);
     
-    switch (newStage) {
-      case 1:
-        stage1Animation();
-        break;
-      case 2:
-        stage2Animation();
-        break;
-      case 3:
-        stage3Animation();
-        break;
-    }
+    // Ensure SVG is ready with a small delay
+    requestAnimationFrame(() => {
+      switch (newStage) {
+        case 1:
+          stage1Animation();
+          break;
+        case 2:
+          stage2Animation();
+          break;
+        case 3:
+          stage3Animation();
+          break;
+      }
+    });
   };
   
   const resetAnimation = () => {
@@ -445,7 +544,7 @@ const HistogramIntuitiveIntro = () => {
   
   return (
     <VisualizationContainer
-      title="Understanding Histograms: An Intuitive Introduction"
+      title="4.2 Histogram Intuitive Intro"
       description="Discover how histograms help us see patterns in continuous data"
     >
       {/* Stage indicator */}
@@ -462,8 +561,16 @@ const HistogramIntuitiveIntro = () => {
       </div>
       
       {/* Main visualization area */}
-      <GraphContainer height="500px" className="relative">
-        <svg ref={svgRef} className="w-full h-full" />
+      <GraphContainer height="500px" className="relative overflow-hidden">
+        <svg 
+          ref={svgRef} 
+          className="w-full h-full" 
+          style={{ 
+            background: 'transparent', 
+            minHeight: '500px',
+            display: 'block'
+          }} 
+        />
         
         {/* Welcome overlay for stage 0 */}
         {stage === 0 && (
@@ -482,6 +589,15 @@ const HistogramIntuitiveIntro = () => {
           </div>
         )}
       </GraphContainer>
+      
+      {/* Show final message for stage 3 */}
+      {stage === 3 && (
+        <div className="mt-4 text-center">
+          <p className="text-lg text-yellow-400 font-medium animate-fadeIn">
+            Histograms help us see patterns in continuous data!
+          </p>
+        </div>
+      )}
       
       {/* Stage description and controls */}
       <div className="mt-6 bg-gradient-to-r from-gray-800/50 to-gray-900/50 rounded-lg p-6">
@@ -514,17 +630,8 @@ const HistogramIntuitiveIntro = () => {
                 disabled={isAnimating}
                 className="flex items-center gap-2"
               >
-                {isAnimating ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Loading...
-                  </>
-                ) : (
-                  <>
-                    {stageDescriptions[stage].action}
-                    <ChevronRight className="w-4 h-4" />
-                  </>
-                )}
+                {stageDescriptions[stage].action}
+                <ChevronRight className="w-4 h-4" />
               </Button>
             )}
             

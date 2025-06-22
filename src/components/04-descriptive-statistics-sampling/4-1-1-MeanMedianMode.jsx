@@ -414,7 +414,7 @@ function MeanMedianMode() {
   };
   
   return (
-    <VisualizationContainer title="Measures of Central Tendency">
+    <VisualizationContainer title="4.1 Mean, Median, Mode">
       <div className="flex flex-col gap-6">
         {/* Main Visualization - 85% of vertical space */}
         <div 

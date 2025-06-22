@@ -69,7 +69,7 @@ const FDistributionExplorer = () => {
   // Otherwise show the path selector
   return (
     <VisualizationContainer
-      title="F-Distribution Learning Hub"
+      title="4.5 F-Distribution Explorer"
       description="Master variance comparison through progressive, interactive learning"
     >
       <div className="mb-8 p-6 bg-gradient-to-r from-violet-900/20 to-purple-900/20 rounded-lg border border-violet-600/30">

@@ -583,7 +583,7 @@ function DescriptiveStatsExplorer() {
   }, [dataPoints, outlierMultiplier, showQuartiles, stats]);
   
   return (
-    <VisualizationContainer title="Interactive Descriptive Statistics Explorer" className="p-6">
+    <VisualizationContainer title="4.3 Descriptive Stats Explorer" className="p-6">
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Left Panel */}
         <div className="lg:w-1/3 space-y-4">

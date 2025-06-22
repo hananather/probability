@@ -73,7 +73,7 @@ const HistogramShapeExplorer = () => {
   // Otherwise show the path selector
   return (
     <VisualizationContainer
-      title="Histogram Learning Hub"
+      title="4.2 Histogram Shape Explorer"
       description="Master the art of creating and interpreting histograms"
     >
       {/* Introduction */}

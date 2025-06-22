@@ -562,7 +562,7 @@ export function TDistributionExplorer() {
 
   return (
     <VisualizationContainer
-      title="📊 t-Distribution vs Normal Distribution"
+      title="4.4 T-Distribution Explorer"
       description={
         <>
           <p className={typography.description}>

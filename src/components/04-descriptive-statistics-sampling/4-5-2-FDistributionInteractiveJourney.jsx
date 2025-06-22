@@ -576,7 +576,7 @@ const FDistributionInteractiveJourney = () => {
   
   return (
     <VisualizationContainer
-      title="F-Distribution Interactive Journey"
+      title="4.5 F-Distribution Interactive Journey"
       description="Master variance comparison through guided exploration"
     >
       {/* Tutorial progress */}

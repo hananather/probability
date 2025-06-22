@@ -704,7 +704,7 @@ const FDistributionJourney = () => {
   
   return (
     <VisualizationContainer
-      title="F-Distribution Interactive Journey"
+      title="4.5 F-Distribution Journey"
       subtitle="Learn by doing - compare variances step by step"
     >
       {/* Achievement Notification */}

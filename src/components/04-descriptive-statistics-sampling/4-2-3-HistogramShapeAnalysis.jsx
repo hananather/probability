@@ -200,13 +200,25 @@ const HistogramShapeAnalysis = () => {
     if (!svgRef.current || data.length === 0) return;
     
     const svg = d3.select(svgRef.current);
-    const { width, height } = svgRef.current.getBoundingClientRect();
-    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
+    const rect = svgRef.current.getBoundingClientRect();
+    const width = rect.width || 800;
+    const height = rect.height || 400;
+    const margin = { top: 40, right: 40, bottom: 80, left: 60 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
+    console.log('HistogramShapeAnalysis - dimensions:', { width, height });
+    
     // Clear previous
     svg.selectAll("*").remove();
+    
+    // Add background for visibility
+    svg.append("rect")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("fill", "transparent")
+      .attr("stroke", "#374151")
+      .attr("stroke-width", 1);
     
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
@@ -312,22 +324,27 @@ const HistogramShapeAnalysis = () => {
     // Axes
     const xAxis = g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(xScale).ticks(10));
+      .call(d3.axisBottom(xScale).ticks(6));
     
-    xAxis.selectAll("path, line").attr("stroke", colors.border.subtle);
-    xAxis.selectAll("text").attr("fill", colors.text.secondary);
+    xAxis.selectAll("path, line").attr("stroke", "#6b7280");
+    xAxis.selectAll("text")
+      .attr("fill", "#d1d5db")
+      .style("text-anchor", "end")
+      .attr("dx", "-.8em")
+      .attr("dy", ".15em")
+      .attr("transform", "rotate(-45)");
     
     const yAxis = g.append("g")
       .call(d3.axisLeft(yScale).ticks(5));
     
-    yAxis.selectAll("path, line").attr("stroke", colors.border.subtle);
-    yAxis.selectAll("text").attr("fill", colors.text.secondary);
+    yAxis.selectAll("path, line").attr("stroke", "#6b7280");
+    yAxis.selectAll("text").attr("fill", "#d1d5db");
     
     // Labels
     g.append("text")
-      .attr("transform", `translate(${innerWidth / 2}, ${innerHeight + 45})`)
+      .attr("transform", `translate(${innerWidth / 2}, ${innerHeight + 65})`)
       .style("text-anchor", "middle")
-      .attr("fill", colors.text.primary)
+      .attr("fill", "#ffffff")
       .text("Value");
     
     g.append("text")
@@ -336,7 +353,7 @@ const HistogramShapeAnalysis = () => {
       .attr("x", 0 - (innerHeight / 2))
       .attr("dy", "1em")
       .style("text-anchor", "middle")
-      .attr("fill", colors.text.primary)
+      .attr("fill", "#ffffff")
       .text("Frequency");
     
     // Title
@@ -345,7 +362,7 @@ const HistogramShapeAnalysis = () => {
       .attr("y", -20)
       .attr("text-anchor", "middle")
       .attr("class", "text-lg font-semibold")
-      .attr("fill", colors.text.primary)
+      .attr("fill", "#ffffff")
       .text(activeShape.name);
     
   }, [data, activeShape, showInsights]);
@@ -382,7 +399,7 @@ const HistogramShapeAnalysis = () => {
   
   return (
     <VisualizationContainer
-      title="Reading the Story in Histogram Shapes"
+      title="4.2 Histogram Shape Analysis"
       description="Learn to identify different distribution patterns and what they tell us about data"
     >
       {/* Progress tracking */}
@@ -411,8 +428,16 @@ const HistogramShapeAnalysis = () => {
           </VisualizationSection>
           
           {/* Main visualization */}
-          <GraphContainer height="400px">
-            <svg ref={svgRef} className="w-full h-full" />
+          <GraphContainer height="400px" className="overflow-hidden">
+            <svg 
+              ref={svgRef} 
+              className="w-full h-full" 
+              style={{ 
+                background: 'transparent',
+                minHeight: '400px',
+                display: 'block'
+              }} 
+            />
           </GraphContainer>
           
           {/* Real-world examples */}
@@ -476,8 +501,16 @@ const HistogramShapeAnalysis = () => {
             </p>
           </div>
           
-          <GraphContainer height="400px">
-            <svg ref={svgRef} className="w-full h-full" />
+          <GraphContainer height="400px" className="overflow-hidden">
+            <svg 
+              ref={svgRef} 
+              className="w-full h-full" 
+              style={{ 
+                background: 'transparent',
+                minHeight: '400px',
+                display: 'block'
+              }} 
+            />
           </GraphContainer>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">

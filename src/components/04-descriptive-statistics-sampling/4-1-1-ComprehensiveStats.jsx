@@ -356,7 +356,7 @@ function ComprehensiveStats() {
   const medianChange = outlierStats ? ((outlierStats.median - normalStats.median) / normalStats.median * 100).toFixed(1) : 0;
   
   return (
-    <VisualizationContainer title="Stats Lab: Real-World Applications">
+    <VisualizationContainer title="4.1 Comprehensive Stats">
       <div className="flex flex-col gap-6">
         {/* Learning Objective */}
         <VisualizationSection className="bg-gradient-to-r from-amber-900/20 to-orange-900/20 border border-amber-600/30">

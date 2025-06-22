@@ -44,9 +44,11 @@ body {
 }
 
 /* SVG text contrast for D3 visualizations */
+/* Commented out to allow D3 to set its own text colors
 svg text {
   fill: var(--foreground) !important;
 }
+*/
 
 /* Slide in animation for notifications */
 @keyframes slide-in-bottom {

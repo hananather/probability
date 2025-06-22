@@ -549,7 +549,7 @@ const FDistributionMastery = () => {
   
   return (
     <VisualizationContainer
-      title="F-Distribution Mastery"
+      title="4.5 F-Distribution Mastery"
       description="Apply F-distribution to real-world scenarios"
     >
       {/* Scenario selector */}

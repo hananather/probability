@@ -478,7 +478,7 @@ const FDistributionIntuitiveIntro = () => {
   
   return (
     <VisualizationContainer
-      title="F-Distribution: An Intuitive Introduction"
+      title="4.5 F-Distribution Intuitive Intro"
       description="Discover how to compare consistency between groups"
     >
       {/* Progress bar */}

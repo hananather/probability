@@ -409,7 +409,7 @@ function HistogramShapeExplorer() {
   const allBins = calculateAllBins();
 
   return (
-    <VisualizationContainer title="Optimal Histogram Binning: Theory and Practice">
+    <VisualizationContainer title="4.2 Histogram Shape Explorer (OLD)">
       <div className="space-y-6">
         
         {/* Introduction */}

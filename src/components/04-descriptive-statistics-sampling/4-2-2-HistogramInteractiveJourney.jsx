@@ -121,13 +121,25 @@ const HistogramInteractiveJourney = () => {
     if (!svgRef.current || data.length === 0) return;
     
     const svg = d3.select(svgRef.current);
-    const { width, height } = svgRef.current.getBoundingClientRect();
-    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
+    const rect = svgRef.current.getBoundingClientRect();
+    const width = rect.width || 800;
+    const height = rect.height || 400;
+    const margin = { top: 40, right: 40, bottom: 80, left: 60 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
+    console.log('HistogramInteractiveJourney - dimensions:', { width, height });
+    
     // Clear previous content
     svg.selectAll("*").remove();
+    
+    // Add background for visibility
+    svg.append("rect")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("fill", "transparent")
+      .attr("stroke", "#374151")
+      .attr("stroke-width", 1);
     
     // Create container
     const g = svg.append("g")
@@ -216,7 +228,7 @@ const HistogramInteractiveJourney = () => {
           .attr("y", y - 10)
           .attr("text-anchor", "middle")
           .attr("font-size", "12px")
-          .attr("fill", colors.text.primary)
+          .attr("fill", "#ffffff")
           .text(`Count: ${d.length}`);
       })
       .on("mouseout", function() {
@@ -232,22 +244,27 @@ const HistogramInteractiveJourney = () => {
     // Draw axes
     const xAxis = g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(xScale).ticks(10));
+      .call(d3.axisBottom(xScale).ticks(6));
     
-    xAxis.selectAll("path, line").attr("stroke", colors.border.subtle);
-    xAxis.selectAll("text").attr("fill", colors.text.secondary);
+    xAxis.selectAll("path, line").attr("stroke", "#6b7280");
+    xAxis.selectAll("text")
+      .attr("fill", "#d1d5db")
+      .style("text-anchor", "end")
+      .attr("dx", "-.8em")
+      .attr("dy", ".15em")
+      .attr("transform", "rotate(-45)");
     
     const yAxis = g.append("g")
       .call(d3.axisLeft(yScale).ticks(5));
     
-    yAxis.selectAll("path, line").attr("stroke", colors.border.subtle);
-    yAxis.selectAll("text").attr("fill", colors.text.secondary);
+    yAxis.selectAll("path, line").attr("stroke", "#6b7280");
+    yAxis.selectAll("text").attr("fill", "#d1d5db");
     
     // Axis labels
     g.append("text")
-      .attr("transform", `translate(${innerWidth / 2}, ${innerHeight + 45})`)
+      .attr("transform", `translate(${innerWidth / 2}, ${innerHeight + 65})`)
       .style("text-anchor", "middle")
-      .attr("fill", colors.text.primary)
+      .attr("fill", "#ffffff")
       .text("Value");
     
     g.append("text")
@@ -256,7 +273,7 @@ const HistogramInteractiveJourney = () => {
       .attr("x", 0 - (innerHeight / 2))
       .attr("dy", "1em")
       .style("text-anchor", "middle")
-      .attr("fill", colors.text.primary)
+      .attr("fill", "#ffffff")
       .text("Frequency");
     
     // Show optimal bins indicator if enabled
@@ -317,7 +334,7 @@ const HistogramInteractiveJourney = () => {
   
   return (
     <VisualizationContainer
-      title="Finding the Perfect Number of Bins"
+      title="4.2 Histogram Interactive Journey"
       description="Learn how the square root rule helps create optimal histograms"
     >
       {/* Progress bar */}
@@ -411,8 +428,16 @@ const HistogramInteractiveJourney = () => {
       </VisualizationSection>
       
       {/* Main visualization */}
-      <GraphContainer height="400px">
-        <svg ref={svgRef} className="w-full h-full" />
+      <GraphContainer height="400px" className="overflow-hidden">
+        <svg 
+          ref={svgRef} 
+          className="w-full h-full" 
+          style={{ 
+            background: 'transparent',
+            minHeight: '400px',
+            display: 'block'
+          }} 
+        />
       </GraphContainer>
       
       {/* Statistics display */}

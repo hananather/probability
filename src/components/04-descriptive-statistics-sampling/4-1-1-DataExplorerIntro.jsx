@@ -8,22 +8,25 @@ import {
   ControlGroup
 } from '../ui/VisualizationContainer';
 import { colors, formatNumber } from '@/lib/design-system';
-import { ProgressBar } from '../ui/ProgressBar';
 import { Button } from '../ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
+import { TutorialButton } from '../ui/TutorialButton';
+import { Tutorial } from '../ui/Tutorial';
 
 // Initial dataset to start with
 const INITIAL_DATA = [30, 40, 50, 60, 70];
 
 function DataExplorerIntro() {
   const [data, setData] = useState(INITIAL_DATA);
-  const [interactions, setInteractions] = useState(0);
   const [showMean, setShowMean] = useState(false);
   const [hoveredPoint, setHoveredPoint] = useState(null);
   const [achievedGoal, setAchievedGoal] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   
   const svgRef = useRef(null);
   const isInitialized = useRef(false);
+  const interactionCount = useRef(0);
   const dragState = useRef({
     isDragging: false,
     draggedIndex: null,
@@ -52,12 +55,120 @@ function DataExplorerIntro() {
     }
   }, [data, checkClusteringGoal, achievedGoal]);
   
-  // Unlock mean after 5 interactions
-  useEffect(() => {
-    if (interactions >= 5 && !showMean) {
+  // Track interactions and unlock mean
+  const incrementInteractions = useCallback(() => {
+    interactionCount.current += 1;
+    if (!hasInteracted) {
+      setHasInteracted(true);
+    }
+    if (interactionCount.current >= 5 && !showMean) {
       setShowMean(true);
     }
-  }, [interactions, showMean]);
+  }, [showMean, hasInteracted]);
+  
+  // Educational tutorial steps
+  const tutorialSteps = [
+    {
+      title: "Understanding Data Visualization",
+      content: (
+        <div className="space-y-2">
+          <p>Welcome to interactive data exploration! This tool helps you understand fundamental statistical concepts.</p>
+          <p className="text-sm text-neutral-400">You'll learn:</p>
+          <ul className="list-disc list-inside space-y-1 ml-2 text-sm">
+            <li>How data points form distributions</li>
+            <li>The concept of arithmetic mean</li>
+            <li>How data clustering affects statistics</li>
+          </ul>
+        </div>
+      )
+    },
+    {
+      target: '.number-line',
+      title: "The Number Line",
+      content: (
+        <div className="space-y-2">
+          <p>This horizontal line represents values from 0 to 100.</p>
+          <p className="text-sm text-neutral-400">Each point on this line corresponds to a specific numerical value - a fundamental concept in data visualization.</p>
+        </div>
+      ),
+      position: 'top'
+    },
+    {
+      target: '.point',
+      title: "Data Points",
+      content: (
+        <div className="space-y-2">
+          <p>These circles represent individual data values in your dataset.</p>
+          <div className="text-sm space-y-1">
+            <p>• <strong>Position</strong>: Shows the numerical value</p>
+            <p>• <strong>Count</strong>: More points = more data</p>
+            <p>• <strong>Spread</strong>: How data distributes</p>
+          </div>
+        </div>
+      ),
+      position: 'bottom'
+    },
+    {
+      title: "Interacting with Data",
+      content: (
+        <div className="space-y-2">
+          <p className="font-semibold">Three ways to manipulate your dataset:</p>
+          <div className="space-y-2 text-sm">
+            <div className="flex items-start gap-2">
+              <span className="text-green-400">➕</span>
+              <div>
+                <strong>Add points:</strong> Click anywhere on the number line
+                <p className="text-xs text-neutral-400">Creates new data at that value</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-blue-400">↔️</span>
+              <div>
+                <strong>Move points:</strong> Drag existing dots
+                <p className="text-xs text-neutral-400">Changes the value of that data point</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-red-400">❌</span>
+              <div>
+                <strong>Remove points:</strong> Right-click any dot
+                <p className="text-xs text-neutral-400">Removes data from your set</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      title: "The Mean: A Central Concept",
+      content: (
+        <div className="space-y-2">
+          <p>After 5 interactions, you'll unlock the <strong className="text-orange-400">mean line</strong>.</p>
+          <div className="bg-neutral-900 p-3 rounded-lg border border-orange-500/20">
+            <p className="text-orange-400 font-mono text-center mb-1">Mean = Σx / n</p>
+            <p className="text-xs text-neutral-400 text-center">Sum of all values divided by count</p>
+          </div>
+          <p className="text-sm">The mean represents the "center of mass" of your data - watch how it moves as you change values!</p>
+        </div>
+      )
+    },
+    {
+      title: "Challenge: Understanding Clustering",
+      content: (
+        <div className="space-y-2">
+          <p>Your mathematical challenge: Create a <strong>clustered distribution</strong>.</p>
+          <div className="bg-blue-900/20 p-3 rounded border border-blue-500/30">
+            <p className="text-sm mb-2">Requirements:</p>
+            <ul className="list-disc list-inside space-y-1 text-sm">
+              <li>At least 5 data points</li>
+              <li>60% between values 45-55</li>
+            </ul>
+          </div>
+          <p className="text-sm text-neutral-400 mt-2">This teaches how data concentration affects statistical measures!</p>
+        </div>
+      )
+    }
+  ];
   
   // Main visualization
   useEffect(() => {
@@ -83,6 +194,7 @@ function DataExplorerIntro() {
     
     // Number line
     g.append("line")
+      .attr("class", "number-line")
       .attr("x1", 0)
       .attr("x2", innerWidth)
       .attr("y1", innerHeight / 2)
@@ -117,7 +229,7 @@ function DataExplorerIntro() {
     // Store scale reference
     elementsRef.current.xScale = xScale;
     
-    // Data points drag behavior with proper delta tracking
+    // Data points drag behavior - update DOM directly during drag
     const drag = d3.drag()
       .on("start", function(event, d) {
         dragState.current.isDragging = true;
@@ -127,44 +239,54 @@ function DataExplorerIntro() {
         
         d3.select(this)
           .raise()
+          .style("cursor", "grabbing")
           .transition()
           .duration(100)
-          .attr("r", 12);
+          .attr("r", 12)
+          .attr("opacity", 0.8);
       })
       .on("drag", function(event) {
         if (dragState.current.draggedIndex === -1) return;
         
-        // Calculate delta from start position
+        // Calculate new position based on mouse movement
         const deltaX = event.x - dragState.current.startX;
         const newX = xScale(dragState.current.initialValue) + deltaX;
         const constrainedX = Math.max(0, Math.min(innerWidth, newX));
         const newValue = Math.round(xScale.invert(constrainedX));
         
-        // Only update if value actually changed
-        if (newValue !== data[dragState.current.draggedIndex] && newValue >= 0 && newValue <= 100) {
-          // Update D3 element immediately for smooth visual feedback
+        // Update DOM directly for smooth visual feedback
+        if (newValue >= 0 && newValue <= 100) {
           d3.select(this).attr("cx", xScale(newValue));
           
           // Update corresponding label
           elementsRef.current.pointsGroup.select(`.value-label-${dragState.current.draggedIndex}`)
             .attr("x", xScale(newValue))
             .text(newValue);
-          
-          // Update React state
-          const newData = [...data];
-          newData[dragState.current.draggedIndex] = newValue;
-          setData(newData);
         }
       })
-      .on("end", function() {
+      .on("end", function(event) {
+        const deltaX = event.x - dragState.current.startX;
+        const newX = xScale(dragState.current.initialValue) + deltaX;
+        const constrainedX = Math.max(0, Math.min(innerWidth, newX));
+        const finalValue = Math.round(xScale.invert(constrainedX));
+        
+        // Update React state only when drag ends
+        if (finalValue !== dragState.current.initialValue && finalValue >= 0 && finalValue <= 100) {
+          const newData = [...data];
+          newData[dragState.current.draggedIndex] = finalValue;
+          setData(newData);
+        }
+        
         dragState.current.isDragging = false;
         dragState.current.draggedIndex = -1;
-        setInteractions(prev => prev + 1);
+        incrementInteractions();
         
         d3.select(this)
+          .style("cursor", "grab")
           .transition()
           .duration(100)
-          .attr("r", 8);
+          .attr("r", 8)
+          .attr("opacity", 1);
       });
     
     // Points group
@@ -205,7 +327,7 @@ function DataExplorerIntro() {
         event.preventDefault();
         // Remove point on right-click
         setData(data.filter(val => val !== d));
-        setInteractions(prev => prev + 1);
+        incrementInteractions();
       })
       .call(drag)
       .transition()
@@ -274,8 +396,21 @@ function DataExplorerIntro() {
       if (x >= 0 && x <= innerWidth) {
         const value = Math.round(xScale.invert(x));
         if (value >= 0 && value <= 100) {
+          // Add visual feedback for new point
+          const tempCircle = g.append("circle")
+            .attr("cx", xScale(value))
+            .attr("cy", innerHeight / 2)
+            .attr("r", 0)
+            .attr("fill", colors.primary)
+            .attr("opacity", 0.5)
+            .transition()
+            .duration(200)
+            .attr("r", 15)
+            .attr("opacity", 0)
+            .remove();
+          
           setData([...data, value]);
-          setInteractions(prev => prev + 1);
+          incrementInteractions();
         }
       }
     });
@@ -316,7 +451,23 @@ function DataExplorerIntro() {
   };
   
   return (
-    <VisualizationContainer title="Meet Your Data">
+    <VisualizationContainer title="4.1 Data Explorer Intro">
+      <TutorialButton 
+        onClick={() => setShowTutorial(true)}
+        position="top-right"
+      />
+      
+      {showTutorial && (
+        <Tutorial
+          steps={tutorialSteps}
+          showOnMount={true}
+          persistKey="data-explorer-intro"
+          onComplete={() => setShowTutorial(false)}
+          onSkip={() => setShowTutorial(false)}
+          mode="tooltip"
+        />
+      )}
+      
       <div className="flex flex-col gap-6">
         {/* Instructions */}
         <VisualizationSection>
@@ -397,7 +548,16 @@ function DataExplorerIntro() {
         
         {/* Main Visualization */}
         <GraphContainer height="300px">
-          <svg ref={svgRef} style={{ width: "100%", height: "100%" }} />
+          <svg 
+            ref={svgRef} 
+            style={{ width: "100%", height: "100%", cursor: "crosshair" }}
+            className="data-explorer-svg"
+          />
+          <style jsx>{`
+            .data-explorer-svg:has(.point:hover) {
+              cursor: default !important;
+            }
+          `}</style>
         </GraphContainer>
         
         {/* Data Summary */}
@@ -436,11 +596,12 @@ function DataExplorerIntro() {
         
         {/* Mean Unlock Message */}
         <AnimatePresence>
-          {showMean && interactions === 5 && (
+          {showMean && interactionCount.current <= 6 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
             >
               <VisualizationSection className="bg-gradient-to-r from-yellow-900/20 to-orange-900/20 border border-yellow-600/30">
                 <div className="p-4 text-center">
@@ -457,8 +618,8 @@ function DataExplorerIntro() {
           )}
         </AnimatePresence>
         
-        {/* Controls and Progress */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        {/* Controls */}
+        <div className="flex items-center justify-start">
           <Button
             variant="secondary"
             size="sm"
@@ -466,17 +627,6 @@ function DataExplorerIntro() {
           >
             Reset Data
           </Button>
-          
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-neutral-400">Progress</span>
-            <ProgressBar 
-              current={Math.min(interactions, 10)} 
-              total={10} 
-              label={showMean ? "Mean Unlocked!" : "Interactions"} 
-              variant={showMean ? "emerald" : "blue"}
-              className="w-48"
-            />
-          </div>
         </div>
         
         {/* Current Data Display */}
