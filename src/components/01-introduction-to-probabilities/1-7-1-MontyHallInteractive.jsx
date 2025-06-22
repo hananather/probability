@@ -75,36 +75,36 @@ const Door = memo(function Door({
       style={{ filter: getDoorGlow() }}
     >
       {/* Door Frame */}
-      <svg width="180" height="240" viewBox="0 0 180 240">
+      <svg width="120" height="160" viewBox="0 0 120 160">
         {/* Door Background */}
         <rect
           x="10"
           y="10"
-          width="160"
-          height="220"
+          width="100"
+          height="140"
           fill={getDoorColor()}
           stroke="#1f2937"
-          strokeWidth="3"
+          strokeWidth="2"
           rx="4"
           className="transition-all duration-300"
         />
         
         {/* Door Handle */}
         <circle
-          cx="145"
-          cy="120"
-          r="8"
+          cx="95"
+          cy="80"
+          r="6"
           fill="#fbbf24"
           stroke="#f59e0b"
-          strokeWidth="2"
+          strokeWidth="1.5"
         />
         
         {/* Door Number */}
         <text
-          x="90"
-          y="60"
+          x="60"
+          y="45"
           textAnchor="middle"
-          fontSize="36"
+          fontSize="28"
           fontWeight="bold"
           fill="white"
           className="select-none"
@@ -118,8 +118,8 @@ const Door = memo(function Door({
             <rect
               x="10"
               y="10"
-              width="160"
-              height="220"
+              width="100"
+              height="140"
               fill="black"
               opacity="0.3"
               className="animate-fade-in"
@@ -135,9 +135,9 @@ const Door = memo(function Door({
           "animate-fade-in-scale"
         )}>
           {hasCar ? (
-            <Car className="w-24 h-24 text-yellow-400" />
+            <Car className="w-16 h-16 text-yellow-400" />
           ) : (
-            <div className="text-6xl">🐐</div>
+            <div className="text-4xl">🐐</div>
           )}
         </div>
       )}
@@ -312,7 +312,7 @@ const GameHistory = memo(function GameHistory({ history, showRecent = 10 }) {
 });
 
 // Main Monty Hall Component
-function MontyHallInteractive() {
+function MontyHallInteractive({ embedded = false, onGameComplete, onStageComplete }) {
   // Game state
   const [stage, setStage] = useState('initial'); // initial, revealed, final
   const [carPosition, setCarPosition] = useState(Math.floor(Math.random() * 3));
@@ -372,8 +372,24 @@ function MontyHallInteractive() {
       const strategy = doorIndex === selectedDoor ? 'stay' : 'switch';
       const won = doorIndex === carPosition;
       setGameHistory(prev => [...prev, { strategy, won }]);
+      
+      // Call onGameComplete callback if provided
+      if (onGameComplete) {
+        onGameComplete({ strategy, won });
+      }
+      
+      // Check if stage is complete (after playing enough games)
+      if (onStageComplete) {
+        const newHistory = [...gameHistory, { strategy, won }];
+        if (newHistory.length === 3 || newHistory.length === 5) {
+          // Trigger completion after 3 or 5 games
+          setTimeout(() => {
+            onStageComplete(newHistory.length);
+          }, 1500); // Give time to see the result
+        }
+      }
     }
-  }, [stage, selectedDoor, carPosition, revealedDoor]);
+  }, [stage, selectedDoor, carPosition, revealedDoor, onGameComplete]);
   
   // Reset game
   const resetGame = useCallback(() => {
@@ -459,14 +475,14 @@ function MontyHallInteractive() {
   const insight = getInsight();
   const progressPercent = Math.min((gameHistory.length / 30) * 100, 100);
   
-  return (
-    <VisualizationContainer
-      title="The Monty Hall Problem"
-      tutorialSteps={tutorial_1_7_1}
-      tutorialKey="monty-hall-interactive"
-    >
-      <div className="flex flex-col lg:flex-row gap-6">
+  const content = (
+      <div className={cn(
+        "flex flex-col gap-4",
+        !embedded && "lg:flex-row",
+        embedded && "w-full"
+      )}>
         {/* Left Panel - Controls and Learning */}
+        {!embedded && (
         <div className="lg:w-1/3 space-y-4">
           {/* Game Controls */}
           <VisualizationSection className="p-4">
@@ -633,55 +649,80 @@ function MontyHallInteractive() {
             </div>
           </VisualizationSection>
         </div>
+        )}
         
         {/* Right Panel - Game Visualization */}
-        <div className="lg:w-2/3 space-y-4">
+        <div className={cn(
+          "space-y-3",
+          !embedded && "lg:w-2/3",
+          embedded && "w-full"
+        )}>
           {/* Main Game Area */}
-          <GraphContainer height="400px" className="flex items-center justify-center">
-            <div className="space-y-8">
+          <GraphContainer className={cn(
+            "flex items-center justify-center",
+            embedded ? "min-h-[400px] h-[60vh] max-h-[600px]" : "min-h-[300px] h-[50vh] max-h-[500px]"
+          )}>
+            <div className={cn(
+              "space-y-4",
+              embedded && "space-y-6"
+            )}>
               {/* Stage Indicator */}
               <div className="text-center">
-                <h3 className="text-lg font-semibold text-white mb-2">
+                <h3 className={cn(
+                  "font-semibold text-white mb-2",
+                  embedded ? "text-xl" : "text-lg"
+                )}>
                   {stage === 'initial' && 'Choose a Door'}
                   {stage === 'revealed' && 'Monty Reveals a Goat - Stay or Switch?'}
                   {stage === 'final' && (finalChoice === carPosition ? '🎉 You Won!' : '😔 You Lost')}
                 </h3>
                 {stage === 'revealed' && (
-                  <p className="text-sm text-neutral-400">
+                  <p className={cn(
+                    "text-neutral-400",
+                    embedded ? "text-base" : "text-sm"
+                  )}>
                     Door {revealedDoor + 1} has a goat. Will you stay with door {selectedDoor + 1} or switch?
                   </p>
                 )}
               </div>
               
               {/* Doors */}
-              <div className="flex justify-center gap-6">
+              <div className={cn(
+                "flex justify-center",
+                embedded ? "gap-6" : "gap-4"
+              )}>
                 {[0, 1, 2].map(i => (
-                  <Door
-                    key={i}
-                    index={i}
-                    isSelected={selectedDoor === i}
-                    isRevealed={revealedDoor === i || (stage === 'final')}
-                    hasCar={carPosition === i}
-                    isWinner={stage === 'final' && finalChoice === i && carPosition === i}
-                    isLoser={stage === 'final' && finalChoice === i && carPosition !== i}
-                    onClick={(doorIndex) => handleManualAction(() => selectDoor(doorIndex))}
-                    disabled={
-                      (stage === 'initial' && selectedDoor !== null) ||
-                      (stage === 'revealed' && revealedDoor === i) ||
-                      stage === 'final'
-                    }
-                    stage={stage}
-                  />
+                  <div key={i} className={embedded ? "scale-110" : ""}>
+                    <Door
+                      index={i}
+                      isSelected={selectedDoor === i}
+                      isRevealed={revealedDoor === i || (stage === 'final')}
+                      hasCar={carPosition === i}
+                      isWinner={stage === 'final' && finalChoice === i && carPosition === i}
+                      isLoser={stage === 'final' && finalChoice === i && carPosition !== i}
+                      onClick={(doorIndex) => handleManualAction(() => selectDoor(doorIndex))}
+                      disabled={
+                        (stage === 'initial' && selectedDoor !== null) ||
+                        (stage === 'revealed' && revealedDoor === i) ||
+                        stage === 'final'
+                      }
+                      stage={stage}
+                    />
+                  </div>
                 ))}
               </div>
               
               {/* Decision Buttons for Revealed Stage */}
               {stage === 'revealed' && !autoPlay && (
-                <div className="flex justify-center gap-4">
+                <div className={cn(
+                  "flex justify-center gap-4",
+                  embedded && "mt-8"
+                )}>
                   <Button
                     onClick={() => handleManualAction(() => selectDoor(selectedDoor))}
                     variant="secondary"
-                    size="lg"
+                    size={embedded ? "xl" : "lg"}
+                    className={embedded ? "px-6 py-3" : ""}
                   >
                     Stay with Door {selectedDoor + 1}
                   </Button>
@@ -691,44 +732,125 @@ function MontyHallInteractive() {
                       handleManualAction(() => selectDoor(otherDoor));
                     }}
                     variant="primary"
-                    size="lg"
+                    size={embedded ? "xl" : "lg"}
+                    className={embedded ? "px-6 py-3" : ""}
                   >
                     Switch to Door {[0, 1, 2].find(d => d !== selectedDoor && d !== revealedDoor) + 1}
                   </Button>
                 </div>
               )}
+              
+              {/* Play Again Button for Final Stage */}
+              {stage === 'final' && (
+                <div className="flex justify-center mt-6">
+                  <Button
+                    onClick={resetGame}
+                    variant="primary"
+                    size="lg"
+                    className="px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+                  >
+                    <RotateCcw className="w-5 h-5 mr-2" />
+                    Play Again
+                  </Button>
+                </div>
+              )}
+              
+              {/* Embedded mode statistics */}
+              {embedded && gameHistory.length > 0 && (
+                <div className="mt-8 p-4 bg-neutral-900/50 rounded-lg border border-neutral-700">
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-sm font-semibold text-neutral-300">Your Statistics</span>
+                    <span className="text-xs text-neutral-500">
+                      {gameHistory.length} game{gameHistory.length !== 1 ? 's' : ''} played
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-neutral-800/50 rounded p-3">
+                      <div className="text-xs text-amber-400 mb-1">Stay Strategy</div>
+                      <div className="text-xl font-mono text-white">
+                        {stats.counts.stay.total > 0 
+                          ? `${(stats.observed.stay * 100).toFixed(0)}%`
+                          : '—'}
+                      </div>
+                      <div className="text-xs text-neutral-500 mt-1">
+                        {stats.counts.stay.wins}/{stats.counts.stay.total} wins
+                      </div>
+                    </div>
+                    
+                    <div className="bg-neutral-800/50 rounded p-3">
+                      <div className="text-xs text-emerald-400 mb-1">Switch Strategy</div>
+                      <div className="text-xl font-mono text-white">
+                        {stats.counts.switch.total > 0 
+                          ? `${(stats.observed.switch * 100).toFixed(0)}%`
+                          : '—'}
+                      </div>
+                      <div className="text-xs text-neutral-500 mt-1">
+                        {stats.counts.switch.wins}/{stats.counts.switch.total} wins
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {gameHistory.length >= 3 && (
+                    <div className="mt-3 text-center">
+                      <p className="text-xs text-emerald-400">
+                        {gameHistory.length >= 5 
+                          ? "Great job! You're seeing the pattern emerge."
+                          : "Keep playing to see the surprising pattern!"}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </GraphContainer>
           
-          {/* Probability Visualization */}
-          <VisualizationSection className="p-4">
-            <h4 className="text-base font-bold text-white mb-3">Probability Comparison</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Theoretical Probabilities */}
-              <div>
-                <h5 className="text-sm text-neutral-400 mb-2">Theoretical Probabilities</h5>
-                <ProbabilityChart 
-                  probabilities={stats.theoretical}
-                  currentStrategy={stage === 'final' ? (finalChoice === selectedDoor ? 'Stay' : 'Switch') : null}
-                  animateChange={false}
-                />
+          {/* Probability Visualization - Only show when not embedded */}
+          {!embedded && (
+            <VisualizationSection className="p-4">
+              <h4 className="text-base font-bold text-white mb-3">Probability Comparison</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Theoretical Probabilities */}
+                <div>
+                  <h5 className="text-sm text-neutral-400 mb-2">Theoretical Probabilities</h5>
+                  <ProbabilityChart 
+                    probabilities={stats.theoretical}
+                    currentStrategy={stage === 'final' ? (finalChoice === selectedDoor ? 'Stay' : 'Switch') : null}
+                    animateChange={false}
+                  />
+                </div>
+                
+                {/* Observed Probabilities */}
+                <div>
+                  <h5 className="text-sm text-neutral-400 mb-2">
+                    Your Results ({gameHistory.length} games)
+                  </h5>
+                  <ProbabilityChart 
+                    probabilities={stats.observed}
+                    currentStrategy={stage === 'final' ? (finalChoice === selectedDoor ? 'Stay' : 'Switch') : null}
+                    animateChange={true}
+                  />
+                </div>
               </div>
-              
-              {/* Observed Probabilities */}
-              <div>
-                <h5 className="text-sm text-neutral-400 mb-2">
-                  Your Results ({gameHistory.length} games)
-                </h5>
-                <ProbabilityChart 
-                  probabilities={stats.observed}
-                  currentStrategy={stage === 'final' ? (finalChoice === selectedDoor ? 'Stay' : 'Switch') : null}
-                  animateChange={true}
-                />
-              </div>
-            </div>
-          </VisualizationSection>
+            </VisualizationSection>
+          )}
         </div>
       </div>
+  );
+  
+  // If embedded, return content without VisualizationContainer
+  if (embedded) {
+    return content;
+  }
+  
+  // Otherwise, wrap in VisualizationContainer
+  return (
+    <VisualizationContainer
+      title="The Monty Hall Problem"
+      tutorialSteps={tutorial_1_7_1}
+      tutorialKey="monty-hall-interactive"
+    >
+      {content}
     </VisualizationContainer>
   );
 }

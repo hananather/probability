@@ -59,8 +59,8 @@ const MontyHallSimulation = lazy(() =>
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })
 );
-const MontyHallMasterclass = lazy(() => 
-  import('../../components/01-introduction-to-probabilities/1-7-4-MontyHallMasterclass.jsx')
+const MontyHallJourney = lazy(() => 
+  import('../../components/01-introduction-to-probabilities/1-7-5-MontyHallJourney.jsx')
     .catch(() => {
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })
@@ -256,7 +256,7 @@ export default function Chapter1() {
     {
       id: 'monty-hall-masterclass',
       title: '1.7 Monty Hall Masterclass',
-      component: MontyHallMasterclass,
+      component: MontyHallJourney,
       description: (
         <>
           <p>

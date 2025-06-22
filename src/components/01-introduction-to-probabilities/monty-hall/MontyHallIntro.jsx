@@ -188,8 +188,8 @@ const MontyHallIntro = ({ onComplete }) => {
               <ul className="space-y-2 text-sm text-neutral-300">
                 <li className="flex items-start gap-2">
                   <span className="text-yellow-400 mt-0.5">•</span>
-                  <span>When Marilyn vos Savant (highest recorded IQ) published the correct answer 
-                  in 1990, she received over 10,000 letters - many from mathematicians - 
+                  <span>When Marilyn vos Savant published the correct answer 
+                  in 1990, she received thousands of letters - many from mathematicians - 
                   telling her she was wrong!</span>
                 </li>
                 <li className="flex items-start gap-2">
