@@ -63,6 +63,24 @@ const learningStages = [
     }
   },
   {
+    id: 'degrees-of-freedom',
+    title: 'Understanding Degrees of Freedom',
+    subtitle: 'Why df = n - 1?',
+    icon: <Info className="w-5 h-5" />,
+    content: {
+      main: "Degrees of freedom (df) represents the number of values that are 'free to vary' when calculating a statistic.",
+      analogy: "Imagine you have 5 numbers that must sum to 20. Once you know 4 of them, the 5th is determined! Only 4 are 'free to vary'.",
+      formula: "df = n - 1",
+      explanation: [
+        "Sample size n: Total number of observations",
+        "Degrees of freedom df: Number of independent pieces of information",
+        "We lose 1 df because we estimate the mean from the same data"
+      ],
+      insight: "When calculating variance, we use the sample mean. This creates a constraint that 'uses up' one degree of freedom!",
+      activity: "Notice how the sliders show both n (sample size) and df (degrees of freedom)"
+    }
+  },
+  {
     id: 'interactive',
     title: 'Exploring F-Distribution Shape',
     subtitle: 'How degrees of freedom affect the curve',
@@ -251,7 +269,7 @@ const FDistributionVisualization = ({
       .attr("offset", d => d.offset)
       .attr("stop-color", d => d.color);
     
-    // Area gradient
+    // Area gradient - More vibrant colors
     const areaGradient = defs.append("linearGradient")
       .attr("id", "f-area-gradient")
       .attr("x1", "0%").attr("y1", "0%")
@@ -259,8 +277,9 @@ const FDistributionVisualization = ({
     
     areaGradient.selectAll("stop")
       .data([
-        { offset: "0%", color: colorScheme.primary, opacity: 0.8 },
-        { offset: "100%", color: colorScheme.secondary, opacity: 0.3 }
+        { offset: "0%", color: "#00ffcc", opacity: 0.9 },  // Bright cyan
+        { offset: "50%", color: "#00e5ff", opacity: 0.7 }, // Bright light blue
+        { offset: "100%", color: "#7c3aed", opacity: 0.4 } // Vibrant purple
       ])
       .enter().append("stop")
       .attr("offset", d => d.offset)
@@ -354,14 +373,14 @@ const FDistributionVisualization = ({
       .attr("d", area)
       .attr("opacity", 0.6);
     
-    // Draw curve
+    // Draw curve - Brighter, more vibrant
     g.append("path")
       .datum(curveData)
       .attr("fill", "none")
-      .attr("stroke", colorScheme.primary)
-      .attr("stroke-width", 3)
+      .attr("stroke", "#00ffcc")  // Bright cyan
+      .attr("stroke-width", 4)
       .attr("d", line)
-      .attr("filter", "drop-shadow(0 0 6px rgba(20, 184, 166, 0.6))");
+      .attr("filter", "drop-shadow(0 0 12px rgba(0, 255, 204, 0.8)) drop-shadow(0 0 24px rgba(0, 255, 204, 0.5))");
     
     // Critical values
     if (showCritical) {
@@ -417,8 +436,8 @@ const FDistributionVisualization = ({
         .attr("width", d => Math.max(0, xScale(d.x1) - xScale(d.x0) - 1))
         .attr("y", innerHeight)
         .attr("height", 0)
-        .attr("fill", colorScheme.secondary)
-        .attr("opacity", 0.7)
+        .attr("fill", "#a855f7")  // Bright purple
+        .attr("opacity", 0.8)
         .transition()
         .duration(300)
         .attr("y", d => yScale(d.length / totalArea))
@@ -433,8 +452,8 @@ const FDistributionVisualization = ({
         .attr("x2", xScale(lastF))
         .attr("y1", innerHeight)
         .attr("y2", innerHeight)
-        .attr("stroke", colorScheme.accent)
-        .attr("stroke-width", 3)
+        .attr("stroke", "#fbbf24")  // Bright amber
+        .attr("stroke-width", 4)
         .attr("opacity", 0);
       
       fLine.transition()
@@ -444,15 +463,15 @@ const FDistributionVisualization = ({
         .transition()
         .delay(1500)
         .duration(500)
-        .attr("opacity", 0.3);
+        .attr("opacity", 0.5);
       
       // Animated circle at top
       g.append("circle")
         .attr("cx", xScale(lastF))
         .attr("cy", yScale(jStat.centralF.pdf(lastF, df1, df2)))
         .attr("r", 0)
-        .attr("fill", colorScheme.accent)
-        .attr("filter", "drop-shadow(0 0 10px rgba(251, 191, 36, 0.8))")
+        .attr("fill", "#fbbf24")  // Bright amber
+        .attr("filter", "drop-shadow(0 0 15px rgba(251, 191, 36, 1)) drop-shadow(0 0 30px rgba(251, 191, 36, 0.5))")
         .transition()
         .duration(300)
         .attr("r", 8)
@@ -752,6 +771,26 @@ const FDistributionMasterclass = () => {
               </div>
             )}
             
+            {stage.content.analogy && (
+              <div className="bg-emerald-900/20 border border-emerald-700/30 rounded-lg p-4">
+                <p className="text-sm text-emerald-300 flex items-start gap-2">
+                  <Lightbulb className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  {stage.content.analogy}
+                </p>
+              </div>
+            )}
+            
+            {stage.content.explanation && (
+              <ul className="space-y-2">
+                {stage.content.explanation.map((item, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-gray-300">
+                    <div className="w-2 h-2 bg-teal-400 rounded-full mt-1.5"></div>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            
             {stage.content.interpretation && (
               <ul className="space-y-2">
                 {stage.content.interpretation.map((item, i) => (
@@ -858,8 +897,8 @@ const FDistributionMasterclass = () => {
                 <div className="space-y-3">
                   <div>
                     <label className="flex justify-between text-sm mb-1">
-                      <span>n₁ = {df1Input}</span>
-                      <span className="text-xs text-gray-500">df₁ = {df1}</span>
+                      <span className="font-semibold">Sample 1 size: n₁ = {df1Input}</span>
+                      <span className="text-xs bg-teal-500/20 px-2 py-0.5 rounded text-teal-300">df₁ = n₁ - 1 = {df1}</span>
                     </label>
                     <RangeSlider
                       value={df1Input}
@@ -868,11 +907,12 @@ const FDistributionMasterclass = () => {
                       max={50}
                       step={1}
                     />
+                    <p className="text-xs text-gray-500 mt-1">Degrees of freedom = Sample size - 1</p>
                   </div>
                   <div>
                     <label className="flex justify-between text-sm mb-1">
-                      <span>n₂ = {df2Input}</span>
-                      <span className="text-xs text-gray-500">df₂ = {df2}</span>
+                      <span className="font-semibold">Sample 2 size: n₂ = {df2Input}</span>
+                      <span className="text-xs bg-blue-500/20 px-2 py-0.5 rounded text-blue-300">df₂ = n₂ - 1 = {df2}</span>
                     </label>
                     <RangeSlider
                       value={df2Input}
@@ -881,6 +921,7 @@ const FDistributionMasterclass = () => {
                       max={50}
                       step={1}
                     />
+                    <p className="text-xs text-gray-500 mt-1">Degrees of freedom = Sample size - 1</p>
                   </div>
                 </div>
               </ControlGroup>

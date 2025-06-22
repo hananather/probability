@@ -40,6 +40,7 @@ import {
   symbol,
   symbolCircle,
   symbolSquare,
+  symbolDiamond,
   linkHorizontal
 } from 'd3-shape';
 
@@ -158,6 +159,7 @@ export {
   symbol,
   symbolCircle,
   symbolSquare,
+  symbolDiamond,
   linkHorizontal,
   // Transitions
   transition,

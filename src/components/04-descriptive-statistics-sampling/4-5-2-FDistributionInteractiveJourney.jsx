@@ -7,7 +7,7 @@ import { VisualizationContainer, GraphContainer, VisualizationSection } from "..
 import { createColorScheme, cn, typography, colors } from "../../lib/design-system";
 import { Button } from "../ui/button";
 import { RangeSlider } from "../ui/RangeSlider";
-import { Play, Pause, RotateCcw, Info, Trophy, ChevronRight, Target, Sparkles } from "lucide-react";
+import { Play, Pause, RotateCcw, ChevronRight, Target } from "lucide-react";
 import { useAnimationCleanup } from "@/hooks/useAnimationCleanup";
 
 // Tutorial steps
@@ -18,8 +18,7 @@ const tutorialSteps = [
     content: "Let's explore how to compare variances between two groups. We'll build understanding step by step.",
     target: null,
     action: null,
-    highlight: [],
-    milestone: null
+    highlight: []
   },
   {
     id: 'variance-intro',
@@ -27,17 +26,15 @@ const tutorialSteps = [
     content: "Variance measures how spread out data is. Watch the two groups - one has low variance (tight cluster), the other has high variance (spread out).",
     target: 'variance-viz',
     action: null,
-    highlight: ['variance-viz'],
-    milestone: null
+    highlight: ['variance-viz']
   },
   {
     id: 'adjust-samples',
-    title: "Adjust Sample Sizes",
-    content: "Try changing the sample sizes. Larger samples give more reliable variance estimates. Notice how degrees of freedom (df) change!",
+    title: "Adjust Parameters",
+    content: "Try changing the sample sizes and population variances. See how different variance ratios affect the F-distribution shape. Larger samples give more reliable estimates!",
     target: 'sample-controls',
     action: null,
-    highlight: ['sample-size-1', 'sample-size-2'],
-    milestone: "Variance Explorer"
+    highlight: ['sample-size-1', 'sample-size-2']
   },
   {
     id: 'generate-first',
@@ -45,8 +42,7 @@ const tutorialSteps = [
     content: "Click 'Generate Single F' to calculate one F-statistic. This is the ratio of two sample variances.",
     target: 'generate-button',
     action: 'generate-single',
-    highlight: ['generate-single-btn'],
-    milestone: null
+    highlight: ['generate-single-btn']
   },
   {
     id: 'f-value-meaning',
@@ -54,8 +50,7 @@ const tutorialSteps = [
     content: "The F-value you generated represents variance₁ ÷ variance₂. When F ≈ 1, variances are similar. When F >> 1, the first group has more variance!",
     target: 'f-display',
     action: null,
-    highlight: ['f-value-display'],
-    milestone: "F-Value Decoder"
+    highlight: ['f-value-display']
   },
   {
     id: 'build-distribution',
@@ -63,8 +58,7 @@ const tutorialSteps = [
     content: "Generate many F-values to see the pattern emerge. Click 'Generate Many' and watch the histogram build!",
     target: 'generate-many-button',
     action: 'generate-many',
-    highlight: ['generate-many-btn'],
-    milestone: null
+    highlight: ['generate-many-btn']
   },
   {
     id: 'critical-values',
@@ -72,8 +66,7 @@ const tutorialSteps = [
     content: "Enable 'Show Critical Values' to see the cutoff points for hypothesis testing. These help determine if variances are significantly different.",
     target: 'critical-toggle',
     action: 'toggle-critical',
-    highlight: ['critical-values-toggle'],
-    milestone: "Hypothesis Tester"
+    highlight: ['critical-values-toggle']
   },
   {
     id: 'explore-parameters',
@@ -81,8 +74,7 @@ const tutorialSteps = [
     content: "Try different sample sizes to see how the F-distribution shape changes. Small df = more skewed, Large df = more symmetric.",
     target: 'parameter-exploration',
     action: null,
-    highlight: ['sample-size-1', 'sample-size-2'],
-    milestone: null
+    highlight: ['sample-size-1', 'sample-size-2']
   },
   {
     id: 'mastery',
@@ -90,38 +82,9 @@ const tutorialSteps = [
     content: "Congratulations! You've mastered the F-distribution. Use it to compare variances in ANOVA, regression diagnostics, and quality control.",
     target: null,
     action: null,
-    highlight: [],
-    milestone: "F-Distribution Master"
+    highlight: []
   }
 ];
-
-// Achievement system
-const achievements = [
-  { id: 'first-f', name: 'First F', description: 'Generated your first F-statistic', icon: '🎯' },
-  { id: 'variance-explorer', name: 'Variance Explorer', description: 'Explored different sample sizes', icon: '🔍' },
-  { id: 'f-value-decoder', name: 'F-Value Decoder', description: 'Understood F-value meaning', icon: '💡' },
-  { id: 'distribution-builder', name: 'Distribution Builder', description: 'Generated 30+ F-values', icon: '📊' },
-  { id: 'hypothesis-tester', name: 'Hypothesis Tester', description: 'Explored critical values', icon: '⚖️' },
-  { id: 'f-distribution-master', name: 'F-Distribution Master', description: 'Completed the journey!', icon: '🎓' }
-];
-
-// Floating insight component
-const FloatingInsight = ({ insight, onClose }) => {
-  useEffect(() => {
-    const timer = setTimeout(onClose, 5000);
-    return () => clearTimeout(timer);
-  }, [onClose]);
-  
-  return (
-    <div className="fixed bottom-8 right-8 max-w-sm bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg shadow-2xl p-6 animate-slideIn z-50">
-      <h4 className="text-lg font-bold mb-2 flex items-center gap-2">
-        <Sparkles className="w-5 h-5" />
-        {insight.title}
-      </h4>
-      <p className="text-sm">{insight.content}</p>
-    </div>
-  );
-};
 
 // Tutorial highlight overlay
 const TutorialHighlight = ({ targetId, isActive }) => {
@@ -171,12 +134,12 @@ const FDistributionInteractiveJourney = () => {
   // Tutorial state
   const [tutorialStep, setTutorialStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState([]);
-  const [unlockedAchievements, setUnlockedAchievements] = useState([]);
-  const [showInsight, setShowInsight] = useState(null);
   
   // Visualization state
   const [sampleSizeN1, setSampleSizeN1] = useState(10);
   const [sampleSizeN2, setSampleSizeN2] = useState(10);
+  const [variance1, setVariance1] = useState(1);
+  const [variance2, setVariance2] = useState(1);
   const [fValues, setFValues] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [lastFValue, setLastFValue] = useState(null);
@@ -200,41 +163,18 @@ const FDistributionInteractiveJourney = () => {
   const currentStep = tutorialSteps[tutorialStep];
   const progress = ((tutorialStep + 1) / tutorialSteps.length) * 100;
   
-  // Unlock achievement
-  const unlockAchievement = useCallback((achievementId) => {
-    if (!unlockedAchievements.includes(achievementId)) {
-      setUnlockedAchievements(prev => [...prev, achievementId]);
-      const achievement = achievements.find(a => a.id === achievementId);
-      if (achievement) {
-        setShowInsight({
-          title: `${achievement.icon} Achievement Unlocked!`,
-          content: achievement.name + ' - ' + achievement.description
-        });
-      }
-    }
-  }, [unlockedAchievements]);
-  
-  // Check for milestones
-  useEffect(() => {
-    if (currentStep.milestone) {
-      const milestoneAchievement = achievements.find(a => a.name === currentStep.milestone);
-      if (milestoneAchievement) {
-        unlockAchievement(milestoneAchievement.id);
-      }
-    }
-  }, [currentStep, unlockAchievement]);
-  
   // Generate F-statistic
   const generateFStatistic = useCallback(() => {
-    const sample1 = Array.from({ length: sampleSizeN1 }, () => jStat.normal.sample(0, 1));
-    const sample2 = Array.from({ length: sampleSizeN2 }, () => jStat.normal.sample(0, 1));
+    // Generate samples with specified variances
+    const sample1 = Array.from({ length: sampleSizeN1 }, () => jStat.normal.sample(0, Math.sqrt(variance1)));
+    const sample2 = Array.from({ length: sampleSizeN2 }, () => jStat.normal.sample(0, Math.sqrt(variance2)));
     
-    const variance1 = jStat.variance(sample1, true);
-    const variance2 = jStat.variance(sample2, true);
-    const f = variance1 / variance2;
+    const sampleVar1 = jStat.variance(sample1, true);
+    const sampleVar2 = jStat.variance(sample2, true);
+    const f = sampleVar1 / sampleVar2;
     
-    return { f, variance1, variance2 };
-  }, [sampleSizeN1, sampleSizeN2]);
+    return { f, variance1: sampleVar1, variance2: sampleVar2 };
+  }, [sampleSizeN1, sampleSizeN2, variance1, variance2]);
   
   // Handle single generation
   const handleGenerateSingle = useCallback(() => {
@@ -246,18 +186,13 @@ const FDistributionInteractiveJourney = () => {
       setLastFValue({ f, variance1, variance2 });
       setIsGenerating(false);
       
-      // Check for first F achievement
-      if (fValues.length === 0) {
-        unlockAchievement('first-f');
-      }
-      
       // Progress tutorial if needed
       if (currentStep.action === 'generate-single' && !completedSteps.includes(currentStep.id)) {
         setCompletedSteps(prev => [...prev, currentStep.id]);
         setCleanTimeout(() => setTutorialStep(prev => Math.min(prev + 1, tutorialSteps.length - 1)), 1000);
       }
     }, 500);
-  }, [generateFStatistic, fValues.length, currentStep, completedSteps, setCleanTimeout, unlockAchievement]);
+  }, [generateFStatistic, fValues.length, currentStep, completedSteps, setCleanTimeout]);
   
   // Handle many generations
   const handleGenerateMany = useCallback(() => {
@@ -278,11 +213,6 @@ const FDistributionInteractiveJourney = () => {
       } else {
         setIsGenerating(false);
         
-        // Check for distribution builder achievement
-        if (fValues.length + newValues.length >= 30) {
-          unlockAchievement('distribution-builder');
-        }
-        
         // Progress tutorial
         if (currentStep.action === 'generate-many' && !completedSteps.includes(currentStep.id)) {
           setCompletedSteps(prev => [...prev, currentStep.id]);
@@ -292,7 +222,7 @@ const FDistributionInteractiveJourney = () => {
     };
     
     addValues();
-  }, [generateFStatistic, fValues.length, currentStep, completedSteps, setCleanTimeout, unlockAchievement]);
+  }, [generateFStatistic, fValues.length, currentStep, completedSteps, setCleanTimeout]);
   
   // Handle critical values toggle
   const handleToggleCritical = useCallback(() => {
@@ -332,21 +262,21 @@ const FDistributionInteractiveJourney = () => {
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
     
-    // Create sample data for visualization
+    // Create sample data for visualization with actual variance values
     const createSampleData = (variance, n) => {
       return Array.from({ length: 30 }, () => ({
         x: Math.random() * 100,
-        y: jStat.normal.sample(50, Math.sqrt(variance) * 10)
+        y: jStat.normal.sample(50, Math.sqrt(variance) * 15)
       }));
     };
     
-    const data1 = createSampleData(1, 30);
-    const data2 = createSampleData(3, 30);
+    const data1 = createSampleData(variance1, 30);
+    const data2 = createSampleData(variance2, 30);
     
     // Draw groups
-    const drawGroup = (data, x, color, label) => {
+    const drawGroup = (data, x, color, label, varianceValue) => {
       // Points
-      g.selectAll(`.points-${label}`)
+      g.selectAll(`.points-${label.replace(/\s/g, '-')}`)
         .data(data)
         .enter()
         .append("circle")
@@ -354,7 +284,7 @@ const FDistributionInteractiveJourney = () => {
         .attr("cy", d => d.y)
         .attr("r", 3)
         .attr("fill", color)
-        .attr("opacity", 0.6);
+        .attr("opacity", 0.8);
       
       // Mean line
       const mean = d3.mean(data, d => d.y);
@@ -367,19 +297,29 @@ const FDistributionInteractiveJourney = () => {
         .attr("stroke-width", 2)
         .attr("stroke-dasharray", "5,5");
       
-      // Label
+      // Label with variance value
       g.append("text")
         .attr("x", x)
         .attr("y", height - margin.bottom - 10)
         .attr("text-anchor", "middle")
         .attr("fill", color)
-        .text(label);
+        .style("font-weight", "bold")
+        .text(`Group ${label}`);
+        
+      g.append("text")
+        .attr("x", x)
+        .attr("y", height - margin.bottom + 5)
+        .attr("text-anchor", "middle")
+        .attr("fill", color)
+        .style("font-size", "12px")
+        .text(`σ² = ${varianceValue.toFixed(1)}`);
     };
     
-    drawGroup(data1, width * 0.3, colorScheme.primary, "Low Variance");
-    drawGroup(data2, width * 0.7, colorScheme.secondary, "High Variance");
+    // Use distinct colors for better visibility
+    drawGroup(data1, width * 0.3, '#10b981', "1", variance1); // Emerald green
+    drawGroup(data2, width * 0.7, '#f97316', "2", variance2); // Orange
     
-  }, [colorScheme]);
+  }, [variance1, variance2]);
   
   // Main F-distribution visualization
   useEffect(() => {
@@ -473,7 +413,7 @@ const FDistributionInteractiveJourney = () => {
     g.append("path")
       .datum(curveData)
       .attr("fill", "none")
-      .attr("stroke", colorScheme.primary)
+      .attr("stroke", "#3b82f6") // Blue for theoretical curve
       .attr("stroke-width", 3)
       .attr("d", line);
     
@@ -496,7 +436,7 @@ const FDistributionInteractiveJourney = () => {
         .attr("width", d => Math.max(0, xScale(d.x1) - xScale(d.x0) - 1))
         .attr("y", d => yScale(d.length / totalArea))
         .attr("height", d => innerHeight - yScale(d.length / totalArea))
-        .attr("fill", colorScheme.secondary)
+        .attr("fill", "#8b5cf6") // Purple for observed data
         .attr("opacity", 0.6);
     }
     
@@ -551,6 +491,33 @@ const FDistributionInteractiveJourney = () => {
         .duration(500)
         .attr("opacity", 0.3);
     }
+    
+    // Add legend
+    const legendData = [
+      { label: "Theoretical F-distribution", color: "#3b82f6" },
+      { label: "Observed F-values", color: "#8b5cf6" }
+    ];
+    
+    const legend = g.append("g")
+      .attr("transform", `translate(${innerWidth - 150}, 20)`);
+    
+    legendData.forEach((item, i) => {
+      const legendRow = legend.append("g")
+        .attr("transform", `translate(0, ${i * 20})`);
+      
+      legendRow.append("rect")
+        .attr("width", 15)
+        .attr("height", 3)
+        .attr("fill", item.color);
+      
+      legendRow.append("text")
+        .attr("x", 20)
+        .attr("y", 3)
+        .attr("text-anchor", "start")
+        .style("font-size", "12px")
+        .attr("fill", "currentColor")
+        .text(item.label);
+    });
     
   }, [fValues, lastFValue, df1, df2, showCriticalValues, colorScheme]);
   
@@ -646,31 +613,62 @@ const FDistributionInteractiveJourney = () => {
           <VisualizationSection className="p-4" id="sample-controls">
             <h3 className="text-base font-semibold mb-3">Parameters</h3>
             <div className="space-y-3">
-              <div id="sample-size-1">
-                <label className="text-sm font-medium mb-1 block">
-                  Sample Size 1 (n₁ = {sampleSizeN1})
-                  <span className="text-xs text-gray-500 ml-2">df₁ = {df1}</span>
-                </label>
-                <RangeSlider
-                  value={sampleSizeN1}
-                  onChange={setSampleSizeN1}
-                  min={3}
-                  max={30}
-                  step={1}
-                />
+              <div className="p-3 bg-gray-800 rounded-lg">
+                <h4 className="text-sm font-semibold text-emerald-400 mb-2">Group 1 (Green)</h4>
+                <div id="sample-size-1" className="mb-2">
+                  <label className="text-sm font-medium mb-1 block">
+                    Sample Size (n₁ = {sampleSizeN1})
+                    <span className="text-xs text-gray-500 ml-2">df₁ = {df1}</span>
+                  </label>
+                  <RangeSlider
+                    value={sampleSizeN1}
+                    onChange={setSampleSizeN1}
+                    min={3}
+                    max={100}
+                    step={1}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">
+                    Population Variance (σ₁² = {variance1.toFixed(1)})
+                  </label>
+                  <RangeSlider
+                    value={variance1}
+                    onChange={setVariance1}
+                    min={0.5}
+                    max={5}
+                    step={0.1}
+                  />
+                </div>
               </div>
-              <div id="sample-size-2">
-                <label className="text-sm font-medium mb-1 block">
-                  Sample Size 2 (n₂ = {sampleSizeN2})
-                  <span className="text-xs text-gray-500 ml-2">df₂ = {df2}</span>
-                </label>
-                <RangeSlider
-                  value={sampleSizeN2}
-                  onChange={setSampleSizeN2}
-                  min={3}
-                  max={30}
-                  step={1}
-                />
+              
+              <div className="p-3 bg-gray-800 rounded-lg">
+                <h4 className="text-sm font-semibold text-orange-400 mb-2">Group 2 (Orange)</h4>
+                <div id="sample-size-2" className="mb-2">
+                  <label className="text-sm font-medium mb-1 block">
+                    Sample Size (n₂ = {sampleSizeN2})
+                    <span className="text-xs text-gray-500 ml-2">df₂ = {df2}</span>
+                  </label>
+                  <RangeSlider
+                    value={sampleSizeN2}
+                    onChange={setSampleSizeN2}
+                    min={3}
+                    max={100}
+                    step={1}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">
+                    Population Variance (σ₂² = {variance2.toFixed(1)})
+                  </label>
+                  <RangeSlider
+                    value={variance2}
+                    onChange={setVariance2}
+                    min={0.5}
+                    max={5}
+                    step={0.1}
+                  />
+                </div>
               </div>
             </div>
           </VisualizationSection>
@@ -735,58 +733,47 @@ const FDistributionInteractiveJourney = () => {
           </VisualizationSection>
           
           {/* Statistics */}
-          {fValues.length > 0 && (
-            <VisualizationSection className="p-4">
-              <h3 className="text-base font-semibold mb-3">Statistics</h3>
-              <div className="space-y-2 text-sm">
+          <VisualizationSection className="p-4">
+            <h3 className="text-base font-semibold mb-3">Statistics</h3>
+            <div className="space-y-2 text-sm">
+              <div className="p-2 bg-gray-800 rounded">
                 <div className="flex justify-between">
-                  <span>Samples:</span>
-                  <span className="font-mono">{fValues.length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Mean F:</span>
-                  <span className="font-mono">{jStat.mean(fValues).toFixed(3)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Theoretical Mean:</span>
-                  <span className="font-mono">
-                    {df2 > 2 ? (df2 / (df2 - 2)).toFixed(3) : "∞"}
+                  <span>Expected F-ratio:</span>
+                  <span className="font-mono text-yellow-400">
+                    σ₁²/σ₂² = {(variance1 / variance2).toFixed(2)}
                   </span>
                 </div>
-                {lastFValue && (
-                  <div className="mt-2 pt-2 border-t border-gray-700">
-                    <div className="text-xs text-gray-500">Last F-value:</div>
-                    <div className="font-mono text-emerald-400">{lastFValue.f.toFixed(3)}</div>
-                  </div>
-                )}
               </div>
-            </VisualizationSection>
-          )}
-          
-          {/* Achievements */}
-          <VisualizationSection className="p-4">
-            <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
-              <Trophy className="w-4 h-4" />
-              Achievements ({unlockedAchievements.length}/{achievements.length})
-            </h3>
-            <div className="grid grid-cols-3 gap-2">
-              {achievements.map(achievement => (
-                <div
-                  key={achievement.id}
-                  className={cn(
-                    "text-center p-2 rounded transition-all",
-                    unlockedAchievements.includes(achievement.id)
-                      ? "bg-gradient-to-br from-violet-600/20 to-purple-600/20 border border-violet-500/30"
-                      : "bg-gray-800/50 border border-gray-700 opacity-50"
+              {fValues.length > 0 && (
+                <>
+                  <div className="flex justify-between">
+                    <span>Samples:</span>
+                    <span className="font-mono">{fValues.length}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Observed Mean F:</span>
+                    <span className="font-mono">{jStat.mean(fValues).toFixed(3)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Theoretical Mean:</span>
+                    <span className="font-mono">
+                      {df2 > 2 ? (df2 / (df2 - 2)).toFixed(3) : "∞"}
+                    </span>
+                  </div>
+                  {lastFValue && (
+                    <div className="mt-2 pt-2 border-t border-gray-700">
+                      <div className="text-xs text-gray-500">Last F-value:</div>
+                      <div className="font-mono text-emerald-400">{lastFValue.f.toFixed(3)}</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        s₁² = {lastFValue.variance1.toFixed(3)}, s₂² = {lastFValue.variance2.toFixed(3)}
+                      </div>
+                    </div>
                   )}
-                  title={achievement.description}
-                >
-                  <div className="text-2xl mb-1">{achievement.icon}</div>
-                  <div className="text-xs">{achievement.name}</div>
-                </div>
-              ))}
+                </>
+              )}
             </div>
           </VisualizationSection>
+          
         </div>
       </div>
       
@@ -794,14 +781,6 @@ const FDistributionInteractiveJourney = () => {
       {currentStep.highlight.map(id => (
         <TutorialHighlight key={id} targetId={id} isActive={true} />
       ))}
-      
-      {/* Floating insights */}
-      {showInsight && (
-        <FloatingInsight
-          insight={showInsight}
-          onClose={() => setShowInsight(null)}
-        />
-      )}
     </VisualizationContainer>
   );
 };

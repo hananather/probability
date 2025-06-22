@@ -32,7 +32,40 @@ const AchievementNotification = ({ achievement, onClose }) => {
 const VarianceVisualizer = ({ group1Variance, group2Variance, isAnimating }) => {
   const canvasRef = useRef(null);
   const animationRef = useRef(null);
-  const particlesRef = useRef([]);
+  const dataPointsRef = useRef([]);
+  const prevVarianceRef = useRef({ group1: group1Variance, group2: group2Variance });
+  
+  // Box-Muller transform for generating Gaussian random numbers
+  const gaussian = () => {
+    let u = 0, v = 0;
+    while(u === 0) u = Math.random();
+    while(v === 0) v = Math.random();
+    return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+  };
+  
+  // Generate new positions for data points based on variance
+  const generatePositions = (variance, centerX, centerY) => {
+    const stdDev = Math.sqrt(variance);
+    const positions = [];
+    
+    for (let i = 0; i < 40; i++) {
+      // Generate value from normal distribution
+      const value = gaussian() * stdDev;
+      
+      // Convert to polar coordinates for radial display
+      const angle = (i / 40) * 2 * Math.PI + (Math.random() - 0.5) * 0.3;
+      const radius = Math.abs(value) * 30; // Scale for visibility
+      
+      positions.push({
+        x: centerX + Math.cos(angle) * radius,
+        y: centerY + Math.sin(angle) * radius,
+        value: value,
+        angle: angle
+      });
+    }
+    
+    return positions;
+  };
   
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -43,82 +76,137 @@ const VarianceVisualizer = ({ group1Variance, group2Variance, isAnimating }) => 
     const height = canvas.height = canvas.offsetHeight * 2;
     ctx.scale(2, 2);
     
-    // Initialize particles for both groups
-    const createParticles = () => {
-      const particles = [];
-      const numParticles = 30;
-      
-      // Group 1 particles (left side)
-      for (let i = 0; i < numParticles; i++) {
-        const spread = Math.sqrt(group1Variance) * 20;
-        particles.push({
-          x: width / 4 / 2 + (Math.random() - 0.5) * spread,
-          y: height / 2 / 2 + (Math.random() - 0.5) * spread,
-          vx: (Math.random() - 0.5) * 0.5,
-          vy: (Math.random() - 0.5) * 0.5,
+    // Initialize data points if needed
+    if (dataPointsRef.current.length === 0) {
+      dataPointsRef.current = [
+        {
           group: 1,
-          baseX: width / 4 / 2,
-          baseY: height / 2 / 2,
-          spread: spread
-        });
-      }
-      
-      // Group 2 particles (right side)
-      for (let i = 0; i < numParticles; i++) {
-        const spread = Math.sqrt(group2Variance) * 20;
-        particles.push({
-          x: (3 * width / 4) / 2 + (Math.random() - 0.5) * spread,
-          y: height / 2 / 2 + (Math.random() - 0.5) * spread,
-          vx: (Math.random() - 0.5) * 0.5,
-          vy: (Math.random() - 0.5) * 0.5,
+          centerX: width / 4 / 2,
+          centerY: height / 2 / 2,
+          points: generatePositions(group1Variance, width / 4 / 2, height / 2 / 2).map(p => ({
+            ...p,
+            currentX: p.x,
+            currentY: p.y,
+            targetX: p.x,
+            targetY: p.y
+          }))
+        },
+        {
           group: 2,
-          baseX: (3 * width / 4) / 2,
-          baseY: height / 2 / 2,
-          spread: spread
+          centerX: (3 * width / 4) / 2,
+          centerY: height / 2 / 2,
+          points: generatePositions(group2Variance, (3 * width / 4) / 2, height / 2 / 2).map(p => ({
+            ...p,
+            currentX: p.x,
+            currentY: p.y,
+            targetX: p.x,
+            targetY: p.y
+          }))
+        }
+      ];
+    }
+    
+    // Update target positions only for changed variance
+    const updateTargetPositions = () => {
+      // Check which variance changed
+      if (prevVarianceRef.current.group1 !== group1Variance) {
+        const group1Positions = generatePositions(group1Variance, width / 4 / 2, height / 2 / 2);
+        dataPointsRef.current[0].points.forEach((point, i) => {
+          point.targetX = group1Positions[i].x;
+          point.targetY = group1Positions[i].y;
+          point.value = group1Positions[i].value;
         });
+        prevVarianceRef.current.group1 = group1Variance;
       }
       
-      return particles;
+      if (prevVarianceRef.current.group2 !== group2Variance) {
+        const group2Positions = generatePositions(group2Variance, (3 * width / 4) / 2, height / 2 / 2);
+        dataPointsRef.current[1].points.forEach((point, i) => {
+          point.targetX = group2Positions[i].x;
+          point.targetY = group2Positions[i].y;
+          point.value = group2Positions[i].value;
+        });
+        prevVarianceRef.current.group2 = group2Variance;
+      }
     };
     
-    particlesRef.current = createParticles();
+    updateTargetPositions();
     
     const animate = () => {
-      ctx.fillStyle = 'rgba(10, 10, 30, 0.1)';
+      // Clear canvas
+      ctx.fillStyle = 'rgba(10, 10, 30, 1)';
       ctx.fillRect(0, 0, width / 2, height / 2);
       
-      // Update and draw particles
-      particlesRef.current.forEach(particle => {
-        // Update position
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-        
-        // Apply spring force back to center
-        const dx = particle.x - particle.baseX;
-        const dy = particle.y - particle.baseY;
-        particle.vx -= dx * 0.01;
-        particle.vy -= dy * 0.01;
-        
-        // Apply damping
-        particle.vx *= 0.98;
-        particle.vy *= 0.98;
-        
-        // Add random movement
-        particle.vx += (Math.random() - 0.5) * 0.1;
-        particle.vy += (Math.random() - 0.5) * 0.1;
-        
-        // Constrain to spread
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist > particle.spread) {
-          particle.x = particle.baseX + (dx / dist) * particle.spread;
-          particle.y = particle.baseY + (dy / dist) * particle.spread;
-        }
-        
-        // Draw particle
-        ctx.fillStyle = particle.group === 1 ? '#22d3ee' : '#a78bfa';
+      // Draw standard deviation guides
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 4]);
+      
+      // Factory A guides
+      const stdDev1 = Math.sqrt(group1Variance) * 30;
+      ctx.beginPath();
+      ctx.arc(width / 4 / 2, height / 2 / 2, stdDev1, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(width / 4 / 2, height / 2 / 2, stdDev1 * 2, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      // Factory B guides
+      const stdDev2 = Math.sqrt(group2Variance) * 30;
+      ctx.beginPath();
+      ctx.arc((3 * width / 4) / 2, height / 2 / 2, stdDev2, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc((3 * width / 4) / 2, height / 2 / 2, stdDev2 * 2, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      ctx.setLineDash([]);
+      
+      // Draw center points (means)
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.beginPath();
+      ctx.arc(width / 4 / 2, height / 2 / 2, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc((3 * width / 4) / 2, height / 2 / 2, 4, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Draw "target" or "ideal" marker to show variance vs accuracy
+      ctx.strokeStyle = 'rgba(255, 215, 0, 0.3)'; // Gold color for target
+      ctx.lineWidth = 2;
+      ctx.setLineDash([]);
+      
+      // Draw crosshair for target
+      const drawCrosshair = (x, y) => {
         ctx.beginPath();
-        ctx.arc(particle.x, particle.y, 3, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.moveTo(x - 8, y);
+        ctx.lineTo(x + 8, y);
+        ctx.moveTo(x, y - 8);
+        ctx.lineTo(x, y + 8);
+        ctx.stroke();
+      };
+      
+      drawCrosshair(width / 4 / 2, height / 2 / 2 - 5); // Slightly offset to show mean ≠ target
+      drawCrosshair((3 * width / 4) / 2, height / 2 / 2 - 5);
+      
+      // Draw and update data points
+      dataPointsRef.current.forEach((group, groupIndex) => {
+        group.points.forEach(point => {
+          // Smooth transition to target position
+          const dx = point.targetX - point.currentX;
+          const dy = point.targetY - point.currentY;
+          point.currentX += dx * 0.1;
+          point.currentY += dy * 0.1;
+          
+          // Draw data point
+          const color = groupIndex === 0 ? '#22d3ee' : '#a78bfa';
+          const opacity = 0.8 - (Math.abs(point.value) / 3) * 0.3; // Fade points further from mean
+          
+          ctx.fillStyle = color + Math.floor(opacity * 255).toString(16).padStart(2, '0');
+          ctx.beginPath();
+          ctx.arc(point.currentX, point.currentY, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        });
       });
       
       // Draw labels
@@ -127,6 +215,21 @@ const VarianceVisualizer = ({ group1Variance, group2Variance, isAnimating }) => 
       ctx.textAlign = 'center';
       ctx.fillText('Factory A', width / 4 / 2, height / 2 / 2 + 80);
       ctx.fillText('Factory B', (3 * width / 4) / 2, height / 2 / 2 + 80);
+      
+      // Draw variance values
+      ctx.font = '12px system-ui';
+      ctx.fillStyle = '#22d3ee';
+      ctx.fillText(`σ² = ${group1Variance.toFixed(1)}`, width / 4 / 2, height / 2 / 2 + 95);
+      ctx.fillStyle = '#a78bfa';
+      ctx.fillText(`σ² = ${group2Variance.toFixed(1)}`, (3 * width / 4) / 2, height / 2 / 2 + 95);
+      
+      // Draw legend
+      ctx.font = '10px system-ui';
+      ctx.textAlign = 'left';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+      ctx.fillText('⬤ = Actual mean', 10, height / 2 - 20);
+      ctx.fillStyle = 'rgba(255, 215, 0, 0.5)';
+      ctx.fillText('+ = Target value', 10, height / 2 - 8);
       
       if (isAnimating) {
         animationRef.current = requestAnimationFrame(animate);
@@ -146,7 +249,6 @@ const VarianceVisualizer = ({ group1Variance, group2Variance, isAnimating }) => 
     <canvas 
       ref={canvasRef} 
       className="w-full h-48 rounded-lg bg-gray-900/50"
-      style={{ imageRendering: 'pixelated' }}
     />
   );
 };
@@ -293,7 +395,7 @@ const FDistributionIntuitiveIntro = () => {
                     value={3 - factory1Variance}
                     onChange={(value) => setFactory1Variance(3 - value)}
                     min={0}
-                    max={2.5}
+                    max={2.9}
                     step={0.1}
                     className="mt-2"
                   />
@@ -306,17 +408,43 @@ const FDistributionIntuitiveIntro = () => {
                     value={3 - factory2Variance}
                     onChange={(value) => setFactory2Variance(3 - value)}
                     min={0}
-                    max={2.5}
+                    max={2.9}
                     step={0.1}
                     className="mt-2"
                   />
                 </div>
               </div>
               <div className="bg-gray-800/50 p-3 rounded-lg">
-                <p className="text-sm">
+                <p className="text-sm mb-2">
                   <strong>Try this:</strong> Make both factories equally consistent. 
                   What do you notice about their spread?
                 </p>
+              </div>
+              
+              {/* Educational insights */}
+              <div className="space-y-3 mt-4">
+                <div className="bg-gradient-to-r from-amber-900/20 to-orange-900/20 p-4 rounded-lg border border-amber-600/30">
+                  <p className="text-sm mb-2">
+                    <AlertCircle className="inline w-4 h-4 mr-1" />
+                    <strong className="text-amber-400">Common Misconception:</strong>
+                  </p>
+                  <p className="text-sm text-gray-300">
+                    Low variance ≠ Good quality! A factory could consistently produce widgets 
+                    that are all 2mm too small. That's <span className="text-amber-400">low variance</span> but 
+                    <span className="text-red-400"> poor quality</span>.
+                  </p>
+                </div>
+                
+                <div className="bg-gradient-to-r from-blue-900/20 to-indigo-900/20 p-4 rounded-lg border border-blue-600/30">
+                  <p className="text-sm mb-2">
+                    <strong className="text-blue-400">What the terms mean:</strong>
+                  </p>
+                  <ul className="text-sm space-y-1 text-gray-300">
+                    <li>• <strong>Consistency:</strong> How similar items are to each other</li>
+                    <li>• <strong>Variance (σ²):</strong> Average squared distance from the mean</li>
+                    <li>• <strong>Spread:</strong> How far data points are from the center</li>
+                  </ul>
+                </div>
               </div>
             </div>
           ),
@@ -351,6 +479,24 @@ const FDistributionIntuitiveIntro = () => {
                 </p>
                 <p className="text-sm">
                   Smaller variance = Tighter clustering = More consistent production
+                </p>
+              </div>
+              
+              <div className="bg-gradient-to-r from-purple-900/20 to-pink-900/20 p-4 rounded-lg border border-purple-600/30">
+                <p className="text-sm mb-2">
+                  <strong className="text-purple-400">Why square the differences?</strong>
+                </p>
+                <p className="text-sm text-gray-300">
+                  Variance squares the distances to:
+                </p>
+                <ul className="text-sm space-y-1 text-gray-300 mt-1">
+                  <li>• Make all values positive (no cancellation)</li>
+                  <li>• Penalize larger deviations more heavily</li>
+                  <li>• Enable mathematical properties we need</li>
+                </ul>
+                <p className="text-xs text-gray-400 mt-2">
+                  Note: Variance units are squared (e.g., mm²), which is why we often use 
+                  standard deviation (σ = √variance) for interpretation.
                 </p>
               </div>
             </div>
@@ -400,6 +546,33 @@ const FDistributionIntuitiveIntro = () => {
                     • F {"<"} 1: Factory B is less consistent
                   </li>
                 </ul>
+              </div>
+              
+              <div className="bg-gradient-to-r from-green-900/20 to-emerald-900/20 p-4 rounded-lg border border-green-600/30">
+                <p className="text-sm mb-2">
+                  <strong className="text-green-400">Real-world context:</strong>
+                </p>
+                <p className="text-sm text-gray-300 mb-2">
+                  Whether you want high or low variance depends on the situation:
+                </p>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="bg-gray-800/50 p-2 rounded">
+                    <p className="text-green-400 font-semibold mb-1">Low variance good for:</p>
+                    <ul className="text-gray-300 space-y-0.5">
+                      <li>• Manufacturing parts</li>
+                      <li>• Drug dosages</li>
+                      <li>• Flight schedules</li>
+                    </ul>
+                  </div>
+                  <div className="bg-gray-800/50 p-2 rounded">
+                    <p className="text-orange-400 font-semibold mb-1">High variance okay for:</p>
+                    <ul className="text-gray-300 space-y-0.5">
+                      <li>• Creative outputs</li>
+                      <li>• Investment portfolios</li>
+                      <li>• Natural processes</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
               <div className="mt-4">
                 <Button 

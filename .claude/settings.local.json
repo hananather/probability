@@ -117,7 +117,8 @@
       "Bash(timeout 10 npm run dev:*)",
       "WebFetch(domain:brilliant.org)",
       "Bash(open http://localhost:3001/test-binomial)",
-      "Bash(git ls-tree:*)"
+      "Bash(git ls-tree:*)",
+      "WebFetch(domain:en.wikipedia.org)"
     ],
     "deny": []
   }

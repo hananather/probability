@@ -84,7 +84,7 @@ function CentralTendencyJourney() {
   
   // Calculate statistics
   const calculateStats = (values) => {
-    if (values.length === 0) return { mean: 0, median: 0, mode: [], totalTorque: 0 };
+    if (values.length === 0) return { mean: 0, median: 0, modes: [], totalTorque: 0 };
     
     const mean = values.reduce((a, b) => a + b, 0) / values.length;
     
@@ -98,7 +98,8 @@ function CentralTendencyJourney() {
     values.forEach(val => {
       frequency[val] = (frequency[val] || 0) + 1;
     });
-    const maxFreq = Math.max(...Object.values(frequency));
+    const freqValues = Object.values(frequency);
+    const maxFreq = freqValues.length > 0 ? Math.max(...freqValues) : 0;
     const modes = Object.keys(frequency)
       .filter(key => frequency[key] === maxFreq && frequency[key] > 1)
       .map(Number);

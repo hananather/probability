@@ -270,12 +270,7 @@ export default function Chapter3Page() {
       id: 'probability-density',
       title: "3.1 Probability Density Functions",
       description: "Learn how continuous random variables are described by PDFs. Calculate probabilities using integration and explore worked examples.",
-      component: (
-        <div className="space-y-8">
-          <ContinuousDistributionsPDF />
-          <IntegralWorkedExample />
-        </div>
-      )
+      component: <ContinuousDistributionsPDF />
     },
     {
       id: 'expectation-variance',

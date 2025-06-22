@@ -53,7 +53,7 @@ const HistogramShapeExplorer = dynamic(
 );
 
 const DescriptiveStatsExplorer = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/4-3-1-DescriptiveStatsExplorer'),
+  () => import('@/components/04-descriptive-statistics-sampling/4-1-3-DescriptiveStatsExplorer'),
   { 
     ssr: false,
     loading: () => (
@@ -111,6 +111,192 @@ const CLTSimulation = dynamic(
     )
   }
 );
+
+// Central Tendency Hub - New comprehensive learning system
+const CentralTendencyHub = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/4-1-central-tendency'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const CentralTendencyJourney = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/4-1-1-CentralTendencyJourney'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const DataExplorerIntro = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/4-1-1-DataExplorerIntro'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+
+// Additional Histogram Components
+const HistogramIntuitiveIntro = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/4-2-1-HistogramIntuitiveIntro'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const HistogramInteractiveJourney = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/4-2-2-HistogramInteractiveJourney'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const HistogramShapeAnalysis = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/4-2-3-HistogramShapeAnalysis'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+// Improved Sampling Distributions
+const SamplingDistributionsImproved = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/4-3-1-SamplingDistributions-Improved'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+// Additional F-Distribution Components
+const FDistributionIntuitiveIntro = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/4-5-1-FDistributionIntuitiveIntro').then(mod => ({ default: mod.FDistributionIntuitiveIntro })),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const FDistributionInteractiveJourney = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/4-5-2-FDistributionInteractiveJourney').then(mod => ({ default: mod.FDistributionInteractiveJourney })),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const FDistributionWorkedExample = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/4-5-2-FDistributionWorkedExample').then(mod => ({ default: mod.FDistributionWorkedExample })),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const FDistributionMasterclass = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/4-5-3-FDistributionMasterclass'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const FDistributionMastery = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/4-5-3-FDistributionMastery').then(mod => ({ default: mod.FDistributionMastery })),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const FDistributionJourney = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/4-5-4-FDistributionJourney'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+// Additional Boxplot Components
+const BoxplotQuartilesJourney = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/4-6-1-BoxplotQuartilesJourney'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const BoxplotRealWorldExplorer = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/4-6-2-BoxplotRealWorldExplorer'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
 import ConceptSection from '@/components/shared/ConceptSection';
 
 export default function Chapter4Page() {
@@ -122,15 +308,41 @@ export default function Chapter4Page() {
   useEffect(() => {
     // Map section IDs to indices
     const sectionIdToIndex = {
-      'descriptive-journey': 0,
-      'comprehensive-stats': 1,
-      'histograms': 2,
+      // Central Tendency & Descriptive Stats
+      'central-tendency-hub': 0,
+      'data-explorer-intro': 1,
+      'descriptive-journey': 2,
       'stats-explorer': 3,
-      't-distribution': 4,
-      'f-distribution': 5,
-      'sampling-distributions': 6,
-      'boxplot-quartiles': 7,
-      'central-limit-theorem': 8
+      'central-tendency-journey': 4,
+      'comprehensive-stats': 5,
+      
+      // Histograms
+      'histogram-intro': 6,
+      'histograms': 7,
+      'histogram-journey': 8,
+      'histogram-analysis': 9,
+      
+      // Sampling & Distributions
+      'sampling-distributions': 10,
+      'sampling-distributions-improved': 11,
+      'central-limit-theorem': 12,
+      
+      // T-Distribution
+      't-distribution': 13,
+      
+      // F-Distribution
+      'f-distribution-intro': 14,
+      'f-distribution': 15,
+      'f-distribution-journey': 16,
+      'f-distribution-worked': 17,
+      'f-distribution-masterclass': 18,
+      'f-distribution-mastery': 19,
+      'f-distribution-full-journey': 20,
+      
+      // Boxplots
+      'boxplot-quartiles': 21,
+      'boxplot-journey': 22,
+      'boxplot-real-world': 23
     };
     
     const section = searchParams.get('section');
@@ -140,59 +352,184 @@ export default function Chapter4Page() {
   }, [searchParams]);
 
   const sections = [
+    // Central Tendency & Descriptive Stats
+    {
+      id: 'central-tendency-hub',
+      title: "4.1.0 - 🎯 Central Tendency: Learning Hub",
+      description: "Master central tendency through multiple learning paths - from intuitive understanding to mathematical rigor. Choose your own journey through mean, median, and mode with interactive visualizations, challenges, and progressive learning.",
+      component: <CentralTendencyHub />,
+      category: 'central-tendency'
+    },
+    {
+      id: 'data-explorer-intro',
+      title: "4.1.1 - Data Explorer Introduction",
+      description: "Get started with exploring data through interactive visualizations and hands-on examples.",
+      component: <DataExplorerIntro />,
+      category: 'central-tendency'
+    },
     {
       id: 'descriptive-journey',
-      title: "📚 Interactive Learning Journey",
-      description: "Start here! Learn descriptive statistics through an engaging, progressive journey with interactive challenges and gamification.",
-      component: <DescriptiveStatsJourney />
-    },
-    {
-      id: 'comprehensive-stats',
-      title: "Stats Lab: Practice & Apply",
-      description: "Practice with real-world scenarios. Master mean, median, mode, and see how outliers affect different measures.",
-      component: <ComprehensiveStats />
-    },
-    {
-      id: 'histograms',
-      title: "Histograms & Data Shapes",
-      description: "Explore how histograms represent data distributions and learn to identify symmetric, right-skewed, and left-skewed datasets.",
-      component: <HistogramShapeExplorer />
+      title: "4.1.2 - 📚 Descriptive Stats Journey",
+      description: "Learn descriptive statistics through an engaging, progressive journey with interactive challenges and gamification.",
+      component: <DescriptiveStatsJourney />,
+      category: 'central-tendency'
     },
     {
       id: 'stats-explorer',
-      title: "Interactive Statistics Explorer",
+      title: "4.1.3 - Interactive Statistics Explorer",
       description: "Explore central tendency and dispersion measures interactively. Drag data points, observe outlier effects, and understand statistical robustness.",
-      component: <DescriptiveStatsExplorer />
+      component: <DescriptiveStatsExplorer />,
+      category: 'central-tendency'
     },
     {
-      id: 't-distribution',
-      title: "t-Distribution vs Normal",
-      description: "Explore how the t-distribution accounts for uncertainty when estimating population variance and converges to normal as sample size increases.",
-      component: <TDistributionExplorer />
+      id: 'central-tendency-journey',
+      title: "4.1.4 - Central Tendency Journey",
+      description: "Explore mean, median, and mode through interactive storytelling and progressive challenges.",
+      component: <CentralTendencyJourney />,
+      category: 'central-tendency'
     },
     {
-      id: 'f-distribution',
-      title: "F-Distribution Explorer",
-      description: "Compare variances from two samples using the F-distribution. Essential for ANOVA and variance ratio tests.",
-      component: <FDistributionExplorer />
+      id: 'comprehensive-stats',
+      title: "4.1.5 - Stats Lab: Practice & Apply",
+      description: "Practice with real-world scenarios. Master mean, median, mode, and see how outliers affect different measures.",
+      component: <ComprehensiveStats />,
+      category: 'central-tendency'
     },
+    
+    // Histograms
+    {
+      id: 'histogram-intro',
+      title: "4.2.1 - Histograms: Intuitive Introduction",
+      description: "Learn what histograms are and why they're essential for understanding data distributions.",
+      component: <HistogramIntuitiveIntro />,
+      category: 'histograms'
+    },
+    {
+      id: 'histograms',
+      title: "4.2.2 - Histograms & Data Shapes",
+      description: "Explore how histograms represent data distributions and learn to identify symmetric, right-skewed, and left-skewed datasets.",
+      component: <HistogramShapeExplorer />,
+      category: 'histograms'
+    },
+    {
+      id: 'histogram-journey',
+      title: "4.2.3 - Histogram Interactive Journey",
+      description: "Build your understanding of histograms through guided, interactive exercises.",
+      component: <HistogramInteractiveJourney />,
+      category: 'histograms'
+    },
+    {
+      id: 'histogram-analysis',
+      title: "4.2.4 - Histogram Shape Analysis",
+      description: "Learn to analyze and interpret different histogram shapes and what they reveal about your data.",
+      component: <HistogramShapeAnalysis />,
+      category: 'histograms'
+    },
+    
+    // Sampling & Distributions
     {
       id: 'sampling-distributions',
-      title: "Sampling Distributions",
+      title: "4.3.1 - Sampling Distributions",
       description: "Discover how sample means form predictable patterns. Experience the Central Limit Theorem in action as you build sampling distributions.",
-      component: <SamplingDistributions />
+      component: <SamplingDistributions />,
+      category: 'sampling'
     },
     {
-      id: 'boxplot-quartiles',
-      title: "Boxplots & Quartiles",
-      description: "Master the five-number summary and boxplot visualization. Learn to identify outliers and understand data distribution at a glance.",
-      component: <BoxplotQuartilesExplorer />
+      id: 'sampling-distributions-improved',
+      title: "4.3.2 - Sampling Distributions (Enhanced)",
+      description: "An improved version with better visualizations and more interactive features for understanding sampling distributions.",
+      component: <SamplingDistributionsImproved />,
+      category: 'sampling'
     },
     {
       id: 'central-limit-theorem',
-      title: "Central Limit Theorem",
+      title: "4.3.3 - Central Limit Theorem",
       description: "Experience the most important theorem in statistics. Watch how sample means always form a normal distribution, regardless of the original data shape.",
-      component: <CLTSimulation />
+      component: <CLTSimulation />,
+      category: 'sampling'
+    },
+    
+    // T-Distribution
+    {
+      id: 't-distribution',
+      title: "4.4.1 - t-Distribution vs Normal",
+      description: "Explore how the t-distribution accounts for uncertainty when estimating population variance and converges to normal as sample size increases.",
+      component: <TDistributionExplorer />,
+      category: 't-distribution'
+    },
+    
+    // F-Distribution
+    {
+      id: 'f-distribution-intro',
+      title: "4.5.1 - F-Distribution: Intuitive Introduction",
+      description: "Get an intuitive understanding of the F-distribution and its role in comparing variances.",
+      component: <FDistributionIntuitiveIntro />,
+      category: 'f-distribution'
+    },
+    {
+      id: 'f-distribution',
+      title: "4.5.2 - F-Distribution Explorer",
+      description: "Compare variances from two samples using the F-distribution. Essential for ANOVA and variance ratio tests.",
+      component: <FDistributionExplorer />,
+      category: 'f-distribution'
+    },
+    {
+      id: 'f-distribution-journey',
+      title: "4.5.3 - F-Distribution Interactive Journey",
+      description: "Learn F-distribution concepts through hands-on exploration and guided exercises.",
+      component: <FDistributionInteractiveJourney />,
+      category: 'f-distribution'
+    },
+    {
+      id: 'f-distribution-worked',
+      title: "4.5.4 - F-Distribution Worked Examples",
+      description: "Work through real-world examples using the F-distribution for hypothesis testing.",
+      component: <FDistributionWorkedExample />,
+      category: 'f-distribution'
+    },
+    {
+      id: 'f-distribution-masterclass',
+      title: "4.5.5 - F-Distribution Masterclass",
+      description: "Advanced concepts and applications of the F-distribution in statistical analysis.",
+      component: <FDistributionMasterclass />,
+      category: 'f-distribution'
+    },
+    {
+      id: 'f-distribution-mastery',
+      title: "4.5.6 - F-Distribution Mastery",
+      description: "Master the F-distribution with comprehensive exercises and real-world applications.",
+      component: <FDistributionMastery />,
+      category: 'f-distribution'
+    },
+    {
+      id: 'f-distribution-full-journey',
+      title: "4.5.7 - Complete F-Distribution Journey",
+      description: "A comprehensive journey through all aspects of the F-distribution from basics to advanced topics.",
+      component: <FDistributionJourney />,
+      category: 'f-distribution'
+    },
+    
+    // Boxplots
+    {
+      id: 'boxplot-quartiles',
+      title: "4.6.1 - Boxplots & Quartiles",
+      description: "Master the five-number summary and boxplot visualization. Learn to identify outliers and understand data distribution at a glance.",
+      component: <BoxplotQuartilesExplorer />,
+      category: 'boxplots'
+    },
+    {
+      id: 'boxplot-journey',
+      title: "4.6.2 - Boxplot Interactive Journey",
+      description: "Learn boxplots through progressive, interactive lessons with real-time feedback.",
+      component: <BoxplotQuartilesJourney />,
+      category: 'boxplots'
+    },
+    {
+      id: 'boxplot-real-world',
+      title: "4.6.3 - Boxplots: Real-World Applications",
+      description: "Apply boxplot analysis to real-world datasets and scenarios.",
+      component: <BoxplotRealWorldExplorer />,
+      category: 'boxplots'
     }
   ];
 
@@ -210,24 +547,163 @@ export default function Chapter4Page() {
           </p>
         </div>
 
-        {/* Section Navigation */}
-        <div className="flex flex-wrap justify-center gap-2 mb-8">
-          {sections.map((section, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                setCurrentSection(index);
-                router.push(`/chapter4?section=${section.id}`);
-              }}
-              className={`px-4 py-2 rounded-lg transition-all ${
-                currentSection === index
-                  ? 'bg-blue-600 text-white font-semibold'
-                  : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
-              }`}
-            >
-              {section.title}
-            </button>
-          ))}
+        {/* Section Navigation by Category */}
+        <div className="space-y-6 mb-8">
+          {/* Central Tendency & Descriptive Stats */}
+          <div>
+            <h3 className="text-lg font-semibold text-cyan-400 mb-3">Central Tendency & Descriptive Statistics</h3>
+            <div className="flex flex-wrap gap-2">
+              {sections.filter(s => s.category === 'central-tendency').map((section, index) => {
+                const sectionIndex = sections.findIndex(s => s.id === section.id);
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => {
+                      setCurrentSection(sectionIndex);
+                      router.push(`/chapter4?section=${section.id}`);
+                    }}
+                    className={`px-4 py-2 rounded-lg transition-all text-sm ${
+                      currentSection === sectionIndex
+                        ? 'bg-blue-600 text-white font-semibold'
+                        : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
+                    }`}
+                  >
+                    {section.title}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Histograms */}
+          <div>
+            <h3 className="text-lg font-semibold text-purple-400 mb-3">Histograms & Data Visualization</h3>
+            <div className="flex flex-wrap gap-2">
+              {sections.filter(s => s.category === 'histograms').map((section) => {
+                const sectionIndex = sections.findIndex(s => s.id === section.id);
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => {
+                      setCurrentSection(sectionIndex);
+                      router.push(`/chapter4?section=${section.id}`);
+                    }}
+                    className={`px-4 py-2 rounded-lg transition-all text-sm ${
+                      currentSection === sectionIndex
+                        ? 'bg-blue-600 text-white font-semibold'
+                        : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
+                    }`}
+                  >
+                    {section.title}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Sampling & CLT */}
+          <div>
+            <h3 className="text-lg font-semibold text-green-400 mb-3">Sampling Distributions & CLT</h3>
+            <div className="flex flex-wrap gap-2">
+              {sections.filter(s => s.category === 'sampling').map((section) => {
+                const sectionIndex = sections.findIndex(s => s.id === section.id);
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => {
+                      setCurrentSection(sectionIndex);
+                      router.push(`/chapter4?section=${section.id}`);
+                    }}
+                    className={`px-4 py-2 rounded-lg transition-all text-sm ${
+                      currentSection === sectionIndex
+                        ? 'bg-blue-600 text-white font-semibold'
+                        : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
+                    }`}
+                  >
+                    {section.title}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* T-Distribution */}
+          <div>
+            <h3 className="text-lg font-semibold text-yellow-400 mb-3">T-Distribution</h3>
+            <div className="flex flex-wrap gap-2">
+              {sections.filter(s => s.category === 't-distribution').map((section) => {
+                const sectionIndex = sections.findIndex(s => s.id === section.id);
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => {
+                      setCurrentSection(sectionIndex);
+                      router.push(`/chapter4?section=${section.id}`);
+                    }}
+                    className={`px-4 py-2 rounded-lg transition-all text-sm ${
+                      currentSection === sectionIndex
+                        ? 'bg-blue-600 text-white font-semibold'
+                        : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
+                    }`}
+                  >
+                    {section.title}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* F-Distribution */}
+          <div>
+            <h3 className="text-lg font-semibold text-orange-400 mb-3">F-Distribution</h3>
+            <div className="flex flex-wrap gap-2">
+              {sections.filter(s => s.category === 'f-distribution').map((section) => {
+                const sectionIndex = sections.findIndex(s => s.id === section.id);
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => {
+                      setCurrentSection(sectionIndex);
+                      router.push(`/chapter4?section=${section.id}`);
+                    }}
+                    className={`px-4 py-2 rounded-lg transition-all text-sm ${
+                      currentSection === sectionIndex
+                        ? 'bg-blue-600 text-white font-semibold'
+                        : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
+                    }`}
+                  >
+                    {section.title}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Boxplots */}
+          <div>
+            <h3 className="text-lg font-semibold text-pink-400 mb-3">Boxplots & Quartiles</h3>
+            <div className="flex flex-wrap gap-2">
+              {sections.filter(s => s.category === 'boxplots').map((section) => {
+                const sectionIndex = sections.findIndex(s => s.id === section.id);
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => {
+                      setCurrentSection(sectionIndex);
+                      router.push(`/chapter4?section=${section.id}`);
+                    }}
+                    className={`px-4 py-2 rounded-lg transition-all text-sm ${
+                      currentSection === sectionIndex
+                        ? 'bg-blue-600 text-white font-semibold'
+                        : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
+                    }`}
+                  >
+                    {section.title}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         {/* Current Section */}
