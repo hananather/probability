@@ -16,17 +16,6 @@ const DescriptiveStatsJourney = dynamic(
   }
 );
 
-const ComprehensiveStats = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/4-1-1-ComprehensiveStats'),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-gray-400">Loading visualization...</div>
-      </div>
-    )
-  }
-);
 
 const TDistributionExplorer = dynamic(
   () => import('@/components/04-descriptive-statistics-sampling/4-4-1-TDistributionExplorer').then(mod => ({ default: mod.TDistributionExplorer })),
@@ -125,29 +114,7 @@ const CentralTendencyHub = dynamic(
   }
 );
 
-const CentralTendencyJourney = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/4-1-central-tendency/4-1-1-CentralTendencyJourney'),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-gray-400">Loading visualization...</div>
-      </div>
-    )
-  }
-);
 
-const DataExplorerIntro = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/4-1-1-DataExplorerIntro'),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-gray-400">Loading visualization...</div>
-      </div>
-    )
-  }
-);
 
 // Additional 4.1 Components
 const CentralTendencyMasterclass = dynamic(
@@ -351,38 +318,35 @@ export default function Chapter4Page() {
       '4-1-0-central-tendency-intuitive-intro': 1,
       '4-1-2-mathematical-foundations': 2,
       '4-1-0-central-tendency-masterclass': 3,
-      '4-1-1-data-explorer-intro': 4,
-      '4-1-1-descriptive-stats-journey': 5,
-      '4-1-1-central-tendency-journey': 6,
-      '4-1-1-comprehensive-stats': 7,
-      '4-1-2-descriptive-statistics-foundations': 8,
-      '4-1-2-central-tendency-deep-dive': 9,
-      '4-1-3-descriptive-stats-explorer': 10,
+      '4-1-1-descriptive-stats-journey': 4,
+      '4-1-2-descriptive-statistics-foundations': 5,
+      '4-1-2-central-tendency-deep-dive': 6,
+      '4-1-3-descriptive-stats-explorer': 7,
       
       // Histograms
-      'histograms': 11,
+      'histograms': 8,
       
       // Sampling & Distributions
-      'sampling-distributions': 12,
-      'sampling-distributions-improved': 13,
-      'central-limit-theorem': 14,
+      'sampling-distributions': 9,
+      'sampling-distributions-improved': 10,
+      'central-limit-theorem': 11,
       
       // T-Distribution
-      't-distribution': 15,
+      't-distribution': 12,
       
       // F-Distribution
-      'f-distribution-intro': 16,
-      'f-distribution': 17,
-      'f-distribution-journey': 18,
-      'f-distribution-worked': 19,
-      'f-distribution-masterclass': 20,
-      'f-distribution-mastery': 21,
-      'f-distribution-full-journey': 22,
+      'f-distribution-intro': 13,
+      'f-distribution': 14,
+      'f-distribution-journey': 15,
+      'f-distribution-worked': 16,
+      'f-distribution-masterclass': 17,
+      'f-distribution-mastery': 18,
+      'f-distribution-full-journey': 19,
       
       // Boxplots
-      'boxplot-quartiles': 23,
-      'boxplot-journey': 24,
-      'boxplot-real-world': 25
+      'boxplot-quartiles': 20,
+      'boxplot-journey': 21,
+      'boxplot-real-world': 22
     };
     
     const section = searchParams.get('section');
@@ -422,31 +386,10 @@ export default function Chapter4Page() {
       category: 'central-tendency'
     },
     {
-      id: '4-1-1-data-explorer-intro',
-      title: "4-1-1-DataExplorerIntro",
-      description: "Get started with exploring data through interactive visualizations and hands-on examples.",
-      component: <DataExplorerIntro />,
-      category: 'central-tendency'
-    },
-    {
       id: '4-1-1-descriptive-stats-journey',
       title: "4-1-1-DescriptiveStatsJourney",
       description: "Learn descriptive statistics through an engaging, progressive journey with interactive challenges and gamification.",
       component: <DescriptiveStatsJourney />,
-      category: 'central-tendency'
-    },
-    {
-      id: '4-1-1-central-tendency-journey',
-      title: "4-1-1-CentralTendencyJourney",
-      description: "Explore mean, median, and mode through interactive physics-based storytelling and progressive challenges.",
-      component: <CentralTendencyJourney />,
-      category: 'central-tendency'
-    },
-    {
-      id: '4-1-1-comprehensive-stats',
-      title: "4-1-1-ComprehensiveStats",
-      description: "Practice with real-world scenarios. Master mean, median, mode, and see how outliers affect different measures.",
-      component: <ComprehensiveStats />,
       category: 'central-tendency'
     },
     {
