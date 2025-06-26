@@ -55,16 +55,16 @@ const CIUnknownVarianceHub = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100">
+    <div className="min-h-screen bg-neutral-900">
       {/* Hero Section */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-amber-500/10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-900/20 to-amber-900/20" />
         <div className="relative max-w-7xl mx-auto px-6 py-16">
           <div className="text-center space-y-6">
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">
               Confidence Intervals: Unknown σ
             </h1>
-            <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+            <p className="text-xl text-neutral-300 max-w-3xl mx-auto">
               Welcome to the real world where population variance is rarely known. 
               Learn how to construct reliable confidence intervals using sample data.
             </p>
@@ -74,36 +74,36 @@ const CIUnknownVarianceHub = () => {
 
       {/* Why This Matters Section */}
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="bg-white rounded-2xl shadow-xl p-8 border border-orange-200">
+        <div className="bg-neutral-800 rounded-2xl shadow-xl p-8 border border-orange-500/30">
           <div className="flex items-start gap-4">
             <div className="p-3 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl">
               <AlertCircle className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+              <h2 className="text-2xl font-bold text-white mb-4">
                 Real-World Uncertainty
               </h2>
-              <p className="text-gray-600 mb-4">
+              <p className="text-neutral-300 mb-4">
                 In practice, we almost never know the true population standard deviation. 
                 This is where the t-distribution becomes our trusted companion, accounting 
                 for the additional uncertainty from estimating σ with s.
               </p>
               <div className="grid md:grid-cols-3 gap-4 mt-6">
-                <div className="bg-orange-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-orange-800 mb-2">Small Samples</h3>
-                  <p className="text-sm text-gray-700">
+                <div className="bg-orange-900/20 rounded-lg p-4 border border-orange-500/30">
+                  <h3 className="font-semibold text-orange-400 mb-2">Small Samples</h3>
+                  <p className="text-sm text-neutral-300">
                     T-distribution properly handles the extra variability in small samples
                   </p>
                 </div>
-                <div className="bg-amber-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-amber-800 mb-2">Wider Intervals</h3>
-                  <p className="text-sm text-gray-700">
+                <div className="bg-amber-900/20 rounded-lg p-4 border border-amber-500/30">
+                  <h3 className="font-semibold text-amber-400 mb-2">Wider Intervals</h3>
+                  <p className="text-sm text-neutral-300">
                     More conservative estimates reflect our uncertainty about σ
                   </p>
                 </div>
-                <div className="bg-orange-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-orange-800 mb-2">Adaptive</h3>
-                  <p className="text-sm text-gray-700">
+                <div className="bg-orange-900/20 rounded-lg p-4 border border-orange-500/30">
+                  <h3 className="font-semibold text-orange-400 mb-2">Adaptive</h3>
+                  <p className="text-sm text-neutral-300">
                     Automatically adjusts based on sample size through degrees of freedom
                   </p>
                 </div>
@@ -115,7 +115,7 @@ const CIUnknownVarianceHub = () => {
 
       {/* Learning Paths */}
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">
+        <h2 className="text-3xl font-bold text-center text-white mb-12">
           Choose Your Learning Path
         </h2>
         <div className="grid md:grid-cols-3 gap-6">
@@ -125,8 +125,8 @@ const CIUnknownVarianceHub = () => {
               <Link
                 key={path.id}
                 href={`/chapter5/ci-unknown-variance/${path.component.replace('5-4-', '')}`}
-                className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl 
-                         transition-all duration-300 overflow-hidden border border-orange-200"
+                className="group relative bg-neutral-800 rounded-2xl shadow-lg hover:shadow-2xl 
+                         transition-all duration-300 overflow-hidden border border-orange-500/30"
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${path.color} opacity-0 
                                group-hover:opacity-10 transition-opacity duration-300`} />
@@ -136,25 +136,25 @@ const CIUnknownVarianceHub = () => {
                     <Icon className="w-8 h-8 text-white" />
                   </div>
                   
-                  <h3 className="text-xl font-bold text-gray-800 group-hover:text-orange-600 
+                  <h3 className="text-xl font-bold text-white group-hover:text-orange-400 
                                transition-colors">
                     {path.title}
                   </h3>
                   
-                  <p className="text-gray-600">
+                  <p className="text-neutral-400">
                     {path.description}
                   </p>
                   
                   <ul className="space-y-2">
                     {path.highlights.map((highlight, idx) => (
-                      <li key={idx} className="flex items-center gap-2 text-sm text-gray-700">
+                      <li key={idx} className="flex items-center gap-2 text-sm text-neutral-300">
                         <div className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
                         {highlight}
                       </li>
                     ))}
                   </ul>
                   
-                  <div className="flex items-center gap-2 text-orange-600 font-medium pt-2">
+                  <div className="flex items-center gap-2 text-orange-400 font-medium pt-2">
                     <span>Start Learning</span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </div>
@@ -167,24 +167,24 @@ const CIUnknownVarianceHub = () => {
 
       {/* Degrees of Freedom Concept */}
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="bg-gradient-to-br from-orange-100 to-amber-100 rounded-2xl p-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">
+        <div className="bg-gradient-to-br from-orange-900/20 to-amber-900/20 rounded-2xl p-8 border border-orange-500/30">
+          <h2 className="text-2xl font-bold text-white mb-6">
             Understanding Degrees of Freedom
           </h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div>
-              <p className="text-gray-700 mb-4">
+              <p className="text-neutral-300 mb-4">
                 Degrees of freedom (df = n - 1) represent the number of independent 
                 pieces of information available to estimate variability.
               </p>
-              <div className="bg-white/80 rounded-lg p-4 space-y-3">
+              <div className="bg-neutral-800/80 rounded-lg p-4 space-y-3 border border-neutral-700">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
                     <span className="text-white font-bold">n=5</span>
                   </div>
                   <div>
-                    <p className="font-semibold">df = 4</p>
-                    <p className="text-sm text-gray-600">Very wide intervals</p>
+                    <p className="font-semibold text-white">df = 4</p>
+                    <p className="text-sm text-neutral-400">Very wide intervals</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -192,8 +192,8 @@ const CIUnknownVarianceHub = () => {
                     <span className="text-white font-bold">n=30</span>
                   </div>
                   <div>
-                    <p className="font-semibold">df = 29</p>
-                    <p className="text-sm text-gray-600">Approaching normal</p>
+                    <p className="font-semibold text-white">df = 29</p>
+                    <p className="text-sm text-neutral-400">Approaching normal</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -201,8 +201,8 @@ const CIUnknownVarianceHub = () => {
                     <span className="text-white font-bold">n=∞</span>
                   </div>
                   <div>
-                    <p className="font-semibold">df = ∞</p>
-                    <p className="text-sm text-gray-600">Becomes standard normal</p>
+                    <p className="font-semibold text-white">df = ∞</p>
+                    <p className="text-sm text-neutral-400">Becomes standard normal</p>
                   </div>
                 </div>
               </div>
@@ -236,22 +236,22 @@ const CIUnknownVarianceHub = () => {
 
       {/* T vs Z Comparison */}
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-8">
+        <h2 className="text-2xl font-bold text-center text-white mb-8">
           T-Distribution vs. Z-Distribution
         </h2>
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="grid md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-gray-200">
+        <div className="bg-neutral-800 rounded-2xl shadow-xl overflow-hidden border border-neutral-700">
+          <div className="grid md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-neutral-600">
             {comparisonData.map((item, idx) => (
               <div key={idx} className="p-6">
-                <h3 className="font-semibold text-gray-700 mb-3">{item.aspect}</h3>
+                <h3 className="font-semibold text-neutral-300 mb-3">{item.aspect}</h3>
                 <div className="space-y-2">
-                  <div className="bg-orange-50 rounded-lg p-3">
-                    <p className="text-sm font-medium text-orange-800">T-Distribution</p>
-                    <p className="text-sm text-gray-700">{item.t}</p>
+                  <div className="bg-orange-900/20 rounded-lg p-3 border border-orange-500/30">
+                    <p className="text-sm font-medium text-orange-400">T-Distribution</p>
+                    <p className="text-sm text-neutral-300">{item.t}</p>
                   </div>
-                  <div className="bg-blue-50 rounded-lg p-3">
-                    <p className="text-sm font-medium text-blue-800">Z-Distribution</p>
-                    <p className="text-sm text-gray-700">{item.z}</p>
+                  <div className="bg-blue-900/20 rounded-lg p-3 border border-blue-500/30">
+                    <p className="text-sm font-medium text-blue-400">Z-Distribution</p>
+                    <p className="text-sm text-neutral-300">{item.z}</p>
                   </div>
                 </div>
               </div>
@@ -262,13 +262,13 @@ const CIUnknownVarianceHub = () => {
 
       {/* Pro Tip */}
       <div className="max-w-7xl mx-auto px-6 py-12 pb-20">
-        <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-8 text-white">
+        <div className="bg-gradient-to-r from-orange-900/20 to-amber-900/20 rounded-2xl p-8 text-white border border-orange-500/30">
           <div className="flex items-start gap-4">
             <TrendingUp className="w-8 h-8 flex-shrink-0" />
             <div>
               <h3 className="text-2xl font-bold mb-3">Pro Tip: Choosing Your Method</h3>
               <div className="grid md:grid-cols-2 gap-6 mt-4">
-                <div className="bg-white/20 rounded-lg p-4">
+                <div className="bg-neutral-800/50 rounded-lg p-4 border border-neutral-700">
                   <h4 className="font-semibold mb-2">Use T-Distribution When:</h4>
                   <ul className="space-y-1 text-sm">
                     <li>• Data is approximately normal</li>
@@ -276,7 +276,7 @@ const CIUnknownVarianceHub = () => {
                     <li>• Traditional statistical approach preferred</li>
                   </ul>
                 </div>
-                <div className="bg-white/20 rounded-lg p-4">
+                <div className="bg-neutral-800/50 rounded-lg p-4 border border-neutral-700">
                   <h4 className="font-semibold mb-2">Use Bootstrap When:</h4>
                   <ul className="space-y-1 text-sm">
                     <li>• Data is non-normal or complex</li>
@@ -285,7 +285,7 @@ const CIUnknownVarianceHub = () => {
                   </ul>
                 </div>
               </div>
-              <p className="mt-4 text-orange-100">
+              <p className="mt-4 text-neutral-300">
                 Both methods account for unknown σ, but bootstrapping offers more flexibility 
                 for modern, complex data scenarios.
               </p>
