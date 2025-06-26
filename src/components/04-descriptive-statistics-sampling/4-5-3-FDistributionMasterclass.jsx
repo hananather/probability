@@ -10,11 +10,11 @@ import {
   ControlGroup,
   ControlPanel,
   StatsDisplay
-} from "../ui/VisualizationContainer";
-import { Button } from "../ui/button";
-import { RangeSlider } from "../ui/RangeSlider";
+} from '@/components/ui/VisualizationContainer';
+import { Button } from '@/components/ui/button';
+import { RangeSlider } from '@/components/ui/RangeSlider';
 import { ProgressBar, ProgressNavigation } from '@/components/ui/ProgressBar';
-import { createColorScheme, cn, formatNumber } from "../../lib/design-system";
+import { createColorScheme, cn, formatNumber } from '@/lib/design-system';
 import { 
   Info, 
   TrendingUp, 

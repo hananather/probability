@@ -8,10 +8,10 @@ import {
   VisualizationSection,
   GraphContainer,
   ControlGroup
-} from '../ui/VisualizationContainer';
+} from '@/components/ui/VisualizationContainer';
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '@/lib/design-system';
-import { ProgressBar } from '../ui/ProgressBar';
-import { Button } from '../ui/button';
+import { ProgressBar } from '@/components/ui/ProgressBar';
+import { Button } from '@/components/ui/button';
 import { CheckCircle, Award, TrendingUp, Brain, Zap } from 'lucide-react';
 import { tutorial_4_3_1 } from '@/tutorials/chapter4';
 

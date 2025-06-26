@@ -9,11 +9,11 @@ import {
   VisualizationSection,
   ControlGroup,
   StatsDisplay
-} from '@/components/ui/VisualizationContainer';
-import { createColorScheme, cn, typography, colors, formatNumber } from '@/lib/design-system';
-import { Button } from '@/components/ui/button';
-import { RangeSlider } from '@/components/ui/RangeSlider';
-import { ProgressBar } from '@/components/ui/ProgressBar';
+} from "@/components/ui/VisualizationContainer";
+import { createColorScheme, cn, typography, colors, formatNumber } from "@/lib/design-system";
+import { Button } from "@/components/ui/button";
+import { RangeSlider } from "@/components/ui/RangeSlider";
+import { ProgressBar } from "@/components/ui/ProgressBar";
 import { AlertCircle, CheckCircle, TrendingUp, Award, Info, Lightbulb } from "lucide-react";
 import { useAnimationCleanup } from "@/hooks/useAnimationCleanup";
 

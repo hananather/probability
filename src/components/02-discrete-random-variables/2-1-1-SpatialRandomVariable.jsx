@@ -35,8 +35,8 @@ const SpatialRandomVariable = () => {
   const [legendItems, setLegendItems] = useState([]);
   const [isSampling, setIsSampling] = useState(false);
   
-  // Track values and total
-  const valuesRef = useRef({});
+  // Track values and total - Initialize with proper default values
+  const valuesRef = useRef({ 0: 0 });
   const totalRef = useRef(0);
   const [updateTrigger, setUpdateTrigger] = useState(0);
   const [drawnHexCount, setDrawnHexCount] = useState(0);
@@ -54,8 +54,9 @@ const SpatialRandomVariable = () => {
   useEffect(() => {
     if (!svgGridRef.current) return;
     
-    const svg = d3.select(svgGridRef.current);
-    svg.selectAll("*").remove();
+    try {
+      const svg = d3.select(svgGridRef.current);
+      svg.selectAll("*").remove();
     
     // Create hexbin generator
     const hexbin = d3Hexbin()
@@ -164,14 +165,18 @@ const SpatialRandomVariable = () => {
     return () => {
       d3.select(window).on("mouseup.spatial", null);
     };
+    } catch (error) {
+      console.error('Error initializing hexagon grid:', error);
+    }
   }, []);
   
   // Initialize distribution chart
   useEffect(() => {
     if (!svgDistRef.current) return;
     
-    const svg = d3.select(svgDistRef.current);
-    svg.selectAll("*").remove();
+    try {
+      const svg = d3.select(svgDistRef.current);
+      svg.selectAll("*").remove();
     
     // Container
     const container = svg.append("g")
@@ -250,10 +255,17 @@ const SpatialRandomVariable = () => {
     // Initialize with value 0 bar
     setTimeout(() => {
       if (svgDistRef.current && svgDistRef.current.container) {
-        valuesRef.current = { 0: 0 };
-        addRect('#6B7280', 0);
+        try {
+          valuesRef.current = { 0: 0 };
+          addRect('#6B7280', 0);
+        } catch (e) {
+          console.error('Error initializing distribution chart:', e);
+        }
       }
     }, 100);
+    } catch (error) {
+      console.error('Error initializing distribution chart:', error);
+    }
   }, []);
   
   // Add rectangle to distribution
@@ -264,8 +276,14 @@ const SpatialRandomVariable = () => {
     const xScaleRVD = svgDistRef.current.xScale;
     const xAxisGroup = svgDistRef.current.xAxisGroup;
     
-    const key = Object.keys(valuesRef.current);
-    const range = key.sort((a, b) => parseFloat(a) - parseFloat(b));
+    // Defensive programming: ensure valuesRef.current exists
+    if (!valuesRef.current) {
+      valuesRef.current = {};
+    }
+    
+    // Get keys and create a sorted copy (avoid mutating the original array)
+    const keys = Object.keys(valuesRef.current);
+    const range = [...keys].sort((a, b) => parseFloat(a) - parseFloat(b));
     
     // Update scale domain
     xScaleRVD.domain(range);
@@ -313,6 +331,11 @@ const SpatialRandomVariable = () => {
     const containerRVD = svgDistRef.current.container;
     const xScaleRVD = svgDistRef.current.xScale;
     const yScaleRVD = svgDistRef.current.yScale;
+    
+    // Defensive check for valuesRef
+    if (!valuesRef.current) {
+      valuesRef.current = {};
+    }
     
     // Update each rect by ID to avoid data binding issues
     Object.keys(valuesRef.current).forEach(value => {
@@ -363,7 +386,7 @@ const SpatialRandomVariable = () => {
     
     // Fix color on hexagons - avoid .each() to prevent DOM errors
     const hexData = svgGridRef.current?.hexData;
-    if (!hexData) return;
+    if (!hexData || !Array.isArray(hexData)) return;
     
     // Update data first
     let assignedCount = 0;
@@ -398,6 +421,11 @@ const SpatialRandomVariable = () => {
   
   // Add point animation with improved visual feedback
   const addPoint = (pos, color, value, hexIndex) => {
+    // Defensive initialization
+    if (!valuesRef.current) {
+      valuesRef.current = {};
+    }
+    
     if (valuesRef.current[value] === undefined) {
       valuesRef.current[value] = 1;
       addRect(color, value);
@@ -466,7 +494,9 @@ const SpatialRandomVariable = () => {
           if (node && node.parentNode) {
             node.parentNode.removeChild(node);
           }
-          animationsRef.current.delete(node);
+          if (animationsRef.current) {
+            animationsRef.current.delete(node);
+          }
         } catch (e) {
           // Ignore errors from already removed nodes
         }
@@ -501,6 +531,11 @@ const SpatialRandomVariable = () => {
     const hexbin = svgGridRef.current?.hexbin;
     const hexData = svgGridRef.current?.hexData;
     if (!hexbin || !hexData) return;
+    
+    // Ensure valuesRef is initialized
+    if (!valuesRef.current) {
+      valuesRef.current = { 0: 0 };
+    }
     
     samplingIntervalRef.current = setInterval(() => {
       const randomX = Math.random() * WIDTH_GRID;
@@ -545,6 +580,7 @@ const SpatialRandomVariable = () => {
   
   // Reset samples only
   const resetSamples = () => {
+    // Safe initialization
     valuesRef.current = { 0: 0 };
     totalRef.current = 0;
     setUpdateTrigger(prev => prev + 1);
@@ -570,15 +606,19 @@ const SpatialRandomVariable = () => {
     
     stopSampling();
     
-    // Clean up animations
-    animationsRef.current.forEach(node => {
-      try {
-        d3.select(node).remove();
-      } catch (e) {
-        // Ignore errors from already removed nodes
-      }
-    });
-    animationsRef.current.clear();
+    // Clean up animations with defensive check
+    if (animationsRef.current && animationsRef.current.forEach) {
+      animationsRef.current.forEach(node => {
+        try {
+          if (node && node.parentNode) {
+            d3.select(node).remove();
+          }
+        } catch (e) {
+          // Ignore errors from already removed nodes
+        }
+      });
+      animationsRef.current.clear();
+    }
   };
   
   // Full reset
@@ -615,7 +655,12 @@ const SpatialRandomVariable = () => {
   
   // Calculate stats
   const calculateStats = () => {
-    if (totalRef.current === 0) return { mean: 0, variance: 0 };
+    if (!totalRef.current || totalRef.current === 0) return { mean: 0, variance: 0 };
+    
+    // Defensive check for valuesRef
+    if (!valuesRef.current) {
+      return { mean: 0, variance: 0 };
+    }
     
     let mean = 0;
     Object.entries(valuesRef.current).forEach(([value, count]) => {
@@ -634,7 +679,10 @@ const SpatialRandomVariable = () => {
   
   useEffect(() => {
     // Initial setup - ensure value 0 is in the values
-    valuesRef.current = { 0: 0 };
+    if (!valuesRef.current) {
+      valuesRef.current = {};
+    }
+    valuesRef.current[0] = 0;
     totalRef.current = 0;
     
     // Initial MathJax processing
@@ -669,9 +717,18 @@ const SpatialRandomVariable = () => {
   useEffect(() => {
     return () => {
       stopSampling();
-      animationsRef.current.forEach(node => {
-        d3.select(node).remove();
-      });
+      // Defensive cleanup
+      if (animationsRef.current && animationsRef.current.forEach) {
+        animationsRef.current.forEach(node => {
+          try {
+            if (node && node.parentNode) {
+              d3.select(node).remove();
+            }
+          } catch (e) {
+            // Ignore errors
+          }
+        });
+      }
     };
   }, []);
   
@@ -844,7 +901,7 @@ const SpatialRandomVariable = () => {
             </h3>
             <div className="text-sm">
               <span className="text-neutral-400" dangerouslySetInnerHTML={{ __html: `\\(n = \\)` }} />
-              <span className="font-mono text-teal-400">{totalRef.current}</span>
+              <span className="font-mono text-teal-400">{totalRef.current || 0}</span>
             </div>
           </div>
           

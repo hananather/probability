@@ -7,11 +7,11 @@ import {
   GraphContainer,
   ControlGroup,
   StatsDisplay
-} from '../ui/VisualizationContainer';
+} from '@/components/ui/VisualizationContainer';
 import { colors, typography, formatNumber, cn, createColorScheme } from '@/lib/design-system';
 import { WorkedExample, ExampleSection, Formula, InsightBox, CalculationSteps } from '../ui/WorkedExample';
-import { Button } from '../ui/button';
-import { RangeSlider } from '../ui/RangeSlider';
+import { Button } from '@/components/ui/button';
+import { RangeSlider } from '@/components/ui/RangeSlider';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Trophy, Award, Star, Zap, Shield, Target, TrendingUp, 
@@ -725,9 +725,8 @@ function CentralTendencyDeepDive() {
           <VisualizationSection title="Select Measure">
             <div className="space-y-2">
               {['mean', 'median', 'mode'].map(measure => (
-                <button
+                <div
                   key={measure}
-                  onClick={() => setSelectedMeasure(measure)}
                   className={cn(
                     "w-full p-3 rounded-lg transition-all flex items-center gap-3",
                     selectedMeasure === measure
@@ -735,11 +734,19 @@ function CentralTendencyDeepDive() {
                       : "bg-neutral-800 hover:bg-neutral-700"
                   )}
                 >
-                  <div 
-                    className="w-4 h-4 rounded-full"
-                    style={{ backgroundColor: enhancedColors[measure].primary }}
-                  />
-                  <span className="capitalize font-medium">{measure}</span>
+                  <button
+                    onClick={() => setSelectedMeasure(measure)}
+                    className={cn(
+                      "flex-1 flex items-center gap-3 text-left",
+                      selectedMeasure === measure && "font-bold"
+                    )}
+                  >
+                    <div 
+                      className="w-4 h-4 rounded-full"
+                      style={{ backgroundColor: enhancedColors[measure].primary }}
+                    />
+                    <span className="capitalize font-medium">{measure}</span>
+                  </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -749,7 +756,7 @@ function CentralTendencyDeepDive() {
                   >
                     <HelpCircle size={16} />
                   </button>
-                </button>
+                </div>
               ))}
             </div>
           </VisualizationSection>

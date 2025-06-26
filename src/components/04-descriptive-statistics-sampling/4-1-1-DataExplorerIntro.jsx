@@ -6,9 +6,9 @@ import {
   VisualizationSection,
   GraphContainer,
   ControlGroup
-} from '../ui/VisualizationContainer';
+} from '@/components/ui/VisualizationContainer';
 import { colors, formatNumber } from '@/lib/design-system';
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TutorialButton } from '../ui/TutorialButton';
 import { Tutorial } from '../ui/Tutorial';

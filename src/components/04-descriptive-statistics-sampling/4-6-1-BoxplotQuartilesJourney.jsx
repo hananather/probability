@@ -6,11 +6,11 @@ import {
   VisualizationContainer, 
   GraphContainer,
   ControlGroup
-} from '../ui/VisualizationContainer';
+} from '@/components/ui/VisualizationContainer';
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '@/lib/design-system';
-import { ProgressBar } from '../ui/ProgressBar';
-import { Button } from '../ui/button';
-import { RangeSlider } from "../ui/RangeSlider";
+import { ProgressBar } from '@/components/ui/ProgressBar';
+import { Button } from '@/components/ui/button';
+import { RangeSlider } from '@/components/ui/RangeSlider';
 
 // Use clean color scheme for better focus on learning
 const colorScheme = createColorScheme('descriptive');

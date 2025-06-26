@@ -6,10 +6,10 @@ import {
   VisualizationContainer, 
   GraphContainer,
   ControlGroup
-} from '../ui/VisualizationContainer';
+} from '@/components/ui/VisualizationContainer';
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '@/lib/design-system';
-import { ProgressBar } from '../ui/ProgressBar';
-import { Button } from '../ui/button';
+import { ProgressBar } from '@/components/ui/ProgressBar';
+import { Button } from '@/components/ui/button';
 
 // Use clean color scheme
 const colorScheme = createColorScheme('descriptive');

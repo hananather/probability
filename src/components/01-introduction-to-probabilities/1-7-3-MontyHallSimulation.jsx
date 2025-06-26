@@ -9,8 +9,7 @@ import {
 } from '../ui/VisualizationContainer';
 import { colors, typography, cn, createColorScheme } from '../../lib/design-system';
 import { Button } from '../ui/button';
-import { RangeSlider } from '../ui/RangeSlider';
-import { Play, Pause, RotateCcw, Zap, BarChart3 } from 'lucide-react';
+import { Play, RotateCcw, BarChart3 } from 'lucide-react';
 import { useSafeMathJax } from '../../utils/mathJaxFix';
 import { tutorial_1_7_3 } from '@/tutorials/chapter1';
 
@@ -22,7 +21,7 @@ const ConvergenceChart = memo(function ConvergenceChart({ data, theoretical }) {
   const svgRef = useRef(null);
   
   useEffect(() => {
-    if (!svgRef.current || data.length === 0) return;
+    if (!svgRef.current) return;
     
     const svg = d3.select(svgRef.current);
     const width = 700;
@@ -38,9 +37,10 @@ const ConvergenceChart = memo(function ConvergenceChart({ data, theoretical }) {
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
-    // Scales
+    // Scales - dynamic x-axis that extends as needed
+    const maxTrials = Math.max(100, data[data.length - 1]?.trial || 100);
     const x = d3.scaleLinear()
-      .domain([0, Math.max(100, data.length)])
+      .domain([0, maxTrials])
       .range([0, innerWidth]);
     
     const y = d3.scaleLinear()
@@ -78,6 +78,27 @@ const ConvergenceChart = memo(function ConvergenceChart({ data, theoretical }) {
       .attr("stroke-width", 2)
       .attr("stroke-dasharray", "5,5")
       .attr("opacity", 0.8);
+    
+    // Add labels for theoretical values when no data
+    if (data.length <= 1) {
+      g.append("text")
+        .attr("x", innerWidth - 5)
+        .attr("y", y(theoretical.switch) - 5)
+        .attr("text-anchor", "end")
+        .attr("fill", colorScheme.chart.primary)
+        .style("font-size", "12px")
+        .style("font-weight", "bold")
+        .text("66.7% (Theory)");
+      
+      g.append("text")
+        .attr("x", innerWidth - 5)
+        .attr("y", y(theoretical.stay) + 15)
+        .attr("text-anchor", "end")
+        .attr("fill", colorScheme.chart.secondary)
+        .style("font-size", "12px")
+        .style("font-weight", "bold")
+        .text("33.3% (Theory)");
+    }
     
     // Line generators
     const lineStay = d3.line()
@@ -117,22 +138,24 @@ const ConvergenceChart = memo(function ConvergenceChart({ data, theoretical }) {
         .attr("opacity", 0.1);
     }
     
-    // Draw lines
-    g.append("path")
-      .datum(data)
-      .attr("d", lineStay)
-      .attr("stroke", colorScheme.chart.secondary)
-      .attr("stroke-width", 3)
-      .attr("fill", "none")
-      .style("filter", "drop-shadow(0 2px 4px rgba(0,0,0,0.3))");
-    
-    g.append("path")
-      .datum(data)
-      .attr("d", lineSwitch)
-      .attr("stroke", colorScheme.chart.primary)
-      .attr("stroke-width", 3)
-      .attr("fill", "none")
-      .style("filter", "drop-shadow(0 2px 4px rgba(0,0,0,0.3))");
+    // Draw lines (only if we have data)
+    if (data.length > 0) {
+      g.append("path")
+        .datum(data)
+        .attr("d", lineStay)
+        .attr("stroke", colorScheme.chart.secondary)
+        .attr("stroke-width", 3)
+        .attr("fill", "none")
+        .style("filter", "drop-shadow(0 2px 4px rgba(0,0,0,0.3))");
+      
+      g.append("path")
+        .datum(data)
+        .attr("d", lineSwitch)
+        .attr("stroke", colorScheme.chart.primary)
+        .attr("stroke-width", 3)
+        .attr("fill", "none")
+        .style("filter", "drop-shadow(0 2px 4px rgba(0,0,0,0.3))");
+    }
     
     // Current point markers
     if (data.length > 0) {
@@ -183,6 +206,18 @@ const ConvergenceChart = memo(function ConvergenceChart({ data, theoretical }) {
       .attr("stroke", "#6b7280");
     g.selectAll(".tick text")
       .attr("fill", "#e5e7eb");
+    
+    // Add "Start Simulation" message if no real data yet
+    if (data.length <= 1) {
+      g.append("text")
+        .attr("x", innerWidth / 2)
+        .attr("y", innerHeight / 2)
+        .attr("text-anchor", "middle")
+        .attr("fill", "#9ca3af")
+        .style("font-size", "16px")
+        .style("font-style", "italic")
+        .text("Start the simulation to see convergence in action!");
+    }
     
     // Legend
     const legend = g.append("g")
@@ -361,13 +396,19 @@ const DistributionHistogram = memo(function DistributionHistogram({ switchWins, 
 // Main Simulation Component
 function MontyHallSimulation() {
   // Simulation state
-  const [isRunning, setIsRunning] = useState(false);
-  const [simulationSpeed, setSimulationSpeed] = useState(10); // games per second
-  const [batchSize, setBatchSize] = useState(100); // for instant mode
   const [totalGames, setTotalGames] = useState(0);
-  const [convergenceData, setConvergenceData] = useState([]);
+  const [convergenceData, setConvergenceData] = useState([
+    // Initialize with theoretical values at trial 0
+    {
+      trial: 0,
+      switchRate: 2/3,
+      stayRate: 1/3,
+      switchCI: 0,
+      stayCI: 0
+    }
+  ]);
   const [recentResults, setRecentResults] = useState({ switch: [], stay: [] });
-  const [mode, setMode] = useState('animated'); // animated or instant
+  const [isSimulating, setIsSimulating] = useState(false);
   
   // Running statistics
   const [stats, setStats] = useState({
@@ -375,8 +416,7 @@ function MontyHallSimulation() {
     stay: { wins: 0, total: 0 }
   });
   
-  // Refs
-  const intervalRef = useRef(null);
+  // Refs for maintaining state during animation
   const statsRef = useRef({ switch: { wins: 0, total: 0 }, stay: { wins: 0, total: 0 } });
   
   // Theoretical values
@@ -402,8 +442,8 @@ function MontyHallSimulation() {
     return finalChoice === carPosition;
   }, []);
   
-  // Update statistics
-  const updateStats = useCallback((results) => {
+  // Update statistics with proper confidence intervals
+  const updateStats = useCallback((results, addToConvergence = true) => {
     const newStats = { ...statsRef.current };
     
     results.forEach(result => {
@@ -419,15 +459,22 @@ function MontyHallSimulation() {
     // Update convergence data
     const totalSoFar = newStats.switch.total + newStats.stay.total;
     
-    if (totalSoFar % 5 === 0 || totalSoFar <= 20) { // Record every 5 games or first 20
+    if (addToConvergence && (totalSoFar % 5 === 0 || totalSoFar <= 20)) { // Record every 5 games or first 20
       const switchRate = newStats.switch.total > 0 ? newStats.switch.wins / newStats.switch.total : 0;
       const stayRate = newStats.stay.total > 0 ? newStats.stay.wins / newStats.stay.total : 0;
       
-      // Calculate confidence intervals (95%)
-      const switchCI = newStats.switch.total > 0 ? 
-        1.96 * Math.sqrt(switchRate * (1 - switchRate) / newStats.switch.total) : 0;
-      const stayCI = newStats.stay.total > 0 ? 
-        1.96 * Math.sqrt(stayRate * (1 - stayRate) / newStats.stay.total) : 0;
+      // Calculate Wilson score confidence intervals (better for small samples)
+      const wilsonCI = (successes, n, z = 1.96) => {
+        if (n === 0) return 0;
+        const p = successes / n;
+        const denominator = 1 + z*z/n;
+        const centre = (p + z*z/(2*n)) / denominator;
+        const margin = (z / denominator) * Math.sqrt(p*(1-p)/n + z*z/(4*n*n));
+        return margin;
+      };
+      
+      const switchCI = wilsonCI(newStats.switch.wins, newStats.switch.total);
+      const stayCI = wilsonCI(newStats.stay.wins, newStats.stay.total);
       
       setConvergenceData(prev => [...prev, {
         trial: totalSoFar,
@@ -454,44 +501,53 @@ function MontyHallSimulation() {
     setTotalGames(totalSoFar);
   }, []);
   
-  // Animated simulation
-  useEffect(() => {
-    if (isRunning && mode === 'animated') {
-      intervalRef.current = setInterval(() => {
-        // Run one game of each strategy
-        const results = [
-          { strategy: 'switch', won: runGame('switch') },
-          { strategy: 'stay', won: runGame('stay') }
-        ];
-        
-        updateStats(results);
-      }, 1000 / simulationSpeed);
-      
-      return () => {
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-        }
-      };
-    }
-  }, [isRunning, mode, simulationSpeed, runGame, updateStats]);
-  
-  // Run batch simulation
-  const runBatch = useCallback(() => {
+  // Run batch of simulations with animation
+  const runBatch = useCallback((batchSize) => {
+    if (isSimulating) return;
+    
+    setIsSimulating(true);
     const results = [];
+    const delay = Math.min(50, 2000 / batchSize); // Faster for larger batches
     
+    // Collect all results first
     for (let i = 0; i < batchSize; i++) {
-      results.push({ strategy: 'switch', won: runGame('switch') });
-      results.push({ strategy: 'stay', won: runGame('stay') });
+      results.push(
+        { strategy: 'switch', won: runGame('switch') },
+        { strategy: 'stay', won: runGame('stay') }
+      );
     }
     
-    updateStats(results);
-  }, [batchSize, runGame, updateStats]);
+    // Animate the updates
+    let processed = 0;
+    const animationTimer = setInterval(() => {
+      const batchEnd = Math.min(processed + 2, results.length);
+      const batch = results.slice(processed, batchEnd);
+      
+      if (batch.length > 0) {
+        updateStats(batch, batchEnd === results.length || batchEnd % 10 === 0);
+        processed = batchEnd;
+      }
+      
+      if (processed >= results.length) {
+        clearInterval(animationTimer);
+        setIsSimulating(false);
+      }
+    }, delay);
+  }, [isSimulating, runGame, updateStats]);
   
   // Reset simulation
   const reset = useCallback(() => {
-    setIsRunning(false);
     setTotalGames(0);
-    setConvergenceData([]);
+    setConvergenceData([
+      // Reset to initial theoretical values
+      {
+        trial: 0,
+        switchRate: 2/3,
+        stayRate: 1/3,
+        switchCI: 0,
+        stayCI: 0
+      }
+    ]);
     setRecentResults({ switch: [], stay: [] });
     setStats({ switch: { wins: 0, total: 0 }, stay: { wins: 0, total: 0 } });
     statsRef.current = { switch: { wins: 0, total: 0 }, stay: { wins: 0, total: 0 } };
@@ -534,94 +590,82 @@ function MontyHallSimulation() {
             <div>
               <h4 className="text-base font-bold text-white mb-3">Simulation Controls</h4>
               <div className="space-y-3">
-                {/* Mode Selection */}
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => setMode('animated')}
-                    variant={mode === 'animated' ? 'primary' : 'secondary'}
-                    size="sm"
-                    className="flex-1"
-                  >
-                    Animated
-                  </Button>
-                  <Button
-                    onClick={() => setMode('instant')}
-                    variant={mode === 'instant' ? 'primary' : 'secondary'}
-                    size="sm"
-                    className="flex-1"
-                  >
-                    Instant
-                  </Button>
-                </div>
-                
-                {/* Speed/Batch controls */}
-                {mode === 'animated' ? (
-                  <div>
-                    <label className="text-sm text-gray-300 mb-1 block">
-                      Speed: {simulationSpeed} games/sec
-                    </label>
-                    <RangeSlider
-                      value={simulationSpeed}
-                      onChange={setSimulationSpeed}
-                      min={1}
-                      max={50}
-                      step={1}
-                    />
-                  </div>
-                ) : (
-                  <div>
-                    <label className="text-sm text-gray-300 mb-1 block">
-                      Batch Size: {batchSize} games
-                    </label>
-                    <RangeSlider
-                      value={batchSize}
-                      onChange={setBatchSize}
-                      min={10}
-                      max={1000}
-                      step={10}
-                    />
-                  </div>
-                )}
-                
-                {/* Action Buttons */}
-                <div className="flex gap-2">
-                  {mode === 'animated' ? (
+                {/* Staged sampling buttons */}
+                <div className="grid grid-cols-2 gap-2">
+                  {totalGames === 0 && (
                     <Button
-                      onClick={() => setIsRunning(!isRunning)}
-                      variant={isRunning ? 'danger' : 'primary'}
-                      className="flex-1"
-                    >
-                      {isRunning ? (
-                        <>
-                          <Pause className="w-4 h-4 mr-2" />
-                          Pause
-                        </>
-                      ) : (
-                        <>
-                          <Play className="w-4 h-4 mr-2" />
-                          Start
-                        </>
-                      )}
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={runBatch}
+                      onClick={() => runBatch(10)}
                       variant="primary"
-                      className="flex-1"
+                      disabled={isSimulating}
+                      className="col-span-2"
                     >
-                      <Zap className="w-4 h-4 mr-2" />
-                      Run {batchSize}
+                      <Play className="w-4 h-4 mr-2" />
+                      Run 10 Games
                     </Button>
                   )}
                   
-                  <Button
-                    onClick={reset}
-                    variant="neutral"
-                  >
-                    <RotateCcw className="w-4 h-4 mr-2" />
-                    Reset
-                  </Button>
+                  {totalGames > 0 && totalGames < 30 && (
+                    <Button
+                      onClick={() => runBatch(20)}
+                      variant="primary"
+                      disabled={isSimulating}
+                      className="col-span-2"
+                    >
+                      Add 20 More → 30 Total
+                    </Button>
+                  )}
+                  
+                  {totalGames >= 30 && totalGames < 100 && (
+                    <Button
+                      onClick={() => runBatch(70)}
+                      variant="primary"
+                      disabled={isSimulating}
+                      className="col-span-2"
+                    >
+                      Add 70 More → 100 Total
+                    </Button>
+                  )}
+                  
+                  {totalGames >= 100 && totalGames < 500 && (
+                    <Button
+                      onClick={() => runBatch(400)}
+                      variant="primary"
+                      disabled={isSimulating}
+                      className="col-span-2"
+                    >
+                      Add 400 More → 500 Total
+                    </Button>
+                  )}
+                  
+                  {totalGames >= 500 && (
+                    <>
+                      <Button
+                        onClick={() => runBatch(100)}
+                        variant="primary"
+                        disabled={isSimulating}
+                      >
+                        Add 100
+                      </Button>
+                      <Button
+                        onClick={() => runBatch(500)}
+                        variant="primary"
+                        disabled={isSimulating}
+                      >
+                        Add 500
+                      </Button>
+                    </>
+                  )}
                 </div>
+                
+                <Button
+                  onClick={reset}
+                  variant="neutral"
+                  className="w-full"
+                  disabled={isSimulating}
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Reset Simulation
+                </Button>
               </div>
             </div>
             
@@ -669,21 +713,50 @@ function MontyHallSimulation() {
                 </div>
                 
                 {/* Convergence Status */}
-                <div className={cn(
-                  "rounded-lg p-3 border",
-                  convergenceMetrics.isConverged 
-                    ? "bg-green-900/20 border-green-600/50" 
-                    : "bg-amber-900/20 border-amber-600/50"
-                )}>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">
-                      {convergenceMetrics.isConverged ? "✓ Converged!" : "Converging..."}
-                    </span>
-                    <span className="text-xs text-neutral-400">
-                      Error: ±{((convergenceMetrics.switchError + convergenceMetrics.stayError) / 2 * 100).toFixed(2)}%
-                    </span>
+                {totalGames > 0 && (
+                  <div className={cn(
+                    "rounded-lg p-3 border",
+                    convergenceMetrics.isConverged 
+                      ? "bg-green-900/20 border-green-600/50" 
+                      : "bg-amber-900/20 border-amber-600/50"
+                  )}>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">
+                          Convergence Status
+                        </span>
+                        <span className="text-xs font-mono text-neutral-400">
+                          n = {totalGames}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <span className="text-neutral-500">Switch error:</span>
+                          <span className={cn(
+                            "ml-1 font-mono",
+                            convergenceMetrics.switchError < 0.05 ? "text-green-400" : "text-amber-400"
+                          )}>
+                            {(convergenceMetrics.switchError * 100).toFixed(2)}%
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-neutral-500">Stay error:</span>
+                          <span className={cn(
+                            "ml-1 font-mono",
+                            convergenceMetrics.stayError < 0.05 ? "text-green-400" : "text-amber-400"
+                          )}>
+                            {(convergenceMetrics.stayError * 100).toFixed(2)}%
+                          </span>
+                        </div>
+                      </div>
+                      {totalGames < 30 && (
+                        <p className="text-xs text-neutral-500 italic">
+                          Small sample - high variance expected
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -777,7 +850,15 @@ function MontyHallSimulation() {
                     <span className="text-neutral-400">Switch: </span>
                     <span className="font-mono text-cyan-300">
                       {stats.switch.total > 0 
-                        ? `[${((winRates.switch - 1.96 * Math.sqrt(winRates.switch * (1 - winRates.switch) / stats.switch.total)) * 100).toFixed(1)}%, ${((winRates.switch + 1.96 * Math.sqrt(winRates.switch * (1 - winRates.switch) / stats.switch.total)) * 100).toFixed(1)}%]`
+                        ? (() => {
+                            const n = stats.switch.total;
+                            const p = winRates.switch;
+                            const z = 1.96;
+                            const denominator = 1 + z*z/n;
+                            const centre = (p + z*z/(2*n)) / denominator;
+                            const margin = (z / denominator) * Math.sqrt(p*(1-p)/n + z*z/(4*n*n));
+                            return `[${((centre - margin) * 100).toFixed(1)}%, ${((centre + margin) * 100).toFixed(1)}%]`;
+                          })()
                         : '—'}
                     </span>
                   </div>
@@ -785,20 +866,48 @@ function MontyHallSimulation() {
                     <span className="text-neutral-400">Stay: </span>
                     <span className="font-mono text-purple-300">
                       {stats.stay.total > 0 
-                        ? `[${((winRates.stay - 1.96 * Math.sqrt(winRates.stay * (1 - winRates.stay) / stats.stay.total)) * 100).toFixed(1)}%, ${((winRates.stay + 1.96 * Math.sqrt(winRates.stay * (1 - winRates.stay) / stats.stay.total)) * 100).toFixed(1)}%]`
+                        ? (() => {
+                            const n = stats.stay.total;
+                            const p = winRates.stay;
+                            const z = 1.96;
+                            const denominator = 1 + z*z/n;
+                            const centre = (p + z*z/(2*n)) / denominator;
+                            const margin = (z / denominator) * Math.sqrt(p*(1-p)/n + z*z/(4*n*n));
+                            return `[${((centre - margin) * 100).toFixed(1)}%, ${((centre + margin) * 100).toFixed(1)}%]`;
+                          })()
                         : '—'}
                     </span>
                   </div>
+                </div>
+                <div className="mt-2 text-xs text-neutral-500">
+                  Wilson score intervals (robust for small samples)
                 </div>
               </div>
               
               {/* Law of Large Numbers */}
               <div className="p-3 bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-lg border border-blue-600/30 text-sm">
-                <h5 className="text-blue-300 font-semibold mb-1">Law of Large Numbers</h5>
-                <p className="text-xs text-blue-200">
-                  As n → ∞, the sample mean converges to the expected value. 
-                  {totalGames > 1000 && " You're seeing this law in action!"}
-                </p>
+                <h5 className="text-blue-300 font-semibold mb-1">Convergence Analysis</h5>
+                <div className="text-xs text-blue-200 space-y-1">
+                  <div>
+                    <span className="text-neutral-400">Theoretical (Weak LLN):</span>
+                    <div className="font-mono text-blue-300 mt-0.5">
+                      P(|X̄ₙ - μ| &gt; ε) → 0 as n → ∞
+                    </div>
+                  </div>
+                  {totalGames >= 30 && (
+                    <div className="mt-2 pt-2 border-t border-blue-600/20">
+                      <span className="text-neutral-400">Current deviation from theory:</span>
+                      <div className="grid grid-cols-2 gap-2 mt-1">
+                        <div className="font-mono text-xs">
+                          Switch: {(Math.abs(winRates.switch - theoretical.switch) * 100).toFixed(2)}%
+                        </div>
+                        <div className="font-mono text-xs">
+                          Stay: {(Math.abs(winRates.stay - theoretical.stay) * 100).toFixed(2)}%
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </VisualizationSection>

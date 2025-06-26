@@ -63,9 +63,8 @@ export const chapters = [
     title: 'Chapter 4: Descriptive Statistics & Sampling',
     path: '/chapter4',
     sections: [
-      { title: '4.1 Measures of Central Tendency', component: 'MeanMedianMode' },
       { title: '4.1 Comprehensive Statistics', component: 'ComprehensiveStats' },
-      { title: '4.2 Histograms & Data Shapes', component: 'HistogramShapeExplorer' },
+      { title: '4.2 Histogram Hub', component: 'HistogramHub' },
       { title: '4.3 Interactive Statistics Explorer', component: 'DescriptiveStatsExplorer' },
       { title: '4.3 Sampling Distributions', component: 'SamplingDistributions' },
       { title: '4.4 t-Distribution vs Normal', component: 'TDistributionExplorer' },

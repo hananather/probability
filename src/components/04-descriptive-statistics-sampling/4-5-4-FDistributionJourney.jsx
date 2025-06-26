@@ -9,11 +9,11 @@ import {
   VisualizationSection,
   ControlGroup,
   StatsDisplay
-} from "../ui/VisualizationContainer";
-import { Button } from "../ui/button";
-import { RangeSlider } from "../ui/RangeSlider";
+} from '@/components/ui/VisualizationContainer';
+import { Button } from '@/components/ui/button';
+import { RangeSlider } from '@/components/ui/RangeSlider';
 import { ProgressBar } from '@/components/ui/ProgressBar';
-import { createColorScheme, cn, formatNumber } from "../../lib/design-system";
+import { createColorScheme, cn, formatNumber } from '@/lib/design-system';
 import { 
   ChevronRight,
   ChevronLeft,

@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import * as d3 from "@/utils/d3-utils";
-import { VisualizationContainer, GraphContainer, VisualizationSection } from '@/components/ui/VisualizationContainer';
-import { createColorScheme, cn, typography, colors } from '@/lib/design-system';
-import { Button } from '@/components/ui/button';
+import { VisualizationContainer, GraphContainer, VisualizationSection } from "@/components/ui/VisualizationContainer";
+import { createColorScheme, cn, typography, colors } from "@/lib/design-system";
+import { Button } from "@/components/ui/button";
 import { Sparkles, Play, Pause, RotateCcw, ChevronRight } from "lucide-react";
 import { useAnimationCleanup } from "@/hooks/useAnimationCleanup";
 

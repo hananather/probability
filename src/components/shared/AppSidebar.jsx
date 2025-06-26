@@ -19,7 +19,6 @@ const sectionIdMap = {
   'BayesTheoremVisualizer': 'bayes-theorem',
   'ProbabilisticFallacies': 'fallacies',
   'MontyHallMasterclass': 'monty-hall-masterclass',
-  'MeanMedianMode': 'measures-central',
   'HistogramShapeExplorer': 'histograms',
   'DescriptiveStatsExplorer': 'stats-explorer',
   'TDistributionExplorer': 't-distribution',

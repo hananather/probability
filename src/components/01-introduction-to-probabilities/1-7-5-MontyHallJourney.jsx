@@ -227,14 +227,15 @@ function MontyHallJourney() {
           Stage {currentStage + 1} of {STAGES.length}
         </div>
         
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={handleStageComplete}
-          disabled={currentStage === STAGES.length - 1 && completedStages.includes(currentStage)}
-        >
-          {currentStage === STAGES.length - 1 ? 'Complete Journey' : 'Next Stage →'}
-        </Button>
+        {currentStage < STAGES.length - 1 && (
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleStageComplete}
+          >
+            Next Stage →
+          </Button>
+        )}
       </div>
     </div>
   );

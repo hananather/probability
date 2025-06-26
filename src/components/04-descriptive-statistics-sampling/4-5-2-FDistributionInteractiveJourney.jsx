@@ -3,10 +3,10 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import * as d3 from "@/utils/d3-utils";
 import { jStat } from "jstat";
-import { VisualizationContainer, GraphContainer, VisualizationSection } from "../ui/VisualizationContainer";
-import { createColorScheme, cn, typography, colors } from "../../lib/design-system";
-import { Button } from "../ui/button";
-import { RangeSlider } from "../ui/RangeSlider";
+import { VisualizationContainer, GraphContainer, VisualizationSection } from '@/components/ui/VisualizationContainer';
+import { createColorScheme, cn, typography, colors } from '@/lib/design-system';
+import { Button } from '@/components/ui/button';
+import { RangeSlider } from '@/components/ui/RangeSlider';
 import { Play, Pause, RotateCcw, ChevronRight, Target } from "lucide-react";
 import { useAnimationCleanup } from "@/hooks/useAnimationCleanup";
 

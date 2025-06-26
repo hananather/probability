@@ -6,10 +6,10 @@ import {
   VisualizationSection,
   GraphContainer,
   ControlGroup
-} from '../ui/VisualizationContainer';
-import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
+} from '@/components/ui/VisualizationContainer';
+import { colors, typography, components, formatNumber, cn, createColorScheme } from '@/lib/design-system';
 import { ProgressTracker } from '../ui/ProgressTracker';
-import { RangeSlider, SliderPresets } from "../ui/RangeSlider";
+import { RangeSlider, SliderPresets } from '@/components/ui/RangeSlider';
 
 // Use estimation color scheme for statistics
 const colorScheme = createColorScheme('estimation');

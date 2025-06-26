@@ -19,7 +19,7 @@ const BayesianInference = dynamic(
 
 // New high-quality components
 const InteractiveInferenceJourney = dynamic(
-  () => import('../../components/05-estimation/5-1-2-InteractiveInferenceJourney.jsx'),
+  () => import('../../components/05-estimation/5-1-3-InteractiveInferenceJourney.jsx'),
   { 
     ssr: false,
     loading: () => (
@@ -31,7 +31,7 @@ const InteractiveInferenceJourney = dynamic(
 );
 
 const PointEstimation = dynamic(
-  () => import('../../components/05-estimation/5-2-1-PointEstimation.jsx'),
+  () => import('../../components/05-estimation/5-1-4-PointEstimation.jsx'),
   { 
     ssr: false,
     loading: () => (
@@ -55,7 +55,7 @@ const ConfidenceIntervalMasterclass = dynamic(
 );
 
 const ConfidenceInterval = dynamic(
-  () => import('../../components/05-estimation/5-2-3-ConfidenceIntervalSimulation.jsx'),
+  () => import('../../components/05-estimation/5-2-4-ConfidenceIntervalSimulation.jsx'),
   { 
     ssr: false,
     loading: () => (
@@ -79,7 +79,7 @@ const SampleSizeLaboratory = dynamic(
 );
 
 const Bootstrapping = dynamic(
-  () => import('../../components/05-estimation/5-4-1-Bootstrapping.jsx'),
+  () => import('../../components/05-estimation/5-4-3-Bootstrapping.jsx'),
   { 
     ssr: false,
     loading: () => (
@@ -103,7 +103,7 @@ const TDistributionShowcase = dynamic(
 );
 
 const ProportionEstimationStudio = dynamic(
-  () => import('../../components/05-estimation/5-5-1-ProportionEstimationStudio.jsx'),
+  () => import('../../components/05-estimation/5-5-2-ProportionEstimationStudio.jsx'),
   { 
     ssr: false,
     loading: () => (

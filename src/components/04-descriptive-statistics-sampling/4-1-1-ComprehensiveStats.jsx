@@ -6,10 +6,10 @@ import {
   VisualizationSection,
   GraphContainer,
   ControlGroup
-} from '../ui/VisualizationContainer';
+} from '@/components/ui/VisualizationContainer';
 import { colors, formatNumber, cn } from '@/lib/design-system';
-import { ProgressBar } from '../ui/ProgressBar';
-import { Button } from '../ui/button';
+import { ProgressBar } from '@/components/ui/ProgressBar';
+import { Button } from '@/components/ui/button';
 
 // Scientific datasets with dramatic outlier effects for clear statistical teaching
 const scenarios = {

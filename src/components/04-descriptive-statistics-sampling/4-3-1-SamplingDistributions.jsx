@@ -7,10 +7,10 @@ import {
   VisualizationSection,
   GraphContainer,
   ControlGroup
-} from '../ui/VisualizationContainer';
+} from '@/components/ui/VisualizationContainer';
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '@/lib/design-system';
-import { ProgressBar } from '../ui/ProgressBar';
-import { Button } from '../ui/button';
+import { ProgressBar } from '@/components/ui/ProgressBar';
+import { Button } from '@/components/ui/button';
 import { tutorial_4_3_1_enhanced } from '@/tutorials/chapter4';
 
 // Use sampling color scheme

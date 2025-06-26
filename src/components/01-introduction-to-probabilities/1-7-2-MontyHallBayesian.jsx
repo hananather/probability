@@ -32,7 +32,7 @@ const BayesianTree = memo(function BayesianTree({ selectedDoor, revealedDoor, hi
     
     const svg = d3.select(svgRef.current);
     const width = 800;
-    const height = 500;
+    const height = 400;
     const margin = { top: 40, right: 40, bottom: 40, left: 40 };
     
     svg.selectAll("*").remove();
@@ -196,7 +196,7 @@ const BayesianTree = memo(function BayesianTree({ selectedDoor, revealedDoor, hi
     
   }, [selectedDoor, revealedDoor, highlightPath]);
   
-  return <svg ref={svgRef} style={{ width: "100%", height: "500px" }} />;
+  return <svg ref={svgRef} style={{ width: "100%", height: "400px" }} />;
 });
 
 // Probability Update Visualization
@@ -342,17 +342,86 @@ const ProbabilityUpdate = memo(function ProbabilityUpdate({ stage, selectedDoor,
 
 // Step-by-step Calculation Component
 const BayesianCalculation = memo(function BayesianCalculation({ selectedDoor, revealedDoor, showSteps }) {
+  const [expandedStep, setExpandedStep] = useState(null);
+  
   if (selectedDoor === null || revealedDoor === null) return null;
   
   const switchDoor = [0, 1, 2].find(d => d !== selectedDoor && d !== revealedDoor);
   
+  const steps = [
+    {
+      id: 1,
+      title: "Prior Probabilities",
+      color: "blue",
+      content: (
+        <div className="text-blue-200 overflow-x-auto">
+          <p><span dangerouslySetInnerHTML={{ __html: `\\(P(\\text{Car in door 1}) = P(\\text{Car in door 2}) = P(\\text{Car in door 3}) = \\frac{1}{3}\\)` }} /></p>
+        </div>
+      )
+    },
+    {
+      id: 2,
+      title: "Likelihood (Monty's Strategy)",
+      color: "emerald",
+      content: (
+        <div className="text-emerald-200 space-y-1 overflow-x-auto">
+          <p>If car is behind your door ({selectedDoor + 1}):</p>
+          <p className="ml-4"><span dangerouslySetInnerHTML={{ __html: `\\(P(\\text{Monty opens ${revealedDoor + 1}}) = \\frac{1}{2}\\)` }} /></p>
+          <p>If car is behind door {switchDoor + 1}:</p>
+          <p className="ml-4"><span dangerouslySetInnerHTML={{ __html: `\\(P(\\text{Monty opens ${revealedDoor + 1}}) = 1\\)` }} /></p>
+        </div>
+      )
+    },
+    {
+      id: 3,
+      title: "Posterior (Bayes' Theorem)",
+      color: "amber",
+      content: (
+        <div className="text-amber-200 space-y-3 overflow-x-auto">
+          <div>
+            <p className="text-xs text-amber-300 mb-1">Probability car is in your door {selectedDoor + 1}:</p>
+            <p className="overflow-x-auto"><span dangerouslySetInnerHTML={{ __html: `\\(P(\\text{Car in ${selectedDoor + 1}}|\\text{Monty opens ${revealedDoor + 1}}) = \\frac{\\frac{1}{3} \\cdot \\frac{1}{2}}{\\frac{1}{3} \\cdot \\frac{1}{2} + \\frac{1}{3} \\cdot 1} = \\frac{1}{3}\\)` }} /></p>
+          </div>
+          <div>
+            <p className="text-xs text-amber-300 mb-1">Probability car is in door {switchDoor + 1}:</p>
+            <p className="overflow-x-auto"><span dangerouslySetInnerHTML={{ __html: `\\(P(\\text{Car in ${switchDoor + 1}}|\\text{Monty opens ${revealedDoor + 1}}) = \\frac{\\frac{1}{3} \\cdot 1}{\\frac{1}{3} \\cdot \\frac{1}{2} + \\frac{1}{3} \\cdot 1} = \\frac{2}{3}\\)` }} /></p>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 4,
+      title: "Conclusion",
+      color: "green",
+      content: (
+        <p className="text-green-200 overflow-x-auto">
+          Switching to door {switchDoor + 1} doubles your probability of winning from <span dangerouslySetInnerHTML={{ __html: `\\(\\frac{1}{3}\\)` }} /> to <span dangerouslySetInnerHTML={{ __html: `\\(\\frac{2}{3}\\)` }} />!
+        </p>
+      )
+    }
+  ];
+  
   return (
-    <div className="space-y-4 p-4 bg-neutral-900 rounded-lg">
-      <h4 className="text-base font-bold text-white mb-3">Bayesian Update Calculation</h4>
+    <div className="space-y-3 p-4 bg-neutral-900 rounded-lg">
+      <div className="flex items-center justify-between mb-3">
+        <h4 className="text-base font-bold text-white">Bayesian Update Calculation</h4>
+        {/* Step indicator dots */}
+        <div className="flex gap-2">
+          {steps.map((step) => (
+            <div
+              key={step.id}
+              className={cn(
+                "w-2 h-2 rounded-full transition-all",
+                showSteps >= step.id ? "bg-blue-500" : "bg-neutral-600"
+              )}
+            />
+          ))}
+        </div>
+      </div>
       
       <LatexContent>
-        <div className="space-y-3 text-sm">
-          {/* Setup */}
+        <div className="space-y-3 text-sm max-w-full">
+          {/* Setup - Always visible */}
           <div className="p-3 bg-neutral-800 rounded">
             <p className="text-neutral-300 mb-2">Given:</p>
             <ul className="space-y-1 text-neutral-400 ml-4">
@@ -362,53 +431,81 @@ const BayesianCalculation = memo(function BayesianCalculation({ selectedDoor, re
             </ul>
           </div>
           
-          {/* Prior Probabilities */}
-          <div className={cn(
-            "p-3 bg-blue-900/20 rounded border border-blue-600/30 transition-all",
-            showSteps >= 1 ? "opacity-100" : "opacity-30"
-          )}>
-            <p className="text-blue-300 font-semibold mb-1">Step 1: Prior Probabilities</p>
-            <div className="text-blue-200">
-              <p><span dangerouslySetInnerHTML={{ __html: `\\(P(\\text{Car in door 1}) = P(\\text{Car in door 2}) = P(\\text{Car in door 3}) = \\frac{1}{3}\\)` }} /></p>
-            </div>
-          </div>
-          
-          {/* Likelihood */}
-          <div className={cn(
-            "p-3 bg-emerald-900/20 rounded border border-emerald-600/30 transition-all",
-            showSteps >= 2 ? "opacity-100" : "opacity-30"
-          )}>
-            <p className="text-emerald-300 font-semibold mb-1">Step 2: Likelihood (Monty's Strategy)</p>
-            <div className="text-emerald-200 space-y-1">
-              <p>If car is behind your door ({selectedDoor + 1}):</p>
-              <p className="ml-4"><span dangerouslySetInnerHTML={{ __html: `\\(P(\\text{Monty opens ${revealedDoor + 1}}) = \\frac{1}{2}\\)` }} /></p>
-              <p>If car is behind door {switchDoor + 1}:</p>
-              <p className="ml-4"><span dangerouslySetInnerHTML={{ __html: `\\(P(\\text{Monty opens ${revealedDoor + 1}}) = 1\\)` }} /></p>
-            </div>
-          </div>
-          
-          {/* Posterior */}
-          <div className={cn(
-            "p-3 bg-amber-900/20 rounded border border-amber-600/30 transition-all",
-            showSteps >= 3 ? "opacity-100" : "opacity-30"
-          )}>
-            <p className="text-amber-300 font-semibold mb-1">Step 3: Posterior (Bayes' Theorem)</p>
-            <div className="text-amber-200 space-y-2">
-              <p><span dangerouslySetInnerHTML={{ __html: `\\(P(\\text{Car in ${selectedDoor + 1}}|\\text{Monty opens ${revealedDoor + 1}}) = \\frac{\\frac{1}{3} \\times \\frac{1}{2}}{\\frac{1}{3} \\times \\frac{1}{2} + \\frac{1}{3} \\times 1} = \\frac{1}{3}\\)` }} /></p>
-              <p><span dangerouslySetInnerHTML={{ __html: `\\(P(\\text{Car in ${switchDoor + 1}}|\\text{Monty opens ${revealedDoor + 1}}) = \\frac{\\frac{1}{3} \\times 1}{\\frac{1}{3} \\times \\frac{1}{2} + \\frac{1}{3} \\times 1} = \\frac{2}{3}\\)` }} /></p>
-            </div>
-          </div>
-          
-          {/* Conclusion */}
-          <div className={cn(
-            "p-3 bg-green-900/20 rounded border border-green-600/30 transition-all",
-            showSteps >= 4 ? "opacity-100" : "opacity-30"
-          )}>
-            <p className="text-green-300 font-semibold mb-1">Conclusion</p>
-            <p className="text-green-200">
-              Switching to door {switchDoor + 1} doubles your probability of winning from <span dangerouslySetInnerHTML={{ __html: `\\(\\frac{1}{3}\\)` }} /> to <span dangerouslySetInnerHTML={{ __html: `\\(\\frac{2}{3}\\)` }} />!
-            </p>
-          </div>
+          {/* Progressive steps */}
+          {steps.map((step) => {
+            const isActive = showSteps === step.id;
+            const isCompleted = showSteps > step.id;
+            const isVisible = showSteps >= step.id;
+            const isExpanded = isActive || expandedStep === step.id;
+            
+            if (!isVisible) return null;
+            
+            const bgColorClass = isActive ? (
+              step.color === 'blue' ? 'bg-blue-900/20 border-blue-600/30' :
+              step.color === 'emerald' ? 'bg-emerald-900/20 border-emerald-600/30' :
+              step.color === 'amber' ? 'bg-amber-900/20 border-amber-600/30' :
+              'bg-green-900/20 border-green-600/30'
+            ) : isCompleted ? 'bg-neutral-800/50 border-neutral-700/50' : '';
+            
+            const textColorClass = isActive ? (
+              step.color === 'blue' ? 'text-blue-300' :
+              step.color === 'emerald' ? 'text-emerald-300' :
+              step.color === 'amber' ? 'text-amber-300' :
+              'text-green-300'
+            ) : 'text-neutral-300';
+            
+            return (
+              <div
+                key={step.id}
+                className={cn(
+                  "rounded border transition-all duration-300 overflow-hidden",
+                  bgColorClass,
+                  !isActive && !isCompleted && "opacity-0"
+                )}
+              >
+                <button
+                  onClick={() => isCompleted && setExpandedStep(isExpanded ? null : step.id)}
+                  disabled={!isCompleted}
+                  className={cn(
+                    "w-full p-3 text-left flex items-center justify-between transition-all",
+                    isCompleted && "cursor-pointer hover:bg-neutral-700/20"
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className={cn(
+                      "font-semibold",
+                      textColorClass
+                    )}>
+                      Step {step.id}: {step.title}
+                    </span>
+                    {isCompleted && (
+                      <span className="text-xs text-green-400">✓</span>
+                    )}
+                  </div>
+                  {isCompleted && (
+                    <ChevronRight className={cn(
+                      "w-4 h-4 text-neutral-400 transition-transform",
+                      isExpanded && "rotate-90"
+                    )} />
+                  )}
+                </button>
+                
+                <div
+                  className={cn(
+                    "transition-all duration-300",
+                    isExpanded ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                  )}
+                  style={{
+                    transition: "max-height 0.3s ease-in-out, opacity 0.3s ease-in-out"
+                  }}
+                >
+                  <div className="px-3 pb-3">
+                    {step.content}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </LatexContent>
     </div>
@@ -422,6 +519,8 @@ function MontyHallBayesian() {
   const [showSteps, setShowSteps] = useState(0);
   const [autoAdvance, setAutoAdvance] = useState(false);
   const [stage, setStage] = useState('initial'); // initial, selected, revealed
+  const [userDecision, setUserDecision] = useState(null); // 'switch' | 'stay' | null
+  const [showResult, setShowResult] = useState(false);
   
   // Reset function
   const reset = () => {
@@ -430,6 +529,8 @@ function MontyHallBayesian() {
     setShowSteps(0);
     setStage('initial');
     setAutoAdvance(false);
+    setUserDecision(null);
+    setShowResult(false);
   };
   
   // Select door
@@ -458,6 +559,17 @@ function MontyHallBayesian() {
     }
   }, [autoAdvance, showSteps, stage]);
   
+  // Handle user decision
+  const makeDecision = (decision) => {
+    setUserDecision(decision);
+    setShowResult(true);
+  };
+  
+  // Calculate which door to switch to
+  const switchDoor = selectedDoor !== null && revealedDoor !== null
+    ? [0, 1, 2].find(d => d !== selectedDoor && d !== revealedDoor)
+    : null;
+  
   return (
     <VisualizationContainer
       title="Monty Hall Problem: Bayesian Analysis"
@@ -471,7 +583,7 @@ function MontyHallBayesian() {
       tutorialSteps={tutorial_1_7_2}
       tutorialKey="monty-hall-bayesian"
     >
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         {/* Controls */}
         <VisualizationSection className="p-4">
           <div className="flex items-center justify-between">
@@ -506,10 +618,10 @@ function MontyHallBayesian() {
           </div>
         </VisualizationSection>
         
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left: Door Selection and Tree */}
-          <div className="space-y-4">
+        {/* Main Content - Changed to better layout */}
+        <div className="flex flex-col gap-4">
+          {/* Door Selection and Probability Update - Side by side on desktop */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Door Selection */}
             <VisualizationSection className="p-4">
               <h4 className="text-sm font-bold text-white mb-3">1. Choose Your Door</h4>
@@ -562,7 +674,7 @@ function MontyHallBayesian() {
             </GraphContainer>
           </div>
           
-          {/* Right: Bayesian Calculation */}
+          {/* Bayesian Calculation - Full width */}
           <div className="space-y-4">
             {/* Step Controls */}
             {stage === 'revealed' && (
@@ -595,10 +707,122 @@ function MontyHallBayesian() {
               </VisualizationSection>
             )}
             
-            {/* Key Insights */}
-            <VisualizationSection className="p-4 bg-gradient-to-br from-blue-900/20 to-purple-900/20 border-blue-600/30">
-              <h4 className="text-base font-bold text-blue-300 mb-3">Key Insights</h4>
-              <div className="space-y-3 text-sm">
+            {/* Interactive Decision Making */}
+            {showSteps === 4 && !userDecision && (
+              <VisualizationSection className="p-4 bg-gradient-to-br from-purple-900/20 to-pink-900/20 border-purple-600/30">
+                <h4 className="text-base font-bold text-purple-300 mb-3">Now It's Your Turn to Decide!</h4>
+                <p className="text-sm text-neutral-300 mb-4">
+                  Based on the Bayesian analysis, what will you do?
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button
+                    onClick={() => makeDecision('stay')}
+                    variant="secondary"
+                    className="px-6 py-3 text-base font-semibold bg-blue-600/20 hover:bg-blue-600/30 border-blue-500"
+                  >
+                    Stay with Door {selectedDoor + 1}
+                  </Button>
+                  <Button
+                    onClick={() => makeDecision('switch')}
+                    variant="primary"
+                    className="px-6 py-3 text-base font-semibold bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    Switch to Door {switchDoor + 1}
+                  </Button>
+                </div>
+              </VisualizationSection>
+            )}
+            
+            {/* Decision Result */}
+            {userDecision && showResult && (
+              <VisualizationSection 
+                className={cn(
+                  "p-4 transition-all duration-500",
+                  userDecision === 'switch' 
+                    ? "bg-gradient-to-br from-green-900/20 to-emerald-900/20 border-green-600/30" 
+                    : "bg-gradient-to-br from-amber-900/20 to-orange-900/20 border-amber-600/30"
+                )}
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "w-10 h-10 rounded-full flex items-center justify-center",
+                      userDecision === 'switch' ? "bg-green-600" : "bg-amber-600"
+                    )}>
+                      {userDecision === 'switch' ? (
+                        <span className="text-white text-xl">✓</span>
+                      ) : (
+                        <span className="text-white text-xl">!</span>
+                      )}
+                    </div>
+                    <div>
+                      <h4 className={cn(
+                        "text-lg font-bold",
+                        userDecision === 'switch' ? "text-green-300" : "text-amber-300"
+                      )}>
+                        You chose to {userDecision === 'switch' ? 'switch' : 'stay'}!
+                      </h4>
+                      <p className={cn(
+                        "text-sm",
+                        userDecision === 'switch' ? "text-green-200" : "text-amber-200"
+                      )}>
+                        {userDecision === 'switch' 
+                          ? "Optimal choice! You maximized your winning probability."
+                          : "Suboptimal choice. You could have doubled your chances by switching."}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Probability Comparison */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                    <div className={cn(
+                      "p-3 rounded-lg",
+                      userDecision === 'stay' ? "bg-blue-900/30 border border-blue-600/50" : "bg-neutral-800/50"
+                    )}>
+                      <p className="text-xs text-neutral-400 mb-1">Staying with Door {selectedDoor + 1}</p>
+                      <p className="text-2xl font-bold font-mono text-blue-300">1/3</p>
+                      <p className="text-xs text-neutral-400">33.33% chance</p>
+                    </div>
+                    <div className={cn(
+                      "p-3 rounded-lg",
+                      userDecision === 'switch' ? "bg-emerald-900/30 border border-emerald-600/50" : "bg-neutral-800/50"
+                    )}>
+                      <p className="text-xs text-neutral-400 mb-1">Switching to Door {switchDoor + 1}</p>
+                      <p className="text-2xl font-bold font-mono text-emerald-300">2/3</p>
+                      <p className="text-xs text-neutral-400">66.67% chance</p>
+                    </div>
+                  </div>
+                  
+                  {/* Educational Feedback */}
+                  <div className="p-3 bg-neutral-900/50 rounded-lg">
+                    <p className="text-sm text-neutral-300">
+                      {userDecision === 'switch' 
+                        ? "Great intuition! The Bayesian analysis shows that Monty's action of revealing a goat door concentrates the probability on the remaining unopened door. By switching, you take advantage of this information update."
+                        : "It's counterintuitive, but the math is clear: switching doubles your chances. Remember, your initial choice had only a 1/3 chance of being correct, and Monty's reveal doesn't change that - it just tells you where the car ISN'T."}
+                    </p>
+                  </div>
+                  
+                  {/* Try Again Button */}
+                  <div className="flex justify-center mt-4">
+                    <Button 
+                      onClick={reset} 
+                      variant="neutral"
+                      className="flex items-center gap-2"
+                    >
+                      <ChevronRight className="w-4 h-4 rotate-180" />
+                      Try Another Scenario
+                    </Button>
+                  </div>
+                </div>
+              </VisualizationSection>
+            )}
+            
+            {/* Key Insights - Now side by side with calculation on larger screens */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+              {/* Key Insights */}
+              <VisualizationSection className="p-4 bg-gradient-to-br from-blue-900/20 to-purple-900/20 border-blue-600/30">
+                <h4 className="text-base font-bold text-blue-300 mb-3">Key Insights</h4>
+                <div className="space-y-3 text-sm">
                 <div className="flex gap-3">
                   <div className="w-8 h-8 rounded-full bg-blue-600/30 flex items-center justify-center flex-shrink-0">
                     <span className="text-blue-400 font-bold">1</span>
@@ -639,53 +863,51 @@ function MontyHallBayesian() {
                 </div>
               </div>
             </VisualizationSection>
+            
+            {/* Mathematical Deep Dive - Moved here */}
+            <VisualizationSection className="p-4">
+              <h4 className="text-base font-bold text-white mb-3">Mathematical Framework</h4>
+              <LatexContent>
+                <div className="space-y-3 text-sm">
+                  <div className="p-3 bg-neutral-900 rounded-lg">
+                    <h5 className="text-blue-400 font-semibold mb-2">Bayes' Theorem</h5>
+                    <div className="space-y-2 text-neutral-300 overflow-x-auto">
+                      <p><span dangerouslySetInnerHTML={{ __html: `\\(P(A|B) = \\frac{P(B|A) \\cdot P(A)}{P(B)}\\)` }} /></p>
+                    </div>
+                  </div>
+                  
+                  <div className="p-3 bg-neutral-900 rounded-lg">
+                    <h5 className="text-emerald-400 font-semibold mb-2">Applied to Monty Hall</h5>
+                    <div className="space-y-1 text-neutral-300 text-xs overflow-x-auto">
+                      <p>Let C_i = "Car is behind door i"</p>
+                      <p>Let M_j = "Monty opens door j"</p>
+                      <p className="mt-2"><span dangerouslySetInnerHTML={{ __html: `\\(P(C_i|M_j) = \\frac{P(M_j|C_i) \\cdot P(C_i)}{P(M_j)}\\)` }} /></p>
+                    </div>
+                  </div>
+                </div>
+              </LatexContent>
+            </VisualizationSection>
+          </div>
           </div>
         </div>
         
-        {/* Decision Tree Visualization */}
-        <GraphContainer height="500px">
-          <h4 className="text-base font-bold text-white mb-2 px-4 pt-3">
-            Decision Tree Analysis
-          </h4>
-          <BayesianTree 
-            selectedDoor={selectedDoor}
-            revealedDoor={revealedDoor}
-            highlightPath={stage === 'revealed'}
-          />
-        </GraphContainer>
-        
-        {/* Mathematical Deep Dive */}
-        <VisualizationSection className="p-4" divider>
-          <h4 className="text-base font-bold text-white mb-3">Mathematical Deep Dive</h4>
-          <LatexContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div className="p-4 bg-neutral-900 rounded-lg">
-                <h5 className="text-blue-400 font-semibold mb-2">General Bayes' Theorem</h5>
-                <div className="space-y-2 text-neutral-300">
-                  <p><span dangerouslySetInnerHTML={{ __html: `\\(P(A|B) = \\frac{P(B|A) \\cdot P(A)}{P(B)}\\)` }} /></p>
-                  <p className="text-xs text-neutral-400 mt-2">Where:</p>
-                  <ul className="text-xs text-neutral-400 space-y-1 ml-4">
-                    <li>• P(A|B) = Posterior probability</li>
-                    <li>• P(A) = Prior probability</li>
-                    <li>• P(B|A) = Likelihood</li>
-                    <li>• P(B) = Evidence</li>
-                  </ul>
-                </div>
-              </div>
-              
-              <div className="p-4 bg-neutral-900 rounded-lg">
-                <h5 className="text-emerald-400 font-semibold mb-2">Applied to Monty Hall</h5>
-                <div className="space-y-2 text-neutral-300">
-                  <p>Let C_i = "Car is behind door i"</p>
-                  <p>Let M_j = "Monty opens door j"</p>
-                  <p className="text-xs mt-2"><span dangerouslySetInnerHTML={{ __html: `\\(P(C_i|M_j) = \\frac{P(M_j|C_i) \\cdot P(C_i)}{P(M_j)}\\)` }} /></p>
-                  <p className="text-xs text-neutral-400 mt-2">
-                    The key: P(M_j|C_i) depends on your initial choice!
-                  </p>
-                </div>
-              </div>
+        {/* Decision Tree Visualization - Now collapsible */}
+        <VisualizationSection className="p-4">
+          <details className="group">
+            <summary className="cursor-pointer flex items-center justify-between">
+              <h4 className="text-base font-bold text-white">Decision Tree Analysis</h4>
+              <ChevronRight className="w-5 h-5 text-neutral-400 transition-transform group-open:rotate-90" />
+            </summary>
+            <div className="mt-4">
+              <GraphContainer height="400px">
+                <BayesianTree 
+                  selectedDoor={selectedDoor}
+                  revealedDoor={revealedDoor}
+                  highlightPath={stage === 'revealed'}
+                />
+              </GraphContainer>
             </div>
-          </LatexContent>
+          </details>
         </VisualizationSection>
       </div>
     </VisualizationContainer>

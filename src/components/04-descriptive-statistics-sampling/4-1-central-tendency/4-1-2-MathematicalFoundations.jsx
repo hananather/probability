@@ -1290,7 +1290,7 @@ const DataTypesSection = React.memo(function DataTypesSection() {
 });
 
 // Main component
-function CentralTendencyFoundations() {
+function MathematicalFoundations() {
   const [currentSection, setCurrentSection] = useState(0);
   
   const renderSection = () => {
@@ -1406,4 +1406,4 @@ function CentralTendencyFoundations() {
   );
 }
 
-export default CentralTendencyFoundations;
+export default MathematicalFoundations;

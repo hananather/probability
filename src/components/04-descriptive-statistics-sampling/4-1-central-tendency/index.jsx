@@ -66,7 +66,7 @@ const LEARNING_COMPONENTS = [
       'Other types of means',
       'Theoretical foundations'
     ],
-    component: () => import('./4-1-0-CentralTendencyFoundations'),
+    component: () => import('./4-1-2-MathematicalFoundations'),
     color: '#8b5cf6' // Purple for advanced
   },
   {

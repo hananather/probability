@@ -118,7 +118,9 @@
       "WebFetch(domain:brilliant.org)",
       "Bash(open http://localhost:3001/test-binomial)",
       "Bash(git ls-tree:*)",
-      "WebFetch(domain:en.wikipedia.org)"
+      "WebFetch(domain:en.wikipedia.org)",
+      "Bash(git mv:*)",
+      "Bash(git mv:*)"
     ],
     "deny": []
   }

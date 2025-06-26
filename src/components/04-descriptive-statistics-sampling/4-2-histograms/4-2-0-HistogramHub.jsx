@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { VisualizationContainer } from '@/components/ui/VisualizationContainer';
-import { cn } from '@/lib/design-system';
-import { Button } from '@/components/ui/button';
+import { VisualizationContainer } from "@/components/ui/VisualizationContainer";
+import { cn } from "@/lib/design-system";
+import { Button } from "@/components/ui/button";
 import HistogramIntuitiveIntro from "./4-2-1-HistogramIntuitiveIntro";
 import HistogramInteractiveJourney from "./4-2-2-HistogramInteractiveJourney";
 import HistogramShapeAnalysis from "./4-2-3-HistogramShapeAnalysis";
@@ -46,7 +46,7 @@ const learningPaths = [
   }
 ];
 
-const HistogramShapeExplorer = () => {
+const HistogramHub = () => {
   const [selectedPath, setSelectedPath] = useState(null);
   
   // If a path is selected, show that component
@@ -73,7 +73,7 @@ const HistogramShapeExplorer = () => {
   // Otherwise show the path selector
   return (
     <VisualizationContainer
-      title="4.2 Histogram Shape Explorer"
+      title="4.2 Histogram Hub"
       description="Master the art of creating and interpreting histograms"
     >
       {/* Introduction */}
@@ -243,4 +243,4 @@ const HistogramShapeExplorer = () => {
   );
 };
 
-export default HistogramShapeExplorer;
+export default HistogramHub;

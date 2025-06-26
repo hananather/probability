@@ -8,10 +8,10 @@ import {
   GraphContainer, 
   VisualizationSection,
   ControlGroup
-} from '@/components/ui/VisualizationContainer';
-import { createColorScheme, cn, typography, colors, formatNumber } from '@/lib/design-system';
-import { Button } from '@/components/ui/button';
-import { ProgressBar } from '@/components/ui/ProgressBar';
+} from "@/components/ui/VisualizationContainer";
+import { createColorScheme, cn, typography, colors, formatNumber } from "@/lib/design-system";
+import { Button } from "@/components/ui/button";
+import { ProgressBar } from "@/components/ui/ProgressBar";
 import { ArrowRight, CheckCircle, TrendingUp, TrendingDown, Activity, Award } from "lucide-react";
 
 const colorScheme = createColorScheme('sampling');
