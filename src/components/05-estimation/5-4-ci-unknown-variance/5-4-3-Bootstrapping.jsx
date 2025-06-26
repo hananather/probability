@@ -8,9 +8,9 @@ import {
   GraphContainer,
   ControlGroup,
   StatsDisplay
-} from '../ui/VisualizationContainer';
-import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
-import { RangeSlider } from '../ui/RangeSlider';
+} from '../../ui/VisualizationContainer';
+import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../../lib/design-system';
+import { RangeSlider } from '../../ui/RangeSlider';
 
 // Use inference color scheme for bootstrapping
 const colorScheme = createColorScheme('inference');

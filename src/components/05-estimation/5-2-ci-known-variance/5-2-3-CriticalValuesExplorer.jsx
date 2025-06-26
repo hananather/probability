@@ -7,7 +7,7 @@ import {
   VisualizationSection,
   GraphContainer,
   ControlGroup
-} from '../ui/VisualizationContainer';
+} from '../../ui/VisualizationContainer';
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '@/lib/design-system';
 
 // Use inference color scheme

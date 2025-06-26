@@ -4,9 +4,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import ConceptSection from '../../components/shared/ConceptSection.jsx';
 
-// Existing components
-const BayesianInference = dynamic(
-  () => import('../../components/05-estimation/5-1-1-BayesianInference.jsx').then(mod => ({ default: mod.BayesianInference })),
+// Section hub components
+const StatisticalInferenceHub = dynamic(
+  () => import('../../components/05-estimation/5-1-statistical-inference/index.jsx'),
   { 
     ssr: false,
     loading: () => (
@@ -17,9 +17,8 @@ const BayesianInference = dynamic(
   }
 );
 
-// New high-quality components
-const InteractiveInferenceJourney = dynamic(
-  () => import('../../components/05-estimation/5-1-3-InteractiveInferenceJourney.jsx'),
+const CIKnownVarianceHub = dynamic(
+  () => import('../../components/05-estimation/5-2-ci-known-variance/index.jsx'),
   { 
     ssr: false,
     loading: () => (
@@ -30,8 +29,8 @@ const InteractiveInferenceJourney = dynamic(
   }
 );
 
-const PointEstimation = dynamic(
-  () => import('../../components/05-estimation/5-1-4-PointEstimation.jsx'),
+const SampleSizeHub = dynamic(
+  () => import('../../components/05-estimation/5-3-sample-size/index.jsx'),
   { 
     ssr: false,
     loading: () => (
@@ -42,8 +41,8 @@ const PointEstimation = dynamic(
   }
 );
 
-const ConfidenceIntervalMasterclass = dynamic(
-  () => import('../../components/05-estimation/5-2-2-ConfidenceIntervalMasterclass.jsx'),
+const CIUnknownVarianceHub = dynamic(
+  () => import('../../components/05-estimation/5-4-ci-unknown-variance/index.jsx'),
   { 
     ssr: false,
     loading: () => (
@@ -54,56 +53,8 @@ const ConfidenceIntervalMasterclass = dynamic(
   }
 );
 
-const ConfidenceInterval = dynamic(
-  () => import('../../components/05-estimation/5-2-4-ConfidenceIntervalSimulation.jsx'),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-gray-400">Loading visualization...</div>
-      </div>
-    )
-  }
-);
-
-const SampleSizeLaboratory = dynamic(
-  () => import('../../components/05-estimation/5-3-2-SampleSizeLaboratory.jsx'),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-gray-400">Loading visualization...</div>
-      </div>
-    )
-  }
-);
-
-const Bootstrapping = dynamic(
-  () => import('../../components/05-estimation/5-4-3-Bootstrapping.jsx'),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-gray-400">Loading visualization...</div>
-      </div>
-    )
-  }
-);
-
-const TDistributionShowcase = dynamic(
-  () => import('../../components/05-estimation/5-4-2-TDistributionShowcase.jsx'),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-gray-400">Loading visualization...</div>
-      </div>
-    )
-  }
-);
-
-const ProportionEstimationStudio = dynamic(
-  () => import('../../components/05-estimation/5-5-2-ProportionEstimationStudio.jsx'),
+const ProportionsHub = dynamic(
+  () => import('../../components/05-estimation/5-5-proportions/index.jsx'),
   { 
     ssr: false,
     loading: () => (
@@ -117,7 +68,7 @@ const ProportionEstimationStudio = dynamic(
 export default function Chapter5() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [activeSection, setActiveSection] = useState('bayesian');
+  const [activeSection, setActiveSection] = useState('statistical-inference');
 
   // Read section from URL on mount and when URL changes
   useEffect(() => {
@@ -129,27 +80,10 @@ export default function Chapter5() {
 
   const sections = [
     {
-      id: 'bayesian',
-      title: '5.1 Bayesian Inference',
-      component: BayesianInference,
-      description: (
-        <>
-          <p>
-            Bayesian inference updates our beliefs based on new evidence. This powerful
-            framework is essential for medical diagnosis, machine learning, and decision
-            making under uncertainty.
-          </p>
-          <p>
-            Explore how a medical test&apos;s accuracy combines with disease prevalence to
-            determine the actual probability of having a disease given a positive test.
-          </p>
-        </>
-      )
-    },
-    {
-      id: 'inference-journey',
-      title: '5.1 Interactive Inference Journey',
-      component: InteractiveInferenceJourney,
+      id: 'statistical-inference',
+      title: '5.1 Statistical Inference',
+      component: StatisticalInferenceHub,
+      section: 'statistical-inference',
       description: (
         <>
           <p>
@@ -158,124 +92,74 @@ export default function Chapter5() {
             estimation and hypothesis testing.
           </p>
           <p>
-            Explore the beautiful journey from population to sample to statistic, and see
-            how sampling distributions emerge through interactive animations.
+            Explore Bayesian inference, the journey from population to sample, and point
+            estimation techniques through interactive visualizations.
           </p>
         </>
       )
     },
     {
-      id: 'point-estimation',
-      title: '5.2 Point Estimation',
-      component: PointEstimation,
+      id: 'ci-known-variance',
+      title: '5.2 Confidence Intervals (σ Known)',
+      component: CIKnownVarianceHub,
+      section: 'ci-known-variance',
       description: (
         <>
           <p>
-            Point estimation finds single values that best estimate population parameters
-            from sample data. Common estimators include the sample mean for population
-            mean and sample variance for population variance.
+            When the population standard deviation σ is known, we can construct confidence
+            intervals using the normal distribution. Master the construction and interpretation
+            of confidence intervals.
           </p>
           <p>
-            Visualize how sample statistics converge to population parameters as sample
-            size increases, demonstrating consistency and unbiasedness.
+            Build intervals, explore the 68-95-99.7 rule, and understand coverage properties
+            through comprehensive visualizations and simulations.
           </p>
         </>
       )
     },
     {
-      id: 'ci-masterclass',
-      title: '5.2 Confidence Interval Masterclass',
-      component: ConfidenceIntervalMasterclass,
-      description: (
-        <>
-          <p>
-            Master the construction and interpretation of confidence intervals with this
-            comprehensive three-panel visualization. Explore critical values, the 68-95-99.7
-            rule, and see confidence intervals in action.
-          </p>
-          <p>
-            Build intervals, compare methods, and understand the long-run coverage behavior
-            that makes confidence intervals such a powerful statistical tool.
-          </p>
-        </>
-      )
-    },
-    {
-      id: 'ci-simulation',
-      title: '5.3 Confidence Interval Simulation',
-      component: ConfidenceInterval,
-      description: (
-        <>
-          <p>
-            Confidence intervals provide a range of plausible values for a parameter.
-            A 95% confidence interval means that if we repeated our sampling process
-            many times, 95% of the intervals would contain the true parameter.
-          </p>
-          <p>
-            Build intuition by generating multiple confidence intervals and observing
-            their coverage properties in real-time.
-          </p>
-        </>
-      )
-    },
-    {
-      id: 'sample-size-lab',
-      title: '5.3 Sample Size Laboratory',
-      component: SampleSizeLaboratory,
+      id: 'sample-size',
+      title: '5.3 Sample Size Determination',
+      component: SampleSizeHub,
+      section: 'sample-size',
       description: (
         <>
           <p>
             Explore the critical relationship between sample size, margin of error, and
-            confidence level. This interactive laboratory features stunning 3D visualizations
-            and practical cost-benefit analysis.
+            confidence level. Learn how to calculate optimal sample sizes for different
+            scenarios.
           </p>
           <p>
-            Calculate optimal sample sizes for means and proportions, discover the square
-            root law, and apply your knowledge to real-world scenarios.
+            Interactive laboratories feature stunning 3D visualizations, practical cost-benefit
+            analysis, and real-world applications.
           </p>
         </>
       )
     },
     {
-      id: 'bootstrapping',
-      title: '5.4 Bootstrapping',
-      component: Bootstrapping,
-      description: (
-        <>
-          <p>
-            Bootstrapping estimates sampling distributions by resampling from the data
-            itself. This powerful technique works when theoretical distributions are
-            unknown or complex.
-          </p>
-          <p>
-            See how resampling with replacement creates a distribution of statistics,
-            enabling confidence interval construction without assumptions.
-          </p>
-        </>
-      )
-    },
-    {
-      id: 't-distribution',
-      title: '5.4 t-Distribution Showcase',
-      component: TDistributionShowcase,
+      id: 'ci-unknown-variance',
+      title: '5.4 Confidence Intervals (σ Unknown)',
+      component: CIUnknownVarianceHub,
+      section: 'ci-unknown-variance',
       description: (
         <>
           <p>
             When the population standard deviation σ is unknown, we use the t-distribution
-            and the sample standard deviation s to construct confidence intervals.
-            Watch the beautiful animation as t approaches normal.
+            and the sample standard deviation s. Learn about bootstrapping and the beautiful
+            properties of the t-distribution.
           </p>
           <p>
-            Compare t-intervals with z-intervals, explore small sample scenarios, and
-            understand when each distribution is appropriate.
+            Compare t-intervals with z-intervals, explore small sample scenarios, and master
+            modern resampling techniques.
           </p>
         </>
       )
     },
     {
-      id: 'proportion-studio',
-      title: '5.5 Proportion Estimation Studio',
-      component: ProportionEstimationStudio,
+      id: 'proportions',
+      title: '5.5 Proportion Confidence Intervals',
+      component: ProportionsHub,
+      section: 'proportions',
       description: (
         <>
           <p>

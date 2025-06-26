@@ -8,9 +8,9 @@ import {
   GraphContainer,
   ControlGroup,
   StatsDisplay
-} from '../ui/VisualizationContainer';
-import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
-import { RangeSlider } from '../ui/RangeSlider';
+} from '../../ui/VisualizationContainer';
+import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../../lib/design-system';
+import { RangeSlider } from '../../ui/RangeSlider';
 
 const margin = { top: 40, right: 20, bottom: 40, left: 20 };
 const width = 1000;

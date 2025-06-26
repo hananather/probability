@@ -2,16 +2,16 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import * as d3 from 'd3';
-import { Button } from '@/components/ui/button';
+import { Button } from '../../ui/button';
 import { 
   VisualizationContainer, 
   VisualizationSection,
   ControlPanel,
   ControlGroup,
   GraphContainer
-} from '@/components/ui/VisualizationContainer';
-import { RangeSlider, SliderPresets } from '@/components/ui/RangeSlider';
-import { cn } from '@/lib/utils';
+} from '../../ui/VisualizationContainer';
+import { RangeSlider, SliderPresets } from '../../ui/RangeSlider';
+import { cn } from '../../../lib/utils';
 import { Play, Pause, RotateCcw, Sparkles } from 'lucide-react';
 
 // Estimation color theme with beautiful gradients

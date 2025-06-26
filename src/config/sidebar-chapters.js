@@ -63,7 +63,6 @@ export const chapters = [
     title: 'Chapter 4: Descriptive Statistics & Sampling',
     path: '/chapter4',
     sections: [
-      { title: '4.1 Comprehensive Statistics', component: 'ComprehensiveStats' },
       { title: '4.2 Histogram Hub', component: 'HistogramHub' },
       { title: '4.3 Interactive Statistics Explorer', component: 'DescriptiveStatsExplorer' },
       { title: '4.3 Sampling Distributions', component: 'SamplingDistributions' },
@@ -77,15 +76,11 @@ export const chapters = [
     title: 'Chapter 5: Estimation',
     path: '/chapter5',
     sections: [
-      { title: '5.1 Bayesian Inference', component: 'BayesianInference' },
-      { title: '5.1 Interactive Inference Journey', component: 'InteractiveInferenceJourney' },
-      { title: '5.2 Point Estimation', component: 'PointEstimation' },
-      { title: '5.2 Confidence Interval Masterclass', component: 'ConfidenceIntervalMasterclass' },
-      { title: '5.3 Confidence Interval Simulation', component: 'ConfidenceInterval' },
-      { title: '5.3 Sample Size Laboratory', component: 'SampleSizeLaboratory' },
-      { title: '5.4 Bootstrapping', component: 'Bootstrapping' },
-      { title: '5.4 t-Distribution Showcase', component: 'TDistributionShowcase' },
-      { title: '5.5 Proportion Estimation Studio', component: 'ProportionEstimationStudio' },
+      { title: '5.1 Statistical Inference', component: 'StatisticalInferenceHub' },
+      { title: '5.2 Confidence Intervals (σ Known)', component: 'CIKnownVarianceHub' },
+      { title: '5.3 Sample Size Determination', component: 'SampleSizeHub' },
+      { title: '5.4 Confidence Intervals (σ Unknown)', component: 'CIUnknownVarianceHub' },
+      { title: '5.5 Proportion Confidence Intervals', component: 'ProportionsHub' },
     ]
   },
   {
