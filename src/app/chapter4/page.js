@@ -126,7 +126,7 @@ const CentralTendencyHub = dynamic(
 );
 
 const CentralTendencyJourney = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/4-1-1-CentralTendencyJourney'),
+  () => import('@/components/04-descriptive-statistics-sampling/4-1-central-tendency/4-1-1-CentralTendencyJourney'),
   { 
     ssr: false,
     loading: () => (
@@ -150,33 +150,9 @@ const DataExplorerIntro = dynamic(
 );
 
 
-// Additional Histogram Components
-const HistogramIntuitiveIntro = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/4-2-1-HistogramIntuitiveIntro'),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-gray-400">Loading visualization...</div>
-      </div>
-    )
-  }
-);
-
-const HistogramInteractiveJourney = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/4-2-2-HistogramInteractiveJourney'),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-gray-400">Loading visualization...</div>
-      </div>
-    )
-  }
-);
-
-const HistogramShapeAnalysis = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/4-2-3-HistogramShapeAnalysis'),
+// Histogram Hub Component
+const HistogramHub = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/4-2-histograms/4-2-0-HistogramHub'),
   { 
     ssr: false,
     loading: () => (
@@ -317,32 +293,29 @@ export default function Chapter4Page() {
       'comprehensive-stats': 5,
       
       // Histograms
-      'histogram-intro': 6,
-      'histograms': 7,
-      'histogram-journey': 8,
-      'histogram-analysis': 9,
+      'histograms': 6,
       
       // Sampling & Distributions
-      'sampling-distributions': 10,
-      'sampling-distributions-improved': 11,
-      'central-limit-theorem': 12,
+      'sampling-distributions': 7,
+      'sampling-distributions-improved': 8,
+      'central-limit-theorem': 9,
       
       // T-Distribution
-      't-distribution': 13,
+      't-distribution': 10,
       
       // F-Distribution
-      'f-distribution-intro': 14,
-      'f-distribution': 15,
-      'f-distribution-journey': 16,
-      'f-distribution-worked': 17,
-      'f-distribution-masterclass': 18,
-      'f-distribution-mastery': 19,
-      'f-distribution-full-journey': 20,
+      'f-distribution-intro': 11,
+      'f-distribution': 12,
+      'f-distribution-journey': 13,
+      'f-distribution-worked': 14,
+      'f-distribution-masterclass': 15,
+      'f-distribution-mastery': 16,
+      'f-distribution-full-journey': 17,
       
       // Boxplots
-      'boxplot-quartiles': 21,
-      'boxplot-journey': 22,
-      'boxplot-real-world': 23
+      'boxplot-quartiles': 18,
+      'boxplot-journey': 19,
+      'boxplot-real-world': 20
     };
     
     const section = searchParams.get('section');
@@ -398,31 +371,10 @@ export default function Chapter4Page() {
     
     // Histograms
     {
-      id: 'histogram-intro',
-      title: "4.2.1 - Histograms: Intuitive Introduction",
-      description: "Learn what histograms are and why they're essential for understanding data distributions.",
-      component: <HistogramIntuitiveIntro />,
-      category: 'histograms'
-    },
-    {
       id: 'histograms',
-      title: "4.2.2 - Histograms & Data Shapes",
+      title: "4.2 - Histogram Hub",
       description: "Explore how histograms represent data distributions and learn to identify symmetric, right-skewed, and left-skewed datasets.",
-      component: <HistogramShapeExplorer />,
-      category: 'histograms'
-    },
-    {
-      id: 'histogram-journey',
-      title: "4.2.3 - Histogram Interactive Journey",
-      description: "Build your understanding of histograms through guided, interactive exercises.",
-      component: <HistogramInteractiveJourney />,
-      category: 'histograms'
-    },
-    {
-      id: 'histogram-analysis',
-      title: "4.2.4 - Histogram Shape Analysis",
-      description: "Learn to analyze and interpret different histogram shapes and what they reveal about your data.",
-      component: <HistogramShapeAnalysis />,
+      component: <HistogramHub />,
       category: 'histograms'
     },
     

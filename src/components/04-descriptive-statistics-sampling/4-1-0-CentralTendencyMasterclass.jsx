@@ -6,12 +6,12 @@ import {
   VisualizationSection,
   GraphContainer,
   ControlGroup
-} from '../ui/VisualizationContainer';
+} from '@/components/ui/VisualizationContainer';
 import { colors, formatNumber } from '@/lib/design-system';
-import { ProgressBar } from '../ui/ProgressBar';
-import { Button } from '../ui/button';
+import { ProgressBar } from '@/components/ui/ProgressBar';
+import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
-import CentralTendencyJourney from './4-1-1-CentralTendencyJourney';
+import CentralTendencyJourney from './4-1-central-tendency/4-1-1-CentralTendencyJourney';
 
 // Custom color scheme for central tendency
 const tendencyColors = {

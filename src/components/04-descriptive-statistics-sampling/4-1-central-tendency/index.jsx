@@ -9,7 +9,7 @@ import { ProgressBar } from '../../ui/ProgressBar';
 import { cn } from '@/lib/design-system';
 import { 
   BookOpen, Lightbulb, Trophy, FlaskConical, 
-  Calculator, ChevronRight, Star, Lock 
+  Calculator, ChevronRight, Star, Lock, AlertCircle 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -17,7 +17,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const LEARNING_COMPONENTS = [
   {
     id: 'intuitive-intro',
-    title: 'Intuitive Introduction',
+    title: '1. Intuitive Introduction',
     subtitle: 'Start your journey here',
     description: 'Discover what "central" means in data through interactive exploration. No formulas needed!',
     icon: Lightbulb,
@@ -30,30 +30,30 @@ const LEARNING_COMPONENTS = [
       'Discover median as the middle value',
       'Learn about mode as the most frequent value'
     ],
-    component: () => import('../4-1-0-CentralTendencyIntuitiveIntro'),
+    component: () => import('./4-1-0-CentralTendencyIntuitiveIntro'),
     color: '#10b981' // Green for beginner
   },
   {
-    id: 'deep-dive',
-    title: 'Interactive Deep Dive',
-    subtitle: 'Master the concepts',
-    description: 'Engage with challenges, unlock achievements, and deeply understand all three measures of central tendency.',
+    id: 'descriptive-stats',
+    title: '2. Descriptive Statistics Foundations',
+    subtitle: 'Master statistical measures',
+    description: 'Learn quartiles, variance, standard deviation, and outlier detection through real-world accident data analysis.',
     icon: Trophy,
     difficulty: 'Intermediate',
     estimatedTime: '20 min',
     prerequisites: ['intuitive-intro'],
     learningGoals: [
-      'Complete hands-on challenges',
-      'Compare measures in different scenarios',
-      'Understand when to use each measure',
-      'Explore edge cases and special situations'
+      'Calculate quartiles and five-number summary',
+      'Understand measures of spread',
+      'Detect outliers using the IQR method',
+      'Apply statistics to real datasets'
     ],
-    component: () => import('../4-1-2-CentralTendencyDeepDive'),
+    component: () => import('./4-1-2-DescriptiveStatisticsFoundations'),
     color: '#3b82f6' // Blue for intermediate
   },
   {
     id: 'mathematical-foundations',
-    title: 'Mathematical Foundations',
+    title: '3. Mathematical Foundations',
     subtitle: 'For the mathematically inclined',
     description: 'Dive deep into formulas, proofs, and mathematical properties of central tendency measures.',
     icon: Calculator,
@@ -66,12 +66,12 @@ const LEARNING_COMPONENTS = [
       'Other types of means',
       'Theoretical foundations'
     ],
-    component: () => import('../4-1-0-CentralTendencyFoundations'),
+    component: () => import('./4-1-0-CentralTendencyFoundations'),
     color: '#8b5cf6' // Purple for advanced
   },
   {
     id: 'physics-playground',
-    title: 'Physics Playground',
+    title: '4. Physics Playground',
     subtitle: 'Optional exploration',
     description: 'See central tendency through the lens of physics with interactive seesaw simulations.',
     icon: FlaskConical,
@@ -83,7 +83,7 @@ const LEARNING_COMPONENTS = [
       'Balance and equilibrium concepts',
       'Interactive physics simulations'
     ],
-    component: () => import('../4-1-1-CentralTendencyJourney'),
+    component: () => import('./4-1-1-CentralTendencyJourney'),
     color: '#f59e0b' // Amber for exploration
   }
 ];
@@ -98,9 +98,33 @@ function useProgress() {
     return [];
   });
   
+  const [devMode, setDevMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('centralTendency_devMode');
+      return saved === 'true';
+    }
+    return false;
+  });
+  
   useEffect(() => {
     localStorage.setItem('centralTendencyProgress', JSON.stringify(completedComponents));
   }, [completedComponents]);
+  
+  // Keyboard shortcut for dev mode (Ctrl/Cmd + Shift + D)
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'D') {
+        setDevMode(prev => {
+          const newValue = !prev;
+          localStorage.setItem('centralTendency_devMode', newValue.toString());
+          return newValue;
+        });
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
   
   const markComplete = (componentId) => {
     if (!completedComponents.includes(componentId)) {
@@ -109,15 +133,20 @@ function useProgress() {
   };
   
   const isUnlocked = (component) => {
-    return component.prerequisites.length === 0 || 
-           component.prerequisites.every(prereq => completedComponents.includes(prereq));
+    // Always return true - all components are now accessible
+    return true;
   };
   
-  return { completedComponents, markComplete, isUnlocked };
+  const hasPrerequisites = (component) => {
+    return component.prerequisites.length > 0 && 
+           !component.prerequisites.every(prereq => completedComponents.includes(prereq));
+  };
+  
+  return { completedComponents, markComplete, isUnlocked, hasPrerequisites, devMode };
 }
 
 // Component card
-function ComponentCard({ component, isUnlocked, isCompleted, onClick }) {
+function ComponentCard({ component, isUnlocked, isCompleted, hasPrerequisites, isNext, onClick }) {
   const [isHovered, setIsHovered] = useState(false);
   
   return (
@@ -126,11 +155,10 @@ function ComponentCard({ component, isUnlocked, isCompleted, onClick }) {
       whileTap={isUnlocked ? { scale: 0.98 } : {}}
       className={cn(
         "relative overflow-hidden rounded-xl transition-all cursor-pointer",
-        isUnlocked 
-          ? "bg-neutral-800 hover:bg-neutral-700" 
-          : "bg-neutral-900 opacity-50 cursor-not-allowed"
+        "bg-neutral-800 hover:bg-neutral-700",
+        isNext && "ring-2 ring-green-500 ring-opacity-50"
       )}
-      onClick={isUnlocked ? onClick : undefined}
+      onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -142,10 +170,18 @@ function ComponentCard({ component, isUnlocked, isCompleted, onClick }) {
         }}
       />
       
-      {/* Lock overlay */}
-      {!isUnlocked && (
-        <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
-          <Lock size={48} className="text-neutral-500" />
+      {/* Recommended badge for prerequisites */}
+      {hasPrerequisites && !isCompleted && (
+        <div className="absolute top-4 left-4 bg-amber-500/20 text-amber-400 px-2 py-1 rounded text-xs font-medium">
+          Complete prerequisites first
+        </div>
+      )}
+      
+      {/* Next recommended indicator */}
+      {isNext && (
+        <div className="absolute top-4 left-4 bg-green-500/20 text-green-400 px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
+          <span>Start Here</span>
+          <ChevronRight size={14} />
         </div>
       )}
       
@@ -195,7 +231,7 @@ function ComponentCard({ component, isUnlocked, isCompleted, onClick }) {
         
         {/* Learning goals preview */}
         <AnimatePresence>
-          {isHovered && isUnlocked && (
+          {isHovered && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
@@ -220,17 +256,15 @@ function ComponentCard({ component, isUnlocked, isCompleted, onClick }) {
         {/* Action button */}
         <div className="flex items-center justify-between mt-4">
           <span className="text-sm text-neutral-400">
-            {!isUnlocked && component.prerequisites.length > 0 && (
-              <>Complete prerequisites first</>
+            {hasPrerequisites && !isCompleted && (
+              <span className="text-amber-400">Recommended after prerequisites</span>
             )}
           </span>
-          {isUnlocked && (
-            <ChevronRight 
-              size={20} 
-              className="text-neutral-400"
-              style={{ color: isHovered ? component.color : undefined }}
-            />
-          )}
+          <ChevronRight 
+            size={20} 
+            className="text-neutral-400"
+            style={{ color: isHovered ? component.color : undefined }}
+          />
         </div>
       </div>
     </motion.div>
@@ -240,7 +274,7 @@ function ComponentCard({ component, isUnlocked, isCompleted, onClick }) {
 // Main hub component
 export default function CentralTendencyHub() {
   const [selectedComponent, setSelectedComponent] = useState(null);
-  const { completedComponents, markComplete, isUnlocked } = useProgress();
+  const { completedComponents, markComplete, isUnlocked, hasPrerequisites, devMode } = useProgress();
   const [showComponent, setShowComponent] = useState(false);
   
   // Calculate overall progress
@@ -270,15 +304,17 @@ export default function CentralTendencyHub() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => {
-              markComplete(selectedComponent.id);
-              setSelectedComponent(null);
-            }}
+            onClick={() => setSelectedComponent(null)}
           >
             ← Back to Learning Hub
           </Button>
         </div>
-        <Component />
+        <Component 
+          onComplete={() => {
+            markComplete(selectedComponent.id);
+            // Optionally show a success message
+          }}
+        />
       </>
     );
   }
@@ -294,6 +330,9 @@ export default function CentralTendencyHub() {
             </h2>
             <p className="text-neutral-400">
               Choose your learning path and progress at your own pace
+            </p>
+            <p className="text-sm text-neutral-500 mt-2">
+              All sections are accessible - follow the numbered sequence for the best learning experience
             </p>
           </div>
           <div className="text-right">
@@ -313,15 +352,24 @@ export default function CentralTendencyHub() {
       {/* Learning paths */}
       <VisualizationSection title="Choose Your Learning Path">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {LEARNING_COMPONENTS.map(component => (
-            <ComponentCard
-              key={component.id}
-              component={component}
-              isUnlocked={isUnlocked(component)}
-              isCompleted={completedComponents.includes(component.id)}
-              onClick={() => setSelectedComponent(component)}
-            />
-          ))}
+          {LEARNING_COMPONENTS.map((component, index) => {
+            // Determine if this is the next recommended component
+            const isCompleted = completedComponents.includes(component.id);
+            const isNext = !isCompleted && 
+              (index === 0 || completedComponents.includes(LEARNING_COMPONENTS[index - 1].id));
+            
+            return (
+              <ComponentCard
+                key={component.id}
+                component={component}
+                isUnlocked={isUnlocked(component)}
+                isCompleted={isCompleted}
+                hasPrerequisites={hasPrerequisites(component)}
+                isNext={isNext}
+                onClick={() => setSelectedComponent(component)}
+              />
+            );
+          })}
         </div>
       </VisualizationSection>
       

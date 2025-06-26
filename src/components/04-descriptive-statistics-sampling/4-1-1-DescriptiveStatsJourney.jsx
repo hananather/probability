@@ -1,10 +1,10 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import DataExplorerIntro from './4-1-1-DataExplorerIntro';
-import CentralTendencyJourney from './4-1-1-CentralTendencyJourney';
+import CentralTendencyJourney from './4-1-central-tendency/4-1-1-CentralTendencyJourney';
 import ComprehensiveStats from './4-1-1-ComprehensiveStats';
-import { Button } from '../ui/button';
-import { ProgressBar } from '../ui/ProgressBar';
+import { Button } from '@/components/ui/button';
+import { ProgressBar } from '@/components/ui/ProgressBar';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const STAGES = [

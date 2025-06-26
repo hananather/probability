@@ -9,11 +9,11 @@ import {
   StatsDisplay
 } from '@/components/ui/VisualizationContainer';
 import { colors, typography, formatNumber, cn, createColorScheme } from '@/lib/design-system';
-import { WorkedExample, ExampleSection, Formula, InsightBox, CalculationSteps } from '../ui/WorkedExample';
+import { WorkedExample, ExampleSection, Formula, InsightBox, CalculationSteps } from '../../ui/WorkedExample';
 import { Button } from '@/components/ui/button';
 import { RangeSlider } from '@/components/ui/RangeSlider';
 import { ChevronLeft, ChevronRight, Calculator, BarChart3, TrendingUp, Database } from 'lucide-react';
-import CentralTendencyJourney from './4-1-central-tendency/4-1-1-CentralTendencyJourney';
+import CentralTendencyJourney from './4-1-1-CentralTendencyJourney';
 
 // Color scheme for statistics
 const colorScheme = createColorScheme('estimation');
@@ -31,58 +31,55 @@ const SECTIONS = [
   { id: 'physics-model', title: 'Physics Model (Optional)', icon: Calculator }
 ];
 
-// LaTeX formula component with MathJax
-const MathFormula = React.memo(function MathFormula({ formula, block = false }) {
-  const ref = useRef(null);
+// LaTeX formula component with MathJax - removed, will use direct dangerouslySetInnerHTML
+
+// Section 1: Mathematical Foundations
+const FoundationsSection = React.memo(function FoundationsSection() {
+  const contentRef = useRef(null);
   
   useEffect(() => {
     const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && ref.current) {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
         if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([ref.current]);
+          window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([ref.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
       }
     };
     
     processMathJax();
     const timeoutId = setTimeout(processMathJax, 100);
     return () => clearTimeout(timeoutId);
-  }, [formula]);
+  }, []);
   
   return (
-    <div ref={ref} className={block ? "text-center my-4" : "inline"}>
-      <span dangerouslySetInnerHTML={{ __html: formula }} />
+    <div ref={contentRef}>
+      <WorkedExample title="What is Central Tendency?" variant="default">
+        <ExampleSection title="Definition">
+          <p className="mb-4 text-neutral-300 leading-relaxed">
+            Central tendency is a single value that attempts to describe a dataset by identifying the central position within that dataset.
+          </p>
+          <Formula>
+            <div className="text-center my-4">
+              <span dangerouslySetInnerHTML={{ __html: `\\(\\text{Central Tendency} = f(\\{x_1, x_2, ..., x_n\\})\\)` }} />
+            </div>
+          </Formula>
+        </ExampleSection>
+      
+        <ExampleSection title="Why Multiple Measures?">
+          <p className="mb-4 text-neutral-300">Different measures capture different aspects of "center":</p>
+          <ul className="list-disc list-inside space-y-3 ml-6 text-neutral-300">
+            <li><strong className="text-blue-400">Mean</strong>: The balance point of the data</li>
+            <li><strong className="text-green-400">Median</strong>: The middle value when ordered</li>
+            <li><strong className="text-amber-400">Mode</strong>: The most frequent value</li>
+          </ul>
+        </ExampleSection>
+        
+        <InsightBox variant="info">
+          Each measure has unique properties that make it suitable for different types of data and analysis goals.
+        </InsightBox>
+      </WorkedExample>
     </div>
-  );
-});
-
-// Section 1: Mathematical Foundations
-const FoundationsSection = React.memo(function FoundationsSection() {
-  return (
-    <WorkedExample title="What is Central Tendency?" variant="default">
-      <ExampleSection title="Definition">
-        <p className="mb-3">
-          Central tendency is a single value that attempts to describe a dataset by identifying the central position within that dataset.
-        </p>
-        <Formula>
-          <MathFormula formula="\\(\text{Central Tendency} = f(\\{x_1, x_2, ..., x_n\\})\\)" block />
-        </Formula>
-      </ExampleSection>
-      
-      <ExampleSection title="Why Multiple Measures?">
-        <p className="mb-3">Different measures capture different aspects of "center":</p>
-        <ul className="list-disc list-inside space-y-2 ml-4">
-          <li><strong>Mean</strong>: The balance point of the data</li>
-          <li><strong>Median</strong>: The middle value when ordered</li>
-          <li><strong>Mode</strong>: The most frequent value</li>
-        </ul>
-      </ExampleSection>
-      
-      <InsightBox variant="info">
-        Each measure has unique properties that make it suitable for different types of data and analysis goals.
-      </InsightBox>
-    </WorkedExample>
   );
 });
 
@@ -90,12 +87,28 @@ const FoundationsSection = React.memo(function FoundationsSection() {
 const MeanSection = React.memo(function MeanSection() {
   const [data, setData] = useState([3, 5, 7, 9, 11]);
   const [newValue, setNewValue] = useState(6);
-  const runningMeanRef = useRef(null);
+  const contentRef = useRef(null);
   
   const mean = useMemo(() => 
     data.length > 0 ? data.reduce((a, b) => a + b, 0) / data.length : 0,
     [data]
   );
+  
+  // MathJax processing
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [data]);
   
   // D3 visualization for running mean
   const svgRef = useRef(null);
@@ -213,32 +226,36 @@ const MeanSection = React.memo(function MeanSection() {
   };
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" ref={contentRef}>
       <WorkedExample title="The Arithmetic Mean">
         <ExampleSection title="Population Mean (Continuous)">
           <Formula>
-            <MathFormula formula="\\(\\mu = E[X] = \\int_{-\\infty}^{\\infty} x f(x) \\, dx\\)" block />
+            <div className="text-center my-4">
+              <span dangerouslySetInnerHTML={{ __html: `\\(\\mu = E[X] = \\int_{-\\infty}^{\\infty} x f(x) \\, dx\\)` }} />
+            </div>
           </Formula>
         </ExampleSection>
         
         <ExampleSection title="Sample Mean">
           <Formula>
-            <MathFormula formula="\\(\\bar{x} = \\frac{1}{n}\\sum_{i=1}^{n} x_i\\)" block />
+            <div className="text-center my-4">
+              <span dangerouslySetInnerHTML={{ __html: `\\(\\bar{x} = \\frac{1}{n}\\sum_{i=1}^{n} x_i\\)` }} />
+            </div>
           </Formula>
         </ExampleSection>
         
         <ExampleSection title="Properties">
           <ul className="list-disc list-inside space-y-1 ml-4">
-            <li>Linear: <MathFormula formula="\\(E[aX + b] = aE[X] + b\\)" /></li>
+            <li>Linear: <span dangerouslySetInnerHTML={{ __html: `\\(E[aX + b] = aE[X] + b\\)` }} /></li>
             <li>Minimum variance unbiased estimator (MVUE)</li>
             <li>Sensitive to outliers</li>
-            <li>Balance point: <MathFormula formula="\\(\\sum(x_i - \\bar{x}) = 0\\)" /></li>
+            <li>Balance point: <span dangerouslySetInnerHTML={{ __html: `\\(\\sum(x_i - \\bar{x}) = 0\\)` }} /></li>
           </ul>
         </ExampleSection>
       </WorkedExample>
       
-      <VisualizationSection title="Interactive Mean Calculator">
-        <GraphContainer height="300px">
+      <VisualizationSection title="Interactive Mean Calculator" className="bg-neutral-900/50 rounded-lg p-4">
+        <GraphContainer height="350px" className="bg-black/50 rounded-lg overflow-hidden">
           <svg ref={svgRef} className="w-full" />
         </GraphContainer>
         
@@ -273,6 +290,7 @@ const MeanSection = React.memo(function MeanSection() {
 const MedianSection = React.memo(function MedianSection() {
   const [data, setData] = useState([3, 1, 4, 1, 5, 9, 2, 6, 5]);
   const [animating, setAnimating] = useState(false);
+  const contentRef = useRef(null);
   const sortedData = useMemo(() => [...data].sort((a, b) => a - b), [data]);
   
   const median = useMemo(() => {
@@ -282,6 +300,22 @@ const MedianSection = React.memo(function MedianSection() {
       ? (sortedData[mid - 1] + sortedData[mid]) / 2
       : sortedData[mid];
   }, [sortedData]);
+  
+  // MathJax processing
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [data]);
   
   // D3 visualization for sorting animation
   const svgRef = useRef(null);
@@ -384,34 +418,36 @@ const MedianSection = React.memo(function MedianSection() {
   };
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" ref={contentRef}>
       <WorkedExample title="The Median">
         <ExampleSection title="Formal Definition">
           <p className="mb-2">The median divides the probability distribution in half:</p>
           <Formula>
-            <MathFormula formula="\\(P(X \\leq \\text{median}) = P(X \\geq \\text{median}) = 0.5\\)" block />
+            <div className="text-center my-4">
+              <span dangerouslySetInnerHTML={{ __html: `\\(P(X \\leq \\text{median}) = P(X \\geq \\text{median}) = 0.5\\)` }} />
+            </div>
           </Formula>
         </ExampleSection>
         
         <ExampleSection title="Sample Median Algorithm">
-          <ol className="list-decimal list-inside space-y-1 ml-4">
-            <li>Sort the data: <MathFormula formula="\\(x_{(1)} \\leq x_{(2)} \\leq ... \\leq x_{(n)}\\)" /></li>
-            <li>If n is odd: <MathFormula formula="\\(\\text{median} = x_{((n+1)/2)}\\)" /></li>
-            <li>If n is even: <MathFormula formula="\\(\\text{median} = \\frac{x_{(n/2)} + x_{(n/2+1)}}{2}\\)" /></li>
+          <ol className="list-decimal list-inside space-y-2 ml-6 text-neutral-300">
+            <li>Sort the data: <span dangerouslySetInnerHTML={{ __html: `\\(x_{(1)} \\leq x_{(2)} \\leq ... \\leq x_{(n)}\\)` }} /></li>
+            <li>If n is odd: <span dangerouslySetInnerHTML={{ __html: `\\(\\text{median} = x_{((n+1)/2)}\\)` }} /></li>
+            <li>If n is even: <span dangerouslySetInnerHTML={{ __html: `\\(\\text{median} = \\frac{x_{(n/2)} + x_{(n/2+1)}}{2}\\)` }} /></li>
           </ol>
         </ExampleSection>
         
         <ExampleSection title="Properties">
           <ul className="list-disc list-inside space-y-1 ml-4">
             <li>Robust to outliers (50% breakdown point)</li>
-            <li>Minimizes: <MathFormula formula="\\(\\sum_{i=1}^{n}|x_i - c|\\)" /></li>
+            <li>Minimizes: <span dangerouslySetInnerHTML={{ __html: `\\(\\sum_{i=1}^{n}|x_i - c|\\)` }} /></li>
             <li>Order statistic (depends only on ranking)</li>
           </ul>
         </ExampleSection>
       </WorkedExample>
       
-      <VisualizationSection title="Interactive Median Finder">
-        <GraphContainer height="300px">
+      <VisualizationSection title="Interactive Median Finder" className="bg-neutral-900/50 rounded-lg p-4">
+        <GraphContainer height="350px" className="bg-black/50 rounded-lg overflow-hidden">
           <svg ref={svgRef} className="w-full" />
         </GraphContainer>
         
@@ -448,6 +484,7 @@ const MedianSection = React.memo(function MedianSection() {
 // Section 4: Mode
 const ModeSection = React.memo(function ModeSection() {
   const [data, setData] = useState([1, 2, 2, 3, 3, 3, 4, 4, 5]);
+  const contentRef = useRef(null);
   
   const frequency = useMemo(() => {
     const freq = {};
@@ -463,6 +500,22 @@ const ModeSection = React.memo(function ModeSection() {
       .filter(key => frequency[key] === maxFreq)
       .map(Number);
   }, [frequency]);
+  
+  // MathJax processing
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [data]);
   
   // D3 visualization for frequency histogram
   const svgRef = useRef(null);
@@ -563,20 +616,24 @@ const ModeSection = React.memo(function ModeSection() {
   };
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" ref={contentRef}>
       <WorkedExample title="The Mode">
         <ExampleSection title="Discrete Data">
           <Formula>
-            <MathFormula formula="\\(\\text{mode} = \\arg\\max_x P(X = x)\\)" block />
+            <div className="text-center my-4">
+              <span dangerouslySetInnerHTML={{ __html: `\\(\\text{mode} = \\arg\\max_x P(X = x)\\)` }} />
+            </div>
           </Formula>
-          <p className="mt-2 text-sm">The value(s) with highest frequency</p>
+          <p className="mt-3 text-sm text-neutral-400">The value(s) with highest frequency</p>
         </ExampleSection>
         
         <ExampleSection title="Continuous Data">
           <Formula>
-            <MathFormula formula="\\(\\text{mode} = \\arg\\max_x f(x)\\)" block />
+            <div className="text-center my-4">
+              <span dangerouslySetInnerHTML={{ __html: `\\(\\text{mode} = \\arg\\max_x f(x)\\)` }} />
+            </div>
           </Formula>
-          <p className="mt-2 text-sm">The peak(s) of the probability density function</p>
+          <p className="mt-3 text-sm text-neutral-400">The peak(s) of the probability density function</p>
         </ExampleSection>
         
         <ExampleSection title="Properties">
@@ -589,8 +646,8 @@ const ModeSection = React.memo(function ModeSection() {
         </ExampleSection>
       </WorkedExample>
       
-      <VisualizationSection title="Interactive Frequency Histogram">
-        <GraphContainer height="300px">
+      <VisualizationSection title="Interactive Frequency Histogram" className="bg-neutral-900/50 rounded-lg p-4">
+        <GraphContainer height="350px" className="bg-black/50 rounded-lg overflow-hidden">
           <svg ref={svgRef} className="w-full" />
         </GraphContainer>
         
@@ -624,6 +681,23 @@ const ModeSection = React.memo(function ModeSection() {
 // Section 5: Comparative Analysis
 const ComparisonSection = React.memo(function ComparisonSection() {
   const [skewness, setSkewness] = useState(0); // -1 to 1
+  const contentRef = useRef(null);
+  
+  // MathJax processing
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [skewness]);
   
   // Generate distribution based on skewness
   const generateData = useCallback((skew) => {
@@ -762,21 +836,21 @@ const ComparisonSection = React.memo(function ComparisonSection() {
   }, [data, stats]);
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" ref={contentRef}>
       <WorkedExample title="When Measures Diverge">
         <ExampleSection title="Distribution Shapes">
-          <div className="space-y-3">
-            <div className="flex items-center gap-4">
-              <span className="w-32">Symmetric:</span>
-              <MathFormula formula="\\(\\text{mean} \\approx \\text{median} \\approx \\text{mode}\\)" />
+          <div className="space-y-4">
+            <div className="flex items-center gap-4 p-3 bg-neutral-800 rounded-lg">
+              <span className="w-32 text-neutral-400">Symmetric:</span>
+              <span dangerouslySetInnerHTML={{ __html: `\\(\\text{mean} \\approx \\text{median} \\approx \\text{mode}\\)` }} />
             </div>
-            <div className="flex items-center gap-4">
-              <span className="w-32">Right-skewed:</span>
-              <MathFormula formula="\\(\\text{mode} < \\text{median} < \\text{mean}\\)" />
+            <div className="flex items-center gap-4 p-3 bg-neutral-800 rounded-lg">
+              <span className="w-32 text-neutral-400">Right-skewed:</span>
+              <span dangerouslySetInnerHTML={{ __html: `\\(\\text{mode} < \\text{median} < \\text{mean}\\)` }} />
             </div>
-            <div className="flex items-center gap-4">
-              <span className="w-32">Left-skewed:</span>
-              <MathFormula formula="\\(\\text{mean} < \\text{median} < \\text{mode}\\)" />
+            <div className="flex items-center gap-4 p-3 bg-neutral-800 rounded-lg">
+              <span className="w-32 text-neutral-400">Left-skewed:</span>
+              <span dangerouslySetInnerHTML={{ __html: `\\(\\text{mean} < \\text{median} < \\text{mode}\\)` }} />
             </div>
           </div>
         </ExampleSection>
@@ -787,8 +861,8 @@ const ComparisonSection = React.memo(function ComparisonSection() {
         </InsightBox>
       </WorkedExample>
       
-      <VisualizationSection title="Interactive Distribution Explorer">
-        <GraphContainer height="400px">
+      <VisualizationSection title="Interactive Distribution Explorer" className="bg-neutral-900/50 rounded-lg p-4">
+        <GraphContainer height="450px" className="bg-black/50 rounded-lg overflow-hidden">
           <svg ref={svgRef} className="w-full" />
         </GraphContainer>
         
@@ -815,6 +889,7 @@ const ComparisonSection = React.memo(function ComparisonSection() {
 // Section 6: Other Means
 const OtherMeansSection = React.memo(function OtherMeansSection() {
   const [values, setValues] = useState([2, 4, 8, 16, 32]);
+  const contentRef = useRef(null);
   
   const means = useMemo(() => {
     const n = values.length;
@@ -837,56 +912,82 @@ const OtherMeansSection = React.memo(function OtherMeansSection() {
     return { arithmetic, geometric, harmonic, quadratic };
   }, [values]);
   
+  // MathJax processing
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, []);
+  
   return (
-    <WorkedExample title="Other Types of Means">
-      <ExampleSection title="Geometric Mean">
-        <p className="mb-2">For multiplicative processes (e.g., growth rates):</p>
-        <Formula>
-          <MathFormula formula="\\(GM = \\sqrt[n]{\\prod_{i=1}^{n} x_i} = (x_1 \\cdot x_2 \\cdot ... \\cdot x_n)^{1/n}\\)" block />
-        </Formula>
+    <div ref={contentRef}>
+      <WorkedExample title="Other Types of Means">
+        <ExampleSection title="Geometric Mean">
+          <p className="mb-2">For multiplicative processes (e.g., growth rates):</p>
+          <Formula>
+            <div className="text-center my-4">
+              <span dangerouslySetInnerHTML={{ __html: `\\(GM = \\sqrt[n]{\\prod_{i=1}^{n} x_i} = (x_1 \\cdot x_2 \\cdot ... \\cdot x_n)^{1/n}\\)` }} />
+            </div>
+          </Formula>
         <p className="mt-2 text-sm">
           Example: Annual returns of 10%, 20%, -5% → GM = {((1.1 * 1.2 * 0.95) ** (1/3) - 1).toFixed(3)}
         </p>
       </ExampleSection>
       
-      <ExampleSection title="Harmonic Mean">
-        <p className="mb-2">For rates and ratios (e.g., average speed):</p>
-        <Formula>
-          <MathFormula formula="\\(HM = \\frac{n}{\\sum_{i=1}^{n} \\frac{1}{x_i}}\\)" block />
-        </Formula>
-        <p className="mt-2 text-sm">
-          Example: Travel 60 mph one way, 40 mph return → Average speed = HM = {(2/(1/60 + 1/40)).toFixed(1)} mph
-        </p>
-      </ExampleSection>
-      
-      <ExampleSection title="Weighted Mean">
-        <p className="mb-2">When observations have different importance:</p>
-        <Formula>
-          <MathFormula formula="\\(\\bar{x}_w = \\frac{\\sum_{i=1}^{n} w_i x_i}{\\sum_{i=1}^{n} w_i}\\)" block />
-        </Formula>
-        <p className="mt-2 text-sm">
-          Example: Course grades with different credit weights
-        </p>
-      </ExampleSection>
-      
-      <ExampleSection title="Relationship Between Means">
-        <p className="mb-2">For positive values:</p>
-        <Formula>
-          <MathFormula formula="\\(HM \\leq GM \\leq AM \\leq QM\\)" block />
-        </Formula>
-        <div className="mt-3 p-3 bg-neutral-900 rounded">
-          <p className="text-sm font-mono">
-            Current values: [{values.join(', ')}]
+        <ExampleSection title="Harmonic Mean">
+          <p className="mb-2">For rates and ratios (e.g., average speed):</p>
+          <Formula>
+            <div className="text-center my-4">
+              <span dangerouslySetInnerHTML={{ __html: `\\(HM = \\frac{n}{\\sum_{i=1}^{n} \\frac{1}{x_i}}\\)` }} />
+            </div>
+          </Formula>
+          <p className="mt-2 text-sm">
+            Example: Travel 60 mph one way, 40 mph return → Average speed = HM = {(2/(1/60 + 1/40)).toFixed(1)} mph
           </p>
-          <div className="mt-2 space-y-1 text-sm">
-            <div>Harmonic Mean: {means.harmonic.toFixed(3)}</div>
-            <div>Geometric Mean: {means.geometric.toFixed(3)}</div>
-            <div>Arithmetic Mean: {means.arithmetic.toFixed(3)}</div>
-            <div>Quadratic Mean: {means.quadratic.toFixed(3)}</div>
+        </ExampleSection>
+        
+        <ExampleSection title="Weighted Mean">
+          <p className="mb-2">When observations have different importance:</p>
+          <Formula>
+            <div className="text-center my-4">
+              <span dangerouslySetInnerHTML={{ __html: `\\(\\bar{x}_w = \\frac{\\sum_{i=1}^{n} w_i x_i}{\\sum_{i=1}^{n} w_i}\\)` }} />
+            </div>
+          </Formula>
+          <p className="mt-2 text-sm">
+            Example: Course grades with different credit weights
+          </p>
+        </ExampleSection>
+        
+        <ExampleSection title="Relationship Between Means">
+          <p className="mb-2">For positive values:</p>
+          <Formula>
+            <div className="text-center my-4">
+              <span dangerouslySetInnerHTML={{ __html: `\\(HM \\leq GM \\leq AM \\leq QM\\)` }} />
+            </div>
+          </Formula>
+          <div className="mt-3 p-3 bg-neutral-900 rounded">
+            <p className="text-sm font-mono">
+              Current values: [{values.join(', ')}]
+            </p>
+            <div className="mt-2 space-y-1 text-sm">
+              <div>Harmonic Mean: {means.harmonic.toFixed(3)}</div>
+              <div>Geometric Mean: {means.geometric.toFixed(3)}</div>
+              <div>Arithmetic Mean: {means.arithmetic.toFixed(3)}</div>
+              <div>Quadratic Mean: {means.quadratic.toFixed(3)}</div>
+            </div>
           </div>
-        </div>
-      </ExampleSection>
-    </WorkedExample>
+        </ExampleSection>
+      </WorkedExample>
+    </div>
   );
 });
 
@@ -894,6 +995,7 @@ const OtherMeansSection = React.memo(function OtherMeansSection() {
 const PropertiesSection = React.memo(function PropertiesSection() {
   const [data] = useState([2, 4, 5, 7, 9, 12]);
   const [c, setC] = useState(6);
+  const contentRef = useRef(null);
   
   const calculations = useMemo(() => {
     const mean = data.reduce((a, b) => a + b, 0) / data.length;
@@ -910,6 +1012,22 @@ const PropertiesSection = React.memo(function PropertiesSection() {
     
     return { mean, median, sumSquared, sumSquaredFromMean, sumAbsolute, sumAbsoluteFromMedian };
   }, [data, c]);
+  
+  // MathJax processing
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [c]);
   
   // D3 visualization
   const svgRef = useRef(null);
@@ -1022,11 +1140,13 @@ const PropertiesSection = React.memo(function PropertiesSection() {
   }, [data, c, calculations]);
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" ref={contentRef}>
       <WorkedExample title="Minimization Properties">
         <ExampleSection title="Mean Minimizes Sum of Squared Deviations">
           <Formula>
-            <MathFormula formula="\\(\\bar{x} = \\arg\\min_c \\sum_{i=1}^{n}(x_i - c)^2\\)" block />
+            <div className="text-center my-4">
+              <span dangerouslySetInnerHTML={{ __html: `\\(\\bar{x} = \\arg\\min_c \\sum_{i=1}^{n}(x_i - c)^2\\)` }} />
+            </div>
           </Formula>
           <div className="mt-2 p-2 bg-neutral-900 rounded text-sm">
             <div>Current: Σ(xᵢ - {c})² = {calculations.sumSquared.toFixed(2)}</div>
@@ -1036,7 +1156,9 @@ const PropertiesSection = React.memo(function PropertiesSection() {
         
         <ExampleSection title="Median Minimizes Sum of Absolute Deviations">
           <Formula>
-            <MathFormula formula="\\(\\text{median} = \\arg\\min_c \\sum_{i=1}^{n}|x_i - c|\\)" block />
+            <div className="text-center my-4">
+              <span dangerouslySetInnerHTML={{ __html: `\\(\\text{median} = \\arg\\min_c \\sum_{i=1}^{n}|x_i - c|\\)` }} />
+            </div>
           </Formula>
           <div className="mt-2 p-2 bg-neutral-900 rounded text-sm">
             <div>Current: Σ|xᵢ - {c}| = {calculations.sumAbsolute.toFixed(2)}</div>
@@ -1052,8 +1174,8 @@ const PropertiesSection = React.memo(function PropertiesSection() {
         </ExampleSection>
       </WorkedExample>
       
-      <VisualizationSection title="Visual Proof">
-        <GraphContainer height="300px">
+      <VisualizationSection title="Visual Proof" className="bg-neutral-900/50 rounded-lg p-4">
+        <GraphContainer height="350px" className="bg-black/50 rounded-lg overflow-hidden">
           <svg ref={svgRef} className="w-full" />
         </GraphContainer>
         
@@ -1205,20 +1327,26 @@ function CentralTendencyFoundations() {
   };
   
   return (
-    <VisualizationContainer title="4.1 Central Tendency: Mathematical Foundations">
-      <div className="space-y-6">
+    <VisualizationContainer title="4.1 Central Tendency: Mathematical Foundations" className="max-w-7xl mx-auto">
+      <div className="space-y-8">
         {/* Navigation */}
-        <div className="bg-neutral-900 rounded-lg p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-white">
-              Section {currentSection + 1} of {SECTIONS.length}: {SECTIONS[currentSection].title}
-            </h3>
-            <div className="flex gap-2">
+        <div className="bg-neutral-900 rounded-lg p-6 shadow-lg">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-xl font-bold text-white">
+                {SECTIONS[currentSection].title}
+              </h3>
+              <p className="text-sm text-neutral-400 mt-1">
+                Section {currentSection + 1} of {SECTIONS.length}
+              </p>
+            </div>
+            <div className="flex gap-3">
               <Button
                 variant="secondary"
                 size="sm"
                 onClick={() => setCurrentSection(Math.max(0, currentSection - 1))}
                 disabled={currentSection === 0}
+                className="flex items-center gap-2"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Previous
@@ -1228,6 +1356,7 @@ function CentralTendencyFoundations() {
                 size="sm"
                 onClick={() => setCurrentSection(Math.min(SECTIONS.length - 1, currentSection + 1))}
                 disabled={currentSection === SECTIONS.length - 1}
+                className="flex items-center gap-2"
               >
                 Next
                 <ChevronRight className="w-4 h-4" />
@@ -1242,33 +1371,36 @@ function CentralTendencyFoundations() {
                 key={section.id}
                 onClick={() => setCurrentSection(idx)}
                 className={cn(
-                  "p-2 rounded text-xs font-medium transition-colors",
+                  "p-3 rounded-lg text-xs font-medium transition-all duration-200",
+                  "flex flex-col items-center justify-center",
                   idx === currentSection 
-                    ? "bg-blue-600 text-white" 
-                    : "bg-neutral-800 text-neutral-400 hover:bg-neutral-700"
+                    ? "bg-blue-600 text-white shadow-md transform scale-105" 
+                    : "bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-neutral-300"
                 )}
                 title={section.title}
               >
-                <section.icon className="w-4 h-4 mx-auto mb-1" />
-                {idx + 1}
+                <section.icon className="w-5 h-5 mb-1" />
+                <span className="font-bold">{idx + 1}</span>
               </button>
             ))}
           </div>
         </div>
         
         {/* Content */}
-        <div className="min-h-[600px]">
+        <div className="min-h-[600px] bg-neutral-950 rounded-lg p-6">
           {renderSection()}
         </div>
         
         {/* Summary Stats */}
-        <StatsDisplay
-          stats={[
-            { label: "Total Sections", value: SECTIONS.length },
-            { label: "Current Section", value: currentSection + 1, highlight: true },
-            { label: "Progress", value: `${Math.round((currentSection + 1) / SECTIONS.length * 100)}%` }
-          ]}
-        />
+        <div className="mt-8">
+          <StatsDisplay
+            stats={[
+              { label: "Total Sections", value: SECTIONS.length },
+              { label: "Current Section", value: currentSection + 1, highlight: true },
+              { label: "Progress", value: `${Math.round((currentSection + 1) / SECTIONS.length * 100)}%` }
+            ]}
+          />
+        </div>
       </div>
     </VisualizationContainer>
   );
