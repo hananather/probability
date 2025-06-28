@@ -41,26 +41,33 @@ const ConditionalProbability = lazy(() =>
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })
 );
-const MontyHallInteractive = lazy(() => 
-  import('../../components/01-introduction-to-probabilities/1-7-1-MontyHallInteractive.jsx')
-    .catch(() => {
-      return { default: () => <div className="text-red-500">Failed to load component</div> };
-    })
-);
-const MontyHallBayesian = lazy(() => 
-  import('../../components/01-introduction-to-probabilities/1-7-2-MontyHallBayesian.jsx')
-    .catch(() => {
-      return { default: () => <div className="text-red-500">Failed to load component</div> };
-    })
-);
-const MontyHallSimulation = lazy(() => 
-  import('../../components/01-introduction-to-probabilities/1-7-3-MontyHallSimulation.jsx')
-    .catch(() => {
-      return { default: () => <div className="text-red-500">Failed to load component</div> };
-    })
-);
+// Individual Monty Hall components are now handled inside MontyHallJourney
+// const MontyHallInteractive = lazy(() => 
+//   import('../../components/01-introduction-to-probabilities/1-7-monty-hall/1-7-2-MontyHallGame.jsx')
+//     .catch(() => {
+//       return { default: () => <div className="text-red-500">Failed to load component</div> };
+//     })
+// );
+// const MontyHallBayesian = lazy(() => 
+//   import('../../components/01-introduction-to-probabilities/1-7-monty-hall/1-7-3-MontyHallBayesProof.jsx')
+//     .catch(() => {
+//       return { default: () => <div className="text-red-500">Failed to load component</div> };
+//     })
+// );
+// const MontyHallSimulation = lazy(() => 
+//   import('../../components/01-introduction-to-probabilities/1-7-monty-hall/1-7-4-MontyHallSimulation.jsx')
+//     .catch(() => {
+//       return { default: () => <div className="text-red-500">Failed to load component</div> };
+//     })
+// );
 const MontyHallJourney = lazy(() => 
-  import('../../components/01-introduction-to-probabilities/1-7-5-MontyHallJourney.jsx')
+  import('../../components/01-introduction-to-probabilities/1-7-monty-hall/1-7-0-MontyHallHub.jsx')
+    .catch(() => {
+      return { default: () => <div className="text-red-500">Failed to load component</div> };
+    })
+);
+const ProbabilisticFallacies = lazy(() => 
+  import('../../components/01-introduction-to-probabilities/1-9-probabilistic-fallacies/1-9-1-ProbabilisticFallacies.jsx')
     .catch(() => {
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })
@@ -197,47 +204,9 @@ export default function Chapter1() {
       )
     },
     {
-      id: 'monty-hall',
-      title: '1.7 The Monty Hall Problem',
-      component: MontyHallInteractive,
-      description: (
-        <>
-          <p>
-            The Monty Hall problem is a famous probability puzzle that demonstrates how
-            our intuition about probability can be wrong. Named after the host of the TV
-            game show &quot;Let&apos;s Make a Deal,&quot; it shows why switching doors gives you a 2/3
-            chance of winning.
-          </p>
-          <p>
-            Play the game below and watch how the statistics confirm that switching is
-            the better strategy. Use auto-play to quickly see the pattern emerge!
-          </p>
-        </>
-      )
-    },
-    {
-      id: 'bayes-theorem',
-      title: '1.7 Bayes\' Theorem Visualizer',
-      component: MontyHallBayesian,
-      description: (
-        <>
-          <p>
-            Bayes&apos; Theorem provides a way to update our beliefs based on new evidence.
-            It shows how to calculate P(hypothesis|data) from P(data|hypothesis), P(hypothesis),
-            and P(data).
-          </p>
-          <p>
-            Explore different scenarios below to see how prior probabilities, likelihood,
-            and evidence combine to form posterior probabilities. Try the medical testing
-            scenario to understand why rare diseases often lead to false positives.
-          </p>
-        </>
-      )
-    },
-    {
       id: 'fallacies',
       title: '1.7 Probabilistic Fallacies',
-      component: MontyHallSimulation,
+      component: ProbabilisticFallacies,
       description: (
         <>
           <p>
@@ -255,7 +224,7 @@ export default function Chapter1() {
     },
     {
       id: 'monty-hall-masterclass',
-      title: '1.7 Monty Hall Masterclass',
+      title: '1.8 Monty Hall Masterclass',
       component: MontyHallJourney,
       description: (
         <>

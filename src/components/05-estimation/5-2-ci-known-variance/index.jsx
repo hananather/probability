@@ -70,7 +70,7 @@ const ConfidenceIntervalsHub = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-white p-6">
+    <div className="min-h-screen bg-neutral-900 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
@@ -78,13 +78,13 @@ const ConfidenceIntervalsHub = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-4">
             Confidence Intervals (Known σ)
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-neutral-300 max-w-3xl mx-auto">
             Master the art of interval estimation when population variance is known
           </p>
-          <div className="mt-2 text-lg font-medium text-blue-600">
+          <div className="mt-2 text-lg font-medium text-blue-400">
             Theme: "Precision with Certainty"
           </div>
         </motion.div>
@@ -94,25 +94,25 @@ const ConfidenceIntervalsHub = () => {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
-          className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl p-8 mb-12 text-white shadow-xl"
+          className="bg-gradient-to-r from-blue-900/20 to-cyan-900/20 rounded-2xl p-8 mb-12 text-white shadow-xl border border-blue-500/30"
         >
           <div className="flex items-start gap-6">
             <div className="flex-1">
               <h2 className="text-3xl font-bold mb-4">Welcome to Confidence Intervals</h2>
-              <p className="text-blue-50 text-lg mb-4">
+              <p className="text-neutral-300 text-lg mb-4">
                 When we know the population standard deviation (σ), we can construct precise confidence intervals 
                 using the normal distribution. This powerful technique allows us to estimate population parameters 
                 with a specified level of confidence.
               </p>
-              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4 mt-4">
+              <div className="bg-neutral-800/50 backdrop-blur-sm rounded-lg p-4 mt-4 border border-blue-500/30">
                 <h3 className="font-semibold mb-2 flex items-center gap-2">
                   <Gauge className="w-5 h-5" />
                   The Confidence Interval Formula
                 </h3>
-                <div className="font-mono text-center py-2 bg-white/10 rounded">
+                <div className="font-mono text-center py-2 bg-neutral-900/50 rounded">
                   CI = x̄ ± z*(σ/√n)
                 </div>
-                <p className="text-sm mt-2 text-blue-100">
+                <p className="text-sm mt-2 text-neutral-400">
                   Where x̄ is sample mean, z* is critical value, σ is population SD, n is sample size
                 </p>
               </div>
@@ -121,9 +121,9 @@ const ConfidenceIntervalsHub = () => {
               <motion.div
                 animate={{ rotate: [0, 5, -5, 0] }}
                 transition={{ duration: 4, repeat: Infinity }}
-                className="bg-white/20 backdrop-blur-sm rounded-xl p-6"
+                className="bg-blue-900/20 backdrop-blur-sm rounded-xl p-6 border border-blue-500/30"
               >
-                <Target className="w-24 h-24 text-white/80" />
+                <Target className="w-24 h-24 text-blue-400" />
               </motion.div>
             </div>
           </div>
@@ -134,9 +134,9 @@ const ConfidenceIntervalsHub = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white rounded-2xl shadow-lg p-8 mb-12"
+          className="bg-neutral-800 rounded-2xl shadow-lg p-8 mb-12 border border-neutral-700"
         >
-          <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+          <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
             <TrendingUp className="w-6 h-6 text-blue-500" />
             Visual Understanding of Confidence Levels
           </h2>
@@ -144,7 +144,7 @@ const ConfidenceIntervalsHub = () => {
           <div className="grid md:grid-cols-2 gap-8">
             {/* Left: Confidence Level Selector */}
             <div>
-              <h3 className="text-lg font-semibold mb-4">Select Confidence Level</h3>
+              <h3 className="text-lg font-semibold mb-4 text-white">Select Confidence Level</h3>
               <div className="space-y-4">
                 {confidenceLevels.map(({ level, zScore, color, description }) => (
                   <motion.button
@@ -154,17 +154,17 @@ const ConfidenceIntervalsHub = () => {
                     onClick={() => setSelectedLevel(level)}
                     className={`w-full p-4 rounded-lg border-2 transition-all ${
                       selectedLevel === level 
-                        ? 'border-blue-500 bg-blue-50' 
-                        : 'border-gray-200 hover:border-blue-300'
+                        ? 'border-blue-500 bg-blue-900/20' 
+                        : 'border-neutral-600 hover:border-blue-400 bg-neutral-700'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="text-left">
-                        <div className="font-semibold text-lg">{level}% Confidence</div>
-                        <div className="text-sm text-gray-600">{description}</div>
+                        <div className="font-semibold text-lg text-white">{level}% Confidence</div>
+                        <div className="text-sm text-neutral-400">{description}</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-sm text-gray-500">z* = {zScore}</div>
+                        <div className="text-sm text-neutral-400">z* = {zScore}</div>
                         <div className={`w-16 h-2 ${color} rounded-full mt-1`} />
                       </div>
                     </div>
@@ -174,8 +174,8 @@ const ConfidenceIntervalsHub = () => {
             </div>
 
             {/* Right: Margin of Error Visualization */}
-            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6">
-              <h3 className="text-lg font-semibold mb-4">Margin of Error Impact</h3>
+            <div className="bg-gradient-to-br from-blue-900/20 to-cyan-900/20 rounded-xl p-6 border border-blue-500/30">
+              <h3 className="text-lg font-semibold mb-4 text-white">Margin of Error Impact</h3>
               <div className="relative h-40 mb-4">
                 <div className="absolute inset-0 flex items-center justify-center">
                   <motion.div
@@ -193,11 +193,11 @@ const ConfidenceIntervalsHub = () => {
                 <div className="text-3xl font-bold text-blue-600">
                   ±{animatedMargin.toFixed(2)}
                 </div>
-                <div className="text-sm text-gray-600 mt-1">
+                <div className="text-sm text-neutral-400 mt-1">
                   Margin of Error (σ = 10, n = 100)
                 </div>
               </div>
-              <div className="mt-4 text-sm text-gray-700 bg-white/50 rounded-lg p-3">
+              <div className="mt-4 text-sm text-neutral-300 bg-neutral-800/50 rounded-lg p-3 border border-neutral-700">
                 Higher confidence → Wider interval → Less precision but more certainty
               </div>
             </div>
@@ -215,37 +215,37 @@ const ConfidenceIntervalsHub = () => {
             >
               <Link href={`/chapter5/confidence-intervals-known/${path.component.replace('5-2-', '')}`}>
                 <div className={`group relative h-full bg-gradient-to-br ${path.color} p-[2px] rounded-xl cursor-pointer transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl`}>
-                  <div className="bg-white rounded-xl p-6 h-full">
+                  <div className="bg-neutral-800 rounded-xl p-6 h-full border border-neutral-700">
                     <div className="flex items-start justify-between mb-4">
                       <div className={`p-3 rounded-lg bg-gradient-to-br ${path.color} shadow-lg`}>
                         <path.icon className="w-6 h-6 text-white" />
                       </div>
                       <span className={`text-xs font-medium px-3 py-1 rounded-full ${
-                        path.level === 'Foundation' ? 'bg-green-100 text-green-700' :
-                        path.level === 'Advanced' ? 'bg-blue-100 text-blue-700' :
-                        path.level === 'Deep Dive' ? 'bg-purple-100 text-purple-700' :
-                        'bg-orange-100 text-orange-700'
+                        path.level === 'Foundation' ? 'bg-green-900/30 text-green-400 border border-green-500/30' :
+                        path.level === 'Advanced' ? 'bg-blue-900/30 text-blue-400 border border-blue-500/30' :
+                        path.level === 'Deep Dive' ? 'bg-purple-900/30 text-purple-400 border border-purple-500/30' :
+                        'bg-orange-900/30 text-orange-400 border border-orange-500/30'
                       }`}>
                         {path.level}
                       </span>
                     </div>
                     
-                    <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors">
+                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">
                       {path.title}
                     </h3>
-                    <p className="text-gray-600 mb-4">
+                    <p className="text-neutral-400 mb-4">
                       {path.description}
                     </p>
                     
                     <div className="flex flex-wrap gap-2 mb-4">
                       {path.topics.map((topic, i) => (
-                        <span key={i} className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded-full">
+                        <span key={i} className="text-xs px-2 py-1 bg-blue-900/30 text-blue-400 rounded-full border border-blue-500/30">
                           {topic}
                         </span>
                       ))}
                     </div>
                     
-                    <div className="flex items-center text-blue-600 font-medium group-hover:gap-3 transition-all">
+                    <div className="flex items-center text-blue-400 font-medium group-hover:gap-3 transition-all">
                       <span>Start Learning</span>
                       <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                     </div>
@@ -261,25 +261,25 @@ const ConfidenceIntervalsHub = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="bg-gradient-to-r from-blue-100 to-cyan-100 rounded-2xl p-8 mb-12"
+          className="bg-gradient-to-r from-blue-900/20 to-cyan-900/20 rounded-2xl p-8 mb-12 border border-blue-500/30"
         >
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Real-World Applications</h2>
+          <h2 className="text-2xl font-bold text-white mb-6">Real-World Applications</h2>
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-lg p-4 shadow-md">
-              <h3 className="font-semibold text-blue-700 mb-2">Quality Control</h3>
-              <p className="text-sm text-gray-600">
+            <div className="bg-neutral-800 rounded-lg p-4 shadow-md border border-neutral-700">
+              <h3 className="font-semibold text-blue-400 mb-2">Quality Control</h3>
+              <p className="text-sm text-neutral-400">
                 Manufacturing uses CI to ensure product dimensions stay within specifications
               </p>
             </div>
-            <div className="bg-white rounded-lg p-4 shadow-md">
-              <h3 className="font-semibold text-blue-700 mb-2">Medical Testing</h3>
-              <p className="text-sm text-gray-600">
+            <div className="bg-neutral-800 rounded-lg p-4 shadow-md border border-neutral-700">
+              <h3 className="font-semibold text-blue-400 mb-2">Medical Testing</h3>
+              <p className="text-sm text-neutral-400">
                 Lab results report normal ranges as confidence intervals for accuracy
               </p>
             </div>
-            <div className="bg-white rounded-lg p-4 shadow-md">
-              <h3 className="font-semibold text-blue-700 mb-2">Financial Analysis</h3>
-              <p className="text-sm text-gray-600">
+            <div className="bg-neutral-800 rounded-lg p-4 shadow-md border border-neutral-700">
+              <h3 className="font-semibold text-blue-400 mb-2">Financial Analysis</h3>
+              <p className="text-sm text-neutral-400">
                 Investment returns are often expressed with confidence intervals
               </p>
             </div>
@@ -291,13 +291,13 @@ const ConfidenceIntervalsHub = () => {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.6 }}
-          className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-300 rounded-2xl p-6"
+          className="bg-gradient-to-r from-yellow-900/20 to-orange-900/20 border-2 border-yellow-500/30 rounded-2xl p-6"
         >
           <div className="flex items-start gap-4">
-            <Lightbulb className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-1" />
+            <Lightbulb className="w-6 h-6 text-yellow-400 flex-shrink-0 mt-1" />
             <div>
-              <h3 className="font-bold text-gray-800 mb-2">Pro Tip: Interpreting Confidence Intervals</h3>
-              <p className="text-gray-700">
+              <h3 className="font-bold text-white mb-2">Pro Tip: Interpreting Confidence Intervals</h3>
+              <p className="text-neutral-300">
                 A 95% confidence interval does NOT mean there's a 95% probability the true parameter is in the interval. 
                 Instead, it means that if we repeated our sampling process many times, 95% of the intervals we construct 
                 would contain the true parameter. It's about the reliability of our method, not the probability of a 

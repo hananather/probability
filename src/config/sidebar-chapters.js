@@ -23,8 +23,6 @@ export const chapters = [
       { title: 'Unordered Samples (Combinations)', component: 'UnorderedSamples' },
       { title: 'Probability of an Event', component: 'ProbabilityEvent' },
       { title: 'Conditional Probability', component: 'ConditionalProbability' },
-      { title: 'Monty Hall Problem', component: 'MontyHallProblem' },
-      { title: "Bayes' Theorem Visualizer", component: 'BayesTheoremVisualizer' },
       { title: 'Probabilistic Fallacies', component: 'ProbabilisticFallacies' },
       { title: 'Monty Hall Masterclass', component: 'MontyHallMasterclass' },
     ]
@@ -60,16 +58,16 @@ export const chapters = [
     ]
   },
   {
-    title: 'Chapter 4: Descriptive Statistics & Sampling',
+    title: 'Chapter 4: Descriptive Statistics and Sampling Distributions',
     path: '/chapter4',
     sections: [
-      { title: '4.2 Histogram Hub', component: 'HistogramHub' },
-      { title: '4.3 Interactive Statistics Explorer', component: 'DescriptiveStatsExplorer' },
-      { title: '4.3 Sampling Distributions', component: 'SamplingDistributions' },
-      { title: '4.4 t-Distribution vs Normal', component: 'TDistributionExplorer' },
-      { title: '4.5 F-Distribution Explorer', component: 'FDistributionExplorer' },
-      { title: '4.5 F-Distribution Worked Example', component: 'FDistributionWorkedExample' },
-      { title: '4.6 Boxplot & Quartiles Explorer', component: 'BoxplotQuartilesExplorer' },
+      { title: '4.1 Data Descriptions', component: 'central-tendency-hub' },
+      { title: '4.2 Visual Summaries', component: 'histograms' },
+      { title: '4.3 Sampling Distributions', component: 'sampling-distributions-hub' },
+      { title: '4.4 t-Distribution vs Normal', component: 't-distribution' },
+      { title: '4.5 F-Distribution Explorer', component: 'f-distribution' },
+      { title: '4.5 F-Distribution Worked Example', component: 'f-distribution-worked' },
+      { title: '4.6 Boxplot & Quartiles Explorer', component: 'boxplot-quartiles' },
     ]
   },
   {

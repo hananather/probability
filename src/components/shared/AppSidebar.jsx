@@ -15,8 +15,6 @@ const sectionIdMap = {
   'UnorderedSamples': 'unordered',
   'ProbabilityEvent': 'probability',
   'ConditionalProbability': 'conditional',
-  'MontyHallProblem': 'monty-hall',
-  'BayesTheoremVisualizer': 'bayes-theorem',
   'ProbabilisticFallacies': 'fallacies',
   'MontyHallMasterclass': 'monty-hall-masterclass',
   'HistogramShapeExplorer': 'histograms',

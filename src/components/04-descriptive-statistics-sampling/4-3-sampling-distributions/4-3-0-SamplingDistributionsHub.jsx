@@ -4,49 +4,73 @@ import React, { useState } from "react";
 import { VisualizationContainer } from "@/components/ui/VisualizationContainer";
 import { cn } from "@/lib/design-system";
 import { Button } from "@/components/ui/button";
-import HistogramIntuitiveIntro from "./4-2-1-HistogramIntuitiveIntro";
-import HistogramInteractiveJourney from "./4-2-2-HistogramInteractiveJourney";
-import HistogramShapeAnalysis from "./4-2-3-HistogramShapeAnalysis";
-import { Sparkles, Calculator, BarChart3, ChevronLeft } from "lucide-react";
+import WhatAreSamplingDistributions from "./4-3-1-WhatAreSamplingDistributions";
+import BuildingIntuition from "./4-3-2-BuildingIntuition";
+import CentralLimitTheoremJourney from "./4-3-3-CentralLimitTheoremJourney";
+import StandardErrorExplorer from "./4-3-4-StandardErrorExplorer";
+import RealWorldApplications from "./4-3-5-RealWorldApplications";
+import { Sparkles, Coins, TrendingUp, Calculator, Globe, ChevronLeft } from "lucide-react";
 
 // Learning paths configuration
 const learningPaths = [
   {
-    id: 'intro',
-    title: 'Intuitive Introduction',
-    description: 'Start here! See why we need histograms through animated examples.',
+    id: 'what-are',
+    title: 'What Are Sampling Distributions?',
+    description: 'Start here! Discover why averages are magical and predictable.',
     icon: Sparkles,
     color: 'from-cyan-500 to-blue-500',
-    component: HistogramIntuitiveIntro,
+    component: WhatAreSamplingDistributions,
     difficulty: 'Beginner',
     duration: '5 min',
-    concepts: ['What are bins?', 'Why group data?', 'Visual patterns']
+    concepts: ['Population vs Sample', 'Sample means', 'Why they matter']
   },
   {
-    id: 'journey',
-    title: 'Finding Optimal Bins',
-    description: 'Learn the square root rule for choosing the perfect number of bins.',
-    icon: Calculator,
-    color: 'from-violet-500 to-purple-500', 
-    component: HistogramInteractiveJourney,
-    difficulty: 'Intermediate',
+    id: 'building-intuition',
+    title: 'Building Intuition with Coins',
+    description: 'Flip coins and watch the pattern emerge - it\'s not magic, it\'s math!',
+    icon: Coins,
+    color: 'from-yellow-500 to-amber-500',
+    component: BuildingIntuition,
+    difficulty: 'Beginner',
     duration: '10 min',
-    concepts: ['Square root rule', 'k = √n formula', 'Bin optimization']
+    concepts: ['Coin flips', 'Averages of averages', 'Pattern recognition']
   },
   {
-    id: 'shapes',
-    title: 'Shape Recognition',
-    description: 'Master different distribution shapes and their real-world meanings.',
-    icon: BarChart3,
-    color: 'from-emerald-500 to-teal-500',
-    component: HistogramShapeAnalysis,
-    difficulty: 'Advanced',
+    id: 'clt-journey',
+    title: 'Central Limit Theorem Journey',
+    description: 'Experience the most important theorem in statistics through interactive exploration.',
+    icon: TrendingUp,
+    color: 'from-violet-500 to-purple-500',
+    component: CentralLimitTheoremJourney,
+    difficulty: 'Intermediate',
     duration: '15 min',
-    concepts: ['Normal distribution', 'Skewness', 'Real-world patterns']
+    concepts: ['CLT visualization', 'Sample size effects', 'Normal distribution emergence']
+  },
+  {
+    id: 'standard-error',
+    title: 'Mastering Standard Error',
+    description: 'Learn how sample size affects precision with interactive formulas.',
+    icon: Calculator,
+    color: 'from-emerald-500 to-teal-500',
+    component: StandardErrorExplorer,
+    difficulty: 'Intermediate',
+    duration: '12 min',
+    concepts: ['SE formula', 'n vs precision', 'Confidence intervals preview']
+  },
+  {
+    id: 'real-world',
+    title: 'Real-World Applications',
+    description: 'Apply your knowledge to polling, quality control, and A/B testing.',
+    icon: Globe,
+    color: 'from-rose-500 to-pink-500',
+    component: RealWorldApplications,
+    difficulty: 'Advanced',
+    duration: '20 min',
+    concepts: ['Opinion polls', 'Quality control', 'A/B testing']
   }
 ];
 
-const HistogramHub = () => {
+const SamplingDistributionsHub = () => {
   const [selectedPath, setSelectedPath] = useState(null);
   
   // If a path is selected, show that component
@@ -73,36 +97,36 @@ const HistogramHub = () => {
   // Otherwise show the path selector
   return (
     <VisualizationContainer
-      title="4.2 Visual Summaries Hub"
-      description="Learn about histograms, shapes of datasets, skewness, and dispersion measures"
+      title="4.3 Sampling Distributions Hub"
+      description="Discover the magic of averages and the Central Limit Theorem"
     >
       {/* Introduction */}
       <div className="mb-8 p-6 bg-gradient-to-r from-blue-900/20 to-purple-900/20 rounded-lg border border-blue-600/30">
-        <h2 className="text-xl font-semibold mb-3 text-blue-400">Welcome to Visual Summaries!</h2>
+        <h2 className="text-xl font-semibold mb-3 text-blue-400">Welcome to Sampling Distributions!</h2>
         <p className="text-gray-300 mb-4">
-          Visual summaries are essential tools for understanding data distributions. Learn how histograms 
-          help us see patterns, identify skewness, and understand the shape of datasets. This journey covers 
-          visualization techniques and dispersion measures.
+          Sampling distributions are one of the most powerful concepts in statistics. They explain why we can 
+          make predictions about entire populations just by looking at samples, and why averages behave so 
+          predictably. This journey will transform how you think about data and uncertainty.
         </p>
         
         {/* Key concepts preview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div className="flex items-start gap-2">
-            <span className="text-cyan-400">📊</span>
+            <span className="text-cyan-400">🎯</span>
             <div>
-              <strong className="text-cyan-300">Beginners:</strong> Start with the Intuitive Introduction
+              <strong className="text-cyan-300">Start Simple:</strong> Understand what sampling distributions are
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <span className="text-violet-400">📐</span>
+            <span className="text-violet-400">🪙</span>
             <div>
-              <strong className="text-violet-300">Learn the Rule:</strong> Discover the √n formula
+              <strong className="text-violet-300">Build Intuition:</strong> See patterns emerge from randomness
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <span className="text-emerald-400">🎯</span>
+            <span className="text-emerald-400">📊</span>
             <div>
-              <strong className="text-emerald-300">Master Shapes:</strong> Identify real-world patterns
+              <strong className="text-emerald-300">Master CLT:</strong> The theorem that powers all statistics
             </div>
           </div>
         </div>
@@ -190,19 +214,19 @@ const HistogramHub = () => {
             <ul className="text-sm text-gray-300 space-y-2">
               <li className="flex items-start gap-2">
                 <span className="text-cyan-500 mt-1">•</span>
-                <span>Understanding what histograms are and why we use them</span>
+                <span>Why sample means cluster around the population mean</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-cyan-500 mt-1">•</span>
-                <span>The square root rule: k = √n for optimal bin count</span>
+                <span>The Central Limit Theorem and its universal power</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-cyan-500 mt-1">•</span>
-                <span>How bin width relates to range and number of bins</span>
+                <span>Standard error formula: SE = σ/√n and its implications</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-cyan-500 mt-1">•</span>
-                <span>Reading and interpreting histogram shapes</span>
+                <span>When and why sample means become normally distributed</span>
               </li>
             </ul>
           </div>
@@ -212,19 +236,19 @@ const HistogramHub = () => {
             <ul className="text-sm text-gray-300 space-y-2">
               <li className="flex items-start gap-2">
                 <span className="text-violet-500 mt-1">•</span>
-                <span>Choosing appropriate bin counts for your data</span>
+                <span>Calculating standard errors for real-world problems</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-violet-500 mt-1">•</span>
-                <span>Identifying normal, skewed, and bimodal distributions</span>
+                <span>Determining required sample sizes for desired precision</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-violet-500 mt-1">•</span>
-                <span>Connecting histogram patterns to real-world phenomena</span>
+                <span>Understanding polling margins of error</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-violet-500 mt-1">•</span>
-                <span>Avoiding common pitfalls in histogram creation</span>
+                <span>Applying CLT to quality control and A/B testing</span>
               </li>
             </ul>
           </div>
@@ -234,13 +258,13 @@ const HistogramHub = () => {
       {/* Quick tip */}
       <div className="mt-6 p-4 bg-blue-900/20 border border-blue-600/30 rounded-lg">
         <p className="text-sm text-blue-300">
-          <strong className="text-blue-400">💡 Pro Tip:</strong> The square root rule (k = √n) is a great 
-          starting point, but always look at your histogram and adjust if needed. The goal is to reveal 
-          the underlying pattern without creating too much noise or losing important details.
+          <strong className="text-blue-400">💡 Pro Tip:</strong> The magic number 30 is often cited as when 
+          the CLT "kicks in," but this depends on how skewed your population is. For symmetric distributions, 
+          even n=10 can be enough. For highly skewed distributions, you might need n=100 or more!
         </p>
       </div>
     </VisualizationContainer>
   );
 };
 
-export default HistogramHub;
+export default SamplingDistributionsHub;

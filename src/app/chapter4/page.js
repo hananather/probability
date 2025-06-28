@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 
 const DescriptiveStatsJourney = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/4-1-1-DescriptiveStatsJourney'),
+  () => import('@/components/04-descriptive-statistics-sampling/4-1-central-tendency/4-1-2-DescriptiveStatsJourney'),
   { 
     ssr: false,
     loading: () => (
@@ -41,17 +41,18 @@ const HistogramShapeExplorer = dynamic(
   }
 );
 
-const DescriptiveStatsExplorer = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/4-1-3-DescriptiveStatsExplorer'),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-gray-400">Loading visualization...</div>
-      </div>
-    )
-  }
-);
+// Archived - functionality moved to DescriptiveStatsJourney
+// const DescriptiveStatsExplorer = dynamic(
+//   () => import('@/components/04-descriptive-statistics-sampling/4-1-3-DescriptiveStatsExplorer'),
+//   { 
+//     ssr: false,
+//     loading: () => (
+//       <div className="flex items-center justify-center h-96">
+//         <div className="text-gray-400">Loading visualization...</div>
+//       </div>
+//     )
+//   }
+// );
 
 const FDistributionExplorer = dynamic(
   () => import('@/components/04-descriptive-statistics-sampling/4-5-1-FDistributionExplorer').then(mod => ({ default: mod.FDistributionExplorer })),
@@ -65,8 +66,9 @@ const FDistributionExplorer = dynamic(
   }
 );
 
-const SamplingDistributions = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/4-3-1-SamplingDistributions'),
+// Sampling Distributions Hub - New comprehensive learning system
+const SamplingDistributionsHub = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions/4-3-0-SamplingDistributionsHub'),
   { 
     ssr: false,
     loading: () => (
@@ -103,7 +105,7 @@ const CLTSimulation = dynamic(
 
 // Central Tendency Hub - New comprehensive learning system
 const CentralTendencyHub = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/4-1-central-tendency'),
+  () => import('@/components/04-descriptive-statistics-sampling/4-1-central-tendency/4-1-0-CentralTendencyHub'),
   { 
     ssr: false,
     loading: () => (
@@ -116,35 +118,24 @@ const CentralTendencyHub = dynamic(
 
 
 
-// Additional 4.1 Components
-const CentralTendencyMasterclass = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/4-1-0-CentralTendencyMasterclass'),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-gray-400">Loading visualization...</div>
-      </div>
-    )
-  }
-);
+// Archived - CentralTendencyMasterclass
+// const CentralTendencyMasterclass = dynamic(
+//   () => import('@/components/04-descriptive-statistics-sampling/4-1-0-CentralTendencyMasterclass'),
+//   { 
+//     ssr: false,
+//     loading: () => (
+//       <div className="flex items-center justify-center h-96">
+//         <div className="text-gray-400">Loading visualization...</div>
+//       </div>
+//     )
+//   }
+// );
 
 
-const CentralTendencyDeepDive = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/4-1-2-CentralTendencyDeepDive'),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-gray-400">Loading visualization...</div>
-      </div>
-    )
-  }
-);
 
 // Individual components from the hub
 const CentralTendencyIntuitiveIntro = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/4-1-central-tendency/4-1-0-CentralTendencyIntuitiveIntro'),
+  () => import('@/components/04-descriptive-statistics-sampling/4-1-central-tendency/4-1-1-CentralTendencyIntro'),
   { 
     ssr: false,
     loading: () => (
@@ -156,7 +147,7 @@ const CentralTendencyIntuitiveIntro = dynamic(
 );
 
 const DescriptiveStatisticsFoundations = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/4-1-central-tendency/4-1-2-DescriptiveStatisticsFoundations'),
+  () => import('@/components/04-descriptive-statistics-sampling/4-1-central-tendency/4-1-3-DescriptiveStatisticsFoundations'),
   { 
     ssr: false,
     loading: () => (
@@ -168,7 +159,7 @@ const DescriptiveStatisticsFoundations = dynamic(
 );
 
 const MathematicalFoundations = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/4-1-central-tendency/4-1-2-MathematicalFoundations'),
+  () => import('@/components/04-descriptive-statistics-sampling/4-1-central-tendency/4-1-4-MathematicalFoundations'),
   { 
     ssr: false,
     loading: () => (
@@ -192,18 +183,6 @@ const HistogramHub = dynamic(
   }
 );
 
-// Improved Sampling Distributions
-const SamplingDistributionsImproved = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/4-3-1-SamplingDistributions-Improved'),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-gray-400">Loading visualization...</div>
-      </div>
-    )
-  }
-);
 
 // Additional F-Distribution Components
 const FDistributionIntuitiveIntro = dynamic(
@@ -315,38 +294,36 @@ export default function Chapter4Page() {
     const sectionIdToIndex = {
       // Central Tendency & Descriptive Stats
       'central-tendency-hub': 0,
-      '4-1-0-central-tendency-intuitive-intro': 1,
-      '4-1-2-mathematical-foundations': 2,
-      '4-1-0-central-tendency-masterclass': 3,
-      '4-1-1-descriptive-stats-journey': 4,
-      '4-1-2-descriptive-statistics-foundations': 5,
-      '4-1-2-central-tendency-deep-dive': 6,
-      '4-1-3-descriptive-stats-explorer': 7,
+      // '4-1-1-central-tendency-intro': 1, // Access through hub
+      // '4-1-4-mathematical-foundations': 2, // Access through hub
+      // '4-1-0-central-tendency-masterclass': 3, // Archived
+      // '4-1-2-descriptive-stats-journey': 3, // Access through hub
+      // '4-1-3-descriptive-statistics-foundations': 4, // Access through hub
+      // '4-1-3-descriptive-stats-explorer': 6, // Archived
       
       // Histograms
-      'histograms': 8,
+      'histograms': 1,
       
       // Sampling & Distributions
-      'sampling-distributions': 9,
-      'sampling-distributions-improved': 10,
-      'central-limit-theorem': 11,
+      'sampling-distributions-hub': 2,
+      'central-limit-theorem': 3,
       
       // T-Distribution
-      't-distribution': 12,
+      't-distribution': 4,
       
       // F-Distribution
-      'f-distribution-intro': 13,
-      'f-distribution': 14,
-      'f-distribution-journey': 15,
-      'f-distribution-worked': 16,
-      'f-distribution-masterclass': 17,
-      'f-distribution-mastery': 18,
-      'f-distribution-full-journey': 19,
+      'f-distribution-intro': 5,
+      'f-distribution': 6,
+      'f-distribution-journey': 7,
+      'f-distribution-worked': 8,
+      'f-distribution-masterclass': 9,
+      'f-distribution-mastery': 10,
+      'f-distribution-full-journey': 11,
       
       // Boxplots
-      'boxplot-quartiles': 20,
-      'boxplot-journey': 21,
-      'boxplot-real-world': 22
+      'boxplot-quartiles': 12,
+      'boxplot-journey': 13,
+      'boxplot-real-world': 14
     };
     
     const section = searchParams.get('section');
@@ -356,119 +333,108 @@ export default function Chapter4Page() {
   }, [searchParams]);
 
   const sections = [
-    // Central Tendency & Descriptive Stats - All 4.1 Components
+    // Data Descriptions - Section 4.1
     {
       id: 'central-tendency-hub',
-      title: "4-1-central-tendency (Hub)",
-      description: "Master central tendency through multiple learning paths - from intuitive understanding to mathematical rigor. Choose your own journey through mean, median, and mode with interactive visualizations, challenges, and progressive learning.",
+      title: "4.1 - Data Descriptions",
+      description: "Explore numerical summaries including sample median, sample mean, quartiles, and outliers. Master the fundamental measures of centrality and spread through interactive visualizations and hands-on learning.",
       component: <CentralTendencyHub />,
-      category: 'central-tendency'
+      category: 'data-descriptions'
     },
-    {
-      id: '4-1-0-central-tendency-intuitive-intro',
-      title: "4-1-0-CentralTendencyIntuitiveIntro",
-      description: "Start your journey with an intuitive introduction to central tendency concepts.",
-      component: <CentralTendencyIntuitiveIntro />,
-      category: 'central-tendency'
-    },
-    {
-      id: '4-1-2-mathematical-foundations',
-      title: "4-1-2-MathematicalFoundations",
-      description: "Deep dive into the mathematical foundations of central tendency with proofs and advanced concepts.",
-      component: <MathematicalFoundations />,
-      category: 'central-tendency'
-    },
-    {
-      id: '4-1-0-central-tendency-masterclass',
-      title: "4-1-0-CentralTendencyMasterclass",
-      description: "A gamified learning experience with progressive stages, challenges, and achievements.",
-      component: <CentralTendencyMasterclass />,
-      category: 'central-tendency'
-    },
-    {
-      id: '4-1-1-descriptive-stats-journey',
-      title: "4-1-1-DescriptiveStatsJourney",
-      description: "Learn descriptive statistics through an engaging, progressive journey with interactive challenges and gamification.",
-      component: <DescriptiveStatsJourney />,
-      category: 'central-tendency'
-    },
-    {
-      id: '4-1-2-descriptive-statistics-foundations',
-      title: "4-1-2-DescriptiveStatisticsFoundations",
-      description: "Master statistical measures including quartiles, variance, standard deviation, and outlier detection.",
-      component: <DescriptiveStatisticsFoundations />,
-      category: 'central-tendency'
-    },
-    {
-      id: '4-1-2-central-tendency-deep-dive',
-      title: "4-1-2-CentralTendencyDeepDive",
-      description: "Advanced comprehensive component with challenges, achievements, and multiple visualization modes.",
-      component: <CentralTendencyDeepDive />,
-      category: 'central-tendency'
-    },
-    {
-      id: '4-1-3-descriptive-stats-explorer',
-      title: "4-1-3-DescriptiveStatsExplorer",
-      description: "Explore central tendency and dispersion measures interactively. Includes quartiles, IQR, and boxplots.",
-      component: <DescriptiveStatsExplorer />,
-      category: 'central-tendency'
-    },
+    // Individual central tendency components - Access through hub
+    // {
+    //   id: '4-1-1-central-tendency-intro',
+    //   title: "4-1-1-CentralTendencyIntro",
+    //   description: "Start your journey with an intuitive introduction to central tendency concepts.",
+    //   component: <CentralTendencyIntuitiveIntro />,
+    //   category: 'central-tendency'
+    // },
+    // {
+    //   id: '4-1-4-mathematical-foundations',
+    //   title: "4-1-4-MathematicalFoundations",
+    //   description: "Deep dive into the mathematical foundations of central tendency with proofs and advanced concepts.",
+    //   component: <MathematicalFoundations />,
+    //   category: 'central-tendency'
+    // },
+    // Archived - CentralTendencyMasterclass
+    // {
+    //   id: '4-1-0-central-tendency-masterclass',
+    //   title: "4-1-0-CentralTendencyMasterclass",
+    //   description: "A gamified learning experience with progressive stages, challenges, and achievements.",
+    //   component: <CentralTendencyMasterclass />,
+    //   category: 'central-tendency'
+    // },
+    // {
+    //   id: '4-1-2-descriptive-stats-journey',
+    //   title: "4-1-2-DescriptiveStatsJourney",
+    //   description: "Master statistical analysis through interactive exploration and computation. Progress through central tendency, dispersion, quartiles, and outlier detection with hands-on visualization.",
+    //   component: <DescriptiveStatsJourney />,
+    //   category: 'central-tendency'
+    // },
+    // {
+    //   id: '4-1-3-descriptive-statistics-foundations',
+    //   title: "4-1-3-DescriptiveStatisticsFoundations",
+    //   description: "Master statistical measures including quartiles, variance, standard deviation, and outlier detection.",
+    //   component: <DescriptiveStatisticsFoundations />,
+    //   category: 'central-tendency'
+    // },
+    // Archived - functionality moved to DescriptiveStatsJourney
+    // {
+    //   id: '4-1-3-descriptive-stats-explorer',
+    //   title: "4-1-3-DescriptiveStatsExplorer",
+    //   description: "Explore central tendency and dispersion measures interactively. Includes quartiles, IQR, and boxplots.",
+    //   component: <DescriptiveStatsExplorer />,
+    //   category: 'central-tendency'
+    // },
     
-    // Histograms
+    // Visual Summaries - Section 4.2
     {
       id: 'histograms',
-      title: "4.2 - Histogram Hub",
-      description: "Explore how histograms represent data distributions and learn to identify symmetric, right-skewed, and left-skewed datasets.",
+      title: "4.2 - Visual Summaries",
+      description: "Learn about histograms, shapes of datasets, skewness, and dispersion measures. Understand how to visually represent and interpret data distributions through interactive visualizations.",
       component: <HistogramHub />,
-      category: 'histograms'
+      category: 'visual-summaries'
     },
     
-    // Sampling & Distributions
+    // Sampling Distributions - Section 4.3
     {
-      id: 'sampling-distributions',
-      title: "4.3.1 - Sampling Distributions",
-      description: "Discover how sample means form predictable patterns. Experience the Central Limit Theorem in action as you build sampling distributions.",
-      component: <SamplingDistributions />,
-      category: 'sampling'
-    },
-    {
-      id: 'sampling-distributions-improved',
-      title: "4.3.2 - Sampling Distributions (Enhanced)",
-      description: "An improved version with better visualizations and more interactive features for understanding sampling distributions.",
-      component: <SamplingDistributionsImproved />,
-      category: 'sampling'
+      id: 'sampling-distributions-hub',
+      title: "4.3 - Sampling Distributions",
+      description: "Explore the behavior of sample statistics, including the sum of independent random variables, sample mean distributions, and the foundational concepts leading to the Central Limit Theorem.",
+      component: <SamplingDistributionsHub />,
+      category: 'sampling-distributions'
     },
     {
       id: 'central-limit-theorem',
-      title: "4.3.3 - Central Limit Theorem",
+      title: "4.4 - Central Limit Theorem",
       description: "Experience the most important theorem in statistics. Watch how sample means always form a normal distribution, regardless of the original data shape.",
       component: <CLTSimulation />,
-      category: 'sampling'
+      category: 'sampling-distributions'
     },
     
-    // T-Distribution
+    // Sampling Distributions (Reprise) - Section 4.5
     {
       id: 't-distribution',
-      title: "4.4.1 - t-Distribution vs Normal",
-      description: "Explore how the t-distribution accounts for uncertainty when estimating population variance and converges to normal as sample size increases.",
+      title: "4.5 - Sample Mean with Unknown Population Variance",
+      description: "Understand the t-distribution and how it accounts for uncertainty when estimating population variance. Learn when and why to use t-distribution instead of normal distribution.",
       component: <TDistributionExplorer />,
-      category: 't-distribution'
+      category: 'sampling-distributions-reprise'
     },
     
-    // F-Distribution
+    // F-Distribution - Part of Section 4.5
     {
       id: 'f-distribution-intro',
-      title: "4.5.1 - F-Distribution: Intuitive Introduction",
-      description: "Get an intuitive understanding of the F-distribution and its role in comparing variances.",
+      title: "4.5 - F-Distribution: Introduction",
+      description: "Get an intuitive understanding of the F-distribution and its role in comparing variances between two samples.",
       component: <FDistributionIntuitiveIntro />,
-      category: 'f-distribution'
+      category: 'sampling-distributions-reprise'
     },
     {
       id: 'f-distribution',
-      title: "4.5.2 - F-Distribution Explorer",
+      title: "4.5 - F-Distribution Explorer",
       description: "Compare variances from two samples using the F-distribution. Essential for ANOVA and variance ratio tests.",
       component: <FDistributionExplorer />,
-      category: 'f-distribution'
+      category: 'sampling-distributions-reprise'
     },
     {
       id: 'f-distribution-journey',
