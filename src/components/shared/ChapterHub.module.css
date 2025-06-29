@@ -1,0 +1,346 @@
+/* Optimized CSS for Hypothesis Testing Hub */
+
+/* Component Card Base Styles */
+.componentCard {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background-color: rgb(38 38 38);
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              background-color 0.2s ease,
+              box-shadow 0.2s ease;
+  will-change: transform;
+  transform: translateZ(0); /* GPU acceleration */
+}
+
+.componentCard:hover {
+  transform: scale(1.02) translateZ(0);
+  background-color: rgb(64 64 64);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+.componentCard:active {
+  transform: scale(0.98) translateZ(0);
+}
+
+/* Recommended/Next Card Ring */
+.componentCardNext {
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.5);
+}
+
+/* Background Gradient Overlay */
+.cardGradient {
+  position: absolute;
+  inset: 0;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+/* Badge Styles */
+.badge {
+  position: absolute;
+  top: 0;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  z-index: 10;
+}
+
+.badgePrerequisite {
+  left: 0;
+  background-color: rgba(245, 158, 11, 0.2);
+  color: rgb(251 191 36);
+  border-top-left-radius: 0.75rem;
+}
+
+.badgeNext {
+  left: 0;
+  background-color: rgba(34, 197, 94, 0.2);
+  color: rgb(74 222 128);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-top-left-radius: 0.75rem;
+}
+
+.badgeCompleted {
+  right: 1rem;
+  background-color: rgb(34 197 94);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 50%;
+}
+
+/* Card Content */
+.cardContent {
+  position: relative;
+  padding: 1.5rem;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Add top margin when card has badges */
+.componentCard:has(.badge) .cardHeader {
+  margin-top: 2rem;
+}
+
+.iconWrapper {
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  flex-shrink: 0;
+}
+
+.cardTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 0.25rem;
+}
+
+.cardSubtitle {
+  font-size: 0.875rem;
+  color: rgb(163 163 163);
+}
+
+.cardDescription {
+  font-size: 0.875rem;
+  color: rgb(212 212 212);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+/* Metadata */
+.cardMetadata {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.75rem;
+  color: rgb(115 115 115);
+  margin-bottom: 1rem;
+}
+
+.difficultyIndicator {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.difficultyDot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+}
+
+/* Learning Goals (Expandable) */
+.learningGoals {
+  border-top: 1px solid rgb(64 64 64);
+  padding-top: 1rem;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s ease,
+              padding 0.3s ease;
+}
+
+.componentCard:hover .learningGoals {
+  max-height: 200px;
+  opacity: 1;
+}
+
+.learningGoalsTitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgb(163 163 163);
+  margin-bottom: 0.5rem;
+}
+
+.learningGoalsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.learningGoalItem {
+  font-size: 0.75rem;
+  color: rgb(115 115 115);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.learningGoalBullet {
+  color: rgb(34 197 94);
+  margin-top: 0.125rem;
+  flex-shrink: 0;
+}
+
+/* Card Footer */
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.cardFooterText {
+  font-size: 0.875rem;
+  color: rgb(163 163 163);
+}
+
+.cardFooterTextWarning {
+  color: rgb(251 191 36);
+}
+
+.cardChevron {
+  color: rgb(163 163 163);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.componentCard:hover .cardChevron {
+  transform: translateX(4px);
+}
+
+/* Progress Bar Container */
+.progressContainer {
+  margin-bottom: 2rem;
+}
+
+.progressHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.progressStats {
+  text-align: right;
+}
+
+.progressLabel {
+  font-size: 0.875rem;
+  color: rgb(163 163 163);
+  margin-bottom: 0.25rem;
+}
+
+.progressPercentage {
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: white;
+}
+
+/* Learning Tips */
+.tipCard {
+  background-color: rgb(38 38 38);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.tipCard:hover {
+  background-color: rgb(51 51 51);
+}
+
+.tipIcon {
+  margin-bottom: 0.5rem;
+}
+
+.tipTitle {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: white;
+}
+
+.tipDescription {
+  font-size: 0.875rem;
+  color: rgb(163 163 163);
+}
+
+/* Achievements Section */
+.achievementsContainer {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: rgb(23 23 23);
+  border-radius: 0.5rem;
+}
+
+.achievementsTitle {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.achievementBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.achievementBadge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Loading States */
+.skeleton {
+  background: linear-gradient(90deg, 
+    rgb(38 38 38) 0%, 
+    rgb(51 51 51) 50%, 
+    rgb(38 38 38) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Responsive Grid */
+@media (max-width: 768px) {
+  .cardContent {
+    padding: 1rem;
+  }
+  
+  .cardTitle {
+    font-size: 1rem;
+  }
+  
+  .cardDescription {
+    font-size: 0.75rem;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .componentCard,
+  .learningGoals,
+  .cardChevron {
+    transition: none;
+  }
+  
+  .componentCard:hover {
+    transform: none;
+  }
+  
+  .skeleton {
+    animation: none;
+    background: rgb(38 38 38);
+  }
+}

@@ -1,3 +1,20 @@
+## Component Versioning Pattern
+  When creating multiple versions for comparison:
+  1. Use folder suffixes: component-v1/, component-v2/, component-old/,
+  component-new/
+  2. Import: Use Next.js Link (import Link from 'next/link'), NOT react-router-dom
+  3. Routing: Add temporary routes to chapter page with clear labels [V1], [V2], etc.
+  4. Mark as TEMPORARY - these URLs will be removed after selection
+
+
+  ## Component Standards
+  - Fill 80-90% space, show content on load
+  - Educational focus: no gamification/achievements
+  - Dense explanations, minimal marketing language
+  - Fast feedback loops (<10 interactions)
+  - Copy proven animation patterns
+  - Verify Next.js imports & hooks
+
 1. Deep Analysis Phase
 Before writing any code, thoroughly analyze the problem:
 

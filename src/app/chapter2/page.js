@@ -69,8 +69,8 @@ const PoissonDistribution = lazy(() =>
     })
 );
 
-const DistributionComparison = lazy(() => 
-  import('@/components/02-discrete-random-variables/2-7-1-DistributionComparison.jsx')
+const DistributionStories = lazy(() => 
+  import('@/components/02-discrete-random-variables/2-7-1-DistributionStories.jsx')
     .catch(() => {
       return { default: () => <div className="text-red-500">Failed to load component</div> };
     })
@@ -333,36 +333,36 @@ export default function Chapter2() {
     },
     {
       id: 'distribution-comparison',
-      title: '2.7 Distribution Comparison',
+      title: '2.7 Distribution Stories',
       description: (
         <>
           <p className="text-base text-neutral-300 mb-3">
-            Compare different discrete distributions side-by-side to understand their relationships and 
-            when to use each one.
+            Discover how probability distributions emerge from real-world scenarios and understand 
+            their beautiful interconnections through animated stories.
           </p>
           
           <p className="text-sm text-neutral-300 mb-2">
-            Key insights to explore:
+            Journey through six animated stories:
           </p>
           <ul className="list-disc list-inside space-y-0.5 text-sm text-neutral-300 ml-4 mb-3">
-            <li>Negative Binomial with <span dangerouslySetInnerHTML={{ __html: `\\(r=1\\)` }} /> equals Geometric</li>
-            <li>Poisson approximates Binomial for large <span dangerouslySetInnerHTML={{ __html: `\\(n\\)` }} />, small <span dangerouslySetInnerHTML={{ __html: `\\(p\\)` }} /></li>
-            <li>Compare shapes, spreads, and tail behaviors</li>
-            <li>Understand parameter effects across distributions</li>
+            <li><span className="text-cyan-400 font-semibold">Counting Successes:</span> How the Binomial emerges from quality control</li>
+            <li><span className="text-orange-400 font-semibold">Waiting for Success:</span> The Geometric distribution in sales</li>
+            <li><span className="text-emerald-400 font-semibold">Random Events:</span> Poisson processes in web traffic</li>
+            <li><span className="text-purple-400 font-semibold">The Great Convergence:</span> Watch Binomial morph into Poisson</li>
           </ul>
           
           <div className="bg-neutral-900 rounded-md p-3 mt-3">
-            <h5 className="text-sm font-medium text-purple-400 mb-2">Selection Guide</h5>
+            <h5 className="text-sm font-medium text-purple-400 mb-2">Key Insights</h5>
             <ul className="list-disc list-inside space-y-0.5 text-xs text-neutral-300">
-              <li><strong>Fixed trials, count successes:</strong> Binomial</li>
-              <li><strong>Trials until first success:</strong> Geometric</li>
-              <li><strong>Trials until r successes:</strong> Negative Binomial</li>
-              <li><strong>Events in fixed interval:</strong> Poisson</li>
+              <li>All distributions are connected through limits and special cases</li>
+              <li>Each distribution tells a story about a specific type of randomness</li>
+              <li>Understanding the story helps you choose the right distribution</li>
+              <li>Mathematical beauty emerges from practical scenarios</li>
             </ul>
           </div>
         </>
       ),
-      components: [DistributionComparison]
+      components: [DistributionStories]
     }
   ];
 

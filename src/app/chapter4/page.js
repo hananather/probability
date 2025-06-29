@@ -68,7 +68,7 @@ const FDistributionExplorer = dynamic(
 
 // Sampling Distributions Hub - New comprehensive learning system
 const SamplingDistributionsHub = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions/4-3-0-SamplingDistributionsHub'),
+  () => import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions-new/4-3-0-SamplingDistributionsHub'),
   { 
     ssr: false,
     loading: () => (
@@ -78,6 +78,8 @@ const SamplingDistributionsHub = dynamic(
     )
   }
 );
+
+
 
 const BoxplotQuartilesExplorer = dynamic(
   () => import('@/components/04-descriptive-statistics-sampling/4-6-1-BoxplotQuartilesExplorer'),
@@ -91,17 +93,6 @@ const BoxplotQuartilesExplorer = dynamic(
   }
 );
 
-const CLTSimulation = dynamic(
-  () => import('@/components/shared/CLTSimulation'),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-gray-400">Loading visualization...</div>
-      </div>
-    )
-  }
-);
 
 // Central Tendency Hub - New comprehensive learning system
 const CentralTendencyHub = dynamic(
@@ -281,6 +272,31 @@ const BoxplotRealWorldExplorer = dynamic(
     )
   }
 );
+
+
+const SamplingDistributionsPropertiesBonus = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions-new/4-3-2-SamplingDistributionsProperties-impl'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
+
+const CLTPropertiesMerged = dynamic(
+  () => import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions-new/4-3-2-CLTProperties-merged'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-400">Loading visualization...</div>
+      </div>
+    )
+  }
+);
 import ConceptSection from '@/components/shared/ConceptSection';
 
 export default function Chapter4Page() {
@@ -304,26 +320,29 @@ export default function Chapter4Page() {
       // Histograms
       'histograms': 1,
       
-      // Sampling & Distributions
+      // Sampling Distributions
       'sampling-distributions-hub': 2,
-      'central-limit-theorem': 3,
       
       // T-Distribution
-      't-distribution': 4,
+      't-distribution': 3,
       
       // F-Distribution
-      'f-distribution-intro': 5,
-      'f-distribution': 6,
-      'f-distribution-journey': 7,
-      'f-distribution-worked': 8,
-      'f-distribution-masterclass': 9,
-      'f-distribution-mastery': 10,
-      'f-distribution-full-journey': 11,
+      'f-distribution-intro': 4,
+      'f-distribution': 5,
+      'f-distribution-journey': 6,
+      'f-distribution-worked': 7,
+      'f-distribution-masterclass': 8,
+      'f-distribution-mastery': 9,
+      'f-distribution-full-journey': 10,
       
       // Boxplots
-      'boxplot-quartiles': 12,
-      'boxplot-journey': 13,
-      'boxplot-real-world': 14
+      'boxplot-quartiles': 11,
+      'boxplot-journey': 12,
+      'boxplot-real-world': 13,
+      
+      // Bonus implementations for review
+      'sampling-bonus-properties': 14,
+      'clt-properties-merged': 15
     };
     
     const section = searchParams.get('section');
@@ -402,13 +421,6 @@ export default function Chapter4Page() {
       title: "4.3 - Sampling Distributions",
       description: "Explore the behavior of sample statistics, including the sum of independent random variables, sample mean distributions, and the foundational concepts leading to the Central Limit Theorem.",
       component: <SamplingDistributionsHub />,
-      category: 'sampling-distributions'
-    },
-    {
-      id: 'central-limit-theorem',
-      title: "4.4 - Central Limit Theorem",
-      description: "Experience the most important theorem in statistics. Watch how sample means always form a normal distribution, regardless of the original data shape.",
-      component: <CLTSimulation />,
       category: 'sampling-distributions'
     },
     
@@ -493,6 +505,21 @@ export default function Chapter4Page() {
       description: "Apply boxplot analysis to real-world datasets and scenarios.",
       component: <BoxplotRealWorldExplorer />,
       category: 'boxplots'
+    },
+    
+    {
+      id: 'sampling-bonus-properties',
+      title: "[REVIEW] Properties & Shape Evolution",
+      description: "Bonus implementation: Side-by-side comparison showing how n affects distribution shape",
+      component: <SamplingDistributionsPropertiesBonus />,
+      category: 'bonus-review'
+    },
+    {
+      id: 'clt-properties-merged',
+      title: "4.3 - CLT & Properties (Merged)",
+      description: "Experience the magic of the Central Limit Theorem and explore how sample size affects sampling distributions through beautiful, animated visualizations.",
+      component: <CLTPropertiesMerged />,
+      category: 'sampling-distributions'
     }
   ];
 
@@ -516,7 +543,7 @@ export default function Chapter4Page() {
           <div>
             <h3 className="text-lg font-semibold text-cyan-400 mb-3">Central Tendency & Descriptive Statistics</h3>
             <div className="flex flex-wrap gap-2">
-              {sections.filter(s => s.category === 'central-tendency').map((section, index) => {
+              {sections.filter(s => s.category === 'data-descriptions' || s.category === 'central-tendency').map((section, index) => {
                 const sectionIndex = sections.findIndex(s => s.id === section.id);
                 return (
                   <button
@@ -542,7 +569,7 @@ export default function Chapter4Page() {
           <div>
             <h3 className="text-lg font-semibold text-purple-400 mb-3">Histograms & Data Visualization</h3>
             <div className="flex flex-wrap gap-2">
-              {sections.filter(s => s.category === 'histograms').map((section) => {
+              {sections.filter(s => s.category === 'visual-summaries' || s.category === 'histograms').map((section) => {
                 const sectionIndex = sections.findIndex(s => s.id === section.id);
                 return (
                   <button
@@ -564,11 +591,11 @@ export default function Chapter4Page() {
             </div>
           </div>
 
-          {/* Sampling & CLT */}
+          {/* Sampling Distributions */}
           <div>
             <h3 className="text-lg font-semibold text-green-400 mb-3">Sampling Distributions & CLT</h3>
             <div className="flex flex-wrap gap-2">
-              {sections.filter(s => s.category === 'sampling').map((section) => {
+              {sections.filter(s => s.category === 'sampling-distributions').map((section) => {
                 const sectionIndex = sections.findIndex(s => s.id === section.id);
                 return (
                   <button
@@ -589,12 +616,13 @@ export default function Chapter4Page() {
               })}
             </div>
           </div>
+
 
           {/* T-Distribution */}
           <div>
             <h3 className="text-lg font-semibold text-yellow-400 mb-3">T-Distribution</h3>
             <div className="flex flex-wrap gap-2">
-              {sections.filter(s => s.category === 't-distribution').map((section) => {
+              {sections.filter(s => s.category === 'sampling-distributions-reprise' || s.category === 't-distribution').map((section) => {
                 const sectionIndex = sections.findIndex(s => s.id === section.id);
                 return (
                   <button
@@ -620,7 +648,7 @@ export default function Chapter4Page() {
           <div>
             <h3 className="text-lg font-semibold text-orange-400 mb-3">F-Distribution</h3>
             <div className="flex flex-wrap gap-2">
-              {sections.filter(s => s.category === 'f-distribution').map((section) => {
+              {sections.filter(s => s.category === 'sampling-distributions-reprise' || s.category === 'f-distribution').map((section) => {
                 const sectionIndex = sections.findIndex(s => s.id === section.id);
                 return (
                   <button
@@ -659,6 +687,32 @@ export default function Chapter4Page() {
                       currentSection === sectionIndex
                         ? 'bg-blue-600 text-white font-semibold'
                         : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
+                    }`}
+                  >
+                    {section.title}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          
+          {/* TEMPORARY - Bonus Review */}
+          <div>
+            <h3 className="text-lg font-semibold text-red-400 mb-3">🎁 Bonus Implementations for Review (TEMPORARY)</h3>
+            <div className="flex flex-wrap gap-2">
+              {sections.filter(s => s.category === 'bonus-review').map((section) => {
+                const sectionIndex = sections.findIndex(s => s.id === section.id);
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => {
+                      setCurrentSection(sectionIndex);
+                      router.push(`/chapter4?section=${section.id}`);
+                    }}
+                    className={`px-4 py-2 rounded-lg transition-all text-sm ${
+                      currentSection === sectionIndex
+                        ? 'bg-red-600 text-white font-semibold'
+                        : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700 border border-red-600'
                     }`}
                   >
                     {section.title}
