@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from "@/utils/d3-utils";
 import { hexbin as d3Hexbin } from 'd3-hexbin';
 import { VisualizationContainer } from '../ui/VisualizationContainer';
+import { MathematicalDiscoveries, useDiscoveries } from '../ui/MathematicalDiscoveries';
 import { tutorial_2_1_1 } from '@/tutorials/chapter2.jsx';
 
 const SpatialRandomVariable = () => {
@@ -40,6 +41,41 @@ const SpatialRandomVariable = () => {
   const totalRef = useRef(0);
   const [updateTrigger, setUpdateTrigger] = useState(0);
   const [drawnHexCount, setDrawnHexCount] = useState(0);
+  
+  // Mathematical discoveries tracking
+  const discoveryDefinitions = [
+    {
+      id: 'spatial-probability',
+      title: 'Spatial-Probability Bridge',
+      description: 'Larger regions have higher probability. Each hexagon contributes equally to the total probability.',
+      formula: 'P(X = x) = \\frac{\\text{Area}(x)}{\\text{Total Area}}',
+      category: 'concept'
+    },
+    {
+      id: 'expected-value',
+      title: 'Expected Value Discovery',
+      description: 'The expected value is the weighted average of outcomes, like finding the "center of mass" of probabilities.',
+      formula: 'E[X] = \\sum_{x} x \\times P(X = x)',
+      category: 'formula'
+    },
+    {
+      id: 'variance',
+      title: 'Variance as Spread',
+      description: 'Variance measures how spread out the values are from the expected value.',
+      formula: '\\text{Var}(X) = E[X^2] - (E[X])^2',
+      category: 'formula'
+    },
+    {
+      id: 'convergence',
+      title: 'Law of Large Numbers',
+      description: 'As sampling continues, the empirical distribution converges to the theoretical PMF.',
+      category: 'pattern'
+    }
+  ];
+  
+  const { discoveries, markDiscovered } = useDiscoveries(discoveryDefinitions);
+  const [hasCreatedRegions, setHasCreatedRegions] = useState(false);
+  const [samplingCount, setSamplingCount] = useState(0);
   
   // Constants - Responsive layout
   const WIDTH_GRID = 720;
@@ -417,6 +453,22 @@ const SpatialRandomVariable = () => {
     resetSamples();
     setValueInput('');
     setDrawnHexCount(0);
+    
+    // Mark spatial-probability discovery when first region is created
+    if (!hasCreatedRegions) {
+      setHasCreatedRegions(true);
+      markDiscovered('spatial-probability');
+    }
+    
+    // Mark expected value discovery when 3+ different values assigned
+    if (legendItems.length >= 2) {
+      markDiscovered('expected-value');
+    }
+    
+    // Mark variance discovery when 4+ different values assigned
+    if (legendItems.length >= 3) {
+      markDiscovered('variance');
+    }
   };
   
   // Add point animation with improved visual feedback
@@ -562,6 +614,15 @@ const SpatialRandomVariable = () => {
         const hexElement = d3.select(`#hex-${closestIndex}`);
         if (!hexElement.empty()) {
           const color = hexElement.style("fill");
+          
+          // Track sampling count for convergence discovery
+          setSamplingCount(prev => {
+            const newCount = prev + 1;
+            if (newCount >= 100) {
+              markDiscovered('convergence');
+            }
+            return newCount;
+          });
           const value = closestData.value;
           addPoint(pos, color, value, closestIndex);
         }
@@ -931,6 +992,15 @@ const SpatialRandomVariable = () => {
                 {stats.variance.toFixed(3)}
               </span>
             </div>
+          </div>
+          
+          {/* Mathematical Discoveries */}
+          <div className="mt-3 pt-3 border-t border-neutral-700">
+            <MathematicalDiscoveries 
+              discoveries={discoveries}
+              title="Random Variable Discoveries"
+              className="text-xs"
+            />
           </div>
         </div>
       </div>

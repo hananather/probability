@@ -1,67 +1,149 @@
-
 # Plan: 6.2 - Types of Hypotheses
 
 ### **Component Development Mandate**
 
-**Guiding Philosophy: Rigorous, Beautiful, and Insightful Guided Discovery.**
-Our goal is to create a learning experience that is as aesthetically beautiful and intellectually satisfying as it is mathematically rigorous. We are building the world's best interactive textbook, inspired by the clarity and elegance of platforms like `brilliant.org`. The priority is **optimal teaching**, not gamification.
+**Guiding Philosophy: Direct Mathematical Teaching with Interactive Reinforcement**
 
-**Core Mandates:**
-1.  **Pedagogy First, Interaction Second:** The primary goal is to teach. Interactions must be purposeful, low-bug, and directly serve to build intuition. Prefer curated animations and controlled interactions over complex, bug-prone drag-and-drop interfaces.
-2.  **Aesthetic Excellence & Brand Consistency:**
-    *   **Internal Consistency is Key:** The new components for this chapter must feel like a natural extension of the existing ones. Use the color schemes, animation styles, and layout patterns already present in `/src/components/06-hypothesis-testing/` as the primary source of truth for UI/UX design.
-    *   **Typography & Layout:** Follow the established design system. Use `font-mono` for numbers, maintain clear visual hierarchies, and ensure layouts are clean, uncluttered, and content-driven.
-3.  **Mathematical & Technical Rigor:**
-    *   **Content:** All content must be derived from the official course materials for the relevant chapter, but examples must be generalized to be accessible to a broad university audience (science, social science, engineering, etc.).
-    *   **LaTeX:** All mathematical notation must strictly adhere to the best practices outlined in `/docs/latex-guide.md`.
-4.  **Reference Gold Standards:**
-    *   **Pedagogy & Interaction:** `/src/components/01-introduction-to-probabilities/1-7-monty-hall/`
-    *   **Hub Design:** `/src/components/04-descriptive-statistics-sampling/4-1-central-tendency/`
-    *   **UI & Aesthetics:** `https://brilliant.org/wiki/best/`
+**Core Principles:**
+1. **Teach First, Interact to Reinforce:** Lead with clear mathematical definitions and concepts. Interactions should clarify and reinforce, not distract.
+2. **Reuse Proven Patterns:** Leverage successful components from chapters 1-3 for consistency and efficiency.
+3. **Mathematical Rigor:** Present formal definitions alongside visual understanding.
+4. **No Unnecessary Narrative:** Focus on the mathematics, not stories.
 
 ---
 
-**Component Type:** Guided Discovery Experience
-
-**Guiding Philosophy:** This component will clarify the crucial difference between one-tailed and two-tailed tests. The focus is on showing how the research question dictates the type of test, which in turn affects the p-value.
+**Component Type:** Mathematical Concept Explorer (Pattern: Normal Z-Score Explorer)
 
 ---
 
-### 1. Core Question
+### 1. Direct Mathematical Introduction
 
-*   "Does our research question suspect a change in a *specific direction*, or just *any change* at all? And how does that affect our evidence?"
+**Opening Statement:** 
+"Hypothesis tests come in three types based on your research question. The type determines where we look for evidence against H₀."
 
----
-
-### 2. Interactive Exploration
-
-*   **Concept:** A unified visualization of a normal distribution.
-    *   **Setup:** A normal distribution is displayed. A slider allows the user to set the "Observed Test Statistic" (z-score).
-    *   **Interaction:** The user can toggle between three modes:
-        1.  **Right-Tailed (H₁: μ > μ₀):** Shades the area to the right of the test statistic.
-        2.  **Left-Tailed (H₁: μ < μ₀):** Shades the area to the left of the test statistic.
-        3.  **Two-Tailed (H₁: μ ≠ μ₀):** Shades the area in *both* tails, equidistant from the mean.
-    *   **Display:** A large, clear display shows the calculated p-value for each mode.
+**Immediate Definitions:**
+```
+One-Tailed (Right): H₀: μ = μ₀  vs  H₁: μ > μ₀
+One-Tailed (Left):  H₀: μ = μ₀  vs  H₁: μ < μ₀  
+Two-Tailed:         H₀: μ = μ₀  vs  H₁: μ ≠ μ₀
+```
 
 ---
 
-### 3. Facilitate Insight (The "Aha!" Moment)
+### 2. Interactive Visualization (Pattern: Distribution Comparison + Z-Score Explorer)
 
-*   The user sets the observed z-score to 1.8.
-    *   In **Right-Tailed** mode, they see a p-value of ~0.036.
-    *   They switch to **Two-Tailed** mode and see the p-value instantly double to ~0.072.
-*   The insight is immediate: **A two-tailed test is more conservative.** For the exact same data, it is "harder" to get a significant result because we are splitting our alpha between two possibilities.
+**Layout:** 80% visualization, 20% controls
+
+**Main View:** Three synchronized normal distributions showing:
+1. **Null Distribution** (always centered at μ₀)
+2. **Critical Regions** (shaded rejection zones)
+3. **Test Statistic** (draggable marker like Z-Score Explorer)
+
+**Key Features:**
+- **Hypothesis Type Selector:** Radio buttons for One-Tailed (Right/Left) and Two-Tailed
+- **Significance Level Slider:** α = 0.01, 0.05, 0.10 (updates critical values in real-time)
+- **Test Statistic Slider:** Move to see p-value calculations
+- **Mathematical Display Panel:** Shows:
+  - Current hypotheses (H₀ and H₁)
+  - Critical value(s)
+  - Test statistic value
+  - p-value calculation formula
+  - Decision rule
+
+**Visual Updates (Pattern: Conditional Probability perspectives):**
+- Switching hypothesis types animates the critical region changes
+- Color coding: Blue (fail to reject), Red (reject region)
+- Show exact areas under curve
 
 ---
 
-### 4. Connect to Rigor
+### 3. Mathematical Concepts Tab (Pattern: Conditional Probability tabs)
 
-*   **Formalization:** Connect the visual to the formal language.
-    *   **Right-Tailed Test:** Used when the research question is about an *increase* (e.g., "Does this fertilizer *increase* crop yield?").
-    *   **Left-Tailed Test:** Used when the research question is about a *decrease* (e.g., "Does this drug *reduce* blood pressure?").
-    *   **Two-Tailed Test:** Used when the research question is about *any difference* (e.g., "Does this new packaging *change* the product's weight?").
-    *   Explain that the choice must be made *before* seeing the data to maintain scientific integrity.
+**Tab 1: Visual Explorer** (described above)
+
+**Tab 2: Mathematical Framework**
+- **Formal Definitions:**
+  - Simple vs Composite Hypotheses
+  - Critical Values Table (interactive - hover to highlight on distribution)
+  - p-Value Formulas with step-by-step calculations
+  
+**Tab 3: Decision Rules**
+- **Interactive Decision Tree:**
+  - Input: Test statistic
+  - Shows path through: Hypothesis type → Critical value comparison → Decision
+  - Highlights which inequality is being checked
 
 ---
 
-**Reference Implementation:** `/src/components/shared/CLTSimulation.jsx` (for the interactive distribution visualization)
+### 4. Comparison Mode (Pattern: Distribution Comparison)
+
+**Side-by-Side View:** 
+- Same test statistic (e.g., z = 1.8) applied to all three test types
+- Shows different p-values and decisions
+- **Key Learning:** "Same data, different conclusions based on research question"
+
+**Interactive Table:**
+| Test Type | Critical Value(s) | p-value | Decision |
+|-----------|------------------|---------|----------|
+| Right-Tailed | z > 1.645 | 0.036 | Reject H₀ |
+| Left-Tailed | z < -1.645 | 0.964 | Fail to Reject |
+| Two-Tailed | |z| > 1.96 | 0.072 | Fail to Reject |
+
+---
+
+### 5. Practice Problems (Pattern: Binomial Distribution's trial runs)
+
+**Quick Scenarios:** (Not stories, just contexts)
+1. "Test if mean > 100" → Identify test type → Set up hypotheses
+2. "Test if proportion differs from 0.5" → Identify test type → Find critical values
+3. "Test if treatment reduces values" → Identify test type → Calculate p-value
+
+**Immediate Feedback:** 
+- Shows correct hypothesis formulation
+- Highlights critical region on distribution
+- No points or gamification
+
+---
+
+### 6. Key Learning Outcomes
+
+**Progressive Insights (Pattern: Z-Score Explorer's staged learning):**
+1. **Stage 1:** Understand hypothesis structure (H₀ always has =)
+2. **Stage 2:** Connect research question to test type
+3. **Stage 3:** See how test type affects critical regions
+4. **Stage 4:** Calculate p-values for each type
+
+**Mathematical Discoveries Panel (Pattern: Conditional Probability's discovery tracking):**
+- "Discovered: Two-tailed tests split α between tails"
+- "Discovered: One-tailed tests have more power in the specified direction"
+- "Discovered: Test type must be chosen before data collection"
+
+---
+
+### Implementation Notes
+
+**Reusable Components:**
+1. Distribution visualization from `NormalZScoreExplorer`
+2. Tab structure from `ConditionalProbability`
+3. Comparison layout from `DistributionComparison`
+4. Interactive sliders from `BinomialDistribution`
+5. Mathematical formatting from existing hypothesis testing components
+
+**Technical Requirements:**
+- Use D3 for distributions (following existing patterns)
+- Smooth transitions between hypothesis types
+- Real-time p-value calculations
+- LaTeX rendering for all mathematical notation
+- Responsive design maintaining 80-90% space usage
+
+**Avoid:**
+- Long narrative introductions
+- "Story-based" scenarios that obscure the mathematics
+- Gamification elements
+- Excessive animations that don't teach
+
+**Focus:**
+- Clear mathematical definitions upfront
+- Visual understanding through interaction
+- Quick feedback loops (understand concept in <10 interactions)
+- Practical application without unnecessary context

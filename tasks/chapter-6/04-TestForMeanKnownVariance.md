@@ -29,37 +29,98 @@ Our goal is to create a learning experience that is as aesthetically beautiful a
 
 ### 1. Core Question
 
-*   **"A coffee shop claims its bags of coffee weigh 340g on average. We know from the supplier that the standard deviation of the filling process is 5g. We take a sample of 30 bags and find their mean weight is 342g. Is this enough evidence to say the shop is giving customers more coffee than advertised?"** (This is a general quality control/consumer science example).
+*   "Components are manufactured to have strength μ = 40 units with known σ = 1.2 units. After modifying the process, we test if mean strength has increased."
 
 ---
 
 ### 2. Interactive Exploration
 
-*   **Concept:** An interactive calculator and visualizer.
-    *   **Setup:** The component is laid out as a clear, 4-step process.
-        1.  **State Hypotheses:** H₀: μ = 340, H₁: μ > 340.
-        2.  **Input Parameters:** The user can input the hypothesized mean (μ₀), the population standard deviation (σ), the sample mean (x̄), and the sample size (n).
-        3.  **Calculate:** A "Calculate" button computes the z-statistic and the p-value.
-        4.  **Visualize:** The result is displayed on a normal distribution curve, showing the z-statistic and the shaded p-value area.
+*   **Part A: The Complete Testing Procedure**
+    *   **Step-by-Step Calculator:**
+        1. **State Hypotheses:** 
+           - H₀: μ = 40 (no improvement)
+           - H₁: μ > 40 (process improved)
+           - Toggle to explore all three alternatives
+        
+        2. **Input Data:**
+           - Population parameters: μ₀ = 40, σ = 1.2
+           - Sample data: n = 12 components
+           - Sample measurements display:
+             ```
+             42.5, 39.8, 40.3, 43.1, 39.6, 41.0
+             39.9, 42.1, 40.7, 41.6, 42.1, 40.8
+             ```
+           - Calculated x̄ = 41.125
+        
+        3. **Choose Significance Level:**
+           - Slider for α: [0.01, 0.05, 0.10]
+           - Show critical values: z₀.₀₅ = 1.645, z₀.₀₁ = 2.327
+        
+        4. **Calculate Test Statistic:**
+           - Show formula: Z = (X̄ - μ₀)/(σ/√n)
+           - Calculation: z₀ = (41.125 - 40)/(1.2/√12) = 3.25
+
+*   **Part B: Dual Approach Visualization**
+    *   **Critical Value Method:**
+        - Normal curve with vertical line at z = 1.645 (for α = 0.05)
+        - Test statistic z₀ = 3.25 shown
+        - Rejection region shaded
+        - Decision: "z₀ = 3.25 > 1.645, Reject H₀"
+    
+    *   **p-Value Method:**
+        - Same normal curve
+        - Area beyond z₀ = 3.25 shaded
+        - p-value = P(Z ≥ 3.25) = 0.0006
+        - Decision: "p-value = 0.0006 < 0.05, Reject H₀"
+
+*   **Part C: Connection to Confidence Intervals**
+    *   **Interactive Toggle:** "Show Confidence Interval Approach"
+    *   **95% CI for μ:** x̄ ± z₀.₀₂₅(σ/√n) = 41.125 ± 1.96(0.346) = [40.45, 41.80]
+    *   **Key Insight:** "μ₀ = 40 is not in the 95% CI, so we reject H₀ at α = 0.05"
+    *   **Equivalence:** "Reject H₀ ⟺ μ₀ not in (1-α)% CI"
 
 ---
 
 ### 3. Facilitate Insight (The "Aha!" Moment)
 
-*   The user inputs the data from the core question and sees a z-statistic of ~2.19 and a p-value of ~0.014.
-*   The interface clearly states: "The p-value (0.014) is less than our chosen α (0.05). We reject the null hypothesis."
-*   **The key insight:** The user can then play with the sliders. They can see how increasing the sample size or the sample mean would make the evidence even stronger (smaller p-value), while decreasing them would weaken the evidence.
+*   **Interactive Exploration Panel:**
+    - Sliders for: sample mean, sample size, significance level
+    - Real-time updates showing:
+      - How z-statistic changes
+      - How p-value changes
+      - Whether we reject or fail to reject
+    
+*   **Key Discoveries:**
+    1. "Larger sample size → More precise test (narrower CI)"
+    2. "Further from H₀ → Stronger evidence (smaller p-value)"
+    3. "Lower α → Need stronger evidence to reject"
+    4. "All three methods (critical value, p-value, CI) give same decision!"
 
 ---
 
 ### 4. Connect to Rigor
 
-*   **Formalization:** Display the formula for the z-test statistic clearly.
-    *   `z = (x̄ - μ₀) / (σ / √n)`
-*   **Explanation:** Explain each part of the formula.
-    *   `(x̄ - μ₀)`: The difference between what we observed and what was claimed.
-    *   `(σ / √n)`: The standard error - a measure of the expected variability of the sample mean.
-*   **Conclusion:** Summarize the full hypothesis testing procedure for a z-test.
+*   **Complete Testing Framework:**
+    ```
+    Step 1: H₀: μ = μ₀ vs H₁: μ > μ₀ (or < or ≠)
+    Step 2: Choose α (typically 0.05)
+    Step 3: Calculate z₀ = (x̄ - μ₀)/(σ/√n)
+    Step 4: Find critical value z_α or p-value
+    Step 5: Make decision
+    Step 6: State conclusion in context
+    ```
+
+*   **Decision Rules Summary Table:**
+    | Alternative | Critical Region | p-Value |
+    |-------------|----------------|---------|
+    | H₁: μ > μ₀  | z₀ > z_α       | P(Z > z₀) |
+    | H₁: μ < μ₀  | z₀ < -z_α      | P(Z < z₀) |
+    | H₁: μ ≠ μ₀  | |z₀| > z_{α/2} | 2P(Z > |z₀|) |
+
+*   **When to Use Z-Test:**
+    - Population is normal OR n ≥ 30 (CLT)
+    - σ is known (rare in practice)
+    - "If σ unknown, use t-test (next section)"
 
 ---
 

@@ -1,0 +1,14 @@
+looking at the hub component, the fundamentals section is connected. In the CHAPTER_6_SECTIONS array (starting
+  at line 206), you can see the first section:
+
+  {
+    id: 'hypothesis-fundamentals',
+    title: '6.1 Hypothesis Testing Fundamentals',
+    ...
+    route: '/tutorials/chapter6/hypothesis-fundamentals',
+    ...
+  }
+
+  The URL for this page is: /tutorials/chapter6/hypothesis-fundamentals
+
+  The hub componen

@@ -6,8 +6,8 @@ import {
   VisualizationSection,
   GraphContainer,
   ControlGroup
-} from '../ui/VisualizationContainer';
-import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
+} from '../../ui/VisualizationContainer';
+import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../../lib/design-system';
 
 // Use hypothesis color scheme
 const colorScheme = createColorScheme('hypothesis');

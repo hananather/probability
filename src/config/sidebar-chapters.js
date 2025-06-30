@@ -85,7 +85,15 @@ export const chapters = [
     title: 'Chapter 6: Hypothesis Testing',
     path: '/chapter6',
     sections: [
-      { title: 'Coin Bias Detection Game', component: 'HypothesisTestingGame' },
+      { title: '6.1 Hypothesis Testing Fundamentals', url: '/tutorials/chapter6/hypothesis-fundamentals' },
+      { title: '6.2 Types of Hypotheses', url: '/tutorials/chapter6/types-of-hypotheses' },
+      { title: '6.3 Errors & Power', url: '/tutorials/chapter6/errors-and-power' },
+      { title: '6.4 Test for a Mean (Known σ)', url: '/tutorials/chapter6/test-mean-known-variance' },
+      { title: '6.5 Test for a Mean (Unknown σ)', url: '/tutorials/chapter6/test-mean-unknown-variance' },
+      { title: '6.6 Test for a Proportion', url: '/tutorials/chapter6/test-for-proportion' },
+      { title: '6.7 Paired Two-Sample Test', url: '/tutorials/chapter6/paired-two-sample' },
+      { title: '6.8 Unpaired Two-Sample Test', url: '/tutorials/chapter6/unpaired-two-sample' },
+      { title: '6.9 Difference of Two Proportions', url: '/tutorials/chapter6/difference-two-proportions' },
     ]
   },
   {

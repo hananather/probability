@@ -29,33 +29,110 @@ Our goal is to create a learning experience that is as aesthetically beautiful a
 
 ### 1. Core Question
 
-*   "We want to test if the average student debt at a university is greater than $30,000. We can only survey a small sample of 20 students, and we have no idea what the overall population's financial variability is. How do we proceed when σ is unknown?" (This is a perfect, general social-science example).
+*   "We observe reaction times from a normal population with unknown mean μ and variance. Can we test H₀: μ = 16.6 when we don't know σ?"
 
 ---
 
 ### 2. Interactive Exploration
 
-*   **Concept:** A comparative visualization and calculator.
-    *   **Setup:** The component shows two distributions overlaid: a standard normal distribution (in grey) and a t-distribution (in blue). A slider for "Degrees of Freedom (n-1)" is present.
-    *   **Interaction 1 (The Distribution):** As the user moves the degrees of freedom slider from 2 up to 30, they see the t-distribution's tails get thinner and its shape converge to the normal distribution. This builds the intuition that the t-distribution accounts for the extra uncertainty of not knowing σ, especially with small samples.
-    *   **Interaction 2 (The Calculator):** Similar to the z-test component, the user can input their sample data (x̄, s, n) and the hypothesized mean (μ₀) to calculate a t-statistic and a p-value.
+*   **Part A: Why We Need the t-Distribution**
+    *   **The Problem Setup:**
+        - Sample data (n = 16):
+          ```
+          18.0, 17.4, 15.5, 16.8, 19.0, 17.8, 17.4, 15.8,
+          17.9, 16.3, 16.9, 18.6, 17.7, 16.4, 18.2, 18.7
+          ```
+        - Calculate: x̄ = 17.4, s = 1.078
+        - Test: H₀: μ = 16.6 vs H₁: μ > 16.6
+    
+    *   **Side-by-Side Comparison:**
+        | If σ known (Z-test) | σ unknown (t-test) |
+        |---------------------|-------------------|
+        | Z = (X̄ - μ₀)/(σ/√n) | T = (X̄ - μ₀)/(S/√n) |
+        | Z ~ N(0,1) | T ~ t(n-1) |
+        | Use σ (parameter) | Use S (statistic) |
+        
+    *   **Key Insight Animation:**
+        - Show how using S instead of σ adds variability
+        - Animate: "S varies from sample to sample, creating extra uncertainty"
+
+*   **Part B: Understanding Degrees of Freedom**
+    *   **Visual Demonstration:**
+        - Show n data points with constraint Σ(xᵢ - x̄) = 0
+        - Animate: "Once we know n-1 deviations and x̄, the last one is determined"
+        - Connection to S² = Σ(xᵢ - x̄)²/(n-1)
+    
+    *   **Interactive df Explorer:**
+        - Slider for df: 1 to 30
+        - Show t-distribution morphing
+        - Display key insight: "df = n - 1 because we estimate μ with x̄"
+
+*   **Part C: The t-Distribution Family**
+    *   **Overlaid Distributions:**
+        - Normal N(0,1) in grey (reference)
+        - t(1) in red (very fat tails)
+        - t(5) in orange (moderately fat)
+        - t(15) in blue (close to normal)
+        - t(30) in green (nearly normal)
+    
+    *   **Interactive Features:**
+        - Hover to see probability values
+        - Toggle to show/hide distributions
+        - Zoom on tails to see differences
 
 ---
 
 ### 3. Facilitate Insight (The "Aha!" Moment)
 
-*   The user sees that for the same data, a t-test will produce a larger p-value than a z-test, especially for small `n`. They realize the t-test is more conservative because it has "fatter tails" to account for the uncertainty in `s` as an estimate of `σ`.
-*   The visual convergence of the t-distribution to the normal distribution as `n` increases makes it clear why the z-test is a reasonable approximation for large samples.
+*   **Critical Values Comparison:**
+    | α = 0.05 | One-tailed | Two-tailed |
+    |----------|------------|------------|
+    | Normal   | z = 1.645  | z = 1.960  |
+    | t(15)    | t = 1.753  | t = 2.131  |
+    | t(5)     | t = 2.015  | t = 2.571  |
+    
+*   **Test Calculation Walkthrough:**
+    - t₀ = (17.4 - 16.6)/(1.078/√16) = 2.968
+    - df = 16 - 1 = 15
+    - From t-table: 2.947 < t₀ < 3.286
+    - Therefore: 0.0025 < p-value < 0.005
+    - Decision: Reject H₀ at α = 0.05
+
+*   **Key Realizations:**
+    1. "t-critical values > z-critical values (more conservative)"
+    2. "As n increases, t-distribution → normal distribution"
+    3. "Small samples require stronger evidence to reject H₀"
 
 ---
 
 ### 4. Connect to Rigor
 
-*   **Formalization:** Display the formula for the one-sample t-test statistic.
-    *   `t = (x̄ - μ₀) / (s / √n)`
-*   **Explanation:** Explicitly state the difference: we use the *sample* standard deviation (`s`) as an estimate for the *population* standard deviation (`σ`).
-*   **Degrees of Freedom:** Explain that the shape of the t-distribution depends on the sample size through the degrees of freedom (df = n - 1).
-*   **Assumptions:** State the key assumption for the t-test: the underlying population is approximately normally distributed.
+*   **Complete t-Test Framework:**
+    ```
+    1. Check assumptions: Data approximately normal
+    2. State hypotheses: H₀: μ = μ₀
+    3. Calculate: t = (x̄ - μ₀)/(s/√n)
+    4. Find df = n - 1
+    5. Look up critical value or p-value
+    6. Make decision based on α
+    ```
+
+*   **When t ≈ z (Rule of Thumb):**
+    - n ≥ 30: t-distribution very close to normal
+    - n ≥ 50: Practically identical
+    - "But always use t when σ unknown for accuracy"
+
+*   **T-Table Excerpt (Essential Values):**
+    | df | t₀.₀₅ | t₀.₀₂₅ | t₀.₀₁ | t₀.₀₀₅ |
+    |----|-------|---------|-------|---------|
+    | 5  | 2.015 | 2.571   | 3.365 | 4.032   |
+    | 10 | 1.812 | 2.228   | 2.764 | 3.169   |
+    | 15 | 1.753 | 2.131   | 2.602 | 2.947   |
+    | 20 | 1.725 | 2.086   | 2.528 | 2.845   |
+    | 30 | 1.697 | 2.042   | 2.457 | 2.750   |
+    | ∞  | 1.645 | 1.960   | 2.326 | 2.576   |
+
+*   **Practical Note:** "Most real-world scenarios have unknown σ, making the t-test the workhorse of statistical inference"
 
 ---
 

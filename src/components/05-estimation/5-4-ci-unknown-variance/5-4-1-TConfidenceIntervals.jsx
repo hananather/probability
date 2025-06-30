@@ -1,671 +1,499 @@
 "use client";
-import React, { useState, useEffect, useRef, useCallback, memo } from "react";
+import React, { useState, useEffect, useRef, memo } from "react";
 import * as d3 from "@/utils/d3-utils";
 import { jStat } from "jstat";
 import { 
   VisualizationContainer, 
   VisualizationSection,
-  GraphContainer,
-  ControlGroup
+  GraphContainer
 } from '../../ui/VisualizationContainer';
-import { colors, typography, components, formatNumber, cn, createColorScheme } from '@/lib/design-system';
+import { colors, cn, createColorScheme } from '@/lib/design-system';
 import { ProgressBar } from '../../ui/ProgressBar';
+import { tutorial_5_4_1 } from '@/tutorials/chapter5';
 
 // Use inference color scheme
 const colorScheme = createColorScheme('inference');
 
-// Comparison Table Component
-const ComparisonTable = memo(function ComparisonTable({ sampleSize, confidenceLevel }) {
-  const df = sampleSize - 1;
-  const alpha = 1 - confidenceLevel;
-  const tCritical = jStat.studentt.inv(1 - alpha/2, df);
-  const zCritical = jStat.normal.inv(1 - alpha/2, 0, 1);
-  const difference = ((tCritical - zCritical) / zCritical * 100).toFixed(1);
-  
-  return (
-    <div className="bg-neutral-800 p-4 rounded-lg">
-      <h4 className="text-sm font-semibold text-white mb-3">Z vs T Critical Values</h4>
-      <div className="space-y-2">
-        <div className="flex justify-between items-center p-2 bg-blue-900/20 rounded">
-          <span className="text-sm text-neutral-300">Z-critical (σ known)</span>
-          <span className="font-mono text-blue-400">±{zCritical.toFixed(3)}</span>
-        </div>
-        <div className="flex justify-between items-center p-2 bg-purple-900/20 rounded">
-          <span className="text-sm text-neutral-300">T-critical (σ unknown)</span>
-          <span className="font-mono text-purple-400">±{tCritical.toFixed(3)}</span>
-        </div>
-        <div className="flex justify-between items-center p-2 bg-yellow-900/20 rounded">
-          <span className="text-sm text-neutral-300">Difference</span>
-          <span className="font-mono text-yellow-400">+{difference}%</span>
-        </div>
-      </div>
-      <div className="mt-3 pt-3 border-t border-neutral-700">
-        <p className="text-xs text-neutral-400">
-          T-intervals are wider to account for the additional uncertainty from estimating σ with s
-        </p>
-      </div>
-    </div>
-  );
-});
+// Stages for progressive learning
+const STAGES = [
+  { n: 5, label: "Small Sample", description: "Maximum difference" },
+  { n: 15, label: "Medium Sample", description: "Still noticeably wider" },
+  { n: 30, label: "Large Sample", description: "Nearly converged" },
+  { n: 100, label: "Convergence", description: "Practically identical" }
+];
 
-// Worked Example Component
-const TIntervalWorkedExample = memo(function TIntervalWorkedExample({ 
-  sampleData, sampleMean, sampleStd, sampleSize, confidenceLevel 
+// Course example data (n=9)
+const COURSE_EXAMPLE = {
+  n: 9,
+  xbar: 100,
+  s: 15,
+  confidence: 0.95,
+  description: "Course example from page 34"
+};
+
+// Interval Comparison Visualization
+const IntervalComparisonViz = memo(function IntervalComparisonViz({ 
+  sampleSize, xbar, s, sigma, confidenceLevel 
 }) {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    // MathJax timeout pattern
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          // Silent error: MathJax error
-        });
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [sampleMean, sampleStd, sampleSize, confidenceLevel]);
-  
-  // Calculate CI components
-  const df = sampleSize - 1;
-  const alpha = 1 - confidenceLevel;
-  const tCritical = jStat.studentt.inv(1 - alpha/2, df);
-  const standardError = sampleStd / Math.sqrt(sampleSize);
-  const marginOfError = tCritical * standardError;
-  const lowerBound = sampleMean - marginOfError;
-  const upperBound = sampleMean + marginOfError;
-  
-  return (
-    <div ref={contentRef} className="bg-neutral-800 p-6 rounded-lg text-neutral-200">
-      <h4 className="text-lg font-semibold border-b border-neutral-600 pb-2 mb-4 text-white">
-        T-Confidence Interval Calculation (σ Unknown)
-      </h4>
-      
-      <div className="space-y-4">
-        <div>
-          <p className="mb-2 font-medium text-purple-400">Step 1: Calculate Sample Statistics</p>
-          <div className="bg-neutral-900 p-3 rounded text-sm">
-            <p className="text-neutral-400 mb-2">Sample data: [{sampleData.slice(0, 5).map(x => x.toFixed(1)).join(', ')}...]</p>
-            <div className="space-y-1">
-              <div dangerouslySetInnerHTML={{ __html: `\\[\\bar{x} = \\frac{\\sum x_i}{n} = ${sampleMean.toFixed(3)}\\]` }} />
-              <div dangerouslySetInnerHTML={{ __html: `\\[s = \\sqrt{\\frac{\\sum (x_i - \\bar{x})^2}{n-1}} = ${sampleStd.toFixed(3)}\\]` }} />
-            </div>
-          </div>
-        </div>
-        
-        <div>
-          <p className="mb-2 font-medium text-purple-400">Step 2: Find T-Critical Value</p>
-          <div className="bg-neutral-900 p-3 rounded text-sm space-y-1">
-            <div className="flex justify-between">
-              <span>Degrees of freedom (df)</span>
-              <span className="font-mono text-cyan-400">n - 1 = {df}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Confidence level</span>
-              <span className="font-mono text-cyan-400">{(confidenceLevel * 100).toFixed(0)}%</span>
-            </div>
-            <div dangerouslySetInnerHTML={{ __html: `\\[t_{\\alpha/2, df} = t_{${(alpha/2).toFixed(3)}, ${df}} = ${tCritical.toFixed(3)}\\]` }} />
-          </div>
-        </div>
-        
-        <div>
-          <p className="mb-2 font-medium text-purple-400">Step 3: Calculate Confidence Interval</p>
-          <div dangerouslySetInnerHTML={{ __html: `\\[CI = \\bar{x} \\pm t_{\\alpha/2, df} \\times \\frac{s}{\\sqrt{n}}\\]` }} />
-          <div dangerouslySetInnerHTML={{ __html: `\\[CI = ${sampleMean.toFixed(3)} \\pm ${tCritical.toFixed(3)} \\times \\frac{${sampleStd.toFixed(3)}}{\\sqrt{${sampleSize}}}\\]` }} />
-          <div dangerouslySetInnerHTML={{ __html: `\\[CI = ${sampleMean.toFixed(3)} \\pm ${marginOfError.toFixed(3)}\\]` }} />
-          
-          <div className="bg-purple-900/20 border border-purple-600/30 rounded p-3 mt-2">
-            <p className="text-center text-purple-300 font-semibold">
-              {confidenceLevel * 100}% CI: [{lowerBound.toFixed(2)}, {upperBound.toFixed(2)}]
-            </p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="bg-neutral-900 p-3 rounded text-sm mt-4">
-        <p className="text-yellow-400 font-medium mb-2">💡 Key Difference from Z-Interval:</p>
-        <p className="text-neutral-300">
-          We use the t-distribution because we're estimating σ with s. This adds uncertainty, 
-          making the interval wider than if σ were known.
-        </p>
-      </div>
-    </div>
-  );
-});
-
-function TConfidenceIntervals() {
-  // State management
-  const [sampleSize, setSampleSize] = useState(10);
-  const [confidenceLevel, setConfidenceLevel] = useState(0.95);
-  const [currentSample, setCurrentSample] = useState([]);
-  const [sampleMean, setSampleMean] = useState(null);
-  const [sampleStd, setSampleStd] = useState(null);
-  const [showComparison, setShowComparison] = useState(true);
-  const [showWorkedExample, setShowWorkedExample] = useState(true);
-  const [totalSamples, setTotalSamples] = useState(0);
-  const [populationMean] = useState(100);
-  const [populationStd] = useState(15);
-  
   const svgRef = useRef(null);
   
-  // Generate a new sample
-  const generateNewSample = useCallback(() => {
-    const sample = Array.from({ length: sampleSize }, () => 
-      jStat.normal.sample(populationMean, populationStd)
-    );
-    const mean = jStat.mean(sample);
-    const std = jStat.stdev(sample, true); // Sample standard deviation
-    
-    setCurrentSample(sample);
-    setSampleMean(mean);
-    setSampleStd(std);
-    setTotalSamples(prev => prev + 1);
-  }, [sampleSize, populationMean, populationStd]);
-  
-  // Calculate CI components
-  const df = sampleSize - 1;
-  const alpha = 1 - confidenceLevel;
-  const tCritical = jStat.studentt.inv(1 - alpha/2, df);
-  const zCritical = jStat.normal.inv(1 - alpha/2, 0, 1);
-  
-  // Main visualization
   useEffect(() => {
-    if (!svgRef.current || sampleMean === null || sampleStd === null) return;
+    if (!svgRef.current) return;
     
     const svg = d3.select(svgRef.current);
     const { width } = svgRef.current.getBoundingClientRect();
-    const height = 500;
-    const margin = { top: 60, right: 40, bottom: 100, left: 60 };
+    const height = 300;
+    const margin = { top: 40, right: 40, bottom: 60, left: 40 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
     svg.selectAll("*").remove();
     svg.attr("viewBox", `0 0 ${width} ${height}`);
     
-    // Background
-    svg.append("rect")
-      .attr("width", width)
-      .attr("height", height)
-      .attr("fill", "#0a0a0a");
-    
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
+    
+    // Calculate critical values and intervals
+    const df = sampleSize - 1;
+    const alpha = 1 - confidenceLevel;
+    const tCritical = jStat.studentt.inv(1 - alpha/2, df);
+    const zCritical = jStat.normal.inv(1 - alpha/2, 0, 1);
+    
+    // T-interval (using s)
+    const tSE = s / Math.sqrt(sampleSize);
+    const tMOE = tCritical * tSE;
+    const tLower = xbar - tMOE;
+    const tUpper = xbar + tMOE;
+    
+    // Z-interval (using σ)
+    const zSE = sigma / Math.sqrt(sampleSize);
+    const zMOE = zCritical * zSE;
+    const zLower = xbar - zMOE;
+    const zUpper = xbar + zMOE;
+    
+    // Scale
+    const extent = Math.max(tMOE, zMOE) * 1.5;
+    const xScale = d3.scaleLinear()
+      .domain([xbar - extent, xbar + extent])
+      .range([0, innerWidth]);
     
     // Title
     g.append("text")
       .attr("x", innerWidth / 2)
-      .attr("y", -30)
+      .attr("y", -20)
       .attr("text-anchor", "middle")
-      .style("font-size", "18px")
+      .style("font-size", "16px")
       .style("font-weight", "600")
       .attr("fill", colors.chart.text)
-      .text("T-Distribution vs Normal Distribution Confidence Intervals");
+      .text(`${confidenceLevel * 100}% Confidence Intervals (n = ${sampleSize})`);
     
-    // Create scales
-    const xExtent = [
-      Math.min(sampleMean - 4 * populationStd, 40),
-      Math.max(sampleMean + 4 * populationStd, 160)
-    ];
-    const xScale = d3.scaleLinear()
-      .domain(xExtent)
-      .range([0, innerWidth]);
-    
-    const yScale = d3.scaleLinear()
-      .domain([0, 0.15])
-      .range([innerHeight, 0]);
-    
-    // Grid lines
-    g.append("g")
-      .attr("class", "grid")
-      .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(xScale)
-        .tickSize(-innerHeight)
-        .tickFormat(""))
-      .style("stroke-dasharray", "3,3")
-      .style("opacity", 0.3)
-      .selectAll("line")
-      .style("stroke", colors.chart.grid);
-    
-    // Draw distributions if comparison is enabled
-    if (showComparison) {
-      const xValues = d3.range(-4, 4.01, 0.05);
-      
-      // Normal distribution (scaled)
-      const normalData = xValues.map(x => ({
-        x: sampleMean + x * (populationStd / Math.sqrt(sampleSize)),
-        y: jStat.normal.pdf(x, 0, 1) * Math.sqrt(sampleSize) / populationStd
-      }));
-      
-      const normalLine = d3.line()
-        .x(d => xScale(d.x))
-        .y(d => yScale(d.y))
-        .curve(d3.curveMonotoneX);
-      
-      g.append("path")
-        .datum(normalData)
-        .attr("fill", "none")
-        .attr("stroke", colorScheme.chart.secondary)
-        .attr("stroke-width", 2)
-        .attr("stroke-dasharray", "5,5")
-        .attr("opacity", 0.6)
-        .attr("d", normalLine);
-      
-      // T-distribution (scaled)
-      const tData = xValues.map(x => ({
-        x: sampleMean + x * (sampleStd / Math.sqrt(sampleSize)),
-        y: jStat.studentt.pdf(x, df) * Math.sqrt(sampleSize) / sampleStd
-      }));
-      
-      const tLine = d3.line()
-        .x(d => xScale(d.x))
-        .y(d => yScale(d.y))
-        .curve(d3.curveMonotoneX);
-      
-      g.append("path")
-        .datum(tData)
-        .attr("fill", "none")
-        .attr("stroke", colorScheme.chart.primary)
-        .attr("stroke-width", 2)
-        .attr("d", tLine);
-    }
-    
-    // Draw sample mean
+    // Center line (sample mean)
     g.append("line")
-      .attr("x1", xScale(sampleMean))
-      .attr("x2", xScale(sampleMean))
-      .attr("y1", 0)
-      .attr("y2", innerHeight)
+      .attr("x1", xScale(xbar))
+      .attr("x2", xScale(xbar))
+      .attr("y1", 20)
+      .attr("y2", innerHeight - 20)
       .attr("stroke", colorScheme.chart.accent)
-      .attr("stroke-width", 2);
+      .attr("stroke-width", 2)
+      .attr("stroke-dasharray", "3,3");
     
     g.append("text")
-      .attr("x", xScale(sampleMean))
-      .attr("y", -5)
+      .attr("x", xScale(xbar))
+      .attr("y", 10)
       .attr("text-anchor", "middle")
       .attr("fill", colorScheme.chart.accent)
-      .style("font-size", "14px")
+      .style("font-size", "12px")
       .style("font-weight", "600")
-      .text(`x̄ = ${sampleMean.toFixed(2)}`);
+      .text(`x̄ = ${xbar}`);
     
-    // Calculate confidence intervals
-    const tStandardError = sampleStd / Math.sqrt(sampleSize);
-    const tMarginOfError = tCritical * tStandardError;
-    const tLower = sampleMean - tMarginOfError;
-    const tUpper = sampleMean + tMarginOfError;
+    // Interval positions
+    const tY = innerHeight * 0.35;
+    const zY = innerHeight * 0.65;
+    const barHeight = 12;
+    const bracketHeight = 20;
     
-    const zStandardError = populationStd / Math.sqrt(sampleSize);
-    const zMarginOfError = zCritical * zStandardError;
-    const zLower = sampleMean - zMarginOfError;
-    const zUpper = sampleMean + zMarginOfError;
+    // T-interval visualization
+    const tInterval = g.append("g");
     
-    // Draw confidence intervals
-    const ciY1 = innerHeight * 0.6;
-    const ciY2 = innerHeight * 0.75;
-    const bracketHeight = 15;
-    
-    // T-interval
-    g.append("line")
-      .attr("x1", xScale(tLower))
-      .attr("x2", xScale(tUpper))
-      .attr("y1", ciY1)
-      .attr("y2", ciY1)
-      .attr("stroke", colorScheme.chart.primary)
-      .attr("stroke-width", 4);
+    // T-interval bar
+    tInterval.append("rect")
+      .attr("x", xScale(tLower))
+      .attr("y", tY - barHeight/2)
+      .attr("width", xScale(tUpper) - xScale(tLower))
+      .attr("height", barHeight)
+      .attr("fill", colorScheme.chart.primary)
+      .attr("rx", 2);
     
     // T-interval brackets
     [tLower, tUpper].forEach(x => {
-      g.append("line")
+      tInterval.append("line")
         .attr("x1", xScale(x))
         .attr("x2", xScale(x))
-        .attr("y1", ciY1 - bracketHeight/2)
-        .attr("y2", ciY1 + bracketHeight/2)
+        .attr("y1", tY - bracketHeight/2)
+        .attr("y2", tY + bracketHeight/2)
         .attr("stroke", colorScheme.chart.primary)
         .attr("stroke-width", 3);
     });
     
-    // T-interval label
-    g.append("text")
-      .attr("x", xScale(sampleMean))
-      .attr("y", ciY1 - 20)
+    // T-interval labels
+    tInterval.append("text")
+      .attr("x", xScale(xbar))
+      .attr("y", tY - 25)
       .attr("text-anchor", "middle")
       .attr("fill", colorScheme.chart.primary)
-      .style("font-size", "12px")
+      .style("font-size", "14px")
       .style("font-weight", "600")
-      .text(`T-interval (σ unknown)`);
+      .text("T-interval (σ unknown, use s)");
     
-    // Z-interval (for comparison)
-    if (showComparison) {
-      g.append("line")
-        .attr("x1", xScale(zLower))
-        .attr("x2", xScale(zUpper))
-        .attr("y1", ciY2)
-        .attr("y2", ciY2)
-        .attr("stroke", colorScheme.chart.secondary)
-        .attr("stroke-width", 4)
-        .attr("stroke-dasharray", "5,5");
-      
-      // Z-interval brackets
-      [zLower, zUpper].forEach(x => {
-        g.append("line")
-          .attr("x1", xScale(x))
-          .attr("x2", xScale(x))
-          .attr("y1", ciY2 - bracketHeight/2)
-          .attr("y2", ciY2 + bracketHeight/2)
-          .attr("stroke", colorScheme.chart.secondary)
-          .attr("stroke-width", 3)
-          .attr("stroke-dasharray", "5,5");
-      });
-      
-      // Z-interval label
-      g.append("text")
-        .attr("x", xScale(sampleMean))
-        .attr("y", ciY2 - 20)
-        .attr("text-anchor", "middle")
-        .attr("fill", colorScheme.chart.secondary)
-        .style("font-size", "12px")
-        .style("font-weight", "600")
-        .text(`Z-interval (σ known)`);
-    }
-    
-    // CI endpoints labels
-    g.append("text")
-      .attr("x", xScale(tLower))
-      .attr("y", ciY1 + 30)
-      .attr("text-anchor", "middle")
+    // T-interval values
+    tInterval.append("text")
+      .attr("x", xScale(tLower) - 5)
+      .attr("y", tY + 35)
+      .attr("text-anchor", "end")
       .attr("fill", colorScheme.chart.primary)
       .style("font-size", "11px")
       .style("font-family", "monospace")
       .text(tLower.toFixed(2));
     
-    g.append("text")
-      .attr("x", xScale(tUpper))
-      .attr("y", ciY1 + 30)
-      .attr("text-anchor", "middle")
+    tInterval.append("text")
+      .attr("x", xScale(tUpper) + 5)
+      .attr("y", tY + 35)
+      .attr("text-anchor", "start")
       .attr("fill", colorScheme.chart.primary)
       .style("font-size", "11px")
       .style("font-family", "monospace")
       .text(tUpper.toFixed(2));
     
-    // X axis
+    // Z-interval visualization
+    const zInterval = g.append("g");
+    
+    // Z-interval bar
+    zInterval.append("rect")
+      .attr("x", xScale(zLower))
+      .attr("y", zY - barHeight/2)
+      .attr("width", xScale(zUpper) - xScale(zLower))
+      .attr("height", barHeight)
+      .attr("fill", colorScheme.chart.secondary)
+      .attr("rx", 2);
+    
+    // Z-interval brackets
+    [zLower, zUpper].forEach(x => {
+      zInterval.append("line")
+        .attr("x1", xScale(x))
+        .attr("x2", xScale(x))
+        .attr("y1", zY - bracketHeight/2)
+        .attr("y2", zY + bracketHeight/2)
+        .attr("stroke", colorScheme.chart.secondary)
+        .attr("stroke-width", 3);
+    });
+    
+    // Z-interval labels
+    zInterval.append("text")
+      .attr("x", xScale(xbar))
+      .attr("y", zY - 25)
+      .attr("text-anchor", "middle")
+      .attr("fill", colorScheme.chart.secondary)
+      .style("font-size", "14px")
+      .style("font-weight", "600")
+      .text("Z-interval (σ known)");
+    
+    // Z-interval values
+    zInterval.append("text")
+      .attr("x", xScale(zLower) - 5)
+      .attr("y", zY + 35)
+      .attr("text-anchor", "end")
+      .attr("fill", colorScheme.chart.secondary)
+      .style("font-size", "11px")
+      .style("font-family", "monospace")
+      .text(zLower.toFixed(2));
+    
+    zInterval.append("text")
+      .attr("x", xScale(zUpper) + 5)
+      .attr("y", zY + 35)
+      .attr("text-anchor", "start")
+      .attr("fill", colorScheme.chart.secondary)
+      .style("font-size", "11px")
+      .style("font-family", "monospace")
+      .text(zUpper.toFixed(2));
+    
+    // Width difference annotation
+    const widthDiff = ((tMOE - zMOE) / zMOE * 100);
+    
+    // Draw connecting lines to show width difference
+    const diffY = innerHeight - 10;
+    g.append("line")
+      .attr("x1", xScale(zLower))
+      .attr("x2", xScale(zLower))
+      .attr("y1", zY + barHeight/2)
+      .attr("y2", diffY)
+      .attr("stroke", colors.chart.grid)
+      .attr("stroke-width", 1)
+      .attr("stroke-dasharray", "2,2");
+    
+    g.append("line")
+      .attr("x1", xScale(tLower))
+      .attr("x2", xScale(tLower))
+      .attr("y1", tY + barHeight/2)
+      .attr("y2", diffY)
+      .attr("stroke", colors.chart.grid)
+      .attr("stroke-width", 1)
+      .attr("stroke-dasharray", "2,2");
+    
+    // Width difference arrow and label
+    g.append("line")
+      .attr("x1", xScale(zLower))
+      .attr("x2", xScale(tLower))
+      .attr("y1", diffY)
+      .attr("y2", diffY)
+      .attr("stroke", colorScheme.chart.warning)
+      .attr("stroke-width", 2)
+      .attr("marker-end", "url(#arrowhead)");
+    
+    // Arrow marker
+    svg.append("defs").append("marker")
+      .attr("id", "arrowhead")
+      .attr("refX", 5)
+      .attr("refY", 3)
+      .attr("markerWidth", 10)
+      .attr("markerHeight", 10)
+      .attr("orient", "auto")
+      .append("path")
+      .attr("d", "M 0 0 L 5 3 L 0 6")
+      .attr("fill", "none")
+      .attr("stroke", colorScheme.chart.warning)
+      .attr("stroke-width", 2);
+    
+    g.append("text")
+      .attr("x", (xScale(zLower) + xScale(tLower)) / 2)
+      .attr("y", diffY - 5)
+      .attr("text-anchor", "middle")
+      .attr("fill", colorScheme.chart.warning)
+      .style("font-size", "12px")
+      .style("font-weight", "600")
+      .text(`+${widthDiff.toFixed(1)}% wider`);
+    
+    // X-axis
     const xAxis = g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(xScale));
+      .call(d3.axisBottom(xScale).ticks(7));
     
     xAxis.selectAll("path, line").attr("stroke", colors.chart.grid);
     xAxis.selectAll("text")
-      .style("font-size", "12px")
-      .style("font-family", "monospace")
+      .style("font-size", "11px")
       .attr("fill", colors.chart.text);
     
-    // X axis label
-    g.append("text")
-      .attr("transform", `translate(${innerWidth / 2}, ${innerHeight + 50})`)
-      .style("text-anchor", "middle")
-      .style("font-size", "14px")
-      .style("font-weight", "600")
-      .attr("fill", colors.chart.text)
-      .text("Value");
-    
-    // Legend
-    const legend = g.append("g")
-      .attr("transform", `translate(${innerWidth - 200}, 20)`);
-    
-    const legendItems = [
-      { label: "T-distribution", color: colorScheme.chart.primary, dash: false },
-      { label: "Normal distribution", color: colorScheme.chart.secondary, dash: true }
-    ];
-    
-    legendItems.forEach((item, i) => {
-      const legendRow = legend.append("g")
-        .attr("transform", `translate(0, ${i * 20})`);
-      
-      legendRow.append("line")
-        .attr("x1", 0)
-        .attr("x2", 20)
-        .attr("y1", 6)
-        .attr("y2", 6)
-        .attr("stroke", item.color)
-        .attr("stroke-width", 2)
-        .attr("stroke-dasharray", item.dash ? "5,5" : null);
-      
-      legendRow.append("text")
-        .attr("x", 25)
-        .attr("y", 9)
-        .attr("fill", colors.chart.text)
-        .style("font-size", "12px")
-        .text(item.label);
-    });
-    
-    // Add annotation about width difference
-    const widthDiff = ((tMarginOfError - zMarginOfError) / zMarginOfError * 100).toFixed(1);
-    g.append("text")
-      .attr("x", innerWidth / 2)
-      .attr("y", innerHeight + 80)
-      .attr("text-anchor", "middle")
-      .attr("fill", colorScheme.chart.warning)
-      .style("font-size", "13px")
-      .style("font-weight", "500")
-      .text(`T-interval is ${widthDiff}% wider than Z-interval`);
-    
-  }, [sampleMean, sampleStd, currentSample, sampleSize, confidenceLevel, 
-      showComparison, df, tCritical, zCritical, populationStd]);
+  }, [sampleSize, xbar, s, sigma, confidenceLevel]);
   
-  // Initialize with a sample on mount
-  useEffect(() => {
-    generateNewSample();
-  }, []);
+  return <svg ref={svgRef} style={{ width: "100%", height: 300 }} />;
+});
+
+// Critical Values Display
+const CriticalValuesDisplay = memo(function CriticalValuesDisplay({ 
+  sampleSize, confidenceLevel 
+}) {
+  const df = sampleSize - 1;
+  const alpha = 1 - confidenceLevel;
+  const tCritical = jStat.studentt.inv(1 - alpha/2, df);
+  const zCritical = jStat.normal.inv(1 - alpha/2, 0, 1);
+  const difference = ((tCritical - zCritical) / zCritical * 100);
+  
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <div className="bg-neutral-800 p-3 rounded-lg">
+        <h5 className="text-xs font-semibold text-purple-400 mb-2">T-critical</h5>
+        <p className="font-mono text-lg text-purple-300">±{tCritical.toFixed(3)}</p>
+        <p className="text-xs text-neutral-500 mt-1">df = {df}</p>
+      </div>
+      <div className="bg-neutral-800 p-3 rounded-lg">
+        <h5 className="text-xs font-semibold text-cyan-400 mb-2">Z-critical</h5>
+        <p className="font-mono text-lg text-cyan-300">±{zCritical.toFixed(3)}</p>
+        <p className="text-xs text-neutral-500 mt-1">σ known</p>
+      </div>
+      <div className="col-span-2 bg-yellow-900/20 border border-yellow-600/30 p-3 rounded-lg">
+        <p className="text-sm text-center">
+          T-critical is <span className="font-mono text-yellow-400">{difference.toFixed(1)}%</span> larger
+        </p>
+      </div>
+    </div>
+  );
+});
+
+// Main Component
+function TConfidenceIntervals() {
+  const [currentStage, setCurrentStage] = useState(0);
+  const [showCourseExample, setShowCourseExample] = useState(false);
+  const [confidenceLevel] = useState(0.95);
+  
+  // Current configuration based on stage or course example
+  const config = showCourseExample ? COURSE_EXAMPLE : {
+    n: STAGES[currentStage].n,
+    xbar: 100,
+    s: 15,
+    confidence: confidenceLevel
+  };
+  
+  // Use true σ = 15 for comparison
+  const sigma = 15;
   
   return (
     <VisualizationContainer 
-      title="T-Distribution Confidence Intervals"
+      title="T vs Z Confidence Intervals"
+      tutorialSteps={tutorial_5_4_1}
       className="p-2"
     >
       <div className="flex flex-col lg:flex-row gap-4">
-        {/* Left Panel */}
+        {/* Left Panel - Controls and Info */}
         <div className="lg:w-1/3 space-y-3">
           <VisualizationSection className="p-3">
-            <p className={cn(typography.description, "text-sm leading-relaxed")}>
-              When the population standard deviation σ is unknown, we use the sample standard deviation s 
-              and the t-distribution to construct confidence intervals. This is the most common real-world scenario.
+            <p className="text-sm text-neutral-300 mb-3">
+              When σ is unknown, we use the sample standard deviation s and the t-distribution. 
+              This accounts for the extra uncertainty, making intervals wider.
             </p>
             
-            <div className="mt-3 space-y-2 text-xs">
-              <div className="p-2 bg-purple-900/20 border border-purple-600/30 rounded">
-                <p className="font-semibold text-purple-400 mb-1">T-Distribution Properties</p>
-                <p className="text-neutral-300">
-                  • Heavier tails than normal<br/>
-                  • Approaches normal as n → ∞<br/>
-                  • Accounts for uncertainty in s
-                </p>
-              </div>
-              
-              <div className="p-2 bg-yellow-900/20 border border-yellow-600/30 rounded">
-                <p className="font-semibold text-yellow-400 mb-1">Degrees of Freedom</p>
-                <p className="text-neutral-300">
-                  df = n - 1 (we "lose" one df estimating x̄)
-                </p>
-              </div>
+            <div className="p-3 bg-purple-900/20 border border-purple-600/30 rounded-lg">
+              <h4 className="text-sm font-semibold text-purple-400 mb-2">Key Insight</h4>
+              <p className="text-xs text-neutral-300">
+                T-intervals are wider because we're estimating σ with s. 
+                The smaller the sample, the more uncertain our estimate, 
+                and the wider the interval needs to be.
+              </p>
             </div>
           </VisualizationSection>
-
-          {/* Controls */}
+          
+          {/* Stage Selection */}
           <VisualizationSection className="p-4">
-            <h4 className="text-base font-bold text-white mb-3">Controls</h4>
+            <h4 className="text-base font-bold text-white mb-3">Sample Size Stages</h4>
             
-            <div className="space-y-3">
-              {/* Sample size control */}
-              <div>
-                <label className="text-sm text-neutral-300 mb-1.5 block">
-                  Sample Size (n = {sampleSize}, df = {df})
-                </label>
-                <input
-                  type="range"
-                  min={3}
-                  max={50}
-                  value={sampleSize}
-                  onChange={(e) => setSampleSize(Number(e.target.value))}
-                  className="w-full accent-purple-500"
-                />
-                <div className="flex justify-between text-xs text-neutral-500 mt-1">
-                  <span>3</span>
-                  <span>50</span>
-                </div>
-              </div>
-              
-              {/* Confidence level control */}
-              <div>
-                <label className="text-sm text-neutral-300 mb-1.5 block">
-                  Confidence Level
-                </label>
-                <div className="flex gap-2 flex-wrap">
-                  {[0.90, 0.95, 0.99].map(level => (
-                    <button
-                      key={level}
-                      onClick={() => setConfidenceLevel(level)}
-                      className={cn(
-                        "px-3 py-1.5 rounded text-sm font-medium transition-colors",
-                        confidenceLevel === level
-                          ? "bg-purple-600 text-white"
-                          : "bg-neutral-700 hover:bg-neutral-600 text-neutral-300"
-                      )}
-                    >
-                      {(level * 100).toFixed(0)}%
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Action buttons */}
-              <div className="space-y-2">
+            <div className="space-y-2">
+              {STAGES.map((stage, index) => (
                 <button
-                  onClick={generateNewSample}
+                  key={index}
+                  onClick={() => {
+                    setCurrentStage(index);
+                    setShowCourseExample(false);
+                  }}
                   className={cn(
-                    "w-full px-3 py-2 rounded text-sm font-medium transition-colors",
-                    "bg-purple-600 hover:bg-purple-700 text-white"
+                    "w-full p-3 rounded-lg text-left transition-all",
+                    currentStage === index && !showCourseExample
+                      ? "bg-purple-600 text-white"
+                      : "bg-neutral-800 hover:bg-neutral-700 text-neutral-300"
                   )}
                 >
-                  Generate New Sample
-                </button>
-              </div>
-              
-              {/* View options */}
-              <div className="space-y-2 pt-2 border-t border-neutral-700">
-                <label className="flex items-center gap-2 text-sm">
-                  <input 
-                    type="checkbox" 
-                    checked={showComparison} 
-                    onChange={e => setShowComparison(e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-neutral-300">Show Z-interval comparison</span>
-                </label>
-                
-                <label className="flex items-center gap-2 text-sm">
-                  <input 
-                    type="checkbox" 
-                    checked={showWorkedExample} 
-                    onChange={e => setShowWorkedExample(e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-neutral-300">Show worked example</span>
-                </label>
-              </div>
-            </div>
-          </VisualizationSection>
-
-          {/* Statistics Display */}
-          <VisualizationSection className="p-4">
-            <h4 className="text-base font-bold text-white mb-3">Current Statistics</h4>
-            
-            <div className="space-y-3">
-              {/* Sample statistics */}
-              {sampleMean !== null && (
-                <div className="bg-neutral-800 rounded p-3">
-                  <h5 className="text-sm font-semibold text-cyan-400 mb-2">Sample Statistics</h5>
-                  <div className="space-y-1 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-neutral-300">x̄ (sample mean)</span>
-                      <span className="font-mono text-cyan-400">{sampleMean.toFixed(3)}</span>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-semibold">{stage.label}</p>
+                      <p className="text-xs opacity-80">n = {stage.n}</p>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-neutral-300">s (sample std dev)</span>
-                      <span className="font-mono text-cyan-400">{sampleStd?.toFixed(3)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-neutral-300">n (sample size)</span>
-                      <span className="font-mono text-cyan-400">{sampleSize}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-neutral-300">df (degrees of freedom)</span>
-                      <span className="font-mono text-yellow-400">{df}</span>
-                    </div>
+                    <p className="text-xs">{stage.description}</p>
                   </div>
-                </div>
-              )}
+                </button>
+              ))}
               
-              {/* Comparison table */}
-              <ComparisonTable 
-                sampleSize={sampleSize} 
-                confidenceLevel={confidenceLevel} 
-              />
+              <button
+                onClick={() => setShowCourseExample(true)}
+                className={cn(
+                  "w-full p-3 rounded-lg text-left transition-all border-2",
+                  showCourseExample
+                    ? "bg-yellow-900/30 border-yellow-600 text-yellow-300"
+                    : "bg-neutral-800 border-transparent hover:bg-neutral-700 text-neutral-300"
+                )}
+              >
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="font-semibold">Course Example</p>
+                    <p className="text-xs opacity-80">n = 9</p>
+                  </div>
+                  <p className="text-xs">Page 34</p>
+                </div>
+              </button>
             </div>
           </VisualizationSection>
-
-          {/* Learning insights */}
+          
+          {/* Critical Values */}
           <VisualizationSection className="p-4">
-            <h4 className="text-sm font-semibold text-purple-400 mb-2">Key Insights</h4>
-            <div className="space-y-2 text-xs text-neutral-300">
-              {sampleSize < 10 && (
-                <div className="p-2 bg-red-900/20 border border-red-600/30 rounded">
-                  <p className="text-red-400 font-semibold">Small sample (n &lt; 10)</p>
-                  <p>T-distribution has very heavy tails. CI is much wider than normal.</p>
-                </div>
-              )}
-              {sampleSize >= 10 && sampleSize < 30 && (
-                <div className="p-2 bg-yellow-900/20 border border-yellow-600/30 rounded">
-                  <p className="text-yellow-400 font-semibold">Moderate sample (10 ≤ n &lt; 30)</p>
-                  <p>T-distribution still noticeably different from normal.</p>
-                </div>
-              )}
-              {sampleSize >= 30 && (
-                <div className="p-2 bg-green-900/20 border border-green-600/30 rounded">
-                  <p className="text-green-400 font-semibold">Large sample (n ≥ 30)</p>
-                  <p>T-distribution nearly identical to normal. Many use z for n ≥ 30.</p>
-                </div>
-              )}
-              
-              <ProgressBar 
-                current={Math.min(sampleSize, 30)} 
-                total={30} 
-                label="Sample size effect"
-                variant="purple"
-              />
-            </div>
+            <h4 className="text-base font-bold text-white mb-3">Critical Values</h4>
+            <CriticalValuesDisplay 
+              sampleSize={config.n} 
+              confidenceLevel={config.confidence}
+            />
+          </VisualizationSection>
+          
+          {/* Progress Indicator */}
+          <VisualizationSection className="p-4">
+            <h4 className="text-sm font-semibold text-white mb-2">Convergence Progress</h4>
+            <ProgressBar 
+              current={Math.min(config.n, 30)} 
+              total={30} 
+              label={`n = ${config.n}`}
+              variant="purple"
+            />
+            <p className="text-xs text-neutral-500 mt-2">
+              {config.n < 30 
+                ? `${30 - config.n} more samples until practical convergence`
+                : "T and Z distributions have practically converged"}
+            </p>
           </VisualizationSection>
         </div>
-
+        
         {/* Right Panel - Visualization */}
-        <div className="lg:w-2/3 flex flex-col gap-4">
-          <GraphContainer height="500px">
-            <svg ref={svgRef} style={{ width: "100%", height: 500 }} />
+        <div className="lg:w-2/3">
+          <GraphContainer height="300px">
+            <IntervalComparisonViz 
+              sampleSize={config.n}
+              xbar={config.xbar}
+              s={config.s}
+              sigma={sigma}
+              confidenceLevel={config.confidence}
+            />
           </GraphContainer>
           
-          {/* Worked Example */}
-          {showWorkedExample && sampleMean !== null && sampleStd !== null && (
-            <TIntervalWorkedExample 
-              sampleData={currentSample}
-              sampleMean={sampleMean}
-              sampleStd={sampleStd}
-              sampleSize={sampleSize}
-              confidenceLevel={confidenceLevel}
-            />
-          )}
+          {/* Formula Display */}
+          <VisualizationSection className="p-4 mt-4">
+            <h4 className="text-sm font-semibold text-white mb-3">Confidence Interval Formulas</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-purple-900/20 p-3 rounded-lg border border-purple-600/30">
+                <h5 className="text-xs font-semibold text-purple-400 mb-2">T-Interval (σ unknown)</h5>
+                <p className="font-mono text-sm text-center">
+                  x̄ ± t<sub>α/2,df</sub> × (s/√n)
+                </p>
+                <p className="text-xs text-neutral-500 mt-2 text-center">
+                  Use sample std dev s
+                </p>
+              </div>
+              <div className="bg-cyan-900/20 p-3 rounded-lg border border-cyan-600/30">
+                <h5 className="text-xs font-semibold text-cyan-400 mb-2">Z-Interval (σ known)</h5>
+                <p className="font-mono text-sm text-center">
+                  x̄ ± z<sub>α/2</sub> × (σ/√n)
+                </p>
+                <p className="text-xs text-neutral-500 mt-2 text-center">
+                  Use population std dev σ
+                </p>
+              </div>
+            </div>
+          </VisualizationSection>
+          
+          {/* Key Takeaways */}
+          <VisualizationSection className="p-4 mt-4">
+            <h4 className="text-sm font-semibold text-white mb-2">Key Takeaways</h4>
+            <div className="space-y-2 text-xs text-neutral-300">
+              <div className="flex items-start gap-2">
+                <span className="text-purple-400 mt-0.5">•</span>
+                <p>When we don't know σ, we must use s, which introduces additional uncertainty</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-cyan-400 mt-0.5">•</span>
+                <p>The t-distribution has heavier tails to account for this uncertainty</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-yellow-400 mt-0.5">•</span>
+                <p>As n increases, the t-distribution approaches the normal distribution</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-green-400 mt-0.5">•</span>
+                <p>For n ≥ 30, the difference is usually negligible in practice</p>
+              </div>
+            </div>
+          </VisualizationSection>
         </div>
       </div>
     </VisualizationContainer>

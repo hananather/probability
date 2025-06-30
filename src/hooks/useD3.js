@@ -21,11 +21,12 @@ export function useD3(renderFn, dependencies = []) {
     
     // Cleanup function
     return () => {
-      if (ref.current) {
-        d3.select(ref.current).selectAll('*').remove();
+      const element = ref.current;
+      if (element) {
+        d3.select(element).selectAll('*').remove();
       }
     };
-  }, dependencies);
+  }, [...dependencies, renderFn]);
 
   return ref;
 }
@@ -108,7 +109,7 @@ export function useD3Animation() {
 
   useEffect(() => {
     return () => clearAllAnimations();
-  }, []);
+  }, [clearAllAnimations]);
 
   return {
     startAnimation,
@@ -152,7 +153,7 @@ export function useResponsiveD3(renderFn, dependencies = []) {
         resizeObserverRef.current.disconnect();
       }
     };
-  }, dependencies);
+  }, [...dependencies, renderFn]);
 
   return containerRef;
 }
@@ -186,7 +187,7 @@ export function useD3Scale(scaleType = 'linear', config = {}) {
     if (config.padding && scaleRef.current.padding) {
       scaleRef.current.padding(config.padding);
     }
-  }, [scaleType]);
+  }, [scaleType, config.domain, config.range, config.padding]);
 
   const updateDomain = (domain) => {
     if (scaleRef.current) {

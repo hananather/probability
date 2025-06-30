@@ -10,6 +10,7 @@ import {
   ControlGroup
 } from '@/components/ui/VisualizationContainer';
 import { RangeSlider } from "@/components/ui/RangeSlider";
+import { MathematicalDiscoveries } from '@/components/ui/MathematicalDiscoveries';
 
 // Use sampling color scheme to match ExpectationVariance
 const colorScheme = createColorScheme('sampling');
@@ -28,24 +29,74 @@ export function TDistributionExplorer() {
   
   const degreesOfFreedom = Math.max(1, sampleSize - 1); // Ensure df >= 1
 
+  // Mathematical discoveries based on exploration
+  const discoveries = [
+    {
+      id: 'heavy-tails',
+      title: 'Heavy Tails with Small Samples',
+      description: 'The t-distribution has heavier tails than the normal distribution when degrees of freedom are small',
+      formula: 'P(|T| > t_{\\alpha/2}) > P(|Z| > z_{\\alpha/2})',
+      discovered: sampleSize <= 10,
+      category: 'concept'
+    },
+    {
+      id: 'df-relationship',
+      title: 'Degrees of Freedom',
+      description: 'Degrees of freedom equals sample size minus one',
+      formula: 'df = n - 1',
+      discovered: sampleSize >= 2,
+      category: 'formula'
+    },
+    {
+      id: 'uncertainty-principle',
+      title: 'Uncertainty in Small Samples',
+      description: 'Smaller samples have more uncertainty because we must estimate the population variance',
+      discovered: sampleSize <= 5 && showNormalOverlay,
+      category: 'concept'
+    },
+    {
+      id: 'convergence',
+      title: 'Convergence to Normal',
+      description: 'As degrees of freedom increase, the t-distribution approaches the standard normal distribution',
+      formula: '\\lim_{df \\to \\infty} t(df) = N(0,1)',
+      discovered: sampleSize >= 30,
+      category: 'pattern'
+    },
+    {
+      id: 'critical-values',
+      title: 'Critical Value Relationship',
+      description: 'T-distribution critical values are always larger than normal critical values for finite samples',
+      formula: 't_{\\alpha/2}(df) > z_{\\alpha/2}',
+      discovered: showConfidenceInterval && sampleSize < 30,
+      category: 'relationship'
+    },
+    {
+      id: 'practical-rule',
+      title: 'Rule of Thumb',
+      description: 'For practical purposes, use normal distribution when n ≥ 30',
+      discovered: sampleSize >= 30,
+      category: 'pattern'
+    }
+  ];
+
   // Educational insights based on sample size - matching ExpectationVariance style
   const getEducationalInsights = () => {
     if (sampleSize === 2) {
       return {
         stage: "minimum",
-        title: "🎯 Minimum Sample Size!",
+        title: "Minimum Sample Size Analysis",
         insights: [
           "With n=2, we have only 1 degree of freedom",
           "The t-distribution has extremely heavy tails",
           "Much more uncertainty than normal distribution",
-          "95% CI critical value: ±12.706 (vs ±1.96 for normal!)"
+          "95% CI critical value: ±12.706 (vs ±1.96 for normal)"
         ],
-        realWorldExample: "Quality control with only 2 measurements - very unreliable!"
+        realWorldExample: "Quality control with only 2 measurements - very unreliable"
       };
     } else if (sampleSize <= 5) {
       return {
         stage: "small",
-        title: "📊 Small Sample Territory",
+        title: "Small Sample Properties",
         insights: [
           `With n=${sampleSize}, df=${degreesOfFreedom} - still quite small`,
           "Notice the t-distribution's fatter tails",
@@ -57,7 +108,7 @@ export function TDistributionExplorer() {
     } else if (sampleSize <= 30) {
       return {
         stage: "moderate",
-        title: "📈 Approaching Normality",
+        title: "Moderate Sample Behavior",
         insights: [
           `Sample size n=${sampleSize}, df=${degreesOfFreedom}`,
           "T-distribution getting closer to normal",
@@ -69,10 +120,10 @@ export function TDistributionExplorer() {
     } else {
       return {
         stage: "large",
-        title: "✨ Large Sample Success!",
+        title: "Large Sample Convergence",
         insights: [
           `With n=${sampleSize}, df=${degreesOfFreedom}`,
-          "T-distribution is nearly identical to normal!",
+          "T-distribution is nearly identical to normal",
           `95% CI critical value: ±${jStat.studentt.inv(0.975, degreesOfFreedom).toFixed(3)} (→ ±1.96)`,
           "In practice, we often use normal for n≥30"
         ],
@@ -695,82 +746,51 @@ export function TDistributionExplorer() {
             )}
           </VisualizationSection>
 
-          {/* Educational Insights - Matching ExpectationVariance style */}
-          <VisualizationSection className="p-3 bg-gradient-to-br from-purple-900/20 to-indigo-900/20 border-purple-600/30">
-            <h4 className="text-base font-bold text-purple-300 mb-3">🎓 Learning Insights</h4>
+          {/* Educational Insights */}
+          <VisualizationSection className="p-3">
+            <h4 className="text-base font-bold text-white mb-3">{educationalContent.title}</h4>
             <div className="space-y-2 text-sm">
-              {sampleSize === 2 && (
-                <div>
-                  <p className="text-purple-200">🎯 Minimum sample size - maximum uncertainty!</p>
-                  <p className="text-purple-300 mt-1">
-                    With only 1 degree of freedom, the t-distribution has extremely heavy tails.
-                  </p>
-                  <div className="mt-2 p-2 bg-indigo-900/30 rounded text-xs">
-                    <p className="text-indigo-300">💡 <strong>Tip:</strong> Toggle the normal overlay to see the dramatic difference!</p>
-                  </div>
-                  <div className="mt-2 p-2 bg-amber-900/30 rounded text-xs">
-                    <p className="text-amber-300">🎮 <strong>Challenge:</strong> Find the sample size where t ≈ normal</p>
-                  </div>
-                </div>
-              )}
+              <ul className="space-y-1 text-gray-300">
+                {educationalContent.insights.map((insight, idx) => (
+                  <li key={idx} className="flex items-start">
+                    <span className="text-gray-500 mr-2">•</span>
+                    <span>{insight}</span>
+                  </li>
+                ))}
+              </ul>
               
-              {sampleSize > 2 && sampleSize <= 10 && (
-                <div>
-                  <p className="text-purple-200">📊 Small sample with {degreesOfFreedom} degrees of freedom</p>
-                  <p className="text-purple-300 mt-1">
-                    Critical value: ±{jStat.studentt.inv(0.975, degreesOfFreedom).toFixed(3)} (vs ±1.96 for normal)
-                  </p>
-                  <div className="mt-2 p-2 bg-red-900/20 border border-red-600/30 rounded text-xs">
-                    <p className="text-red-300">
-                      ⚠️ <strong>Real impact:</strong> Confidence intervals are {((jStat.studentt.inv(0.975, degreesOfFreedom) / 1.96 - 1) * 100).toFixed(0)}% wider!
-                    </p>
-                  </div>
-                </div>
-              )}
+              {/* Statistical Impact */}
+              <div className="mt-3 p-2 bg-gray-800/50 rounded text-xs">
+                <p className="text-gray-400 mb-1">
+                  <strong>Statistical Impact:</strong>
+                </p>
+                <p className="text-gray-300">
+                  {sampleSize <= 10 
+                    ? `Confidence intervals are ${((jStat.studentt.inv(0.975, degreesOfFreedom) / 1.96 - 1) * 100).toFixed(0)}% wider than normal`
+                    : sampleSize < 30
+                    ? `Critical value approaches normal as n increases (currently ${((jStat.studentt.inv(0.975, degreesOfFreedom) / 1.96 - 1) * 100).toFixed(1)}% wider)`
+                    : `Difference from normal is negligible (${Math.abs(jStat.studentt.inv(0.975, degreesOfFreedom) - 1.96).toFixed(4)})`
+                  }
+                </p>
+              </div>
               
-              {sampleSize > 10 && sampleSize < 30 && (
-                <div>
-                  <p className="text-purple-200">📈 Getting closer with n={sampleSize}!</p>
-                  <div className="mt-2 p-2 bg-purple-900/20 border border-purple-600/30 rounded">
-                    <div className="text-xs text-purple-300">
-                      🎯 Goal: Reach n=30 for normal approximation
-                    </div>
-                    <div className="mt-1.5">
-                      <div className="w-full bg-purple-900/30 rounded-full h-1.5">
-                        <div 
-                          className="bg-purple-500 h-1.5 rounded-full transition-all duration-300"
-                          style={{ width: `${Math.min((sampleSize / 30) * 100, 100)}%` }}
-                        />
-                      </div>
-                      <div className="text-center mt-1 text-purple-400 font-mono" style={{ fontSize: '10px' }}>
-                        {sampleSize}/30
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+              {/* Real-world Application */}
+              <div className="mt-2 p-2 bg-blue-900/20 border border-blue-600/30 rounded text-xs">
+                <p className="text-blue-400 mb-1">
+                  <strong>Application:</strong>
+                </p>
+                <p className="text-gray-300">
+                  {educationalContent.realWorldExample}
+                </p>
+              </div>
               
-              {sampleSize >= 30 && (
-                <div>
-                  <p className="text-green-400 font-semibold mb-1">
-                    ✨ Normal Approximation Territory!
+              {/* Observation Guide */}
+              {showNormalOverlay && (
+                <div className="mt-2 p-2 bg-purple-900/20 border border-purple-600/30 rounded text-xs">
+                  <p className="text-purple-300">
+                    <strong>Observation:</strong> Compare the tail thickness between t and normal distributions. 
+                    Notice how they converge as sample size increases.
                   </p>
-                  <p className="text-purple-200 text-xs">
-                    With n={sampleSize}, the t-distribution is practically indistinguishable from normal.
-                  </p>
-                  <div className="mt-2 space-y-1 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Critical value difference:</span>
-                      <span className="text-emerald-400 font-mono">
-                        {Math.abs(jStat.studentt.inv(0.975, degreesOfFreedom) - 1.96).toFixed(4)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="mt-2 p-2 bg-green-900/20 border border-green-600/30 rounded text-xs">
-                    <p className="text-green-300">
-                      <strong>Engineering insight:</strong> {educationalContent.realWorldExample}
-                    </p>
-                  </div>
                 </div>
               )}
             </div>
@@ -826,6 +846,14 @@ export function TDistributionExplorer() {
               </div>
             </VisualizationSection>
           </div>
+          
+          {/* Mathematical Discoveries */}
+          <VisualizationSection className="mt-4 p-3">
+            <MathematicalDiscoveries 
+              discoveries={discoveries}
+              title="Statistical Concepts Discovered"
+            />
+          </VisualizationSection>
         </div>
       </div>
     </VisualizationContainer>

@@ -29,38 +29,119 @@ Our goal is to create a learning experience that is as aesthetically beautiful a
 
 ### 1. Core Question
 
-*   **"A researcher wants to know if students who use a new digital textbook have higher final exam scores than students who use a traditional print textbook. They compare the scores of two random groups of students. How do we compare these two independent groups?"** (A universal educational-research example).
+*   "How do we compare means from two independent groups? The answer depends on what we know about their variances."
 
 ---
 
 ### 2. Interactive Exploration
 
-*   **Concept:** An interactive calculator and visualizer for comparing two independent groups.
-    *   **Setup:** The user can input the summary statistics for two groups:
-        *   Group 1 (Digital Textbook): x̄₁, s₁, n₁
-        *   Group 2 (Print Textbook): x̄₂, s₂, n₂
-    *   **Visualization:** Two separate distributions are shown, representing the two samples. The difference in their means is highlighted.
-    *   **Calculation:** The component calculates the t-statistic and p-value for the difference between the two means.
-    *   **Toggle:** A crucial toggle allows the user to switch between "Assume Equal Variances" and "Do Not Assume Equal Variances" (Welch's t-test). This will subtly change the degrees of freedom and the final p-value.
+*   **Part A: Decision Tree Navigator**
+    *   **Interactive Flowchart:**
+        ```
+        Are population variances σ₁² and σ₂² known?
+        ├─ Yes → Case 1: Z-test
+        └─ No → Are variances assumed equal?
+                ├─ Yes → Case 2: Pooled t-test
+                └─ No → Case 3: Welch's t-test
+        ```
+    *   **Click to explore each path with real examples**
+
+*   **Part B: Case 1 - Known Variances (Z-test)**
+    *   **Example:** Alberta vs Ontario Income
+        - n₁ = 100 Albertans: X̄₁ = $33,000
+        - n₂ = 80 Ontarians: X̄₂ = $32,000
+        - Known: σ₁ = $5,000, σ₂ = $2,000
+    
+    *   **Test Calculation:**
+        - H₀: μ₁ = μ₂ vs H₁: μ₁ > μ₂
+        - z = (X̄₁ - X̄₂)/√(σ₁²/n₁ + σ₂²/n₂)
+        - z = 1000/√(250000 + 50000) = 1.82
+        - p-value = 0.035
+
+*   **Part C: Case 2 - Unknown Equal Variances (Pooled t-test)**
+    *   **Example:** New vs Old Fertilizer
+        | Sample | n | X̄ | S² |
+        |--------|---|---|-----|
+        | Control | 8 | 43.14 | 71.65 |
+        | New | 8 | 47.79 | 52.66 |
+    
+    *   **Pooled Variance Calculation:**
+        - S²p = [(n₁-1)S₁² + (n₂-1)S₂²]/(n₁+n₂-2)
+        - S²p = [7(71.65) + 7(52.66)]/14 = 62.155
+        - Visual: "Weighted average of variances"
+    
+    *   **Test Statistic:**
+        - t = (X̄₁ - X̄₂)/√(S²p(1/n₁ + 1/n₂))
+        - t = -4.65/√(62.155 × 0.25) = -1.18
+        - df = n₁ + n₂ - 2 = 14
+
+*   **Part D: Case 3 - Unknown Unequal Variances (Welch's t-test)**
+    *   **When to Use:**
+        - Variance ratio > 3:1
+        - Different sample sizes
+        - Default in most software
+    
+    *   **Modified Formula:**
+        - SE = √(S₁²/n₁ + S₂²/n₂)
+        - df = complex formula (Welch-Satterthwaite)
+        - "More conservative, fewer df"
 
 ---
 
 ### 3. Facilitate Insight (The "Aha!" Moment)
 
-*   The user sees that the core logic is similar to a one-sample t-test, but the formula for the standard error is different because it has to account for the variability from *both* samples.
-*   Playing with the "Assume Equal Variances" toggle will show them that the results are often very similar, building intuition that Welch's t-test (the default in most software) is generally a safe and robust choice.
+*   **Sample Size Effects Demonstration:**
+    | Case | Small Sample (n=8) | Large Sample (n=100) |
+    |------|-------------------|---------------------|
+    | Test stat | t = -1.18 | z = -4.17 |
+    | Critical | t₀.₀₅(14) = 1.761 | z₀.₀₅ = 1.645 |
+    | p-value | 0.129 | 0.00003 |
+    | Decision | Fail to reject | Reject H₀ |
+    
+    "Same effect size, different conclusions!"
+
+*   **Variance Assumption Checker:**
+    - Visual comparison of S₁² vs S₂²
+    - Ratio calculator: S₁²/S₂²
+    - Rule of thumb: "If ratio < 3, pooling is OK"
+    - Show how results differ between methods
+
+*   **Standard Error Comparison:**
+    - Visualize how SE changes with:
+      - Sample sizes (n₁, n₂)
+      - Variances (S₁², S₂²)
+      - Pooling assumption
 
 ---
 
 ### 4. Connect to Rigor
 
-*   **Formalization:** Present the formulas for the two-sample t-test.
-    *   **Hypotheses:** H₀: μ₁ = μ₂ (or μ₁ - μ₂ = 0), H₁: μ₁ > μ₂.
-    *   **Test Statistic:** `t = (x̄₁ - x̄₂) / SE`
-    *   **Standard Error (SE):** Show the two different formulas for the standard error:
-        1.  **Pooled SE (assuming equal variances):** `√((s_p² / n₁) + (s_p² / n₂))` where `s_p²` is the pooled variance.
-        2.  **Unpooled SE (Welch's t-test):** `√((s₁² / n₁) + (s₂² / n₂))`
-    *   **Degrees of Freedom:** Explain that the degrees of freedom calculation is straightforward for the pooled test (n₁ + n₂ - 2) but more complex for Welch's test (and is thus usually left to software).
+*   **Complete Two-Sample Test Framework:**
+    ```
+    Case 1 (σ known): Z = (X̄₁-X̄₂)/√(σ₁²/n₁ + σ₂²/n₂)
+    
+    Case 2 (σ unknown, equal):
+    - Pool: S²p = [(n₁-1)S₁² + (n₂-1)S₂²]/(n₁+n₂-2)
+    - Test: T = (X̄₁-X̄₂)/√(S²p(1/n₁ + 1/n₂))
+    - df = n₁ + n₂ - 2
+    
+    Case 3 (σ unknown, unequal):
+    - Test: T = (X̄₁-X̄₂)/√(S₁²/n₁ + S₂²/n₂)
+    - df = [(S₁²/n₁ + S₂²/n₂)²]/[...]
+    ```
+
+*   **Decision Rules Summary:**
+    | Alternative | Critical Region | p-Value |
+    |-------------|----------------|---------|
+    | μ₁ > μ₂ | t > tα(df) | P(T > t₀) |
+    | μ₁ < μ₂ | t < -tα(df) | P(T < t₀) |
+    | μ₁ ≠ μ₂ | |t| > tα/2(df) | 2P(T > |t₀|) |
+
+*   **Practical Guidelines:**
+    1. "When in doubt, use Welch's test"
+    2. "Check variance assumption visually"
+    3. "Large samples → Methods converge"
+    4. "Report which method you used!"
 
 ---
 

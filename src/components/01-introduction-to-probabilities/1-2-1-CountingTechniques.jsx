@@ -7,7 +7,6 @@ import {
   GraphContainer
 } from '../ui/VisualizationContainer';
 import { colors, typography, cn, createColorScheme } from '../../lib/design-system';
-import { ProgressTracker } from '../ui/ProgressTracker';
 import { tutorial_1_2_1 } from '@/tutorials/chapter1';
 
 // Use probability color scheme
@@ -96,7 +95,9 @@ function CountingTechniques() {
   const [size, setSize] = useState(3); // Start with 3 items
   const [number, setNumber] = useState(2); // Start with r=2
   const [combinations, setCombinations] = useState(false);
-  const [totalCalculations, setTotalCalculations] = useState(0);
+  const [hasExploredPermutations, setHasExploredPermutations] = useState(false);
+  const [hasExploredCombinations, setHasExploredCombinations] = useState(false);
+  const [hasComparedBoth, setHasComparedBoth] = useState(false);
   const [showWorkedExample, setShowWorkedExample] = useState(true);
   const [selectedNodes, setSelectedNodes] = useState([]);
   const [showSelectionMode, setShowSelectionMode] = useState(false);
@@ -110,7 +111,6 @@ function CountingTechniques() {
   const updateNumber = (newNumber) => {
     if (newNumber === number || newNumber < 0 || newNumber > size) return;
     setNumber(newNumber);
-    setTotalCalculations(prev => prev + 1);
     setSelectedNodes([]); // Clear selection when changing depth
   };
   
@@ -119,8 +119,10 @@ function CountingTechniques() {
     const handleKeyPress = (e) => {
       if (e.key === 'p' || e.key === 'P') {
         setCombinations(false);
+        setHasExploredPermutations(true);
       } else if (e.key === 'c' || e.key === 'C') {
         setCombinations(true);
+        setHasExploredCombinations(true);
       } else if (e.key === 'ArrowRight') {
         updateNumber(Math.min(number + 1, size));
       } else if (e.key === 'ArrowLeft') {
@@ -131,6 +133,13 @@ function CountingTechniques() {
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [number, size]);
+  
+  // Update hasComparedBoth when both modes have been explored
+  useEffect(() => {
+    if (hasExploredPermutations && hasExploredCombinations) {
+      setHasComparedBoth(true);
+    }
+  }, [hasExploredPermutations, hasExploredCombinations]);
   
   // Get current count
   function getCount() {
@@ -518,7 +527,10 @@ function CountingTechniques() {
                 <label className="text-sm text-neutral-300 mb-1.5 block">Mode</label>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setCombinations(false)}
+                    onClick={() => {
+                      setCombinations(false);
+                      setHasExploredPermutations(true);
+                    }}
                     className={cn(
                       "flex-1 px-2 py-1.5 rounded text-sm font-medium transition-colors",
                       !combinations
@@ -529,7 +541,10 @@ function CountingTechniques() {
                     Permutations
                   </button>
                   <button
-                    onClick={() => setCombinations(true)}
+                    onClick={() => {
+                      setCombinations(true);
+                      setHasExploredCombinations(true);
+                    }}
                     className={cn(
                       "flex-1 px-2 py-1.5 rounded text-sm font-medium transition-colors",
                       combinations
@@ -719,54 +734,65 @@ function CountingTechniques() {
             )}
           </VisualizationSection>
 
-          {/* Learning Insights */}
+          {/* Mathematical Insights */}
           <VisualizationSection className="p-4 flex-1 flex flex-col">
-            <h4 className="text-sm font-semibold text-purple-400 mb-2">Counting Insights</h4>
-            <div className="space-y-2 text-xs text-neutral-300">
-              {totalCalculations === 0 && (
+            <h4 className="text-sm font-semibold text-purple-400 mb-2">Mathematical Discoveries</h4>
+            <div className="space-y-3 text-xs text-neutral-300">
+              {!hasExploredPermutations && !hasExploredCombinations && (
                 <div>
-                  <p>🎯 Ready to explore counting techniques?</p>
+                  <p className="text-neutral-400">Switch between Permutations and Combinations to discover key differences.</p>
                   <p className="text-purple-300 mt-1">
-                    Click on the table rows to see how the tree expands!
-                  </p>
-                </div>
-              )}
-              {totalCalculations > 0 && totalCalculations < 5 && (
-                <div>
-                  <p>📊 Notice how the tree branches represent choices:</p>
-                  <ul className="ml-3 mt-1 space-y-1">
-                    <li>• Each level represents selecting one more item</li>
-                    <li>• Branches show all possible selections</li>
-                  </ul>
-                </div>
-              )}
-              {totalCalculations >= 5 && totalCalculations < 10 && (
-                <div>
-                  <p>🎓 Key insight:</p>
-                  <p className="mt-1">
-                    {combinations 
-                      ? "In combinations, branches that differ only in order merge together!"
-                      : "In permutations, every different order creates a unique branch!"
-                    }
-                  </p>
-                </div>
-              )}
-              {totalCalculations >= 10 && (
-                <div>
-                  <p className="text-green-400 font-semibold mb-1">
-                    ✨ Counting Expert! You've explored {totalCalculations} calculations.
+                    Try changing r values to see how the tree structure evolves.
                   </p>
                 </div>
               )}
               
-              {/* Progress tracker */}
-              {totalCalculations > 0 && (
-                <ProgressTracker 
-                  current={totalCalculations} 
-                  goal={15} 
-                  label="Exploration Progress"
-                  color="purple"
-                />
+              {hasExploredPermutations && !hasExploredCombinations && (
+                <div className="p-2 bg-blue-900/20 border border-blue-600/30 rounded">
+                  <p className="font-medium text-blue-400">Permutations Discovered!</p>
+                  <p className="mt-1">Each arrangement is unique - order matters.</p>
+                  <p className="mt-1">Formula: P(n,r) = n!/(n-r)!</p>
+                </div>
+              )}
+              
+              {hasExploredCombinations && !hasExploredPermutations && (
+                <div className="p-2 bg-green-900/20 border border-green-600/30 rounded">
+                  <p className="font-medium text-green-400">Combinations Discovered!</p>
+                  <p className="mt-1">Branches merge when order doesn't matter.</p>
+                  <p className="mt-1">Formula: C(n,r) = n!/(r!(n-r)!)</p>
+                </div>
+              )}
+              
+              {hasComparedBoth && (
+                <>
+                  <div className="p-2 bg-purple-900/20 border border-purple-600/30 rounded">
+                    <p className="font-medium text-purple-400">Key Relationship Found!</p>
+                    <p className="mt-1">P(n,r) = C(n,r) × r!</p>
+                    <p className="mt-1 text-xs">Permutations = Combinations × ways to arrange r items</p>
+                  </div>
+                  
+                  {size === 4 && number === 2 && (
+                    <div className="text-yellow-400">
+                      <p>Example with current values:</p>
+                      <p className="font-mono text-xs">P(4,2) = 12 = C(4,2) × 2! = 6 × 2</p>
+                    </div>
+                  )}
+                </>
+              )}
+              
+              {number === size && (
+                <div className="text-neutral-400 italic">
+                  <p>When r = n:</p>
+                  <p>• Permutations: n! ways to arrange all items</p>
+                  <p>• Combinations: Only 1 way to select all items</p>
+                </div>
+              )}
+              
+              {number === 0 && (
+                <div className="text-neutral-400 italic">
+                  <p>When r = 0:</p>
+                  <p>Both equal 1 (the empty selection)</p>
+                </div>
               )}
             </div>
           </VisualizationSection>

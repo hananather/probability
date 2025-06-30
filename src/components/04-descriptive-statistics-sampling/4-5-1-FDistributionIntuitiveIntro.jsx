@@ -7,26 +7,9 @@ import { VisualizationContainer, GraphContainer, VisualizationSection } from '@/
 import { createColorScheme, cn, typography, colors } from '@/lib/design-system';
 import { Button } from '@/components/ui/button';
 import { RangeSlider } from '@/components/ui/RangeSlider';
-import { Factory, TrendingUp, Award, ChevronRight, AlertCircle } from "lucide-react";
+import { Factory, TrendingUp, ChevronRight, AlertCircle } from "lucide-react";
 import { useAnimationCleanup } from "@/hooks/useAnimationCleanup";
-
-// Achievement notification component
-const AchievementNotification = ({ achievement, onClose }) => {
-  useEffect(() => {
-    const timer = setTimeout(onClose, 3000);
-    return () => clearTimeout(timer);
-  }, [onClose]);
-  
-  return (
-    <div className="fixed top-4 right-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 animate-slide-in z-50">
-      <Award className="w-6 h-6" />
-      <div>
-        <p className="font-semibold">Achievement Unlocked!</p>
-        <p className="text-sm opacity-90">{achievement}</p>
-      </div>
-    </div>
-  );
-};
+import { MathematicalDiscoveries } from '@/components/ui/MathematicalDiscoveries';
 
 // Visual variance comparison component
 const VarianceVisualizer = ({ group1Variance, group2Variance, isAnimating }) => {
@@ -248,7 +231,8 @@ const VarianceVisualizer = ({ group1Variance, group2Variance, isAnimating }) => 
   return (
     <canvas 
       ref={canvasRef} 
-      className="w-full h-48 rounded-lg bg-gray-900/50"
+      className="w-full rounded-lg bg-gray-900/50"
+      style={{ height: '400px' }}
     />
   );
 };
@@ -269,10 +253,6 @@ const FDistributionIntuitiveIntro = () => {
   const [fValues, setFValues] = useState([]);
   const [lastFValue, setLastFValue] = useState(null);
   
-  // Achievements
-  const [achievements, setAchievements] = useState([]);
-  const [showAchievement, setShowAchievement] = useState(null);
-  
   // Animation cleanup
   const { setCleanInterval, setCleanTimeout } = useAnimationCleanup();
   
@@ -282,37 +262,54 @@ const FDistributionIntuitiveIntro = () => {
   // Calculate F-value
   const currentF = useMemo(() => factory1Variance / factory2Variance, [factory1Variance, factory2Variance]);
   
-  // Check for achievements
-  const checkAchievements = useCallback(() => {
-    const newAchievements = [];
-    
-    if (currentStage === 'visual' && !achievements.includes('visual-explorer')) {
-      newAchievements.push({ id: 'visual-explorer', text: 'Visual Explorer - Started comparing spreads!' });
+  // Mathematical discoveries
+  const discoveries = [
+    {
+      id: 'variance-concept',
+      title: 'Understanding Variance',
+      description: 'Variance measures how spread out data points are from their mean',
+      formula: '\\sigma^2 = \\frac{1}{n}\\sum_{i=1}^{n}(x_i - \\mu)^2',
+      discovered: currentStage !== 'story',
+      category: 'concept'
+    },
+    {
+      id: 'f-ratio',
+      title: 'The F-Ratio',
+      description: 'F-statistic is the ratio of two variances',
+      formula: 'F = \\frac{s_1^2}{s_2^2}',
+      discovered: currentStage === 'compare' || currentStage === 'formalize',
+      category: 'formula'
+    },
+    {
+      id: 'equal-variances',
+      title: 'Equal Variances',
+      description: 'When two populations have equal variances, F ≈ 1',
+      discovered: Math.abs(currentF - 1) < 0.1 && currentStage !== 'story',
+      category: 'pattern'
+    },
+    {
+      id: 'f-distribution',
+      title: 'F-Distribution Properties',
+      description: 'The F-distribution is right-skewed and always positive',
+      discovered: currentStage === 'formalize',
+      category: 'concept'
+    },
+    {
+      id: 'degrees-of-freedom',
+      title: 'Degrees of Freedom',
+      description: 'F-distribution has two parameters: df₁ and df₂',
+      formula: 'F \\sim F(df_1, df_2)',
+      discovered: currentStage === 'formalize' && samplesGenerated > 0,
+      category: 'formula'
+    },
+    {
+      id: 'practical-use',
+      title: 'Practical Application',
+      description: 'F-test is used to compare variances in quality control, ANOVA, and regression',
+      discovered: samplesGenerated >= 5,
+      category: 'relationship'
     }
-    
-    if (currentF > 0.9 && currentF < 1.1 && !achievements.includes('equal-variance')) {
-      newAchievements.push({ id: 'equal-variance', text: 'Balance Master - Found equal variances!' });
-    }
-    
-    if (samplesGenerated >= 10 && !achievements.includes('sample-collector')) {
-      newAchievements.push({ id: 'sample-collector', text: 'Sample Collector - Generated 10 F-values!' });
-    }
-    
-    if (currentStage === 'formalize' && !achievements.includes('statistics-scholar')) {
-      newAchievements.push({ id: 'statistics-scholar', text: 'Statistics Scholar - Mastered F-distributions!' });
-    }
-    
-    newAchievements.forEach(achievement => {
-      if (!achievements.includes(achievement.id)) {
-        setAchievements(prev => [...prev, achievement.id]);
-        setShowAchievement(achievement.text);
-      }
-    });
-  }, [currentStage, currentF, samplesGenerated, achievements]);
-  
-  useEffect(() => {
-    checkAchievements();
-  }, [checkAchievements]);
+  ];
   
   // Generate F-statistic
   const generateFStatistic = useCallback(() => {
@@ -716,23 +713,16 @@ const FDistributionIntuitiveIntro = () => {
           </div>
         </VisualizationSection>
         
-        {/* Achievement stats */}
-        {achievements.length > 0 && (
-          <div className="mt-4 text-center">
-            <p className="text-sm text-gray-400">
-              Achievements unlocked: {achievements.length}
-            </p>
-          </div>
+        {/* Mathematical Discoveries */}
+        {currentStage !== 'story' && (
+          <VisualizationSection className="mt-4 p-4">
+            <MathematicalDiscoveries 
+              discoveries={discoveries}
+              title="Statistical Concepts Discovered"
+            />
+          </VisualizationSection>
         )}
       </div>
-      
-      {/* Achievement notification */}
-      {showAchievement && (
-        <AchievementNotification
-          achievement={showAchievement}
-          onClose={() => setShowAchievement(null)}
-        />
-      )}
     </VisualizationContainer>
   );
 };

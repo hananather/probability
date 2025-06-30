@@ -20,18 +20,73 @@ Our goal is to create a learning experience that is as aesthetically beautiful a
 
 ---
 
+## Hub Component Design
 
-These are the following sections we want.
+### 1. Opening Hook: The Coin Scenario
+*   **Interactive Visual Anchor:** An animated coin that flips when clicked, showing heads/tails results
+*   **Scenario Setup:** "Person A claims they have a fair coin, but Person B is suspicious, believing it's biased toward tails..."
+*   **Quick Demo:** User flips the coin 10 times, sees 4 heads. Text shows: "Is this evidence of bias? Let's discover how to answer questions like this scientifically."
 
-*   **6.1 Hypothesis Testing Fundamentals:** What are null and alternative hypotheses?
-*   **6.2 Types of Hypotheses:** One-tailed vs. Two-tailed tests.
-*   **6.3 Errors & Power:** The trade-off between Type I and Type II errors.
-*   **6.4 Test for a Mean (Known Variance):** How do we test a claim about an average when we know the population's variability?
-*   **6.5 Test for a Mean (Unknown Variance):** What happens when we don't know the population's variability? (Introducing the t-test).
-*   **6.6 Test for a Proportion:** How do we test a claim about a percentage or a rate?
-*   **6.7 Paired Two-Sample Test:** How do we compare two related groups (e.g., before and after a treatment)?
-*   **6.8 Unpaired Two-Sample Test:** How do we compare two independent groups?
-*   **6.9 Difference of Two Proportions:** How do we compare two percentages?
+### 2. Core Introduction
+**What is Hypothesis Testing?**
+"Hypothesis testing is a systematic method for evaluating claims using data. Instead of relying on gut feelings, we use probability to determine when evidence is strong enough to challenge a claim."
+
+### 3. Learning Journey Visualization
+A visual roadmap showing the progression through the chapter:
+- Start with fundamentals (what is a hypothesis?)
+- Build to single-sample tests (testing one claim)
+- Advance to two-sample tests (comparing groups)
+- Each section shows estimated time and key skill unlocked
+
+### 4. Section Links with Compelling Questions
+
+*   **6.1 Hypothesis Testing Fundamentals:** 
+    - "How do we turn suspicions into testable claims?"
+    - Preview: Interactive p-value visualization
+    
+*   **6.2 Types of Hypotheses:** 
+    - "Does it matter if we're looking for any change vs. a specific direction?"
+    - Preview: One-tailed vs. two-tailed test comparison
+    
+*   **6.3 Errors & Power:** 
+    - "What's worse: convicting the innocent or letting the guilty go free?"
+    - Preview: Type I/II error trade-off visualization
+    
+*   **6.4 Test for a Mean (Known Variance):** 
+    - "Is the manufacturing process producing the claimed quality?"
+    - Preview: Z-test calculator with critical regions
+    
+*   **6.5 Test for a Mean (Unknown Variance):** 
+    - "What if we don't know the population's variability?"
+    - Preview: t-distribution emergence animation
+    
+*   **6.6 Test for a Proportion:** 
+    - "Has the politician's approval rating really changed?"
+    - Preview: Proportion sampling distribution
+    
+*   **6.7 Paired Two-Sample Test:** 
+    - "Did the training course actually improve performance?"
+    - Preview: Before/after difference visualization
+    
+*   **6.8 Unpaired Two-Sample Test:** 
+    - "Which teaching method produces better results?"
+    - Preview: Two independent distributions comparison
+    
+*   **6.9 Difference of Two Proportions:** 
+    - "Is the marketing campaign more effective in one city?"
+    - Preview: Proportion difference distribution
+
+### 5. Key Concepts Summary Card
+A clean card showing:
+- **Null Hypothesis (H₀):** The claim we're testing
+- **Alternative Hypothesis (H₁):** What we suspect is true
+- **p-value:** Probability of seeing our data if H₀ is true
+- **Significance Level (α):** Our threshold for "rare enough"
+
+### 6. Progress Tracking
+- Show completion status for each section
+- Estimated total time: 2-3 hours for full chapter
+- Achievement unlocked: "Statistical Detective" badge upon completion
 
 ---
 

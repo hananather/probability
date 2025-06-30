@@ -257,7 +257,7 @@ export default function Chapter3Page() {
       console.log('Chapter 3 - Setting section to index:', sectionIdToIndex[section]);
       setCurrentSection(sectionIdToIndex[section]);
     }
-  }, [searchParams]);
+  }, [searchParams, currentSection]);
 
   const sections = [
     {

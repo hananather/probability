@@ -8,7 +8,6 @@ import {
   ControlGroup
 } from '../ui/VisualizationContainer';
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
-import { ProgressTracker } from '../ui/ProgressTracker';
 import { tutorial_1_5_1 } from '@/tutorials/chapter1';
 
 // Use probability color scheme
@@ -116,6 +115,9 @@ function ProbabilityEvent() {
   const [showDiceExample, setShowDiceExample] = useState(true);
   const [isAutoRunning, setIsAutoRunning] = useState(false);
   const [targetTrials, setTargetTrials] = useState(1000);
+  const [hasRunTrials, setHasRunTrials] = useState(false);
+  const [hasObservedConvergence, setHasObservedConvergence] = useState(false);
+  const [eventTypesExplored, setEventTypesExplored] = useState(new Set());
   
   const svgRef = useRef(null);
   const intervalRef = useRef(null);
@@ -143,6 +145,8 @@ function ProbabilityEvent() {
     
     setTrials(prev => {
       trialsRef.current = prev + 1;
+      if (prev + 1 >= 1) setHasRunTrials(true);
+      if (prev + 1 >= 50) setHasObservedConvergence(true);
       return prev + 1;
     });
     if (success) setSuccesses(prev => prev + 1);
@@ -385,6 +389,11 @@ function ProbabilityEvent() {
     setHistory([]);
     trialsRef.current = 0;
   }
+  
+  // Track event type changes
+  useEffect(() => {
+    setEventTypesExplored(prev => new Set([...prev, eventType]));
+  }, [eventType]);
   
   // Auto-run functions
   function startAutoRun() {
@@ -629,54 +638,67 @@ function ProbabilityEvent() {
             )}
           </VisualizationSection>
 
-          {/* Learning Progress */}
+          {/* Mathematical Discoveries */}
           <VisualizationSection className="p-3">
-            <h4 className="text-sm font-semibold text-purple-400 mb-2">Probability Insights</h4>
+            <h4 className="text-sm font-semibold text-purple-400 mb-2">Probability Discoveries</h4>
             
-            <ProgressTracker 
-              current={trials} 
-              goal={100} 
-              label="Trials Completed"
-              color="purple"
-            />
-            
-            <div className="space-y-2 text-xs text-neutral-300 mt-3">
-              {trials === 0 && (
+            <div className="space-y-3 text-xs text-neutral-300">
+              {!hasRunTrials && (
                 <div>
-                  <p>🎯 Ready to explore probability?</p>
+                  <p className="text-neutral-400">Run trials to discover how experimental probability relates to theoretical probability.</p>
                   <p className="text-purple-300 mt-1">
-                    Run trials to see how experimental probability converges to theoretical!
+                    Try different events to explore various probability values.
                   </p>
                 </div>
               )}
-              {trials > 0 && trials < 30 && (
-                <div>
-                  <p>📊 Early results can vary widely from theory.</p>
-                  <p className="mt-1">Keep running trials to see the Law of Large Numbers in action!</p>
-                </div>
-              )}
-              {trials >= 30 && trials < 100 && (
-                <div>
-                  <p>🎓 Notice the convergence:</p>
-                  <p className="mt-1">
-                    As trials increase, experimental probability approaches {getCurrentEvent().theoretical.toFixed(3)}
-                  </p>
-                  <div className="mt-2 p-2 bg-purple-900/20 border border-purple-600/30 rounded">
-                    <p className="text-purple-300">
-                      Current error: {Math.abs(successes / trials - getCurrentEvent().theoretical).toFixed(4)}
-                    </p>
+              
+              {hasRunTrials && trials > 0 && (
+                <div className="p-2 bg-neutral-800 rounded">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-neutral-400">Theoretical:</span>
+                    <span className="font-mono text-yellow-400">{getCurrentEvent().theoretical.toFixed(3)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-neutral-400">Experimental:</span>
+                    <span className="font-mono text-cyan-400">{trials > 0 ? (successes / trials).toFixed(3) : '0.000'}</span>
+                  </div>
+                  <div className="flex justify-between items-center mt-1 pt-1 border-t border-neutral-700">
+                    <span className="text-neutral-400">Difference:</span>
+                    <span className="font-mono text-sm">{trials > 0 ? Math.abs(successes / trials - getCurrentEvent().theoretical).toFixed(4) : '0.0000'}</span>
                   </div>
                 </div>
               )}
-              {trials >= 100 && (
-                <div>
-                  <p className="text-green-400 font-semibold mb-1">
-                    ✨ Law of Large Numbers confirmed! {trials} trials completed.
-                  </p>
-                  <p>The difference is now just {Math.abs(successes / trials - getCurrentEvent().theoretical).toFixed(4)}!</p>
-                  <p className="text-blue-400 mt-2">
-                    💡 Try a different event to see how probabilities change!
-                  </p>
+              
+              {hasObservedConvergence && (
+                <div className="p-2 bg-purple-900/20 border border-purple-600/30 rounded">
+                  <p className="font-medium text-purple-400">Law of Large Numbers Discovered!</p>
+                  <p className="mt-1">As trials increase, experimental probability converges to theoretical probability.</p>
+                </div>
+              )}
+              
+              {eventTypesExplored.size > 1 && (
+                <div className="p-2 bg-blue-900/20 border border-blue-600/30 rounded">
+                  <p className="font-medium text-blue-400">Events Explored: {eventTypesExplored.size}/4</p>
+                  <div className="mt-1 space-y-0.5">
+                    {Array.from(eventTypesExplored).map(type => (
+                      <div key={type} className="text-xs">
+                        • {diceEvents[type].name}: {diceEvents[type].theoretical.toFixed(3)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {trials >= 1000 && (
+                <div className="text-green-400">
+                  <p className="font-medium">Statistical Insight:</p>
+                  <p className="text-xs mt-1">With {trials} trials, the error margin is consistently below 0.01!</p>
+                </div>
+              )}
+              
+              {isAutoRunning && (
+                <div className="text-xs text-neutral-400 italic">
+                  Auto-running to {targetTrials} trials...
                 </div>
               )}
             </div>

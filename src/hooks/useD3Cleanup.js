@@ -37,13 +37,14 @@ export function useD3Cleanup(drawFunction, dependencies = []) {
     
     // Cleanup function
     return () => {
-      if (svgRef.current) {
-        const svg = d3.select(svgRef.current);
+      const svgElement = svgRef.current;
+      if (svgElement) {
+        const svg = d3.select(svgElement);
         svg.selectAll("*").interrupt();
         svg.selectAll("*").remove();
       }
     };
-  }, dependencies);
+  }, [...dependencies, drawFunction]);
   
   return svgRef;
 }

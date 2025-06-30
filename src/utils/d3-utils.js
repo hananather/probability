@@ -96,7 +96,8 @@ import {
   easeCubicOut,
   easeCubicInOut,
   easeBackOut,
-  easeBounceOut
+  easeBounceOut,
+  easeSinInOut
 } from 'd3-ease';
 
 // Random
@@ -202,6 +203,7 @@ export {
   easeCubicInOut,
   easeBackOut,
   easeBounceOut,
+  easeSinInOut,
   // Random
   randomNormal,
   randomUniform,

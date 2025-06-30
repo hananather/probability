@@ -29,36 +29,122 @@ Our goal is to create a learning experience that is as aesthetically beautiful a
 
 ### 1. Core Question
 
-*   "A new ad campaign is launched in a specific city. We want to know if it was effective. We poll 500 people in the campaign city and find 120 are aware of our product. In a control city of similar size, we poll 500 people and find only 90 are aware. Is this a statistically significant difference?" (A strong, general marketing/social-science example).
+*   "Scientists study moth populations to understand natural selection. Among light-colored moths, 18 of 137 were recaptured. Among dark-colored moths, 131 of 493 were recaptured. Is there a significant difference in recapture rates?"
 
 ---
 
 ### 2. Interactive Exploration
 
-*   **Concept:** An interactive calculator for comparing two proportions.
-    *   **Setup:** The user can input the data for two groups:
-        *   Group 1 (Campaign City): x₁, n₁
-        *   Group 2 (Control City): x₂, n₂
-    *   **Calculation:** The component calculates the two sample proportions (p̂₁ and p̂₂), the pooled proportion, the z-statistic, and the p-value.
-    *   **Visualization:** A normal distribution is shown, representing the sampling distribution of the difference in proportions. The z-statistic and p-value are highlighted.
+*   **Part A: The Moth Recapture Data**
+    *   **Data Setup:**
+        | Population | Released (n) | Recaptured (y) | Proportion (p̂) |
+        |------------|-------------|----------------|----------------|
+        | Light moths | n₁ = 137 | y₁ = 18 | p̂₁ = 0.131 |
+        | Dark moths | n₂ = 493 | y₂ = 131 | p̂₂ = 0.266 |
+        
+    *   **Visual Display:**
+        - Bar chart showing proportions
+        - Difference: p̂₁ - p̂₂ = -0.135
+        - "Dark moths 2x more likely to be recaptured!"
+
+*   **Part B: The Pooled Proportion Concept**
+    *   **Why Pool Under H₀?**
+        - H₀ claims p₁ = p₂ = p (common proportion)
+        - Best estimate: pool all data
+        - Formula: p̂ = (y₁ + y₂)/(n₁ + n₂)
+    
+    *   **Calculation Visualization:**
+        ```
+        p̂ = (18 + 131)/(137 + 493) = 149/630 = 0.2365
+        ```
+        - Animation: Merge two groups into one
+        - "Under H₀, we treat all moths as one population"
+
+*   **Part C: Standard Error Explorer**
+    *   **SE Formula Breakdown:**
+        - SE = √[p̂(1-p̂)(1/n₁ + 1/n₂)]
+        - SE = √[0.2365 × 0.7635 × (1/137 + 1/493)]
+        - SE = √[0.1806 × 0.00932] = 0.041
+    
+    *   **Interactive SE Visualizer:**
+        - Slider for p̂: Show SE vs p
+        - Maximum at p = 0.5
+        - Effect of sample sizes
+        - "Larger n → Smaller SE → More power"
+
+*   **Part D: Large Counts Validator**
+    *   **Check Both Groups:**
+        | Group | np̂ | n(1-p̂) | Status |
+        |-------|-----|---------|--------|
+        | Light | 137×0.2365 = 32 | 105 | ✓ |
+        | Dark | 493×0.2365 = 117 | 376 | ✓ |
+        
+    *   **Visual Indicator:** Green checkmarks
+    *   **Note:** "Use pooled p̂ for checking!"
 
 ---
 
 ### 3. Facilitate Insight (The "Aha!" Moment)
 
-*   The user enters the data and sees a significant p-value, concluding the ad campaign was effective.
-*   They can then explore the effect of sample size. If they reduce the sample sizes to 100 in each city (with 24 and 18 successes, respectively), the difference in proportions is the same, but the p-value becomes non-significant. This powerfully demonstrates that the same observed effect can be statistically meaningless without a large enough sample.
+*   **Test Calculation:**
+    - z = (p̂₁ - p̂₂)/SE = -0.135/0.041 = -3.29
+    - p-value = 2 × P(Z < -3.29) ≈ 0.001
+    - "Extremely strong evidence of difference!"
+
+*   **Sample Size Impact Demonstration:**
+    | Scenario | n₁, n₂ | Same p̂₁, p̂₂ | z-stat | p-value | Significant? |
+    |----------|---------|--------------|---------|---------|--------------|
+    | Original | 137, 493 | 0.131, 0.266 | -3.29 | 0.001 | Yes! |
+    | Halved | 69, 247 | 0.131, 0.266 | -2.33 | 0.020 | Yes |
+    | Quartered | 34, 123 | 0.131, 0.266 | -1.64 | 0.101 | No |
+    
+    "Same observed difference, different conclusions!"
+
+*   **Confidence Interval Connection:**
+    - 95% CI for p₁ - p₂: (-0.215, -0.055)
+    - "CI excludes 0 ⟺ Reject H₀"
+    - Note: CI uses unpooled SE
 
 ---
 
 ### 4. Connect to Rigor
 
-*   **Formalization:** Present the formula for the two-proportion z-test.
-    *   **Hypotheses:** H₀: p₁ = p₂ (or p₁ - p₂ = 0), H₁: p₁ > p₂.
-    *   **Test Statistic:** `z = (p̂₁ - p̂₂) / SE`
-    *   **Standard Error (SE):** Explain the standard error formula, which uses a *pooled proportion* (p̂_pool) because the null hypothesis assumes the two proportions are equal.
-        *   `SE = √((p̂_pool * (1 - p̂_pool)) * (1/n₁ + 1/n₂))`
-    *   **Conditions:** Reiterate the Large Counts condition, which must now apply to both samples.
+*   **Complete Two-Proportion Test Framework:**
+    ```
+    1. State hypotheses:
+       H₀: p₁ = p₂ (or p₁ - p₂ = 0)
+    
+    2. Check conditions:
+       - Random samples
+       - n₁p̂ ≥ 10, n₁(1-p̂) ≥ 10
+       - n₂p̂ ≥ 10, n₂(1-p̂) ≥ 10
+    
+    3. Calculate pooled proportion:
+       p̂ = (x₁ + x₂)/(n₁ + n₂)
+    
+    4. Calculate test statistic:
+       z = (p̂₁ - p̂₂)/√[p̂(1-p̂)(1/n₁ + 1/n₂)]
+    
+    5. Find p-value and decide
+    ```
+
+*   **Important Distinctions:**
+    | Purpose | SE Formula |
+    |---------|------------|
+    | Hypothesis Test | Use pooled p̂ |
+    | Confidence Interval | Use separate p̂₁, p̂₂ |
+    | Why? | H₀ assumes p₁ = p₂ |
+
+*   **Connection to Chi-Square:**
+    - z² = χ² for 2×2 table
+    - "Two ways to test same hypothesis"
+    - Preview of Chapter 7
+
+*   **Practical Applications:**
+    - A/B testing in tech
+    - Clinical trials (treatment vs placebo)
+    - Survey comparisons
+    - Quality control (defect rates)
 
 ---
 

@@ -39,7 +39,7 @@ export function useMathJax(dependencies = []) {
       mounted = false;
       clearTimeout(timeoutId);
     };
-  }, dependencies);
+  }, Array.isArray(dependencies) ? dependencies : []);
   
   return containerRef;
 }

@@ -11,650 +11,477 @@ import {
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '@/lib/design-system';
 import { ProgressBar } from '../../ui/ProgressBar';
 import { Button } from '../../ui/button';
+import { tutorial_5_2_1 } from '@/tutorials/chapter5';
+// Temporarily comment out shared imports to debug
+// import { 
+//   ConfidenceIntervalVisualizer,
+//   StageProgressionWrapper,
+//   FormulaHighlighter,
+//   DiscoveryBadge,
+//   useStageProgression,
+//   useDiscoveryTracking
+// } from '../shared';
 
 // Use inference color scheme
 const colorScheme = createColorScheme('inference');
 
-// Worked Example Component
-const CIWorkedExample = memo(function CIWorkedExample({ sampleMean, sampleSize, populationStd, confidenceLevel }) {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [sampleMean, sampleSize, populationStd, confidenceLevel]);
-  
-  // Calculate CI components
-  const alpha = 1 - confidenceLevel;
-  const zCritical = jStat.normal.inv(1 - alpha/2, 0, 1);
-  const standardError = populationStd / Math.sqrt(sampleSize);
-  const marginOfError = zCritical * standardError;
-  const lowerBound = sampleMean - marginOfError;
-  const upperBound = sampleMean + marginOfError;
-  
-  return (
-    <div ref={contentRef} className="bg-neutral-800 p-6 rounded-lg text-neutral-200">
-      <h4 className="text-lg font-semibold border-b border-neutral-600 pb-2 mb-4 text-white">
-        Confidence Interval Calculation (σ Known)
-      </h4>
-      
-      <div className="space-y-4">
-        <div>
-          <p className="mb-2 font-medium text-purple-400">Step 1: Identify Parameters</p>
-          <div className="bg-neutral-900 p-3 rounded text-sm space-y-1">
-            <div className="flex justify-between">
-              <span>Sample mean (x̄)</span>
-              <span className="font-mono text-cyan-400">{sampleMean.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Population std (σ)</span>
-              <span className="font-mono text-cyan-400">{populationStd}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Sample size (n)</span>
-              <span className="font-mono text-cyan-400">{sampleSize}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Confidence level</span>
-              <span className="font-mono text-yellow-400">{(confidenceLevel * 100).toFixed(0)}%</span>
-            </div>
-          </div>
-        </div>
-        
-        <div>
-          <p className="mb-2 font-medium text-purple-400">Step 2: Find Critical Value</p>
-          <div dangerouslySetInnerHTML={{ __html: `\[z_{\alpha/2} = z_{${(alpha/2).toFixed(3)}} = ${zCritical.toFixed(3)}\]` }} />
-        </div>
-        
-        <div>
-          <p className="mb-2 font-medium text-purple-400">Step 3: Calculate Standard Error</p>
-          <div dangerouslySetInnerHTML={{ __html: `\[SE = \frac{\sigma}{\sqrt{n}} = \frac{${populationStd}}{\sqrt{${sampleSize}}} = ${standardError.toFixed(3)}\]` }} />
-        </div>
-        
-        <div>
-          <p className="mb-2 font-medium text-purple-400">Step 4: Calculate Margin of Error</p>
-          <div dangerouslySetInnerHTML={{ __html: `\[ME = z_{\alpha/2} \times SE = ${zCritical.toFixed(3)} \times ${standardError.toFixed(3)} = ${marginOfError.toFixed(3)}\]` }} />
-        </div>
-        
-        <div>
-          <p className="mb-2 font-medium text-purple-400">Step 5: Construct Confidence Interval</p>
-          <div dangerouslySetInnerHTML={{ __html: `\[CI = \bar{x} \pm ME = ${sampleMean.toFixed(2)} \pm ${marginOfError.toFixed(3)}\]` }} />
-          <div className="bg-purple-900/20 border border-purple-600/30 rounded p-3 mt-2">
-            <p className="text-center text-purple-300 font-semibold">
-              {confidenceLevel * 100}% CI: [{lowerBound.toFixed(2)}, {upperBound.toFixed(2)}]
-            </p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="bg-neutral-900 p-3 rounded text-sm mt-4">
-        <p className="text-yellow-400 font-medium mb-2">💡 Interpretation:</p>
-        <p className="text-neutral-300">
-          We are {(confidenceLevel * 100).toFixed(0)}% confident that the true population mean μ lies between {lowerBound.toFixed(2)} and {upperBound.toFixed(2)}.
-        </p>
-      </div>
-    </div>
-  );
-});
+// Learning stages for 68-95-99.7 rule
+const LEARNING_STAGES = [
+  {
+    id: 'explore-68',
+    title: '68% Confidence',
+    description: 'Most values fall within 1 standard deviation',
+    confidenceLevel: 0.68,
+    zScore: 1,
+    unlocks: ['basic-controls']
+  },
+  {
+    id: 'discover-95',
+    title: '95% Confidence',
+    description: 'The standard choice for research',
+    confidenceLevel: 0.95,
+    zScore: 1.96,
+    unlocks: ['sample-size-control']
+  },
+  {
+    id: 'master-997',
+    title: '99.7% Confidence',
+    description: 'Nearly all values within 3 standard deviations',
+    confidenceLevel: 0.997,
+    zScore: 2.576,
+    unlocks: ['animation-controls', 'discoveries']
+  }
+];
 
-function ConfidenceIntervalBuilder() {
-  // State management
-  const [populationMean] = useState(100);
-  const [populationStd] = useState(15);
-  const [sampleSize, setSampleSize] = useState(25);
-  const [confidenceLevel, setConfidenceLevel] = useState(0.95);
-  const [currentSample, setCurrentSample] = useState([]);
-  const [sampleMean, setSampleMean] = useState(null);
-  const [showWorkedExample, setShowWorkedExample] = useState(true);
-  const [showPopulation, setShowPopulation] = useState(true);
-  const [animateCI, setAnimateCI] = useState(false);
-  const [totalSamples, setTotalSamples] = useState(0);
-  
+// Focused visualization component
+const EmpiricalRuleVisualization = memo(function EmpiricalRuleVisualization({ 
+  mean, std, selectedLevel, showAnimation, sampleSize 
+}) {
   const svgRef = useRef(null);
   
-  // Generate a new sample
-  const generateNewSample = useCallback(() => {
-    const sample = Array.from({ length: sampleSize }, () => 
-      jStat.normal.sample(populationMean, populationStd)
-    );
-    const mean = jStat.mean(sample);
-    
-    setCurrentSample(sample);
-    setSampleMean(mean);
-    setTotalSamples(prev => prev + 1);
-    setAnimateCI(true);
-    
-    setTimeout(() => setAnimateCI(false), 1000);
-  }, [sampleSize, populationMean, populationStd]);
-  
-  // Calculate CI components
-  const alpha = 1 - confidenceLevel;
-  const zCritical = jStat.normal.inv(1 - alpha/2, 0, 1);
-  const standardError = populationStd / Math.sqrt(sampleSize);
-  const marginOfError = zCritical * standardError;
-  
-  // Main visualization
   useEffect(() => {
-    if (!svgRef.current || sampleMean === null) return;
+    if (!svgRef.current) return;
     
     const svg = d3.select(svgRef.current);
     const { width } = svgRef.current.getBoundingClientRect();
-    const height = 400;
-    const margin = { top: 40, right: 40, bottom: 80, left: 60 };
+    const height = 300;
+    const margin = { top: 20, right: 20, bottom: 40, left: 20 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
     svg.selectAll("*").remove();
     svg.attr("viewBox", `0 0 ${width} ${height}`);
     
-    // Background
-    svg.append("rect")
-      .attr("width", width)
-      .attr("height", height)
-      .attr("fill", "#0a0a0a");
-    
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
     
-    // Title
-    g.append("text")
-      .attr("x", innerWidth / 2)
-      .attr("y", -20)
-      .attr("text-anchor", "middle")
-      .style("font-size", "18px")
-      .style("font-weight", "600")
-      .attr("fill", colors.chart.text)
-      .text("Confidence Interval Construction");
-    
     // Create scales
-    const xExtent = [
-      populationMean - 4 * populationStd,
-      populationMean + 4 * populationStd
-    ];
     const xScale = d3.scaleLinear()
-      .domain(xExtent)
+      .domain([mean - 4 * std, mean + 4 * std])
       .range([0, innerWidth]);
     
     const yScale = d3.scaleLinear()
       .domain([0, 0.03])
       .range([innerHeight, 0]);
     
-    // Grid lines
-    g.append("g")
-      .attr("class", "grid")
-      .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(xScale)
-        .tickSize(-innerHeight)
-        .tickFormat(""))
-      .style("stroke-dasharray", "3,3")
-      .style("opacity", 0.3)
-      .selectAll("line")
-      .style("stroke", colors.chart.grid);
+    // Generate normal curve data
+    const xValues = d3.range(mean - 4 * std, mean + 4 * std, std / 10);
+    const normalData = xValues.map(x => ({
+      x: x,
+      y: jStat.normal.pdf(x, mean, std)
+    }));
     
-    // Draw population distribution if enabled
-    if (showPopulation) {
-      const xValues = d3.range(xExtent[0], xExtent[1], (xExtent[1] - xExtent[0]) / 200);
-      const normalData = xValues.map(x => ({
-        x: x,
-        y: jStat.normal.pdf(x, populationMean, populationStd)
-      }));
-      
-      const area = d3.area()
-        .x(d => xScale(d.x))
-        .y0(innerHeight)
-        .y1(d => yScale(d.y))
-        .curve(d3.curveMonotoneX);
-      
-      g.append("path")
-        .datum(normalData)
-        .attr("fill", colorScheme.chart.secondary)
-        .attr("opacity", 0.2)
-        .attr("d", area);
-      
-      const line = d3.line()
-        .x(d => xScale(d.x))
-        .y(d => yScale(d.y))
-        .curve(d3.curveMonotoneX);
-      
-      g.append("path")
-        .datum(normalData)
-        .attr("fill", "none")
-        .attr("stroke", colorScheme.chart.secondary)
-        .attr("stroke-width", 2)
-        .attr("opacity", 0.5)
-        .attr("d", line);
+    // Draw the normal curve
+    const line = d3.line()
+      .x(d => xScale(d.x))
+      .y(d => yScale(d.y))
+      .curve(d3.curveMonotoneX);
+    
+    g.append("path")
+      .datum(normalData)
+      .attr("fill", "none")
+      .attr("stroke", colorScheme.chart.secondary)
+      .attr("stroke-width", 2)
+      .attr("d", line);
+    
+    // Calculate interval bounds
+    const { zScore, confidenceLevel } = selectedLevel;
+    const standardError = std / Math.sqrt(sampleSize);
+    const marginOfError = zScore * standardError;
+    const lowerBound = mean - zScore * std;
+    const upperBound = mean + zScore * std;
+    
+    // Shade the confidence interval region
+    const areaData = normalData.filter(d => d.x >= lowerBound && d.x <= upperBound);
+    
+    const area = d3.area()
+      .x(d => xScale(d.x))
+      .y0(innerHeight)
+      .y1(d => yScale(d.y))
+      .curve(d3.curveMonotoneX);
+    
+    const shadedArea = g.append("path")
+      .datum(areaData)
+      .attr("fill", colorScheme.chart.primary)
+      .attr("opacity", 0)
+      .attr("d", area);
+    
+    if (showAnimation) {
+      shadedArea.transition()
+        .duration(800)
+        .attr("opacity", 0.3);
+    } else {
+      shadedArea.attr("opacity", 0.3);
     }
     
-    // Draw true mean line
+    // Draw vertical lines at bounds
+    [lowerBound, upperBound].forEach((bound, i) => {
+      const line = g.append("line")
+        .attr("x1", xScale(bound))
+        .attr("x2", xScale(bound))
+        .attr("y1", 0)
+        .attr("y2", innerHeight)
+        .attr("stroke", colorScheme.chart.accent)
+        .attr("stroke-width", 2)
+        .attr("stroke-dasharray", "5,5")
+        .attr("opacity", 0);
+      
+      if (showAnimation) {
+        line.transition()
+          .delay(400 + i * 200)
+          .duration(500)
+          .attr("opacity", 1);
+      } else {
+        line.attr("opacity", 1);
+      }
+    });
+    
+    // Add mean line
     g.append("line")
-      .attr("x1", xScale(populationMean))
-      .attr("x2", xScale(populationMean))
+      .attr("x1", xScale(mean))
+      .attr("x2", xScale(mean))
       .attr("y1", 0)
       .attr("y2", innerHeight)
       .attr("stroke", colorScheme.chart.tertiary)
-      .attr("stroke-width", 2)
-      .attr("stroke-dasharray", "5,5");
+      .attr("stroke-width", 2);
     
-    g.append("text")
-      .attr("x", xScale(populationMean))
-      .attr("y", -5)
-      .attr("text-anchor", "middle")
-      .attr("fill", colorScheme.chart.tertiary)
-      .style("font-size", "14px")
-      .style("font-weight", "600")
-      .text(`μ = ${populationMean}`);
+    // Add labels
+    const labels = [
+      { x: lowerBound, text: `-${zScore}σ`, color: colorScheme.chart.accent },
+      { x: mean, text: 'μ', color: colorScheme.chart.tertiary },
+      { x: upperBound, text: `+${zScore}σ`, color: colorScheme.chart.accent }
+    ];
     
-    // Draw sample points
-    const sampleY = innerHeight * 0.7;
-    
-    g.selectAll("circle.sample")
-      .data(currentSample)
-      .enter().append("circle")
-      .attr("class", "sample")
-      .attr("cx", d => xScale(d))
-      .attr("cy", sampleY)
-      .attr("r", 0)
-      .attr("fill", colorScheme.chart.primary)
-      .attr("opacity", 0.6)
-      .transition()
-      .duration(500)
-      .attr("r", 4);
-    
-    // Draw sample mean
-    const sampleMeanGroup = g.append("g")
-      .attr("transform", `translate(${xScale(sampleMean)}, 0)`);
-    
-    sampleMeanGroup.append("line")
-      .attr("y1", 0)
-      .attr("y2", innerHeight)
-      .attr("stroke", colorScheme.chart.primary)
-      .attr("stroke-width", 2)
-      .attr("opacity", 0)
-      .transition()
-      .delay(300)
-      .duration(500)
-      .attr("opacity", 1);
-    
-    sampleMeanGroup.append("text")
-      .attr("y", -5)
-      .attr("text-anchor", "middle")
-      .attr("fill", colorScheme.chart.primary)
-      .style("font-size", "14px")
-      .style("font-weight", "600")
-      .text(`x̄ = ${sampleMean.toFixed(2)}`)
-      .attr("opacity", 0)
-      .transition()
-      .delay(300)
-      .duration(500)
-      .attr("opacity", 1);
-    
-    // Draw confidence interval
-    const lowerBound = sampleMean - marginOfError;
-    const upperBound = sampleMean + marginOfError;
-    const ciY = innerHeight * 0.5;
-    
-    // CI bracket
-    const ciGroup = g.append("g")
-      .attr("class", "confidence-interval");
-    
-    // Horizontal line
-    ciGroup.append("line")
-      .attr("x1", xScale(sampleMean))
-      .attr("x2", xScale(sampleMean))
-      .attr("y1", ciY)
-      .attr("y2", ciY)
-      .attr("stroke", colorScheme.chart.accent)
-      .attr("stroke-width", 4)
-      .transition()
-      .delay(600)
-      .duration(800)
-      .attr("x1", xScale(lowerBound))
-      .attr("x2", xScale(upperBound));
-    
-    // Vertical brackets
-    const bracketHeight = 15;
-    
-    [-1, 1].forEach((side, i) => {
-      const x = side === -1 ? lowerBound : upperBound;
-      ciGroup.append("line")
-        .attr("x1", xScale(sampleMean))
-        .attr("x2", xScale(sampleMean))
-        .attr("y1", ciY - bracketHeight/2)
-        .attr("y2", ciY + bracketHeight/2)
-        .attr("stroke", colorScheme.chart.accent)
-        .attr("stroke-width", 3)
-        .attr("opacity", 0)
-        .transition()
-        .delay(600 + i * 200)
-        .duration(500)
-        .attr("x1", xScale(x))
-        .attr("x2", xScale(x))
-        .attr("opacity", 1);
+    labels.forEach((label, i) => {
+      const text = g.append("text")
+        .attr("x", xScale(label.x))
+        .attr("y", -5)
+        .attr("text-anchor", "middle")
+        .attr("fill", label.color)
+        .style("font-size", "14px")
+        .style("font-weight", "600")
+        .text(label.text)
+        .attr("opacity", 0);
+      
+      if (showAnimation) {
+        text.transition()
+          .delay(600 + i * 100)
+          .duration(300)
+          .attr("opacity", 1);
+      } else {
+        text.attr("opacity", 1);
+      }
     });
     
-    // CI labels
-    ciGroup.append("text")
-      .attr("x", xScale(lowerBound))
-      .attr("y", ciY + 30)
+    // Add percentage label
+    const percentageLabel = g.append("text")
+      .attr("x", xScale(mean))
+      .attr("y", innerHeight / 2)
       .attr("text-anchor", "middle")
-      .attr("fill", colorScheme.chart.accent)
-      .style("font-size", "12px")
-      .style("font-family", "monospace")
-      .text(lowerBound.toFixed(2))
-      .attr("opacity", 0)
-      .transition()
-      .delay(1000)
-      .duration(500)
-      .attr("opacity", 1);
+      .attr("fill", colors.chart.text)
+      .style("font-size", "24px")
+      .style("font-weight", "700")
+      .text(`${(confidenceLevel * 100).toFixed(0)}%`)
+      .attr("opacity", 0);
     
-    ciGroup.append("text")
-      .attr("x", xScale(upperBound))
-      .attr("y", ciY + 30)
-      .attr("text-anchor", "middle")
-      .attr("fill", colorScheme.chart.accent)
-      .style("font-size", "12px")
-      .style("font-family", "monospace")
-      .text(upperBound.toFixed(2))
-      .attr("opacity", 0)
-      .transition()
-      .delay(1000)
-      .duration(500)
-      .attr("opacity", 1);
-    
-    // CI label
-    ciGroup.append("text")
-      .attr("x", xScale(sampleMean))
-      .attr("y", ciY - 25)
-      .attr("text-anchor", "middle")
-      .attr("fill", colorScheme.chart.accent)
-      .style("font-size", "14px")
-      .style("font-weight", "600")
-      .text(`${(confidenceLevel * 100).toFixed(0)}% CI`)
-      .attr("opacity", 0)
-      .transition()
-      .delay(800)
-      .duration(500)
-      .attr("opacity", 1);
-    
-    // Check if CI contains true mean
-    const containsMu = lowerBound <= populationMean && populationMean <= upperBound;
-    
-    // Add indicator
-    if (animateCI) {
-      const indicator = g.append("text")
-        .attr("x", innerWidth / 2)
-        .attr("y", innerHeight + 50)
-        .attr("text-anchor", "middle")
-        .attr("fill", containsMu ? "#10b981" : "#ef4444")
-        .style("font-size", "16px")
-        .style("font-weight", "600")
-        .text(containsMu ? "✓ Contains μ" : "✗ Misses μ")
-        .attr("opacity", 0)
-        .transition()
-        .delay(1200)
+    if (showAnimation) {
+      percentageLabel.transition()
+        .delay(1000)
         .duration(500)
-        .attr("opacity", 1)
-        .transition()
-        .delay(3000)
-        .duration(500)
-        .attr("opacity", 0);
+        .attr("opacity", 0.8);
+    } else {
+      percentageLabel.attr("opacity", 0.8);
     }
     
     // X axis
     const xAxis = g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(xScale).ticks(10));
+      .call(d3.axisBottom(xScale).ticks(7));
     
     xAxis.selectAll("path, line").attr("stroke", colors.chart.grid);
     xAxis.selectAll("text")
-      .style("font-size", "12px")
-      .style("font-family", "monospace")
+      .style("font-size", "11px")
       .attr("fill", colors.chart.text);
     
-    // X axis label
-    g.append("text")
-      .attr("transform", `translate(${innerWidth / 2}, ${innerHeight + 40})`)
-      .style("text-anchor", "middle")
-      .style("font-size", "14px")
-      .style("font-weight", "600")
-      .attr("fill", colors.chart.text)
-      .text("Value");
-    
-  }, [sampleMean, currentSample, populationMean, populationStd, confidenceLevel, 
-      marginOfError, showPopulation, animateCI]);
+  }, [mean, std, selectedLevel, showAnimation, sampleSize]);
   
-  // Initialize with a sample on mount
+  return <svg ref={svgRef} style={{ width: "100%", height: 300 }} />;
+});
+
+function ConfidenceIntervalBuilder() {
+  // Use course example values: IQ scores with μ=100, σ=15
+  const populationMean = 100;
+  const populationStd = 15;
+  
+  // Simplified state management for debugging
+  const [currentStage, setCurrentStage] = useState(0);
+  const [completedStages, setCompletedStages] = useState([]);
+  const [discoveries, setDiscoveries] = useState([]);
+  
+  const isStageUnlocked = (stageId) => {
+    const index = LEARNING_STAGES.findIndex(s => s.id === stageId);
+    return index === 0 || completedStages.includes(LEARNING_STAGES[index - 1].id);
+  };
+  
+  const trackDiscovery = (discoveryId) => {
+    if (!discoveries.includes(discoveryId)) {
+      setDiscoveries(prev => [...prev, discoveryId]);
+    }
+  };
+  
+  // Simplified state
+  const [sampleSize, setSampleSize] = useState(25);
+  const [selectedLevel, setSelectedLevel] = useState(LEARNING_STAGES[0]);
+  const [showAnimation, setShowAnimation] = useState(false);
+  const [interactions, setInteractions] = useState(0);
+  
+  // Handle confidence level selection
+  const selectConfidenceLevel = useCallback((stage) => {
+    if (!isStageUnlocked(stage.id)) return;
+    
+    setSelectedLevel(stage);
+    setShowAnimation(true);
+    setInteractions(prev => prev + 1);
+    
+    // Complete current stage when moving to next
+    if (stage.id === 'discover-95' && !completedStages.includes('explore-68')) {
+      setCompletedStages(prev => [...prev, 'explore-68']);
+      setCurrentStage(1);
+    } else if (stage.id === 'master-997' && !completedStages.includes('discover-95')) {
+      setCompletedStages(prev => [...prev, 'discover-95']);
+      setCurrentStage(2);
+    }
+    
+    // Track discoveries
+    if (interactions === 0) {
+      trackDiscovery('empirical-rule');
+    }
+    if (interactions === 2) {
+      trackDiscovery('z-scores');
+    }
+    if (stage.id === 'master-997' && !discoveries.includes('interval-width')) {
+      trackDiscovery('interval-width');
+    }
+    
+    setTimeout(() => setShowAnimation(false), 1500);
+  }, [interactions, isStageUnlocked, trackDiscovery, currentStage, discoveries, completedStages]);
+  
+  // Handle sample size change
+  const handleSampleSizeChange = useCallback((newSize) => {
+    setSampleSize(newSize);
+    if (newSize >= 50 && !discoveries.includes('sample-size-effect')) {
+      trackDiscovery('sample-size-effect');
+    }
+  }, [discoveries, trackDiscovery]);
+  
+  // Initialize first time
   useEffect(() => {
-    generateNewSample();
-  }, []);
+    if (interactions === 0) {
+      const timer = setTimeout(() => {
+        setInteractions(1);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [interactions]);
   
   return (
     <VisualizationContainer 
-      title="Confidence Interval Builder (σ Known)"
-      className="p-2"
+      title="The 68-95-99.7 Rule"
+      tutorialSteps={tutorial_5_2_1}
+      tutorialKey="ci-68-95-997-rule"
     >
-      <div className="flex flex-col lg:flex-row gap-4">
-        {/* Left Panel */}
-        <div className="lg:w-1/3 space-y-3">
-          <VisualizationSection className="p-3">
-            <p className={cn(typography.description, "text-sm leading-relaxed")}>
-              Build confidence intervals when the population standard deviation σ is known. 
-              This demonstrates the fundamental concept before moving to the more realistic case where σ is unknown.
-            </p>
-            
-            <div className="mt-3 space-y-2 text-xs">
-              <div className="p-2 bg-blue-900/20 border border-blue-600/30 rounded">
-                <p className="font-semibold text-blue-400 mb-1">Key Formula</p>
-                <p className="text-neutral-300">
-                  CI = x̄ ± z<sub>α/2</sub> × (σ/√n)
-                </p>
-              </div>
+      {/* Temporarily remove wrapper for debugging */}
+      <div>
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* Left Panel - Focused Controls */}
+          <div className="lg:w-1/4 space-y-3">
+            <VisualizationSection className="p-3">
+              <h4 className="text-base font-bold text-white mb-3">Select Confidence Level</h4>
               
-              <div className="p-2 bg-green-900/20 border border-green-600/30 rounded">
-                <p className="font-semibold text-green-400 mb-1">Interpretation</p>
-                <p className="text-neutral-300">
-                  We are (1-α)×100% confident that μ lies within the interval
-                </p>
-              </div>
-            </div>
-          </VisualizationSection>
-
-          {/* Controls */}
-          <VisualizationSection className="p-4">
-            <h4 className="text-base font-bold text-white mb-3">Controls</h4>
-            
-            <div className="space-y-3">
-              {/* Sample size control */}
-              <div>
-                <label className="text-sm text-neutral-300 mb-1.5 block">
-                  Sample Size (n = {sampleSize})
-                </label>
-                <input
-                  type="range"
-                  min={5}
-                  max={100}
-                  value={sampleSize}
-                  onChange={(e) => setSampleSize(Number(e.target.value))}
-                  className="w-full accent-cyan-500"
-                />
-                <div className="flex justify-between text-xs text-neutral-500 mt-1">
-                  <span>5</span>
-                  <span>100</span>
-                </div>
-              </div>
-              
-              {/* Confidence level control */}
-              <div>
-                <label className="text-sm text-neutral-300 mb-1.5 block">
-                  Confidence Level ({(confidenceLevel * 100).toFixed(0)}%)
-                </label>
-                <div className="flex gap-2 flex-wrap">
-                  {[0.90, 0.95, 0.99].map(level => (
+              <div className="space-y-2">
+                {LEARNING_STAGES.map((stage, index) => {
+                  const isUnlocked = isStageUnlocked(stage.id);
+                  const isSelected = selectedLevel.id === stage.id;
+                  
+                  return (
                     <button
-                      key={level}
-                      onClick={() => setConfidenceLevel(level)}
+                      key={stage.id}
+                      onClick={() => selectConfidenceLevel(stage)}
+                      disabled={!isUnlocked}
                       className={cn(
-                        "px-3 py-1.5 rounded text-sm font-medium transition-colors",
-                        confidenceLevel === level
-                          ? "bg-cyan-600 text-white"
-                          : "bg-neutral-700 hover:bg-neutral-600 text-neutral-300"
+                        "w-full p-3 rounded-lg transition-all duration-300 text-left",
+                        isUnlocked ? "cursor-pointer" : "cursor-not-allowed opacity-50",
+                        isSelected 
+                          ? "bg-purple-600 text-white shadow-lg" 
+                          : isUnlocked
+                            ? "bg-neutral-700 hover:bg-neutral-600 text-neutral-300"
+                            : "bg-neutral-800 text-neutral-500"
                       )}
                     >
-                      {(level * 100).toFixed(0)}%
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-semibold">{stage.title}</div>
+                          <div className="text-xs opacity-80 mt-1">{stage.description}</div>
+                        </div>
+                        <div className="text-2xl font-mono">
+                          {isUnlocked ? `±${stage.zScore}σ` : '🔒'}
+                        </div>
+                      </div>
+                      {!isUnlocked && index > 0 && (
+                        <div className="text-xs text-yellow-400 mt-2">
+                          Complete previous level to unlock
+                        </div>
+                      )}
                     </button>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
-              
-              {/* Action buttons */}
-              <div className="space-y-2">
-                <button
-                  onClick={generateNewSample}
-                  className={cn(
-                    "w-full px-3 py-2 rounded text-sm font-medium transition-colors",
-                    "bg-purple-600 hover:bg-purple-700 text-white"
-                  )}
-                >
-                  Generate New Sample
-                </button>
-              </div>
-              
-              {/* View options */}
-              <div className="space-y-2 pt-2 border-t border-neutral-700">
-                <label className="flex items-center gap-2 text-sm">
-                  <input 
-                    type="checkbox" 
-                    checked={showPopulation} 
-                    onChange={e => setShowPopulation(e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-neutral-300">Show population distribution</span>
-                </label>
-                
-                <label className="flex items-center gap-2 text-sm">
-                  <input 
-                    type="checkbox" 
-                    checked={showWorkedExample} 
-                    onChange={e => setShowWorkedExample(e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-neutral-300">Show worked example</span>
-                </label>
-              </div>
-            </div>
-          </VisualizationSection>
-
-          {/* Statistics Display */}
-          <VisualizationSection className="p-4">
-            <h4 className="text-base font-bold text-white mb-3">Current Statistics</h4>
+            </VisualizationSection>
             
-            <div className="space-y-3">
-              {/* Population parameters */}
-              <div className="bg-neutral-800 rounded p-3">
-                <h5 className="text-sm font-semibold text-purple-400 mb-2">Known Parameters</h5>
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-neutral-300">μ (population mean)</span>
-                    <span className="font-mono text-white">{populationMean}</span>
+            {/* Sample Size Control - Unlocked after 95% */}
+            {isStageUnlocked('discover-95') && (
+              <VisualizationSection className="p-3">
+                <h4 className="text-sm font-semibold text-white mb-2">Sample Size Effect</h4>
+                <div>
+                  <label className="text-xs text-neutral-300 mb-1 block">
+                    n = {sampleSize} {sampleSize >= 50 && '✨'}
+                  </label>
+                  <input
+                    type="range"
+                    min={5}
+                    max={100}
+                    value={sampleSize}
+                    onChange={(e) => handleSampleSizeChange(Number(e.target.value))}
+                    className="w-full accent-purple-500"
+                  />
+                  <div className="flex justify-between text-xs text-neutral-500 mt-1">
+                    <span>5</span>
+                    <span>100</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-300">σ (population std)</span>
-                    <span className="font-mono text-white">{populationStd}</span>
+                </div>
+              </VisualizationSection>
+            )}
+            
+            {/* Discovery Badges - simplified */}
+            {discoveries.length > 0 && (
+              <VisualizationSection className="p-3">
+                <h4 className="text-sm font-semibold text-purple-400 mb-2">Discoveries</h4>
+                <div className="text-xs text-neutral-300">
+                  {discoveries.length} concepts unlocked
+                </div>
+              </VisualizationSection>
+            )}
+          </div>
+          
+          {/* Right Panel - Visualization */}
+          <div className="lg:w-3/4 space-y-4">
+            <GraphContainer>
+              <EmpiricalRuleVisualization 
+                mean={populationMean}
+                std={populationStd}
+                selectedLevel={selectedLevel}
+                showAnimation={showAnimation}
+                sampleSize={sampleSize}
+              />
+            </GraphContainer>
+            
+            {/* Formula Display */}
+            <VisualizationSection className="p-4">
+              <div className="bg-neutral-800/50 rounded-lg p-6 border border-neutral-700">
+                <div className="text-xl text-center text-white mb-4">
+                  CI = x̄ ± {selectedLevel.zScore} × (σ/√n)
+                </div>
+                <div className="grid grid-cols-3 gap-3 text-sm">
+                  <div className="text-center">
+                    <div className="text-green-400 font-mono">z = {selectedLevel.zScore}</div>
+                    <div className="text-xs text-neutral-400">Critical value</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-blue-400 font-mono">σ = {populationStd}</div>
+                    <div className="text-xs text-neutral-400">Population SD</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-yellow-400 font-mono">n = {sampleSize}</div>
+                    <div className="text-xs text-neutral-400">Sample size</div>
                   </div>
                 </div>
               </div>
               
-              {/* Sample statistics */}
-              {sampleMean !== null && (
-                <div className="bg-neutral-800 rounded p-3">
-                  <h5 className="text-sm font-semibold text-cyan-400 mb-2">Sample Statistics</h5>
-                  <div className="space-y-1 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-neutral-300">x̄ (sample mean)</span>
-                      <span className="font-mono text-cyan-400">{sampleMean.toFixed(3)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-neutral-300">n (sample size)</span>
-                      <span className="font-mono text-cyan-400">{sampleSize}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-neutral-300">SE (standard error)</span>
-                      <span className="font-mono text-yellow-400">{standardError.toFixed(3)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-neutral-300">ME (margin of error)</span>
-                      <span className="font-mono text-yellow-400">{marginOfError.toFixed(3)}</span>
-                    </div>
+              {/* Quick calculation */}
+              <div className="mt-4 bg-neutral-800 p-3 rounded">
+                <div className="text-sm text-neutral-300">
+                  <div>Standard Error = {populationStd}/√{sampleSize} = {(populationStd / Math.sqrt(sampleSize)).toFixed(2)}</div>
+                  <div>Margin of Error = {selectedLevel.zScore} × {(populationStd / Math.sqrt(sampleSize)).toFixed(2)} = {(selectedLevel.zScore * populationStd / Math.sqrt(sampleSize)).toFixed(2)}</div>
+                  <div className="font-semibold text-purple-400 mt-2">
+                    {(selectedLevel.confidenceLevel * 100).toFixed(0)}% CI: [{(populationMean - selectedLevel.zScore * populationStd / Math.sqrt(sampleSize)).toFixed(2)}, {(populationMean + selectedLevel.zScore * populationStd / Math.sqrt(sampleSize)).toFixed(2)}]
                   </div>
                 </div>
-              )}
-              
-              {/* CI details */}
-              {sampleMean !== null && (
-                <div className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 border border-purple-600/30 rounded p-3">
-                  <h5 className="text-sm font-semibold text-purple-400 mb-2">Confidence Interval</h5>
-                  <div className="text-center">
-                    <div className="text-lg font-mono text-purple-300">
-                      [{(sampleMean - marginOfError).toFixed(2)}, {(sampleMean + marginOfError).toFixed(2)}]
-                    </div>
-                    <div className="text-xs text-neutral-400 mt-1">
-                      Width: {(2 * marginOfError).toFixed(2)}
-                    </div>
-                  </div>
+              </div>
+            </VisualizationSection>
+            
+            {/* Learning Insights */}
+            <VisualizationSection className="p-4">
+              <h4 className="text-sm font-semibold text-purple-400 mb-2">What You've Learned</h4>
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className={cn(
+                  "p-2 rounded border",
+                  discoveries.includes('empirical-rule') 
+                    ? "bg-green-900/20 border-green-600/30 text-green-400"
+                    : "bg-neutral-800 border-neutral-700 text-neutral-500"
+                )}>
+                  <div className="font-semibold">68-95-99.7 Rule</div>
+                  <div className="text-xs opacity-80">The three key percentages</div>
                 </div>
-              )}
-            </div>
-          </VisualizationSection>
-
-          {/* Progress indicator */}
-          <VisualizationSection className="p-4">
-            <h4 className="text-sm font-semibold text-purple-400 mb-2">Learning Progress</h4>
-            <div className="space-y-2 text-xs text-neutral-300">
-              <p>Samples generated: {totalSamples}</p>
-              {totalSamples > 0 && totalSamples < 5 && (
-                <p className="text-yellow-400">
-                  Try different sample sizes to see how n affects the CI width!
-                </p>
-              )}
-              {totalSamples >= 5 && totalSamples < 10 && (
-                <p className="text-green-400">
-                  Notice: Larger n → Smaller SE → Narrower CI → More precision!
-                </p>
-              )}
-              {totalSamples >= 10 && (
-                <p className="text-purple-400">
-                  🎓 Expert tip: Try changing the confidence level to see the trade-off between confidence and precision.
-                </p>
-              )}
-            </div>
-          </VisualizationSection>
-        </div>
-
-        {/* Right Panel - Visualization */}
-        <div className="lg:w-2/3 flex flex-col gap-4">
-          <GraphContainer height="400px">
-            <svg ref={svgRef} style={{ width: "100%", height: 400 }} />
-          </GraphContainer>
-          
-          {/* Worked Example */}
-          {showWorkedExample && sampleMean !== null && (
-            <CIWorkedExample 
-              sampleMean={sampleMean}
-              sampleSize={sampleSize}
-              populationStd={populationStd}
-              confidenceLevel={confidenceLevel}
-            />
-          )}
+                <div className={cn(
+                  "p-2 rounded border",
+                  discoveries.includes('z-scores') 
+                    ? "bg-green-900/20 border-green-600/30 text-green-400"
+                    : "bg-neutral-800 border-neutral-700 text-neutral-500"
+                )}>
+                  <div className="font-semibold">Critical Values</div>
+                  <div className="text-xs opacity-80">z = 1, 1.96, 2.576</div>
+                </div>
+                <div className={cn(
+                  "p-2 rounded border",
+                  discoveries.includes('interval-width') 
+                    ? "bg-green-900/20 border-green-600/30 text-green-400"
+                    : "bg-neutral-800 border-neutral-700 text-neutral-500"
+                )}>
+                  <div className="font-semibold">Width Pattern</div>
+                  <div className="text-xs opacity-80">Higher confidence = wider</div>
+                </div>
+                <div className={cn(
+                  "p-2 rounded border",
+                  discoveries.includes('sample-size-effect') 
+                    ? "bg-green-900/20 border-green-600/30 text-green-400"
+                    : "bg-neutral-800 border-neutral-700 text-neutral-500"
+                )}>
+                  <div className="font-semibold">Sample Size</div>
+                  <div className="text-xs opacity-80">Larger n = narrower CI</div>
+                </div>
+              </div>
+            </VisualizationSection>
+          </div>
         </div>
       </div>
     </VisualizationContainer>

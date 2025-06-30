@@ -28,32 +28,60 @@ Our goal is to create a learning experience that is as aesthetically beautiful a
 
 ### 1. Core Question
 
-*   "A pharmaceutical company claims their new drug has no effect on reaction time. We suspect it actually slows reaction time. How can we use data to challenge their claim?"
+*   "Person A claims they have a fair coin, but Person B is suspicious that it's biased against heads. How can we use data to evaluate this claim scientifically?"
 
 ---
 
 ### 2. Interactive Exploration
 
-*   **Concept:** A simple simulation.
-    *   **Setup:** A graph shows a normal distribution centered at 0, representing "No Effect" (the null hypothesis, H₀). The user is told the average reaction time change for the placebo group is 0ms.
-    *   **Interaction:** A slider labeled "Observed Mean Reaction Time" allows the user to move a vertical line on the graph. As they move the line away from 0, the area under the curve to the right of the line is shaded, and a large display shows the corresponding p-value.
-    *   **Data Story:** The user is told their sample of patients who took the drug had an average reaction time of +12ms. They slide the line to +12.
+*   **Part A: Building Intuition with Small Samples**
+    *   **Setup:** Interactive coin flipper with binomial distribution B(10, 0.5) shown below
+    *   **Interaction:** User clicks to flip coin 10 times, observes X = number of heads
+    *   **Display:** Shows probability P(X = k) for each outcome, with observed value highlighted
+    *   **Key Insight:** "With X = 4 heads, P(X = 4) = 0.205. This outcome is still quite likely for a fair coin!"
+
+*   **Part B: The Power of Larger Samples**
+    *   **Setup:** Same coin, but now flip 100 times with distribution B(100, 0.5)
+    *   **Interaction:** User runs simulation, observes 40 heads out of 100 flips
+    *   **Visualization:** Normal approximation overlay showing how unlikely this is
+    *   **Key Insight:** "With 40/100 heads, this falls in the tail of the distribution. Much more suspicious!"
+
+*   **Part C: Understanding the p-value**
+    *   **Interactive Element:** Slider to explore different observed values
+    *   **Visualization:** As slider moves, show:
+        - The observed value as a vertical line
+        - Shaded area to the left (for H₁: p < 0.5)
+        - Dynamic p-value display
+    *   **Key Teaching:** "The p-value is the area in the tail - the probability of seeing evidence this extreme or more extreme, assuming H₀ is true"
 
 ---
 
 ### 3. Facilitate Insight (The "Aha!" Moment)
 
-*   The user will see that at +12ms, the shaded area (the p-value) is very small (e.g., 0.03). The interface will state: "If the drug truly had no effect, the chance of seeing an average slowdown of +12ms or more is only 3%. Is that rare enough to be suspicious?"
+*   **Critical Realization:** Show side-by-side comparison:
+    - 4/10 heads: p-value = P(X ≤ 4) = 0.377 → "Not suspicious"
+    - 40/100 heads: p-value = P(X ≤ 40) = 0.028 → "Very suspicious!"
+*   **Key Message:** "Same proportion (40%), but vastly different evidence strength. Sample size matters!"
+*   **The Asymmetry:** "Important: Not rejecting H₀ doesn't mean we accept it. We could also fail to reject p = 0.3 or p = 0.4 with this data!"
 
 ---
 
 ### 4. Connect to Rigor
 
-*   **Formalization:** Now, introduce the formal terms from Section 6.1.
-    *   **Null Hypothesis (H₀):** The company's claim. The drug has no effect (μ = 0).
-    *   **Alternative Hypothesis (H₁ or Hₐ):** Our suspicion. The drug slows reaction time (μ > 0).
-    *   **p-value:** The probability of observing our data (or more extreme data) if the null hypothesis is true.
-    *   **Significance Level (α):** Introduce the concept of a pre-determined cutoff (e.g., α = 0.05) for making a decision. Since our p-value (0.03) is less than α, we "reject the null hypothesis."
+*   **Formalization:** Introduce the formal framework:
+    *   **Null Hypothesis (H₀):** The claim - coin is fair (p = 0.5)
+    *   **Alternative Hypothesis (H₁):** The suspicion - coin favors tails (p < 0.5)
+    *   **Test Statistic:** X = number of heads in n flips
+    *   **p-value:** P(X ≤ x_observed | H₀ is true)
+    
+*   **Decision Framework:**
+    *   If p-value ≤ α (typically 0.05): "Reject H₀ - evidence is too unlikely under the claim"
+    *   If p-value > α: "Fail to reject H₀ - not enough evidence against the claim"
+    
+*   **Critical Concepts:**
+    *   "Smaller p-value ⟺ stronger evidence against H₀"
+    *   "We never 'prove' H₀ true, we only fail to find evidence against it"
+    *   "The significance level α is chosen before seeing the data"
 
 ---
 

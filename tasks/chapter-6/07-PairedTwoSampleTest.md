@@ -29,35 +29,108 @@ Our goal is to create a learning experience that is as aesthetically beautiful a
 
 ### 1. Core Question
 
-*   "A group of 10 students takes a statistics pre-test, then a 4-week training course, and finally a post-test. Did the training course significantly improve their scores? How do we analyze this 'before and after' scenario?" (A perfect, general educational example).
+*   "10 engineers' knowledge of statistical concepts was measured before and after a quality control course. Did the course improve their understanding?"
 
 ---
 
 ### 2. Interactive Exploration
 
-*   **Concept:** A data transformation visualizer.
-    *   **Setup:** The user sees a table with two columns: "Before Scores" and "After Scores" for 10 students.
-    *   **Interaction:** The user clicks a button labeled "Analyze the Differences." The two columns animate and merge into a single new column: "Difference (After - Before)."
-    *   **Visualization:** A plot of the individual differences is shown. The component then treats this single column of differences as a new dataset.
-    *   **Calculation:** The component automatically calculates the mean and standard deviation of these differences and then runs a one-sample t-test on them, testing if the mean difference is greater than 0.
+*   **Part A: The Paired Data**
+    *   **Data Display:**
+        | Engineer | Before (X₁ᵢ) | After (X₂ᵢ) | Difference (Dᵢ) |
+        |----------|--------------|-------------|-----------------|
+        | 1 | 43 | 51 | -8 |
+        | 2 | 82 | 84 | -2 |
+        | 3 | 77 | 74 | 3 |
+        | 4 | 39 | 48 | -9 |
+        | 5 | 51 | 53 | -2 |
+        | 6 | 66 | 61 | 5 |
+        | 7 | 55 | 59 | -4 |
+        | 8 | 61 | 75 | -14 |
+        | 9 | 79 | 82 | -3 |
+        | 10 | 43 | 48 | -5 |
+    
+    *   **Key Formula:** Dᵢ = X₁ᵢ - X₂ᵢ (Before - After)
+    *   **Note:** "Negative differences indicate improvement!"
+
+*   **Part B: Why Pairing Matters**
+    *   **Scatter Plot Visualization:**
+        - Plot Before vs After scores
+        - Draw connecting lines for each engineer
+        - Show correlation r ≈ 0.85
+        - Insight: "Engineers who started high stayed high"
+    
+    *   **Variance Comparison:**
+        - Var(X₁) = 224.9, Var(X₂) = 159.4
+        - Var(D) = 31.21 (much smaller!)
+        - Animation: "Pairing removes individual variation"
+
+*   **Part C: The Transformation Animation**
+    *   **Visual Steps:**
+        1. Show full paired data table
+        2. Animate: Extract difference column
+        3. Transform: "Two-sample → One-sample problem"
+        4. Apply one-sample t-test to differences
+    
+    *   **Test Setup:**
+        - H₀: μD = 0 (no improvement)
+        - H₁: μD < 0 (improvement)
+        - Test statistic: T = D̄/(SD/√n)
 
 ---
 
 ### 3. Facilitate Insight (The "Aha!" Moment)
 
-*   The user's "aha!" moment is seeing a seemingly complex two-sample problem visually transform into a simple one-sample problem they already know how to solve. They realize the power of the paired design is in controlling for individual variability (e.g., some students are just naturally better at stats) and focusing only on the *change*.
+*   **Calculations:**
+    - D̄ = -3.9 (average improvement)
+    - SD² = 31.21, SD = 5.59
+    - t₀ = -3.9/(5.59/√10) = -2.21
+    - df = 10 - 1 = 9
+    - Critical value: t₀.₀₅(9) = 1.833
+    - p-value ≈ 0.027
+
+*   **Power of Pairing Demonstration:**
+    | Method | Test Statistic | p-value | Decision (α=0.05) |
+    |--------|---------------|---------|-------------------|
+    | Paired t-test | -2.21 | 0.027 | Reject H₀ ✓ |
+    | Unpaired t-test | -1.31 | 0.107 | Fail to reject |
+    
+    "Same data, different analysis, different conclusions!"
+
+*   **When to Use Paired Design:**
+    - Before/after measurements
+    - Matched pairs (twins, split plots)
+    - Repeated measures on same subject
+    - "Key: Natural pairing exists"
 
 ---
 
 ### 4. Connect to Rigor
 
-*   **Formalization:** Explain the logic of the paired t-test.
-    *   **Hypotheses:** State the hypotheses in terms of the mean difference (μ_d).
-        *   H₀: μ_d = 0 (There is no change)
-        *   H₁: μ_d > 0 (The course improved scores)
-    *   **Formula:** Show the t-statistic formula, making it clear it's the same one-sample t-test formula, but applied to the difference data.
-        *   `t = (d̄ - 0) / (s_d / √n)`
-    *   **Explanation:** Emphasize that this method is only appropriate when the data points in the two samples are naturally paired (e.g., same person before/after, two measurements on the same specimen).
+*   **Complete Paired t-Test Framework:**
+    ```
+    1. Verify pairing is appropriate
+    2. Calculate differences: Dᵢ = X₁ᵢ - X₂ᵢ
+    3. State hypotheses about μD
+    4. Calculate: D̄ = ΣDᵢ/n, SD² = Σ(Dᵢ-D̄)²/(n-1)
+    5. Test statistic: T = D̄/(SD/√n) ~ t(n-1)
+    6. Compare to critical value or find p-value
+    ```
+
+*   **Assumptions:**
+    - Differences Dᵢ are approximately normal
+    - Pairs are independent of each other
+    - Same measurement scale for both groups
+
+*   **Efficiency Gain:**
+    - Paired design variance: Var(D) = Var(X₁) + Var(X₂) - 2Cov(X₁,X₂)
+    - When correlation is high, Var(D) << Var(X₁) + Var(X₂)
+    - "Higher correlation → More powerful test"
+
+*   **Common Mistakes:**
+    - Using paired test on independent samples
+    - Ignoring natural pairing in data
+    - "Always check: Is there a logical pairing?"
 
 ---
 

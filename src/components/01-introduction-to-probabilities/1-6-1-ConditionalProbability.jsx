@@ -9,6 +9,7 @@ import {
 } from '../ui/VisualizationContainer';
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
 import { Button } from '../ui/button';
+import { MathematicalDiscoveries, useDiscoveries } from '../ui/MathematicalDiscoveries';
 import { tutorial_1_6_1 } from '@/tutorials/chapter1';
 
 // Use probability color scheme
@@ -328,6 +329,42 @@ function ConditionalProbability() {
   const [eventHistory, setEventHistory] = useState({ A: 0, B: 0, C: 0, AB: 0, AC: 0, BC: 0, ABC: 0, none: 0 });
   const [targetSamples, setTargetSamples] = useState(1000);
   const [activeTab, setActiveTab] = useState('visualization'); // New state for tabs
+  
+  // Mathematical discoveries tracking
+  const discoveryDefinitions = [
+    {
+      id: 'independence',
+      title: 'Independence Discovery',
+      description: 'Two events are independent when P(B|A) = P(B). The occurrence of one doesn\'t affect the other.',
+      formula: 'P(B|A) = P(B) \\Leftrightarrow P(A \\cap B) = P(A) \\times P(B)',
+      category: 'concept'
+    },
+    {
+      id: 'perspective',
+      title: 'Conditional Perspective Mastery',
+      description: 'Conditioning changes the reference frame. The "universe" shrinks to only include outcomes where the condition is true.',
+      formula: 'P(B|A) = \\frac{P(A \\cap B)}{P(A)}',
+      category: 'concept'
+    },
+    {
+      id: 'bayes',
+      title: 'Bayes\' Theorem Understanding',
+      description: 'Forward and backward conditional probabilities are related through Bayes\' theorem.',
+      formula: 'P(A|B) = \\frac{P(B|A) \\times P(A)}{P(B)}',
+      category: 'formula'
+    },
+    {
+      id: 'complement',
+      title: 'Complement Rule',
+      description: 'Within any perspective, probabilities sum to 1.',
+      formula: 'P(A|B) + P(A^\\prime|B) = 1',
+      category: 'formula'
+    }
+  ];
+  
+  const { discoveries, markDiscovered } = useDiscoveries(discoveryDefinitions);
+  const [perspectiveChangeCount, setPerspectiveChangeCount] = useState(0);
+  const [hasExploredBayes, setHasExploredBayes] = useState(false);
   
   const svgBallRef = useRef(null);
   const svgProbRef = useRef(null);
@@ -1189,6 +1226,49 @@ function ConditionalProbability() {
     setIsAnimating(false);
   }
   
+  // Track perspective changes
+  useEffect(() => {
+    if (currentPerspective !== 'universe') {
+      setPerspectiveChangeCount(prev => {
+        const newCount = prev + 1;
+        if (newCount >= 3) {
+          markDiscovered('perspective');
+        }
+        return newCount;
+      });
+    }
+  }, [currentPerspective, markDiscovered]);
+  
+  // Check for independence discovery
+  useEffect(() => {
+    const EPSILON = 0.01;
+    
+    // Check A and B independence
+    const pA = eventsData[0].width;
+    const pB = eventsData[1].width;
+    const pAB = calcEventOverlap(eventsData[0], eventsData[1]);
+    
+    if (pA > 0 && pB > 0) {
+      const pBgivenA = pAB / pA;
+      const isIndependent = Math.abs(pBgivenA - pB) < EPSILON;
+      
+      if (isIndependent && samplesDropped > 10) {
+        markDiscovered('independence');
+      }
+    }
+    
+    // Check if user has explored Bayes by changing tabs
+    if (activeTab === 'mathematical' && !hasExploredBayes) {
+      setHasExploredBayes(true);
+      markDiscovered('bayes');
+    }
+    
+    // Check complement rule understanding
+    if (samplesDropped > 50 && currentPerspective !== 'universe') {
+      markDiscovered('complement');
+    }
+  }, [eventsData, samplesDropped, activeTab, currentPerspective, hasExploredBayes, markDiscovered]);
+  
   // Reset visualization
   function reset() {
     stopAnimation();
@@ -1364,6 +1444,14 @@ function ConditionalProbability() {
                 {samplesDropped >= 30 && <span className="text-sm text-green-400 ml-2">✓ Converged</span>}
               </span>
             </div>
+          </VisualizationSection>
+          
+          {/* Mathematical Discoveries */}
+          <VisualizationSection className="p-4">
+            <MathematicalDiscoveries 
+              discoveries={discoveries}
+              title="Probability Discoveries"
+            />
           </VisualizationSection>
         </div>
 

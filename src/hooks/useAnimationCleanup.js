@@ -128,7 +128,7 @@ export function useAnimationState() {
   // Cleanup on unmount
   useEffect(() => {
     return stopAnimation;
-  }, []);
+  }, [stopAnimation]);
   
   return {
     startAnimation,

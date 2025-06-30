@@ -9,7 +9,6 @@ import {
 } from '../ui/VisualizationContainer';
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
 import { Button } from '../ui/button';
-import { ProgressTracker } from '../ui/ProgressTracker';
 import { tutorial_1_3_1 } from '@/tutorials/chapter1';
 
 // Use probability color scheme
@@ -131,9 +130,19 @@ function OrderedSamples() {
   const [allSequences, setAllSequences] = useState([]);
   const [sequenceCount, setSequenceCount] = useState(0);
   const [showWorkedExample, setShowWorkedExample] = useState(true);
+  const [hasTriedWithReplacement, setHasTriedWithReplacement] = useState(false);
+  const [hasTriedWithoutReplacement, setHasTriedWithoutReplacement] = useState(false);
+  const [hasComparedModes, setHasComparedModes] = useState(false);
   
   const svgRef = useRef(null);
   const animationRef = useRef(null);
+  
+  // Track when both modes have been tried
+  useEffect(() => {
+    if (hasTriedWithReplacement && hasTriedWithoutReplacement) {
+      setHasComparedModes(true);
+    }
+  }, [hasTriedWithReplacement, hasTriedWithoutReplacement]);
   
   // Calculate total possible sequences
   function calculateTotal() {
@@ -475,6 +484,13 @@ function OrderedSamples() {
     setAllSequences(prev => [...prev.slice(-9), sequence]);
     setSequenceCount(prev => prev + 1);
     
+    // Track which modes have been tried
+    if (withReplacement) {
+      setHasTriedWithReplacement(true);
+    } else {
+      setHasTriedWithoutReplacement(true);
+    }
+    
     // Animation duration
     const stepDuration = withReplacement ? 1200 : 800;
     const duration = r * stepDuration + 500;
@@ -677,61 +693,74 @@ function OrderedSamples() {
             )}
           </VisualizationSection>
 
-          {/* Learning Progress */}
+          {/* Mathematical Discoveries */}
           <VisualizationSection className="p-3">
-            <h4 className="text-sm font-semibold text-purple-400 mb-2">Sampling Insights</h4>
+            <h4 className="text-sm font-semibold text-purple-400 mb-2">Sampling Discoveries</h4>
             
-            <ProgressTracker 
-              current={sequenceCount} 
-              goal={20} 
-              label="Sequences Drawn"
-              color="purple"
-            />
-            
-            <div className="space-y-2 text-xs text-neutral-300 mt-3">
+            <div className="space-y-3 text-xs text-neutral-300">
               {sequenceCount === 0 && (
                 <div>
-                  <p>🎯 Ready to explore ordered sampling?</p>
+                  <p className="text-neutral-400">Draw sequences to explore ordered sampling.</p>
                   <p className="text-purple-300 mt-1">
-                    Draw sequences to see how permutations work!
+                    Try both "with replacement" and "without replacement" modes.
                   </p>
                 </div>
               )}
-              {sequenceCount > 0 && sequenceCount < 5 && (
-                <div>
-                  <p>📊 Notice the difference:</p>
-                  <ul className="ml-3 mt-1 space-y-1">
-                    <li>• With replacement: balls return to bag</li>
-                    <li>• Without replacement: each ball used once</li>
-                  </ul>
+              
+              {hasTriedWithReplacement && !hasTriedWithoutReplacement && (
+                <div className="p-2 bg-blue-900/20 border border-blue-600/30 rounded">
+                  <p className="font-medium text-blue-400">With Replacement Discovered!</p>
+                  <p className="mt-1">Each position has {n} choices (balls return to bag)</p>
+                  <p className="mt-1">Total sequences: n^r = {n}^{r} = {Math.pow(n, r)}</p>
                 </div>
               )}
-              {sequenceCount >= 5 && sequenceCount < 10 && (
-                <div>
-                  <p>🎓 Key observation:</p>
-                  <p className="mt-1">
-                    {withReplacement 
-                      ? `With replacement, you have ${n} choices at each step!`
-                      : `Without replacement, choices decrease: ${n}, ${n-1}, ${n-2}...`
-                    }
+              
+              {hasTriedWithoutReplacement && !hasTriedWithReplacement && (
+                <div className="p-2 bg-green-900/20 border border-green-600/30 rounded">
+                  <p className="font-medium text-green-400">Without Replacement Discovered!</p>
+                  <p className="mt-1">Choices decrease: {n}, {n-1}, {n-2}...</p>
+                  <p className="mt-1">Total: P({n},{r}) = {calculateTotal()}</p>
+                </div>
+              )}
+              
+              {hasComparedModes && (
+                <>
+                  <div className="p-2 bg-purple-900/20 border border-purple-600/30 rounded">
+                    <p className="font-medium text-purple-400">Key Comparison Found!</p>
+                    <p className="mt-1 space-y-1">
+                      <span className="block">With replacement: {Math.pow(n, r)} sequences</span>
+                      <span className="block">Without replacement: {calculateTotal()} sequences</span>
+                    </p>
+                    <p className="mt-2 text-yellow-400">
+                      Ratio: {(Math.pow(n, r) / calculateTotal()).toFixed(2)}x more with replacement
+                    </p>
+                  </div>
+                </>
+              )}
+              
+              {sequenceCount > 0 && (
+                <div className="p-2 bg-neutral-800 rounded">
+                  <p className="text-neutral-400">Current Mode: {withReplacement ? 'With' : 'Without'} Replacement</p>
+                  <p className="font-mono text-sm mt-1">
+                    {sequenceCount} sequence{sequenceCount > 1 ? 's' : ''} drawn
                   </p>
+                  {allSequences.length > 0 && (
+                    <div className="mt-2 text-xs">
+                      <p className="text-neutral-500">Recent sequences:</p>
+                      {allSequences.slice(-3).map((seq, i) => (
+                        <div key={i} className="font-mono text-cyan-400">
+                          {seq.join('-')}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
-              {sequenceCount >= 10 && sequenceCount < 20 && (
-                <div>
-                  <p>🔥 Excellent progress! Compare the formulas:</p>
-                  <ul className="ml-3 mt-1 space-y-1">
-                    <li>• With replacement: n^r = {Math.pow(n, r)}</li>
-                    <li>• Without: P(n,r) = n!/(n-r)! = {calculateTotal()}</li>
-                  </ul>
-                </div>
-              )}
-              {sequenceCount >= 20 && (
-                <div>
-                  <p className="text-green-400 font-semibold mb-1">
-                    ✨ Permutation Expert! {sequenceCount} sequences drawn.
-                  </p>
-                  <p>Try changing modes to compare the total possibilities!</p>
+              
+              {(r > n && !withReplacement) && (
+                <div className="text-yellow-400 italic">
+                  <p>Note: r {'>'} n without replacement</p>
+                  <p>No valid sequences possible!</p>
                 </div>
               )}
             </div>

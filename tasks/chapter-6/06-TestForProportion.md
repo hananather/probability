@@ -29,38 +29,103 @@ Our goal is to create a learning experience that is as aesthetically beautiful a
 
 ### 1. Core Question
 
-*   "A politician's approval rating was 52% last month. After a recent policy announcement, a new poll of 1000 people shows a 49% approval rating. Is this a real drop in support, or is it just random sampling noise?" (A classic, general social-science example).
+*   "100 adult American Catholics were asked: 'Do you favor allowing women to be priests?' 60 answered 'Yes'. Is this strong evidence that more than half favor this change?"
 
 ---
 
 ### 2. Interactive Exploration
 
-*   **Concept:** An interactive calculator focused on proportions.
-    *   **Setup:** The component is framed around the polling scenario. It has inputs for:
-        1.  **Hypothesized Proportion (p₀):** e.g., 0.52
-        2.  **Number of Successes (x):** e.g., 490
-        3.  **Sample Size (n):** e.g., 1000
-    *   **Calculation:** The tool calculates the sample proportion (p̂ = x/n), the z-statistic, and the p-value.
-    *   **Visualization:** A normal distribution is shown, representing the sampling distribution of the proportion. The calculated z-statistic and p-value are highlighted.
+*   **Part A: The Binomial Foundation**
+    *   **Setup:** 
+        - Let X = number who favor (X = 60)
+        - X ~ B(100, p) where p = true proportion
+        - H₀: p = 0.5 vs H₁: p > 0.5
+    
+    *   **Exact Binomial vs Normal Approximation:**
+        - Show histogram of B(100, 0.5)
+        - Overlay normal curve N(50, 25)
+        - Highlight X = 60 on both
+        - Display: "Exact: P(X ≥ 60) = 0.0284"
+
+*   **Part B: The Continuity Correction**
+    *   **Visual Demonstration:**
+        - Zoom on bars 59, 60, 61
+        - Animate: "Discrete X = 60 → Continuous interval [59.5, 60.5]"
+        - Show why P(X ≥ 60) ≈ P(Z ≥ 59.5)
+    
+    *   **Calculation Comparison:**
+        | Method | Calculation | p-value |
+        |--------|------------|---------|
+        | Without correction | P(Z ≥ 60-50)/5 = P(Z ≥ 2.0) | 0.0228 |
+        | With correction | P(Z ≥ 59.5-50)/5 = P(Z ≥ 1.9) | 0.0287 |
+        | Exact binomial | P(X ≥ 60 \| p = 0.5) | 0.0284 |
+
+*   **Part C: Large Counts Condition Checker**
+    *   **Interactive Validator:**
+        - Input: n, p₀
+        - Check: np₀ ≥ 10 and n(1-p₀) ≥ 10
+        - Visual indicator:
+          - Green: "✓ Conditions met"
+          - Yellow: "⚠ Borderline (5-10)"
+          - Red: "✗ Use exact binomial test"
+    
+    *   **Examples Grid:**
+        | n | p₀ | np₀ | n(1-p₀) | Status |
+        |---|----|----|---------|--------|
+        | 100 | 0.5 | 50 | 50 | ✓ Good |
+        | 20 | 0.5 | 10 | 10 | ✓ Minimum |
+        | 30 | 0.1 | 3 | 27 | ✗ Fail |
 
 ---
 
 ### 3. Facilitate Insight (The "Aha!" Moment)
 
-*   The user enters the data and gets a z-statistic of approximately -1.90 and a p-value of ~0.057 (for a two-tailed test).
-*   The interface concludes: "The p-value is slightly above 0.05. We fail to reject the null hypothesis. We don't have strong enough evidence to conclude the politician's support has definitively changed."
-*   The user can then change the sample size to 2000 (with 980 successes) and see the p-value drop significantly, demonstrating how more data provides more conclusive evidence.
+*   **Key Discoveries:**
+    1. "Continuity correction improves accuracy: 0.0287 vs 0.0284"
+    2. "Without large counts, normal approximation fails badly"
+    3. "Same proportion (60%) can be significant or not depending on n"
+
+*   **Sample Size Explorer:**
+    - Fix p̂ = 0.6, vary n
+    - n = 25: X = 15, p-value = 0.212 (not significant)
+    - n = 100: X = 60, p-value = 0.029 (significant)
+    - n = 400: X = 240, p-value < 0.001 (highly significant)
+    - "More data → Stronger conclusions"
 
 ---
 
 ### 4. Connect to Rigor
 
-*   **Formalization:** Display the formula for the one-proportion z-test.
-    *   `z = (p̂ - p₀) / √((p₀ * (1 - p₀)) / n)`
-*   **Explanation:** Explain the components, especially the standard error term, which is derived from the properties of the binomial distribution.
-*   **Assumptions (Conditions):** Clearly state the conditions required for the test to be valid:
-    1.  **Random Sample:** The data must be from a random sample.
-    2.  **Large Counts:** The sample must be large enough such that `n*p₀` and `n*(1-p₀)` are both at least 10. The interface should check this and show a warning if the condition is not met.
+*   **Complete Framework for Proportion Tests:**
+    ```
+    1. Check conditions:
+       - Random sample
+       - np₀ ≥ 10 and n(1-p₀) ≥ 10
+    
+    2. State hypotheses:
+       H₀: p = p₀
+    
+    3. Calculate test statistic:
+       z = (p̂ - p₀) / √(p₀(1-p₀)/n)
+    
+    4. Apply continuity correction (if using normal):
+       - For H₁: p > p₀, use (X - 0.5)
+       - For H₁: p < p₀, use (X + 0.5)
+       - For H₁: p ≠ p₀, use (|X - np₀| - 0.5)
+    
+    5. Find p-value and decide
+    ```
+
+*   **Standard Error Insight:**
+    - SE(p̂) = √(p(1-p)/n)
+    - Under H₀, use p₀: SE = √(p₀(1-p₀)/n)
+    - "Maximum SE when p = 0.5"
+    - Interactive plot: SE vs p for different n
+
+*   **Connection to Confidence Intervals:**
+    - Test at α ⟺ p₀ outside (1-α)% CI
+    - But CI uses p̂ for SE, test uses p₀
+    - "Slight difference in formulas!"
 
 ---
 
