@@ -1,148 +1,179 @@
-# Plan: 7.1 - Coefficient of Correlation
+# Plan: 7.1 - Correlation Coefficient
 
-### **Component Development Mandate**
+## Component Development Mandate
 
-**Guiding Philosophy: Rigorous, Beautiful, and Insightful Guided Discovery.**
-Our goal is to create a learning experience that is as aesthetically beautiful and intellectually satisfying as it is mathematically rigorous. We are building the world's best interactive textbook, inspired by the clarity and elegance of platforms like `brilliant.org`. The priority is **optimal teaching**, not gamification.
+**CRITICAL: LaTeX Rendering Best Practices**
+- **ALWAYS** use `dangerouslySetInnerHTML` for ALL LaTeX content
+- Follow the pattern in `/docs/latex-guide.md` exactly
+- Use the processMathJax() + setTimeout(..., 100) pattern
+- Wrap LaTeX sections in React.memo to prevent re-rendering issues
+- See reference: `/src/components/06-hypothesis-testing/6-3-1-ErrorsAndPower.jsx`
 
-**Core Mandates:**
-1.  **Pedagogy First, Interaction Second:** The primary goal is to teach. Interactions must be purposeful, low-bug, and directly serve to build intuition. Prefer curated animations and controlled interactions over complex, bug-prone drag-and-drop interfaces.
-2.  **Aesthetic Excellence & Brand Consistency:**
-    *   **Internal Consistency is Key:** The new components for this chapter must feel like a natural extension of the existing ones. Use the color schemes, animation styles, and layout patterns already established in the codebase.
-    *   **Typography & Layout:** Follow the established design system. Use `font-mono` for numbers, maintain clear visual hierarchies, and ensure layouts are clean, uncluttered, and content-driven.
-3.  **Mathematical & Technical Rigor:**
-    *   **Content:** All content must be derived from the official course materials for the relevant chapter, but examples must be generalized to be accessible to a broad university audience (science, social science, engineering, etc.).
-    *   **LaTeX:** All mathematical notation must strictly adhere to the best practices outlined in `/docs/latex-guide.md`.
-4.  **Reference Gold Standards:**
-    *   **Pedagogy & Interaction:** `/src/components/01-introduction-to-probabilities/1-7-monty-hall/`
-    *   **Visual Design:** `/src/components/shared/CLTSimulation.jsx`
-    *   **UI & Aesthetics:** `https://brilliant.org/wiki/best/`
+**Gold Standard Task Files:**
+- `/Users/hananather/Desktop/Javascript/prob-lab/tasks/chapter-6/09-DifferenceOfTwoProportions.md`
+- `/Users/hananather/Desktop/Javascript/prob-lab/tasks/chapter-6/03-ErrorsAndPower.md`
 
----
+**Guiding Philosophy:** Create a version that prioritizes rigorous learning with clear explanations, mathematical formulations, and meaningful interactions that reinforce understanding.
 
-**Component Type:** Guided Discovery Experience
+**Core Development Principles:**
+1. **Mathematical Rigor + Interactivity**: Focus on teaching correlation through meaningful visualizations
+2. **Reuse Existing Components**: Use VisualizationContainer, GraphContainer, ControlGroup
+3. **Follow Chapter 6 Style**: Match the structure of ErrorsAndPower and DifferenceOfTwoProportions
+4. **Simplicity**: Avoid complex drag-and-drop; use controlled interactions
+5. **LaTeX Excellence**: Every mathematical expression must follow `/docs/latex-guide.md` best practices
 
-**Guiding Philosophy:** This component introduces correlation as a measure of linear association strength. Users will discover that correlation captures linear relationships but can miss non-linear patterns.
+## Component Structure
 
----
+**Reference Implementation Components:**
+- `/src/components/06-hypothesis-testing/6-3-1-ErrorsAndPower.jsx`
+- `/src/components/06-hypothesis-testing/6-9-1-DifferenceOfTwoProportions.jsx`
 
-### 1. Core Question
+### 1. Opening Section
+```jsx
+// Hypothesis Display equivalent - Show what we're exploring
+const CorrelationIntroduction = React.memo(function CorrelationIntroduction() {
+  // LaTeX-enabled introduction
+  // "How strong is the linear relationship between X and Y?"
+  // Show the correlation coefficient formula
+});
+```
 
-*   "How can we measure the strength of a linear relationship between two variables?"
+### 2. Mathematical Framework
+Following the pattern from DifferenceOfTwoProportions:
+```jsx
+const MathematicalFramework = React.memo(function MathematicalFramework() {
+  // Grid layout with formula cards
+  // Card 1: Population correlation ρ = Cov(X,Y)/(σx×σy)
+  // Card 2: Sample correlation r = Sxy/√(Sxx×Syy)
+  // Card 3: Interpretation scale (-1 to +1)
+});
+```
 
----
+### 3. Main Interactive Visualization
+```jsx
+const CorrelationExplorer = () => {
+  // State for scenario selection
+  const [scenario, setScenario] = useState('strong-positive');
+  
+  // Pre-defined scenarios with different correlation values
+  const scenarios = {
+    'perfect-positive': { data: [...], rho: 1.0 },
+    'strong-positive': { data: [...], rho: 0.85 },
+    'moderate': { data: [...], rho: 0.50 },
+    'none': { data: [...], rho: 0.0 },
+    'strong-negative': { data: [...], rho: -0.85 }
+  };
+  
+  // Main scatter plot with d3
+  // Correlation value display
+  // Interpretation guide
+};
+```
 
-### 2. Interactive Exploration
+### 4. Worked Example Component
+Following ErrorsAndPower pattern:
+```jsx
+const WorkedExample = React.memo(function WorkedExample() {
+  // Step-by-step calculation using fuel quality data
+  // Given: n=20 points, calculate correlation
+  // Show all intermediate steps with LaTeX
+  // Final result: r = 0.9367
+});
+```
 
-*   **Part A: Building Intuition with Scatter Plots**
-    *   **Interactive Scatter Plot:**
-        - Start with fuel data (n = 20 points)
-        - Display real-time correlation coefficient ρ
-        - Allow user to drag individual points
-        - Color-code points: blue for typical, red when dragged
-        - Show how moving points affects ρ
-    
-    *   **Key Observations Panel:**
-        - "Current ρ = 0.937"
-        - "Strength: Very Strong Positive"
-        - Visual indicator: |————●———| (-1 to +1 scale)
+### 5. Key Insights Section
+```jsx
+const KeyInsights = () => {
+  // Three tabbed insights:
+  // 1. Correlation ≠ Causation (with examples)
+  // 2. Linear relationships only (show non-linear examples)
+  // 3. Scale invariance (unit conversion demo)
+};
+```
 
-*   **Part B: The Correlation Spectrum**
-    *   **Gallery of Relationships:**
-        | Dataset | Scatter Plot | ρ value | Interpretation |
-        |---------|-------------|---------|----------------|
-        | Perfect Positive | Points on line ↗ | +1.00 | Exact linear |
-        | Strong Positive | Tight cloud ↗ | +0.85 | Clear trend |
-        | Moderate | Loose cloud ↗ | +0.50 | Some association |
-        | None | Random scatter | 0.00 | No linear pattern |
-        | Strong Negative | Tight cloud ↘ | -0.85 | Inverse trend |
-        | Perfect Negative | Points on line ↘ | -1.00 | Exact inverse |
-    
-    *   **Interactive Feature:** Click any plot to load it into main explorer
+### 6. Visual Components
 
-*   **Part C: Understanding the Formula**
-    *   **Visual Decomposition:**
-        ```
-        ρ = Σ(x - x̄)(y - ȳ) / √[Σ(x - x̄)² × Σ(y - ȳ)²]
-        ```
-    
-    *   **Step-by-Step Calculation:**
-        1. Show deviations from means: (x - x̄), (y - ȳ)
-        2. Highlight products: positive (blue) vs negative (red)
-        3. Animate summation process
-        4. Show standardization by standard deviations
-    
-    *   **Interactive Calculator:**
-        - Input your own data (up to 10 points)
-        - See calculation unfold step-by-step
-        - Compare manual vs formula result
+**Correlation Strength Indicator:**
+```jsx
+const CorrelationStrengthBar = ({ value }) => {
+  // Visual bar showing correlation strength
+  // Color-coded: blue for positive, red for negative
+  // Labels: Very Weak | Weak | Moderate | Strong | Very Strong
+};
+```
 
----
+**Scatter Plot Component:**
+```jsx
+const ScatterPlot = ({ data, width, height }) => {
+  // D3-based scatter plot
+  // Show correlation line
+  // Highlight deviations from means
+  // Animate transitions between scenarios
+};
+```
 
-### 3. Facilitate Insight (The "Aha!" Moment)
+### 7. Implementation Requirements
 
-*   **Key Insight 1: Correlation ≠ Causation**
-    *   **Example Gallery:**
-        - Ice cream sales vs drownings (ρ = 0.82)
-        - Number of firefighters vs damage (ρ = 0.91)
-        - Shoe size vs reading ability in children (ρ = 0.78)
-    *   **Hidden Variable Reveal:** Temperature, fire size, age
-    
-*   **Key Insight 2: Non-linear Relationships**
-    *   **Interactive Demo:**
-        - Perfect parabola: y = x², ρ ≈ 0
-        - Perfect circle: x² + y² = 1, ρ = 0
-        - Exponential: y = eˣ, ρ = 0.65 (misleading!)
-    *   **Message:** "ρ only measures LINEAR association"
+**State Management:**
+```jsx
+const [scenario, setScenario] = useState('strong-positive');
+const [showCalculation, setShowCalculation] = useState(false);
+const [showDeviations, setShowDeviations] = useState(false);
+```
 
-*   **Key Insight 3: Sensitivity to Outliers**
-    *   **Outlier Explorer:**
-        - Dataset with ρ = 0.3
-        - Add one outlier → ρ jumps to 0.8
-        - Remove outlier → back to 0.3
-    *   **Lesson:** "Single points can dramatically affect ρ"
+**Data Structure:**
+```javascript
+const fuelQualityData = [
+  { x: 0.99, y: 90.01 },
+  { x: 1.02, y: 89.05 },
+  // ... 20 points total
+];
+```
 
----
+**Calculations:**
+```javascript
+const calculateCorrelation = (data) => {
+  // Calculate means
+  // Calculate Sxx, Syy, Sxy
+  // Return correlation coefficient
+};
+```
 
-### 4. Connect to Rigor
+### 8. Layout Structure
 
-*   **Formal Definition:**
-    ```
-    Sample Correlation Coefficient:
-    ρXY = Sxy / √(Sxx × Syy)
-    
-    where:
-    Sxy = Σ(xi - x̄)(yi - ȳ) = Σxiyi - nx̄ȳ
-    Sxx = Σ(xi - x̄)² = Σxi² - nx̄²
-    Syy = Σ(yi - ȳ)² = Σyi² - nȳ²
-    ```
+Following Chapter 6 components:
+1. BackToHub navigation
+2. VisualizationContainer wrapper
+3. Title and introduction
+4. Mathematical framework grid
+5. Main interactive section with controls
+6. Worked example in expandable section
+7. Key insights cards
 
-*   **Properties of ρ:**
-    1. **Range:** -1 ≤ ρ ≤ 1 always
-    2. **Symmetry:** ρXY = ρYX
-    3. **Scale Invariant:** Linear transformations don't change ρ
-    4. **Unit Free:** No units, pure number
-    
-*   **Interpretation Guidelines:**
-    | |ρ| Range | Strength |
-    |----------|----------|
-    | 0.8 - 1.0 | Very strong |
-    | 0.6 - 0.8 | Strong |
-    | 0.4 - 0.6 | Moderate |
-    | 0.2 - 0.4 | Weak |
-    | 0.0 - 0.2 | Very weak |
+### 9. Specific Features to Include
 
-*   **Connection to Regression:**
-    - Preview: "ρ² will become R² (coefficient of determination)"
-    - Slope formula uses ρ: b₁ = ρ × (sy/sx)
+1. **Scenario Selector**: Button group to switch between correlation patterns
+2. **Real-time Updates**: Show correlation value changing during transitions
+3. **Interpretation Guide**: Visual scale showing correlation strength
+4. **Step-by-Step Calculation**: Expandable section with full computation
+5. **Non-Linear Examples**: Show why correlation misses curved relationships
 
-*   **Computational Example:**
-    ```
-    Fuel Data:
-    Sxy = 10.18, Sxx = 0.68, Syy = 173.38
-    ρ = 10.18 / √(0.68 × 173.38) = 0.937
-    ```
+### 10. Technical Notes
 
----
+**Animation Requirements:**
+- Smooth transitions between scenarios (1.5s duration)
+- Use framer-motion for component transitions
+- D3 transitions for scatter plot updates
 
-**Reference Implementation:** This component will combine interactive scatter plots similar to regression visualizations with the calculation transparency of statistical components.
+**Performance Considerations:**
+- Pre-calculate all scenario data
+- Use React.memo for LaTeX-heavy sections
+- Limit to 20-30 points per visualization
+
+**Color Scheme:**
+```javascript
+const colors = createColorScheme('regression');
+// Use consistent colors across Chapter 7
+```
+
+**File Location:** `/src/components/07-linear-regression/7-1-CorrelationCoefficient.jsx`

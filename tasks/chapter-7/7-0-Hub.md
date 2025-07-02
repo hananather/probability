@@ -1,114 +1,167 @@
 # Plan: 7.0 - Linear Regression and Correlation Hub
 
-### **Component Development Mandate**
+## Component Development Mandate
 
-**Guiding Philosophy: Rigorous, Beautiful, and Insightful Guided Discovery.**
-Our goal is to create a learning experience that is as aesthetically beautiful and intellectually satisfying as it is mathematically rigorous. We are building the world's best interactive textbook, inspired by the clarity and elegance of platforms like `brilliant.org`. The priority is **optimal teaching**, not gamification.
+**CRITICAL: LaTeX Rendering Best Practices**
+- **ALWAYS** use `dangerouslySetInnerHTML` for ALL LaTeX content
+- Follow the pattern in `/docs/latex-guide.md` exactly
+- Use the processMathJax() + setTimeout(..., 100) pattern
+- Wrap LaTeX sections in React.memo to prevent re-rendering issues
+- See reference: `/src/components/06-hypothesis-testing/6-3-1-ErrorsAndPower.jsx`
 
-**Core Mandates:**
-1.  **Pedagogy First, Interaction Second:** The primary goal is to teach. Interactions must be purposeful, low-bug, and directly serve to build intuition. Prefer curated animations and controlled interactions over complex, bug-prone drag-and-drop interfaces.
-2.  **Aesthetic Excellence & Brand Consistency:**
-    *   **Internal Consistency is Key:** The new components for this chapter must feel like a natural extension of the existing ones. Use the color schemes, animation styles, and layout patterns already established in the codebase.
-    *   **Typography & Layout:** Follow the established design system. Use `font-mono` for numbers, maintain clear visual hierarchies, and ensure layouts are clean, uncluttered, and content-driven.
-3.  **Mathematical & Technical Rigor:**
-    *   **Content:** All content must be derived from the official course materials for the relevant chapter, but examples must be generalized to be accessible to a broad university audience (science, social science, engineering, etc.).
-    *   **LaTeX:** All mathematical notation must strictly adhere to the best practices outlined in `/docs/latex-guide.md`.
-4.  **Reference Gold Standards:**
-    *   **Pedagogy & Interaction:** `/src/components/01-introduction-to-probabilities/1-7-monty-hall/`
-    *   **Hub Design:** `/src/components/04-descriptive-statistics-sampling/4-1-central-tendency/`
-    *   **UI & Aesthetics:** `https://brilliant.org/wiki/best/`
+**Core Development Principles:**
+1. **Mathematical Rigor + Interactivity**: Components should teach mathematical concepts through meaningful interactions
+2. **Reuse Existing Components**: Use established UI components and patterns from the codebase
+3. **Visual Cohesion**: Follow Chapter 6 hub style exactly
+4. **Simplicity**: Focus on core concepts, avoid complex animations that don't serve learning
 
----
+## Hub Component Structure
 
-## Hub Component Design
+**IMPORTANT**: Use the existing `ChapterHub` component from `/src/components/shared/ChapterHub.jsx`
+**Reference**: `/src/components/06-hypothesis-testing/6-0-HypothesisTestingHub.jsx` (but WITHOUT the coin flip animation)
 
-### 1. Opening Hook: The Prediction Challenge
-*   **Interactive Visual Anchor:** 
-    - Scatter plot with 20 points (hydrocarbon vs oxygen levels)
-    - As user hovers, show coordinate values
-    - Toggle to add/remove trend line
-    - Real-time correlation coefficient display
-*   **Core Question:** "Can we predict oxygen purity from hydrocarbon levels? How confident can we be in our predictions?"
-*   **Quick Insight:** User sees points cluster around a hidden line, correlation ρ ≈ 0.94
+### 1. NO Opening Animation
+Unlike Chapter 6, we will NOT include an interactive opening animation. The hub should be clean and straightforward, focusing on navigation to the chapter sections. The ChapterHub component already provides all the functionality we need.
 
-### 2. Core Introduction
-**What is Linear Regression?**
-"Linear regression reveals relationships between variables, allowing us to predict one from another. It's the foundation of predictive modeling, from weather forecasting to stock market analysis."
-
-**The Journey:**
-- First, measure the relationship strength (correlation)
-- Then, find the best prediction line (regression)
-- Finally, quantify our confidence (intervals and tests)
-
-### 3. Learning Journey Visualization
-A visual progression showing:
-```
-Scatter Plot → Correlation → Best Fit Line → Predictions → Confidence
-    (Data)     (Strength)    (Model)       (Application) (Reliability)
+### 2. Key Concepts Card
+Following Chapter 6 pattern exactly:
+```jsx
+const concepts = [
+  { term: "Correlation", definition: "Strength of linear relationship", latex: "\\rho" },
+  { term: "Regression Line", definition: "Best prediction equation", latex: "\\hat{y} = b_0 + b_1x" },
+  { term: "R-squared", definition: "Variation explained by model", latex: "R^2" },
+  { term: "Standard Error", definition: "Typical prediction error", latex: "s_e" },
+];
 ```
 
-### 4. Section Links with Compelling Questions
+### 3. Chapter Introduction Card
+Brief, focused explanation:
+"Linear regression reveals relationships between variables, enabling prediction and understanding. From fuel quality to stock prices, master the tools to model real-world relationships."
 
-*   **7.1 Coefficient of Correlation:**
-    - "How do we measure the strength of a linear relationship?"
-    - Preview: Interactive correlation explorer (-1 to +1)
-    - Key Insight: ρ measures linear association, not causation
+### 4. Section Configuration
+Following Chapter 6's CHAPTER_6_SECTIONS pattern:
 
-*   **7.2 Simple Linear Regression:**
-    - "What's the best line through our data points?"
-    - Preview: Least squares visualization
-    - Key Insight: Minimize vertical distances squared
+```javascript
+const CHAPTER_7_SECTIONS = [
+  {
+    id: 'correlation-coefficient',
+    title: '7.1 Correlation Coefficient',
+    subtitle: 'Measuring relationship strength',
+    description: 'How strong is the linear relationship between two variables? Learn to calculate and interpret correlation.',
+    icon: TrendingUp,
+    difficulty: 'Beginner',
+    estimatedTime: '20 min',
+    prerequisites: [],
+    learningGoals: [
+      'Calculate Pearson correlation coefficient',
+      'Interpret correlation values (-1 to +1)',
+      'Understand correlation vs causation',
+      'Apply to real datasets'
+    ],
+    route: '/chapter7/correlation-coefficient',
+    color: '#10b981',
+    question: "How do we measure the strength of a linear relationship?",
+    preview: "Interactive correlation explorer"
+  },
+  // ... (continue for all sections)
+];
+```
 
-*   **7.3 Hypothesis Testing for Linear Regression:**
-    - "Is the relationship real or just random noise?"
-    - Preview: Significance test animation
-    - Key Insight: Test if slope β₁ = 0
+### 5. Visual System
+Use Chapter 6's color scheme approach:
+```javascript
+const chapterColors = createColorScheme('regression');
+```
 
-*   **7.4 Confidence and Prediction Intervals:**
-    - "How precise are our predictions?"
-    - Preview: Confidence bands visualization
-    - Key Insight: CI for mean vs PI for individuals
+### 6. Implementation Requirements
 
-*   **7.5 Analysis of Variance:**
-    - "How much variation does our model explain?"
-    - Preview: SST = SSR + SSE decomposition
-    - Key Insight: F-test connection to t-test
+**Component Structure:**
+```jsx
+// Follow the exact pattern from Chapter 6:
+import HypothesisTestingHub from "@/components/06-hypothesis-testing/6-0-HypothesisTestingHub";
 
-*   **7.6 Coefficient of Determination:**
-    - "What percentage of variation is explained?"
-    - Preview: R² visualization
-    - Key Insight: R² = correlation squared (for simple regression)
+export default function Chapter7() {
+  return (
+    <div className="min-h-screen bg-[#0F0F10]">
+      <div className="space-y-8 p-4 max-w-7xl mx-auto">
+        <LinearRegressionHub />
+      </div>
+    </div>
+  );
+}
+```
 
-### 5. Key Concepts Summary Card
-**The Regression Trinity:**
-- **Model:** Y = β₀ + β₁X + ε
-- **Estimation:** Least squares minimizes Σ(y - ŷ)²
-- **Inference:** Test significance, build intervals
+**Hub Component Structure:**
+```jsx
+// LinearRegressionHub should follow this pattern:
+export default function LinearRegressionHub() {
+  const router = useRouter();
+  
+  const handleSectionClick = (section) => {
+    if (section?.route) {
+      router.push(section.route);
+    }
+  };
 
-**Key Assumptions:**
-- Linear relationship
-- Constant variance
-- Normal errors
-- Independent observations
+  return (
+    <div className="min-h-screen bg-gray-950">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
+          <h1>Chapter 7: Linear Regression and Correlation</h1>
+          <p>Learn to model relationships and make predictions</p>
+        </motion.div>
 
-### 6. Interactive Motivating Example
-**Fuel Quality Analysis:**
-- Dataset: 20 fuel samples
-- X: Hydrocarbon level (%)
-- Y: Oxygen purity (%)
-- Fitted line: ŷ = 74.28 + 14.95x
-- R² = 0.877 (87.7% variance explained)
+        {/* Key Concepts Card */}
+        <KeyConceptsCard />
 
-**Try It:** 
-- Adjust a point and see correlation change
-- Remove outliers and observe effect
-- Predict purity for new hydrocarbon level
+        {/* Introduction Card */}
+        <Card>...</Card>
 
-### 7. Progress Tracking
-- Show completion status for each section
-- Estimated time: 3-4 hours for full chapter
-- Achievement: "Prediction Master" badge upon completion
+        {/* Chapter Hub with Sections */}
+        <ChapterHub
+          chapterNumber={7}
+          chapterTitle="Linear Regression and Correlation"
+          chapterSubtitle="Master prediction and relationship analysis"
+          sections={CHAPTER_7_SECTIONS}
+          storageKey="linearRegressionProgress"
+          progressVariant="blue"
+          onSectionClick={handleSectionClick}
+          hideHeader={true}
+        />
+      </div>
+    </div>
+  );
+}
+```
 
----
+**Key Features Already Provided by ChapterHub:**
+- Progress tracking with localStorage
+- Section cards with all metadata
+- Responsive grid layout
+- Dev mode for testing
+- Accessibility features
 
-**Reference Implementation:** `/src/components/04-descriptive-statistics-sampling/4-1-central-tendency/4-1-0-CentralTendencyHub.jsx`
+## Section Plans Structure
+
+Each section (7.1 through 7.6) should follow this consistent structure:
+1. Reference components: `6-3-1-ErrorsAndPower.jsx` and `6-9-1-DifferenceOfTwoProportions.jsx`
+2. Include WorkedExample pattern with proper LaTeX handling
+3. Use existing UI components from the codebase
+4. Focus on mathematical concepts with supporting interactivity
+5. Include step-by-step calculations
+6. Provide visual representations of key concepts
+
+## Technical Implementation Notes
+
+1. **LaTeX Handling**: Every component MUST implement the standard MathJax pattern
+2. **State Management**: Use React hooks consistently
+3. **Animations**: Use framer-motion sparingly for educational emphasis
+4. **D3 Integration**: Use existing d3-utils for visualizations
+5. **Responsive Design**: Ensure mobile compatibility
+
+**File Locations**: 
+- Hub Component: `/src/components/07-linear-regression/7-0-LinearRegressionHub.jsx`
+- Page File: `/src/app/chapter7/page.js` (following Chapter 6 pattern)
+
+**Note**: The page.js file should be minimal, just importing and rendering the LinearRegressionHub component, exactly like Chapter 6 does.

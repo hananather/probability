@@ -1,163 +1,218 @@
 # Plan: 7.2 - Simple Linear Regression
 
-### **Component Development Mandate**
+## Component Development Mandate
 
-**Guiding Philosophy: Rigorous, Beautiful, and Insightful Guided Discovery.**
-Our goal is to create a learning experience that is as aesthetically beautiful and intellectually satisfying as it is mathematically rigorous. We are building the world's best interactive textbook, inspired by the clarity and elegance of platforms like `brilliant.org`. The priority is **optimal teaching**, not gamification.
+**CRITICAL: LaTeX Rendering Best Practices**
+- **ALWAYS** use `dangerouslySetInnerHTML` for ALL LaTeX content
+- Follow the pattern in `/docs/latex-guide.md` exactly
+- Use the processMathJax() + setTimeout(..., 100) pattern
+- Wrap LaTeX sections in React.memo to prevent re-rendering issues
+- See reference: `/src/components/06-hypothesis-testing/6-3-1-ErrorsAndPower.jsx`
 
-**Core Mandates:**
-1.  **Pedagogy First, Interaction Second:** The primary goal is to teach. Interactions must be purposeful, low-bug, and directly serve to build intuition. Prefer curated animations and controlled interactions over complex, bug-prone drag-and-drop interfaces.
-2.  **Aesthetic Excellence & Brand Consistency:**
-    *   **Internal Consistency is Key:** The new components for this chapter must feel like a natural extension of the existing ones. Use the color schemes, animation styles, and layout patterns already established in the codebase.
-    *   **Typography & Layout:** Follow the established design system. Use `font-mono` for numbers, maintain clear visual hierarchies, and ensure layouts are clean, uncluttered, and content-driven.
-3.  **Mathematical & Technical Rigor:**
-    *   **Content:** All content must be derived from the official course materials for the relevant chapter, but examples must be generalized to be accessible to a broad university audience (science, social science, engineering, etc.).
-    *   **LaTeX:** All mathematical notation must strictly adhere to the best practices outlined in `/docs/latex-guide.md`.
-4.  **Reference Gold Standards:**
-    *   **Pedagogy & Interaction:** `/src/components/01-introduction-to-probabilities/1-7-monty-hall/`
-    *   **Visual Design:** `/src/components/02-discrete-random-variables/2-1-1-SpatialRandomVariable.jsx`
-    *   **UI & Aesthetics:** `https://brilliant.org/wiki/best/`
+**Gold Standard Task Files:**
+- `/Users/hananather/Desktop/Javascript/prob-lab/tasks/chapter-6/09-DifferenceOfTwoProportions.md`
+- `/Users/hananather/Desktop/Javascript/prob-lab/tasks/chapter-6/03-ErrorsAndPower.md`
 
----
+**Guiding Philosophy:** Create a version that prioritizes rigorous learning with clear explanations, mathematical formulations, and meaningful interactions that reinforce understanding.
 
-**Component Type:** Guided Discovery Experience
+**Core Development Principles:**
+1. **Mathematical Rigor + Interactivity**: Teach least squares through visual demonstrations
+2. **Reuse Existing Components**: Use VisualizationContainer, GraphContainer, ControlGroup
+3. **Follow Chapter 6 Style**: Match ErrorsAndPower and DifferenceOfTwoProportions structure
+4. **Simplicity**: Use controlled animations rather than complex dragging
+5. **LaTeX Excellence**: Follow exact patterns from gold standard components
 
-**Guiding Philosophy:** This component reveals how the least squares method finds the optimal regression line. Users will discover why we minimize squared errors rather than absolute errors.
+## Component Structure
 
----
+**Reference Implementation Components:**
+- `/src/components/06-hypothesis-testing/6-3-1-ErrorsAndPower.jsx`
+- `/src/components/06-hypothesis-testing/6-9-1-DifferenceOfTwoProportions.jsx`
 
-### 1. Core Question
+### 1. Opening Section
+```jsx
+const RegressionIntroduction = React.memo(function RegressionIntroduction() {
+  // Question: "What makes one line through our data 'better' than another?"
+  // Show the regression model: Y = β₀ + β₁X + ε
+  // Preview the least squares criterion
+});
+```
 
-*   "What's the 'best' line through our data points, and how do we find it?"
+### 2. Mathematical Framework
+```jsx
+const MathematicalFramework = React.memo(function MathematicalFramework() {
+  // Grid layout with key concepts:
+  // Card 1: Least Squares Criterion - minimize Σ(y - ŷ)²
+  // Card 2: Normal Equations - formulas for b₀ and b₁
+  // Card 3: Standard Errors - SE(b₁) = σ̂/√Sxx, SE(b₀) = σ̂√(1/n + x̄²/Sxx)
+  // Card 4: Model Assumptions - linearity, constant variance, normal errors
+});
+```
 
----
+### 3. Main Interactive Visualization
 
-### 2. Interactive Exploration
+**Line Comparison Animation:**
+```jsx
+const LineComparisonDemo = () => {
+  const [currentLine, setCurrentLine] = useState('initial');
+  
+  const lines = {
+    'too-flat': { b0: 80, b1: 10, sse: 142.7 },
+    'optimal': { b0: 74.28, b1: 14.95, sse: 21.19 },
+    'too-steep': { b0: 70, b1: 20, sse: 98.3 }
+  };
+  
+  // Animated comparison of different lines
+  // Show residuals as vertical lines
+  // Display SSE prominently
+  // Smooth transitions between lines
+};
+```
 
-*   **Part A: The Line-Finding Challenge**
-    *   **Interactive Plot Setup:**
-        - Scatter plot with fuel data (20 points)
-        - Draggable line with handles for:
-          - Intercept (b₀): vertical position
-          - Slope (b₁): rotation angle
-        - Real-time display:
-          - Current equation: ŷ = b₀ + b₁x
-          - Sum of Squared Errors (SSE)
-          - Visual residuals (vertical lines)
-    
-    *   **Challenge:** "Can you find the line that minimizes SSE?"
-    *   **Feedback:** Color gradient from red (high SSE) to green (low SSE)
+**Why Squared Errors:**
+```jsx
+const WhySquaredErrors = () => {
+  // Visual comparison of error methods:
+  // 1. Sum of errors (cancels out)
+  // 2. Sum of absolute errors (not differentiable)
+  // 3. Sum of squared errors (optimal properties)
+  // Animate the squaring process
+};
+```
 
-*   **Part B: Why Squared Errors?**
-    *   **Comparison Panel:**
-        | Method | Formula | Visual | Properties |
-        |--------|---------|--------|------------|
-        | Squared | Σ(y - ŷ)² | Parabola | Differentiable, emphasizes outliers |
-        | Absolute | Σ|y - ŷ| | V-shape | Not differentiable at 0 |
-        | Count | Σ(I[error > ε]) | Step | Not continuous |
-    
-    *   **Interactive Demo:**
-        - Toggle between error methods
-        - Show how squared errors lead to unique solution
-        - Demonstrate sensitivity to outliers
+### 4. Worked Example Component
+```jsx
+const WorkedExample = React.memo(function WorkedExample() {
+  // Step-by-step calculation with fuel data
+  // Given: n=20, Sxx=0.68, Sxy=10.18, x̄=1.20, ȳ=92.16
+  // Calculate b₁ = Sxy/Sxx = 14.95
+  // Calculate b₀ = ȳ - b₁x̄ = 74.28
+  // Show all intermediate steps with LaTeX
+});
+```
 
-*   **Part C: The Least Squares Solution**
-    *   **Animated Derivation:**
-        1. Start with SSE = Σ(yi - b₀ - b₁xi)²
-        2. Show partial derivatives:
-           - ∂SSE/∂b₀ = -2Σ(yi - b₀ - b₁xi)
-           - ∂SSE/∂b₁ = -2Σ(yi - b₀ - b₁xi)xi
-        3. Set to zero and solve
-        4. Arrive at formulas:
-           - b₁ = Sxy/Sxx
-           - b₀ = ȳ - b₁x̄
-    
-    *   **Visual Proof:** 3D surface of SSE(b₀, b₁) with minimum point
+### 5. Key Insights Section
 
----
+**Centroid Property:**
+```jsx
+const CentroidInsight = () => {
+  // Interactive demo showing line always passes through (x̄, ȳ)
+  // Rotate line around centroid
+  // Show SSE changes but centroid remains fixed
+};
+```
 
-### 3. Facilitate Insight (The "Aha!" Moment)
+**Residual Analysis:**
+```jsx
+const ResidualAnalysis = () => {
+  // Show residual plot
+  // Demonstrate that residuals sum to zero
+  // Check for patterns (good vs bad fits)
+};
+```
 
-*   **Key Insight 1: The Line Goes Through (x̄, ȳ)**
-    *   **Visual Demo:**
-        - Mark centroid (x̄, ȳ) with special symbol
-        - Show any least squares line passes through it
-        - Rotate line around centroid - SSE changes
-    *   **Why:** "The residuals sum to zero: Σei = 0"
+### 6. Visual Components
 
-*   **Key Insight 2: Residual Patterns**
-    *   **Good Fit Checklist:**
-        - Random scatter around 0
-        - No curves or patterns
-        - Constant variance
-    *   **Interactive Residual Plot:**
-        - Plot residuals vs x
-        - Highlight patterns in poor fits
-        - Show examples: linear OK, quadratic bad
+**Regression Plot:**
+```jsx
+const RegressionPlot = ({ data, line, showResiduals }) => {
+  // D3-based scatter plot with regression line
+  // Option to show residuals as vertical lines
+  // Highlight centroid point
+  // Animate line changes smoothly
+};
+```
 
-*   **Key Insight 3: Regression ≠ Causation**
-    *   **Direction Matters:**
-        - Regress Y on X: ŷ = b₀ + b₁x
-        - Regress X on Y: x̂ = c₀ + c₁y
-        - Show these give different lines!
-    *   **Message:** "Regression assumes X causes Y"
+**SSE Visualization:**
+```jsx
+const SSEVisualization = ({ slope, intercept }) => {
+  // Show SSE as function of parameters
+  // 3D surface or 2D contour plot
+  // Mark the minimum point
+};
+```
 
----
+### 7. Implementation Requirements
 
-### 4. Connect to Rigor
+**State Management:**
+```jsx
+const [lineType, setLineType] = useState('optimal');
+const [showResiduals, setShowResiduals] = useState(true);
+const [animationStep, setAnimationStep] = useState(0);
+const [showCalculation, setShowCalculation] = useState(false);
+```
 
-*   **The Regression Model:**
-    ```
-    Model: Y = β₀ + β₁X + ε
-    
-    Assumptions:
-    1. E[ε] = 0 (errors average to zero)
-    2. Var[ε] = σ² (constant variance)
-    3. ε ~ N(0, σ²) (normal errors)
-    4. ε independent (no autocorrelation)
-    ```
+**Calculations:**
+```javascript
+const calculateRegression = (data) => {
+  // Calculate means
+  const xMean = data.reduce((sum, d) => sum + d.x, 0) / data.length;
+  const yMean = data.reduce((sum, d) => sum + d.y, 0) / data.length;
+  
+  // Calculate Sxx, Sxy
+  const sxx = data.reduce((sum, d) => sum + (d.x - xMean) ** 2, 0);
+  const sxy = data.reduce((sum, d) => sum + (d.x - xMean) * (d.y - yMean), 0);
+  
+  // Calculate coefficients
+  const b1 = sxy / sxx;
+  const b0 = yMean - b1 * xMean;
+  
+  return { b0, b1, xMean, yMean };
+};
+```
 
-*   **Least Squares Estimators:**
-    ```
-    b₁ = Sxy/Sxx = Σ(xi - x̄)(yi - ȳ)/Σ(xi - x̄)²
-    b₀ = ȳ - b₁x̄
-    
-    where:
-    Sxy = Σxiyi - nx̄ȳ (numerator)
-    Sxx = Σxi² - nx̄² (denominator)
-    ```
+### 8. Layout Structure
 
-*   **Properties of Estimators:**
-    - **Unbiased:** E[b₀] = β₀, E[b₁] = β₁
-    - **Linear:** b₀, b₁ are linear combinations of yi
-    - **BLUE:** Best Linear Unbiased Estimators
+Following Chapter 6 pattern:
+1. BackToHub navigation
+2. VisualizationContainer wrapper
+3. Title and introduction
+4. Mathematical framework cards
+5. Main visualization with controls
+6. Worked example (expandable)
+7. Key insights section
+8. Summary and next steps
 
-*   **Variance Estimation:**
-    ```
-    σ̂² = MSE = SSE/(n-2) = (Syy - b₁Sxy)/(n-2)
-    
-    Why n-2? Lost 2 degrees of freedom estimating b₀, b₁
-    ```
+### 9. Specific Features to Include
 
-*   **Fuel Data Example:**
-    ```
-    Given: n = 20, x̄ = 1.20, ȳ = 92.16
-           Sxx = 0.68, Sxy = 10.18, Syy = 173.38
-    
-    Calculate:
-    b₁ = 10.18/0.68 = 14.95
-    b₀ = 92.16 - 14.95(1.20) = 74.28
-    
-    Regression line: ŷ = 74.28 + 14.95x
-    
-    σ̂² = (173.38 - 14.95×10.18)/18 = 1.18
-    ```
+1. **Line Comparison**: Animated comparison of different regression lines
+2. **Error Visualization**: Show why we use squared errors
+3. **Centroid Property**: Interactive demo of line through (x̄, ȳ)
+4. **Residual Plot**: Check model assumptions
+5. **Step-by-Step Calculation**: Full worked example with fuel data
 
-*   **Connection Forward:**
-    - "Next: Is this relationship statistically significant?"
-    - "How confident are we in these estimates?"
-    - "Can we make predictions?"
+### 10. Animation Choreography
 
----
+```javascript
+// Smooth line transitions
+const animateLine = (fromLine, toLine, duration = 1500) => {
+  // Interpolate slope and intercept
+  // Update residuals during transition
+  // Show SSE changing in real-time
+};
 
-**Reference Implementation:** This component will combine interactive line fitting similar to curve-fitting tools with the mathematical rigor of statistical demonstrations.
+// Residual emphasis
+const emphasizeResiduals = () => {
+  // Pulse animation on residual lines
+  // Color code positive (blue) vs negative (red)
+  // Show sum balancing to zero
+};
+```
+
+### 11. Technical Notes
+
+**Performance:**
+- Pre-calculate regression lines for all scenarios
+- Use React.memo for formula-heavy sections
+- Debounce rapid animation triggers
+
+**Visual Consistency:**
+- Use Chapter 7 color scheme consistently
+- Match animation timing with Chapter 6 components
+- Maintain responsive design
+
+**Accessibility:**
+- Provide text descriptions of visual changes
+- Keyboard controls for animation steps
+- High contrast mode support
+
+**File Location:** `/src/components/07-linear-regression/7-2-SimpleLinearRegression.jsx`

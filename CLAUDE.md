@@ -1,74 +1,42 @@
-## Component Versioning Pattern
-  When creating multiple versions for comparison:
-  1. Use folder suffixes: component-v1/, component-v2/, component-old/,
-  component-new/
-  2. Import: Use Next.js Link (import Link from 'next/link'), NOT react-router-dom
-  3. Routing: Add temporary routes to chapter page with clear labels [V1], [V2], etc.
-  4. Mark as TEMPORARY - these URLs will be removed after selection
+## Use LaTeX (see `/docs/latex-guide.md`)
 
-
-  ## Component Standards
-  - Fill 80-90% space, show content on load
-  - Educational focus: no gamification/achievements
-  - Dense explanations, minimal marketing language
-  - Fast feedback loops (<10 interactions)
-  - Copy proven animation patterns
-  - Verify Next.js imports & hooks
-  - Use tables for data visualization (font-mono for numbers)
-  - Show raw data before visualizations for clarity
+## See `/docs/` folder for all best practices and guides. Claude will select relevant docs based on your task.
 
 1. Deep Analysis Phase
-Before writing any code, thoroughly analyze the problem:
-
-Break down the objective into core components
-Identify potential edge cases and constraints
-Consider multiple architectural approaches
+- Before writing any code, thoroughly analyze the problem:
+- Break down the objective into core components
+- Identify potential edge cases and constraints
+- Consider multiple architectural approaches
 
 2. Multi-Perspective Evaluation
-When tackling complex problems:
-
-Approach the issue from different angles (user experience, performance, maintainability, scalability)
-Consider trade-offs between different solutions
-Think about both immediate needs and future extensibility
+- When tackling complex problems:
+- Approach the issue from different angles (user experience, performance, maintainability, scalability)
+- Consider trade-offs between different solutions
 
 3. Simplicity First Principle
 
-Start with the simplest solution that could possibly work
-Add complexity only when proven necessary
-Prefer clarity over cleverness in implementation
+- Start with the simplest solution that could possibly work
+- Add complexity only when proven necessary
+- Prefer clarity over cleverness in implementation
 
 4. Continuous Simplification Check
-At each decision point, ask:
-
-"Is this the simplest way to achieve our goal?"
-"What can we remove while maintaining functionality?"
-"Are we solving problems we don't actually have?"
+- At each decision point, ask:
+- "Is this the simplest way to achieve our goal?"
+- "What can we remove while maintaining functionality?"
+- "Are we solving problems we don't actually have?"
 
 5. Avoid Premature Optimization
-
-Don't over-engineer for hypothetical future requirements
-Build for current needs with reasonable flexibility
-Refactor when requirements actually change, not before
+- Don't over-engineer for hypothetical future requirements
+- Build for current needs with reasonable flexibility
+- Refactor when requirements actually change, not before
 
 6. Implementation Only After Understanding
+- Ensure you have a complete mental model of the solution
+- Validate your approach against the requirements
+- Have evaluated and compared multiple implementation strategies
+- Can clearly articulate why your chosen approach is optimal
 
-Ensure you have a complete mental model of the solution
-Validate your approach against the requirements
-Have evaluated and compared multiple implementation strategies
-Can clearly articulate why your chosen approach is optimal
 
-## Project
-Educational statistics platform with interactive visualizations.
-
-## Core Principles
-1. **Educational First**: Every feature teaches
-2. **Simplicity**: Reduce code, be concise
-3. **Mathematical Rigor**: Use LaTeX (see `/docs/latex-guide.md`)
-
-## Use Existing Components
-- **Progress bars**: `/src/components/ui/ProgressBar.jsx`
-- **Buttons**: `/src/components/ui/button.jsx`
-- Never create inline UI elements
 
 ## Design Principles
 
@@ -88,15 +56,6 @@ Educational statistics platform with interactive visualizations.
 
 **Colors**: Bright for data, semantic for status, clear hover states
 
-## Layout Patterns
-
-1. **Exploration**: Large viz (80-90%) + minimal controls
-2. **Progressive**: Viz + insights revealed at milestones  
-3. **Guided**: Step 1 → Step 2 → Step 3
-4. **Comparison**: Side-by-side views + shared controls
-
-## Good Examples
-See Chapter 1 and 2 components
 
 ## Checklist
 - Content shape drives layout

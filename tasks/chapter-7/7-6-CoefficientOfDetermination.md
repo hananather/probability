@@ -1,195 +1,236 @@
-# Plan: 7.6 - Coefficient of Determination
+# Plan: 7.6 - Coefficient of Determination (R²)
 
-### **Component Development Mandate**
+## Component Development Mandate
 
-**Guiding Philosophy: Rigorous, Beautiful, and Insightful Guided Discovery.**
-Our goal is to create a learning experience that is as aesthetically beautiful and intellectually satisfying as it is mathematically rigorous. We are building the world's best interactive textbook, inspired by the clarity and elegance of platforms like `brilliant.org`. The priority is **optimal teaching**, not gamification.
+**CRITICAL: LaTeX Rendering Best Practices**
+- **ALWAYS** use `dangerouslySetInnerHTML` for ALL LaTeX content
+- Follow the pattern in `/docs/latex-guide.md` exactly
+- Use the processMathJax() + setTimeout(..., 100) pattern
+- Wrap LaTeX sections in React.memo to prevent re-rendering issues
+- See reference: `/src/components/06-hypothesis-testing/6-3-1-ErrorsAndPower.jsx`
 
-**Core Mandates:**
-1.  **Pedagogy First, Interaction Second:** The primary goal is to teach. Interactions must be purposeful, low-bug, and directly serve to build intuition. Prefer curated animations and controlled interactions over complex, bug-prone drag-and-drop interfaces.
-2.  **Aesthetic Excellence & Brand Consistency:**
-    *   **Internal Consistency is Key:** The new components for this chapter must feel like a natural extension of the existing ones. Use the color schemes, animation styles, and layout patterns already established in the codebase.
-    *   **Typography & Layout:** Follow the established design system. Use `font-mono` for numbers, maintain clear visual hierarchies, and ensure layouts are clean, uncluttered, and content-driven.
-3.  **Mathematical & Technical Rigor:**
-    *   **Content:** All content must be derived from the official course materials for the relevant chapter, but examples must be generalized to be accessible to a broad university audience (science, social science, engineering, etc.).
-    *   **LaTeX:** All mathematical notation must strictly adhere to the best practices outlined in `/docs/latex-guide.md`.
-4.  **Reference Gold Standards:**
-    *   **Pedagogy & Interaction:** `/src/components/01-introduction-to-probabilities/1-7-monty-hall/`
-    *   **Visual Design:** Percentage and proportion visualizations
-    *   **UI & Aesthetics:** `https://brilliant.org/wiki/best/`
+**Gold Standard Task Files:**
+- `/Users/hananather/Desktop/Javascript/prob-lab/tasks/chapter-6/09-DifferenceOfTwoProportions.md`
+- `/Users/hananather/Desktop/Javascript/prob-lab/tasks/chapter-6/03-ErrorsAndPower.md`
 
----
+**Guiding Philosophy:** Create a version that prioritizes rigorous learning with clear explanations, mathematical formulations, and meaningful interactions that reinforce understanding.
 
-**Component Type:** Guided Discovery Experience
+**Core Development Principles:**
+1. **Mathematical Rigor + Interactivity**: Teach R² as proportion of variance explained
+2. **Reuse Existing Components**: Use VisualizationContainer, GraphContainer, ControlGroup
+3. **Follow Chapter 6 Style**: Match ErrorsAndPower and DifferenceOfTwoProportions structure
+4. **Simplicity**: Clear visual representation of explained vs unexplained variation
+5. **LaTeX Excellence**: Follow exact patterns from gold standard components
 
-**Guiding Philosophy:** This component reveals R² as a measure of model quality while exposing its limitations. Users will discover that high R² doesn't guarantee a good model.
+## Component Structure
 
----
+**Reference Implementation Components:**
+- `/src/components/06-hypothesis-testing/6-3-1-ErrorsAndPower.jsx`
+- `/src/components/06-hypothesis-testing/6-9-1-DifferenceOfTwoProportions.jsx`
 
-### 1. Core Question
+### 1. Opening Section
+```jsx
+const RSquaredIntroduction = React.memo(function RSquaredIntroduction() {
+  // Core question: "How good is our model?"
+  // R² = Proportion of variation explained by regression
+  // Preview: R² = SSR/SST = 1 - SSE/SST
+});
+```
 
-*   "What percentage of Y's variation does our regression model explain, and what does this really tell us about model quality?"
+### 2. Mathematical Framework
+```jsx
+const MathematicalFramework = React.memo(function MathematicalFramework() {
+  // Grid layout with key formulas:
+  // Card 1: R² = SSR/SST (explained/total)
+  // Card 2: R² = 1 - SSE/SST (complement)
+  // Card 3: R² = r² (correlation squared)
+  // Card 4: Interpretation scale (0 to 1)
+});
+```
 
----
+### 3. Main Interactive Visualization
 
-### 2. Interactive Exploration
+**R² Visual Representation:**
+```jsx
+const RSquaredVisualization = () => {
+  const [showBreakdown, setShowBreakdown] = useState(false);
+  const [displayType, setDisplayType] = useState('pie'); // pie, bar, or area
+  
+  // Show R² = 87.7% for fuel data
+  // Visual options:
+  // - Pie chart (explained vs unexplained)
+  // - Stacked bar
+  // - Area representation
+};
+```
 
-*   **Part A: R² as a Visual Proportion**
-    *   **Pie Chart Visualization:**
-        ```
-        Total Variation in Y (100%)
-        ┌─────────────────────────┐
-        │ ████████████████ 87.7% │ ← Explained by Model (R²)
-        │ ███ 12.3%              │ ← Unexplained (1-R²)
-        └─────────────────────────┘
-        ```
-    
-    *   **Interactive Features:**
-        - Adjust data points
-        - Watch R² change in real-time
-        - See pie chart update dynamically
+### 4. Worked Example Component
+Following ErrorsAndPower pattern:
+```jsx
+const WorkedExample = React.memo(function WorkedExample() {
+  // Calculate R² three ways:
+  // Method 1: R² = SSR/SST = 152.14/173.38 = 0.877
+  // Method 2: R² = 1 - SSE/SST = 1 - 21.24/173.38 = 0.877
+  // Method 3: R² = r² = (0.937)² = 0.877
+  // Show all calculations match
+});
+```
 
-*   **Part B: The R² Formula Explorer**
-    *   **Three Equivalent Formulas:**
-        ```
-        1. R² = SSR/SST = Explained/Total
-        
-        2. R² = 1 - SSE/SST = 1 - Unexplained/Total
-        
-        3. R² = ρ² (correlation squared)
-           [For simple linear regression only!]
-        ```
-    
-    *   **Calculator:**
-        - Input: SSR, SSE, SST
-        - Or input: ρ
-        - Show all three calculations match
+### 5. Key Insights Section
 
-*   **Part C: Anscombe's Quartet - When R² Lies**
-    *   **Four Datasets, Same R² = 0.67:**
-        ```
-        Dataset 1: Perfect linear relationship
-        Dataset 2: Perfect quadratic, wrong model
-        Dataset 3: Perfect linear with one outlier
-        Dataset 4: Vertical line with one leverage point
-        ```
-    
-    *   **Interactive Feature:**
-        - Toggle between datasets
-        - Same regression line equation
-        - Same R² value
-        - Vastly different patterns!
-    
-    *   **Residual Plots:** Show how residuals reveal the truth
+**R² vs Correlation:**
+```jsx
+const RSquaredVsCorrelation = () => {
+  // Show relationship: R² = r² for simple regression
+  // Visual proof with actual values
+  // Explain why R² has no sign
+};
+```
 
----
+**Model Comparison:**
+```jsx
+const ModelComparison = () => {
+  // Compare different R² values:
+  // Poor fit: R² < 0.3
+  // Moderate: 0.3 < R² < 0.7
+  // Good: R² > 0.7
+  // Show visual examples
+};
+```
 
-### 3. Facilitate Insight (The "Aha!" Moment)
+### 6. Visual Components
 
-*   **Key Insight 1: R² Range and Interpretation**
-    *   **Scale Visualization:**
-        ```
-        R² = 0.0  ████ No linear relationship
-        R² = 0.3  ████████ Weak relationship  
-        R² = 0.5  ████████████ Moderate
-        R² = 0.7  ████████████████ Strong
-        R² = 0.9  ████████████████████ Very strong
-        R² = 1.0  ████████████████████████ Perfect
-        ```
-    
-    *   **Context Matters:**
-        - Physics: R² < 0.95 might be poor
-        - Social Sciences: R² > 0.30 might be excellent
-        - "Good R² depends on your field!"
+**Variance Pie Chart:**
+```jsx
+const VariancePieChart = ({ rSquared }) => {
+  // Animated pie chart
+  // Explained portion (blue)
+  // Unexplained portion (gray)
+  // Percentage labels
+};
+```
 
-*   **Key Insight 2: What R² Doesn't Tell You**
-    *   **R² is Blind To:**
-        - Non-linearity (quadratic patterns)
-        - Outliers' influence
-        - Heteroscedasticity
-        - Model appropriateness
-    
-    *   **Visual Demo:** High R² with terrible residual pattern
+**Goodness of Fit Scale:**
+```jsx
+const GoodnessScale = ({ rSquared }) => {
+  // Visual scale from 0 to 1
+  // Color gradient (red to green)
+  // Marker at current R²
+  // Interpretation label
+};
+```
 
-*   **Key Insight 3: R² Always Increases**
-    *   **Adding Variables Demo:**
-        - Start with simple model
-        - Add useless variable (random noise)
-        - R² goes up!
-        - "More complex ≠ better"
-    
-    *   **Preview:** "That's why we need adjusted R² for multiple regression"
+### 7. Implementation Requirements
 
----
+**State Management:**
+```jsx
+const [visualType, setVisualType] = useState('pie');
+const [showCalculations, setShowCalculations] = useState(false);
+const [comparisonMode, setComparisonMode] = useState(false);
+```
 
-### 4. Connect to Rigor
+**R² Calculations:**
+```javascript
+const calculateRSquared = (regressionResults) => {
+  const { sst, ssr, sse, correlation } = regressionResults;
+  
+  // Three equivalent methods
+  const method1 = ssr / sst;
+  const method2 = 1 - (sse / sst);
+  const method3 = correlation ** 2;
+  
+  return {
+    value: method1,
+    methods: { method1, method2, method3 },
+    percentage: (method1 * 100).toFixed(1)
+  };
+};
+```
 
-*   **Definition and Properties:**
-    ```
-    R² = 1 - SSE/SST = SSR/SST
-    
-    Properties:
-    1. 0 ≤ R² ≤ 1 always
-    2. R² = 0: No linear relationship
-    3. R² = 1: Perfect linear fit
-    4. R² = ρ² for simple linear regression
-    ```
+### 8. Layout Structure
 
-*   **Interpretation Guidelines:**
-    ```
-    "R² is the proportion of variance in Y 
-     explained by the linear relationship with X"
-    
-    Example: R² = 0.877 means:
-    - 87.7% of variation in Y is explained by X
-    - 12.3% remains unexplained
-    ```
+Following Chapter 6 pattern:
+1. BackToHub navigation
+2. VisualizationContainer wrapper
+3. Title and introduction
+4. Mathematical framework grid
+5. Main R² visualization
+6. Worked example with three methods
+7. Key insights section
+8. Model interpretation guide
 
-*   **Fuel Data Summary:**
-    ```
-    Correlation: ρ = 0.937
-    R² = (0.937)² = 0.877
-    
-    Verification via ANOVA:
-    R² = SSR/SST = 152.14/173.38 = 0.877 ✓
-    ```
+### 9. Specific Features to Include
 
-*   **Limitations of R²:**
-    1. **Non-linearity:** Can miss curved relationships
-    2. **Outliers:** One point can inflate R²
-    3. **Scale Dependent:** Not comparable across different Y variables
-    4. **Sample Size:** Small n can give misleading R²
+1. **Multiple Visual Representations**: Pie, bar, and area charts
+2. **Three Calculation Methods**: Show equivalence
+3. **Interpretation Guide**: What R² values mean
+4. **Connection to Correlation**: Show R² = r²
+5. **Limitations Discussion**: What R² doesn't tell us
 
-*   **Best Practices:**
-    ```
-    Always examine:
-    1. Scatter plot - Is relationship linear?
-    2. Residual plot - Random pattern?
-    3. Influence diagnostics - Outliers?
-    4. Context - What's typical R² in this field?
-    
-    Never rely on R² alone!
-    ```
+### 10. Animation Details
 
-*   **The Complete Regression Toolkit:**
-    ```
-    Good Model = High R² 
-               + Random Residuals 
-               + Significant F-test
-               + Reasonable Predictions
-               + Subject Matter Sense
-    ```
+```javascript
+// Pie chart animation
+const animatePieChart = (rSquared) => {
+  // Start from 0
+  // Sweep to final R² value
+  // Pulse on completion
+};
 
-*   **Connection to Course Flow:**
-    - Chapter 7.1: Measured correlation (ρ)
-    - Chapter 7.2: Found best line (b₀, b₁)
-    - Chapter 7.3: Tested significance (t, F tests)
-    - Chapter 7.4: Built intervals (CI, PI)
-    - Chapter 7.5: Decomposed variation (ANOVA)
-    - Chapter 7.6: Summarized quality (R²)
-    
-    "You now have the complete toolkit for simple linear regression!"
+// Scale animation
+const animateScale = (value) => {
+  // Marker slides to position
+  // Color transitions smoothly
+  // Label fades in
+};
+```
 
----
+### 11. Visual Design
 
-**Reference Implementation:** This component will combine proportion visualizations with cautionary examples showing R²'s limitations.
+**Color Scheme:**
+```javascript
+const rSquaredColors = {
+  explained: '#3b82f6',    // Blue for explained variation
+  unexplained: '#9ca3af',  // Gray for unexplained
+  excellent: '#10b981',    // Green for high R²
+  good: '#3b82f6',        // Blue for moderate R²
+  poor: '#ef4444'         // Red for low R²
+};
+```
+
+### 12. Practical Interpretation
+
+**R² Interpretation Guide:**
+```jsx
+const InterpretationGuide = () => {
+  // Context-dependent interpretation
+  // Physical sciences: expect high R²
+  // Social sciences: lower R² common
+  // Important warnings about R² limitations:
+  // - R² alone doesn't indicate model adequacy
+  // - High R² doesn't guarantee good predictions
+  // - R² can be affected by number of observations
+  // - Always check residual plots for model validity
+};
+```
+
+**Note:** The interpretation thresholds (< 0.3 poor, 0.3-0.7 moderate, > 0.7 good) are general guidelines, not absolute rules. R² interpretation must consider the field of study and specific context.
+
+### 13. Technical Notes
+
+**Performance:**
+- Smooth animations with requestAnimationFrame
+- Pre-calculate all visualization data
+- Efficient pie chart rendering
+
+**Mathematical Precision:**
+- Show all three methods yield same result
+- Handle rounding consistently
+- Verify 0 ≤ R² ≤ 1
+
+**Summary Connection:**
+- Link back to correlation (Section 7.1)
+- Reference ANOVA decomposition (Section 7.5)
+- Complete the regression story
+
+**File Location:** `/src/components/07-linear-regression/7-6-CoefficientOfDetermination.jsx`

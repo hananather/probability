@@ -1,182 +1,223 @@
-# Plan: 7.5 - Analysis of Variance
+# Plan: 7.5 - Analysis of Variance (ANOVA) for Regression
 
-### **Component Development Mandate**
+## Component Development Mandate
 
-**Guiding Philosophy: Rigorous, Beautiful, and Insightful Guided Discovery.**
-Our goal is to create a learning experience that is as aesthetically beautiful and intellectually satisfying as it is mathematically rigorous. We are building the world's best interactive textbook, inspired by the clarity and elegance of platforms like `brilliant.org`. The priority is **optimal teaching**, not gamification.
+**CRITICAL: LaTeX Rendering Best Practices**
+- **ALWAYS** use `dangerouslySetInnerHTML` for ALL LaTeX content
+- Follow the pattern in `/docs/latex-guide.md` exactly
+- Use the processMathJax() + setTimeout(..., 100) pattern
+- Wrap LaTeX sections in React.memo to prevent re-rendering issues
+- See reference: `/src/components/06-hypothesis-testing/6-3-1-ErrorsAndPower.jsx`
 
-**Core Mandates:**
-1.  **Pedagogy First, Interaction Second:** The primary goal is to teach. Interactions must be purposeful, low-bug, and directly serve to build intuition. Prefer curated animations and controlled interactions over complex, bug-prone drag-and-drop interfaces.
-2.  **Aesthetic Excellence & Brand Consistency:**
-    *   **Internal Consistency is Key:** The new components for this chapter must feel like a natural extension of the existing ones. Use the color schemes, animation styles, and layout patterns already established in the codebase.
-    *   **Typography & Layout:** Follow the established design system. Use `font-mono` for numbers, maintain clear visual hierarchies, and ensure layouts are clean, uncluttered, and content-driven.
-3.  **Mathematical & Technical Rigor:**
-    *   **Content:** All content must be derived from the official course materials for the relevant chapter, but examples must be generalized to be accessible to a broad university audience (science, social science, engineering, etc.).
-    *   **LaTeX:** All mathematical notation must strictly adhere to the best practices outlined in `/docs/latex-guide.md`.
-4.  **Reference Gold Standards:**
-    *   **Pedagogy & Interaction:** `/src/components/01-introduction-to-probabilities/1-7-monty-hall/`
-    *   **Visual Design:** Component composition and decomposition visualizations
-    *   **UI & Aesthetics:** `https://brilliant.org/wiki/best/`
+**Gold Standard Task Files:**
+- `/Users/hananather/Desktop/Javascript/prob-lab/tasks/chapter-6/09-DifferenceOfTwoProportions.md`
+- `/Users/hananather/Desktop/Javascript/prob-lab/tasks/chapter-6/03-ErrorsAndPower.md`
 
----
+**Guiding Philosophy:** Create a version that prioritizes rigorous learning with clear explanations, mathematical formulations, and meaningful interactions that reinforce understanding.
 
-**Component Type:** Guided Discovery Experience
+**Core Development Principles:**
+1. **Mathematical Rigor + Interactivity**: Teach variance decomposition visually
+2. **Reuse Existing Components**: Use VisualizationContainer, GraphContainer, ControlGroup
+3. **Follow Chapter 6 Style**: Match ErrorsAndPower and DifferenceOfTwoProportions structure
+4. **Simplicity**: Use clear animations to show SST = SSR + SSE
+5. **LaTeX Excellence**: Follow exact patterns from gold standard components
 
-**Guiding Philosophy:** This component reveals how total variation in Y is partitioned into explained (regression) and unexplained (error) components. Users will discover the deep connection between ANOVA and regression.
+## Component Structure
 
----
+**Reference Implementation Components:**
+- `/src/components/06-hypothesis-testing/6-3-1-ErrorsAndPower.jsx`
+- `/src/components/06-hypothesis-testing/6-9-1-DifferenceOfTwoProportions.jsx`
 
-### 1. Core Question
+### 1. Opening Section
+```jsx
+const ANOVAIntroduction = React.memo(function ANOVAIntroduction() {
+  // Core question: "Where does the variation in Y come from?"
+  // Preview: Total variation splits into explained + unexplained
+  // Show the fundamental equation: SST = SSR + SSE
+});
+```
 
-*   "How can we decompose the total variation in Y to understand what portion our regression model explains?"
+### 2. Mathematical Framework
+```jsx
+const MathematicalFramework = React.memo(function MathematicalFramework() {
+  // Grid layout with key concepts:
+  // Card 1: SST - Total Sum of Squares
+  // Card 2: SSR - Regression Sum of Squares
+  // Card 3: SSE - Error Sum of Squares
+  // Card 4: F-test = MSR/MSE
+});
+```
 
----
+### 3. Main Interactive Visualization
 
-### 2. Interactive Exploration
+**Variance Decomposition Animation:**
+```jsx
+const VarianceDecomposition = () => {
+  const [showDecomposition, setShowDecomposition] = useState(false);
+  const [highlightComponent, setHighlightComponent] = useState('total');
+  
+  // Visual breakdown:
+  // 1. Show total variation (y - ȳ)
+  // 2. Split into regression (ŷ - ȳ)
+  // 3. And residual (y - ŷ)
+  // Animate the decomposition
+};
+```
 
-*   **Part A: The Variation Decomposition**
-    *   **Visual Setup:**
-        ```
-        Three Perspectives on Each Point:
-        
-        1. Total Deviation: (yi - ȳ)
-           "How far is yi from the mean?"
-        
-        2. Explained by Model: (ŷi - ȳ)
-           "How far did regression move us from ȳ?"
-        
-        3. Unexplained Error: (yi - ŷi)
-           "How far are we from the regression line?"
-        ```
-    
-    *   **Interactive Point Explorer:**
-        - Click any data point
-        - Show three arrows:
-          - Total (purple): point to mean line
-          - Regression (blue): predicted to mean
-          - Error (red): point to regression line
-        - Display: (yi - ȳ) = (ŷi - ȳ) + (yi - ŷi)
+### 4. Worked Example Component
+Following ErrorsAndPower pattern:
+```jsx
+const WorkedExample = React.memo(function WorkedExample() {
+  // ANOVA table construction:
+  // Source | SS | df | MS | F
+  // Regression | SSR | 1 | MSR | F
+  // Error | SSE | n-2 | MSE |
+  // Total | SST | n-1 | |
+  
+  // Calculate all values with fuel data
+  // Show F = 128.86, p < 0.0001
+});
+```
 
-*   **Part B: Sum of Squares Visualization**
-    *   **Stacked Bar Chart:**
-        ```
-        SST (Total) = 173.38
-        ├── SSR (Regression) = 152.14 [87.7%]
-        └── SSE (Error) = 21.24 [12.3%]
-        ```
-    
-    *   **Interactive Features:**
-        - Hover to see individual contributions
-        - Toggle between actual vs squared deviations
-        - Animate the accumulation process
+### 5. Key Insights Section
 
-*   **Part C: The ANOVA Table Builder**
-    *   **Step-by-Step Construction:**
-        | Source | SS | df | MS | F | p-value |
-        |--------|----|----|----|----|---------|
-        | Regression | SSR = 152.14 | 1 | MSR = 152.14 | ? | ? |
-        | Error | SSE = 21.24 | 18 | MSE = 1.18 | - | - |
-        | Total | SST = 173.38 | 19 | - | - | - |
-    
-    *   **Calculate F-statistic:**
-        - F = MSR/MSE = 152.14/1.18 = 128.9
-        - Show F-distribution(1, 18)
-        - Mark observed F value
-        - Shade p-value area
+**Visual Proof of SST = SSR + SSE:**
+```jsx
+const VarianceProof = () => {
+  // Geometric demonstration
+  // Show perpendicular components
+  // Pythagorean theorem visualization
+};
+```
 
----
+**F-test Connection:**
+```jsx
+const FTestConnection = () => {
+  // Show F = t² for simple regression
+  // Demonstrate with actual values
+  // F = 128.86 = (11.35)²
+};
+```
 
-### 3. Facilitate Insight (The "Aha!" Moment)
+### 6. Visual Components
 
-*   **Key Insight 1: The Pythagorean Theorem of Statistics**
-    *   **Geometric Visualization:**
-        - Show vectors in n-dimensional space
-        - SST² = SSR² + SSE² (when centered)
-        - "Regression and error are orthogonal!"
-    
-*   **Key Insight 2: F = t²**
-    *   **Demonstration:**
-        - From Section 7.3: t = 11.35 for slope test
-        - Calculate: t² = (11.35)² = 128.9
-        - From ANOVA: F = 128.9
-        - "Same test, different perspective!"
-    
-*   **Key Insight 3: Degrees of Freedom**
-    *   **Visual Breakdown:**
-        ```
-        Start with n = 20 observations
-        
-        Total df = n - 1 = 19
-        └── Why -1? Constraint: Σ(yi - ȳ) = 0
-        
-        Regression df = 1 (one slope parameter)
-        Error df = n - 2 = 18 (lost intercept & slope)
-        
-        Check: 1 + 18 = 19 ✓
-        ```
+**ANOVA Table Component:**
+```jsx
+const ANOVATable = ({ sst, ssr, sse, n }) => {
+  // Formatted table with calculations
+  // Highlight F-statistic
+  // Show p-value interpretation
+};
+```
 
----
+**Variation Bars:**
+```jsx
+const VariationBars = ({ sst, ssr, sse }) => {
+  // Stacked bar showing decomposition
+  // SSR portion (explained)
+  // SSE portion (unexplained)
+  // Percentages labeled
+};
+```
 
-### 4. Connect to Rigor
+### 7. Implementation Requirements
 
-*   **The Fundamental Identity:**
-    ```
-    Σ(yi - ȳ)² = Σ(ŷi - ȳ)² + Σ(yi - ŷi)²
-       SST     =    SSR     +    SSE
-       
-    Total    = Explained + Unexplained
-    Variation  by Model    Error
-    ```
+**State Management:**
+```jsx
+const [animationStep, setAnimationStep] = useState('initial');
+const [showCalculations, setShowCalculations] = useState(false);
+const [highlightedSS, setHighlightedSS] = useState(null);
+```
 
-*   **ANOVA Table Structure:**
-    ```
-    Source      | Sum of Squares | df    | Mean Square | F-statistic
-    ------------|----------------|-------|-------------|------------
-    Regression  | SSR            | 1     | MSR = SSR/1 | F = MSR/MSE
-    Error       | SSE            | n-2   | MSE = SSE/(n-2) |
-    Total       | SST            | n-1   |             |
-    ```
+**ANOVA Calculations:**
+```javascript
+const performANOVA = (regressionResults) => {
+  const { sst, ssr, sse, n } = regressionResults;
+  
+  // Degrees of freedom
+  const df_regression = 1;
+  const df_error = n - 2;
+  const df_total = n - 1;
+  
+  // Mean squares
+  const msr = ssr / df_regression;
+  const mse = sse / df_error;
+  
+  // F-statistic
+  const f = msr / mse;
+  
+  // p-value
+  const pValue = 1 - jStat.centralF.cdf(f, df_regression, df_error);
+  
+  return { f, pValue, msr, mse };
+};
+```
 
-*   **F-Test for Regression Significance:**
-    ```
-    H₀: β₁ = 0 (no linear relationship)
-    H₁: β₁ ≠ 0 (linear relationship exists)
-    
-    Test Statistic: F = MSR/MSE ~ F(1, n-2)
-    
-    Decision Rule: Reject H₀ if F > F_α(1, n-2)
-    ```
+### 8. Layout Structure
 
-*   **Fuel Data ANOVA:**
-    ```
-    Given: Syy = 173.38, b₁ = 14.95, Sxy = 10.18
-    
-    SSR = b₁ × Sxy = 14.95 × 10.18 = 152.14
-    SSE = Syy - SSR = 173.38 - 152.14 = 21.24
-    
-    ANOVA Table:
-    Source      | SS     | df | MS     | F      | p-value
-    ------------|--------|----|---------|---------|---------
-    Regression  | 152.14 | 1  | 152.14 | 128.9  | 1.23e-09
-    Error       | 21.24  | 18 | 1.18   |        |
-    Total       | 173.38 | 19 |        |        |
-    
-    Critical value: F₀.₀₅(1,18) = 4.41
-    Since 128.9 > 4.41, reject H₀
-    ```
+Following Chapter 6 pattern:
+1. BackToHub navigation
+2. VisualizationContainer wrapper
+3. Title and introduction
+4. Mathematical framework grid
+5. Main decomposition visualization
+6. ANOVA table display
+7. Worked example
+8. Key insights section
 
-*   **Connection to R²:**
-    ```
-    R² = SSR/SST = 152.14/173.38 = 0.877
-    
-    "Our model explains 87.7% of the variation in Y"
-    ```
+### 9. Specific Features to Include
 
-*   **Mean Squares Interpretation:**
-    - MSR: Average variation explained per regression df
-    - MSE: Average unexplained variation per error df
-    - MSE = σ̂² (estimate of error variance)
+1. **Animated Decomposition**: Show SST splitting into components
+2. **Interactive ANOVA Table**: Build table step by step
+3. **Variance Bars**: Visual representation of SS components
+4. **F-Distribution Overlay**: Show test statistic location
+5. **R² Connection**: Link to next section
 
----
+### 10. Animation Choreography
 
-**Reference Implementation:** This component will use variation decomposition similar to variance components with interactive table building.
+```javascript
+// Decomposition animation sequence
+const animateDecomposition = () => {
+  // Step 1: Show all (y - ȳ) deviations
+  // Step 2: Highlight regression part (ŷ - ȳ)
+  // Step 3: Highlight residual part (y - ŷ)
+  // Step 4: Show sum of squares
+};
+
+// Bar chart animation
+const animateVarianceBars = () => {
+  // Start with total bar
+  // Split into SSR and SSE
+  // Show percentages
+};
+```
+
+### 11. Visual Design
+
+**Color Coding:**
+```javascript
+const anovaColors = {
+  total: '#6b7280',      // Gray for total
+  regression: '#3b82f6', // Blue for explained
+  error: '#ef4444',      // Red for unexplained
+  fStat: '#f59e0b'      // Orange for F-statistic
+};
+```
+
+### 12. Technical Notes
+
+**Performance:**
+- Pre-calculate all SS values
+- Smooth transitions with d3
+- Limit animation complexity
+
+**Accessibility:**
+- Clear labels for all components
+- Announce calculation results
+- Keyboard navigation for steps
+
+**Mathematical Accuracy:**
+- Verify SST = SSR + SSE to machine precision
+- Show rounding only in display
+
+**File Location:** `/src/components/07-linear-regression/7-5-AnalysisOfVariance.jsx`

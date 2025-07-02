@@ -1,175 +1,229 @@
 # Plan: 7.3 - Hypothesis Testing for Linear Regression
 
-### **Component Development Mandate**
+## Component Development Mandate
 
-**Guiding Philosophy: Rigorous, Beautiful, and Insightful Guided Discovery.**
-Our goal is to create a learning experience that is as aesthetically beautiful and intellectually satisfying as it is mathematically rigorous. We are building the world's best interactive textbook, inspired by the clarity and elegance of platforms like `brilliant.org`. The priority is **optimal teaching**, not gamification.
+**CRITICAL: LaTeX Rendering Best Practices**
+- **ALWAYS** use `dangerouslySetInnerHTML` for ALL LaTeX content
+- Follow the pattern in `/docs/latex-guide.md` exactly
+- Use the processMathJax() + setTimeout(..., 100) pattern
+- Wrap LaTeX sections in React.memo to prevent re-rendering issues
+- See reference: `/src/components/06-hypothesis-testing/6-3-1-ErrorsAndPower.jsx`
 
-**Core Mandates:**
-1.  **Pedagogy First, Interaction Second:** The primary goal is to teach. Interactions must be purposeful, low-bug, and directly serve to build intuition. Prefer curated animations and controlled interactions over complex, bug-prone drag-and-drop interfaces.
-2.  **Aesthetic Excellence & Brand Consistency:**
-    *   **Internal Consistency is Key:** The new components for this chapter must feel like a natural extension of the existing ones. Use the color schemes, animation styles, and layout patterns already established in the codebase.
-    *   **Typography & Layout:** Follow the established design system. Use `font-mono` for numbers, maintain clear visual hierarchies, and ensure layouts are clean, uncluttered, and content-driven.
-3.  **Mathematical & Technical Rigor:**
-    *   **Content:** All content must be derived from the official course materials for the relevant chapter, but examples must be generalized to be accessible to a broad university audience (science, social science, engineering, etc.).
-    *   **LaTeX:** All mathematical notation must strictly adhere to the best practices outlined in `/docs/latex-guide.md`.
-4.  **Reference Gold Standards:**
-    *   **Pedagogy & Interaction:** `/src/components/06-hypothesis-testing/` (leverage Chapter 6 patterns)
-    *   **Visual Design:** `/src/components/shared/CLTSimulation.jsx`
-    *   **UI & Aesthetics:** `https://brilliant.org/wiki/best/`
+**Gold Standard Task Files:**
+- `/Users/hananather/Desktop/Javascript/prob-lab/tasks/chapter-6/09-DifferenceOfTwoProportions.md`
+- `/Users/hananather/Desktop/Javascript/prob-lab/tasks/chapter-6/03-ErrorsAndPower.md`
 
----
+**Guiding Philosophy:** Create a version that prioritizes rigorous learning with clear explanations, mathematical formulations, and meaningful interactions that reinforce understanding.
 
-**Component Type:** Guided Discovery Experience
+**Core Development Principles:**
+1. **Mathematical Rigor + Interactivity**: Teach hypothesis testing in regression context
+2. **Reuse Existing Components**: Use VisualizationContainer, GraphContainer, ControlGroup
+3. **Follow Chapter 6 Style**: Match the structure of ErrorsAndPower and DifferenceOfTwoProportions
+4. **Simplicity**: Use controlled simulations rather than complex interactions
+5. **LaTeX Excellence**: Follow exact patterns from gold standard components
 
-**Guiding Philosophy:** This component extends hypothesis testing to regression context. Users will discover that testing β₁ = 0 determines if the relationship is statistically significant.
+## Component Structure
 
----
+**Reference Implementation Components:**
+- `/src/components/06-hypothesis-testing/6-3-1-ErrorsAndPower.jsx`
+- `/src/components/06-hypothesis-testing/6-9-1-DifferenceOfTwoProportions.jsx`
 
-### 1. Core Question
+### 1. Opening Section
+```jsx
+// Following HypothesisDisplay pattern from DifferenceOfTwoProportions
+const HypothesisDisplay = React.memo(function HypothesisDisplay() {
+  // H₀: β₁ = 0 (no linear relationship)
+  // H₁: β₁ ≠ 0 (significant linear relationship)
+  // Question: "Is the relationship real or just random noise?"
+});
+```
 
-*   "Is the relationship between X and Y real, or could it have occurred by random chance?"
+### 2. Mathematical Framework
+Following DifferenceOfTwoProportions pattern:
+```jsx
+const MathematicalFramework = React.memo(function MathematicalFramework() {
+  // Grid layout with cards:
+  // Card 1: Test Statistic - t = b₁/SE(b₁)
+  // Card 2: Standard Error - SE(b₁) = s/√Sxx
+  // Card 3: Degrees of Freedom - df = n-2
+  // Card 4: Decision Rule - Reject if |t| > t_{α/2,n-2}
+});
+```
 
----
+### 3. Main Interactive Visualization
+Following ErrorsAndPower visualization style:
+```jsx
+const RegressionTestVisualization = () => {
+  const [showNullDistribution, setShowNullDistribution] = useState(false);
+  const [showTestStatistic, setShowTestStatistic] = useState(false);
+  const [showPValue, setShowPValue] = useState(false);
+  
+  // Real data vs null hypothesis visualization
+  // Show scatter plot with/without relationship
+  // Animate t-distribution with critical regions
+};
+```
 
-### 2. Interactive Exploration
+### 4. Simulation Component
+```jsx
+const NullDistributionSimulation = () => {
+  // Similar to ErrorsAndPower simulation approach
+  // Generate data under H₀: β₁ = 0
+  // Calculate test statistics from shuffled data
+  // Build null distribution histogram
+  // Show where our observed t falls
+};
+```
 
-*   **Part A: The Significance Question**
-    *   **Visual Setup:**
-        - Scatter plot with regression line
-        - Toggle between:
-          1. Real data (strong relationship)
-          2. Scrambled Y values (no relationship)
-        - Show how scrambling destroys pattern but can still produce non-zero slopes
+### 5. Worked Example Component
+Following ErrorsAndPower pattern exactly:
+```jsx
+const WorkedExample = React.memo(function WorkedExample() {
+  const contentRef = useRef(null);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
     
-    *   **Key Question:** "If there's truly NO relationship (β₁ = 0), what slopes might we see by chance?"
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, []);
+  
+  return (
+    <VisualizationSection className="bg-gradient-to-br from-neutral-800/50 to-neutral-900/50 rounded-lg p-6 border border-neutral-700/50">
+      <h3 className="text-xl font-bold text-purple-400 mb-6">
+        Step-by-Step Hypothesis Test Computation
+      </h3>
+      
+      <div ref={contentRef} className="space-y-6">
+        {/* Given Information */}
+        {/* Step 1: Calculate Standard Error */}
+        {/* Step 2: Calculate t-statistic */}
+        {/* Step 3: Find critical value */}
+        {/* Step 4: Make decision */}
+      </div>
+    </VisualizationSection>
+  );
+});
+```
 
-*   **Part B: Three Tests, One Goal**
-    *   **Test Selection Panel:**
-        ```
-        Choose what to test:
-        ┌─────────────────┬─────────────────┬─────────────────┐
-        │   Intercept     │     Slope       │   Significance  │
-        │  H₀: β₀ = β₀₀   │  H₀: β₁ = β₁₀   │  H₀: β₁ = 0     │
-        │  (rarely used)  │  (general test) │  (most common)  │
-        └─────────────────┴─────────────────┴─────────────────┘
-        ```
-    
-    *   **Focus:** Significance test (H₀: β₁ = 0)
+### 6. Key Insights Section
+```jsx
+const KeyInsights = () => {
+  // Three key insights with visual demos:
+  // 1. Connection to correlation test (t_corr = t_slope)
+  // 2. Why df = n-2 (lost 2 parameters)
+  // 3. F-test equivalence (F = t²)
+};
+```
 
-*   **Part C: The Test Statistic**
-    *   **Formula Builder:**
-        ```
-        Under H₀: β₁ = 0
-        
-        Test statistic: T = (b₁ - 0) / SE(b₁)
-                          = b₁ / √(σ̂²/Sxx)
-        
-        Distribution: T ~ t(n-2)
-        ```
-    
-    *   **Interactive Calculator:**
-        - Input: b₁, σ̂², Sxx, n
-        - Output: t-statistic, df, critical values, p-value
-        - Visual: t-distribution with observed value marked
+### 7. Visual Components
 
-*   **Part D: Sampling Distribution Visualization**
-    *   **Simulation Under H₀:**
-        1. Generate data with NO relationship
-        2. Fit regression line
-        3. Record slope b₁
-        4. Repeat 1000 times
-        5. Show histogram → t-distribution overlay
-    
-    *   **Key Insight:** "Even when β₁ = 0, we get non-zero b₁ by chance!"
+**Test Statistic Visualization:**
+```jsx
+const TestStatisticVisualization = ({ tValue, df }) => {
+  // t-distribution curve
+  // Shade rejection regions
+  // Mark observed t-value
+  // Show p-value area
+};
+```
 
----
+**Confidence Interval for Slope:**
+```jsx
+const SlopeConfidenceInterval = ({ b1, se, alpha }) => {
+  // Visual representation of CI
+  // b₁ ± t_{α/2,n-2} × SE(b₁)
+  // Show if 0 is included
+};
+```
 
-### 3. Facilitate Insight (The "Aha!" Moment)
+### 8. Implementation Requirements
 
-*   **Key Insight 1: Connection to Correlation Test**
-    *   **Equivalence Demo:**
-        - Test H₀: β₁ = 0 
-        - Test H₀: ρ = 0
-        - Show these give identical t-statistics!
-    *   **Formula:** t = ρ√[(n-2)/(1-ρ²)] = b₁/SE(b₁)
+**State Management:**
+```jsx
+const [testType, setTestType] = useState('two-tailed');
+const [alpha, setAlpha] = useState(0.05);
+const [showSimulation, setShowSimulation] = useState(false);
+const [animationStep, setAnimationStep] = useState('initial');
+```
 
-*   **Key Insight 2: Why df = n-2?**
-    *   **Visual Explanation:**
-        - Start with n data points
-        - Estimate b₀ → lose 1 df
-        - Estimate b₁ → lose 1 df
-        - Remainder: n-2 for error estimation
-    *   **Analogy:** "Like using sample mean in Chapter 6, but now we estimate TWO parameters"
+**Test Calculations:**
+```javascript
+const performHypothesisTest = (regressionResults) => {
+  const { b1, se_b1, n } = regressionResults;
+  
+  // Calculate t-statistic
+  const t = b1 / se_b1;
+  
+  // Degrees of freedom
+  const df = n - 2;
+  
+  // Calculate p-value
+  const pValue = 2 * (1 - jStat.studentt.cdf(Math.abs(t), df));
+  
+  return { t, df, pValue };
+};
+```
 
-*   **Key Insight 3: F-test = t-test²**
-    *   **Demonstration:**
-        - Calculate t-statistic for slope
-        - Square it: t²
-        - Calculate F-statistic from ANOVA
-        - Show F = t² exactly!
-    *   **Message:** "Two ways to test the same thing"
+### 9. Layout Structure
 
----
+Following Chapter 6 components exactly:
+1. BackToHub navigation
+2. VisualizationContainer wrapper
+3. Title: "Hypothesis Testing for Linear Regression"
+4. HypothesisDisplay section
+5. MathematicalFramework grid
+6. Main visualization with controls
+7. WorkedExample (expandable)
+8. Key insights section
 
-### 4. Connect to Rigor
+### 10. Specific Features to Include
 
-*   **Test for Slope (Most Common):**
-    ```
-    H₀: β₁ = 0 (no linear relationship)
-    H₁: β₁ ≠ 0 (linear relationship exists)
-    
-    Test Statistic: T = b₁/SE(b₁) ~ t(n-2)
-    where SE(b₁) = √(σ̂²/Sxx)
-    
-    Decision Rule:
-    - Reject H₀ if |T| > t_{α/2}(n-2)
-    - Or if p-value < α
-    ```
+1. **Real vs Null Comparison**: Show data with and without relationship
+2. **t-Distribution Visualization**: Interactive critical regions
+3. **p-Value Animation**: Visual representation of extreme values
+4. **Simulation Under H₀**: Generate null distribution
+5. **Connection to Correlation**: Show equivalence of tests
 
-*   **Test for Intercept (Less Common):**
-    ```
-    H₀: β₀ = β₀₀
-    H₁: β₀ ≠ β₀₀
-    
-    Test Statistic: T = (b₀ - β₀₀)/SE(b₀) ~ t(n-2)
-    where SE(b₀) = √(σ̂² × Σxi²/(n×Sxx))
-    ```
+### 11. Color Scheme and Styling
 
-*   **Fuel Data Example:**
-    ```
-    Test H₀: β₁ = 0 vs H₁: β₁ ≠ 0 at α = 0.01
-    
-    Given: b₁ = 14.95, σ̂² = 1.18, Sxx = 0.68, n = 20
-    
-    SE(b₁) = √(1.18/0.68) = 1.317
-    T = 14.95/1.317 = 11.35
-    
-    Critical value: t₀.₀₀₅(18) = 2.88
-    Since |11.35| > 2.88, reject H₀
-    
-    Conclusion: Significant linear relationship exists
-    ```
+Following Chapter 6 color patterns:
+```javascript
+const chapterColors = createColorScheme('regression');
 
-*   **R Output Interpretation:**
-    ```
-    Coefficients:
-                Estimate Std. Error t value Pr(>|t|)    
-    (Intercept)  74.283    1.593    46.62  < 2e-16 ***
-    x            14.947    1.317    11.35  1.23e-09 ***
-    
-    Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05
-    ```
+// Specific colors for hypothesis testing
+const testColors = {
+  null: '#6b7280',        // Gray for null hypothesis
+  alternative: '#3b82f6', // Blue for alternative
+  rejection: '#ef4444',   // Red for rejection region
+  acceptance: '#10b981',  // Green for acceptance
+  testStat: '#f59e0b'    // Orange for test statistic
+};
+```
 
-*   **One-Sided Tests:**
-    - H₁: β₁ > 0 (positive relationship)
-    - H₁: β₁ < 0 (negative relationship)
-    - Use t_α(n-2) instead of t_{α/2}(n-2)
+### 12. Technical Notes
 
-*   **Connection to Confidence Intervals:**
-    - "If 95% CI for β₁ excludes 0, then significant at α = 0.05"
-    - Preview next section on interval estimation
+**Animation Patterns:**
+- Use framer-motion for smooth transitions
+- Stagger reveal of mathematical steps
+- Animate test statistic movement on distribution
 
----
+**Performance:**
+- Pre-compute simulation results
+- Use React.memo for LaTeX-heavy sections
+- Limit simulation to 1000 iterations
 
-**Reference Implementation:** This component will integrate hypothesis testing patterns from Chapter 6 with regression-specific visualizations.
+**Accessibility:**
+- Announce test results
+- Provide text alternatives for visualizations
+- Keyboard navigation for controls
+
+**File Location:** `/src/components/07-linear-regression/7-3-HypothesisTestingRegression.jsx`

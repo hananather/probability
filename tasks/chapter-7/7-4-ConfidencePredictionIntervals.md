@@ -1,183 +1,212 @@
-# Plan: 7.4 - Confidence and Prediction Intervals for Linear Regression
+# Plan: 7.4 - Confidence and Prediction Intervals
 
-### **Component Development Mandate**
+## Component Development Mandate
 
-**Guiding Philosophy: Rigorous, Beautiful, and Insightful Guided Discovery.**
-Our goal is to create a learning experience that is as aesthetically beautiful and intellectually satisfying as it is mathematically rigorous. We are building the world's best interactive textbook, inspired by the clarity and elegance of platforms like `brilliant.org`. The priority is **optimal teaching**, not gamification.
+**CRITICAL: LaTeX Rendering Best Practices**
+- **ALWAYS** use `dangerouslySetInnerHTML` for ALL LaTeX content
+- Follow the pattern in `/docs/latex-guide.md` exactly
+- Use the processMathJax() + setTimeout(..., 100) pattern
+- Wrap LaTeX sections in React.memo to prevent re-rendering issues
+- See reference: `/src/components/06-hypothesis-testing/6-3-1-ErrorsAndPower.jsx`
 
-**Core Mandates:**
-1.  **Pedagogy First, Interaction Second:** The primary goal is to teach. Interactions must be purposeful, low-bug, and directly serve to build intuition. Prefer curated animations and controlled interactions over complex, bug-prone drag-and-drop interfaces.
-2.  **Aesthetic Excellence & Brand Consistency:**
-    *   **Internal Consistency is Key:** The new components for this chapter must feel like a natural extension of the existing ones. Use the color schemes, animation styles, and layout patterns already established in the codebase.
-    *   **Typography & Layout:** Follow the established design system. Use `font-mono` for numbers, maintain clear visual hierarchies, and ensure layouts are clean, uncluttered, and content-driven.
-3.  **Mathematical & Technical Rigor:**
-    *   **Content:** All content must be derived from the official course materials for the relevant chapter, but examples must be generalized to be accessible to a broad university audience (science, social science, engineering, etc.).
-    *   **LaTeX:** All mathematical notation must strictly adhere to the best practices outlined in `/docs/latex-guide.md`.
-4.  **Reference Gold Standards:**
-    *   **Pedagogy & Interaction:** `/src/components/05-continuous-random-variables/` (for interval concepts)
-    *   **Visual Design:** `/src/components/shared/DistributionComparison.jsx`
-    *   **UI & Aesthetics:** `https://brilliant.org/wiki/best/`
+**Gold Standard Task Files:**
+- `/Users/hananather/Desktop/Javascript/prob-lab/tasks/chapter-6/09-DifferenceOfTwoProportions.md`
+- `/Users/hananather/Desktop/Javascript/prob-lab/tasks/chapter-6/03-ErrorsAndPower.md`
 
----
+**Guiding Philosophy:** Create a version that prioritizes rigorous learning with clear explanations, mathematical formulations, and meaningful interactions that reinforce understanding.
 
-**Component Type:** Guided Discovery Experience
+**Core Development Principles:**
+1. **Mathematical Rigor + Interactivity**: Teach CI vs PI through visual comparison
+2. **Reuse Existing Components**: Use VisualizationContainer, GraphContainer, ControlGroup
+3. **Follow Chapter 6 Style**: Match ErrorsAndPower and DifferenceOfTwoProportions structure
+4. **Simplicity**: Use clear visualizations to show interval differences
+5. **LaTeX Excellence**: Follow exact patterns from gold standard components
 
-**Guiding Philosophy:** This component reveals the crucial distinction between confidence intervals (for the mean response) and prediction intervals (for individual observations). Users will discover why prediction intervals are always wider.
+## Component Structure
 
----
+**Reference Implementation Components:**
+- `/src/components/06-hypothesis-testing/6-3-1-ErrorsAndPower.jsx`
+- `/src/components/06-hypothesis-testing/6-9-1-DifferenceOfTwoProportions.jsx`
 
-### 1. Core Question
+### 1. Opening Section
+```jsx
+const IntervalsIntroduction = React.memo(function IntervalsIntroduction() {
+  // Core question: "How precise are our predictions?"
+  // Distinguish between:
+  // - CI: Interval for the mean response
+  // - PI: Interval for individual observations
+});
+```
 
-*   "When we predict Y for a given X, how precise is our prediction? And does it matter if we're predicting an average or a single new observation?"
+### 2. Mathematical Framework
+```jsx
+const MathematicalFramework = React.memo(function MathematicalFramework() {
+  // Grid layout with formulas:
+  // Card 1: CI formula - ŷ ± t_{α/2,n-2} × SE(ŷ)
+  // Card 2: PI formula - ŷ ± t_{α/2,n-2} × SE(pred)
+  // Card 3: Why PI > CI always
+  // Card 4: Interpretation differences
+});
+```
 
----
+### 3. Main Interactive Visualization
 
-### 2. Interactive Exploration
+**Interval Comparison:**
+```jsx
+const IntervalVisualization = () => {
+  const [xValue, setXValue] = useState(1.2);
+  const [showCI, setShowCI] = useState(true);
+  const [showPI, setShowPI] = useState(true);
+  const [confidenceLevel, setConfidenceLevel] = useState(0.95);
+  
+  // Scatter plot with regression line
+  // CI bands (narrow, for mean)
+  // PI bands (wide, for individuals)
+  // Interactive x-value selector
+};
+```
 
-*   **Part A: Two Types of Predictions**
-    *   **Scenario Setup:**
-        ```
-        Fuel Quality Manager asks two questions:
-        1. "What's the average purity for ALL batches with 1.3% hydrocarbon?"
-        2. "What purity will the NEXT batch with 1.3% hydrocarbon have?"
-        
-        Same X, different questions → Different intervals!
-        ```
-    
-    *   **Visual Comparison:**
-        - Show regression line with both interval types
-        - CI: narrower band (blue)
-        - PI: wider band (green)
-        - Key insight: PI always contains CI
+### 4. Worked Example Component
+Following ErrorsAndPower pattern:
+```jsx
+const WorkedExample = React.memo(function WorkedExample() {
+  // Calculate both intervals for x₀ = 1.28
+  // Show all steps:
+  // 1. Calculate ŷ₀
+  // 2. Calculate SE(ŷ₀) for CI
+  // 3. Calculate SE(pred) for PI
+  // 4. Find critical t-value
+  // 5. Construct both intervals
+});
+```
 
-*   **Part B: Interactive Interval Explorer**
-    *   **Main Visualization:**
-        - Scatter plot with regression line
-        - Draggable vertical line at x₀
-        - Real-time display:
-          ```
-          At x₀ = 1.30:
-          Point Estimate: ŷ = 93.72
-          
-          95% CI for E[Y|x₀]: [92.84, 94.60]  ← Average
-          95% PI for new Y:   [91.25, 96.19]  ← Individual
-          ```
-    
-    *   **Interval Width Visualization:**
-        - Bar chart showing interval widths
-        - CI width: ±0.88
-        - PI width: ±2.47
-        - Ratio: PI/CI ≈ 2.8
+### 5. Key Insights Section
 
-*   **Part C: Understanding the Components**
-    *   **CI Formula Breakdown:**
-        ```
-        CI: ŷ ± t_{α/2} × SE(mean)
-        
-        SE(mean) = σ̂ × √[1/n + (x₀-x̄)²/Sxx]
-                          ↑       ↑
-                    sampling   leverage
-        ```
-    
-    *   **PI Formula Breakdown:**
-        ```
-        PI: ŷ ± t_{α/2} × SE(individual)
-        
-        SE(individual) = σ̂ × √[1 + 1/n + (x₀-x̄)²/Sxx]
-                               ↑     ↑       ↑
-                          individual sampling leverage
-        ```
-    
-    *   **Key Difference:** The "1+" term for individual variation
+**Why PI > CI:**
+```jsx
+const IntervalWidthExplanation = () => {
+  // Visual demonstration:
+  // CI: Uncertainty about the mean only
+  // PI: Mean uncertainty + individual variation
+  // Formula comparison showing extra σ² term
+};
+```
 
----
+**Extrapolation Warning:**
+```jsx
+const ExtrapolationDanger = () => {
+  // Show intervals widening outside data range
+  // Visual warning zones
+  // Real example of extrapolation failure
+};
+```
 
-### 3. Facilitate Insight (The "Aha!" Moment)
+### 6. Visual Components
 
-*   **Key Insight 1: The Funnel Effect**
-    *   **Visualization:**
-        - Both intervals narrowest at x̄
-        - Widen as we move away from center
-        - Forms characteristic "funnel" shape
-    *   **Why:** "Further from x̄ = more uncertainty"
-    
-*   **Key Insight 2: Sample Size Effects**
-    *   **Interactive Demo:**
-        | n | CI Width | PI Width | Difference |
-        |---|----------|----------|------------|
-        | 10 | Wide | Very Wide | Large |
-        | 50 | Narrow | Wide | Moderate |
-        | 100 | Very Narrow | Wide | Small |
-        | ∞ | → 0 | → σ | = σ |
-    
-    *   **Message:** "More data narrows CI dramatically, PI less so"
+**Interval Band Visualization:**
+```jsx
+const IntervalBands = ({ regressionLine, alpha, type }) => {
+  // Smooth curves for CI and PI
+  // Different opacity/color for each
+  // Animate width changes with confidence level
+};
+```
 
-*   **Key Insight 3: Practical Interpretation**
-    *   **CI Interpretation:**
-        - "We're 95% confident the TRUE MEAN purity at x₀ = 1.3 is between 92.84 and 94.60"
-        - For quality control standards
-    
-    *   **PI Interpretation:**
-        - "We're 95% confident the NEXT BATCH at x₀ = 1.3 will be between 91.25 and 96.19"
-        - For individual batch acceptance
+**Width Comparison Chart:**
+```jsx
+const WidthComparison = ({ x, ciWidth, piWidth }) => {
+  // Bar chart showing relative widths
+  // Update as x-value changes
+  // Show ratio PI/CI
+};
+```
 
----
+### 7. Implementation Requirements
 
-### 4. Connect to Rigor
+**State Management:**
+```jsx
+const [xValue, setXValue] = useState(1.2);
+const [alpha, setAlpha] = useState(0.05);
+const [showFormulas, setShowFormulas] = useState(false);
+const [intervalType, setIntervalType] = useState('both');
+```
 
-*   **Confidence Interval for Parameters:**
-    ```
-    For β₀: b₀ ± t_{α/2}(n-2) × SE(b₀)
-    For β₁: b₁ ± t_{α/2}(n-2) × SE(b₁)
-    
-    where:
-    SE(b₀) = σ̂√[Σxi²/(n×Sxx)]
-    SE(b₁) = σ̂/√Sxx
-    ```
+**Interval Calculations:**
+```javascript
+const calculateIntervals = (x0, regressionResults, alpha) => {
+  const { b0, b1, mse, xMean, sxx, n } = regressionResults;
+  
+  // Point estimate
+  const y0 = b0 + b1 * x0;
+  
+  // Standard errors
+  const se_mean = Math.sqrt(mse * (1/n + (x0 - xMean)**2 / sxx));
+  const se_pred = Math.sqrt(mse * (1 + 1/n + (x0 - xMean)**2 / sxx));
+  
+  // Critical value
+  const t_crit = jStat.studentt.inv(1 - alpha/2, n - 2);
+  
+  return {
+    ci: { lower: y0 - t_crit * se_mean, upper: y0 + t_crit * se_mean },
+    pi: { lower: y0 - t_crit * se_pred, upper: y0 + t_crit * se_pred }
+  };
+};
+```
 
-*   **Confidence Interval for Mean Response:**
-    ```
-    E[Y|x₀]: ŷ₀ ± t_{α/2}(n-2) × σ̂√[1/n + (x₀-x̄)²/Sxx]
-    
-    Interpretation: Interval for μ_{Y|x₀} = β₀ + β₁x₀
-    ```
+### 8. Layout Structure
 
-*   **Prediction Interval for New Observation:**
-    ```
-    Y₀: ŷ₀ ± t_{α/2}(n-2) × σ̂√[1 + 1/n + (x₀-x̄)²/Sxx]
-    
-    Interpretation: Interval for Y₀ = β₀ + β₁x₀ + ε₀
-    ```
+Following Chapter 6 pattern:
+1. BackToHub navigation
+2. VisualizationContainer wrapper
+3. Title and introduction
+4. Mathematical framework grid
+5. Main visualization with slider
+6. Worked example section
+7. Key insights with demos
+8. Summary comparison table
 
-*   **Fuel Data Example:**
-    ```
-    At x₀ = 1.3:
-    ŷ = 74.28 + 14.95(1.3) = 93.72
-    
-    95% CI: 93.72 ± 2.10 × 1.087 × √[1/20 + (1.3-1.2)²/0.68]
-          = 93.72 ± 0.88 = [92.84, 94.60]
-    
-    95% PI: 93.72 ± 2.10 × 1.087 × √[1 + 1/20 + (1.3-1.2)²/0.68]
-          = 93.72 ± 2.47 = [91.25, 96.19]
-    ```
+### 9. Specific Features to Include
 
-*   **R Implementation:**
-    ```r
-    # Confidence interval for mean
-    predict(model, newdata=data.frame(x=1.3), 
-            interval="confidence", level=0.95)
-    
-    # Prediction interval for individual
-    predict(model, newdata=data.frame(x=1.3), 
-            interval="prediction", level=0.95)
-    ```
+1. **Interactive X-Value Slider**: Choose prediction point
+2. **Confidence Level Control**: 90%, 95%, 99% options
+3. **Interval Toggle**: Show/hide CI and PI separately
+4. **Width Visualization**: Compare interval widths
+5. **Extrapolation Warning**: Visual danger zones
 
-*   **Visual Summary:**
-    - CI: "Where is the true line?"
-    - PI: "Where will the next point fall?"
-    - Both widen away from x̄
-    - PI always wider than CI
+### 10. Animation Details
 
----
+```javascript
+// Smooth interval transitions
+const animateIntervals = (newX) => {
+  // Interpolate band widths
+  // Fade in/out interval fills
+  // Highlight selected x-value
+};
 
-**Reference Implementation:** This component will combine interval visualizations with interactive exploration similar to confidence interval components from earlier chapters.
+// Confidence level animation
+const animateConfidenceChange = (newAlpha) => {
+  // Smooth band expansion/contraction
+  // Update width indicators
+  // Show critical value change
+};
+```
+
+### 11. Technical Notes
+
+**Visual Design:**
+- CI bands: Semi-transparent blue
+- PI bands: Semi-transparent green
+- Overlap area: Darker shade
+- Selected point: Highlighted marker
+
+**Performance:**
+- Pre-calculate interval points
+- Use React.memo for static formulas
+- Efficient band rendering with d3
+
+**Accessibility:**
+- Announce interval values on change
+- Keyboard control for slider
+- Clear legend for band types
+
+**File Location:** `/src/components/07-linear-regression/7-4-ConfidencePredictionIntervals.jsx`
