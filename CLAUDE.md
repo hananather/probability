@@ -1,6 +1,17 @@
 ## Use LaTeX (see `/docs/latex-guide.md`)
-
 ## See `/docs/` folder for all best practices and guides. Claude will select relevant docs based on your task.
+Make sure there are no build errors and all buttions and componets are wired up. 
+Make sure the central hub make has a link to sub-chapters, and there is a standard back to hub button (this as been implemented in chapter 6)
+Don't try to build a compoent from scratch, always use existing components ideas that have already been validated and tested.
+
+I've found most interactions with draggable components that are super interactive have a LOT of bugs and it just distracts from the learning experience. We want animations, that are carefully curated that the users can control. And finally carefully read the best practices we have in /docs to ensure we are learning from out past mistakes and not repeating them.
+
+Reflect ALL  possible sources of problems from different dimensions. For each issue you identity reflect on 5-7 possible sources or solutions of the problem, distill those down to 1-2 most likely sources and validate your assumptions before we begin implementing the actual code fixes. 
+* Priority #1: Polish the User Interface for a Frictionless Experience
+* Follow our ALL of our best practices for: dragging-best-practices.md and and latex-guide.md 
+- No overlapping and cluttered UI. 
+- All the animations are exceptionally smooth, use vibrant colours that match the aesthetic and use /Users/hananather/Desktop/Javascript/prob-lab/src/components/landing/landing-animations.jsx guidance on how to build great animations that we are using on the home page 
+
 
 1. Deep Analysis Phase
 - Before writing any code, thoroughly analyze the problem:

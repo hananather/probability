@@ -100,7 +100,12 @@ export const chapters = [
     title: 'Chapter 7: Linear Regression & Correlation',
     path: '/chapter7',
     sections: [
-      { title: 'Coming Soon...', disabled: true },
+      { title: '7.1 Correlation Coefficient', url: '/chapter7/correlation-coefficient' },
+      { title: '7.2 Simple Linear Regression', url: '/chapter7/simple-linear-regression' },
+      { title: '7.3 Hypothesis Testing in Regression', url: '/chapter7/hypothesis-testing-regression' },
+      { title: '7.4 Confidence & Prediction Intervals', url: '/chapter7/confidence-prediction-intervals' },
+      { title: '7.5 Analysis of Variance', url: '/chapter7/analysis-of-variance' },
+      { title: '7.6 Coefficient of Determination', url: '/chapter7/coefficient-of-determination' },
     ]
   },
   {

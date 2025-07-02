@@ -1,11 +1,11 @@
 "use client";
-import TestForMeanKnownVarianceV2 from '@/components/06-hypothesis-testing/6-4-1-TestForMeanKnownVariance-v2';
-import TestForMeanKnownVarianceV3 from '@/components/06-hypothesis-testing/6-4-1-TestForMeanKnownVariance-v3';
+import TestForMeanKnownVarianceV2 from '@/components/06-hypothesis-testing/6-4-1-TestForMeanKnownVariance';
+// import TestForMeanKnownVarianceV3 from '@/components/06-hypothesis-testing/6-4-1-TestForMeanKnownVariance-v3';
 import Link from 'next/link';
 import { useState } from 'react';
 
 export default function ComparisonPage() {
-  const [version, setVersion] = useState('v3');
+  const [version, setVersion] = useState('v2');
   
   return (
     <div className="min-h-screen bg-[#0F0F10]">
@@ -22,7 +22,7 @@ export default function ComparisonPage() {
                     : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
                 }`}
               >
-                V2 (Original)
+                V2 (New Improved)
               </button>
               <button
                 onClick={() => setVersion('v3')}
@@ -32,7 +32,7 @@ export default function ComparisonPage() {
                     : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
                 }`}
               >
-                V3 (Improved)
+                V3 (Old Version)
               </button>
             </div>
             <Link 
@@ -49,15 +49,15 @@ export default function ComparisonPage() {
         <div className="max-w-7xl mx-auto">
           <p className="text-yellow-400 text-sm">
             <strong>TEMPORARY:</strong> This comparison page is for evaluation only. 
-            {version === 'v3' && ' V3 features: 6-step framework, step-by-step calculator, decision rules table, manual progression controls.'}
-            {version === 'v2' && ' V2 is the original story-driven version with automatic animations.'}
+            {version === 'v2' && ' V2 is the new improved version following the pattern of 6-3-1 and 6-9-1 with clear mathematical framework, worked examples, and professional UI.'}
+            {version === 'v3' && ' V3 is the previous version with 6-step framework and story-driven approach.'}
           </p>
         </div>
       </div>
       
       <div className="space-y-8 p-4 max-w-7xl mx-auto">
         {version === 'v2' && <TestForMeanKnownVarianceV2 />}
-        {version === 'v3' && <TestForMeanKnownVarianceV3 />}
+        {version === 'v3' && <div className="text-white">V3 component not available</div>}
       </div>
     </div>
   );
