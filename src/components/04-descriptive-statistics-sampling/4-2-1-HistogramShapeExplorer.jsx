@@ -4,9 +4,9 @@ import React, { useState } from "react";
 import { VisualizationContainer } from '@/components/ui/VisualizationContainer';
 import { cn } from '@/lib/design-system';
 import { Button } from '@/components/ui/button';
-import HistogramIntuitiveIntro from "./4-2-1-HistogramIntuitiveIntro";
-import HistogramInteractiveJourney from "./4-2-2-HistogramInteractiveJourney";
-import HistogramShapeAnalysis from "./4-2-3-HistogramShapeAnalysis";
+import HistogramIntuitiveIntro from "./4-2-histograms/4-2-1-HistogramIntuitiveIntro";
+import HistogramInteractiveJourney from "./4-2-histograms/4-2-2-HistogramInteractiveJourney";
+import HistogramShapeAnalysis from "./4-2-histograms/4-2-3-HistogramShapeAnalysis";
 import { Sparkles, Calculator, BarChart3, ChevronLeft } from "lucide-react";
 
 // Learning paths configuration

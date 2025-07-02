@@ -121,7 +121,11 @@
       "WebFetch(domain:en.wikipedia.org)",
       "Bash(git mv:*)",
       "Bash(git mv:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(if [ -d \"/Users/hananather/Desktop/Javascript/prob-lab/src/app/tutorials\" ])",
+      "Bash([ -z \"$(ls -A /Users/hananather/Desktop/Javascript/prob-lab/src/app/tutorials)\" ])",
+      "Bash(then rm -rf /Users/hananather/Desktop/Javascript/prob-lab/src/app/tutorials)",
+      "Bash(else echo \"Tutorials directory is not empty or doesn''t exist\")"
     ],
     "deny": []
   }

@@ -224,30 +224,6 @@ const FDistributionMasterclass = dynamic(
   }
 );
 
-const FDistributionMastery = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/4-5-3-FDistributionMastery').then(mod => ({ default: mod.FDistributionMastery })),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-gray-400">Loading visualization...</div>
-      </div>
-    )
-  }
-);
-
-const FDistributionJourney = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/4-5-4-FDistributionJourney'),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-gray-400">Loading visualization...</div>
-      </div>
-    )
-  }
-);
-
 // Additional Boxplot Components
 const BoxplotQuartilesJourney = dynamic(
   () => import('@/components/04-descriptive-statistics-sampling/4-6-1-BoxplotQuartilesJourney'),
@@ -263,19 +239,6 @@ const BoxplotQuartilesJourney = dynamic(
 
 const BoxplotRealWorldExplorer = dynamic(
   () => import('@/components/04-descriptive-statistics-sampling/4-6-2-BoxplotRealWorldExplorer'),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-gray-400">Loading visualization...</div>
-      </div>
-    )
-  }
-);
-
-
-const SamplingDistributionsPropertiesBonus = dynamic(
-  () => import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions-new/4-3-2-SamplingDistributionsProperties-impl'),
   { 
     ssr: false,
     loading: () => (
@@ -332,17 +295,13 @@ export default function Chapter4Page() {
       'f-distribution-journey': 6,
       'f-distribution-worked': 7,
       'f-distribution-masterclass': 8,
-      'f-distribution-mastery': 9,
-      'f-distribution-full-journey': 10,
       
       // Boxplots
-      'boxplot-quartiles': 11,
-      'boxplot-journey': 12,
-      'boxplot-real-world': 13,
+      'boxplot-quartiles': 9,
+      'boxplot-journey': 10,
+      'boxplot-real-world': 11,
       
-      // Bonus implementations for review
-      'sampling-bonus-properties': 14,
-      'clt-properties-merged': 15
+      'clt-properties-merged': 12
     };
     
     const section = searchParams.get('section');
@@ -469,20 +428,6 @@ export default function Chapter4Page() {
       component: <FDistributionMasterclass />,
       category: 'f-distribution'
     },
-    {
-      id: 'f-distribution-mastery',
-      title: "4.5.6 - F-Distribution Mastery",
-      description: "Master the F-distribution with comprehensive exercises and real-world applications.",
-      component: <FDistributionMastery />,
-      category: 'f-distribution'
-    },
-    {
-      id: 'f-distribution-full-journey',
-      title: "4.5.7 - Complete F-Distribution Journey",
-      description: "A comprehensive journey through all aspects of the F-distribution from basics to advanced topics.",
-      component: <FDistributionJourney />,
-      category: 'f-distribution'
-    },
     
     // Boxplots
     {
@@ -505,14 +450,6 @@ export default function Chapter4Page() {
       description: "Apply boxplot analysis to real-world datasets and scenarios.",
       component: <BoxplotRealWorldExplorer />,
       category: 'boxplots'
-    },
-    
-    {
-      id: 'sampling-bonus-properties',
-      title: "[REVIEW] Properties & Shape Evolution",
-      description: "Bonus implementation: Side-by-side comparison showing how n affects distribution shape",
-      component: <SamplingDistributionsPropertiesBonus />,
-      category: 'bonus-review'
     },
     {
       id: 'clt-properties-merged',
@@ -687,32 +624,6 @@ export default function Chapter4Page() {
                       currentSection === sectionIndex
                         ? 'bg-blue-600 text-white font-semibold'
                         : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
-                    }`}
-                  >
-                    {section.title}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          
-          {/* TEMPORARY - Bonus Review */}
-          <div>
-            <h3 className="text-lg font-semibold text-red-400 mb-3">🎁 Bonus Implementations for Review (TEMPORARY)</h3>
-            <div className="flex flex-wrap gap-2">
-              {sections.filter(s => s.category === 'bonus-review').map((section) => {
-                const sectionIndex = sections.findIndex(s => s.id === section.id);
-                return (
-                  <button
-                    key={section.id}
-                    onClick={() => {
-                      setCurrentSection(sectionIndex);
-                      router.push(`/chapter4?section=${section.id}`);
-                    }}
-                    className={`px-4 py-2 rounded-lg transition-all text-sm ${
-                      currentSection === sectionIndex
-                        ? 'bg-red-600 text-white font-semibold'
-                        : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700 border border-red-600'
                     }`}
                   >
                     {section.title}

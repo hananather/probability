@@ -3,8 +3,9 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import * as d3 from 'd3'
 import { Button } from '../ui/button'
+import BackToHub from '../ui/BackToHub'
 import ProgressBar from '../ui/ProgressBar'
-import { MathematicalDiscoveries, useDiscoveries } from '../ui/MathematicalDiscoveries'
+import { motion } from 'framer-motion'
 import { createColorScheme } from '../../lib/design-system'
 
 // Create hypothesis testing color scheme
@@ -57,7 +58,7 @@ const ContinuityCorrectionFormula = React.memo(function ContinuityCorrectionForm
   return (
     <div ref={ref}>
       <div dangerouslySetInnerHTML={{ 
-        __html: `\\[P(X = k) \\approx P(k - 0.5 < X < k + 0.5)\\]` 
+        __html: `\\[P(X = k) \\approx P(k - 0.5 &lt; X &lt; k + 0.5)\\]` 
       }} />
     </div>
   )
@@ -127,6 +128,347 @@ const HypothesesFormula = React.memo(function HypothesesFormula({ nullProportion
   )
 })
 
+// Worked Example Component
+const WorkedExample = React.memo(function WorkedExample() {
+  const contentRef = useRef(null)
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current])
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error)
+      }
+    }
+    
+    processMathJax()
+    const timeoutId = setTimeout(processMathJax, 100)
+    return () => clearTimeout(timeoutId)
+  }, [])
+  
+  return (
+    <div className="bg-gradient-to-br from-neutral-800/50 to-neutral-900/50 rounded-lg p-6 border border-neutral-700/50">
+      <h3 className="text-xl font-bold text-purple-400 mb-6">
+        Step-by-Step Test for Proportion
+      </h3>
+      
+      <div ref={contentRef} className="space-y-6">
+        {/* Setup */}
+        <div className="bg-neutral-900/50 rounded-lg p-4">
+          <h4 className="font-bold text-white mb-3">Example: Quality Control Testing</h4>
+          <p className="text-sm text-neutral-300 mb-3">
+            A manufacturing process should produce 90% defect-free items. We test 200 items and find 170 are defect-free.
+            Is there evidence the process is not meeting specifications?
+          </p>
+          <ul className="space-y-2 text-sm text-neutral-300">
+            <li>• Sample size: <span dangerouslySetInnerHTML={{ __html: `\\(n = 200\\)` }} /></li>
+            <li>• Observed successes: <span dangerouslySetInnerHTML={{ __html: `\\(X = 170\\)` }} /></li>
+            <li>• Null hypothesis: <span dangerouslySetInnerHTML={{ __html: `\\(H_0: p = 0.9\\)` }} /></li>
+            <li>• Alternative hypothesis: <span dangerouslySetInnerHTML={{ __html: `\\(H_1: p \\neq 0.9\\)` }} /> (two-sided)</li>
+          </ul>
+        </div>
+
+        {/* Step 1: Check Conditions */}
+        <div className="bg-neutral-900/50 rounded-lg p-4">
+          <h4 className="font-bold text-white mb-3">Step 1: Verify Large Counts Condition</h4>
+          <div className="text-sm text-neutral-300 space-y-2">
+            <p>For the normal approximation to be valid, we need:</p>
+            <div className="text-center my-3">
+              <span dangerouslySetInnerHTML={{ __html: `\\[np_0 \\geq 10 \\text{ and } n(1-p_0) \\geq 10\\]` }} />
+            </div>
+            <p>Checking:</p>
+            <div className="text-center my-3">
+              <span dangerouslySetInnerHTML={{ __html: `\\[np_0 = 200 \\times 0.9 = 180 \\geq 10 \\checkmark\\]` }} />
+              <span dangerouslySetInnerHTML={{ __html: `\\[n(1-p_0) = 200 \\times 0.1 = 20 \\geq 10 \\checkmark\\]` }} />
+            </div>
+            <p className="text-green-400">✓ Normal approximation is valid!</p>
+          </div>
+        </div>
+
+        {/* Step 2: Calculate Sample Proportion */}
+        <div className="bg-neutral-900/50 rounded-lg p-4">
+          <h4 className="font-bold text-white mb-3">Step 2: Calculate Sample Proportion</h4>
+          <div className="text-sm text-neutral-300 space-y-2">
+            <div className="text-center my-3">
+              <span dangerouslySetInnerHTML={{ __html: `\\[\\hat{p} = \\frac{X}{n} = \\frac{170}{200} = 0.85\\]` }} />
+            </div>
+            <p>The observed proportion is 0.85, which is 0.05 below the hypothesized value of 0.9.</p>
+          </div>
+        </div>
+
+        {/* Step 3: Calculate Test Statistic */}
+        <div className="bg-neutral-900/50 rounded-lg p-4">
+          <h4 className="font-bold text-white mb-3">Step 3: Calculate Test Statistic</h4>
+          <div className="text-sm text-neutral-300 space-y-2">
+            <p>First, find the standard error under <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />:</p>
+            <div className="text-center my-3">
+              <span dangerouslySetInnerHTML={{ __html: `\\[SE = \\sqrt{\\frac{p_0(1-p_0)}{n}} = \\sqrt{\\frac{0.9 \\times 0.1}{200}} = \\sqrt{\\frac{0.09}{200}} = 0.0212\\]` }} />
+            </div>
+            <p>Then calculate the z-statistic:</p>
+            <div className="text-center my-3">
+              <span dangerouslySetInnerHTML={{ __html: `\\[z = \\frac{\\hat{p} - p_0}{SE} = \\frac{0.85 - 0.9}{0.0212} = \\frac{-0.05}{0.0212} = -2.36\\]` }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Step 4: Find P-value */}
+        <div className="bg-neutral-900/50 rounded-lg p-4">
+          <h4 className="font-bold text-white mb-3">Step 4: Calculate P-value</h4>
+          <div className="text-sm text-neutral-300 space-y-2">
+            <p>For a two-sided test:</p>
+            <div className="text-center my-3">
+              <span dangerouslySetInnerHTML={{ __html: `\\[\\text{P-value} = 2 \\times P(Z &lt; -2.36) = 2 \\times 0.0091 = 0.0182\\]` }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Conclusion */}
+        <div className="bg-gradient-to-br from-red-900/20 to-red-800/20 border border-red-500/30 rounded-lg p-4">
+          <h4 className="font-bold text-red-400 mb-3">Conclusion</h4>
+          <div className="text-sm text-neutral-300 space-y-2">
+            <p>At significance level α = 0.05:</p>
+            <p className="text-red-400 font-bold">P-value = 0.0182 &lt; 0.05</p>
+            <p>
+              <strong>Decision:</strong> Reject <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />
+            </p>
+            <p className="mt-3">
+              <strong>Interpretation:</strong> There is significant evidence that the process is not producing 
+              90% defect-free items. The observed rate of 85% is statistically significantly different from 
+              the target of 90%.
+            </p>
+          </div>
+        </div>
+
+        {/* With Continuity Correction */}
+        <div className="bg-gradient-to-br from-teal-900/20 to-teal-800/20 border border-teal-500/30 rounded-lg p-4">
+          <h4 className="font-bold text-teal-400 mb-3">Alternative: With Continuity Correction</h4>
+          <div className="text-sm text-neutral-300 space-y-2">
+            <p>For improved accuracy with discrete data:</p>
+            <div className="text-center my-3">
+              <span dangerouslySetInnerHTML={{ __html: `\\[z_{corrected} = \\frac{|\\hat{p} - p_0| - \\frac{0.5}{n}}{SE} = \\frac{0.05 - \\frac{0.5}{200}}{0.0212} = \\frac{0.0475}{0.0212} = 2.24\\]` }} />
+            </div>
+            <p>P-value = 2 × P(Z &gt; 2.24) = 2 × 0.0125 = 0.025</p>
+            <p className="text-teal-400">Still significant at α = 0.05</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+})
+
+// Section Completion Components
+const BinomialFoundationCompletion = React.memo(function BinomialFoundationCompletion() {
+  const contentRef = useRef(null)
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current])
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error)
+      }
+    }
+    processMathJax()
+    const timeoutId = setTimeout(processMathJax, 100)
+    return () => clearTimeout(timeoutId)
+  }, [])
+  
+  return (
+    <motion.div
+      ref={contentRef}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="mt-8 bg-gradient-to-br from-green-900/20 to-green-800/20 border border-green-500/30 rounded-lg p-6"
+    >
+      <div className="flex items-start gap-4">
+        <div className="text-3xl">✅</div>
+        <div className="flex-1">
+          <h3 className="text-xl font-bold text-green-400 mb-3">
+            Section Complete: Binomial Foundation
+          </h3>
+          <div className="bg-green-900/30 rounded-lg p-4 mb-4">
+            <h4 className="font-semibold text-white mb-2">Key Concept Mastered</h4>
+            <p className="text-sm text-green-200 mb-3">
+              The binomial distribution approaches a normal distribution as n increases:
+            </p>
+            <div className="text-center text-green-400">
+              <span dangerouslySetInnerHTML={{ __html: `\\[X \\sim B(n,p) \\approx N(np, np(1-p))\\]` }} />
+            </div>
+          </div>
+          <p className="text-sm text-neutral-300">
+            <strong className="text-green-400">What you've learned:</strong> You now understand how the central limit theorem 
+            applies to proportions, enabling the use of z-scores and normal tables for hypothesis testing.
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  )
+})
+
+const ContinuityCorrectionCompletion = React.memo(function ContinuityCorrectionCompletion() {
+  const contentRef = useRef(null)
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current])
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error)
+      }
+    }
+    processMathJax()
+    const timeoutId = setTimeout(processMathJax, 100)
+    return () => clearTimeout(timeoutId)
+  }, [])
+  
+  return (
+    <motion.div
+      ref={contentRef}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="mt-8 bg-gradient-to-br from-teal-900/20 to-teal-800/20 border border-teal-500/30 rounded-lg p-6"
+    >
+      <div className="flex items-start gap-4">
+        <div className="text-3xl">🎯</div>
+        <div className="flex-1">
+          <h3 className="text-xl font-bold text-teal-400 mb-3">
+            Section Complete: Continuity Correction
+          </h3>
+          <div className="bg-teal-900/30 rounded-lg p-4 mb-4">
+            <h4 className="font-semibold text-white mb-2">Key Technique Mastered</h4>
+            <p className="text-sm text-teal-200 mb-3">
+              Improve discrete-to-continuous approximation:
+            </p>
+            <div className="text-center text-teal-400">
+              <span dangerouslySetInnerHTML={{ __html: `\\[P(X = k) \\approx P(k - 0.5 < X < k + 0.5)\\]` }} />
+            </div>
+          </div>
+          <p className="text-sm text-neutral-300">
+            <strong className="text-teal-400">What you've learned:</strong> You can now apply continuity correction 
+            to improve the accuracy of normal approximations, especially important for smaller sample sizes.
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  )
+})
+
+const LargeCountsConditionCompletion = React.memo(function LargeCountsConditionCompletion() {
+  const contentRef = useRef(null)
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current])
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error)
+      }
+    }
+    processMathJax()
+    const timeoutId = setTimeout(processMathJax, 100)
+    return () => clearTimeout(timeoutId)
+  }, [])
+  
+  return (
+    <motion.div
+      ref={contentRef}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="mt-8 bg-gradient-to-br from-purple-900/20 to-purple-800/20 border border-purple-500/30 rounded-lg p-6"
+    >
+      <div className="flex items-start gap-4">
+        <div className="text-3xl">🔬</div>
+        <div className="flex-1">
+          <h3 className="text-xl font-bold text-purple-400 mb-3">
+            Section Complete: Large Counts Condition
+          </h3>
+          <div className="bg-purple-900/30 rounded-lg p-4 mb-4">
+            <h4 className="font-semibold text-white mb-2">Key Validation Rule</h4>
+            <p className="text-sm text-purple-200 mb-3">
+              Normal approximation requires sufficient expected counts:
+            </p>
+            <div className="text-center text-purple-400">
+              <span dangerouslySetInnerHTML={{ __html: `\\[np_0 \\geq 10 \\text{ and } n(1-p_0) \\geq 10\\]` }} />
+            </div>
+          </div>
+          <p className="text-sm text-neutral-300">
+            <strong className="text-purple-400">What you've learned:</strong> You can now verify when the normal 
+            approximation is valid and choose appropriate alternative methods when conditions aren't met.
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  )
+})
+
+const SampleSizeEffectsCompletion = React.memo(function SampleSizeEffectsCompletion() {
+  const contentRef = useRef(null)
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current])
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error)
+      }
+    }
+    processMathJax()
+    const timeoutId = setTimeout(processMathJax, 100)
+    return () => clearTimeout(timeoutId)
+  }, [])
+  
+  return (
+    <motion.div
+      ref={contentRef}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="mt-8 bg-gradient-to-br from-blue-900/20 to-blue-800/20 border border-blue-500/30 rounded-lg p-6"
+    >
+      <div className="flex items-start gap-4">
+        <div className="text-3xl">📊</div>
+        <div className="flex-1">
+          <h3 className="text-xl font-bold text-blue-400 mb-3">
+            Section Complete: Sample Size Effects
+          </h3>
+          <div className="bg-blue-900/30 rounded-lg p-4 mb-4">
+            <h4 className="font-semibold text-white mb-2">Key Insight Gained</h4>
+            <p className="text-sm text-blue-200 mb-3">
+              Larger samples can detect smaller differences from the null hypothesis:
+            </p>
+            <div className="grid grid-cols-3 gap-2 text-center text-xs">
+              <div className="bg-blue-800/30 rounded p-2">
+                <div className="text-blue-400 font-mono">n = 20</div>
+                <div className="text-neutral-400">Large effects only</div>
+              </div>
+              <div className="bg-blue-800/30 rounded p-2">
+                <div className="text-blue-400 font-mono">n = 100</div>
+                <div className="text-neutral-400">Medium effects</div>
+              </div>
+              <div className="bg-blue-800/30 rounded p-2">
+                <div className="text-blue-400 font-mono">n = 500</div>
+                <div className="text-neutral-400">Small effects</div>
+              </div>
+            </div>
+          </div>
+          <p className="text-sm text-neutral-300">
+            <strong className="text-blue-400">What you've learned:</strong> You understand the relationship between 
+            sample size and statistical power, enabling better study design and result interpretation.
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  )
+})
+
 // Define sections outside component for SSR compatibility
 const sections = [
   {
@@ -152,42 +494,7 @@ const sections = [
 ]
 
 export default function TestForProportion() {
-  // Define discoveries with useMemo to prevent recreation
-  const discoveryDefinitions = useMemo(() => [
-    {
-      id: 'binomial-normal-approximation',
-      title: 'Normal Approximation',
-      description: 'The binomial distribution approaches a normal distribution as n increases',
-      formula: '\\[X \\sim B(n,p) \\approx N(np, np(1-p))\\]',
-      discovered: false,
-      category: 'concept'
-    },
-    {
-      id: 'continuity-correction',
-      title: 'Continuity Correction',
-      description: 'Improves approximation when converting discrete to continuous',
-      formula: '\\[P(X = k) \\approx P(k - 0.5 < X < k + 0.5)\\]',
-      discovered: false,
-      category: 'formula'
-    },
-    {
-      id: 'large-counts-condition',
-      title: 'Validity Conditions',
-      description: 'Normal approximation requires sufficient expected counts',
-      formula: '\\[np_0 \\geq 10 \\text{ and } n(1-p_0) \\geq 10\\]',
-      discovered: false,
-      category: 'pattern'
-    },
-    {
-      id: 'sample-size-effect',
-      title: 'Power and Sample Size',
-      description: 'Larger samples can detect smaller differences from the null hypothesis',
-      discovered: false,
-      category: 'relationship'
-    }
-  ], [])
-  
-  const { discoveries, markDiscovered } = useDiscoveries(discoveryDefinitions)
+  // Component definitions will be added later
   
   // State management
   const [activeSection, setActiveSection] = useState(0)
@@ -196,15 +503,8 @@ export default function TestForProportion() {
   const [observedCount, setObservedCount] = useState(60)
   const [showContinuityCorrection, setShowContinuityCorrection] = useState(false)
   const [testType, setTestType] = useState('two-sided')
-  const [isAnimating, setIsAnimating] = useState(false)
   
-  // Refs for D3 visualizations
-  const binomialNormalRef = useRef(null)
-  const continuityRef = useRef(null)
-  const conditionRef = useRef(null)
-  const sampleSizeRef = useRef(null)
-  const animationFrameRef = useRef(null)
-  const svgInitialized = useRef({})
+  // No longer need visualization refs since we've removed the D3 visualizations
   
   // Calculations
   const observedProportion = observedCount / sampleSize
@@ -282,632 +582,12 @@ export default function TestForProportion() {
     return probs
   }, [sampleSize, nullProportion])
   
-  // Binomial vs Normal Approximation Visualization
-  useEffect(() => {
-    if (!binomialNormalRef.current || activeSection !== 0) return
-    
-    const svg = d3.select(binomialNormalRef.current)
-    const margin = { top: 20, right: 30, bottom: 50, left: 60 }
-    const width = 800 - margin.left - margin.right
-    const height = 400 - margin.top - margin.bottom
-    
-    // Initialize only once
-    if (!svgInitialized.current.binomial) {
-      svg.selectAll('*').remove()
-      svg
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
-      
-      // Add dark background
-      svg.append('rect')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
-        .attr('fill', '#0f172a')
-        .attr('rx', 8)
-      
-      // Create gradient
-      const gradient = svg.append('defs')
-        .append('linearGradient')
-        .attr('id', 'binomial-gradient')
-        .attr('gradientUnits', 'userSpaceOnUse')
-        .attr('x1', 0).attr('y1', height)
-        .attr('x2', 0).attr('y2', 0)
-      
-      gradient.append('stop')
-        .attr('offset', '0%')
-        .attr('stop-color', colorScheme.chart.primary)
-        .attr('stop-opacity', 0.1)
-      
-      gradient.append('stop')
-        .attr('offset', '100%')
-        .attr('stop-color', colorScheme.chart.primary)
-        .attr('stop-opacity', 0.8)
-      
-      svg.append('g')
-        .attr('class', 'main-group')
-        .attr('transform', `translate(${margin.left},${margin.top})`)
-      
-      svgInitialized.current.binomial = true
-    }
-    
-    const g = svg.select('.main-group')
-    
-    // Scales
-    const xScale = d3.scaleLinear()
-      .domain([0, Math.min(sampleSize, 40)])
-      .range([0, width])
-    
-    const yScale = d3.scaleLinear()
-      .domain([0, d3.max(binomialProbabilities, d => d.p) * 1.1])
-      .range([height, 0])
-    
-    // Update axes
-    g.selectAll('.axis').remove()
-    
-    g.append('g')
-      .attr('class', 'axis x-axis')
-      .attr('transform', `translate(0,${height})`)
-      .call(d3.axisBottom(xScale).ticks(10))
-      .append('text')
-      .attr('x', width / 2)
-      .attr('y', 40)
-      .attr('fill', 'currentColor')
-      .style('text-anchor', 'middle')
-      .text('Number of Successes')
-    
-    g.append('g')
-      .attr('class', 'axis y-axis')
-      .call(d3.axisLeft(yScale).tickFormat(d3.format('.4f')))
-      .append('text')
-      .attr('transform', 'rotate(-90)')
-      .attr('y', -40)
-      .attr('x', -height / 2)
-      .attr('fill', 'currentColor')
-      .style('text-anchor', 'middle')
-      .text('Probability')
-    
-    // Update bars with smooth transition
-    const bars = g.selectAll('.bar')
-      .data(binomialProbabilities)
-    
-    bars.enter()
-      .append('rect')
-      .attr('class', 'bar')
-      .attr('x', d => xScale(d.x) - 8)
-      .attr('y', height)
-      .attr('width', 16)
-      .attr('height', 0)
-      .attr('fill', 'url(#binomial-gradient)')
-      .merge(bars)
-      .transition()
-      .duration(300)
-      .attr('x', d => xScale(d.x) - 8)
-      .attr('y', d => yScale(d.p))
-      .attr('height', d => height - yScale(d.p))
-    
-    bars.exit().remove()
-    
-    // Normal curve overlay with animation
-    if (!isAnimating) {
-      setIsAnimating(true)
-      
-      const mean = sampleSize * nullProportion
-      const stdDev = Math.sqrt(sampleSize * nullProportion * (1 - nullProportion))
-      
-      const normalData = []
-      for (let x = 0; x <= Math.min(sampleSize, 40); x += 0.5) {
-        const y = (1 / (stdDev * Math.sqrt(2 * Math.PI))) * 
-                  Math.exp(-0.5 * Math.pow((x - mean) / stdDev, 2))
-        normalData.push({ x, y })
-      }
-      
-      const line = d3.line()
-        .x(d => xScale(d.x))
-        .y(d => yScale(d.y))
-        .curve(d3.curveBasis)
-      
-      // Remove old curve
-      g.selectAll('.normal-curve').remove()
-      
-      // Animate curve drawing
-      const path = g.append('path')
-        .datum(normalData)
-        .attr('class', 'normal-curve')
-        .attr('fill', 'none')
-        .attr('stroke', colorScheme.chart.secondary)
-        .attr('stroke-width', 3)
-        .attr('d', line)
-      
-      const totalLength = path.node().getTotalLength()
-      
-      path
-        .attr('stroke-dasharray', totalLength + ' ' + totalLength)
-        .attr('stroke-dashoffset', totalLength)
-        .transition()
-        .duration(1500)
-        .ease(d3.easeQuadInOut)
-        .attr('stroke-dashoffset', 0)
-        .on('end', () => setIsAnimating(false))
-    }
-    
-    // Highlight observed value
-    g.selectAll('.observed-highlight').remove()
-    
-    if (observedCount <= Math.min(sampleSize, 40)) {
-      const highlightGroup = g.append('g')
-        .attr('class', 'observed-highlight')
-        .style('opacity', 0)
-      
-      highlightGroup.append('rect')
-        .attr('x', xScale(observedCount) - 10)
-        .attr('y', 0)
-        .attr('width', 20)
-        .attr('height', height)
-        .attr('fill', colorScheme.chart.tertiary)
-        .attr('opacity', 0.2)
-      
-      highlightGroup.append('line')
-        .attr('x1', xScale(observedCount))
-        .attr('x2', xScale(observedCount))
-        .attr('y1', 0)
-        .attr('y2', height)
-        .attr('stroke', colorScheme.chart.tertiary)
-        .attr('stroke-width', 2)
-        .attr('stroke-dasharray', '5,5')
-      
-      highlightGroup.transition()
-        .delay(800)
-        .duration(500)
-        .style('opacity', 1)
-    }
-    
-    // Mark discovery with a slight delay for visual effect
-    const timer = setTimeout(() => {
-      markDiscovered('binomial-normal-approximation')
-    }, 1000)
-    
-    return () => clearTimeout(timer)
-  }, [activeSection, sampleSize, nullProportion, observedCount, binomialProbabilities, isAnimating, markDiscovered])
-  
-  // Continuity Correction Visualization
-  useEffect(() => {
-    if (!continuityRef.current || activeSection !== 1) return
-    
-    const svg = d3.select(continuityRef.current)
-    const margin = { top: 20, right: 30, bottom: 60, left: 60 }
-    const width = 800 - margin.left - margin.right
-    const height = 400 - margin.top - margin.bottom
-    
-    // Initialize
-    if (!svgInitialized.current.continuity) {
-      svg.selectAll('*').remove()
-      svg
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
-      
-      // Add dark background
-      svg.append('rect')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
-        .attr('fill', '#0f172a')
-        .attr('rx', 8)
-      
-      svg.append('g')
-        .attr('class', 'main-group')
-        .attr('transform', `translate(${margin.left},${margin.top})`)
-      
-      svgInitialized.current.continuity = true
-    }
-    
-    const g = svg.select('.main-group')
-    
-    // Focus on area around observed value
-    const focusRange = 3
-    const xMin = Math.max(0, observedCount - focusRange)
-    const xMax = Math.min(sampleSize, observedCount + focusRange)
-    
-    const xScale = d3.scaleLinear()
-      .domain([xMin - 0.5, xMax + 0.5])
-      .range([0, width])
-    
-    const relevantProbs = binomialProbabilities.filter(d => d.x >= xMin && d.x <= xMax)
-    const yScale = d3.scaleLinear()
-      .domain([0, d3.max(relevantProbs, d => d.p) * 1.2])
-      .range([height, 0])
-    
-    // Clear and redraw
-    g.selectAll('*').remove()
-    
-    // Axes
-    g.append('g')
-      .attr('transform', `translate(0,${height})`)
-      .call(d3.axisBottom(xScale).ticks(xMax - xMin + 1))
-    
-    g.append('g')
-      .call(d3.axisLeft(yScale).tickFormat(d3.format('.4f')))
-    
-    // Bars with animation
-    const barWidth = width / (xMax - xMin + 2) * 0.8
-    
-    relevantProbs.forEach((d, i) => {
-      const bar = g.append('rect')
-        .attr('x', xScale(d.x) - barWidth / 2)
-        .attr('y', height)
-        .attr('width', barWidth)
-        .attr('height', 0)
-        .attr('fill', d.x === observedCount ? colorScheme.chart.tertiary : colorScheme.chart.primary)
-        .attr('opacity', 0.7)
-      
-      bar.transition()
-        .delay(i * 100)
-        .duration(500)
-        .attr('y', yScale(d.p))
-        .attr('height', height - yScale(d.p))
-    })
-    
-    // Continuity correction visualization
-    if (showContinuityCorrection) {
-      const correctionGroup = g.append('g')
-        .attr('class', 'correction-group')
-        .style('opacity', 0)
-      
-      // Correction interval
-      correctionGroup.append('rect')
-        .attr('x', xScale(observedCount - 0.5))
-        .attr('y', 0)
-        .attr('width', xScale(observedCount + 0.5) - xScale(observedCount - 0.5))
-        .attr('height', height)
-        .attr('fill', colorScheme.chart.success)
-        .attr('opacity', 0.2)
-      
-      // Labels
-      correctionGroup.append('text')
-        .attr('x', xScale(observedCount - 0.5))
-        .attr('y', height + 35)
-        .attr('text-anchor', 'middle')
-        .attr('fill', colorScheme.chart.success)
-        .style('font-size', '12px')
-        .text(`${observedCount - 0.5}`)
-      
-      correctionGroup.append('text')
-        .attr('x', xScale(observedCount + 0.5))
-        .attr('y', height + 35)
-        .attr('text-anchor', 'middle')
-        .attr('fill', colorScheme.chart.success)
-        .style('font-size', '12px')
-        .text(`${observedCount + 0.5}`)
-      
-      // Animate in
-      correctionGroup.transition()
-        .delay(relevantProbs.length * 100)
-        .duration(500)
-        .style('opacity', 1)
-    }
-    
-    // Mark discovery with visual delay
-    if (showContinuityCorrection) {
-      const timer = setTimeout(() => {
-        markDiscovered('continuity-correction')
-      }, 800)
-      return () => clearTimeout(timer)
-    }
-  }, [activeSection, observedCount, sampleSize, showContinuityCorrection, binomialProbabilities, markDiscovered])
-  
-  // Large Counts Condition Visualization
-  useEffect(() => {
-    if (!conditionRef.current || activeSection !== 2) return
-    
-    const svg = d3.select(conditionRef.current)
-    const width = 400
-    const height = 200
-    
-    svg.selectAll('*').remove()
-    svg
-      .attr('width', width)
-      .attr('height', height)
-    
-    // Add dark background
-    svg.append('rect')
-      .attr('width', width)
-      .attr('height', height)
-      .attr('fill', '#0f172a')
-      .attr('rx', 8)
-    
-    const createGauge = (value, threshold, label, xPos, delay) => {
-      const gaugeG = svg.append('g')
-        .attr('transform', `translate(${xPos}, ${height / 2})`)
-        .style('opacity', 0)
-      
-      // Progress animation
-      let progress = 0
-      const maxProgress = Math.min(value / (threshold * 2), 1)
-      
-      const animateGauge = () => {
-        progress = Math.min(progress + 0.02, maxProgress)
-        
-        // Clear previous arc
-        gaugeG.selectAll('.value-arc').remove()
-        
-        // Value arc
-        const valueAngle = progress * Math.PI - Math.PI / 2
-        const valueArc = d3.arc()
-          .innerRadius(40)
-          .outerRadius(60)
-          .startAngle(-Math.PI / 2)
-          .endAngle(valueAngle)
-        
-        const color = value >= threshold ? colorScheme.chart.success : 
-                     value >= threshold * 0.8 ? colorScheme.chart.tertiary : 
-                     colorScheme.chart.error
-        
-        gaugeG.append('path')
-          .attr('class', 'value-arc')
-          .attr('d', valueArc)
-          .attr('fill', color)
-        
-        if (progress < maxProgress) {
-          animationFrameRef.current = requestAnimationFrame(animateGauge)
-        } else {
-          // Add final elements
-          gaugeG.append('text')
-            .attr('text-anchor', 'middle')
-            .attr('y', 5)
-            .style('font-size', '18px')
-            .style('font-weight', 'bold')
-            .style('fill', color)
-            .text(value.toFixed(1))
-          
-          gaugeG.append('text')
-            .attr('text-anchor', 'middle')
-            .attr('y', 80)
-            .style('font-size', '14px')
-            .style('fill', '#e5e7eb')
-            .text(label)
-        }
-      }
-      
-      // Background arc
-      const arcGenerator = d3.arc()
-        .innerRadius(40)
-        .outerRadius(60)
-        .startAngle(-Math.PI / 2)
-        .endAngle(Math.PI / 2)
-      
-      gaugeG.append('path')
-        .attr('d', arcGenerator)
-        .attr('fill', '#374151')
-        .attr('opacity', 0.5)
-      
-      // Threshold marker
-      const thresholdAngle = 0
-      gaugeG.append('line')
-        .attr('x1', 35 * Math.cos(thresholdAngle))
-        .attr('y1', 35 * Math.sin(thresholdAngle))
-        .attr('x2', 65 * Math.cos(thresholdAngle))
-        .attr('y2', 65 * Math.sin(thresholdAngle))
-        .attr('stroke', '#6b7280')
-        .attr('stroke-width', 2)
-        .attr('stroke-dasharray', '3,3')
-      
-      // Animate in
-      gaugeG.transition()
-        .delay(delay)
-        .duration(300)
-        .style('opacity', 1)
-        .on('end', () => {
-          animationFrameRef.current = requestAnimationFrame(animateGauge)
-        })
-    }
-    
-    createGauge(largeCountsCondition.np0, 10, 'np₀', 100, 0)
-    createGauge(largeCountsCondition.n1p0, 10, 'n(1-p₀)', 300, 200)
-    
-    // Mark discovery when condition is satisfied
-    if (largeCountsCondition.satisfied) {
-      const timer = setTimeout(() => {
-        markDiscovered('large-counts-condition')
-      }, 1500)
-      return () => {
-        clearTimeout(timer)
-        if (animationFrameRef.current) {
-          cancelAnimationFrame(animationFrameRef.current)
-        }
-      }
-    }
-    
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current)
-      }
-    }
-  }, [activeSection, largeCountsCondition, markDiscovered])
-  
-  // Sample Size Effect Visualization
-  useEffect(() => {
-    if (!sampleSizeRef.current || activeSection !== 3) return
-    
-    const svg = d3.select(sampleSizeRef.current)
-    const margin = { top: 20, right: 30, bottom: 50, left: 60 }
-    const width = 800 - margin.left - margin.right
-    const height = 400 - margin.top - margin.bottom
-    
-    // Initialize
-    if (!svgInitialized.current.sampleSize) {
-      svg.selectAll('*').remove()
-      svg
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
-      
-      // Add dark background
-      svg.append('rect')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
-        .attr('fill', '#0f172a')
-        .attr('rx', 8)
-      
-      // Create gradient for curve
-      const gradient = svg.append('defs')
-        .append('linearGradient')
-        .attr('id', 'pvalue-gradient')
-        .attr('x1', '0%').attr('y1', '0%')
-        .attr('x2', '100%').attr('y2', '0%')
-      
-      gradient.append('stop')
-        .attr('offset', '0%')
-        .attr('stop-color', colorScheme.chart.primary)
-      
-      gradient.append('stop')
-        .attr('offset', '100%')
-        .attr('stop-color', colorScheme.chart.secondary)
-      
-      svg.append('g')
-        .attr('class', 'main-group')
-        .attr('transform', `translate(${margin.left},${margin.top})`)
-      
-      svgInitialized.current.sampleSize = true
-    }
-    
-    const g = svg.select('.main-group')
-    g.selectAll('*').remove()
-    
-    // Generate data
-    const sampleSizes = []
-    for (let n = 10; n <= 500; n += 5) {
-      const se = Math.sqrt(0.5 * 0.5 / n)
-      const z = (0.6 - 0.5) / se
-      const pVal = 2 * (1 - normalCDF(Math.abs(z)))
-      sampleSizes.push({ n, pValue: pVal })
-    }
-    
-    // Scales
-    const xScale = d3.scaleLinear()
-      .domain([10, 500])
-      .range([0, width])
-    
-    const yScale = d3.scaleLinear()
-      .domain([0, 1])
-      .range([height, 0])
-    
-    // Axes
-    g.append('g')
-      .attr('transform', `translate(0,${height})`)
-      .call(d3.axisBottom(xScale))
-      .append('text')
-      .attr('x', width / 2)
-      .attr('y', 40)
-      .attr('fill', '#e5e7eb')
-      .style('text-anchor', 'middle')
-      .text('Sample Size (n)')
-    
-    g.append('g')
-      .call(d3.axisLeft(yScale))
-      .append('text')
-      .attr('transform', 'rotate(-90)')
-      .attr('y', -40)
-      .attr('x', -height / 2)
-      .attr('fill', '#e5e7eb')
-      .style('text-anchor', 'middle')
-      .text('P-value')
-    
-    // Significance levels with animation
-    const alphaLevels = [0.01, 0.05, 0.1]
-    alphaLevels.forEach((alpha, i) => {
-      const alphaLine = g.append('line')
-        .attr('x1', 0)
-        .attr('x2', 0)
-        .attr('y1', yScale(alpha))
-        .attr('y2', yScale(alpha))
-        .attr('stroke', colorScheme.chart.error)
-        .attr('stroke-dasharray', '5,5')
-        .attr('opacity', 0.5)
-      
-      alphaLine.transition()
-        .delay(i * 200)
-        .duration(800)
-        .attr('x2', width)
-      
-      g.append('text')
-        .attr('x', width - 5)
-        .attr('y', yScale(alpha) - 5)
-        .attr('text-anchor', 'end')
-        .attr('fill', colorScheme.chart.error)
-        .style('font-size', '12px')
-        .text(`α = ${alpha}`)
-        .style('opacity', 0)
-        .transition()
-        .delay(i * 200 + 800)
-        .duration(300)
-        .style('opacity', 1)
-    })
-    
-    // P-value curve with progressive drawing
-    const line = d3.line()
-      .x(d => xScale(d.n))
-      .y(d => yScale(d.pValue))
-      .curve(d3.curveBasis)
-    
-    const path = g.append('path')
-      .datum(sampleSizes)
-      .attr('fill', 'none')
-      .attr('stroke', 'url(#pvalue-gradient)')
-      .attr('stroke-width', 3)
-      .attr('d', line)
-    
-    const totalLength = path.node().getTotalLength()
-    path
-      .attr('stroke-dasharray', totalLength + ' ' + totalLength)
-      .attr('stroke-dashoffset', totalLength)
-      .transition()
-      .delay(600)
-      .duration(2000)
-      .ease(d3.easeQuadInOut)
-      .attr('stroke-dashoffset', 0)
-    
-    // Current sample size indicator
-    const currentData = sampleSizes.find(d => Math.abs(d.n - sampleSize) < 3)
-    if (currentData) {
-      const indicator = g.append('g')
-        .attr('class', 'current-indicator')
-        .style('opacity', 0)
-      
-      indicator.append('circle')
-        .attr('cx', xScale(sampleSize))
-        .attr('cy', yScale(currentData.pValue))
-        .attr('r', 8)
-        .attr('fill', colorScheme.chart.tertiary)
-        .attr('stroke', 'white')
-        .attr('stroke-width', 2)
-      
-      indicator.append('line')
-        .attr('x1', xScale(sampleSize))
-        .attr('x2', xScale(sampleSize))
-        .attr('y1', height)
-        .attr('y2', yScale(currentData.pValue))
-        .attr('stroke', colorScheme.chart.tertiary)
-        .attr('stroke-width', 1)
-        .attr('stroke-dasharray', '3,3')
-        .attr('opacity', 0.5)
-      
-      indicator.transition()
-        .delay(2600)
-        .duration(500)
-        .style('opacity', 1)
-    }
-    
-    // Mark discovery after animation completes
-    const timer = setTimeout(() => {
-      markDiscovered('sample-size-effect')
-    }, 3000)
-    
-    return () => clearTimeout(timer)
-  }, [activeSection, sampleSize, markDiscovered])
+  // Removed discovery tracking logic
   
   // Clean up animations on unmount
   useEffect(() => {
     return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current)
-      }
+      // Cleanup if needed
     }
   }, [])
   
@@ -938,6 +618,9 @@ export default function TestForProportion() {
         />
       </div>
       
+      {/* Back to Hub Button */}
+      <BackToHub chapter={6} />
+      
       {/* Section Navigation with smooth transitions */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {sections && sections.map((section, idx) => (
@@ -945,13 +628,11 @@ export default function TestForProportion() {
             key={idx}
             onClick={() => {
               setActiveSection(idx)
-              setIsAnimating(false)
-              svgInitialized.current = {} // Reset animations on section change
             }}
             className={`p-4 rounded-lg transition-all duration-300 transform hover:scale-105 ${
               activeSection === idx
-                ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-lg scale-105'
-                : 'bg-gray-800/50 border border-gray-700/50 text-gray-300 hover:border-purple-500/50 hover:bg-gray-800/70'
+                ? 'bg-blue-600/90 text-white shadow-lg scale-105 border border-blue-500/50'
+                : 'bg-neutral-800/50 border border-neutral-700/50 text-neutral-300 hover:border-blue-500/50 hover:bg-neutral-800/70'
             }`}
           >
             <div className="text-2xl mb-2">{section?.icon || '📊'}</div>
@@ -961,6 +642,7 @@ export default function TestForProportion() {
         ))}
       </div>
       
+      
       {/* Section 0: Binomial Foundation */}
       {activeSection === 0 && (
         <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl shadow-2xl p-6">
@@ -968,18 +650,14 @@ export default function TestForProportion() {
             Binomial Distribution and Normal Approximation
           </h2>
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <svg ref={binomialNormalRef} className="w-full"></svg>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="bg-gray-800/50 border border-gray-700/50 p-4 rounded-lg">
-                <h3 className="font-semibold mb-3 text-gray-200">Parameters</h3>
-                <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <div className="bg-gray-800/50 border border-gray-700/50 p-6 rounded-lg">
+                <h3 className="font-semibold mb-4 text-gray-200 text-lg">Interactive Parameters</h3>
+                <div className="space-y-5">
                   <div>
-                    <label className="text-sm text-gray-400 block mb-1">
-                      Sample Size (n): <span className="font-mono text-purple-400">{sampleSize}</span>
+                    <label className="text-gray-300 block mb-2">
+                      Sample Size (n): <span className="font-mono text-purple-400 font-bold text-lg">{sampleSize}</span>
                     </label>
                     <input
                       type="range"
@@ -992,8 +670,8 @@ export default function TestForProportion() {
                   </div>
                   
                   <div>
-                    <label className="text-sm text-gray-400 block mb-1">
-                      Null Proportion (p₀): <span className="font-mono text-purple-400">{nullProportion.toFixed(2)}</span>
+                    <label className="text-gray-300 block mb-2">
+                      Null Proportion (p₀): <span className="font-mono text-purple-400 font-bold text-lg">{nullProportion.toFixed(2)}</span>
                     </label>
                     <input
                       type="range"
@@ -1007,8 +685,8 @@ export default function TestForProportion() {
                   </div>
                   
                   <div>
-                    <label className="text-sm text-gray-400 block mb-1">
-                      Observed Count (X): <span className="font-mono text-purple-400">{observedCount}</span>
+                    <label className="text-gray-300 block mb-2">
+                      Observed Count (X): <span className="font-mono text-purple-400 font-bold text-lg">{observedCount}</span>
                     </label>
                     <input
                       type="range"
@@ -1020,28 +698,84 @@ export default function TestForProportion() {
                     />
                   </div>
                 </div>
+                
+                <div className="mt-6 pt-6 border-t border-gray-600">
+                  <div className="bg-yellow-900/20 border border-yellow-700/30 p-4 rounded-lg">
+                    <h4 className="font-semibold mb-3 text-yellow-300">Observed Proportion</h4>
+                    <ObservedProportionFormula 
+                      observedCount={observedCount}
+                      sampleSize={sampleSize}
+                      observedProportion={observedProportion}
+                    />
+                  </div>
+                </div>
               </div>
-              
-              <div className="bg-purple-900/20 border border-purple-700/30 p-4 rounded-lg">
-                <h3 className="font-semibold mb-2 text-purple-300">Key Insight</h3>
-                <p className="text-sm text-purple-200">
+            </div>
+            
+            <div className="space-y-4">
+              <div className="bg-blue-900/20 border border-blue-700/30 p-6 rounded-lg">
+                <h3 className="font-semibold mb-3 text-blue-300 text-lg">Normal Approximation Principle</h3>
+                <p className="text-blue-200 mb-4">
                   When <span dangerouslySetInnerHTML={{ __html: `\\(n\\)` }} /> is large, the binomial distribution 
-                  <span dangerouslySetInnerHTML={{ __html: ` \\(B(n, p)\\)` }} /> approximates a normal distribution 
-                  with mean <span dangerouslySetInnerHTML={{ __html: `\\(\\mu = np\\)` }} /> and 
-                  variance <span dangerouslySetInnerHTML={{ __html: ` \\(\\sigma^2 = np(1-p)\\)` }} />
+                  <span dangerouslySetInnerHTML={{ __html: ` \\(B(n, p)\\)` }} /> approximates a normal distribution:
                 </p>
+                <div className="bg-blue-900/30 p-4 rounded-lg text-center">
+                  <p className="text-blue-100">
+                    Mean: <span dangerouslySetInnerHTML={{ __html: `\\(\\mu = np = ${sampleSize} \\times ${nullProportion.toFixed(2)} = ${(sampleSize * nullProportion).toFixed(1)}\\)` }} />
+                  </p>
+                  <p className="text-blue-100 mt-2">
+                    Variance: <span dangerouslySetInnerHTML={{ __html: `\\(\\sigma^2 = np(1-p) = ${(sampleSize * nullProportion * (1 - nullProportion)).toFixed(1)}\\)` }} />
+                  </p>
+                  <p className="text-blue-100 mt-2">
+                    Std Dev: <span dangerouslySetInnerHTML={{ __html: `\\(\\sigma = ${Math.sqrt(sampleSize * nullProportion * (1 - nullProportion)).toFixed(2)}\\)` }} />
+                  </p>
+                </div>
               </div>
               
-              <div className="bg-yellow-900/20 border border-yellow-700/30 p-4 rounded-lg">
-                <h3 className="font-semibold mb-2 text-yellow-300">Observed Proportion</h3>
-                <ObservedProportionFormula 
-                  observedCount={observedCount}
-                  sampleSize={sampleSize}
-                  observedProportion={observedProportion}
-                />
+              <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 border border-purple-700/30 p-6 rounded-lg">
+                <h3 className="font-semibold mb-3 text-purple-300 text-lg">Why This Matters</h3>
+                <ul className="space-y-3 text-purple-200">
+                  <li className="flex items-start">
+                    <span className="text-purple-400 mr-2">→</span>
+                    <span>The normal approximation allows us to use z-scores and standard normal tables</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-purple-400 mr-2">→</span>
+                    <span>Calculations become much simpler than using exact binomial probabilities</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-purple-400 mr-2">→</span>
+                    <span>Works well when both <span dangerouslySetInnerHTML={{ __html: `\(np \geq 10\)` }} /> and <span dangerouslySetInnerHTML={{ __html: `\(n(1-p) \geq 10\)` }} /></span>
+                  </li>
+                </ul>
+              </div>
+              
+              <div className="bg-neutral-800/50 border border-neutral-700/50 p-4 rounded-lg">
+                <h4 className="font-semibold text-neutral-200 mb-2">Current Conditions Check</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-neutral-400">np₀ = {(sampleSize * nullProportion).toFixed(1)}</span>
+                    <span className={`font-mono font-bold ${
+                      sampleSize * nullProportion >= 10 ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {sampleSize * nullProportion >= 10 ? '✓ ≥ 10' : '✗ < 10'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-400">n(1-p₀) = {(sampleSize * (1 - nullProportion)).toFixed(1)}</span>
+                    <span className={`font-mono font-bold ${
+                      sampleSize * (1 - nullProportion) >= 10 ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {sampleSize * (1 - nullProportion) >= 10 ? '✓ ≥ 10' : '✗ < 10'}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+          
+          {/* Section Completion */}
+          <BinomialFoundationCompletion />
         </div>
       )}
       
@@ -1050,36 +784,51 @@ export default function TestForProportion() {
         <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl shadow-2xl p-6">
           <h2 className="text-2xl font-bold mb-6 text-white">Continuity Correction</h2>
           
-          <div className="mb-4">
-            <Button
-              onClick={() => setShowContinuityCorrection(!showContinuityCorrection)}
-              className={`transition-all duration-300 ${
-                showContinuityCorrection 
-                  ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700' 
-                  : 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700'
-              }`}
-            >
-              {showContinuityCorrection ? 'Hide' : 'Show'} Continuity Correction
-            </Button>
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <svg ref={continuityRef} className="w-full"></svg>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="bg-gray-800/50 border border-gray-700/50 p-4 rounded-lg">
-                <h3 className="font-semibold mb-2 text-gray-200">Why Continuity Correction?</h3>
-                <p className="text-sm mb-3 text-gray-400">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <div className="bg-neutral-800/50 border border-neutral-700/50 p-6 rounded-lg mb-4">
+                <h3 className="font-semibold mb-3 text-neutral-200 text-lg">Why Continuity Correction?</h3>
+                <p className="text-neutral-300 mb-4">
                   The binomial distribution is discrete, but the normal distribution is continuous.
-                  To improve the approximation, we adjust:
+                  To improve the approximation when converting discrete to continuous, we adjust:
                 </p>
-                <ContinuityCorrectionFormula />
+                <div className="bg-neutral-900/50 p-4 rounded-lg">
+                  <ContinuityCorrectionFormula />
+                </div>
+                <p className="text-sm text-neutral-400 mt-4">
+                  This adjustment accounts for the "width" of each discrete value when approximating with a continuous curve.
+                </p>
               </div>
               
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg shadow-inner">
-                <h3 className="font-semibold mb-2 text-purple-800">Test Statistic</h3>
+              <div className="bg-yellow-900/20 border border-yellow-700/30 p-6 rounded-lg">
+                <h3 className="font-semibold mb-3 text-yellow-300 text-lg">Practical Example</h3>
+                <p className="text-yellow-200">
+                  In quality control, if 60 out of 100 products pass inspection,
+                  we test whether the true pass rate differs from the standard 50%.
+                </p>
+                <ul className="mt-3 space-y-2 text-sm text-yellow-100">
+                  <li>• Without correction: P(X = 60)</li>
+                  <li>• With correction: P(59.5 &lt; X &lt; 60.5)</li>
+                  <li>• More accurate for finite samples</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div>
+              <div className="bg-blue-900/20 border border-blue-700/30 p-6 rounded-lg">
+                <h3 className="font-semibold mb-4 text-blue-300 text-lg">Test Statistic Comparison</h3>
+                <div className="mb-4">
+                  <Button
+                    onClick={() => setShowContinuityCorrection(!showContinuityCorrection)}
+                    className={`w-full transition-all duration-300 ${
+                      showContinuityCorrection 
+                        ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700' 
+                        : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700'
+                    }`}
+                  >
+                    {showContinuityCorrection ? 'Hide' : 'Show'} Continuity Correction
+                  </Button>
+                </div>
                 <TestStatisticFormulas 
                   zStatistic={zStatistic}
                   showContinuity={showContinuityCorrection}
@@ -1090,16 +839,21 @@ export default function TestForProportion() {
                 />
               </div>
               
-              <div className="bg-yellow-900/20 border border-yellow-700/30 p-4 rounded-lg">
-                <h3 className="font-semibold mb-2 text-yellow-300">Engineering Example</h3>
-                <p className="text-sm text-yellow-200">
-                  In quality control, if 60 out of 100 products pass inspection,
-                  we test whether the true pass rate differs from the standard 50%.
-                  The continuity correction improves accuracy for finite samples.
-                </p>
+              <div className="bg-neutral-800/50 border border-neutral-700/50 p-4 rounded-lg mt-4">
+                <h4 className="font-semibold text-neutral-200 mb-2">When to Use</h4>
+                <ul className="space-y-2 text-sm text-neutral-300">
+                  <li>✓ Small to moderate sample sizes (n &lt; 200)</li>
+                  <li>✓ When precision is important</li>
+                  <li>✓ For two-sided tests</li>
+                  <li>✗ Less important for very large samples</li>
+                  <li>✗ Can be skipped for rough estimates</li>
+                </ul>
               </div>
             </div>
           </div>
+          
+          {/* Section Completion */}
+          <ContinuityCorrectionCompletion />
         </div>
       )}
       
@@ -1110,96 +864,164 @@ export default function TestForProportion() {
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
-              <svg ref={conditionRef} className="w-full"></svg>
-              
-              <div className="mt-6 bg-gray-800/50 border border-gray-700/50 p-4 rounded-lg">
-                <h3 className="font-semibold mb-3 text-gray-200">Condition Check</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">np₀ = {sampleSize} × {nullProportion}</span>
-                    <span className={`font-mono font-bold ${
-                      largeCountsCondition.np0 >= 10 ? 'text-green-400' : 'text-red-400'
-                    }`}>
-                      {largeCountsCondition.np0.toFixed(1)} {largeCountsCondition.np0 >= 10 ? '✓' : '✗'}
-                    </span>
+              <div className="bg-gray-800/50 border border-gray-700/50 p-6 rounded-lg">
+                <h3 className="font-semibold mb-4 text-gray-200 text-lg">Interactive Condition Check</h3>
+                
+                <div className="space-y-6">
+                  <div className="bg-neutral-900/50 p-5 rounded-lg">
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-neutral-300">
+                          np₀ = {sampleSize} × {nullProportion.toFixed(2)}
+                        </span>
+                        <span className={`font-mono text-2xl font-bold ${
+                          largeCountsCondition.np0 >= 10 ? 'text-green-400' : 'text-red-400'
+                        }`}>
+                          {largeCountsCondition.np0.toFixed(1)}
+                        </span>
+                      </div>
+                      <div className="w-full bg-neutral-700 rounded-full h-3">
+                        <div 
+                          className={`h-3 rounded-full transition-all duration-500 ${
+                            largeCountsCondition.np0 >= 10 ? 'bg-green-500' : 'bg-red-500'
+                          }`}
+                          style={{ width: `${Math.min(100, (largeCountsCondition.np0 / 20) * 100)}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-neutral-400 text-center">
+                        {largeCountsCondition.np0 >= 10 ? '✓ Condition satisfied' : `Need ${(10 - largeCountsCondition.np0).toFixed(1)} more`}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">n(1-p₀) = {sampleSize} × {(1 - nullProportion).toFixed(2)}</span>
-                    <span className={`font-mono font-bold ${
-                      largeCountsCondition.n1p0 >= 10 ? 'text-green-400' : 'text-red-400'
-                    }`}>
-                      {largeCountsCondition.n1p0.toFixed(1)} {largeCountsCondition.n1p0 >= 10 ? '✓' : '✗'}
-                    </span>
+                  
+                  <div className="bg-neutral-900/50 p-5 rounded-lg">
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-neutral-300">
+                          n(1-p₀) = {sampleSize} × {(1 - nullProportion).toFixed(2)}
+                        </span>
+                        <span className={`font-mono text-2xl font-bold ${
+                          largeCountsCondition.n1p0 >= 10 ? 'text-green-400' : 'text-red-400'
+                        }`}>
+                          {largeCountsCondition.n1p0.toFixed(1)}
+                        </span>
+                      </div>
+                      <div className="w-full bg-neutral-700 rounded-full h-3">
+                        <div 
+                          className={`h-3 rounded-full transition-all duration-500 ${
+                            largeCountsCondition.n1p0 >= 10 ? 'bg-green-500' : 'bg-red-500'
+                          }`}
+                          style={{ width: `${Math.min(100, (largeCountsCondition.n1p0 / 20) * 100)}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-neutral-400 text-center">
+                        {largeCountsCondition.n1p0 >= 10 ? '✓ Condition satisfied' : `Need ${(10 - largeCountsCondition.n1p0).toFixed(1)} more`}
+                      </p>
+                    </div>
                   </div>
                 </div>
                 
-                <div className={`mt-3 p-3 rounded transition-all duration-300 ${
+                <div className={`mt-6 p-4 rounded-lg transition-all duration-300 ${
                   largeCountsCondition.satisfied 
                     ? 'bg-green-900/20 border border-green-700/30' 
                     : 'bg-red-900/20 border border-red-700/30'
                 }`}>
-                  <p className={`text-sm font-semibold ${
+                  <p className={`text-center font-semibold ${
                     largeCountsCondition.satisfied ? 'text-green-400' : 'text-red-400'
                   }`}>
                     {largeCountsCondition.satisfied 
-                      ? 'Normal approximation is valid! ✨' 
-                      : 'Normal approximation may not be accurate ⚠️'}
+                      ? '✓ Normal approximation is valid!' 
+                      : '✗ Normal approximation may not be accurate'}
                   </p>
+                </div>
+              </div>
+              
+              <div className="mt-4 bg-yellow-900/20 border border-yellow-700/30 p-6 rounded-lg">
+                <h3 className="font-semibold mb-3 text-yellow-300 text-lg">Common Scenarios</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-neutral-800/50 p-3 rounded-lg border border-neutral-700/50">
+                    <div className="font-mono text-sm text-neutral-300">n=30, p=0.5</div>
+                    <div className="text-green-400 font-semibold mt-1">✓ Valid</div>
+                    <div className="text-xs text-neutral-400">15 & 15</div>
+                  </div>
+                  <div className="bg-neutral-800/50 p-3 rounded-lg border border-neutral-700/50">
+                    <div className="font-mono text-sm text-neutral-300">n=20, p=0.1</div>
+                    <div className="text-red-400 font-semibold mt-1">✗ Too small</div>
+                    <div className="text-xs text-neutral-400">2 & 18</div>
+                  </div>
+                  <div className="bg-neutral-800/50 p-3 rounded-lg border border-neutral-700/50">
+                    <div className="font-mono text-sm text-neutral-300">n=100, p=0.05</div>
+                    <div className="text-yellow-400 font-semibold mt-1">⚠ Borderline</div>
+                    <div className="text-xs text-neutral-400">5 & 95</div>
+                  </div>
+                  <div className="bg-neutral-800/50 p-3 rounded-lg border border-neutral-700/50">
+                    <div className="font-mono text-sm text-neutral-300">n=200, p=0.3</div>
+                    <div className="text-green-400 font-semibold mt-1">✓ Valid</div>
+                    <div className="text-xs text-neutral-400">60 & 140</div>
+                  </div>
                 </div>
               </div>
             </div>
             
             <div className="space-y-4">
-              <div className="bg-purple-900/20 border border-purple-700/30 p-4 rounded-lg">
-                <h3 className="font-semibold mb-2 text-purple-300">Rule of Thumb</h3>
-                <p className="text-sm mb-3 text-purple-200">
-                  For the normal approximation to be valid, both:
+              <div className="bg-purple-900/20 border border-purple-700/30 p-6 rounded-lg">
+                <h3 className="font-semibold mb-3 text-purple-300 text-lg">The Rule of Thumb</h3>
+                <p className="text-purple-200 mb-4">
+                  For the normal approximation to be valid, both conditions must be satisfied:
                 </p>
-                <div className="bg-gray-800/50 p-3 rounded border border-gray-700/50">
+                <div className="bg-purple-900/30 p-4 rounded-lg text-center">
                   <div dangerouslySetInnerHTML={{ 
                     __html: `\\[np_0 \\geq 10 \\text{ and } n(1-p_0) \\geq 10\\]` 
                   }} />
                 </div>
-                <p className="text-sm mt-3 text-purple-200">
-                  This ensures the distribution isn't too skewed and has enough data in both tails.
+                <p className="text-sm mt-4 text-purple-200">
+                  This ensures the distribution isn't too skewed and has enough data in both tails for the normal curve to be a good approximation.
                 </p>
               </div>
               
-              <div className="bg-yellow-900/20 border border-yellow-700/30 p-4 rounded-lg">
-                <h3 className="font-semibold mb-3 text-yellow-300">Common Scenarios</h3>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div className="bg-gray-800/50 p-2 rounded border border-gray-700/50">
-                    <div className="font-mono text-xs text-gray-300">n=30, p=0.5</div>
-                    <div className="text-green-400 font-semibold">✓ Valid</div>
-                  </div>
-                  <div className="bg-gray-800/50 p-2 rounded border border-gray-700/50">
-                    <div className="font-mono text-xs text-gray-300">n=20, p=0.1</div>
-                    <div className="text-red-400 font-semibold">✗ Too small</div>
-                  </div>
-                  <div className="bg-gray-800/50 p-2 rounded border border-gray-700/50">
-                    <div className="font-mono text-xs text-gray-300">n=100, p=0.05</div>
-                    <div className="text-yellow-400 font-semibold">⚠ Borderline</div>
-                  </div>
-                  <div className="bg-gray-800/50 p-2 rounded border border-gray-700/50">
-                    <div className="font-mono text-xs text-gray-300">n=200, p=0.3</div>
-                    <div className="text-green-400 font-semibold">✓ Valid</div>
-                  </div>
-                </div>
+              <div className="bg-blue-900/20 border border-blue-700/30 p-6 rounded-lg">
+                <h3 className="font-semibold mb-3 text-blue-300 text-lg">Why 10?</h3>
+                <ul className="space-y-2 text-blue-200">
+                  <li className="flex items-start">
+                    <span className="text-blue-400 mr-2">•</span>
+                    <span>Below 10, the binomial distribution can be noticeably skewed</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-blue-400 mr-2">•</span>
+                    <span>The normal approximation error becomes significant</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-blue-400 mr-2">•</span>
+                    <span>Type I error rates may deviate from the nominal α level</span>
+                  </li>
+                </ul>
               </div>
               
-              <div className="bg-gray-800/50 border border-gray-700/50 p-4 rounded-lg">
-                <h3 className="font-semibold mb-2 text-gray-200">Alternative Methods</h3>
-                <p className="text-sm text-gray-400">
+              <div className="bg-gray-800/50 border border-gray-700/50 p-6 rounded-lg">
+                <h3 className="font-semibold mb-3 text-gray-200 text-lg">Alternative Methods</h3>
+                <p className="text-gray-300 mb-3">
                   When the large counts condition fails:
                 </p>
-                <ul className="list-disc list-inside text-sm mt-2 space-y-1 text-gray-400">
-                  <li>Use exact binomial test</li>
-                  <li>Apply Wilson score interval</li>
-                  <li>Consider bootstrap methods</li>
+                <ul className="space-y-2 text-gray-300">
+                  <li className="flex items-center">
+                    <span className="text-yellow-400 mr-2">→</span>
+                    <span><strong>Exact binomial test:</strong> Uses the actual binomial distribution</span>
+                  </li>
+                  <li className="flex items-center">
+                    <span className="text-yellow-400 mr-2">→</span>
+                    <span><strong>Wilson score interval:</strong> Better for small samples</span>
+                  </li>
+                  <li className="flex items-center">
+                    <span className="text-yellow-400 mr-2">→</span>
+                    <span><strong>Bootstrap methods:</strong> Resampling approach</span>
+                  </li>
                 </ul>
               </div>
             </div>
           </div>
+          
+          {/* Section Completion */}
+          <LargeCountsConditionCompletion />
         </div>
       )}
       
@@ -1210,16 +1032,13 @@ export default function TestForProportion() {
           
           <div className="mb-4">
             <p className="text-gray-400">
-              Testing H₀: p = 0.5 vs H₁: p ≠ 0.5 with observed proportion p̂ = 0.6
+              Testing <span dangerouslySetInnerHTML={{ __html: `\\(H_0: p = 0.5\\)` }} /> vs <span dangerouslySetInnerHTML={{ __html: `\\(H_1: p \\neq 0.5\\)` }} /> with observed proportion <span dangerouslySetInnerHTML={{ __html: `\\(\\hat{p} = 0.6\\)` }} />
             </p>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <svg ref={sampleSizeRef} className="w-full"></svg>
-            </div>
-            
-            <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <div className="space-y-4">
               <div className="bg-gray-800/50 border border-gray-700/50 p-4 rounded-lg">
                 <h3 className="font-semibold mb-3 text-gray-200">Current Test</h3>
                 <div className="space-y-2 text-sm">
@@ -1256,9 +1075,9 @@ export default function TestForProportion() {
                 </div>
               </div>
               
-              <div className="bg-purple-900/20 border border-purple-700/30 p-4 rounded-lg">
-                <h3 className="font-semibold mb-2 text-purple-300">Key Insight</h3>
-                <p className="text-sm text-purple-200">
+              <div className="bg-blue-900/20 border border-blue-700/30 p-4 rounded-lg">
+                <h3 className="font-semibold mb-2 text-blue-300">Key Insight</h3>
+                <p className="text-sm text-blue-200">
                   The same observed proportion (60%) can be:
                 </p>
                 <ul className="list-disc list-inside text-sm mt-2 space-y-1 text-purple-200">
@@ -1289,15 +1108,21 @@ export default function TestForProportion() {
                 </div>
               </div>
             </div>
+            </div>
+            
+            {/* Second column - placeholder or visualization */}
+            <div>
+              {/* Visualization or additional content can go here */}
+            </div>
           </div>
           
           {/* Complete Test Summary */}
-          <div className="mt-6 bg-gradient-to-r from-purple-900/20 to-pink-900/20 border border-purple-700/30 p-6 rounded-lg">
+          <div className="mt-6 bg-gradient-to-br from-blue-900/20 to-blue-800/20 border border-blue-700/30 p-6 rounded-lg">
             <h3 className="font-bold text-lg mb-4 text-white">Complete Hypothesis Test</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <h4 className="font-semibold mb-2 text-purple-300">Hypotheses</h4>
+                <h4 className="font-semibold mb-2 text-blue-300">Hypotheses</h4>
                 <HypothesesFormula 
                   nullProportion={nullProportion}
                   testType={testType}
@@ -1305,13 +1130,13 @@ export default function TestForProportion() {
               </div>
               
               <div>
-                <h4 className="font-semibold mb-2 text-purple-300">Test Results</h4>
+                <h4 className="font-semibold mb-2 text-blue-300">Test Results</h4>
                 <div className="space-y-1 text-sm">
-                  <p className="text-gray-300">Sample proportion: <span className="font-mono text-purple-400">{observedProportion.toFixed(3)}</span></p>
-                  <p className="text-gray-300">Standard error: <span className="font-mono text-purple-400">{standardError.toFixed(4)}</span></p>
-                  <p className="text-gray-300">Test statistic: <span className="font-mono text-purple-400">z = {zStatistic.toFixed(3)}</span></p>
-                  <p className="text-gray-300">P-value: <span className={`font-mono font-bold ${
-                    pValue < 0.05 ? 'text-red-400' : 'text-gray-400'
+                  <p className="text-neutral-300">Sample proportion: <span className="font-mono text-blue-400">{observedProportion.toFixed(3)}</span></p>
+                  <p className="text-neutral-300">Standard error: <span className="font-mono text-blue-400">{standardError.toFixed(4)}</span></p>
+                  <p className="text-neutral-300">Test statistic: <span className="font-mono text-blue-400">z = {zStatistic.toFixed(3)}</span></p>
+                  <p className="text-neutral-300">P-value: <span className={`font-mono font-bold ${
+                    pValue < 0.05 ? 'text-red-400' : 'text-neutral-400'
                   }`}>{pValue.toFixed(4)}</span></p>
                 </div>
               </div>
@@ -1320,26 +1145,65 @@ export default function TestForProportion() {
             <div className={`mt-4 p-3 rounded transition-all duration-300 border ${
               pValue < 0.05 
                 ? 'bg-red-900/20 border-red-700/30' 
-                : 'bg-gray-800/50 border-gray-700/50'
+                : 'bg-neutral-800/50 border-neutral-700/50'
             }`}>
-              <p className={`font-semibold ${pValue < 0.05 ? 'text-red-400' : 'text-gray-300'}`}>
-                Decision at α = 0.05: {pValue < 0.05 ? 'Reject H₀' : 'Fail to reject H₀'}
+              <p className={`font-semibold ${pValue < 0.05 ? 'text-red-400' : 'text-neutral-300'}`}>
+                Decision at <span dangerouslySetInnerHTML={{ __html: `\\\\(\\\\alpha = 0.05\\\\)` }} />: {pValue < 0.05 ? <>Reject <span dangerouslySetInnerHTML={{ __html: `\\\\(H_0\\\\)` }} /></> : <>Fail to reject <span dangerouslySetInnerHTML={{ __html: `\\\\(H_0\\\\)` }} /></>}
               </p>
-              <p className={`text-sm mt-1 ${pValue < 0.05 ? 'text-red-300' : 'text-gray-400'}`}>
+              <p className={`text-sm mt-1 ${pValue < 0.05 ? 'text-red-300' : 'text-neutral-400'}`}>
                 {pValue < 0.05 
                   ? `There is significant evidence that the proportion differs from ${nullProportion}`
                   : `There is insufficient evidence that the proportion differs from ${nullProportion}`}
               </p>
             </div>
           </div>
+          
+          {/* Section Completion */}
+          <SampleSizeEffectsCompletion />
         </div>
       )}
-      
-      {/* Mathematical Discoveries */}
-      <MathematicalDiscoveries 
-        discoveries={discoveries}
-        className="mt-8"
-      />
+
+      {/* Worked Example Section */}
+      <WorkedExample />
+
+      {/* Key Insights */}
+      <div className="bg-neutral-800/30 rounded-lg p-6">
+        <h3 className="text-xl font-bold text-teal-400 mb-4">Key Insights</h3>
+        
+        <div className="grid md:grid-cols-2 gap-4 text-sm">
+          <div className="bg-neutral-800/50 rounded p-4">
+            <h4 className="font-bold text-white mb-2">Normal Approximation</h4>
+            <p className="text-neutral-300">
+              Valid when both <span dangerouslySetInnerHTML={{ __html: `\\(np_0 \\geq 10\\)` }} /> and <span dangerouslySetInnerHTML={{ __html: `\\(n(1-p_0) \\geq 10\\)` }} />. For smaller samples,
+              use exact binomial test or Wilson score interval.
+            </p>
+          </div>
+          
+          <div className="bg-neutral-800/50 rounded p-4">
+            <h4 className="font-bold text-white mb-2">Continuity Correction</h4>
+            <p className="text-neutral-300">
+              Adjusts for discrete-to-continuous approximation. More important for
+              smaller samples, negligible effect as n increases.
+            </p>
+          </div>
+          
+          <div className="bg-neutral-800/50 rounded p-4">
+            <h4 className="font-bold text-white mb-2">Sample Size Planning</h4>
+            <p className="text-neutral-300">
+              To detect difference δ with power 1-β:
+              <span dangerouslySetInnerHTML={{ __html: `\\(n \\approx p(1-p)(z_\\alpha + z_\\beta)^2/\\delta^2\\)` }} />
+            </p>
+          </div>
+          
+          <div className="bg-neutral-800/50 rounded p-4">
+            <h4 className="font-bold text-white mb-2">Effect of Sample Size</h4>
+            <p className="text-neutral-300">
+              Larger samples can detect smaller deviations from <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />. With <span dangerouslySetInnerHTML={{ __html: `\\(n=500\\)` }} />,
+              even a 3% difference from <span dangerouslySetInnerHTML={{ __html: `\\(p_0\\)` }} /> may be statistically significant.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

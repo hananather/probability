@@ -668,12 +668,12 @@ export default function HypothesisTestingFundamentals() {
                 <p className="text-sm font-bold text-blue-400">Hypotheses:</p>
                 <div className="space-y-2">
                   <p className="text-sm text-gray-300">
-                    <span className="font-mono text-white bg-gray-700 px-2 py-1 rounded" dangerouslySetInnerHTML={{ __html: `\\\\(H_0\\\\)` }} />
-                    <span className="ml-2">The coin is fair (<span dangerouslySetInnerHTML={{ __html: `\\\\(p = 0.5\\\\)` }} />)</span>
+                    <span className="font-mono text-white bg-gray-700 px-2 py-1 rounded" dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />
+                    <span className="ml-2">The coin is fair (<span dangerouslySetInnerHTML={{ __html: `\\(p = 0.5\\)` }} />)</span>
                   </p>
                   <p className="text-sm text-gray-300">
-                    <span className="font-mono text-white bg-gray-700 px-2 py-1 rounded" dangerouslySetInnerHTML={{ __html: `\\\\(H_1\\\\)` }} />
-                    <span className="ml-2">The coin is biased against heads (<span dangerouslySetInnerHTML={{ __html: `\\\\(p < 0.5\\\\)` }} />)</span>
+                    <span className="font-mono text-white bg-gray-700 px-2 py-1 rounded" dangerouslySetInnerHTML={{ __html: `\\(H_1\\)` }} />
+                    <span className="ml-2">The coin is biased against heads (<span dangerouslySetInnerHTML={{ __html: `\\(p < 0.5\\)` }} />)</span>
                   </p>
                 </div>
               </div>
@@ -864,16 +864,16 @@ export default function HypothesisTestingFundamentals() {
                       because coin flips are independent Bernoulli trials.
                     </p>
                     <div className="bg-gray-800/50 rounded-lg p-3">
-                      <div className="font-mono text-sm text-white" dangerouslySetInnerHTML={{ __html: `\\\\[P(X = k) = \\\\binom{n}{k} \\\\times p^k \\\\times (1-p)^{n-k}\\\\]` }} />
+                      <div className="font-mono text-sm text-white" dangerouslySetInnerHTML={{ __html: `\\[P(X = k) = \\binom{n}{k} \\times p^k \\times (1-p)^{n-k}\\]` }} />
                     </div>
                   </div>
                   
                   <div className="space-y-3">
                     <p className="text-sm text-gray-300">
-                      <span className="font-semibold text-blue-400">Step 2:</span> Under <span dangerouslySetInnerHTML={{ __html: `\\\\(H_0\\\\)` }} /> (fair coin), <span dangerouslySetInnerHTML={{ __html: `\\\\(p = 0.5\\\\)` }} />
+                      <span className="font-semibold text-blue-400">Step 2:</span> Under <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /> (fair coin), <span dangerouslySetInnerHTML={{ __html: `\\(p = 0.5\\)` }} />
                     </p>
                     <div className="bg-gray-800/50 rounded-lg p-3">
-                      <div className="font-mono text-sm text-white" dangerouslySetInnerHTML={{ __html: `\\\\[P(X = ${smallStats.heads} | H_0) = \\\\binom{10}{${smallStats.heads}} \\\\times 0.5^{10}\\\\]` }} />
+                      <div className="font-mono text-sm text-white" dangerouslySetInnerHTML={{ __html: `\\[P(X = ${smallStats.heads} | H_0) = \\binom{10}{${smallStats.heads}} \\times 0.5^{10}\\]` }} />
                     </div>
                   </div>
                 </div>
@@ -881,10 +881,10 @@ export default function HypothesisTestingFundamentals() {
                 <div className="mt-4 space-y-3">
                   <p className="text-sm text-gray-300">
                     <span className="font-semibold text-blue-400">Step 3:</span> The p-value is the probability 
-                    of observing {smallStats.heads} or fewer heads if <span dangerouslySetInnerHTML={{ __html: `\\\\(H_0\\\\)` }} /> is true:
+                    of observing {smallStats.heads} or fewer heads if <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /> is true:
                   </p>
                   <div className="bg-gray-800/50 rounded-lg p-4">
-                    <div className="font-mono text-sm text-white mb-2" dangerouslySetInnerHTML={{ __html: `\\\\[\\\\text{p-value} = P(X \\\\leq ${smallStats.heads} | H_0) = \\\\sum_{i=0}^{${smallStats.heads}} P(X = i)\\\\]` }} />
+                    <div className="font-mono text-sm text-white mb-2" dangerouslySetInnerHTML={{ __html: `\\[\\text{p-value} = P(X \\leq ${smallStats.heads} | H_0) = \\sum_{i=0}^{${smallStats.heads}} P(X = i)\\]` }} />
                     <p className="font-mono text-xs text-gray-400">
                       = {Array.from({length: smallStats.heads + 1}, (_, i) => 
                         `P(X=${i})`
@@ -1081,25 +1081,25 @@ export default function HypothesisTestingFundamentals() {
                 <div className="flex gap-4">
                   <span className="text-purple-400 text-lg">1.</span>
                   <p className="text-sm text-gray-300">
-                    The p-value measures how likely we'd see our data (or more extreme) if <span dangerouslySetInnerHTML={{ __html: `\\\\(H_0\\\\)` }} /> were true
+                    The p-value measures how likely we'd see our data (or more extreme) if <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /> were true
                   </p>
                 </div>
                 <div className="flex gap-4">
                   <span className="text-purple-400 text-lg">2.</span>
                   <p className="text-sm text-gray-300">
-                    Sample size dramatically affects our ability to detect deviations from <span dangerouslySetInnerHTML={{ __html: `\\\\(H_0\\\\)` }} />
+                    Sample size dramatically affects our ability to detect deviations from <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />
                   </p>
                 </div>
                 <div className="flex gap-4">
                   <span className="text-purple-400 text-lg">3.</span>
                   <p className="text-sm text-gray-300">
-                    Small p-values provide evidence against <span dangerouslySetInnerHTML={{ __html: `\\\\(H_0\\\\)` }} />, but don't prove <span dangerouslySetInnerHTML={{ __html: `\\\\(H_1\\\\)` }} /> is true
+                    Small p-values provide evidence against <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />, but don't prove <span dangerouslySetInnerHTML={{ __html: `\\(H_1\\)` }} /> is true
                   </p>
                 </div>
                 <div className="flex gap-4">
                   <span className="text-purple-400 text-lg">4.</span>
                   <p className="text-sm text-gray-300">
-                    Failing to reject <span dangerouslySetInnerHTML={{ __html: `\\\\(H_0\\\\)` }} /> doesn't mean <span dangerouslySetInnerHTML={{ __html: `\\\\(H_0\\\\)` }} /> is true - we might just lack sufficient data
+                    Failing to reject <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /> doesn't mean <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /> is true - we might just lack sufficient data
                   </p>
                 </div>
               </div>

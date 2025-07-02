@@ -14,6 +14,8 @@
   - Fast feedback loops (<10 interactions)
   - Copy proven animation patterns
   - Verify Next.js imports & hooks
+  - Use tables for data visualization (font-mono for numbers)
+  - Show raw data before visualizations for clarity
 
 1. Deep Analysis Phase
 Before writing any code, thoroughly analyze the problem:
@@ -105,7 +107,9 @@ See Chapter 1 and 2 components
 
 ## Commands
 ```bash
-npm run dev                    # Start
+npm run dev                    # Start development server
+npm run build                  # Build for production
+npm run lint                   # Check code quality
 npm run build && npm run lint  # Before commit
 ```
 

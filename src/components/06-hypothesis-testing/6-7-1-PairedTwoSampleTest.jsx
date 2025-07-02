@@ -9,12 +9,13 @@ import {
   GraphContainer 
 } from '@/components/ui/VisualizationContainer';
 import { Button } from '@/components/ui/button';
+import BackToHub from '@/components/ui/BackToHub';
 import { MathematicalDiscoveries } from '@/components/ui/MathematicalDiscoveries';
 import { useDiscoveries } from '@/hooks/useDiscoveries';
 import { createColorScheme, cn } from '@/lib/design-system';
 import { 
   Users, TrendingUp, GitBranch, Calculator, 
-  ChevronRight, Sparkles, Activity, Target
+  ChevronRight, ChevronLeft, Sparkles, Activity, Target
 } from 'lucide-react';
 
 const colors = createColorScheme('hypothesis');
@@ -44,31 +45,31 @@ const dataWithDifferences = engineersData.map(d => ({
 const LEARNING_JOURNEY = [
   { 
     id: 'challenge', 
-    title: 'The Challenge', 
+    title: 'Problem Setup', 
     icon: Target,
     color: 'from-purple-500 to-pink-500'
   },
   { 
     id: 'explore', 
-    title: 'Explore the Data', 
+    title: 'Data Exploration', 
     icon: Activity,
     color: 'from-blue-500 to-cyan-500'
   },
   { 
     id: 'discover', 
-    title: 'Discover the Pattern', 
+    title: 'Pattern Analysis', 
     icon: Sparkles,
     color: 'from-green-500 to-emerald-500'
   },
   { 
     id: 'transform', 
-    title: 'The Magic Transformation', 
+    title: 'Transformation to Differences', 
     icon: GitBranch,
     color: 'from-orange-500 to-red-500'
   },
   { 
     id: 'results', 
-    title: 'Reveal the Truth', 
+    title: 'Statistical Results', 
     icon: TrendingUp,
     color: 'from-indigo-500 to-purple-500'
   }
@@ -79,21 +80,18 @@ export default function PairedTwoSampleTest() {
   const [revealedEngineers, setRevealedEngineers] = useState(new Set());
   const [showDifferences, setShowDifferences] = useState(false);
   const [animationPhase, setAnimationPhase] = useState('idle');
-  const [showScatterInsight, setShowScatterInsight] = useState(false);
+  const [showScatterInsight, setShowScatterInsight] = useState(true);
   const [transformationComplete, setTransformationComplete] = useState(false);
   const [showFinalResult, setShowFinalResult] = useState(false);
-  
+  const [scatterLoading, setScatterLoading] = useState(false);
+  const [scatterAnimationPhase, setScatterAnimationPhase] = useState('idle');
   const { discoveries, addDiscovery } = useDiscoveries();
 
   // Refs for visualizations
   const scatterRef = useRef(null);
   const transformRef = useRef(null);
   const distributionRef = useRef(null);
-  const isInitializedRef = useRef({
-    scatter: false,
-    transform: false,
-    distribution: false
-  });
+  const animationTimeoutRef = useRef(null);
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -146,6 +144,10 @@ export default function PairedTwoSampleTest() {
   // Handle step progression
   const handleNextStep = useCallback(() => {
     if (currentStep < LEARNING_JOURNEY.length - 1) {
+      // Reset scatter animation when leaving step 2
+      if (currentStep === 2) {
+        setScatterAnimationPhase('idle');
+      }
       setCurrentStep(prev => prev + 1);
       
       // Add discoveries at key moments
@@ -174,12 +176,56 @@ export default function PairedTwoSampleTest() {
     }
   }, [currentStep, addDiscovery]);
 
-  // Initialize scatter plot visualization
+  // Reset scatter state when changing steps
   useEffect(() => {
-    if (!scatterRef.current || currentStep < 2) return;
+    if (currentStep !== 2) {
+      setScatterLoading(false);
+      setScatterAnimationPhase('idle');
+    }
+  }, [currentStep]);
+
+  // Combined scatter plot initialization and data rendering
+  useEffect(() => {
+    console.log('[Scatter] Effect triggered - currentStep:', currentStep, 'scatterAnimationPhase:', scatterAnimationPhase);
     
-    const svg = d3.select(scatterRef.current);
-    svg.selectAll("*").remove(); // Clear any existing content
+    // Clear any existing timeout
+    if (animationTimeoutRef.current) {
+      clearTimeout(animationTimeoutRef.current);
+      animationTimeoutRef.current = null;
+    }
+    
+    // Only run for step 2 when button is clicked
+    if (currentStep !== 2 || scatterAnimationPhase !== 'show') {
+      return;
+    }
+    
+    // Check if ref is available
+    if (!scatterRef.current) {
+      console.log('[Scatter] Ref not ready');
+      return;
+    }
+    
+    // Set loading state
+    setScatterLoading(true);
+    
+    // Initialize and render scatter plot
+    animationTimeoutRef.current = setTimeout(() => {
+      try {
+        console.log('[Scatter] Starting initialization and render...');
+        const svg = d3.select(scatterRef.current);
+        
+        // Check if SVG element exists and has dimensions
+        const svgNode = svg.node();
+        if (!svgNode) {
+          console.error('[Scatter] SVG node not found');
+          return;
+        }
+        
+        const rect = svgNode.getBoundingClientRect();
+        console.log('[Scatter] SVG dimensions:', rect.width, 'x', rect.height);
+        
+        // Clear any existing content
+        svg.selectAll("*").remove();
     
     const margin = { top: 40, right: 60, bottom: 60, left: 60 };
     const width = 500 - margin.left - margin.right;
@@ -290,26 +336,12 @@ export default function PairedTwoSampleTest() {
     
     // Set viewBox to ensure proper sizing
     svg.attr("viewBox", "0 0 500 400")
-       .attr("preserveAspectRatio", "xMidYMid meet");
-  }, [currentStep]);
-
-  // Update scatter plot with data
-  useEffect(() => {
-    if (!scatterRef.current || currentStep < 2) return;
-
-    const svg = d3.select(scatterRef.current);
-    const g = svg.select("g");
-    const margin = { top: 40, right: 60, bottom: 60, left: 60 };
-    const width = 500 - margin.left - margin.right;
-    const height = 400 - margin.top - margin.bottom;
-
-    const xScale = d3.scaleLinear()
-      .domain([30, 90])
-      .range([0, width]);
-
-    const yScale = d3.scaleLinear()
-      .domain([30, 90])
-      .range([height, 0]);
+       .attr("preserveAspectRatio", "xMidYMid meet")
+       .attr("width", "100%")
+       .attr("height", "100%");
+        
+        // Now add the data and animations
+        console.log('[Scatter] Adding data visualizations...');
 
     // Show diagonal line
     g.select(".diagonal-line")
@@ -430,14 +462,14 @@ export default function PairedTwoSampleTest() {
         .duration(500)
         .attr("opacity", 1);
 
-      // Add insight box
+      // Add insight box in top-left quadrant where no data points exist
       const insightBox = g.append("g")
         .attr("class", "insight-box")
-        .attr("transform", `translate(${width - 180}, 20)`);
+        .attr("transform", `translate(${50}, ${10})`);
 
       insightBox.append("rect")
-        .attr("width", 160)
-        .attr("height", 60)
+        .attr("width", 200)
+        .attr("height", 45)
         .attr("fill", "rgba(16, 185, 129, 0.1)")
         .attr("stroke", "#10b981")
         .attr("stroke-width", 2)
@@ -448,35 +480,68 @@ export default function PairedTwoSampleTest() {
         .attr("opacity", 1);
 
       insightBox.append("text")
-        .attr("x", 80)
-        .attr("y", 25)
+        .attr("x", 100)
+        .attr("y", 18)
         .attr("text-anchor", "middle")
         .attr("fill", "#10b981")
-        .style("font-size", "14px")
+        .style("font-size", "12px")
         .style("font-weight", "bold")
-        .text("Key Insight!")
+        .text("Statistical Insight")
         .attr("opacity", 0)
         .transition()
         .duration(500)
         .attr("opacity", 1);
 
       insightBox.append("text")
-        .attr("x", 80)
-        .attr("y", 45)
+        .attr("x", 100)
+        .attr("y", 33)
         .attr("text-anchor", "middle")
         .attr("fill", "white")
-        .style("font-size", "12px")
-        .text("Pairing captures this!")
+        .style("font-size", "10px")
+        .text("High correlation enables paired analysis")
         .attr("opacity", 0)
         .transition()
         .duration(500)
         .delay(200)
         .attr("opacity", 1);
     }
+    
+    // Mark as complete
+        setScatterLoading(false);
+        console.log('[Scatter] Initialization and rendering complete');
+        
+      } catch (error) {
+        console.error('[Scatter] Error in visualization:', error);
+        console.error('[Scatter] Error stack:', error.stack);
+        setScatterLoading(false);
+      }
+    }, 100); // Reduced delay for faster rendering
+    
+    return () => {
+      if (animationTimeoutRef.current) {
+        clearTimeout(animationTimeoutRef.current);
+        animationTimeoutRef.current = null;
+      }
+    };
+  }, [currentStep, scatterAnimationPhase, stats.correlation]);
 
-  }, [currentStep, showScatterInsight, stats.correlation]);
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowLeft' && currentStep > 0) {
+        // Reset scatter animation when navigating
+        setScatterAnimationPhase('idle');
+        setCurrentStep(prev => prev - 1);
+      } else if (e.key === 'ArrowRight' && currentStep < LEARNING_JOURNEY.length - 1) {
+        handleNextStep();
+      }
+    };
 
-  // Transformation animation
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentStep, handleNextStep]);
+
+  // Transformation animation - simplified version
   useEffect(() => {
     if (!transformRef.current || currentStep < 3) return;
     if (animationPhase !== 'transform') return;
@@ -491,26 +556,6 @@ export default function PairedTwoSampleTest() {
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    // Create gradient for transformation
-    const defs = svg.append("defs");
-    
-    const transformGradient = defs.append("linearGradient")
-      .attr("id", "transform-gradient")
-      .attr("x1", "0%")
-      .attr("y1", "0%")
-      .attr("x2", "0%")
-      .attr("y2", "100%");
-    
-    transformGradient.append("stop")
-      .attr("offset", "0%")
-      .attr("stop-color", "#f59e0b")
-      .attr("stop-opacity", 0.8);
-    
-    transformGradient.append("stop")
-      .attr("offset", "100%")
-      .attr("stop-color", "#ef4444")
-      .attr("stop-opacity", 0.8);
-
     // Title
     g.append("text")
       .attr("x", width / 2)
@@ -519,195 +564,142 @@ export default function PairedTwoSampleTest() {
       .attr("fill", colors.chart.text)
       .style("font-size", "20px")
       .style("font-weight", "bold")
-      .text("The Magic Transformation")
+      .text("From Two Samples to One")
       .attr("opacity", 0)
       .transition()
-      .duration(500)
+      .duration(300)
       .attr("opacity", 1);
 
-    // Create two columns that will merge
-    const columnWidth = 120;
-    const columnHeight = 200;
+    // Show the transformation directly without complex animations
+    const columnWidth = 100;
+    const columnHeight = 180;
+    const spacing = 40;
+    const centerX = width / 2;
     const startY = 50;
 
-    // Before column
-    const beforeGroup = g.append("g")
-      .attr("class", "before-column")
-      .attr("transform", `translate(${width/3 - columnWidth}, ${startY})`);
-
-    beforeGroup.append("rect")
-      .attr("width", columnWidth)
-      .attr("height", columnHeight)
-      .attr("fill", "#fbbf24")
-      .attr("fill-opacity", 0.3)
-      .attr("stroke", "#fbbf24")
-      .attr("stroke-width", 3)
-      .attr("rx", 12)
-      .attr("opacity", 0)
-      .transition()
-      .duration(500)
-      .attr("opacity", 1);
-
-    beforeGroup.append("text")
-      .attr("x", columnWidth / 2)
-      .attr("y", -15)
-      .attr("text-anchor", "middle")
-      .attr("fill", "#fbbf24")
-      .style("font-size", "16px")
-      .style("font-weight", "bold")
-      .text("Before Scores")
-      .attr("opacity", 0)
-      .transition()
-      .duration(500)
-      .attr("opacity", 1);
-
-    // After column
-    const afterGroup = g.append("g")
-      .attr("class", "after-column")
-      .attr("transform", `translate(${2*width/3}, ${startY})`);
-
-    afterGroup.append("rect")
-      .attr("width", columnWidth)
-      .attr("height", columnHeight)
-      .attr("fill", "#3b82f6")
-      .attr("fill-opacity", 0.3)
-      .attr("stroke", "#3b82f6")
-      .attr("stroke-width", 3)
-      .attr("rx", 12)
-      .attr("opacity", 0)
-      .transition()
-      .duration(500)
-      .attr("opacity", 1);
-
-    afterGroup.append("text")
-      .attr("x", columnWidth / 2)
-      .attr("y", -15)
-      .attr("text-anchor", "middle")
-      .attr("fill", "#3b82f6")
-      .style("font-size", "16px")
-      .style("font-weight", "bold")
-      .text("After Scores")
-      .attr("opacity", 0)
-      .transition()
-      .duration(500)
-      .attr("opacity", 1);
-
-    // Add sample values
+    // Sample values
     const sampleValues = dataWithDifferences.slice(0, 5);
-    
-    sampleValues.forEach((d, i) => {
-      beforeGroup.append("text")
-        .attr("x", columnWidth / 2)
-        .attr("y", 30 + i * 30)
-        .attr("text-anchor", "middle")
-        .attr("fill", "white")
-        .style("font-size", "14px")
-        .style("font-family", "monospace")
-        .text(d.before)
+
+    // Create three columns: Before, After, and Differences
+    const columns = [
+      { label: "Before", x: centerX - columnWidth - spacing, color: "#fbbf24", data: sampleValues.map(d => d.before) },
+      { label: "After", x: centerX, color: "#3b82f6", data: sampleValues.map(d => d.after) },
+      { label: "Differences", x: centerX + columnWidth + spacing, color: "#10b981", data: sampleValues.map(d => d.difference) }
+    ];
+
+    // Draw all columns at once
+    columns.forEach((col, colIndex) => {
+      const colGroup = g.append("g")
+        .attr("transform", `translate(${col.x - columnWidth/2}, ${startY})`);
+
+      // Column background
+      colGroup.append("rect")
+        .attr("width", columnWidth)
+        .attr("height", columnHeight)
+        .attr("fill", col.color)
+        .attr("fill-opacity", 0.2)
+        .attr("stroke", col.color)
+        .attr("stroke-width", 2)
+        .attr("rx", 8)
         .attr("opacity", 0)
         .transition()
-        .duration(300)
-        .delay(600 + i * 100)
+        .duration(500)
+        .delay(colIndex * 200)
         .attr("opacity", 1);
 
-      afterGroup.append("text")
+      // Column label
+      colGroup.append("text")
         .attr("x", columnWidth / 2)
-        .attr("y", 30 + i * 30)
+        .attr("y", -15)
         .attr("text-anchor", "middle")
-        .attr("fill", "white")
+        .attr("fill", col.color)
         .style("font-size", "14px")
-        .style("font-family", "monospace")
-        .text(d.after)
+        .style("font-weight", "bold")
+        .text(col.label)
         .attr("opacity", 0)
         .transition()
-        .duration(300)
-        .delay(600 + i * 100)
+        .duration(500)
+        .delay(colIndex * 200)
         .attr("opacity", 1);
+
+      // Data values
+      col.data.forEach((value, i) => {
+        colGroup.append("text")
+          .attr("x", columnWidth / 2)
+          .attr("y", 25 + i * 30)
+          .attr("text-anchor", "middle")
+          .attr("fill", colIndex === 2 ? (value < 0 ? "#10b981" : "#ef4444") : "white")
+          .style("font-size", "14px")
+          .style("font-family", "monospace")
+          .style("font-weight", colIndex === 2 ? "bold" : "normal")
+          .text(colIndex === 2 && value > 0 ? `+${value}` : value)
+          .attr("opacity", 0)
+          .transition()
+          .duration(300)
+          .delay(colIndex * 200 + 300 + i * 50)
+          .attr("opacity", 1);
+      });
     });
 
-    // Animate the transformation
+    // Add arrows showing the transformation
+    const arrowY = startY + columnHeight / 2;
+    
+    // Arrow from Before to After
+    g.append("path")
+      .attr("d", `M ${centerX - spacing - 5} ${arrowY} L ${centerX - columnWidth/2 - 5} ${arrowY}`)
+      .attr("stroke", "#6b7280")
+      .attr("stroke-width", 2)
+      .attr("marker-end", "url(#arrowhead)")
+      .attr("opacity", 0)
+      .transition()
+      .duration(300)
+      .delay(600)
+      .attr("opacity", 0.5);
+
+    // Arrow from After to Differences
+    g.append("path")
+      .attr("d", `M ${centerX + columnWidth/2 + 5} ${arrowY} L ${centerX + spacing - 5} ${arrowY}`)
+      .attr("stroke", "#6b7280")
+      .attr("stroke-width", 2)
+      .attr("marker-end", "url(#arrowhead)")
+      .attr("opacity", 0)
+      .transition()
+      .duration(300)
+      .delay(800)
+      .attr("opacity", 0.5);
+
+    // Define arrowhead marker
+    const marker = svg.append("defs").append("marker")
+      .attr("id", "arrowhead")
+      .attr("viewBox", "0 -5 10 10")
+      .attr("refX", 8)
+      .attr("refY", 0)
+      .attr("markerWidth", 8)
+      .attr("markerHeight", 8)
+      .attr("orient", "auto");
+
+    marker.append("path")
+      .attr("d", "M0,-5L10,0L0,5")
+      .attr("fill", "#6b7280");
+
+    // Add explanation text
+    g.append("text")
+      .attr("x", width / 2)
+      .attr("y", columnHeight + 100)
+      .attr("text-anchor", "middle")
+      .attr("fill", colors.chart.text)
+      .style("font-size", "16px")
+      .text("By taking differences, we convert a two-sample test into a one-sample test!")
+      .attr("opacity", 0)
+      .transition()
+      .duration(500)
+      .delay(1200)
+      .attr("opacity", 1);
+
+    // Mark transformation as complete after a short delay
     setTimeout(() => {
-      // Move columns together
-      beforeGroup.transition()
-        .duration(1500)
-        .ease(d3.easeCubicInOut)
-        .attr("transform", `translate(${width/2 - columnWidth/2}, ${startY})`)
-        .attr("opacity", 0.3);
-
-      afterGroup.transition()
-        .duration(1500)
-        .ease(d3.easeCubicInOut)
-        .attr("transform", `translate(${width/2 - columnWidth/2}, ${startY})`)
-        .attr("opacity", 0.3);
-
-      // Create difference column
-      setTimeout(() => {
-        const diffGroup = g.append("g")
-          .attr("class", "diff-column")
-          .attr("transform", `translate(${width/2 - columnWidth/2}, ${startY})`);
-
-        diffGroup.append("rect")
-          .attr("width", columnWidth)
-          .attr("height", columnHeight)
-          .attr("fill", "url(#transform-gradient)")
-          .attr("stroke", "#10b981")
-          .attr("stroke-width", 3)
-          .attr("rx", 12)
-          .attr("opacity", 0)
-          .transition()
-          .duration(500)
-          .attr("opacity", 1);
-
-        diffGroup.append("text")
-          .attr("x", columnWidth / 2)
-          .attr("y", -15)
-          .attr("text-anchor", "middle")
-          .attr("fill", "#10b981")
-          .style("font-size", "16px")
-          .style("font-weight", "bold")
-          .text("Differences!")
-          .attr("opacity", 0)
-          .transition()
-          .duration(500)
-          .attr("opacity", 1);
-
-        // Show differences
-        sampleValues.forEach((d, i) => {
-          const diff = d.difference;
-          diffGroup.append("text")
-            .attr("x", columnWidth / 2)
-            .attr("y", 30 + i * 30)
-            .attr("text-anchor", "middle")
-            .attr("fill", diff < 0 ? "#10b981" : "#ef4444")
-            .style("font-size", "16px")
-            .style("font-family", "monospace")
-            .style("font-weight", "bold")
-            .text(diff > 0 ? `+${diff}` : diff)
-            .attr("opacity", 0)
-            .transition()
-            .duration(300)
-            .delay(i * 100)
-            .attr("opacity", 1);
-        });
-
-        // Add transformation equation
-        g.append("text")
-          .attr("x", width / 2)
-          .attr("y", columnHeight + 100)
-          .attr("text-anchor", "middle")
-          .attr("fill", colors.chart.text)
-          .style("font-size", "18px")
-          .style("font-weight", "bold")
-          .text("Two-sample problem → One-sample problem!")
-          .attr("opacity", 0)
-          .transition()
-          .duration(500)
-          .delay(1000)
-          .attr("opacity", 1);
-
-        setTransformationComplete(true);
-      }, 1500);
-    }, 2000);
+      setTransformationComplete(true);
+    }, 1500);
 
   }, [animationPhase, currentStep]);
 
@@ -740,6 +732,9 @@ export default function PairedTwoSampleTest() {
             setShowScatterInsight={setShowScatterInsight}
             stats={stats}
             onNext={handleNextStep}
+            loading={scatterLoading}
+            scatterAnimationPhase={scatterAnimationPhase}
+            setScatterAnimationPhase={setScatterAnimationPhase}
           />
         );
       
@@ -773,6 +768,9 @@ export default function PairedTwoSampleTest() {
       title="6.7 - Paired Two-Sample Test"
       description="Discover the hidden power of pairing through an engaging journey"
     >
+      {/* Back to Hub Button */}
+      <BackToHub chapter={6} />
+      
       {/* Journey Progress */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
@@ -845,6 +843,56 @@ export default function PairedTwoSampleTest() {
         </motion.div>
       </AnimatePresence>
 
+      {/* Navigation Controls */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="mt-8 flex justify-between items-center"
+      >
+        <Button
+          onClick={() => {
+            // Reset scatter animation when navigating
+            setScatterAnimationPhase('idle');
+            setCurrentStep(prev => Math.max(0, prev - 1));
+          }}
+          disabled={currentStep === 0}
+          variant="outline"
+          size="lg"
+          className="flex items-center gap-2"
+        >
+          <ChevronLeft className="w-5 h-5" />
+          Previous
+        </Button>
+        
+        <div className="flex gap-2">
+          {LEARNING_JOURNEY.map((_, index) => (
+            <div
+              key={index}
+              className={cn(
+                "w-2 h-2 rounded-full transition-all",
+                index === currentStep 
+                  ? "bg-blue-500 w-8" 
+                  : index < currentStep 
+                    ? "bg-green-500" 
+                    : "bg-neutral-600"
+              )}
+            />
+          ))}
+        </div>
+        
+        <Button
+          onClick={handleNextStep}
+          disabled={currentStep === LEARNING_JOURNEY.length - 1}
+          variant="primary"
+          size="lg"
+          className="flex items-center gap-2"
+        >
+          Next
+          <ChevronRight className="w-5 h-5" />
+        </Button>
+      </motion.div>
+
       {/* Mathematical Discoveries */}
       {discoveries.length > 0 && (
         <motion.div
@@ -865,20 +913,89 @@ export default function PairedTwoSampleTest() {
 
 // Component sections with improved design
 function ChallengeSection({ onNext }) {
+  const contentRef = useRef(null);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, []);
+  
   return (
     <motion.div 
+      ref={contentRef}
       className="space-y-6"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
-      <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-2xl p-8 border border-purple-700/30">
+      {/* Mathematical Introduction */}
+      <div className="bg-gradient-to-br from-blue-900/20 to-cyan-900/20 rounded-2xl p-8 border border-blue-700/30">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
+          <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-4">
+            Understanding Paired Two-Sample Tests
+          </h3>
+        </motion.div>
+        
+        <motion.div 
+          className="space-y-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <p className="text-lg text-neutral-300 leading-relaxed">
+            A paired two-sample test is used when we have two related measurements on the same subjects. 
+            Instead of comparing two independent groups, we analyze the <span className="text-blue-400 font-semibold">differences</span> within pairs.
+          </p>
+          
+          <div className="bg-neutral-800/50 rounded-xl p-6 space-y-3">
+            <h4 className="text-lg font-semibold text-white mb-3">The Mathematical Insight</h4>
+            <div className="space-y-2 text-neutral-300">
+              <p className="flex items-start gap-2">
+                <span className="text-green-400">→</span>
+                <span>For each subject i: <span dangerouslySetInnerHTML={{ __html: `\\(D_i = X_{\\text{after},i} - X_{\\text{before},i}\\)` }} /></span>
+              </p>
+              <p className="flex items-start gap-2">
+                <span className="text-green-400">→</span>
+                <span>We transform a two-sample problem into a one-sample test on differences</span>
+              </p>
+              <p className="flex items-start gap-2">
+                <span className="text-green-400">→</span>
+                <span>Test whether <span dangerouslySetInnerHTML={{ __html: `\\(\\mu_D = 0\\)` }} /> (no change) vs <span dangerouslySetInnerHTML={{ __html: `\\(\\mu_D \\neq 0\\)` }} /> (change exists)</span>
+              </p>
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-r from-green-900/20 to-emerald-900/20 rounded-lg p-4 border border-green-700/30">
+            <p className="text-sm text-green-300">
+              <span className="font-semibold">Why paired design is effective:</span> It eliminates individual variation. 
+              When subjects serve as their own control, we can detect smaller effects with the same sample size.
+            </p>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Practical Example */}
+      <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-2xl p-8 border border-purple-700/30">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
           <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
-            The Quality Control Challenge
+            Let's Build Intuition Through an Example
           </h3>
         </motion.div>
         
@@ -886,18 +1003,22 @@ function ChallengeSection({ onNext }) {
           className="text-lg text-neutral-300 mb-6 leading-relaxed"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.4 }}
         >
-          A tech company just invested heavily in a statistical quality control training program 
-          for their engineers. Management is anxious - did the expensive training actually work?
+          We'll explore a hypothetical scenario: A tech company invested in a statistical quality control 
+          training program for their engineers. Did the training improve their skills?
         </motion.p>
         
         <motion.div 
           className="bg-neutral-800/50 rounded-xl p-6 space-y-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.5 }}
         >
+          <p className="text-xs text-neutral-400 italic mb-3">
+            Note: This is a hypothetical example designed for educational purposes
+          </p>
+          
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center">
               <span className="text-xl">💰</span>
@@ -924,7 +1045,7 @@ function ChallengeSection({ onNext }) {
             </div>
             <div>
               <p className="text-sm text-neutral-400">Your Mission</p>
-              <p className="text-white font-semibold">Prove if the training worked!</p>
+              <p className="text-white font-semibold">Use paired t-test to analyze the results.</p>
             </div>
           </div>
         </motion.div>
@@ -933,13 +1054,15 @@ function ChallengeSection({ onNext }) {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.6 }}
+        transition={{ delay: 0.7 }}
       >
         <Button 
           onClick={onNext} 
-          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-4 text-lg"
+          variant="primary"
+          size="lg"
+          className="w-full"
         >
-          Accept the Challenge
+          Begin the Analysis
           <ChevronRight className="ml-2 w-5 h-5" />
         </Button>
       </motion.div>
@@ -954,13 +1077,18 @@ function ExploreSection({ data, revealedEngineers, setRevealedEngineers, showDif
 
   return (
     <div className="space-y-6">
-      <motion.h3 
-        className="text-xl font-semibold text-white mb-4"
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
+        className="space-y-3"
       >
-        Meet the Engineers
-      </motion.h3>
+        <h3 className="text-xl font-semibold text-white">
+          Meet the Engineers
+        </h3>
+        <p className="text-neutral-400">
+          Click on each engineer below to explore their before and after training scores
+        </p>
+      </motion.div>
       
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {data.map((engineer, index) => (
@@ -1024,11 +1152,11 @@ function ExploreSection({ data, revealedEngineers, setRevealedEngineers, showDif
           className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 rounded-xl p-4 border border-blue-700/30"
         >
           <p className="text-sm text-neutral-300 mb-3">
-            Interesting scores! Can you spot any patterns? Let's calculate the differences...
+            Observed scores. Examine the pattern in the data. Calculate the differences to proceed.
           </p>
           <Button
             onClick={() => setShowDifferences(true)}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            variant="primary"
           >
             Calculate Differences
             <Calculator className="ml-2 w-4 h-4" />
@@ -1040,8 +1168,57 @@ function ExploreSection({ data, revealedEngineers, setRevealedEngineers, showDif
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-4"
+          className="space-y-6"
         >
+          {/* Data Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-neutral-700">
+                  <th className="py-2 px-4 text-left">Engineer</th>
+                  <th className="py-2 px-4 text-center">Before (X₁ᵢ)</th>
+                  <th className="py-2 px-4 text-center">After (X₂ᵢ)</th>
+                  <th className="py-2 px-4 text-center">Difference (Dᵢ)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((eng, i) => (
+                  <motion.tr
+                    key={eng.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="border-b border-neutral-800"
+                  >
+                    <td className="py-2 px-4">{eng.name}</td>
+                    <td className="py-2 px-4 text-center font-mono text-yellow-400">{eng.before}</td>
+                    <td className="py-2 px-4 text-center font-mono text-blue-400">{eng.after}</td>
+                    <td className={cn(
+                      "py-2 px-4 text-center font-mono font-bold",
+                      eng.difference < 0 ? "text-green-400" : "text-red-400"
+                    )}>
+                      {eng.difference < 0 ? eng.difference : `+${eng.difference}`}
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="p-4 bg-neutral-800/50 rounded-lg"
+          >
+            <p className="text-sm">
+              <span className="text-yellow-400">Key Formula:</span> Dᵢ = X₁ᵢ - X₂ᵢ (Before - After)
+            </p>
+            <p className="text-sm text-green-400 mt-2">
+              Negative differences indicate improvement!
+            </p>
+          </motion.div>
+
           <div className="bg-gradient-to-r from-green-900/20 to-emerald-900/20 rounded-xl p-6 border border-green-700/30">
             <h4 className="font-semibold text-green-400 mb-3">Quick Stats</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
@@ -1058,7 +1235,12 @@ function ExploreSection({ data, revealedEngineers, setRevealedEngineers, showDif
             </div>
           </div>
           
-          <Button onClick={onNext} className="w-full">
+          <Button 
+            onClick={onNext} 
+            variant="success"
+            size="lg"
+            className="w-full"
+          >
             Discover the Hidden Pattern
             <Sparkles className="ml-2 w-4 h-4" />
           </Button>
@@ -1068,7 +1250,7 @@ function ExploreSection({ data, revealedEngineers, setRevealedEngineers, showDif
   );
 }
 
-function DiscoverSection({ scatterRef, showScatterInsight, setShowScatterInsight, stats, onNext }) {
+function DiscoverSection({ scatterRef, showScatterInsight, setShowScatterInsight, stats, onNext, loading, scatterAnimationPhase, setScatterAnimationPhase }) {
   return (
     <div className="space-y-6">
       <motion.div
@@ -1081,69 +1263,142 @@ function DiscoverSection({ scatterRef, showScatterInsight, setShowScatterInsight
         </p>
       </motion.div>
       
-      <GraphContainer height={400}>
-        <svg
-          ref={scatterRef}
-          viewBox="0 0 500 400"
-          className="w-full h-full"
-        />
-      </GraphContainer>
-
-      {!showScatterInsight && (
+      {scatterAnimationPhase === 'idle' && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-center"
+          className="text-center py-8"
         >
-          <p className="text-sm text-neutral-400 mb-3">
-            The visualization is loading. Can you guess what pattern we'll see?
-          </p>
           <Button
-            onClick={() => setShowScatterInsight(true)}
-            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+            onClick={() => setScatterAnimationPhase('show')}
+            variant="warning"
+            size="lg"
           >
-            Reveal the Insight
-            <Activity className="ml-2 w-4 h-4" />
+            Reveal the Pattern
+            <Activity className="ml-2 w-5 h-5" />
           </Button>
         </motion.div>
       )}
 
-      {showScatterInsight && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-4"
-        >
-          <div className="bg-gradient-to-r from-purple-900/20 to-pink-900/20 rounded-xl p-6 border border-purple-700/30">
-            <h4 className="font-semibold text-purple-400 mb-3">The Power of Pairing!</h4>
-            <p className="text-sm text-neutral-300 mb-3">
-              Engineers who scored high before training tend to score high after. 
-              This strong correlation (r = {stats.correlation.toFixed(3)}) is the secret weapon!
-            </p>
-            <div className="bg-neutral-800/50 rounded-lg p-4">
-              <p className="text-xs text-neutral-400 mb-2">Why this matters:</p>
-              <ul className="text-sm text-neutral-300 space-y-1">
-                <li>• Individual variation is huge (some score 40, others 80)</li>
-                <li>• But each person's improvement is what we care about</li>
-                <li>• Pairing removes the noise of individual differences!</li>
-              </ul>
+      {scatterAnimationPhase === 'show' && (
+        <>
+          {/* Compact Data Table */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6"
+          >
+            <h4 className="text-sm text-neutral-400 mb-3">The Data</h4>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-neutral-700">
+                    <th className="py-1 px-3 text-left">Engineer</th>
+                    <th className="py-1 px-3 text-center">Before</th>
+                    <th className="py-1 px-3 text-center">After</th>
+                    <th className="py-1 px-3 text-center">Diff</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dataWithDifferences.slice(0, 5).map((eng, i) => (
+                    <tr key={eng.id} className="border-b border-neutral-800">
+                      <td className="py-1 px-3 text-xs">{eng.name}</td>
+                      <td className="py-1 px-3 text-center font-mono text-yellow-400">{eng.before}</td>
+                      <td className="py-1 px-3 text-center font-mono text-blue-400">{eng.after}</td>
+                      <td className={cn(
+                        "py-1 px-3 text-center font-mono text-xs",
+                        eng.difference < 0 ? "text-green-400" : "text-red-400"
+                      )}>
+                        {eng.difference}
+                      </td>
+                    </tr>
+                  ))}
+                  <tr className="border-t border-neutral-600">
+                    <td colSpan="4" className="py-1 px-3 text-center text-xs text-neutral-500">
+                      ... and 5 more engineers
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-          </div>
-          
-          <Button onClick={onNext} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
-            See the Magic Transformation
-            <GitBranch className="ml-2 w-4 h-4" />
-          </Button>
-        </motion.div>
+          </motion.div>
+
+          <GraphContainer height="400px" className="relative overflow-hidden">
+            {loading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-neutral-900/80 z-10">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full"
+                />
+              </div>
+            )}
+            <svg
+              ref={scatterRef}
+              viewBox="0 0 500 400"
+              className="w-full h-full"
+              style={{ display: 'block', width: '100%', height: '100%', minHeight: '400px' }}
+            />
+          </GraphContainer>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="space-y-4"
+          >
+            <div className="bg-gradient-to-r from-purple-900/20 to-pink-900/20 rounded-xl p-6 border border-purple-700/30">
+              <h4 className="font-semibold text-purple-400 mb-3">Paired Design Advantage</h4>
+              <p className="text-sm text-neutral-300 mb-3">
+                Engineers who scored high before training tend to score high after. 
+                This strong correlation (r = {stats.correlation.toFixed(3)}) is the key advantage of paired design.
+              </p>
+              <div className="bg-neutral-800/50 rounded-lg p-4">
+                <p className="text-xs text-neutral-400 mb-2">Why this matters:</p>
+                <ul className="text-sm text-neutral-300 space-y-1">
+                  <li>• Individual variation is huge (some score 40, others 80)</li>
+                  <li>• But each person's improvement is what we care about</li>
+                  <li>• Pairing removes the noise of individual differences!</li>
+                </ul>
+              </div>
+            </div>
+            
+            <Button 
+              onClick={onNext} 
+              variant="primary"
+              size="lg"
+              className="w-full"
+            >
+              See the Transformation
+              <GitBranch className="ml-2 w-4 h-4" />
+            </Button>
+          </motion.div>
+        </>
       )}
     </div>
   );
 }
 
 function TransformSection({ transformRef, animationPhase, setAnimationPhase, transformationComplete, onNext }) {
+  const contentRef = useRef(null);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [transformationComplete]);
+  
   return (
-    <div className="space-y-6">
+    <div ref={contentRef} className="space-y-6">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -1162,8 +1417,8 @@ function TransformSection({ transformRef, animationPhase, setAnimationPhase, tra
         >
           <Button
             onClick={() => setAnimationPhase('transform')}
+            variant="warning"
             size="lg"
-            className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
           >
             Start Transformation
             <GitBranch className="ml-2 w-5 h-5" />
@@ -1193,12 +1448,17 @@ function TransformSection({ transformRef, animationPhase, setAnimationPhase, tra
               By focusing on the differences, we've eliminated individual variation and can now use a simple one-sample t-test!
             </p>
             <div className="bg-neutral-800/50 rounded-lg p-4 font-mono text-sm">
-              <p className="text-green-400">H₀: μ_difference = 0 (no improvement)</p>
-              <p className="text-red-400">H₁: μ_difference ≠ 0 (there is a change)</p>
+              <p className="text-green-400"><span dangerouslySetInnerHTML={{ __html: `\\(H_0: \\mu_{\\text{difference}} = 0\\)` }} /> (no improvement)</p>
+              <p className="text-red-400"><span dangerouslySetInnerHTML={{ __html: `\\(H_1: \\mu_{\\text{difference}} \\neq 0\\)` }} /> (there is a change)</p>
             </div>
           </div>
           
-          <Button onClick={onNext} className="w-full">
+          <Button 
+            onClick={onNext} 
+            variant="primary"
+            size="lg"
+            className="w-full"
+          >
             See the Final Results
             <TrendingUp className="ml-2 w-4 h-4" />
           </Button>
@@ -1209,15 +1469,32 @@ function TransformSection({ transformRef, animationPhase, setAnimationPhase, tra
 }
 
 function ResultsSection({ stats, showFinalResult, setShowFinalResult }) {
+  const contentRef = useRef(null);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [showFinalResult]);
+  
   return (
-    <div className="space-y-6">
+    <div ref={contentRef} className="space-y-6">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
-        <h3 className="text-xl font-semibold text-white mb-2">The Moment of Truth</h3>
+        <h3 className="text-xl font-semibold text-white mb-2">Test Results</h3>
         <p className="text-neutral-400">
-          Did the $50,000 training program work? Let's find out!
+          Did the $50,000 training program work? Examine the statistical evidence.
         </p>
       </motion.div>
 
@@ -1229,8 +1506,8 @@ function ResultsSection({ stats, showFinalResult, setShowFinalResult }) {
         >
           <Button
             onClick={() => setShowFinalResult(true)}
+            variant="primary"
             size="lg"
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
           >
             Reveal the Results
             <Target className="ml-2 w-5 h-5" />
@@ -1246,7 +1523,7 @@ function ResultsSection({ stats, showFinalResult, setShowFinalResult }) {
         >
           {/* Test Results */}
           <div className="bg-gradient-to-r from-green-900/20 to-emerald-900/20 rounded-xl p-6 border border-green-700/30">
-            <h4 className="text-2xl font-bold text-green-400 mb-4">Training Was Successful! 🎉</h4>
+            <h4 className="text-2xl font-bold text-green-400 mb-4">Statistical Evidence of Improvement</h4>
             
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-4">
@@ -1266,7 +1543,7 @@ function ResultsSection({ stats, showFinalResult, setShowFinalResult }) {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-400">Decision (α = 0.05):</span>
-                    <span className="font-semibold text-green-400">Reject H₀</span>
+                    <span className="font-semibold text-green-400">Reject <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /></span>
                   </div>
                 </div>
               </div>
@@ -1323,7 +1600,7 @@ function ResultsSection({ stats, showFinalResult, setShowFinalResult }) {
                 </div>
                 <h5 className="font-medium text-white mb-2">Simple Analysis</h5>
                 <p className="text-xs text-neutral-400">
-                  Transform two samples into one by focusing on differences - elegant and powerful!
+                  Transform two samples into one by focusing on differences - an elegant statistical approach
                 </p>
               </div>
             </div>

@@ -150,7 +150,10 @@ function AppSidebarInner() {
                       
                       // Determine if this section is active
                       let isActiveSection = false;
-                      if (pathname === chapter.path) {
+                      if (section.url && section.url.startsWith('/')) {
+                        // For absolute URLs (like Chapter 6 routes), check if pathname matches
+                        isActiveSection = pathname === section.url;
+                      } else if (pathname === chapter.path) {
                         if (section.url) {
                           // For hash-based sections
                           isActiveSection = activeId === sectionId;
@@ -179,8 +182,14 @@ function AppSidebarInner() {
                         // For sections with custom paths (like MDX pages)
                         href = section.customPath;
                       } else if (section.url) {
-                        // For hash-based sections (overview page and chapter 3)
-                        href = `${chapter.path}${section.url}`;
+                        // Check if URL is already absolute (starts with /)
+                        if (section.url.startsWith('/')) {
+                          // For absolute URLs (like Chapter 6 routes)
+                          href = section.url;
+                        } else {
+                          // For hash-based sections (overview page)
+                          href = `${chapter.path}${section.url}`;
+                        }
                       } else if (section.component) {
                         // For component-based sections (chapters with button navigation)
                         const sectionId = getSectionId(section.component);

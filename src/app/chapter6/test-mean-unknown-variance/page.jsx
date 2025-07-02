@@ -1,4 +1,4 @@
-import TestForMeanUnknownVariance from '@/components/06-hypothesis-testing/6-5-TestForMeanUnknownVariance-v2';
+import TestForMeanUnknownVariance from '@/components/06-hypothesis-testing/6-5-TestForMeanUnknownVariance';
 
 export const metadata = {
   title: 'Test for Mean with Unknown Variance | Chapter 6',

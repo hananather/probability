@@ -169,10 +169,10 @@ const CoinFlipOpening = ({ onComplete }) => {
 // Key Concepts Card
 const KeyConceptsCard = () => {
   const concepts = [
-    { term: "Null Hypothesis (H₀)", definition: "The claim we're testing", latex: "H_0" },
-    { term: "Alternative Hypothesis (H₁)", definition: "What we suspect is true", latex: "H_1" },
-    { term: "p-value", definition: "Probability of seeing our data if H₀ is true", latex: "p" },
-    { term: "Significance Level (α)", definition: "Our threshold for 'rare enough'", latex: "\\alpha" },
+    { term: "Null Hypothesis", definition: "The claim we're testing", latex: "H_0" },
+    { term: "Alternative Hypothesis", definition: "What we suspect is true", latex: "H_1" },
+    { term: "p-value", definition: "Probability of seeing our data if H_0 is true", latex: "p" },
+    { term: "Significance Level", definition: "Our threshold for 'rare enough'", latex: "\\alpha" },
   ];
 
   return (
@@ -193,7 +193,7 @@ const KeyConceptsCard = () => {
                 <p className="text-sm text-gray-400 mt-1">{concept.definition}</p>
               </div>
               <div className="text-2xl font-mono text-cyan-400">
-                {concept.latex}
+                <span dangerouslySetInnerHTML={{ __html: `\\(${concept.latex}\\)` }} />
               </div>
             </div>
           </motion.div>
@@ -220,7 +220,7 @@ const CHAPTER_6_SECTIONS = [
       'Explore real-world examples',
       'Practice formulating hypotheses'
     ],
-    route: '/tutorials/chapter6/hypothesis-fundamentals',
+    route: '/chapter6/hypothesis-fundamentals',
     color: '#10b981',
     question: "How do we turn suspicions into testable claims?",
     preview: "Interactive p-value visualization"
@@ -240,7 +240,7 @@ const CHAPTER_6_SECTIONS = [
       'Learn when to use each type',
       'Practice with visual examples'
     ],
-    route: '/tutorials/chapter6/types-of-hypotheses',
+    route: '/chapter6/types-of-hypotheses',
     color: '#10b981',
     question: "Does it matter if we're looking for any change vs. a specific direction?",
     preview: "One-tailed vs. two-tailed test comparison"
@@ -260,7 +260,7 @@ const CHAPTER_6_SECTIONS = [
       'Explore the trade-offs between errors',
       'Calculate and visualize power'
     ],
-    route: '/tutorials/chapter6/errors-and-power',
+    route: '/chapter6/errors-and-power',
     color: '#3b82f6',
     question: "What's worse: convicting the innocent or letting the guilty go free?",
     preview: "Type I/II error trade-off visualization"
@@ -280,7 +280,7 @@ const CHAPTER_6_SECTIONS = [
       'Interpret p-values',
       'Apply to real scenarios'
     ],
-    route: '/tutorials/chapter6/test-mean-known-variance',
+    route: '/chapter6/test-mean-known-variance',
     color: '#3b82f6',
     question: "Is the manufacturing process producing the claimed quality?",
     preview: "Z-test calculator with critical regions"
@@ -300,7 +300,7 @@ const CHAPTER_6_SECTIONS = [
       'Apply the one-sample t-test',
       'Interpret results correctly'
     ],
-    route: '/tutorials/chapter6/test-mean-unknown-variance',
+    route: '/chapter6/test-mean-unknown-variance',
     color: '#3b82f6',
     question: "What if we don't know the population's variability?",
     preview: "t-distribution emergence animation"
@@ -320,7 +320,7 @@ const CHAPTER_6_SECTIONS = [
       'Calculate test statistics for proportions',
       'Apply to survey data'
     ],
-    route: '/tutorials/chapter6/test-for-proportion',
+    route: '/chapter6/test-for-proportion',
     color: '#3b82f6',
     question: "Has the politician's approval rating really changed?",
     preview: "Proportion sampling distribution"
@@ -340,7 +340,7 @@ const CHAPTER_6_SECTIONS = [
       'Analyze before-after data',
       'Handle matched pairs designs'
     ],
-    route: '/tutorials/chapter6/paired-two-sample',
+    route: '/chapter6/paired-two-sample',
     color: '#8b5cf6',
     question: "Did the training course actually improve performance?",
     preview: "Before/after difference visualization"
@@ -360,7 +360,7 @@ const CHAPTER_6_SECTIONS = [
       'Check equality of variances',
       'Interpret group differences'
     ],
-    route: '/tutorials/chapter6/unpaired-two-sample',
+    route: '/chapter6/unpaired-two-sample',
     color: '#8b5cf6',
     question: "Which teaching method produces better results?",
     preview: "Two independent distributions comparison"
@@ -380,7 +380,7 @@ const CHAPTER_6_SECTIONS = [
       'Test for significant differences',
       'Apply to A/B testing scenarios'
     ],
-    route: '/tutorials/chapter6/difference-two-proportions',
+    route: '/chapter6/difference-two-proportions',
     color: '#8b5cf6',
     question: "Is the marketing campaign more effective in one city?",
     preview: "Proportion difference distribution"

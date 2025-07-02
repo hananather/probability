@@ -1,25 +1,258 @@
-'use client';
-
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import * as d3 from 'd3';
-import { jStat } from 'jstat';
-import { motion, AnimatePresence } from 'framer-motion';
+"use client";
+import React, { useState, useEffect, useRef } from "react";
+import * as d3 from "@/utils/d3-utils";
+import { jStat } from "jstat";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
-  VisualizationContainer,
+  VisualizationContainer, 
   VisualizationSection,
   GraphContainer,
   ControlGroup
 } from '@/components/ui/VisualizationContainer';
+import { colors, createColorScheme } from '@/lib/design-system';
 import { Button } from '@/components/ui/button';
-import { MathematicalDiscoveries } from '@/components/ui/MathematicalDiscoveries';
-import { useDiscoveries } from '@/hooks/useDiscoveries';
-import { createColorScheme, cn } from '@/lib/design-system';
-import { 
-  Bug, BarChart3, Calculator, ChevronRight, Sparkles, 
-  Activity, Target, AlertCircle, CheckCircle, Merge
-} from 'lucide-react';
+import BackToHub from '@/components/ui/BackToHub';
+import { Bug, Merge, Calculator, CheckCircle, AlertCircle, BarChart3 } from 'lucide-react';
 
-const colors = createColorScheme('hypothesis');
+// Get vibrant Chapter 6 color scheme
+const chapterColors = createColorScheme('hypothesis');
+
+// Hypothesis Display Component
+const HypothesisDisplay = React.memo(function HypothesisDisplay() {
+  const contentRef = useRef(null);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, []);
+  
+  return (
+    <div ref={contentRef} className="bg-neutral-800 rounded-lg p-4 max-w-2xl mx-auto">
+      <div className="text-sm text-neutral-300 space-y-2">
+        <p>
+          <strong className="text-white"><span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />:</strong> <span dangerouslySetInnerHTML={{ __html: `\\(p_1 = p_2\\)` }} /> (same recapture rate for both types)
+        </p>
+        <p>
+          <strong className="text-white"><span dangerouslySetInnerHTML={{ __html: `\\(H_1\\)` }} />:</strong> <span dangerouslySetInnerHTML={{ __html: `\\(p_1 \\neq p_2\\)` }} /> (different recapture rates)
+        </p>
+        <p>
+          <strong className="text-white">Question:</strong> Do environmental factors affect moth types differently?
+        </p>
+      </div>
+    </div>
+  );
+});
+
+// Mathematical Framework Component
+const MathematicalFramework = React.memo(function MathematicalFramework() {
+  const contentRef = useRef(null);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, []);
+  
+  return (
+    <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">
+      <h3 className="text-xl font-bold text-teal-400 mb-6">Mathematical Framework</h3>
+      
+      <div ref={contentRef} className="grid md:grid-cols-2 gap-6">
+        <div className="bg-neutral-900/50 rounded-lg p-4">
+          <h4 className="font-bold text-white mb-3">Test Statistic</h4>
+          <div className="text-sm text-neutral-300">
+            <p className="mb-2">Under <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />, the test statistic follows:</p>
+            <div className="text-center text-teal-400 my-3">
+              <span dangerouslySetInnerHTML={{ __html: `\\[z = \\frac{\\hat{p}_1 - \\hat{p}_2}{SE} \\sim N(0, 1)\\]` }} />
+            </div>
+            <p className="mt-2">where SE uses the pooled proportion <span dangerouslySetInnerHTML={{ __html: `\\(\\hat{p}\\)` }} /></p>
+          </div>
+        </div>
+
+        <div className="bg-neutral-900/50 rounded-lg p-4">
+          <h4 className="font-bold text-white mb-3">Pooled Proportion</h4>
+          <div className="text-sm text-neutral-300">
+            <p className="mb-2">Best estimate under <span dangerouslySetInnerHTML={{ __html: `\\(H_0: p_1 = p_2 = p\\)` }} /></p>
+            <div className="text-center text-blue-400 my-3">
+              <span dangerouslySetInnerHTML={{ __html: `\\[\\hat{p} = \\frac{y_1 + y_2}{n_1 + n_2}\\]` }} />
+            </div>
+            <p className="mt-2">Combines data from both groups</p>
+          </div>
+        </div>
+
+        <div className="bg-neutral-900/50 rounded-lg p-4">
+          <h4 className="font-bold text-white mb-3">Standard Error (Test)</h4>
+          <div className="text-sm text-neutral-300">
+            <p className="mb-2">For hypothesis testing:</p>
+            <div className="text-center text-purple-400 my-3">
+              <span dangerouslySetInnerHTML={{ __html: `\\[SE = \\sqrt{\\hat{p}(1-\\hat{p})\\left(\\frac{1}{n_1} + \\frac{1}{n_2}\\right)}\\]` }} />
+            </div>
+            <p className="mt-2">Uses pooled <span dangerouslySetInnerHTML={{ __html: `\\(\\hat{p}\\)` }} /> under <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /></p>
+          </div>
+        </div>
+
+        <div className="bg-neutral-900/50 rounded-lg p-4">
+          <h4 className="font-bold text-white mb-3">Confidence Interval</h4>
+          <div className="text-sm text-neutral-300">
+            <p className="mb-2">For CI, use unpooled SE:</p>
+            <div className="text-center text-green-400 my-3">
+              <span dangerouslySetInnerHTML={{ __html: `\\[SE = \\sqrt{\\frac{\\hat{p}_1(1-\\hat{p}_1)}{n_1} + \\frac{\\hat{p}_2(1-\\hat{p}_2)}{n_2}}\\]` }} />
+            </div>
+            <p className="mt-2">Don't assume <span dangerouslySetInnerHTML={{ __html: `\\(p_1 = p_2\\)` }} /> for CI</p>
+          </div>
+        </div>
+      </div>
+    </VisualizationSection>
+  );
+});
+
+// Key Insights Component
+const KeyInsights = React.memo(function KeyInsights({ calculations }) {
+  const contentRef = useRef(null);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [calculations]);
+  
+  return (
+    <VisualizationSection className="bg-gradient-to-br from-yellow-900/20 to-orange-900/20 border border-yellow-700/30 rounded-lg p-6">
+      <h3 className="text-xl font-bold text-yellow-400 mb-4">Key Insights: Sample Size Impact</h3>
+      
+      <div ref={contentRef} className="space-y-4">
+        <p className="text-neutral-300">
+          With the same observed difference ({(Math.abs(calculations.difference) * 100).toFixed(1)}%), 
+          different sample sizes lead to different conclusions:
+        </p>
+        
+        <div className="bg-neutral-900/50 rounded-lg p-4">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-neutral-700">
+                <th className="text-left py-2 text-neutral-400">Sample Size</th>
+                <th className="text-center py-2 text-neutral-400">z-statistic</th>
+                <th className="text-center py-2 text-neutral-400">p-value</th>
+                <th className="text-center py-2 text-neutral-400">Decision <span dangerouslySetInnerHTML={{ __html: `\\(\\alpha=0.05\\)` }} /></th>
+              </tr>
+            </thead>
+            <tbody>
+              {[0.25, 0.5, 1, 2].map(multiplier => {
+                const n1 = Math.round(MOTH_DATA.light.n * multiplier);
+                const n2 = Math.round(MOTH_DATA.dark.n * multiplier);
+                const y1 = Math.round(MOTH_DATA.light.recaptured * multiplier);
+                const y2 = Math.round(MOTH_DATA.dark.recaptured * multiplier);
+                const p1 = y1 / n1;
+                const p2 = y2 / n2;
+                const pooledP = (y1 + y2) / (n1 + n2);
+                const se = Math.sqrt(pooledP * (1 - pooledP) * (1/n1 + 1/n2));
+                const z = (p1 - p2) / se;
+                const p = 2 * (1 - jStat.normal.cdf(Math.abs(z), 0, 1));
+                
+                return (
+                  <tr key={multiplier} className="border-b border-neutral-700/50">
+                    <td className="py-2 text-neutral-300">{multiplier * 100}% (n1={n1})</td>
+                    <td className="text-center py-2 font-mono text-white">{z.toFixed(3)}</td>
+                    <td className="text-center py-2 font-mono text-white">
+                      {p < 0.001 ? '< 0.001' : p.toFixed(3)}
+                    </td>
+                    <td className="text-center py-2">
+                      <span className={`font-semibold ${p < 0.05 ? 'text-red-400' : 'text-green-400'}`}>
+                        {p < 0.05 ? (
+                          <span dangerouslySetInnerHTML={{ __html: `Reject \\(H_0\\)` }} />
+                        ) : (
+                          'Fail to reject'
+                        )}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        
+        <p className="text-sm text-neutral-400">
+          <strong>Lesson:</strong> Statistical significance depends on both effect size AND sample size. 
+          A real difference might not be detected with small samples, while tiny differences can be 
+          "statistically significant" with large samples.
+        </p>
+      </div>
+    </VisualizationSection>
+  );
+});
+
+// Important Distinctions Component
+const ImportantDistinctions = React.memo(function ImportantDistinctions() {
+  const contentRef = useRef(null);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, []);
+  
+  return (
+    <div ref={contentRef} className="grid md:grid-cols-2 gap-6">
+      <div className="bg-neutral-900/50 rounded-lg p-4">
+        <h4 className="font-bold text-white mb-3">Hypothesis Test vs Confidence Interval</h4>
+        <div className="space-y-2 text-sm text-neutral-300">
+          <p><strong>Test:</strong> Uses pooled SE assuming <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /> is true</p>
+          <p><strong>CI:</strong> Uses unpooled SE, doesn't assume <span dangerouslySetInnerHTML={{ __html: `\\(p_1 = p_2\\)` }} /></p>
+          <p className="text-yellow-400">Always use the right SE for your purpose!</p>
+        </div>
+      </div>
+      
+      <div className="bg-neutral-900/50 rounded-lg p-4">
+        <h4 className="font-bold text-white mb-3">Large Counts Condition</h4>
+        <div className="space-y-2 text-sm text-neutral-300">
+          <p>Check using <strong>pooled <span dangerouslySetInnerHTML={{ __html: `\\(\\hat{p}\\)` }} /></strong>, not individual proportions</p>
+          <p>All four counts must be ≥ 10:</p>
+          <p className="font-mono text-center mt-2">
+            <span dangerouslySetInnerHTML={{ __html: `\\(n_1\\hat{p},\\quad n_1(1-\\hat{p}),\\quad n_2\\hat{p},\\quad n_2(1-\\hat{p})\\)` }} />
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+});
 
 // Moth data from the task
 const MOTH_DATA = {
@@ -27,107 +260,232 @@ const MOTH_DATA = {
   dark: { n: 493, recaptured: 131, name: 'Dark-colored moths', color: '#6b7280' }
 };
 
-// Learning journey stages
-const LEARNING_JOURNEY = [
-  { 
-    id: 'data', 
-    title: 'The Moth Recapture Data', 
-    icon: Bug,
-    color: 'from-amber-500 to-yellow-500'
-  },
-  { 
-    id: 'pooled', 
-    title: 'The Pooled Proportion', 
-    icon: Merge,
-    color: 'from-blue-500 to-cyan-500'
-  },
-  { 
-    id: 'se', 
-    title: 'Standard Error Explorer', 
-    icon: Activity,
-    color: 'from-green-500 to-emerald-500'
-  },
-  { 
-    id: 'validation', 
-    title: 'Large Counts Validator', 
-    icon: CheckCircle,
-    color: 'from-purple-500 to-pink-500'
-  },
-  { 
-    id: 'test', 
-    title: 'Hypothesis Test & Results', 
-    icon: Target,
-    color: 'from-red-500 to-orange-500'
-  }
-];
-
-// LaTeX component
-const LaTeXContent = React.memo(({ content }) => {
-  const ref = useRef(null);
+// Worked Example Component
+const WorkedExample = React.memo(function WorkedExample({ sampleSize, significanceLevel }) {
+  const contentRef = useRef(null);
+  
+  // Calculate values based on sample size
+  const n1 = Math.round(MOTH_DATA.light.n * sampleSize);
+  const n2 = Math.round(MOTH_DATA.dark.n * sampleSize);
+  const y1 = Math.round(MOTH_DATA.light.recaptured * sampleSize);
+  const y2 = Math.round(MOTH_DATA.dark.recaptured * sampleSize);
+  const p1 = y1 / n1;
+  const p2 = y2 / n2;
+  const pooledP = (y1 + y2) / (n1 + n2);
+  const difference = p1 - p2;
+  const sePooled = Math.sqrt(pooledP * (1 - pooledP) * (1/n1 + 1/n2));
+  const zStat = difference / sePooled;
+  const pValue = 2 * (1 - jStat.normal.cdf(Math.abs(zStat), 0, 1));
   
   useEffect(() => {
     const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && ref.current) {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
         if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([ref.current]);
+          window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([ref.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
       }
     };
     
     processMathJax();
     const timeoutId = setTimeout(processMathJax, 100);
     return () => clearTimeout(timeoutId);
-  }, [content]);
+  }, [sampleSize, significanceLevel]);
   
-  return <span ref={ref} dangerouslySetInnerHTML={{ __html: content }} />;
+  return (
+    <VisualizationSection className="bg-gradient-to-br from-neutral-800/50 to-neutral-900/50 rounded-lg p-6 border border-neutral-700/50">
+      <h3 className="text-xl font-bold text-purple-400 mb-6">
+        Step-by-Step Computation
+      </h3>
+      
+      <div ref={contentRef} className="space-y-6">
+        {/* Step 1: Data Setup */}
+        <div className="bg-neutral-900/50 rounded-lg p-4">
+          <h4 className="font-bold text-white mb-3">Step 1: Observed Data</h4>
+          <div className="grid md:grid-cols-2 gap-4 text-sm text-neutral-300">
+            <div>
+              <p className="font-semibold text-amber-400">Light Moths:</p>
+              <ul className="mt-2 space-y-1">
+                <li>• Released: <span className="font-mono text-white">{n1}</span></li>
+                <li>• Recaptured: <span className="font-mono text-white">{y1}</span></li>
+                <li>• Proportion: <span dangerouslySetInnerHTML={{ __html: `\\(\\hat{p}_1 = \\frac{${y1}}{${n1}} = ${p1.toFixed(4)}\\)` }} /></li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-semibold text-gray-400">Dark Moths:</p>
+              <ul className="mt-2 space-y-1">
+                <li>• Released: <span className="font-mono text-white">{n2}</span></li>
+                <li>• Recaptured: <span className="font-mono text-white">{y2}</span></li>
+                <li>• Proportion: <span dangerouslySetInnerHTML={{ __html: `\\(\\hat{p}_2 = \\frac{${y2}}{${n2}} = ${p2.toFixed(4)}\\)` }} /></li>
+              </ul>
+            </div>
+          </div>
+          <p className="mt-3 text-center text-neutral-400">
+            Observed difference: <span dangerouslySetInnerHTML={{ __html: `\\(\\hat{p}_1 - \\hat{p}_2 = ${difference.toFixed(4)}\\)` }} />
+          </p>
+        </div>
+
+        {/* Step 2: Pooled Proportion */}
+        <div className="bg-neutral-900/50 rounded-lg p-4">
+          <h4 className="font-bold text-white mb-3">Step 2: Calculate Pooled Proportion</h4>
+          <div className="text-sm text-neutral-300 space-y-2">
+            <p>Under <span dangerouslySetInnerHTML={{ __html: `\\(H_0: p_1 = p_2\\)` }} />, we estimate the common proportion:</p>
+            <div className="text-center my-3">
+              <span dangerouslySetInnerHTML={{ __html: `\\[\\hat{p} = \\frac{y_1 + y_2}{n_1 + n_2} = \\frac{${y1} + ${y2}}{${n1} + ${n2}} = \\frac{${y1 + y2}}{${n1 + n2}} = ${pooledP.toFixed(4)}\\]` }} />
+            </div>
+            <p className="text-blue-400">
+              This represents our best estimate of the common recapture rate if <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /> is true.
+            </p>
+          </div>
+        </div>
+
+        {/* Step 3: Standard Error */}
+        <div className="bg-neutral-900/50 rounded-lg p-4">
+          <h4 className="font-bold text-white mb-3">Step 3: Calculate Standard Error</h4>
+          <div className="text-sm text-neutral-300 space-y-2">
+            <p>Using the pooled proportion for the hypothesis test:</p>
+            <div className="my-3">
+              <span dangerouslySetInnerHTML={{ __html: `\\[SE = \\sqrt{\\hat{p}(1-\\hat{p})\\left(\\frac{1}{n_1} + \\frac{1}{n_2}\\right)}\\]` }} />
+            </div>
+            <div className="my-3">
+              <span dangerouslySetInnerHTML={{ __html: `\\[SE = \\sqrt{${pooledP.toFixed(4)} \\times ${(1-pooledP).toFixed(4)} \\times \\left(\\frac{1}{${n1}} + \\frac{1}{${n2}}\\right)}\\]` }} />
+            </div>
+            <div className="my-3">
+              <span dangerouslySetInnerHTML={{ __html: `\\[SE = ${sePooled.toFixed(4)}\\]` }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Step 4: Test Statistic */}
+        <div className="bg-neutral-900/50 rounded-lg p-4">
+          <h4 className="font-bold text-white mb-3">Step 4: Calculate Test Statistic</h4>
+          <div className="text-sm text-neutral-300 space-y-2">
+            <div className="my-3">
+              <span dangerouslySetInnerHTML={{ __html: `\\[z = \\frac{\\hat{p}_1 - \\hat{p}_2}{SE} = \\frac{${difference.toFixed(4)}}{${sePooled.toFixed(4)}} = ${zStat.toFixed(3)}\\]` }} />
+            </div>
+            <p>For a two-sided test:</p>
+            <div className="my-3">
+              <span dangerouslySetInnerHTML={{ __html: `\\[p\\text{-value} = 2 \\times P(|Z| > ${Math.abs(zStat).toFixed(3)}) = ${pValue < 0.001 ? '< 0.001' : pValue.toFixed(4)}\\]` }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Step 5: Large Counts Check */}
+        <div className="bg-neutral-900/50 rounded-lg p-4">
+          <h4 className="font-bold text-white mb-3">Step 5: Verify Large Counts Condition</h4>
+          <div className="text-sm text-neutral-300 space-y-2">
+            <p>For the normal approximation to be valid, all counts must be ≥ 10:</p>
+            <div className="grid md:grid-cols-2 gap-4 mt-3">
+              <div>
+                <p className="font-semibold text-amber-400">Light Moths:</p>
+                <ul className="mt-2 space-y-1">
+                  <li><span dangerouslySetInnerHTML={{ __html: `\\(n_1\\hat{p} = ${n1} \\times ${pooledP.toFixed(3)} = ${(n1 * pooledP).toFixed(1)}\\)` }} /> 
+                    <span className={n1 * pooledP >= 10 ? "text-green-400" : "text-red-400"}> {n1 * pooledP >= 10 ? "✓" : "✗"}</span>
+                  </li>
+                  <li><span dangerouslySetInnerHTML={{ __html: `\\(n_1(1-\\hat{p}) = ${n1} \\times ${(1-pooledP).toFixed(3)} = ${(n1 * (1-pooledP)).toFixed(1)}\\)` }} />
+                    <span className={n1 * (1-pooledP) >= 10 ? "text-green-400" : "text-red-400"}> {n1 * (1-pooledP) >= 10 ? "✓" : "✗"}</span>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <p className="font-semibold text-gray-400">Dark Moths:</p>
+                <ul className="mt-2 space-y-1">
+                  <li><span dangerouslySetInnerHTML={{ __html: `\\(n_2\\hat{p} = ${n2} \\times ${pooledP.toFixed(3)} = ${(n2 * pooledP).toFixed(1)}\\)` }} />
+                    <span className={n2 * pooledP >= 10 ? "text-green-400" : "text-red-400"}> {n2 * pooledP >= 10 ? "✓" : "✗"}</span>
+                  </li>
+                  <li><span dangerouslySetInnerHTML={{ __html: `\\(n_2(1-\\hat{p}) = ${n2} \\times ${(1-pooledP).toFixed(3)} = ${(n2 * (1-pooledP)).toFixed(1)}\\)` }} />
+                    <span className={n2 * (1-pooledP) >= 10 ? "text-green-400" : "text-red-400"}> {n2 * (1-pooledP) >= 10 ? "✓" : "✗"}</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Conclusion */}
+        <div className={`rounded-lg p-4 ${pValue < significanceLevel ? 'bg-red-900/20 border border-red-500/30' : 'bg-green-900/20 border border-green-500/30'}`}>
+          <h4 className="font-bold text-white mb-3">Conclusion</h4>
+          <div className="text-sm text-neutral-300 space-y-2">
+            <p>
+              With p-value = {pValue < 0.001 ? '< 0.001' : pValue.toFixed(4)} {pValue < significanceLevel ? '<' : '>'} <span dangerouslySetInnerHTML={{ __html: `\\(\\alpha = ${significanceLevel}\\)` }} />:
+            </p>
+            <p className={`font-bold ${pValue < significanceLevel ? 'text-red-400' : 'text-green-400'}`}>
+              {pValue < significanceLevel ? (
+                <>Reject <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />: There is significant evidence of a difference in recapture rates.</>
+              ) : (
+                <>Fail to reject <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />: Insufficient evidence of a difference in recapture rates.</>
+              )}
+            </p>
+          </div>
+        </div>
+      </div>
+    </VisualizationSection>
+  );
 });
 
-LaTeXContent.displayName = 'LaTeXContent';
-
 export default function DifferenceOfTwoProportions() {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [showPoolingAnimation, setShowPoolingAnimation] = useState(false);
-  const [selectedSampleSize, setSelectedSampleSize] = useState('original');
-  const [showTestResults, setShowTestResults] = useState(false);
-  const [hypothesisType, setHypothesisType] = useState('two');
+  // State management
+  const [sampleSizeMultiplier, setSampleSizeMultiplier] = useState(1);
   const [significanceLevel, setSignificanceLevel] = useState(0.05);
+  const [hypothesisType, setHypothesisType] = useState('two'); // 'two', 'left', 'right'
+  const [showDistributions, setShowDistributions] = useState(false);
+  const [dimensions, setDimensions] = useState({ width: 600, height: 300 });
   
-  const { discoveries, addDiscovery } = useDiscoveries();
+  // Memoized event handlers
+  const handleSampleSizeChange = React.useCallback((e) => {
+    setSampleSizeMultiplier(Number(e.target.value));
+  }, []);
+  
+  const handleSignificanceLevelChange = React.useCallback((level) => {
+    setSignificanceLevel(level);
+  }, []);
+  
+  const handleHypothesisTypeChange = React.useCallback((e) => {
+    setHypothesisType(e.target.value);
+  }, []);
+  
+  const toggleDistributions = React.useCallback(() => {
+    setShowDistributions(prev => !prev);
+  }, []);
   
   // Refs for visualizations
   const barChartRef = useRef(null);
-  const poolingRef = useRef(null);
-  const seExplorerRef = useRef(null);
+  const distributionRef = useRef(null);
+  const resizeObserverRef = useRef(null);
   
-  // Calculate proportions
-  const calculations = useMemo(() => {
-    const sampleSizeMultipliers = {
-      original: 1,
-      halved: 0.5,
-      quartered: 0.25
-    };
+  // Calculations with edge case handling
+  const calculations = React.useMemo(() => {
+    // Ensure minimum sample sizes
+    const n1 = Math.max(1, Math.round(MOTH_DATA.light.n * sampleSizeMultiplier));
+    const n2 = Math.max(1, Math.round(MOTH_DATA.dark.n * sampleSizeMultiplier));
     
-    const multiplier = sampleSizeMultipliers[selectedSampleSize];
-    const n1 = Math.round(MOTH_DATA.light.n * multiplier);
-    const n2 = Math.round(MOTH_DATA.dark.n * multiplier);
-    const y1 = Math.round(MOTH_DATA.light.recaptured * multiplier);
-    const y2 = Math.round(MOTH_DATA.dark.recaptured * multiplier);
+    // Ensure counts don't exceed sample size
+    const y1 = Math.min(n1, Math.max(0, Math.round(MOTH_DATA.light.recaptured * sampleSizeMultiplier)));
+    const y2 = Math.min(n2, Math.max(0, Math.round(MOTH_DATA.dark.recaptured * sampleSizeMultiplier)));
     
     const p1 = y1 / n1;
     const p2 = y2 / n2;
     const pooledP = (y1 + y2) / (n1 + n2);
     const difference = p1 - p2;
     
-    // Standard error (using pooled proportion for test)
-    const sePooled = Math.sqrt(pooledP * (1 - pooledP) * (1/n1 + 1/n2));
+    // Standard errors with edge case handling
+    // Ensure pooledP is valid (between 0 and 1)
+    const safePooledP = Math.max(0.0001, Math.min(0.9999, pooledP));
+    const sePooled = Math.sqrt(safePooledP * (1 - safePooledP) * (1/n1 + 1/n2));
     
-    // Test statistic
-    const zStat = difference / sePooled;
+    // For unpooled SE, handle edge cases where p1 or p2 might be 0 or 1
+    const safep1 = Math.max(0.0001, Math.min(0.9999, p1));
+    const safep2 = Math.max(0.0001, Math.min(0.9999, p2));
+    const seUnpooled = Math.sqrt(safep1 * (1 - safep1) / n1 + safep2 * (1 - safep2) / n2);
     
-    // P-value
+    // Test statistic with edge case handling
+    const zStat = sePooled > 0 ? difference / sePooled : 0;
+    
+    // P-value based on hypothesis type
     let pValue;
-    if (hypothesisType === 'two') {
+    if (!isFinite(zStat) || isNaN(zStat)) {
+      pValue = 1; // Conservative approach for invalid test statistic
+    } else if (hypothesisType === 'two') {
       pValue = 2 * (1 - jStat.normal.cdf(Math.abs(zStat), 0, 1));
     } else if (hypothesisType === 'left') {
       pValue = jStat.normal.cdf(zStat, 0, 1);
@@ -135,880 +493,792 @@ export default function DifferenceOfTwoProportions() {
       pValue = 1 - jStat.normal.cdf(zStat, 0, 1);
     }
     
-    // Large counts check
-    const largeCountsCheck = {
-      light: {
-        np: n1 * pooledP,
-        n1p: n1 * (1 - pooledP),
-        valid: n1 * pooledP >= 10 && n1 * (1 - pooledP) >= 10
-      },
-      dark: {
-        np: n2 * pooledP,
-        n1p: n2 * (1 - pooledP),
-        valid: n2 * pooledP >= 10 && n2 * (1 - pooledP) >= 10
-      }
-    };
+    // Ensure p-value is between 0 and 1
+    pValue = Math.max(0, Math.min(1, pValue));
     
-    // Confidence interval (using unpooled SE)
-    const seUnpooled = Math.sqrt(p1 * (1 - p1) / n1 + p2 * (1 - p2) / n2);
+    // Confidence interval
     const zCrit = jStat.normal.inv(1 - significanceLevel / 2, 0, 1);
     const ciLower = difference - zCrit * seUnpooled;
     const ciUpper = difference + zCrit * seUnpooled;
+    
+    // Large counts check using safe pooled proportion
+    const largeCountsCheck = {
+      light: {
+        np: n1 * safePooledP,
+        n1p: n1 * (1 - safePooledP),
+        valid: n1 * safePooledP >= 10 && n1 * (1 - safePooledP) >= 10
+      },
+      dark: {
+        np: n2 * safePooledP,
+        n1p: n2 * (1 - safePooledP),
+        valid: n2 * safePooledP >= 10 && n2 * (1 - safePooledP) >= 10
+      }
+    };
     
     return {
       n1, n2, y1, y2, p1, p2, pooledP, difference,
       sePooled, seUnpooled, zStat, pValue,
       largeCountsCheck, ciLower, ciUpper
     };
-  }, [selectedSampleSize, hypothesisType, significanceLevel]);
+  }, [sampleSizeMultiplier, hypothesisType, significanceLevel]);
   
-  // Draw bar chart
+  // Resize observer for responsive visualizations
   useEffect(() => {
-    if (!barChartRef.current || currentStep < 0) return;
+    if (!barChartRef.current) return;
+    
+    const handleResize = () => {
+      if (barChartRef.current) {
+        const width = barChartRef.current.clientWidth || 600;
+        setDimensions({ width, height: 300 });
+      }
+    };
+    
+    // Initial size
+    handleResize();
+    
+    // Create resize observer
+    resizeObserverRef.current = new ResizeObserver(handleResize);
+    resizeObserverRef.current.observe(barChartRef.current);
+    
+    return () => {
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+      }
+    };
+  }, []);
+  
+  // Bar chart initialization
+  const barChartInitialized = useRef(false);
+  const barChartG = useRef(null);
+  const barChartBars = useRef(null);
+  const barChartTexts = useRef(null);
+  
+  // Bar chart visualization
+  useEffect(() => {
+    if (!barChartRef.current) return;
     
     const svg = d3.select(barChartRef.current);
-    const width = barChartRef.current.clientWidth;
-    const height = 300;
-    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
+    const { width, height } = dimensions;
+    const margin = { top: 40, right: 60, bottom: 60, left: 60 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
-    svg.selectAll("*").remove();
+    // Initialize only once
+    if (!barChartInitialized.current) {
+      // Clear any existing content first
+      svg.selectAll("*").remove();
+      
+      barChartG.current = svg
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+      
+      barChartInitialized.current = true;
+    }
     
-    const g = svg.append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
+    // Always update SVG dimensions
+    svg.attr("width", width).attr("height", height);
     
-    // Data for bar chart
+    const g = barChartG.current;
+    
+    // Add glow filter and gradients only once
+    if (!svg.select("defs").node()) {
+      const defs = svg.append("defs");
+    
+    const filter = defs.append("filter")
+      .attr("id", "glow");
+    filter.append("feGaussianBlur")
+      .attr("stdDeviation", "3")
+      .attr("result", "coloredBlur");
+    const feMerge = filter.append("feMerge");
+    feMerge.append("feMergeNode")
+      .attr("in", "coloredBlur");
+    feMerge.append("feMergeNode")
+      .attr("in", "SourceGraphic");
+    
+    // Light moth gradient
+    const lightGradient = defs.append("linearGradient")
+      .attr("id", "light-moth-gradient")
+      .attr("x1", "0%")
+      .attr("y1", "0%")
+      .attr("x2", "0%")
+      .attr("y2", "100%");
+    lightGradient.append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", "#fde047")
+      .attr("stop-opacity", 1);
+    lightGradient.append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", "#f59e0b")
+      .attr("stop-opacity", 1);
+    
+    // Dark moth gradient
+    const darkGradient = defs.append("linearGradient")
+      .attr("id", "dark-moth-gradient")
+      .attr("x1", "0%")
+      .attr("y1", "0%")
+      .attr("x2", "0%")
+      .attr("y2", "100%");
+    darkGradient.append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", "#9ca3af")
+      .attr("stop-opacity", 1);
+    darkGradient.append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", "#4b5563")
+      .attr("stop-opacity", 1);
+    }
+    
+    // Data
     const data = [
-      { group: 'Light moths', proportion: calculations.p1, color: MOTH_DATA.light.color },
-      { group: 'Dark moths', proportion: calculations.p2, color: MOTH_DATA.dark.color }
+      { group: 'Light moths', proportion: calculations.p1, color: 'url(#light-moth-gradient)' },
+      { group: 'Dark moths', proportion: calculations.p2, color: 'url(#dark-moth-gradient)' }
     ];
     
     // Scales
-    const xScale = d3.scaleBand()
+    const x = d3.scaleBand()
       .domain(data.map(d => d.group))
       .range([0, innerWidth])
       .padding(0.4);
     
-    const yScale = d3.scaleLinear()
+    const y = d3.scaleLinear()
       .domain([0, 0.3])
       .range([innerHeight, 0]);
     
-    // Axes
-    g.append("g")
+    // Axes - create or update
+    let xAxis = g.select(".x-axis");
+    if (xAxis.empty()) {
+      xAxis = g.append("g")
+        .attr("class", "x-axis");
+    }
+    xAxis
       .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(xScale))
-      .style("color", "#9ca3af");
+      .call(d3.axisBottom(x));
     
-    g.append("g")
-      .call(d3.axisLeft(yScale).tickFormat(d3.format(".0%")))
-      .style("color", "#9ca3af");
+    xAxis.style("font-size", "12px")
+      .selectAll("text")
+      .style("fill", "#a78bfa");
     
-    // Y-axis label
-    g.append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 0 - margin.left)
-      .attr("x", 0 - innerHeight / 2)
-      .attr("dy", "1em")
-      .style("text-anchor", "middle")
-      .style("fill", "#d4d4d8")
-      .text("Recapture Rate");
+    xAxis.selectAll("path, line")
+      .style("stroke", "#a78bfa");
     
-    // Bars
-    g.selectAll(".bar")
-      .data(data)
-      .enter().append("rect")
+    let yAxis = g.select(".y-axis");
+    if (yAxis.empty()) {
+      yAxis = g.append("g")
+        .attr("class", "y-axis");
+    }
+    yAxis
+      .call(d3.axisLeft(y).tickFormat(d => (d * 100).toFixed(0) + "%"));
+    
+    yAxis.style("font-size", "12px")
+      .selectAll("text")
+      .style("fill", "#60a5fa");
+    
+    yAxis.selectAll("path, line")
+      .style("stroke", "#60a5fa");
+    
+    // Labels - create only once
+    if (g.select(".x-label").empty()) {
+      g.append("text")
+        .attr("class", "x-label")
+        .attr("text-anchor", "middle")
+        .style("font-size", "14px")
+        .style("font-weight", "bold")
+        .style("fill", "#c084fc")
+        .text("Moth Type");
+    }
+    g.select(".x-label")
+      .attr("x", innerWidth / 2)
+      .attr("y", innerHeight + 45);
+    
+    if (g.select(".y-label").empty()) {
+      g.append("text")
+        .attr("class", "y-label")
+        .attr("transform", "rotate(-90)")
+        .attr("text-anchor", "middle")
+        .style("font-size", "14px")
+        .style("font-weight", "bold")
+        .style("fill", "#60a5fa")
+        .text("Recapture Rate");
+    }
+    g.select(".y-label")
+      .attr("y", -40)
+      .attr("x", -innerHeight / 2);
+    
+    // Bars - proper enter/update/exit pattern
+    const bars = g.selectAll(".bar")
+      .data(data, d => d.group);
+    
+    // Enter new bars
+    const barsEnter = bars.enter().append("rect")
       .attr("class", "bar")
-      .attr("x", d => xScale(d.group))
-      .attr("width", xScale.bandwidth())
+      .attr("x", d => x(d.group))
+      .attr("width", x.bandwidth())
       .attr("y", innerHeight)
       .attr("height", 0)
       .attr("fill", d => d.color)
-      .transition()
-      .duration(1000)
-      .attr("y", d => yScale(d.proportion))
-      .attr("height", d => innerHeight - yScale(d.proportion));
+      .style("filter", "url(#glow)");
     
-    // Value labels
-    g.selectAll(".label")
-      .data(data)
-      .enter().append("text")
+    // Update all bars (enter + update)
+    bars.merge(barsEnter)
+      .transition()
+      .duration(800)
+      .attr("x", d => x(d.group))
+      .attr("width", x.bandwidth())
+      .attr("y", d => y(d.proportion))
+      .attr("height", d => innerHeight - y(d.proportion))
+      .attr("fill", d => d.color);
+    
+    // Remove old bars
+    bars.exit().remove();
+    
+    // Value labels - proper enter/update/exit pattern
+    const labels = g.selectAll(".label")
+      .data(data, d => d.group);
+    
+    // Enter new labels
+    const labelsEnter = labels.enter().append("text")
       .attr("class", "label")
-      .attr("x", d => xScale(d.group) + xScale.bandwidth() / 2)
-      .attr("y", d => yScale(d.proportion) - 10)
       .attr("text-anchor", "middle")
-      .style("fill", "#ffffff")
+      .style("font-size", "16px")
       .style("font-weight", "bold")
-      .style("opacity", 0)
+      .style("text-shadow", "0 0 10px rgba(0,0,0,0.5)")
+      .style("opacity", 0);
+    
+    // Update all labels (enter + update)
+    labels.merge(labelsEnter)
+      .attr("x", d => x(d.group) + x.bandwidth() / 2)
+      .attr("y", d => y(d.proportion) - 10)
+      .style("fill", d => d.group.includes('Light') ? "#fde047" : "#e5e7eb")
       .text(d => `${(d.proportion * 100).toFixed(1)}%`)
       .transition()
-      .duration(1000)
-      .delay(500)
+      .duration(800)
+      .delay(400)
       .style("opacity", 1);
     
-    // Difference annotation
-    if (currentStep >= 1) {
-      const diffGroup = g.append("g")
-        .attr("class", "difference-annotation")
+    // Remove old labels
+    labels.exit().remove();
+    
+    // Difference line - create or update
+    let diffLine = g.select(".diff-line");
+    if (diffLine.empty()) {
+      diffLine = g.append("line")
+        .attr("class", "diff-line")
+        .style("stroke", "#f43f5e")
+        .style("stroke-width", 3)
+        .style("stroke-dasharray", "5,5")
+        .style("filter", "drop-shadow(0 0 4px #f43f5e)")
         .style("opacity", 0);
-      
-      // Connecting line
-      const y1 = yScale(calculations.p1);
-      const y2 = yScale(calculations.p2);
-      const x1 = xScale('Light moths') + xScale.bandwidth() / 2;
-      const x2 = xScale('Dark moths') + xScale.bandwidth() / 2;
-      
-      diffGroup.append("line")
-        .attr("x1", x1)
-        .attr("y1", y1)
-        .attr("x2", x2)
-        .attr("y2", y2)
-        .style("stroke", "#e11d48")
-        .style("stroke-width", 2)
-        .style("stroke-dasharray", "5,5");
-      
-      // Difference text
-      diffGroup.append("text")
-        .attr("x", (x1 + x2) / 2)
-        .attr("y", Math.min(y1, y2) - 30)
-        .attr("text-anchor", "middle")
-        .style("fill", "#e11d48")
-        .style("font-weight", "bold")
-        .text(`Difference: ${(calculations.difference * 100).toFixed(1)}%`);
-      
-      diffGroup.transition()
-        .duration(800)
-        .delay(200)
-        .style("opacity", 1);
     }
     
-  }, [currentStep, calculations]);
+    diffLine
+      .attr("x1", x('Light moths') + x.bandwidth() / 2)
+      .attr("x2", x('Dark moths') + x.bandwidth() / 2)
+      .attr("y1", y(calculations.p1))
+      .attr("y2", y(calculations.p2))
+      .transition()
+      .duration(800)
+      .delay(800)
+      .style("opacity", 1);
+    
+    // Difference text - create or update
+    let diffText = g.select(".diff-text");
+    if (diffText.empty()) {
+      diffText = g.append("text")
+        .attr("class", "diff-text")
+        .attr("text-anchor", "middle")
+        .style("font-size", "18px")
+        .style("font-weight", "bold")
+        .style("fill", "#f43f5e")
+        .style("text-shadow", "0 0 10px rgba(244, 63, 94, 0.6)")
+        .style("opacity", 0);
+    }
+    
+    diffText
+      .attr("x", innerWidth / 2)
+      .attr("y", (y(calculations.p1) + y(calculations.p2)) / 2)
+      .text(`Δ = ${(calculations.difference * 100).toFixed(1)}%`)
+      .transition()
+      .duration(800)
+      .delay(1000)
+      .style("opacity", 1);
+    
+  }, [calculations, dimensions]);
   
-  // Draw pooling animation
+  // Distribution visualization
   useEffect(() => {
-    if (!poolingRef.current || currentStep !== 1 || !showPoolingAnimation) return;
+    if (!distributionRef.current || !showDistributions) return;
     
-    const svg = d3.select(poolingRef.current);
-    const width = poolingRef.current.clientWidth;
-    const height = 200;
-    
+    const svg = d3.select(distributionRef.current);
     svg.selectAll("*").remove();
     
-    const g = svg.append("g")
-      .attr("transform", "translate(20, 20)");
+    const width = distributionRef.current.clientWidth || 600;
+    const height = Math.min(400, width * 0.67); // Maintain aspect ratio
+    const margin = { top: 40, right: 80, bottom: 60, left: 80 };
     
-    // Initial separate groups
-    const group1 = g.append("g").attr("transform", "translate(0, 0)");
-    const group2 = g.append("g").attr("transform", "translate(300, 0)");
+    const g = svg
+      .attr("width", width)
+      .attr("height", height)
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
     
-    // Light moths group
-    group1.append("rect")
-      .attr("width", 200)
-      .attr("height", 80)
-      .attr("fill", MOTH_DATA.light.color)
-      .attr("opacity", 0.3)
-      .attr("rx", 8);
-    
-    group1.append("text")
-      .attr("x", 100)
-      .attr("y", 40)
-      .attr("text-anchor", "middle")
-      .style("fill", "#171717")
-      .style("font-weight", "bold")
-      .text(`${calculations.y1} / ${calculations.n1}`);
-    
-    // Dark moths group
-    group2.append("rect")
-      .attr("width", 200)
-      .attr("height", 80)
-      .attr("fill", MOTH_DATA.dark.color)
-      .attr("opacity", 0.3)
-      .attr("rx", 8);
-    
-    group2.append("text")
-      .attr("x", 100)
-      .attr("y", 40)
-      .attr("text-anchor", "middle")
-      .style("fill", "#ffffff")
-      .style("font-weight", "bold")
-      .text(`${calculations.y2} / ${calculations.n2}`);
-    
-    // Animate merging
-    setTimeout(() => {
-      group1.transition()
-        .duration(1500)
-        .attr("transform", "translate(150, 0)");
-      
-      group2.transition()
-        .duration(1500)
-        .attr("transform", "translate(150, 0)");
-      
-      // Add pooled result
-      setTimeout(() => {
-        const pooledGroup = g.append("g")
-          .attr("transform", "translate(150, 100)")
-          .style("opacity", 0);
-        
-        pooledGroup.append("rect")
-          .attr("width", 200)
-          .attr("height", 80)
-          .attr("fill", colors.chart.primary)
-          .attr("opacity", 0.3)
-          .attr("rx", 8);
-        
-        pooledGroup.append("text")
-          .attr("x", 100)
-          .attr("y", 40)
-          .attr("text-anchor", "middle")
-          .style("fill", "#ffffff")
-          .style("font-weight", "bold")
-          .text(`p̂ = ${(calculations.pooledP * 100).toFixed(1)}%`);
-        
-        pooledGroup.transition()
-          .duration(800)
-          .style("opacity", 1);
-      }, 1600);
-    }, 500);
-    
-  }, [currentStep, showPoolingAnimation, calculations]);
-  
-  // SE Explorer visualization
-  useEffect(() => {
-    if (!seExplorerRef.current || currentStep !== 2) return;
-    
-    const svg = d3.select(seExplorerRef.current);
-    const width = seExplorerRef.current.clientWidth;
-    const height = 300;
-    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
-    svg.selectAll("*").remove();
+    // Create defs for gradients
+    const defs = svg.append("defs");
     
-    const g = svg.append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
+    // Critical region gradient
+    const criticalGradient = defs.append("linearGradient")
+      .attr("id", "critical-gradient")
+      .attr("x1", "0%")
+      .attr("y1", "0%")
+      .attr("x2", "0%")
+      .attr("y2", "100%");
+    criticalGradient.append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", "#ef4444")
+      .attr("stop-opacity", 0.8);
+    criticalGradient.append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", "#dc2626")
+      .attr("stop-opacity", 0.3);
     
-    // Generate SE curve data
-    const seData = d3.range(0.01, 0.99, 0.01).map(p => ({
-      p: p,
-      se: Math.sqrt(p * (1 - p) * (1/calculations.n1 + 1/calculations.n2))
-    }));
+    // Calculate distribution parameters
+    const se = calculations.sePooled;
+    const xMin = -4 * se;
+    const xMax = 4 * se;
     
-    // Scales
-    const xScale = d3.scaleLinear()
-      .domain([0, 1])
+    const x = d3.scaleLinear()
+      .domain([xMin, xMax])
       .range([0, innerWidth]);
     
-    const yScale = d3.scaleLinear()
-      .domain([0, d3.max(seData, d => d.se) * 1.1])
+    const maxPDF = jStat.normal.pdf(0, 0, se) * 1.1;
+    
+    const y = d3.scaleLinear()
+      .domain([0, maxPDF])
       .range([innerHeight, 0]);
     
     // Axes
-    g.append("g")
+    const xAxis2 = g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(xScale).tickFormat(d3.format(".0%")))
-      .style("color", "#9ca3af");
+      .call(d3.axisBottom(x).tickFormat(d => d.toFixed(3)));
     
-    g.append("g")
-      .call(d3.axisLeft(yScale).tickFormat(d3.format(".3f")))
-      .style("color", "#9ca3af");
+    xAxis2.style("font-size", "12px")
+      .selectAll("text")
+      .style("fill", "#34d399");
     
-    // Axis labels
+    xAxis2.selectAll("path, line")
+      .style("stroke", "#34d399");
+    
+    const yAxis2 = g.append("g")
+      .call(d3.axisLeft(y).tickFormat(d => d.toFixed(3)));
+    
+    yAxis2.style("font-size", "12px")
+      .selectAll("text")
+      .style("fill", "#f472b6");
+    
+    yAxis2.selectAll("path, line")
+      .style("stroke", "#f472b6");
+    
+    // Labels
     g.append("text")
       .attr("x", innerWidth / 2)
       .attr("y", innerHeight + 45)
-      .style("text-anchor", "middle")
-      .style("fill", "#d4d4d8")
-      .text("Pooled Proportion (p̂)");
+      .attr("text-anchor", "middle")
+      .style("font-size", "14px")
+      .style("font-weight", "bold")
+      .style("fill", "#10b981")
+      .text("Difference in Proportions");
     
     g.append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", 0 - margin.left)
-      .attr("x", 0 - innerHeight / 2)
-      .attr("dy", "1em")
-      .style("text-anchor", "middle")
-      .style("fill", "#d4d4d8")
-      .text("Standard Error");
-    
-    // SE curve
-    const line = d3.line()
-      .x(d => xScale(d.p))
-      .y(d => yScale(d.se))
-      .curve(d3.curveBasis);
-    
-    const path = g.append("path")
-      .datum(seData)
-      .attr("fill", "none")
-      .attr("stroke", colors.chart.primary)
-      .attr("stroke-width", 3)
-      .attr("d", line);
-    
-    // Animate drawing
-    const totalLength = path.node().getTotalLength();
-    path
-      .attr("stroke-dasharray", totalLength + " " + totalLength)
-      .attr("stroke-dashoffset", totalLength)
-      .transition()
-      .duration(2000)
-      .attr("stroke-dashoffset", 0);
-    
-    // Mark current pooled p
-    g.append("line")
-      .attr("x1", xScale(calculations.pooledP))
-      .attr("x2", xScale(calculations.pooledP))
-      .attr("y1", innerHeight)
-      .attr("y2", yScale(calculations.sePooled))
-      .style("stroke", colors.chart.secondary)
-      .style("stroke-width", 2)
-      .style("stroke-dasharray", "5,5")
-      .style("opacity", 0)
-      .transition()
-      .duration(800)
-      .delay(1500)
-      .style("opacity", 1);
-    
-    g.append("circle")
-      .attr("cx", xScale(calculations.pooledP))
-      .attr("cy", yScale(calculations.sePooled))
-      .attr("r", 6)
-      .style("fill", colors.chart.secondary)
-      .style("opacity", 0)
-      .transition()
-      .duration(800)
-      .delay(1500)
-      .style("opacity", 1);
-    
-    // Label
-    g.append("text")
-      .attr("x", xScale(calculations.pooledP) + 10)
-      .attr("y", yScale(calculations.sePooled) - 10)
-      .style("fill", colors.chart.secondary)
+      .attr("y", -50)
+      .attr("x", -innerHeight / 2)
+      .attr("text-anchor", "middle")
       .style("font-size", "14px")
       .style("font-weight", "bold")
-      .text(`SE = ${calculations.sePooled.toFixed(3)}`)
-      .style("opacity", 0)
-      .transition()
-      .duration(800)
-      .delay(1800)
-      .style("opacity", 1);
+      .style("fill", "#f472b6")
+      .text("Probability Density");
     
-  }, [currentStep, calculations]);
-  
-  const handleStepChange = (newStep) => {
-    setCurrentStep(newStep);
+    // Generate curve data
+    const curveData = d3.range(xMin, xMax, (xMax - xMin) / 200).map(val => ({
+      x: val,
+      y: jStat.normal.pdf(val, 0, se)
+    }));
     
-    // Add discoveries
-    if (newStep === 1 && !discoveries.some(d => d.id === 'pooled-proportion')) {
-      addDiscovery({
-        id: 'pooled-proportion',
-        title: 'Pooled Proportion',
-        description: 'Under H₀, we combine both groups to estimate the common proportion',
-        category: 'hypothesis-testing'
-      });
+    // Curve
+    const line = d3.line()
+      .x(d => x(d.x))
+      .y(d => y(d.y))
+      .curve(d3.curveBasis);
+    
+    // Add gradient for the curve
+    const curveGradient = defs.append("linearGradient")
+      .attr("id", "curve-gradient")
+      .attr("x1", "0%")
+      .attr("y1", "0%")
+      .attr("x2", "100%")
+      .attr("y2", "0%");
+    curveGradient.append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", "#8b5cf6");
+    curveGradient.append("stop")
+      .attr("offset", "50%")
+      .attr("stop-color", "#3b82f6");
+    curveGradient.append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", "#06b6d4");
+    
+    g.append("path")
+      .datum(curveData)
+      .attr("fill", "none")
+      .attr("stroke", "url(#curve-gradient)")
+      .attr("stroke-width", 3)
+      .style("filter", "drop-shadow(0 0 4px rgba(59, 130, 246, 0.6))")
+      .attr("d", line);
+    
+    // Critical regions
+    let criticalValues;
+    if (hypothesisType === 'two') {
+      const zCrit = jStat.normal.inv(1 - significanceLevel / 2, 0, 1);
+      criticalValues = [-zCrit * se, zCrit * se];
+    } else if (hypothesisType === 'left') {
+      const zCrit = jStat.normal.inv(significanceLevel, 0, 1);
+      criticalValues = [xMin, zCrit * se];
+    } else {
+      const zCrit = jStat.normal.inv(1 - significanceLevel, 0, 1);
+      criticalValues = [zCrit * se, xMax];
     }
     
-    if (newStep === 4 && !discoveries.some(d => d.id === 'two-proportion-test')) {
-      addDiscovery({
-        id: 'two-proportion-test',
-        title: 'Two-Proportion Z-Test',
-        description: 'Compare proportions from two independent groups',
-        category: 'hypothesis-testing'
-      });
+    // Shade critical regions
+    const area = d3.area()
+      .x(d => x(d.x))
+      .y0(innerHeight)
+      .y1(d => y(d.y))
+      .curve(d3.curveBasis);
+    
+    if (hypothesisType === 'two') {
+      // Left tail
+      const leftData = curveData.filter(d => d.x <= criticalValues[0]);
+      g.append("path")
+        .datum(leftData)
+        .attr("fill", "url(#critical-gradient)")
+        .attr("opacity", 0.4)
+        .attr("d", area);
+      
+      // Right tail
+      const rightData = curveData.filter(d => d.x >= criticalValues[1]);
+      g.append("path")
+        .datum(rightData)
+        .attr("fill", "url(#critical-gradient)")
+        .attr("opacity", 0.4)
+        .attr("d", area);
+    } else {
+      const criticalData = curveData.filter(d => 
+        hypothesisType === 'left' ? d.x <= criticalValues[1] : d.x >= criticalValues[0]
+      );
+      g.append("path")
+        .datum(criticalData)
+        .attr("fill", "url(#critical-gradient)")
+        .attr("opacity", 0.4)
+        .attr("d", area);
     }
-  };
+    
+    // Observed difference line
+    const observedX = x(calculations.difference);
+    g.append("line")
+      .attr("x1", observedX)
+      .attr("x2", observedX)
+      .attr("y1", 0)
+      .attr("y2", innerHeight)
+      .attr("stroke", "#10b981")
+      .attr("stroke-width", 4)
+      .attr("stroke-dasharray", "8,4")
+      .style("filter", "drop-shadow(0 0 6px #10b981)");
+    
+    g.append("text")
+      .attr("x", observedX)
+      .attr("y", -10)
+      .attr("text-anchor", "middle")
+      .attr("fill", "#10b981")
+      .style("font-size", "14px")
+      .style("font-weight", "bold")
+      .style("text-shadow", "0 0 8px rgba(16, 185, 129, 0.8)")
+      .text("Observed");
+    
+  }, [calculations, showDistributions, hypothesisType, significanceLevel]);
   
   return (
-    <VisualizationContainer 
-      title="Difference of Two Proportions - Moth Recapture Study"
-      className="max-w-7xl mx-auto"
+    <VisualizationContainer
+      title="Difference of Two Proportions Test"
+      description="Learn how to test for differences between two population proportions using the moth recapture study."
     >
-      <div className="mb-6 p-4 bg-gradient-to-r from-neutral-900 to-neutral-800 rounded-xl border border-neutral-700">
-        <p className="text-lg text-white text-center">
-          Scientists study moth populations to understand natural selection. 
-          Is there a significant difference in recapture rates between light and dark moths?
-        </p>
-      </div>
-      
-      {/* Learning Journey Navigation */}
-      <div className="flex justify-between items-center mb-8 overflow-x-auto pb-2">
-        {LEARNING_JOURNEY.map((stage, index) => {
-          const Icon = stage.icon;
-          const isActive = index === currentStep;
-          const isCompleted = index < currentStep;
-          
-          return (
-            <motion.button
-              key={stage.id}
-              onClick={() => handleStepChange(index)}
-              className={cn(
-                "flex flex-col items-center p-3 rounded-lg transition-all duration-300 min-w-[120px]",
-                isActive && "bg-gradient-to-br " + stage.color + " shadow-lg scale-105",
-                isCompleted && "bg-neutral-700",
-                !isActive && !isCompleted && "bg-neutral-800"
-              )}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+      <div className="space-y-8">
+        {/* Back to Hub Button */}
+        <BackToHub chapter={6} />
+
+        {/* Introduction */}
+        <VisualizationSection>
+          <div className="text-center space-y-4">
+            <h3 className="text-2xl font-bold text-white">The Moth Recapture Study</h3>
+            <p className="text-neutral-300 max-w-3xl mx-auto">
+              Scientists study moth populations to understand natural selection. They release and recapture 
+              moths to estimate survival rates. Is there a significant difference in recapture rates 
+              between light and dark moths?
+            </p>
+            <HypothesisDisplay />
+          </div>
+        </VisualizationSection>
+
+        {/* Data Display */}
+        <VisualizationSection>
+          <h3 className="text-xl font-bold text-white mb-4">Observed Data</h3>
+          <div className="grid md:grid-cols-2 gap-6 mb-6">
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              className="bg-gradient-to-br from-amber-500/10 to-amber-600/10 border border-amber-500/30 rounded-lg p-6"
             >
-              <div className={cn(
-                "p-2 rounded-full mb-2",
-                isActive ? "bg-white/20" : "bg-white/10"
-              )}>
-                <Icon className={cn(
-                  "h-6 w-6",
-                  isActive ? "text-white" : "text-neutral-400"
-                )} />
+              <div className="flex items-center gap-3 mb-4">
+                <Bug className="w-6 h-6 text-amber-400" />
+                <h4 className="text-lg font-bold text-amber-400">Light-colored Moths</h4>
               </div>
-              <span className={cn(
-                "text-xs font-medium text-center",
-                isActive ? "text-white" : "text-neutral-400"
-              )}>
-                {stage.title}
-              </span>
-            </motion.button>
-          );
-        })}
-      </div>
-      
-      <AnimatePresence mode="wait">
-        {/* Stage 1: Data Visualization */}
-        {currentStep === 0 && (
-          <motion.div
-            key="data"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="space-y-6"
-          >
-            <VisualizationSection>
-              <h3 className="text-xl font-bold text-white mb-4">The Moth Recapture Data</h3>
-              
-              <div className="grid md:grid-cols-2 gap-6 mb-6">
-                <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
-                  <h4 className="font-semibold text-amber-400 mb-3">Light-colored Moths</h4>
-                  <div className="space-y-2 text-sm">
-                    <p className="text-neutral-300">Released: <span className="font-mono text-white">{MOTH_DATA.light.n}</span></p>
-                    <p className="text-neutral-300">Recaptured: <span className="font-mono text-white">{MOTH_DATA.light.recaptured}</span></p>
-                    <p className="text-neutral-300">Proportion: <span className="font-mono text-amber-400">{(calculations.p1 * 100).toFixed(1)}%</span></p>
-                  </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-neutral-300">Released:</span>
+                  <span className="font-mono text-white">{calculations.n1}</span>
                 </div>
-                
-                <div className="bg-neutral-600/10 border border-neutral-600/30 rounded-lg p-4">
-                  <h4 className="font-semibold text-neutral-400 mb-3">Dark-colored Moths</h4>
-                  <div className="space-y-2 text-sm">
-                    <p className="text-neutral-300">Released: <span className="font-mono text-white">{MOTH_DATA.dark.n}</span></p>
-                    <p className="text-neutral-300">Recaptured: <span className="font-mono text-white">{MOTH_DATA.dark.recaptured}</span></p>
-                    <p className="text-neutral-300">Proportion: <span className="font-mono text-neutral-400">{(calculations.p2 * 100).toFixed(1)}%</span></p>
-                  </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-300">Recaptured:</span>
+                  <span className="font-mono text-white">{calculations.y1}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-300">Proportion:</span>
+                  <span className="font-mono text-amber-400">{(calculations.p1 * 100).toFixed(1)}%</span>
                 </div>
               </div>
-              
-              <GraphContainer height="350px">
-                <svg ref={barChartRef} className="w-full h-full" />
-              </GraphContainer>
-              
-              <div className="mt-4 p-4 bg-red-900/20 border border-red-700/30 rounded-lg">
-                <p className="text-red-400 text-center font-semibold">
-                  Dark moths are {(calculations.p2 / calculations.p1).toFixed(1)}x more likely to be recaptured!
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              className="bg-gradient-to-br from-gray-500/10 to-gray-600/10 border border-gray-500/30 rounded-lg p-6"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <Bug className="w-6 h-6 text-gray-400" />
+                <h4 className="text-lg font-bold text-gray-400">Dark-colored Moths</h4>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-neutral-300">Released:</span>
+                  <span className="font-mono text-white">{calculations.n2}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-300">Recaptured:</span>
+                  <span className="font-mono text-white">{calculations.y2}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-300">Proportion:</span>
+                  <span className="font-mono text-gray-400">{(calculations.p2 * 100).toFixed(1)}%</span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Bar Chart */}
+          <GraphContainer title="Recapture Rates Comparison">
+            <svg 
+              ref={barChartRef} 
+              className="w-full"
+              role="img"
+              aria-label="Bar chart comparing recapture rates between light and dark moths"
+            >
+              <title>Moth Recapture Rates Comparison</title>
+              <desc>A bar chart showing the recapture rates for light-colored moths ({(calculations.p1 * 100).toFixed(1)}%) and dark-colored moths ({(calculations.p2 * 100).toFixed(1)}%)</desc>
+            </svg>
+          </GraphContainer>
+        </VisualizationSection>
+
+        {/* Mathematical Framework */}
+        <MathematicalFramework />
+
+        {/* Interactive Controls */}
+        <VisualizationSection className="bg-neutral-800/50 rounded-lg p-6">
+          <h4 className="text-lg font-bold text-white mb-6">Explore the Impact of Sample Size and Significance</h4>
+          
+          <div className="grid md:grid-cols-3 gap-6">
+            <ControlGroup label="Sample Size Multiplier">
+              <div className="space-y-3">
+                <input
+                  type="range"
+                  min={0.25}
+                  max={2}
+                  step={0.25}
+                  value={sampleSizeMultiplier}
+                  onChange={handleSampleSizeChange}
+                  className="w-full"
+                  aria-label="Sample size multiplier slider"
+                  aria-valuemin={0.25}
+                  aria-valuemax={2}
+                  aria-valuenow={sampleSizeMultiplier}
+                  aria-valuetext={`${(sampleSizeMultiplier * 100).toFixed(0)} percent`}
+                />
+                <div className="flex justify-between text-xs text-neutral-400">
+                  <span>25%</span>
+                  <span className="font-mono text-white">{(sampleSizeMultiplier * 100).toFixed(0)}%</span>
+                  <span>200%</span>
+                </div>
+                <p className="text-xs text-neutral-500">
+                  n1 = {calculations.n1}, n2 = {calculations.n2}
                 </p>
               </div>
-            </VisualizationSection>
-          </motion.div>
-        )}
-        
-        {/* Stage 2: Pooled Proportion */}
-        {currentStep === 1 && (
-          <motion.div
-            key="pooled"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="space-y-6"
-          >
-            <VisualizationSection>
-              <h3 className="text-xl font-bold text-white mb-4">The Pooled Proportion Concept</h3>
-              
-              <div className="bg-gradient-to-r from-blue-900/20 to-cyan-900/20 border border-blue-700/30 rounded-lg p-6 mb-6">
-                <h4 className="text-lg font-semibold text-blue-400 mb-3">Why Pool Under H₀?</h4>
-                <ul className="space-y-2 text-neutral-300">
-                  <li>• H₀ claims p₁ = p₂ = p (common proportion)</li>
-                  <li>• Best estimate: combine all data from both groups</li>
-                  <li>• Under H₀, we treat all moths as one population</li>
-                </ul>
+            </ControlGroup>
+
+            <ControlGroup label={<>Significance Level <span dangerouslySetInnerHTML={{ __html: `\\(\\alpha\\)` }} /></>}>
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  {[0.01, 0.05, 0.10].map(alpha => (
+                    <button
+                      key={alpha}
+                      onClick={() => handleSignificanceLevelChange(alpha)}
+                      className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all ${
+                        significanceLevel === alpha
+                          ? 'bg-purple-600 text-white'
+                          : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+                      }`}
+                      aria-label={`Set significance level to ${(alpha * 100)} percent`}
+                      aria-pressed={significanceLevel === alpha}
+                    >
+                      {(alpha * 100)}%
+                    </button>
+                  ))}
+                </div>
               </div>
-              
-              <Button
-                onClick={() => setShowPoolingAnimation(true)}
-                className="mb-4 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
-                disabled={showPoolingAnimation}
-              >
-                <Merge className="mr-2 h-4 w-4" />
-                Show Pooling Animation
-              </Button>
-              
-              {showPoolingAnimation && (
-                <GraphContainer height="250px">
-                  <svg ref={poolingRef} className="w-full h-full" />
-                </GraphContainer>
+            </ControlGroup>
+
+            <ControlGroup label="Alternative Hypothesis">
+              <div className="space-y-3">
+                <select
+                  value={hypothesisType}
+                  onChange={handleHypothesisTypeChange}
+                  className="w-full bg-neutral-700 text-white rounded-md px-3 py-2 text-sm"
+                  aria-label="Select alternative hypothesis type"
+                >
+                  <option value="two">p1 ≠ p2 (Two-sided)</option>
+                  <option value="left">p1 &lt; p2 (Left-sided)</option>
+                  <option value="right">p1 &gt; p2 (Right-sided)</option>
+                </select>
+              </div>
+            </ControlGroup>
+          </div>
+        </VisualizationSection>
+
+        {/* Test Results */}
+        <div className="grid md:grid-cols-3 gap-6">
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/30 rounded-lg p-6"
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <Calculator className="w-6 h-6 text-blue-400" />
+              <h4 className="text-lg font-bold text-blue-400">Test Statistic</h4>
+            </div>
+            <div className="text-3xl font-mono font-bold text-blue-400">
+              z = {calculations.zStat.toFixed(3)}
+            </div>
+            <p className="text-xs text-neutral-400 mt-2">
+              Measures difference in SE units
+            </p>
+          </motion.div>
+
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className={`bg-gradient-to-br rounded-lg p-6 border ${
+              calculations.pValue < significanceLevel
+                ? 'from-red-500/10 to-red-600/10 border-red-500/30'
+                : 'from-green-500/10 to-green-600/10 border-green-500/30'
+            }`}
+          >
+            <div className="flex items-center gap-3 mb-3">
+              {calculations.pValue < significanceLevel ? (
+                <AlertCircle className="w-6 h-6 text-red-400" />
+              ) : (
+                <CheckCircle className="w-6 h-6 text-green-400" />
               )}
-              
-              <div className="bg-black/30 p-6 rounded-lg">
-                <h4 className="text-teal-400 font-semibold mb-3">Pooled Proportion Calculation</h4>
-                <div className="text-center">
-                  <div className="text-xl text-white mb-3">
-                    <LaTeXContent content={`\\(\\hat{p} = \\frac{y_1 + y_2}{n_1 + n_2} = \\frac{${calculations.y1} + ${calculations.y2}}{${calculations.n1} + ${calculations.n2}} = \\frac{${calculations.y1 + calculations.y2}}{${calculations.n1 + calculations.n2}} = ${calculations.pooledP.toFixed(4)}\\)`} />
-                  </div>
-                  <p className="text-neutral-400">
-                    This gives us p̂ = {(calculations.pooledP * 100).toFixed(2)}%
-                  </p>
-                </div>
-              </div>
-            </VisualizationSection>
+              <h4 className={`text-lg font-bold ${
+                calculations.pValue < significanceLevel ? 'text-red-400' : 'text-green-400'
+              }`}>P-value</h4>
+            </div>
+            <div className={`text-3xl font-mono font-bold ${
+              calculations.pValue < significanceLevel ? 'text-red-400' : 'text-green-400'
+            }`}>
+              {calculations.pValue < 0.001 ? '< 0.001' : calculations.pValue.toFixed(4)}
+            </div>
+            <p className="text-xs text-neutral-400 mt-2">
+              {calculations.pValue < significanceLevel ? (
+                <>Reject <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /></>
+              ) : (
+                <>Fail to reject <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /></>
+              )}
+            </p>
           </motion.div>
-        )}
-        
-        {/* Stage 3: Standard Error Explorer */}
-        {currentStep === 2 && (
+
           <motion.div
-            key="se"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="space-y-6"
+            whileHover={{ scale: 1.02 }}
+            className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 border border-purple-500/30 rounded-lg p-6"
           >
-            <VisualizationSection>
-              <h3 className="text-xl font-bold text-white mb-4">Standard Error Explorer</h3>
-              
-              <div className="bg-black/30 p-6 rounded-lg mb-6">
-                <h4 className="text-green-400 font-semibold mb-3">SE Formula Breakdown</h4>
-                <div className="text-center space-y-3">
-                  <div className="text-lg">
-                    <LaTeXContent content={`\\(SE = \\sqrt{\\hat{p}(1-\\hat{p})\\left(\\frac{1}{n_1} + \\frac{1}{n_2}\\right)}\\)`} />
-                  </div>
-                  <div className="text-base text-neutral-300">
-                    <LaTeXContent content={`\\(SE = \\sqrt{${calculations.pooledP.toFixed(4)} \\times ${(1 - calculations.pooledP).toFixed(4)} \\times \\left(\\frac{1}{${calculations.n1}} + \\frac{1}{${calculations.n2}}\\right)}\\)`} />
-                  </div>
-                  <div className="text-xl text-green-400 font-mono">
-                    SE = {calculations.sePooled.toFixed(4)}
-                  </div>
-                </div>
-              </div>
-              
-              <GraphContainer height="350px">
-                <svg ref={seExplorerRef} className="w-full h-full" />
-              </GraphContainer>
-              
-              <div className="grid md:grid-cols-2 gap-4 mt-4">
-                <div className="bg-neutral-800/50 rounded-lg p-4">
-                  <h5 className="text-sm font-semibold text-neutral-400 mb-2">Key Insight 1</h5>
-                  <p className="text-neutral-300 text-sm">
-                    SE is maximized when p = 0.5
-                  </p>
-                </div>
-                <div className="bg-neutral-800/50 rounded-lg p-4">
-                  <h5 className="text-sm font-semibold text-neutral-400 mb-2">Key Insight 2</h5>
-                  <p className="text-neutral-300 text-sm">
-                    Larger n → Smaller SE → More power
-                  </p>
-                </div>
-              </div>
-            </VisualizationSection>
+            <div className="flex items-center gap-3 mb-3">
+              <BarChart3 className="w-6 h-6 text-purple-400" />
+              <h4 className="text-lg font-bold text-purple-400">95% CI</h4>
+            </div>
+            <div className="text-lg font-mono font-bold text-purple-400">
+              ({calculations.ciLower.toFixed(3)}, {calculations.ciUpper.toFixed(3)})
+            </div>
+            <p className="text-xs text-neutral-400 mt-2">
+              {calculations.ciLower > 0 || calculations.ciUpper < 0 ? 'Excludes 0' : 'Includes 0'}
+            </p>
           </motion.div>
-        )}
-        
-        {/* Stage 4: Large Counts Validation */}
-        {currentStep === 3 && (
-          <motion.div
-            key="validation"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="space-y-6"
+        </div>
+
+        {/* Distribution Visualization */}
+        <div className="space-y-4">
+          <Button
+            onClick={toggleDistributions}
+            variant="secondary"
+            className="w-full"
           >
-            <VisualizationSection>
-              <h3 className="text-xl font-bold text-white mb-4">Large Counts Validator</h3>
-              
-              <div className="bg-purple-900/20 border border-purple-700/30 rounded-lg p-6 mb-6">
-                <p className="text-purple-300 mb-4">
-                  For the normal approximation to be valid, we need all counts ≥ 10
-                </p>
-                <p className="text-purple-400 font-semibold">
-                  Important: Use the pooled p̂ for checking!
-                </p>
-              </div>
-              
-              <div className="grid md:grid-cols-2 gap-6">
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className={cn(
-                    "p-6 rounded-lg border-2",
-                    calculations.largeCountsCheck.light.valid
-                      ? "bg-green-900/20 border-green-500/50"
-                      : "bg-red-900/20 border-red-500/50"
-                  )}
-                >
-                  <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
-                    Light Moths
-                    {calculations.largeCountsCheck.light.valid ? (
-                      <CheckCircle className="h-5 w-5 text-green-400" />
-                    ) : (
-                      <AlertCircle className="h-5 w-5 text-red-400" />
-                    )}
-                  </h4>
-                  <div className="space-y-2 text-sm">
-                    <p className="text-neutral-300">
-                      np̂ = {calculations.n1} × {calculations.pooledP.toFixed(3)} = 
-                      <span className={cn(
-                        "font-mono ml-2",
-                        calculations.largeCountsCheck.light.np >= 10 ? "text-green-400" : "text-red-400"
-                      )}>
-                        {calculations.largeCountsCheck.light.np.toFixed(1)}
-                      </span>
-                    </p>
-                    <p className="text-neutral-300">
-                      n(1-p̂) = {calculations.n1} × {(1 - calculations.pooledP).toFixed(3)} = 
-                      <span className={cn(
-                        "font-mono ml-2",
-                        calculations.largeCountsCheck.light.n1p >= 10 ? "text-green-400" : "text-red-400"
-                      )}>
-                        {calculations.largeCountsCheck.light.n1p.toFixed(1)}
-                      </span>
-                    </p>
-                  </div>
-                </motion.div>
-                
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className={cn(
-                    "p-6 rounded-lg border-2",
-                    calculations.largeCountsCheck.dark.valid
-                      ? "bg-green-900/20 border-green-500/50"
-                      : "bg-red-900/20 border-red-500/50"
-                  )}
-                >
-                  <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
-                    Dark Moths
-                    {calculations.largeCountsCheck.dark.valid ? (
-                      <CheckCircle className="h-5 w-5 text-green-400" />
-                    ) : (
-                      <AlertCircle className="h-5 w-5 text-red-400" />
-                    )}
-                  </h4>
-                  <div className="space-y-2 text-sm">
-                    <p className="text-neutral-300">
-                      np̂ = {calculations.n2} × {calculations.pooledP.toFixed(3)} = 
-                      <span className={cn(
-                        "font-mono ml-2",
-                        calculations.largeCountsCheck.dark.np >= 10 ? "text-green-400" : "text-red-400"
-                      )}>
-                        {calculations.largeCountsCheck.dark.np.toFixed(1)}
-                      </span>
-                    </p>
-                    <p className="text-neutral-300">
-                      n(1-p̂) = {calculations.n2} × {(1 - calculations.pooledP).toFixed(3)} = 
-                      <span className={cn(
-                        "font-mono ml-2",
-                        calculations.largeCountsCheck.dark.n1p >= 10 ? "text-green-400" : "text-red-400"
-                      )}>
-                        {calculations.largeCountsCheck.dark.n1p.toFixed(1)}
-                      </span>
-                    </p>
-                  </div>
-                </motion.div>
-              </div>
-              
-              <div className={cn(
-                "mt-6 p-4 rounded-lg text-center",
-                calculations.largeCountsCheck.light.valid && calculations.largeCountsCheck.dark.valid
-                  ? "bg-green-900/20 border border-green-500/30"
-                  : "bg-red-900/20 border border-red-500/30"
-              )}>
-                <p className={cn(
-                  "font-semibold",
-                  calculations.largeCountsCheck.light.valid && calculations.largeCountsCheck.dark.valid
-                    ? "text-green-400"
-                    : "text-red-400"
-                )}>
-                  {calculations.largeCountsCheck.light.valid && calculations.largeCountsCheck.dark.valid
-                    ? "✓ All conditions satisfied - we can use the normal approximation!"
-                    : "✗ Conditions not met - normal approximation may not be valid"}
-                </p>
-              </div>
-            </VisualizationSection>
-          </motion.div>
-        )}
-        
-        {/* Stage 5: Hypothesis Test */}
-        {currentStep === 4 && (
-          <motion.div
-            key="test"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="space-y-6"
-          >
-            <VisualizationSection>
-              <h3 className="text-xl font-bold text-white mb-4">Hypothesis Test & Results</h3>
-              
-              {/* Hypothesis Type Selection */}
-              <div className="bg-neutral-800/50 rounded-lg p-4 mb-6">
-                <h4 className="text-sm font-semibold text-neutral-400 mb-3">Select Alternative Hypothesis</h4>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { value: 'two', label: 'p₁ ≠ p₂', desc: 'Two-tailed' },
-                    { value: 'left', label: 'p₁ < p₂', desc: 'Left-tailed' },
-                    { value: 'right', label: 'p₁ > p₂', desc: 'Right-tailed' }
-                  ].map(type => (
-                    <button
-                      key={type.value}
-                      onClick={() => setHypothesisType(type.value)}
-                      className={cn(
-                        "p-3 rounded-lg transition-all duration-300",
-                        hypothesisType === type.value
-                          ? "bg-purple-600 text-white"
-                          : "bg-neutral-700 hover:bg-neutral-600 text-neutral-300"
-                      )}
-                    >
-                      <div className="font-semibold">{type.label}</div>
-                      <div className="text-xs">{type.desc}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Test Calculation */}
-              <div className="bg-black/30 p-6 rounded-lg mb-6">
-                <h4 className="text-orange-400 font-semibold mb-4">Test Calculation</h4>
-                <div className="text-center space-y-3">
-                  <div className="text-lg">
-                    <LaTeXContent content={`\\(z = \\frac{\\hat{p}_1 - \\hat{p}_2}{SE} = \\frac{${calculations.p1.toFixed(4)} - ${calculations.p2.toFixed(4)}}{${calculations.sePooled.toFixed(4)}} = \\frac{${calculations.difference.toFixed(4)}}{${calculations.sePooled.toFixed(4)}} = ${calculations.zStat.toFixed(3)}\\)`} />
-                  </div>
-                  <div className="text-xl">
-                    <span className="text-neutral-400">p-value = </span>
-                    <span className={cn(
-                      "font-mono font-bold",
-                      calculations.pValue < 0.05 ? "text-red-400" : "text-green-400"
-                    )}>
-                      {calculations.pValue < 0.001 ? "< 0.001" : calculations.pValue.toFixed(4)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Sample Size Impact */}
-              <div className="mb-6">
-                <h4 className="text-sm font-semibold text-neutral-400 mb-3">Sample Size Impact</h4>
-                <div className="flex gap-3">
-                  {['original', 'halved', 'quartered'].map(size => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSampleSize(size)}
-                      className={cn(
-                        "flex-1 p-3 rounded-lg transition-all duration-300",
-                        selectedSampleSize === size
-                          ? "bg-orange-600 text-white"
-                          : "bg-neutral-700 hover:bg-neutral-600 text-neutral-300"
-                      )}
-                    >
-                      <div className="font-semibold capitalize">{size}</div>
-                      <div className="text-xs">
-                        n₁={Math.round(MOTH_DATA.light.n * (size === 'halved' ? 0.5 : size === 'quartered' ? 0.25 : 1))}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Results Display */}
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className={cn(
-                  "p-6 rounded-lg",
-                  calculations.pValue < significanceLevel
-                    ? "bg-red-900/20 border border-red-700/30"
-                    : "bg-green-900/20 border border-green-700/30"
-                )}>
-                  <h5 className="font-semibold text-white mb-3">Test Decision</h5>
-                  <p className={cn(
-                    "text-2xl font-bold",
-                    calculations.pValue < significanceLevel ? "text-red-400" : "text-green-400"
-                  )}>
-                    {calculations.pValue < significanceLevel ? "Reject H₀" : "Fail to Reject H₀"}
-                  </p>
-                  <p className="text-sm text-neutral-300 mt-2">
-                    {calculations.pValue < significanceLevel 
-                      ? "Strong evidence of difference in recapture rates"
-                      : "Insufficient evidence of difference"}
-                  </p>
-                </div>
-                
-                <div className="p-6 rounded-lg bg-purple-900/20 border border-purple-700/30">
-                  <h5 className="font-semibold text-white mb-3">Confidence Interval</h5>
-                  <p className="text-lg font-mono text-purple-400">
-                    ({calculations.ciLower.toFixed(3)}, {calculations.ciUpper.toFixed(3)})
-                  </p>
-                  <p className="text-sm text-neutral-300 mt-2">
-                    95% CI for p₁ - p₂
-                    {calculations.ciLower > 0 || calculations.ciUpper < 0 
-                      ? " (excludes 0)" 
-                      : " (includes 0)"}
-                  </p>
-                </div>
-              </div>
-              
-              {/* Key Insight */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.5 }}
-                className="mt-6 p-6 bg-gradient-to-br from-yellow-900/20 to-orange-900/20 border border-yellow-700/30 rounded-lg"
+            {showDistributions ? "Hide" : "Show"} Sampling Distribution
+          </Button>
+          
+          {showDistributions && (
+            <GraphContainer title="Sampling Distribution Under Null Hypothesis">
+              <svg 
+                ref={distributionRef} 
+                className="w-full"
+                role="img"
+                aria-label="Sampling distribution curve under null hypothesis"
               >
-                <h4 className="text-lg font-bold text-yellow-400 mb-3">
-                  <Sparkles className="inline h-5 w-5 mr-2" />
-                  Key Insight: Same Effect, Different Conclusions!
-                </h4>
-                <p className="text-neutral-300 mb-3">
-                  With the same observed difference ({(Math.abs(calculations.difference) * 100).toFixed(1)}%), 
-                  sample size dramatically affects our conclusion:
-                </p>
-                <div className="space-y-2 text-sm">
-                  <p className="text-neutral-400">
-                    • Original sample: z = -3.29, p {"<"} 0.001 → <span className="text-red-400 font-semibold">Significant!</span>
-                  </p>
-                  <p className="text-neutral-400">
-                    • Halved sample: z ≈ -2.33, p ≈ 0.020 → <span className="text-yellow-400 font-semibold">Still significant</span>
-                  </p>
-                  <p className="text-neutral-400">
-                    • Quartered sample: z ≈ -1.64, p ≈ 0.101 → <span className="text-green-400 font-semibold">Not significant</span>
-                  </p>
-                </div>
-              </motion.div>
-            </VisualizationSection>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      
-      {/* Navigation Buttons */}
-      <div className="flex justify-between mt-8">
-        <Button
-          onClick={() => handleStepChange(Math.max(0, currentStep - 1))}
-          disabled={currentStep === 0}
-          variant="secondary"
-          className="bg-neutral-700 hover:bg-neutral-600"
-        >
-          Previous
-        </Button>
-        <Button
-          onClick={() => handleStepChange(Math.min(LEARNING_JOURNEY.length - 1, currentStep + 1))}
-          disabled={currentStep === LEARNING_JOURNEY.length - 1}
-          className="bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600"
-        >
-          Next
-          <ChevronRight className="ml-2 h-4 w-4" />
-        </Button>
+                <title>Sampling Distribution Under H_0</title>
+                <desc>A normal distribution curve showing the sampling distribution of the difference in proportions under the null hypothesis, with critical regions highlighted</desc>
+              </svg>
+            </GraphContainer>
+          )}
+        </div>
+
+        {/* Worked Example */}
+        <WorkedExample 
+          sampleSize={sampleSizeMultiplier} 
+          significanceLevel={significanceLevel} 
+        />
+
+        {/* Key Insights */}
+        <KeyInsights calculations={calculations} />
+
+        {/* Important Distinctions */}
+        <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">
+          <h3 className="text-xl font-bold text-purple-400 mb-4">Important Distinctions</h3>
+          
+          <ImportantDistinctions />
+        </VisualizationSection>
       </div>
-      
-      <MathematicalDiscoveries discoveries={discoveries} />
     </VisualizationContainer>
   );
 }

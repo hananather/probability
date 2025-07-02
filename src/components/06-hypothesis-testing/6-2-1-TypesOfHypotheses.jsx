@@ -302,11 +302,11 @@ const ExampleCalculation = ({ testType, example }) => {
             <div className="mt-4 grid grid-cols-4 gap-4">
               <div className="text-center">
                 <p className="text-sm text-neutral-400">Null Mean</p>
-                <p className="text-base font-mono text-white">μ₀ = {example.mu0}</p>
+                <p className="text-base font-mono text-white"><span dangerouslySetInnerHTML={{ __html: `\\(\\mu_0 = ${example.mu0}\\)` }} /></p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-neutral-400">Std Dev</p>
-                <p className="text-base font-mono text-white">σ = {example.sigma}</p>
+                <p className="text-base font-mono text-white"><span dangerouslySetInnerHTML={{ __html: `\\(\\sigma = ${example.sigma}\\)` }} /></p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-neutral-400">Sample Size</p>
@@ -314,7 +314,7 @@ const ExampleCalculation = ({ testType, example }) => {
               </div>
               <div className="text-center">
                 <p className="text-sm text-neutral-400">Sample Mean</p>
-                <p className="text-base font-mono text-white">x̄ = {example.xbar}</p>
+                <p className="text-base font-mono text-white"><span dangerouslySetInnerHTML={{ __html: `\\(\\bar{x} = ${example.xbar}\\)` }} /></p>
               </div>
             </div>
           </motion.div>
@@ -330,11 +330,11 @@ const ExampleCalculation = ({ testType, example }) => {
               <div className="grid grid-cols-2 gap-8">
                 <div className="text-center">
                   <p className="text-sm text-neutral-400 mb-2">Null Hypothesis</p>
-                  <p className="text-base">H₀: μ = {example.mu0}</p>
+                  <p className="text-base"><span dangerouslySetInnerHTML={{ __html: `\\(H_0: \\mu = ${example.mu0}\\)` }} /></p>
                 </div>
                 <div className="text-center">
                   <p className="text-sm text-neutral-400 mb-2">Alternative Hypothesis</p>
-                  <p className="text-base">H₁: μ {testType === 'two-tailed' ? '≠' : testType === 'left-tailed' ? '<' : '>'} {example.mu0}</p>
+                  <p className="text-base"><span dangerouslySetInnerHTML={{ __html: `\\(H_1: \\mu ${testType === 'two-tailed' ? '\\neq' : testType === 'left-tailed' ? '<' : '>'} ${example.mu0}\\)` }} /></p>
                 </div>
               </div>
               <p className="text-neutral-400 mt-4 text-center italic">{example.interpretation}</p>
@@ -514,8 +514,8 @@ export default function TypesOfHypotheses({ onSwitchToInteractive }) {
       symbol: '≠',
       description: 'Tests for any difference from the null hypothesis value',
       hypothesis: {
-        null: 'H₀: μ = μ₀',
-        alternative: 'H₁: μ ≠ μ₀'
+        null: 'H_0: μ = μ_0',
+        alternative: 'H_1: μ ≠ μ_0'
       },
       when: 'Use when you want to detect any change, regardless of direction',
       criticalRegions: 'Both tails of the distribution',
@@ -539,8 +539,8 @@ export default function TypesOfHypotheses({ onSwitchToInteractive }) {
       symbol: '<',
       description: 'Tests if the parameter is less than the null hypothesis value',
       hypothesis: {
-        null: 'H₀: μ = μ₀',
-        alternative: 'H₁: μ < μ₀'
+        null: 'H_0: μ = μ_0',
+        alternative: 'H_1: μ < μ_0'
       },
       when: 'Use when you specifically want to test for a decrease',
       criticalRegions: 'Left tail of the distribution',
@@ -564,8 +564,8 @@ export default function TypesOfHypotheses({ onSwitchToInteractive }) {
       symbol: '>',
       description: 'Tests if the parameter is greater than the null hypothesis value',
       hypothesis: {
-        null: 'H₀: μ = μ₀',
-        alternative: 'H₁: μ > μ₀'
+        null: 'H_0: μ = μ_0',
+        alternative: 'H_1: μ > μ_0'
       },
       when: 'Use when you specifically want to test for an increase',
       criticalRegions: 'Right tail of the distribution',

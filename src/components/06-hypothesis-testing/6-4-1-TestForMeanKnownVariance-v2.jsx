@@ -12,8 +12,8 @@ import {
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '@/lib/design-system';
 import { ProgressBar } from '../ui/ProgressBar';
 import { Button } from '../ui/button';
-import { useDiscoveries } from '@/hooks/useDiscoveries';
-import { MathematicalDiscoveries } from '@/components/ui/MathematicalDiscoveries';
+import BackToHub from '../ui/BackToHub';
+import { MathematicalDiscoveries, useDiscoveries } from '@/components/ui/MathematicalDiscoveries';
 import { D3DragWrapper } from '../ui/D3DragWrapper';
 
 const colorScheme = createColorScheme('hypothesis');
@@ -175,6 +175,9 @@ export default function TestForMeanKnownVariance() {
       title="Is Our Manufacturing Process Better?"
       description="Use hypothesis testing to make data-driven decisions"
     >
+      {/* Back to Hub Button */}
+      <BackToHub chapter={6} />
+      
       {/* Minimal Progress Indicator */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex gap-2">

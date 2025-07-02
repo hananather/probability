@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useState, useCallback } from 'react';
 import { cn } from '../../lib/design-system';
 import { CheckCircle2, Circle, Lightbulb, TrendingUp, Brain, Sparkles } from 'lucide-react';
 import { useMathJax, inlineMath } from '../../utils/latex';
@@ -158,11 +158,11 @@ export const MathematicalDiscoveries = React.memo(function MathematicalDiscoveri
  * @returns {Object} - { discoveries, markDiscovered, resetDiscoveries }
  */
 export function useDiscoveries(initialDiscoveries) {
-  const [discoveries, setDiscoveries] = React.useState(
+  const [discoveries, setDiscoveries] = useState(
     initialDiscoveries.map(d => ({ ...d, discovered: false }))
   );
   
-  const markDiscovered = React.useCallback((id) => {
+  const markDiscovered = useCallback((id) => {
     setDiscoveries(prev => 
       prev.map(d => 
         d.id === id ? { ...d, discovered: true } : d
@@ -170,7 +170,7 @@ export function useDiscoveries(initialDiscoveries) {
     );
   }, []);
   
-  const resetDiscoveries = React.useCallback(() => {
+  const resetDiscoveries = useCallback(() => {
     setDiscoveries(
       initialDiscoveries.map(d => ({ ...d, discovered: false }))
     );

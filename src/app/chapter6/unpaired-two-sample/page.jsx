@@ -1,4 +1,4 @@
-import UnpairedTwoSampleTest from '@/components/06-hypothesis-testing/6-8-1-UnpairedTwoSampleTest-v2';
+import UnpairedTwoSampleTest from '@/components/06-hypothesis-testing/6-8-1-UnpairedTwoSampleTest';
 
 export const metadata = {
   title: 'Unpaired Two-Sample Test | Chapter 6',
