@@ -1,173 +1,411 @@
-# Plan: 4.1 - Data Descriptions & Central Tendency
+# Plan: 4.1 - Data Descriptions
 
-## Component Development Mandate
+## Component Orchestration Mandate
 
-**CRITICAL: This section must incorporate ALL 10 existing central tendency components**
-- Reuse every component without eliminating any
-- Create a cohesive learning journey through all components
-- Follow Chapter 7's content-heavy interactive style
+**CRITICAL: Component Integration Best Practices**
+- Seamlessly integrate 5 existing central tendency components
+- Maintain individual component functionality while adding cohesive flow
+- Implement shared state management across all components
+- Use React.lazy() for performance optimization
 
-**Components to Incorporate:**
-1. 4-1-0-CentralTendencyHub.jsx
-2. 4-1-1-CentralTendencyIntro.jsx
-3. 4-1-2-DescriptiveStatsJourney.jsx
-4. 4-1-3-DescriptiveStatisticsFoundations.jsx
-5. 4-1-4-MathematicalFoundations.jsx
-6. Archive: 4-1-0-CentralTendencyMasterclass.jsx
-7. Archive: 4-1-1-ComprehensiveStats.jsx
-8. Archive: 4-1-1-DataExplorerIntro.jsx
-9. Archive: 4-1-1-DescriptiveStatsJourney.jsx (original)
-10. Archive: 4-1-3-DescriptiveStatsExplorer.jsx
+**Gold Standard Integration Examples:**
+- Chapter 6 section pages with multiple components
+- Chapter 7's approach to component orchestration
+- Reference successful multi-component implementations
 
-## Structure
+**Guiding Philosophy:** Transform isolated components into a unified learning journey that builds understanding progressively while preserving each component's unique strengths.
 
-### 1. Main Page Component
-Location: `/src/app/chapter4/data-descriptions/page.jsx`
+**Core Orchestration Principles:**
+1. **Component Autonomy**: Each component maintains its internal logic
+2. **Shared Context**: Global state provides continuity between components
+3. **Progressive Complexity**: Start simple, build to mathematical depth
+4. **Performance Optimization**: Lazy load and unmount unused components
+5. **Seamless Transitions**: Smooth visual and conceptual flow
 
-This page will serve as a comprehensive module that incorporates all components in a logical flow:
+## Component File
+`/src/app/chapter4/data-descriptions/page.jsx`
 
-```jsx
-const DataDescriptionsPage = () => {
-  const [currentSection, setCurrentSection] = useState(0);
-  const [completedSections, setCompletedSections] = useState([]);
-  
-  const sections = [
-    { id: 'intro', title: 'Introduction to Data Descriptions' },
-    { id: 'journey', title: 'Interactive Journey' },
-    { id: 'foundations', title: 'Statistical Foundations' },
-    { id: 'mathematical', title: 'Mathematical Proofs' },
-    { id: 'masterclass', title: 'Advanced Concepts' },
-    { id: 'comprehensive', title: 'Comprehensive Practice' }
-  ];
-};
+## Course Content Coverage
+From MAT 2377 Chapter 4.1:
+- Numerical Summaries (p.5)
+- Sample Median (p.6)  
+- Sample Mean (p.8)
+- Quartiles (p.13)
+- Outliers (p.17)
+- Standard Deviation (p.16)
+
+## Components to Integrate (5 Total)
+
+1. **4-1-0-CentralTendencyHub.jsx** - Transform into progress navigator
+2. **4-1-1-CentralTendencyIntro.jsx** - Opening introduction
+3. **4-1-2-DescriptiveStatsJourney.jsx** - Main interactive journey
+4. **4-1-3-DescriptiveStatisticsFoundations.jsx** - Quartiles and variance
+5. **4-1-4-MathematicalFoundations.jsx** - Proofs and theory
+
+## Component Integration Map
+
+```
+Stage 1: Introduction
+├── Primary: 4-1-1-CentralTendencyIntro.jsx
+├── Enhancement: Custom welcome content
+├── Data Flow: Initialize shared dataset
+└── Transition: Fade → Stage 2 (duration: 0.5s)
+
+Stage 2: Interactive Journey
+├── Primary: 4-1-2-DescriptiveStatsJourney.jsx
+├── Enhancement: Progress tracking overlay
+├── Data Flow: Pass dataset, collect calculations
+└── Transition: Slide → Stage 3 (duration: 0.6s)
+
+Stage 3: Statistical Foundations
+├── Primary: 4-1-3-DescriptiveStatisticsFoundations.jsx
+├── Enhancement: Topic selector wrapper
+├── Data Flow: Use previous calculations, add quartiles
+└── Transition: Expand → Stage 4 (duration: 0.5s)
+
+Stage 4: Mathematical Depth
+├── Primary: 4-1-4-MathematicalFoundations.jsx
+├── Enhancement: Proof navigator
+├── Data Flow: Reference all previous results
+└── Transition: Fade → Stage 5 (duration: 0.4s)
+
+Stage 5: Practice & Application
+├── Primary: Custom practice component
+├── Components: Features from all previous stages
+├── Data Flow: Comprehensive state access
+└── Transition: Complete → Summary
 ```
 
-### 2. Content Flow
+## Implementation Structure
 
-#### Section 1: Introduction (Beginner)
-**Components Used:**
-- 4-1-1-CentralTendencyIntro.jsx (primary)
-- Archive: 4-1-1-DataExplorerIntro.jsx (supplementary visualizations)
-
-**Content:**
-- What are descriptive statistics?
-- Why do we need measures of central tendency?
-- Interactive data explorer from archived component
-
-#### Section 2: Interactive Journey (Beginner-Intermediate)
-**Components Used:**
-- 4-1-2-DescriptiveStatsJourney.jsx (current version)
-- Archive: 4-1-1-DescriptiveStatsJourney.jsx (original features)
-
-**Content:**
-- Combine best features from both versions
-- Step-by-step exploration of mean, median, mode
-- Interactive dataset manipulation
-
-#### Section 3: Statistical Foundations (Intermediate)
-**Components Used:**
-- 4-1-3-DescriptiveStatisticsFoundations.jsx (primary)
-- Archive: 4-1-3-DescriptiveStatsExplorer.jsx (additional interactions)
-
-**Content:**
-- Quartiles and percentiles
-- Variance and standard deviation
-- Outlier detection
-- Interactive explorers from both components
-
-#### Section 4: Mathematical Foundations (Advanced)
-**Components Used:**
-- 4-1-4-MathematicalFoundations.jsx
-
-**Content:**
-- Mathematical proofs
-- Theoretical underpinnings
-- Advanced formulas with LaTeX
-
-#### Section 5: Masterclass & Practice (Advanced)
-**Components Used:**
-- Archive: 4-1-0-CentralTendencyMasterclass.jsx (gamified elements)
-- Archive: 4-1-1-ComprehensiveStats.jsx (comprehensive exercises)
-
-**Content:**
-- Gamified learning from masterclass
-- Comprehensive practice problems
-- Real-world applications
-
-### 3. Sub-Navigation Component
-**Component Used:**
-- 4-1-0-CentralTendencyHub.jsx (modified to be sub-navigation)
-
-This will be transformed into a progress tracker/navigation component that appears at the top of the page, allowing users to jump between sections.
-
-### 4. Implementation Strategy
-
-#### Phase 1: Page Structure
+### Page Component
 ```jsx
-<VisualizationContainer>
-  <BackToHub />
-  <SubNavigation /> {/* Modified 4-1-0-CentralTendencyHub */}
-  
-  <AnimatePresence mode="wait">
-    {currentSection === 0 && <IntroductionSection />}
-    {currentSection === 1 && <InteractiveJourney />}
-    {currentSection === 2 && <StatisticalFoundations />}
-    {currentSection === 3 && <MathematicalFoundations />}
-    {currentSection === 4 && <MasterclassSection />}
-  </AnimatePresence>
-  
-  <NavigationControls />
-</VisualizationContainer>
-```
+export default function DataDescriptionsPage() {
+  // Global state management
+  const [globalState, setGlobalState] = useState({
+    currentStage: 'introduction',
+    completedStages: [],
+    dataset: {
+      name: 'studentGrades',
+      values: defaultDataset,
+      source: 'preloaded'
+    },
+    calculations: {
+      mean: null,
+      median: null,
+      mode: null,
+      quartiles: { Q1: null, Q2: null, Q3: null },
+      variance: null,
+      stdDev: null,
+      outliers: []
+    },
+    userProgress: {
+      conceptsMastered: [],
+      exercisesCompleted: 0,
+      timeSpent: 0,
+      accuracy: null
+    }
+  });
 
-#### Phase 2: Component Integration
-Each section will import and use the existing components:
+  // Component lazy loading
+  const CentralTendencyIntro = lazy(() => 
+    import('@/components/04-descriptive-statistics-sampling/4-1-central-tendency/4-1-1-CentralTendencyIntro')
+  );
+  // ... other lazy imports
 
-```jsx
-const IntroductionSection = () => {
+  // Navigation logic
+  const navigateToStage = (stage) => {
+    setGlobalState(prev => ({
+      ...prev,
+      currentStage: stage,
+      completedStages: [...new Set([...prev.completedStages, prev.currentStage])]
+    }));
+  };
+
   return (
-    <>
-      <CentralTendencyIntro />
-      <DataExplorerIntro /> {/* From archive */}
-    </>
+    <VisualizationContainer className="data-descriptions-page">
+      <BackToHub chapter={4} section="4.1" />
+      
+      {/* Progress Navigator (transformed CentralTendencyHub) */}
+      <StageNavigator 
+        stages={stages}
+        current={globalState.currentStage}
+        completed={globalState.completedStages}
+        onNavigate={navigateToStage}
+      />
+      
+      {/* Main Content Area */}
+      <AnimatePresence mode="wait">
+        <Suspense fallback={<LoadingSpinner />}>
+          {renderCurrentStage()}
+        </Suspense>
+      </AnimatePresence>
+      
+      {/* Persistent Elements */}
+      <DatasetPanel 
+        dataset={globalState.dataset}
+        calculations={globalState.calculations}
+        minimized={globalState.currentStage === 'introduction'}
+      />
+    </VisualizationContainer>
+  );
+}
+```
+
+### Stage Implementations
+
+#### Stage 1: Introduction (10 min)
+```jsx
+const IntroductionStage = ({ globalState, onComplete }) => {
+  const [interactionComplete, setInteractionComplete] = useState(false);
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="introduction-stage"
+    >
+      <CentralTendencyIntro 
+        onComplete={() => setInteractionComplete(true)}
+        initialDataset={globalState.dataset.values}
+      />
+      
+      {/* Extended introduction content */}
+      <div className="mt-8 space-y-6">
+        <RealWorldExamples />
+        <WhyDescriptiveStats />
+        
+        {interactionComplete && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="next-steps"
+          >
+            <h3>Ready to explore your data?</h3>
+            <Button 
+              onClick={() => onComplete('journey')}
+              className="bg-purple-600 hover:bg-purple-700"
+            >
+              Start Learning Journey →
+            </Button>
+          </motion.div>
+        )}
+      </div>
+    </motion.div>
   );
 };
 ```
 
-#### Phase 3: Unified Styling
-- Apply consistent Chapter 4 color scheme
-- Ensure smooth transitions between components
-- Add progress tracking
+#### Stage 2: Interactive Learning Journey (20 min)
+```jsx
+const LearningJourneyStage = ({ globalState, updateGlobalState, onComplete }) => {
+  const [journeyProgress, setJourneyProgress] = useState({
+    currentConcept: 'mean',
+    completedConcepts: [],
+    conceptData: {}
+  });
+  
+  const handleConceptComplete = (concept, data) => {
+    // Update local journey progress
+    setJourneyProgress(prev => ({
+      ...prev,
+      completedConcepts: [...prev.completedConcepts, concept],
+      conceptData: { ...prev.conceptData, [concept]: data }
+    }));
+    
+    // Update global calculations
+    updateGlobalState({
+      calculations: {
+        ...globalState.calculations,
+        [concept]: data.value
+      },
+      userProgress: {
+        ...globalState.userProgress,
+        conceptsMastered: [...globalState.userProgress.conceptsMastered, concept]
+      }
+    });
+  };
+  
+  return (
+    <motion.div className="journey-stage">
+      <h2>Your Statistical Journey</h2>
+      
+      <ConceptProgress 
+        concepts={['mean', 'median', 'mode', 'range', 'quartiles']}
+        completed={journeyProgress.completedConcepts}
+      />
+      
+      <DescriptiveStatsJourney 
+        startingConcept={journeyProgress.currentConcept}
+        dataset={globalState.dataset.values}
+        onConceptComplete={handleConceptComplete}
+        previousCalculations={globalState.calculations}
+        enhancedMode={true}
+      />
+      
+      <PracticeProblems 
+        concept={journeyProgress.currentConcept}
+        difficulty="adaptive"
+      />
+      
+      {journeyProgress.completedConcepts.length >= 5 && (
+        <CompleteButton onClick={() => onComplete('foundations')} />
+      )}
+    </motion.div>
+  );
+};
+```
 
-### 5. Key Features to Preserve
+## Technical Specifications
 
-From each component:
-- **CentralTendencyIntro**: Opening animations and concepts
-- **DescriptiveStatsJourney**: Step-by-step progression
-- **DescriptiveStatisticsFoundations**: Quartile visualizations
-- **MathematicalFoundations**: LaTeX formulas and proofs
-- **CentralTendencyMasterclass**: Gamification elements
-- **ComprehensiveStats**: Practice problems
-- **DataExplorerIntro**: Interactive data exploration
-- **DescriptiveStatsExplorer**: Advanced visualizations
+### Performance Requirements
+- **Component Load Time**: < 500ms per component
+- **Transition Duration**: 400-600ms between stages
+- **Memory Management**: Max 2 components in memory
+- **State Updates**: Debounced at 100ms
 
-### 6. Technical Notes
+### State Management Architecture
+```javascript
+const stateArchitecture = {
+  global: {
+    // Shared across all stages
+    dataset: { values: [], metadata: {} },
+    calculations: { /* all statistical results */ },
+    progress: { /* learning progress tracking */ }
+  },
+  local: {
+    // Per-component state
+    introduction: { animationComplete: false },
+    journey: { currentConcept: 'mean', journeyPath: [] },
+    foundations: { selectedTopic: 'quartiles' },
+    mathematical: { selectedProof: null }
+  },
+  persistence: {
+    localStorage: ['progress', 'completedStages', 'calculations'],
+    sessionStorage: ['currentDataset', 'currentStage']
+  }
+};
+```
 
-**State Management:**
-- Track progress through all sections
-- Save user interactions
-- Enable section jumping
+### Data Flow Specification
+```javascript
+const dataFlow = {
+  stage1to2: {
+    pass: ['dataset', 'userPreferences'],
+    receive: ['interactionComplete'],
+    method: 'props + callback'
+  },
+  stage2to3: {
+    pass: ['calculations.mean', 'calculations.median', 'calculations.mode'],
+    receive: ['quartiles', 'outliers'],
+    method: 'globalState'
+  },
+  stage3to4: {
+    pass: ['allCalculations', 'conceptsMastered'],
+    receive: ['proofsViewed'],
+    method: 'globalState'
+  },
+  persistence: {
+    onStageComplete: 'save to localStorage',
+    onMount: 'restore from localStorage',
+    onUnmount: 'cleanup sessionStorage'
+  }
+};
+```
 
-**Performance:**
-- Lazy load archived components
-- Use React.memo for heavy visualizations
+### Animation Coordination
+```javascript
+const transitionConfig = {
+  stageTransitions: {
+    introduction: { exit: 'fadeUp', duration: 500 },
+    journey: { enter: 'slideRight', exit: 'slideLeft', duration: 600 },
+    foundations: { enter: 'expand', duration: 500 },
+    mathematical: { enter: 'fade', duration: 400 }
+  },
+  componentTransitions: {
+    withinStage: { duration: 300, ease: 'easeInOut' },
+    dataUpdate: { duration: 200, ease: 'easeOut' }
+  }
+};
+```
 
-**Accessibility:**
-- Keyboard navigation through sections
-- Screen reader support for all interactions
+## Layout Structure
+```
+┌─────────────────────────────────────────────┐
+│ ← Back to Hub          Section 4.1         │
+├─────────────────────────────────────────────┤
+│ ┌─────────────────────────────────────────┐ │
+│ │ Progress: [■■■□□] Stage 3 of 5         │ │
+│ │ Intro | Journey | Found. | Math | Prac.│ │
+│ └─────────────────────────────────────────┘ │
+├─────────────────────────────────────────────┤
+│ ┌───────────────────┬─────────────────────┐ │
+│ │                   │ Dataset Panel       │ │
+│ │  Active Component │ Mean: 74.5          │ │
+│ │      Area         │ Median: 72          │ │
+│ │                   │ [Minimize]          │ │
+│ └───────────────────┴─────────────────────┘ │
+├─────────────────────────────────────────────┤
+│ Navigation: [← Previous] [Next →]           │
+└─────────────────────────────────────────────┘
+```
 
-## Verification
-✓ All 10 components are incorporated
-✓ No components are eliminated
-✓ Clear learning progression maintained
-✓ Both active and archived components utilized
+## Component Lifecycle Management
+```javascript
+const lifecycleHooks = {
+  onComponentMount: (componentName) => {
+    analytics.track('component_viewed', { component: componentName });
+    performance.mark(`${componentName}_start`);
+  },
+  
+  onComponentUnmount: (componentName) => {
+    performance.mark(`${componentName}_end`);
+    performance.measure(componentName, `${componentName}_start`, `${componentName}_end`);
+    // Cleanup heavy resources
+  },
+  
+  onStageTransition: (from, to) => {
+    // Save progress
+    saveToLocalStorage(globalState);
+    // Preload next component
+    if (nextComponent[to]) {
+      import(nextComponent[to]);
+    }
+  }
+};
+```
+
+## Fallback Strategies
+```javascript
+const fallbacks = {
+  componentLoadError: {
+    strategy: 'show cached version or simplified alternative',
+    implementation: ErrorBoundary with fallback UI
+  },
+  stateCorruption: {
+    strategy: 'reset to last known good state',
+    implementation: stateValidator with recovery
+  },
+  performanceIssue: {
+    strategy: 'disable animations, simplify visualizations',
+    implementation: performanceMonitor with degradation
+  }
+};
+```
+
+## Success Metrics
+- ✓ All 5 components successfully integrated
+- ✓ Smooth transitions between stages (< 600ms)
+- ✓ State persists correctly across sessions
+- ✓ No memory leaks during component switches
+- ✓ Load time < 2s for initial page
+- ✓ 60fps animations throughout
+- ✓ Mobile responsive at all breakpoints
+- ✓ Accessibility score > 95
+
+## Reference Implementations
+- Multi-component orchestration in Chapter 3
+- State management patterns from Chapter 6
+- Transition strategies from Chapter 7
+- Performance optimization from landing page

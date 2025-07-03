@@ -17,57 +17,54 @@ export const chapters = [
     title: 'Chapter 1: Introduction to Probabilities',
     path: '/chapter1',
     sections: [
-      { title: 'Sample Spaces & Events', component: 'SampleSpacesEvents' },
-      { title: 'Counting Techniques', component: 'CountingTechniques' },
-      { title: 'Ordered Samples (Permutations)', component: 'OrderedSamples' },
-      { title: 'Unordered Samples (Combinations)', component: 'UnorderedSamples' },
-      { title: 'Probability of an Event', component: 'ProbabilityEvent' },
-      { title: 'Conditional Probability', component: 'ConditionalProbability' },
-      { title: 'Probabilistic Fallacies', component: 'ProbabilisticFallacies' },
-      { title: 'Monty Hall Masterclass', component: 'MontyHallMasterclass' },
+      { title: '1.1 Sample Spaces & Events', url: '/chapter1/sample-spaces-events' },
+      { title: '1.2 Counting Techniques', url: '/chapter1/counting-techniques' },
+      { title: '1.3 Ordered Samples (Permutations)', url: '/chapter1/ordered-samples' },
+      { title: '1.4 Unordered Samples (Combinations)', url: '/chapter1/unordered-samples' },
+      { title: '1.5 Probability of an Event', url: '/chapter1/probability-event' },
+      { title: '1.6 Conditional Probability', url: '/chapter1/conditional-probability' },
+      { title: '1.7 Bayes\' Theorem', url: '/chapter1/bayes-theorem' },
+      { title: '1.8 Probabilistic Fallacies', url: '/chapter1/probabilistic-fallacies' },
+      { title: '1.9 Monty Hall Masterclass', url: '/chapter1/monty-hall-masterclass' },
     ]
   },
   {
     title: 'Chapter 2: Discrete Random Variables',
     path: '/chapter2',
     sections: [
-      { title: '2.1 Random Variables & Distributions', component: 'SpatialRandomVariable' },
-      { title: '2.2 Expectation & Variance', component: 'ExpectationVariance' },
-      { title: '2.2 Worked Example', component: 'ExpectationVarianceWorkedExample' },
-      { title: '2.3.1 Linear Transformations', component: 'LinearTransformations' },
-      { title: '2.3.2 Function Transformations', component: 'FunctionTransformations' },
-      { title: '2.3.3 Binomial Distribution', component: 'BinomialDistribution' },
-      { title: '2.4 Geometric Distribution', component: 'GeometricDistribution' },
-      { title: '2.5 Negative Binomial Distribution', component: 'NegativeBinomialDistribution' },
-      { title: '2.6 Poisson Distribution', component: 'PoissonDistribution' },
-      { title: '2.7 Distribution Comparison', component: 'DistributionComparison' },
+      { title: '2.1 Random Variables & Distributions', url: '/chapter2/random-variables' },
+      { title: '2.2 Expectation & Variance', url: '/chapter2/expectation-variance' },
+      { title: '2.2.4 Transformations', url: '/chapter2/transformations' },
+      { title: '2.3 Binomial Distribution', url: '/chapter2/binomial-distribution' },
+      { title: '2.4 Geometric Distribution', url: '/chapter2/geometric-distribution' },
+      { title: '2.5 Negative Binomial Distribution', url: '/chapter2/negative-binomial' },
+      { title: '2.6 Poisson Distribution', url: '/chapter2/poisson-distribution' },
+      { title: '2.7 Distribution Stories', url: '/chapter2/distribution-stories' }
     ]
   },
   {
     title: 'Chapter 3: Continuous Random Variables',
     path: '/chapter3',
     sections: [
-      { title: 'Introduction: Bridge to Continuous', component: 'BridgeToContinuous' },
-      { title: '3.1 Probability Density Functions', component: 'ContinuousDistributionsPDF' },
-      { title: '3.2 Expectation & Variance', component: 'ContinuousExpectationVariance' },
-      { title: '3.3 Normal Distributions', component: 'NormalZScoreExplorer' },
-      { title: '3.4 Exponential Distributions', component: 'ExponentialDistribution' },
-      { title: '3.5 Gamma Distributions', component: 'GammaDistribution' },
-      { title: '3.6 Joint Distributions', component: 'JointDistributions' },
-      { title: '3.7 Normal Approximation', component: 'NormalApproxBinomial' },
+      { title: 'Introduction: Bridge to Continuous', url: '/chapter3/introduction' },
+      { title: '3.1 Probability Density Functions', url: '/chapter3/probability-density' },
+      { title: '3.2 Expectation & Variance', url: '/chapter3/expectation-variance' },
+      { title: '3.3 Normal Distributions', url: '/chapter3/normal-distributions' },
+      { title: '3.4 Exponential Distributions', url: '/chapter3/exponential' },
+      { title: '3.5 Gamma Distributions', url: '/chapter3/gamma' },
+      { title: '3.6 Joint Distributions', url: '/chapter3/joint-distributions' },
+      { title: '3.7 Normal Approximation', url: '/chapter3/normal-approximation' }
     ]
   },
   {
     title: 'Chapter 4: Descriptive Statistics and Sampling Distributions',
     path: '/chapter4',
     sections: [
-      { title: '4.1 Data Descriptions', component: 'central-tendency-hub' },
-      { title: '4.2 Visual Summaries', component: 'histograms' },
-      { title: '4.3 Sampling Distributions', component: 'sampling-distributions-hub' },
-      { title: '4.4 t-Distribution vs Normal', component: 't-distribution' },
-      { title: '4.5 F-Distribution Explorer', component: 'f-distribution' },
-      { title: '4.5 F-Distribution Worked Example', component: 'f-distribution-worked' },
-      { title: '4.6 Boxplot & Quartiles Explorer', component: 'boxplot-quartiles' },
+      { title: '4.1 Data Descriptions', url: '/chapter4/data-descriptions' },
+      { title: '4.2 Visual Summaries', url: '/chapter4/visual-summaries' },
+      { title: '4.3 Sampling Distributions', url: '/chapter4/sampling-distributions' },
+      { title: '4.4 Central Limit Theorem', url: '/chapter4/central-limit-theorem' },
+      { title: '4.5 Advanced Sampling Distributions', url: '/chapter4/sampling-distributions-reprise' },
     ]
   },
   {
@@ -113,6 +110,17 @@ export const chapters = [
     path: '/learn',
     sections: [
       { title: 'React Experiments', url: '' },
+    ]
+  },
+  {
+    title: '📦 Legacy Components',
+    path: '/legacy-components',
+    sections: [
+      { title: 'Bayesian Inference', url: '#bayesian-inference' },
+      { title: 'Point Estimation', url: '#point-estimation' },
+      { title: 'Confidence Intervals', url: '#confidence-intervals' },
+      { title: 'Bootstrapping', url: '#bootstrapping' },
+      { title: 'Central Limit Theorem', url: '#central-limit-theorem' },
     ]
   },
 ];
