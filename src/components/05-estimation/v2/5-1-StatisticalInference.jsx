@@ -7,10 +7,10 @@ import {
   VisualizationSection,
   GraphContainer,
   ControlGroup
-} from '../ui/VisualizationContainer';
-import { colors, createColorScheme } from '../../lib/design-system';
+} from '../../ui/VisualizationContainer';
+import { colors, createColorScheme } from '../../../lib/design-system';
 import BackToHub from '@/components/ui/BackToHub';
-import { Brain, Target, Activity, BarChart, Sparkles, RefreshCw, Zap } from 'lucide-react';
+import { Brain, Target, Activity, BarChart, Sparkles, RefreshCw, Zap, TrendingUp } from 'lucide-react';
 
 // Get Chapter 5 color scheme
 const chapterColors = createColorScheme('estimation');
@@ -206,7 +206,14 @@ const PopulationSampleOverview = () => {
   
   return (
     <VisualizationSection>
-      <h3 className="text-xl font-bold text-white mb-4">Population vs Sample</h3>
+      <motion.h3 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="text-xl font-bold text-white mb-4 flex items-center gap-2"
+      >
+        <Activity className="w-6 h-6 text-emerald-400" />
+        Population vs Sample
+      </motion.h3>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
         <div className="bg-emerald-900/20 rounded-lg p-4 border border-emerald-700/50">
@@ -304,7 +311,7 @@ const PopulationSampleOverview = () => {
   );
 };
 
-// Central Limit Theorem Demo (based on 5-1-3)
+// Enhanced Central Limit Theorem Demo with interactive animations
 const CentralLimitTheoremDemo = () => {
   const [popMean, setPopMean] = useState(50);
   const [popSD, setPopSD] = useState(10);
@@ -312,32 +319,63 @@ const CentralLimitTheoremDemo = () => {
   const [sampleMeans, setSampleMeans] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
   const [insights, setInsights] = useState([]);
+  const [distributionType, setDistributionType] = useState('normal'); // normal, uniform, exponential
+  const [showTheory, setShowTheory] = useState(false);
+  const [animationSpeed, setAnimationSpeed] = useState(100);
   const svgRef = useRef(null);
   const intervalRef = useRef(null);
   
   const theoreticalSE = popSD / Math.sqrt(sampleSize);
   
+  const generateSampleValue = useCallback(() => {
+    switch (distributionType) {
+      case 'uniform':
+        return popMean - popSD * Math.sqrt(3) + 2 * popSD * Math.sqrt(3) * Math.random();
+      case 'exponential':
+        return -Math.log(1 - Math.random()) * popSD + (popMean - popSD);
+      case 'normal':
+      default:
+        return d3.randomNormal(popMean, popSD)();
+    }
+  }, [distributionType, popMean, popSD]);
+  
   const takeSample = useCallback(() => {
-    const sample = Array.from({ length: sampleSize }, () => 
-      d3.randomNormal(popMean, popSD)()
-    );
+    const sample = Array.from({ length: sampleSize }, generateSampleValue);
     const mean = d3.mean(sample);
     setSampleMeans(prev => [...prev, mean]);
     
     // Add insights at milestones
     const count = sampleMeans.length + 1;
     if (count === 10) {
-      setInsights(prev => [...prev, "After 10 samples, the pattern begins to emerge..."]);
+      setInsights(prev => [...prev, {
+        text: "After 10 samples, the pattern begins to emerge...",
+        icon: Activity,
+        color: "text-blue-400"
+      }]);
     } else if (count === 50) {
-      setInsights(prev => [...prev, "With 50 samples, the normal shape becomes clearer!"]);
+      setInsights(prev => [...prev, {
+        text: "With 50 samples, the normal shape becomes clearer!",
+        icon: TrendingUp,
+        color: "text-emerald-400"
+      }]);
     } else if (count === 100) {
-      setInsights(prev => [...prev, "At 100 samples, the Central Limit Theorem is in full effect!"]);
+      setInsights(prev => [...prev, {
+        text: "At 100 samples, the Central Limit Theorem is in full effect!",
+        icon: Sparkles,
+        color: "text-purple-400"
+      }]);
+    } else if (count === 200) {
+      setInsights(prev => [...prev, {
+        text: "Amazing! No matter the original distribution, sample means are normally distributed!",
+        icon: Zap,
+        color: "text-pink-400"
+      }]);
     }
-  }, [popMean, popSD, sampleSize, sampleMeans.length]);
+  }, [sampleSize, sampleMeans.length, generateSampleValue]);
   
   const startContinuousSampling = () => {
     setIsRunning(true);
-    intervalRef.current = setInterval(takeSample, 100);
+    intervalRef.current = setInterval(takeSample, animationSpeed);
   };
   
   const stopContinuousSampling = () => {
@@ -448,7 +486,14 @@ const CentralLimitTheoremDemo = () => {
   
   return (
     <VisualizationSection>
-      <h3 className="text-xl font-bold text-white mb-4">Central Limit Theorem in Action</h3>
+      <motion.h3 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="text-xl font-bold text-white mb-4 flex items-center gap-2"
+      >
+        <Zap className="w-6 h-6 text-blue-400" />
+        Central Limit Theorem in Action
+      </motion.h3>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         <GraphContainer>
@@ -473,17 +518,20 @@ const CentralLimitTheoremDemo = () => {
           
           {insights.length > 0 && (
             <div className="space-y-2">
-              <h4 className="font-semibold text-gray-300">Insights</h4>
+              <h4 className="font-semibold text-gray-300">Discovery Timeline</h4>
               <AnimatePresence>
                 {insights.map((insight, i) => (
                   <motion.div
                     key={i}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-emerald-900/20 rounded p-2 text-sm border border-emerald-700/50"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                    className="bg-gradient-to-r from-neutral-800/50 to-neutral-700/30 rounded-lg p-3 text-sm border border-neutral-600/50"
                   >
-                    <Sparkles className="inline w-4 h-4 mr-1 text-emerald-400" />
-                    {insight}
+                    <div className="flex items-center gap-2">
+                      <insight.icon className={`w-4 h-4 ${insight.color}`} />
+                      <span className="text-gray-300">{insight.text}</span>
+                    </div>
                   </motion.div>
                 ))}
               </AnimatePresence>
@@ -493,6 +541,35 @@ const CentralLimitTheoremDemo = () => {
       </div>
       
       <ControlGroup>
+        {/* Distribution Type Selector */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            Original Distribution Type
+          </label>
+          <div className="flex gap-2">
+            {[
+              { value: 'normal', label: 'Normal', color: 'from-blue-500 to-blue-600' },
+              { value: 'uniform', label: 'Uniform', color: 'from-green-500 to-green-600' },
+              { value: 'exponential', label: 'Exponential', color: 'from-purple-500 to-purple-600' }
+            ].map((type) => (
+              <motion.button
+                key={type.value}
+                onClick={() => setDistributionType(type.value)}
+                disabled={isRunning}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  distributionType === type.value
+                    ? `bg-gradient-to-r ${type.color} text-white`
+                    : 'bg-neutral-700/50 text-gray-300 hover:bg-neutral-700'
+                } disabled:opacity-50`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {type.label}
+              </motion.button>
+            ))}
+          </div>
+        </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">
@@ -540,7 +617,24 @@ const CentralLimitTheoremDemo = () => {
           </div>
         </div>
         
-        <div className="flex gap-4 mt-4">
+        {/* Animation Speed Control */}
+        <div className="mt-4 mb-4">
+          <label className="block text-sm font-medium text-gray-300 mb-1">
+            Animation Speed: {animationSpeed}ms
+          </label>
+          <input
+            type="range"
+            min="50"
+            max="500"
+            step="50"
+            value={animationSpeed}
+            onChange={(e) => setAnimationSpeed(Number(e.target.value))}
+            className="w-full md:w-64"
+            disabled={isRunning}
+          />
+        </div>
+        
+        <div className="flex gap-4">
           <button
             onClick={takeSample}
             disabled={isRunning}
@@ -572,18 +666,54 @@ const CentralLimitTheoremDemo = () => {
           >
             Reset
           </button>
+          
+          <motion.button
+            onClick={() => setShowTheory(!showTheory)}
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Brain size={16} />
+            {showTheory ? 'Hide' : 'Show'} Theory
+          </motion.button>
         </div>
+        
+        <AnimatePresence>
+          {showTheory && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mt-4 p-4 bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-lg border border-purple-700/30"
+            >
+              <h5 className="font-semibold text-purple-400 mb-2">The Central Limit Theorem</h5>
+              <p className="text-sm text-gray-300 mb-2">
+                For a population with mean μ and standard deviation σ, the sampling distribution 
+                of the sample mean x̄ approaches a normal distribution as n → ∞:
+              </p>
+              <div className="bg-neutral-900/50 rounded p-3 text-center">
+                <span className="text-lg">x̄ ~ N(μ, σ²/n)</span>
+              </div>
+              <p className="text-xs text-gray-400 mt-2">
+                This holds regardless of the shape of the original population distribution!
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </ControlGroup>
     </VisualizationSection>
   );
 };
 
-// Point Estimation with Monte Carlo (based on 5-1-4)
+// Enhanced Point Estimation with Monte Carlo
 const PointEstimationMonteCarlo = () => {
   const canvasRef = useRef(null);
   const [inside, setInside] = useState(0);
   const [total, setTotal] = useState(0);
   const [isDropping, setIsDropping] = useState(false);
+  const [estimationHistory, setEstimationHistory] = useState([]);
+  const [showComparison, setShowComparison] = useState(false);
+  const [dropMode, setDropMode] = useState('sequential'); // sequential, batch
   const animationRef = useRef(null);
   
   const piEstimate = total > 0 ? (4 * inside / total) : 0;
@@ -748,12 +878,15 @@ const PointEstimationMonteCarlo = () => {
   );
 };
 
-// Bayesian Inference Demo (simplified from 5-1-1)
+// Enhanced Bayesian Inference Demo with Interactive Visualization
 const BayesianInferenceDemo = () => {
   const [prior, setPrior] = useState(0.01);
   const [sensitivity, setSensitivity] = useState(0.95);
   const [specificity, setSpecificity] = useState(0.90);
+  const [showVisualization, setShowVisualization] = useState(true);
+  const [showExample, setShowExample] = useState(false);
   const contentRef = useRef(null);
+  const svgRef = useRef(null);
   
   // Calculate posterior probabilities
   const falsePositiveRate = 1 - specificity;
@@ -775,9 +908,100 @@ const BayesianInferenceDemo = () => {
     return () => clearTimeout(timeoutId);
   }, [prior, sensitivity, specificity]);
   
+  // Draw visualization
+  useEffect(() => {
+    if (!showVisualization || !svgRef.current) return;
+    
+    const svg = d3.select(svgRef.current);
+    svg.selectAll("*").remove();
+    
+    const width = 400;
+    const height = 300;
+    const margin = { top: 20, right: 20, bottom: 20, left: 20 };
+    
+    // Create visual representation of Bayes' theorem
+    const g = svg.append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+    
+    // Total population square
+    const totalSize = 200;
+    g.append("rect")
+      .attr("x", 50)
+      .attr("y", 30)
+      .attr("width", totalSize)
+      .attr("height", totalSize)
+      .attr("fill", "none")
+      .attr("stroke", "#666")
+      .attr("stroke-width", 2);
+    
+    // Disease rectangle
+    const diseaseWidth = totalSize * prior;
+    g.append("rect")
+      .attr("x", 50)
+      .attr("y", 30)
+      .attr("width", diseaseWidth)
+      .attr("height", totalSize)
+      .attr("fill", chapterColors.primary)
+      .attr("opacity", 0.3);
+    
+    // True positive area
+    const tpHeight = totalSize * sensitivity;
+    g.append("rect")
+      .attr("x", 50)
+      .attr("y", 30)
+      .attr("width", diseaseWidth)
+      .attr("height", tpHeight)
+      .attr("fill", chapterColors.primary)
+      .attr("opacity", 0.8);
+    
+    // False positive area
+    const fpWidth = (totalSize - diseaseWidth) * (1 - specificity);
+    g.append("rect")
+      .attr("x", 50 + diseaseWidth)
+      .attr("y", 30)
+      .attr("width", fpWidth)
+      
+      .attr("height", totalSize)
+      .attr("fill", chapterColors.secondary)
+      .attr("opacity", 0.5);
+    
+    // Labels
+    g.append("text")
+      .attr("x", 150)
+      .attr("y", 15)
+      .attr("text-anchor", "middle")
+      .attr("fill", "white")
+      .text("Population");
+    
+    g.append("text")
+      .attr("x", 50 + diseaseWidth / 2)
+      .attr("y", 250)
+      .attr("text-anchor", "middle")
+      .attr("fill", chapterColors.primary)
+      .attr("font-size", "12px")
+      .text("Disease");
+    
+    g.append("text")
+      .attr("x", 150)
+      .attr("y", 130)
+      .attr("text-anchor", "middle")
+      .attr("fill", "white")
+      .attr("font-size", "14px")
+      .attr("font-weight", "bold")
+      .text(`P(D|+) = ${(posterior * 100).toFixed(1)}%`);
+      
+  }, [prior, sensitivity, specificity, showVisualization, posterior]);
+  
   return (
     <VisualizationSection>
-      <h3 className="text-xl font-bold text-white mb-4">Bayesian Inference: Medical Testing</h3>
+      <motion.h3 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="text-xl font-bold text-white mb-4 flex items-center gap-2"
+      >
+        <Brain className="w-6 h-6 text-pink-400" />
+        Bayesian Inference: Medical Testing
+      </motion.h3>
       
       <div ref={contentRef} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="space-y-4">
@@ -877,7 +1101,63 @@ const BayesianInferenceDemo = () => {
               For rare diseases, even accurate tests can produce many false positives.
             </p>
           </div>
+          
+          <motion.button
+            onClick={() => setShowVisualization(!showVisualization)}
+            className="mt-2 text-sm text-gray-400 hover:text-gray-300 flex items-center gap-2"
+            whileHover={{ x: 5 }}
+          >
+            {showVisualization ? 'Hide' : 'Show'} Visual Representation
+          </motion.button>
         </div>
+        
+        {showVisualization && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-4"
+          >
+            <GraphContainer>
+              <svg ref={svgRef} width="100%" height="300" viewBox="0 0 400 300" />
+            </GraphContainer>
+          </motion.div>
+        )}
+      </div>
+      
+      <AnimatePresence>
+        {showExample && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-4 p-4 bg-gradient-to-r from-pink-900/20 to-purple-900/20 rounded-lg border border-pink-700/30"
+          >
+            <h5 className="font-semibold text-pink-400 mb-2">Real-World Example</h5>
+            <p className="text-sm text-gray-300">
+              If we test 10,000 people for this disease:
+            </p>
+            <ul className="text-sm text-gray-300 mt-2 space-y-1">
+              <li>• {Math.round(10000 * prior)} have the disease</li>
+              <li>• {Math.round(10000 * prior * sensitivity)} test positive (true positives)</li>
+              <li>• {Math.round(10000 * (1 - prior) * (1 - specificity))} test positive (false positives)</li>
+              <li>• Total positive tests: {Math.round(10000 * probPositive)}</li>
+              <li className="text-pink-400 font-semibold">
+                • Only {Math.round(posterior * 100)}% of positive tests are truly positive!
+              </li>
+            </ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      <div className="mt-4 flex justify-center">
+        <motion.button
+          onClick={() => setShowExample(!showExample)}
+          className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors flex items-center gap-2"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          {showExample ? 'Hide' : 'Show'} Numerical Example
+        </motion.button>
       </div>
     </VisualizationSection>
   );
@@ -903,28 +1183,65 @@ export default function StatisticalInference() {
       <BayesianInferenceDemo />
       
       <VisualizationSection>
-        <h3 className="text-xl font-bold text-white mb-4">Key Takeaways</h3>
+        <motion.h3 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-xl font-bold text-white mb-4 flex items-center gap-2"
+        >
+          <Sparkles className="w-6 h-6 text-yellow-400" />
+          Key Takeaways
+        </motion.h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-neutral-800 rounded-lg p-4">
-            <h4 className="font-semibold text-emerald-400 mb-2">Frequentist Approach</h4>
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-gradient-to-br from-emerald-900/20 to-emerald-800/20 rounded-lg p-4 border border-emerald-700/50"
+          >
+            <h4 className="font-semibold text-emerald-400 mb-2 flex items-center gap-2">
+              <Activity size={16} />
+              Frequentist Approach
+            </h4>
             <ul className="text-sm space-y-1 text-gray-300">
               <li>• Sample statistics estimate population parameters</li>
               <li>• Larger samples provide more precise estimates</li>
               <li>• The CLT guarantees normality of sample means</li>
               <li>• Standard error quantifies estimation uncertainty</li>
             </ul>
-          </div>
+          </motion.div>
           
-          <div className="bg-neutral-800 rounded-lg p-4">
-            <h4 className="font-semibold text-blue-400 mb-2">Bayesian Approach</h4>
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-gradient-to-br from-blue-900/20 to-blue-800/20 rounded-lg p-4 border border-blue-700/50"
+          >
+            <h4 className="font-semibold text-blue-400 mb-2 flex items-center gap-2">
+              <Brain size={16} />
+              Bayesian Approach
+            </h4>
             <ul className="text-sm space-y-1 text-gray-300">
               <li>• Combines prior knowledge with new data</li>
               <li>• Updates beliefs based on evidence</li>
               <li>• Provides intuitive probability statements</li>
               <li>• Essential for rare event analysis</li>
             </ul>
-          </div>
+          </motion.div>
         </div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mt-6 p-4 bg-gradient-to-r from-purple-900/20 to-pink-900/20 rounded-lg border border-purple-700/30"
+        >
+          <p className="text-center text-gray-300">
+            <strong className="text-purple-400">Remember:</strong> Statistical inference bridges the gap 
+            between what we observe (samples) and what we want to know (population). Whether you use 
+            frequentist or Bayesian methods, the goal is the same: make informed decisions in the face 
+            of uncertainty.
+          </p>
+        </motion.div>
       </VisualizationSection>
     </VisualizationContainer>
   );

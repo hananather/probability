@@ -82,7 +82,7 @@ const CHAPTER_5_SECTIONS = [
       'Apply Bayesian inference to real problems',
       'Calculate point estimates effectively'
     ],
-    route: '/chapter5/statistical-inference',
+    route: '/chapter5/v2/statistical-inference',
     color: '#10b981', // Emerald
     question: "How do we infer population truths from sample data?",
     preview: "Interactive sampling and Bayesian updates"
@@ -102,7 +102,7 @@ const CHAPTER_5_SECTIONS = [
       'Interpret confidence levels correctly',
       'Visualize interval coverage'
     ],
-    route: '/chapter5/confidence-intervals-known',
+    route: '/chapter5/v2/confidence-intervals-known',
     color: '#10b981',
     question: "How confident are we in our estimates?",
     preview: "Interactive CI builder and simulations"
@@ -122,7 +122,7 @@ const CHAPTER_5_SECTIONS = [
       'Visualize n-E-α relationships',
       'Apply to real-world scenarios'
     ],
-    route: '/chapter5/sample-size',
+    route: '/chapter5/v2/sample-size',
     color: '#3b82f6', // Blue
     question: "How many samples ensure reliable results?",
     preview: "3D visualization laboratory"
@@ -142,7 +142,7 @@ const CHAPTER_5_SECTIONS = [
       'Understand degrees of freedom',
       'Master bootstrap techniques'
     ],
-    route: '/chapter5/confidence-intervals-unknown',
+    route: '/chapter5/v2/confidence-intervals-unknown',
     color: '#3b82f6',
     question: "What happens when σ is unknown?",
     preview: "t-distribution explorer and bootstrap demo"
@@ -162,7 +162,7 @@ const CHAPTER_5_SECTIONS = [
       'Apply to polling and testing',
       'Understand sample size requirements'
     ],
-    route: '/chapter5/proportions',
+    route: '/chapter5/v2/proportions',
     color: '#8b5cf6', // Purple
     question: "How accurate are polls and surveys?",
     preview: "Election polling and A/B testing scenarios"

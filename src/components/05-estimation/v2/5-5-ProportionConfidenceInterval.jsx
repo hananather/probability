@@ -7,8 +7,8 @@ import {
   VisualizationSection,
   GraphContainer,
   ControlGroup
-} from '../ui/VisualizationContainer';
-import { colors, createColorScheme } from '../../lib/design-system';
+} from '../../ui/VisualizationContainer';
+import { colors, createColorScheme } from '../../../lib/design-system';
 import BackToHub from '@/components/ui/BackToHub';
 import { Vote, Package, FlaskConical, BarChart3, AlertCircle, TrendingUp, Users, ChevronRight, Sparkles } from 'lucide-react';
 

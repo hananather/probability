@@ -7,9 +7,9 @@ import {
   VisualizationSection,
   GraphContainer,
   ControlGroup
-} from '../ui/VisualizationContainer';
-import { colors, createColorScheme } from '../../lib/design-system';
-import BackToHub from '../ui/BackToHub';
+} from '../../ui/VisualizationContainer';
+import { colors, createColorScheme } from '../../../lib/design-system';
+import BackToHub from '@/components/ui/BackToHub';
 import { Calculator, TrendingUp, DollarSign, Target, Trophy, Zap, Sparkles, BarChart } from 'lucide-react';
 import { jStat } from "jstat";
 

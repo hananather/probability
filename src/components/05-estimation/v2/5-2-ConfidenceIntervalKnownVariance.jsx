@@ -7,8 +7,8 @@ import {
   VisualizationSection,
   GraphContainer,
   ControlGroup
-} from '../ui/VisualizationContainer';
-import { colors, createColorScheme } from '../../lib/design-system';
+} from '../../ui/VisualizationContainer';
+import { colors, createColorScheme } from '../../../lib/design-system';
 import BackToHub from '@/components/ui/BackToHub';
 
 // Helper function for inverse normal CDF (quantileNormal approximation)
