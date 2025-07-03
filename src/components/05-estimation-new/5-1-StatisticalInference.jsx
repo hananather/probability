@@ -9,7 +9,7 @@ import {
   ControlGroup
 } from '../ui/VisualizationContainer';
 import { colors, createColorScheme } from '../../lib/design-system';
-import BackToHub from '../ui/BackToHub';
+import BackToHub from '@/components/ui/BackToHub';
 import { Brain, Target, Activity, BarChart, Sparkles, RefreshCw, Zap } from 'lucide-react';
 
 // Get Chapter 5 color scheme

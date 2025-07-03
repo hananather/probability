@@ -122,7 +122,7 @@ const CHAPTER_5_SECTIONS = [
       'Visualize n-E-α relationships',
       'Apply to real-world scenarios'
     ],
-    route: '/chapter5/sample-size',
+    route: '/chapter5-new/sample-size-calculation',
     color: '#3b82f6', // Blue
     question: "How many samples ensure reliable results?",
     preview: "3D visualization laboratory"
