@@ -1,0 +1,118 @@
+import { ProgressiveContent } from '@/components/mdx/ProgressiveContent'
+import { QuizBreak } from '@/components/mdx/QuizBreak'
+import { SectionBreak } from '@/components/mdx/SectionBreak'
+
+<ProgressiveContent>
+
+## Introduction to Probability
+
+Welcome to this lesson-based approach to learning probability. This style of teaching breaks complex concepts into small, digestible pieces with frequent knowledge checks.
+
+<SectionBreak />
+
+## Sample Spaces
+
+A **sample space** is the set of all possible outcomes of a random experiment. For example:
+- When flipping a coin: S = {"Heads", "Tails"}
+- When rolling a die: S = {1, 2, 3, 4, 5, 6}
+
+Each element in the sample space represents one possible outcome.
+
+<QuizBreak
+  question="What is the sample space when flipping two coins?"
+  options={[
+    "{H, T}",
+    "{HH, HT, TH, TT}",
+    "{2H, 1H1T, 2T}",
+    "{H, T, H, T}"
+  ]}
+  correctIndex={1}
+  explanation="When flipping two coins, we need to consider all possible combinations: HH (both heads), HT (first heads, second tails), TH (first tails, second heads), and TT (both tails)."
+/>
+
+<SectionBreak />
+
+## Events
+
+An **event** is any subset of the sample space. Events can be:
+- Simple (containing only one outcome)
+- Compound (containing multiple outcomes)
+
+For a die roll:
+- Simple event: "Rolling a 4" = {4}
+- Compound event: "Rolling an even number" = {2, 4, 6}
+
+<QuizBreak
+  question="Which of the following is a compound event when rolling a die?"
+  options={[
+    "Getting a 3",
+    "Getting a number less than 4",
+    "Getting exactly 5",
+    "Rolling the die"
+  ]}
+  correctIndex={1}
+  explanation="'Getting a number less than 4' includes the outcomes {1, 2, 3}, making it a compound event with multiple outcomes."
+/>
+
+<SectionBreak />
+
+## Probability of Events
+
+The probability of an event A is calculated as:
+
+$$P(A) = \frac{\text{Number of favorable outcomes}}{\text{Total number of outcomes}}$$
+
+Key properties:
+- 0 ≤ P(A) ≤ 1 for any event A
+- P(S) = 1 (certain event)
+- P(∅) = 0 (impossible event)
+
+<QuizBreak
+  question="What is the probability of rolling a prime number (2, 3, 5) on a fair six-sided die?"
+  options={[
+    "1/6",
+    "1/3",
+    "1/2",
+    "2/3"
+  ]}
+  correctIndex={2}
+  explanation="Prime numbers on a die are {2, 3, 5}, which is 3 outcomes out of 6 total. So P(prime) = 3/6 = 1/2."
+/>
+
+<SectionBreak />
+
+## Complementary Events
+
+The complement of event A (denoted A') consists of all outcomes not in A.
+
+Key relationship:
+$$P(A') = 1 - P(A)$$
+
+This is often useful when it's easier to calculate what we don't want.
+
+<QuizBreak
+  question="If P(rain tomorrow) = 0.3, what is P(no rain tomorrow)?"
+  options={[
+    "0.3",
+    "0.5",
+    "0.7",
+    "1.3"
+  ]}
+  correctIndex={2}
+  explanation="The probability of no rain is the complement of rain: P(no rain) = 1 - P(rain) = 1 - 0.3 = 0.7"
+/>
+
+<SectionBreak />
+
+## Summary
+
+You've completed this lesson on basic probability concepts! Key takeaways:
+
+1. **Sample Space**: All possible outcomes
+2. **Events**: Subsets of the sample space
+3. **Probability**: Ratio of favorable to total outcomes
+4. **Complements**: P(A') = 1 - P(A)
+
+This execute-program style approach ensures you understand each concept before moving forward, building a strong foundation for more advanced topics.
+
+</ProgressiveContent>

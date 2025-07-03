@@ -1,27 +1,52 @@
 "use client";
 
 import React, { useState, useMemo, lazy, Suspense, useCallback, useEffect } from "react";
-import { VisualizationContainer } from "@/components/ui/VisualizationContainer";
+import { VisualizationContainer, VisualizationSection } from "@/components/ui/VisualizationContainer";
 import { Button } from "@/components/ui/button";
 import BackToHub from "@/components/ui/BackToHub";
-import { ChevronLeft, BarChart3, Box, Sparkles, Grid3X3, ChevronRight } from "lucide-react";
+import { ChevronLeft, BarChart3, Box, Sparkles, Grid3X3, ChevronRight, Target, Activity, TrendingUp, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { createColorScheme } from "@/lib/design-system";
+import dynamic from 'next/dynamic';
 
 // Color scheme for this section
 const colorScheme = createColorScheme('probability');
 
 // Lazy load components for performance
 const HistogramHub = lazy(() => import("@/components/04-descriptive-statistics-sampling/4-2-histograms/4-2-0-HistogramHub"));
-const HistogramIntuitiveIntro = lazy(() => import("@/components/04-descriptive-statistics-sampling/4-2-histograms/4-2-1-HistogramIntuitiveIntro"));
-const HistogramShapeExplorer = lazy(() => import("@/components/04-descriptive-statistics-sampling/4-2-1-HistogramShapeExplorer"));
-const HistogramInteractiveJourney = lazy(() => import("@/components/04-descriptive-statistics-sampling/4-2-histograms/4-2-2-HistogramInteractiveJourney"));
-const HistogramShapeAnalysis = lazy(() => import("@/components/04-descriptive-statistics-sampling/4-2-histograms/4-2-3-HistogramShapeAnalysis"));
+const HistogramIntuitiveIntro = dynamic(() => 
+  import('@/components/04-descriptive-statistics-sampling/4-2-histograms/4-2-1-HistogramIntuitiveIntro'),
+  {
+    loading: () => <LoadingComponent />,
+    ssr: false
+  }
+);
+const HistogramShapeExplorer = dynamic(() => 
+  import('@/components/04-descriptive-statistics-sampling/4-2-histograms/4-2-1-HistogramShapeExplorer'),
+  {
+    loading: () => <LoadingComponent />,
+    ssr: false
+  }
+);
+const HistogramInteractiveJourney = dynamic(() => 
+  import('@/components/04-descriptive-statistics-sampling/4-2-histograms/4-2-2-HistogramInteractiveJourney'),
+  {
+    loading: () => <LoadingComponent />,
+    ssr: false
+  }
+);
+const HistogramShapeAnalysis = dynamic(() => 
+  import('@/components/04-descriptive-statistics-sampling/4-2-histograms/4-2-3-HistogramShapeAnalysis'),
+  {
+    loading: () => <LoadingComponent />,
+    ssr: false
+  }
+);
 
-const BoxplotQuartilesExplorer = lazy(() => import("@/components/04-descriptive-statistics-sampling/4-6-1-BoxplotQuartilesExplorer"));
-const BoxplotQuartilesJourney = lazy(() => import("@/components/04-descriptive-statistics-sampling/4-6-1-BoxplotQuartilesJourney"));
-const BoxplotRealWorldExplorer = lazy(() => import("@/components/04-descriptive-statistics-sampling/4-6-2-BoxplotRealWorldExplorer"));
+const BoxplotQuartilesExplorer = lazy(() => import("@/components/04-descriptive-statistics-sampling/4-2-histograms/4-2-4-BoxplotQuartilesExplorer"));
+const BoxplotQuartilesJourney = lazy(() => import("@/components/04-descriptive-statistics-sampling/4-2-histograms/4-2-5-BoxplotQuartilesJourney"));
+const BoxplotRealWorldExplorer = lazy(() => import("@/components/04-descriptive-statistics-sampling/4-2-histograms/4-2-6-BoxplotRealWorldExplorer"));
 
 // Default dataset
 const defaultDataset = {
@@ -54,6 +79,97 @@ const pageTransition = {
 const cardHover = {
   scale: 1.02,
   transition: { duration: 0.2, ease: "easeOut" }
+};
+
+// Loading component
+const LoadingComponent = () => (
+  <div className="flex items-center justify-center py-12">
+    <div className="flex items-center gap-3 text-neutral-400">
+      <Loader2 className="w-6 h-6 animate-spin" />
+      <span>Loading section...</span>
+    </div>
+  </div>
+);
+
+// Tab configuration with clean sequential numbering (4-2-1 through 4-2-4)
+const TABS = [
+  {
+    id: '4-2-1-intro',
+    label: 'Intuitive Introduction',
+    icon: BarChart3,
+    description: 'Getting started with histogram fundamentals',
+    component: HistogramIntuitiveIntro,
+    color: '#10b981'
+  },
+  {
+    id: '4-2-2-journey',
+    label: 'Interactive Journey',
+    icon: Target,
+    description: 'Hands-on histogram exploration and creation',
+    component: HistogramInteractiveJourney,
+    color: '#3b82f6'
+  },
+  {
+    id: '4-2-3-shapes',
+    label: 'Shape Analysis',
+    icon: Activity,
+    description: 'Understanding distribution shapes and patterns',
+    component: HistogramShapeAnalysis,
+    color: '#6366f1'
+  },
+  {
+    id: '4-2-4-explorer',
+    label: 'Advanced Explorer',
+    icon: TrendingUp,
+    description: 'Advanced histogram analysis and comparison',
+    component: HistogramShapeExplorer,
+    color: '#7c3aed'
+  }
+];
+
+// Progress tracking
+function useTabProgress() {
+  const [completedTabs, setCompletedTabs] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('histograms-tab-progress');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('histograms-tab-progress', JSON.stringify(completedTabs));
+    }
+  }, [completedTabs]);
+
+  const markTabComplete = (tabId) => {
+    if (!completedTabs.includes(tabId)) {
+      setCompletedTabs(prev => [...prev, tabId]);
+    }
+  };
+
+  return { completedTabs, markTabComplete };
+}
+
+// Component wrapper to standardize interfaces
+const ComponentWrapper = ({ component: Component, tabId, onComplete, isActive }) => {
+  const handleComplete = () => {
+    console.log(`${tabId} section completed!`);
+    if (onComplete) {
+      onComplete(tabId);
+    }
+  };
+
+  if (!isActive) {
+    return null;
+  }
+
+  return (
+    <div className="w-full">
+      <Component onComplete={handleComplete} />
+    </div>
+  );
 };
 
 // Mode selector component
@@ -550,170 +666,122 @@ const ComparisonMode = ({ globalState }) => {
   );
 };
 
-// Main page wrapper following Chapter 6 pattern
+// Main Page Component
 export default function VisualSummariesPage() {
+  const [activeTab, setActiveTab] = useState('4-2-1-intro');
+  const { completedTabs, markTabComplete } = useTabProgress();
+
+  const handleTabComplete = (tabId) => {
+    markTabComplete(tabId);
+  };
+
+  const activeTabData = TABS.find(tab => tab.id === activeTab);
+
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
-      <div className="max-w-7xl mx-auto space-y-8 p-4">
-        <VisualSummariesOrchestrator />
+    <VisualizationContainer>
+      <BackToHub chapter={4} />
+      
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold mb-2">Visual Summaries & Histograms</h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          Master the art of visualizing data distributions through histograms
+        </p>
       </div>
-    </div>
-  );
-}
 
-// Main orchestrator component
-function VisualSummariesOrchestrator() {
-  // Global state management
-  const [globalState, setGlobalState] = useState({
-    mode: 'overview',
-    dataset: {
-      name: 'studentGrades',
-      values: defaultDataset.studentGrades,
-      statistics: null
-    },
-    visualizationSettings: {
-      binCount: 10,
-      showOutliers: true,
-      colorScheme: 'purple',
-      animationsEnabled: true,
-      datasetName: 'studentGrades'
-    },
-    progress: {
-      histogramStages: [],
-      boxplotStages: [],
-      conceptsLearned: [],
-      completedModes: []
-    }
-  });
-
-  // Update visualization settings
-  const updateVisualizationSettings = useCallback((newSettings) => {
-    setGlobalState(prev => {
-      // Check if dataset changed
-      const datasetChanged = newSettings.datasetName !== prev.visualizationSettings.datasetName;
-      
-      return {
-        ...prev,
-        visualizationSettings: newSettings,
-        dataset: datasetChanged ? {
-          name: newSettings.datasetName,
-          values: defaultDataset[newSettings.datasetName],
-          statistics: null
-        } : prev.dataset
-      };
-    });
-  }, []);
-
-  // Update state helper
-  const updateState = useCallback((updates) => {
-    setGlobalState(prev => ({ ...prev, ...updates }));
-  }, []);
-
-  // Get available controls based on mode
-  const getControlsForMode = (mode) => {
-    switch (mode) {
-      case 'histograms':
-        return ['binCount', 'dataset'];
-      case 'boxplots':
-        return ['showOutliers', 'dataset'];
-      case 'comparison':
-        return ['binCount', 'showOutliers', 'dataset'];
-      default:
-        return [];
-    }
-  };
-
-  // Get completed modes
-  const getCompletedModes = () => globalState.progress.completedModes;
-
-  // Render the appropriate mode
-  const renderMode = (mode) => {
-    switch (mode) {
-      case 'overview':
-        return <OverviewMode onSelectMode={(mode) => updateState({ mode })} dataset={globalState.dataset} />;
-      case 'histograms':
-        return <HistogramMode globalState={globalState} updateState={updateState} />;
-      case 'boxplots':
-        return <BoxplotMode globalState={globalState} updateState={updateState} />;
-      case 'comparison':
-        return <ComparisonMode globalState={globalState} />;
-      default:
-        return null;
-    }
-  };
-
-  // Save progress to localStorage
-  useEffect(() => {
-    const saveProgress = () => {
-      localStorage.setItem('visualSummariesProgress', JSON.stringify(globalState.progress));
-      localStorage.setItem('visualSummariesSettings', JSON.stringify(globalState.visualizationSettings));
-    };
-    
-    const debounced = setTimeout(saveProgress, 1000);
-    return () => clearTimeout(debounced);
-  }, [globalState.progress, globalState.visualizationSettings]);
-
-  // Load progress from localStorage
-  useEffect(() => {
-    const savedProgress = localStorage.getItem('visualSummariesProgress');
-    const savedSettings = localStorage.getItem('visualSummariesSettings');
-    
-    if (savedProgress) {
-      try {
-        const progress = JSON.parse(savedProgress);
-        setGlobalState(prev => ({ ...prev, progress }));
-      } catch (e) {
-        console.error('Failed to load progress:', e);
-      }
-    }
-    
-    if (savedSettings) {
-      try {
-        const settings = JSON.parse(savedSettings);
-        setGlobalState(prev => ({ ...prev, visualizationSettings: settings }));
-      } catch (e) {
-        console.error('Failed to load settings:', e);
-      }
-    }
-  }, []);
-
-  return (
-    <VisualizationContainer
-      title="4.2 Visual Summaries"
-      description="Master histograms and boxplots to visualize and understand data distributions"
-    >
-      <div className="space-y-6">
-        <BackToHub chapter={4} />
-      
-      {/* Mode Navigation */}
-      <ModeSelector 
-        currentMode={globalState.mode}
-        onModeChange={(mode) => updateState({ mode })}
-        completedModes={getCompletedModes()}
-      />
-      
-        {/* Main Visualization Area */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={globalState.mode}
-            variants={pageTransition}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-          >
-            {renderMode(globalState.mode)}
-          </motion.div>
-        </AnimatePresence>
-      
-        {/* Unified Controls */}
-        {globalState.mode !== 'overview' && (
-          <UnifiedControls 
-            settings={globalState.visualizationSettings}
-            onSettingsChange={updateVisualizationSettings}
-            availableControls={getControlsForMode(globalState.mode)}
-          />
+      {/* Tab Navigation */}
+      <VisualizationSection className="bg-neutral-800/30 rounded-lg mb-6">
+        <div className="border-b border-neutral-700">
+          <div className="flex space-x-1 px-6 overflow-x-auto">
+            {TABS.map(({ id, label, icon: Icon, description, color }) => (
+              <button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap ${
+                  activeTab === id
+                    ? 'bg-neutral-700 text-white border-b-2'
+                    : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
+                }`}
+                style={{
+                  borderBottomColor: activeTab === id ? color : 'transparent'
+                }}
+              >
+                <Icon className="w-4 h-4" style={{ color: activeTab === id ? color : 'currentColor' }} />
+                <span>{label}</span>
+                {completedTabs.includes(id) && (
+                  <div className="w-2 h-2 bg-green-500 rounded-full ml-1" />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+        
+        {/* Active tab description */}
+        {activeTabData && (
+          <div className="px-6 py-4">
+            <div className="flex items-center gap-3">
+              <div 
+                className="p-2 rounded-lg"
+                style={{ backgroundColor: `${activeTabData.color}20` }}
+              >
+                <activeTabData.icon 
+                  className="w-5 h-5" 
+                  style={{ color: activeTabData.color }} 
+                />
+              </div>
+              <div>
+                <h3 className="font-semibold text-white">{activeTabData.label}</h3>
+                <p className="text-sm text-neutral-400">{activeTabData.description}</p>
+              </div>
+            </div>
+          </div>
         )}
+      </VisualizationSection>
+
+      {/* Tab Content */}
+      <motion.div
+        key={activeTab}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="max-w-6xl mx-auto"
+      >
+        <Suspense fallback={<LoadingComponent />}>
+          {TABS.map(tab => (
+            <ComponentWrapper
+              key={tab.id}
+              component={tab.component}
+              tabId={tab.id}
+              onComplete={handleTabComplete}
+              isActive={activeTab === tab.id}
+            />
+          ))}
+        </Suspense>
+      </motion.div>
+
+      {/* Progress indicator */}
+      <div className="fixed bottom-6 right-6 bg-neutral-800 rounded-lg p-3 shadow-lg border border-neutral-700">
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-neutral-400">Progress:</span>
+          <span className="font-semibold text-white">
+            {completedTabs.length}/{TABS.length}
+          </span>
+          <div className="flex gap-1 ml-2">
+            {TABS.map(tab => (
+              <div
+                key={tab.id}
+                className={`w-2 h-2 rounded-full ${
+                  completedTabs.includes(tab.id) 
+                    ? 'bg-green-500' 
+                    : activeTab === tab.id 
+                      ? 'bg-blue-500' 
+                      : 'bg-neutral-600'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
       </div>
     </VisualizationContainer>
   );
 }
+

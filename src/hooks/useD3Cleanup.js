@@ -11,10 +11,12 @@ export function useD3Cleanup(drawFunction, dependencies = []) {
   const svgRef = useRef(null);
   
   useEffect(() => {
-    if (!svgRef.current) return;
+    const svgElement = svgRef.current;
+    
+    if (!svgElement) return;
     
     // Clear any existing content and transitions
-    const svg = d3.select(svgRef.current);
+    const svg = d3.select(svgElement);
     svg.selectAll("*").interrupt();
     svg.selectAll("*").remove();
     
@@ -23,7 +25,7 @@ export function useD3Cleanup(drawFunction, dependencies = []) {
     let height = 400; // Default height
     
     try {
-      const rect = svgRef.current.getBoundingClientRect();
+      const rect = svgElement.getBoundingClientRect();
       if (rect && rect.width > 0) {
         width = rect.width;
         height = rect.height || height;
@@ -37,14 +39,14 @@ export function useD3Cleanup(drawFunction, dependencies = []) {
     
     // Cleanup function
     return () => {
-      const svgElement = svgRef.current;
       if (svgElement) {
         const svg = d3.select(svgElement);
         svg.selectAll("*").interrupt();
         svg.selectAll("*").remove();
       }
     };
-  }, [...dependencies, drawFunction]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drawFunction, ...dependencies]);
   
   return svgRef;
 }

@@ -113,6 +113,13 @@ export const chapters = [
     ]
   },
   {
+    title: '📚 Lesson-Based Approach',
+    path: '/lesson-based-approach',
+    sections: [
+      { title: 'Execute Program Style Reference', url: '' },
+    ]
+  },
+  {
     title: '📦 Legacy Components',
     path: '/legacy-components',
     sections: [

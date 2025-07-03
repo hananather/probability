@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 
 /**
  * Custom hook for managing intervals and timeouts with automatic cleanup
@@ -118,10 +118,10 @@ export function useAnimationState() {
     return true;
   };
   
-  const stopAnimation = () => {
+  const stopAnimation = useCallback(() => {
     isRunningRef.current = false;
     animationCleanup.clearAll();
-  };
+  }, [animationCleanup]);
   
   const isRunning = () => isRunningRef.current;
   

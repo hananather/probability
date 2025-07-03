@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
-import BoxplotQuartilesJourney from "./4-6-1-BoxplotQuartilesJourney";
-import BoxplotRealWorldExplorer from "./4-6-2-BoxplotRealWorldExplorer";
+import BoxplotQuartilesJourney from "./4-2-5-BoxplotQuartilesJourney";
+import BoxplotRealWorldExplorer from "./4-2-6-BoxplotRealWorldExplorer";
 
 function BoxplotQuartilesExplorer() {
   return (

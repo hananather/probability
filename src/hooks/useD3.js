@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import * as d3 from "@/utils/d3-utils";
 
 /**
@@ -11,22 +11,24 @@ export function useD3(renderFn, dependencies = []) {
   const ref = useRef(null);
 
   useEffect(() => {
-    if (ref.current) {
+    const element = ref.current;
+    
+    if (element) {
       // Clean up previous render
-      d3.select(ref.current).selectAll('*').remove();
+      d3.select(element).selectAll('*').remove();
       
       // Create new visualization
-      renderFn(d3.select(ref.current));
+      renderFn(d3.select(element));
     }
     
     // Cleanup function
     return () => {
-      const element = ref.current;
       if (element) {
         d3.select(element).selectAll('*').remove();
       }
     };
-  }, [...dependencies, renderFn]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [renderFn, ...dependencies]);
 
   return ref;
 }
@@ -97,7 +99,7 @@ export function useD3Animation() {
     }
   };
 
-  const clearAllAnimations = () => {
+  const clearAllAnimations = useCallback(() => {
     stopAnimation();
     animationsRef.current.forEach(element => {
       if (element && element.remove) {
@@ -105,7 +107,7 @@ export function useD3Animation() {
       }
     });
     animationsRef.current.clear();
-  };
+  }, []);
 
   useEffect(() => {
     return () => clearAllAnimations();
@@ -153,7 +155,8 @@ export function useResponsiveD3(renderFn, dependencies = []) {
         resizeObserverRef.current.disconnect();
       }
     };
-  }, [...dependencies, renderFn]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [renderFn, ...dependencies]);
 
   return containerRef;
 }

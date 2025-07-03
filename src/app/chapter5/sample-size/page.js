@@ -1,4 +1,4 @@
-import SampleSizeCalculation from "@/components/05-estimation/v2/5-3-SampleSizeCalculation";
+import SampleSizeCalculation from "@/components/05-estimation/5-3-SampleSizeCalculation";
 
 export default function SampleSizeCalculationPage() {
   return (

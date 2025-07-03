@@ -27,7 +27,7 @@ import {
   Lightbulb,
   Award
 } from "lucide-react";
-import { useSafeMathJax } from '../../utils/mathJaxFix';
+import { useSafeMathJax } from '../../../utils/mathJaxFix';
 
 // Color scheme
 const colorScheme = createColorScheme('hypothesis');

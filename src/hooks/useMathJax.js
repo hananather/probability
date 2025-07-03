@@ -39,7 +39,8 @@ export function useMathJax(dependencies = []) {
       mounted = false;
       clearTimeout(timeoutId);
     };
-  }, Array.isArray(dependencies) ? dependencies : []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [...dependencies]);
   
   return containerRef;
 }

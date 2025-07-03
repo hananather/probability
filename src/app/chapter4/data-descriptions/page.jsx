@@ -2,28 +2,45 @@
 
 import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { VisualizationContainer } from "@/components/ui/VisualizationContainer";
+import { VisualizationContainer, VisualizationSection } from "@/components/ui/VisualizationContainer";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { createColorScheme, typography } from "@/lib/design-system";
-import { ArrowLeft, ArrowRight, CheckCircle2, Circle, BarChart3 } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Circle, BarChart3, Calculator, Target, BookOpen, Loader2 } from "lucide-react";
 import Link from "next/link";
+import dynamic from 'next/dynamic';
 
-// Lazy load all components for performance
-const CentralTendencyHub = lazy(() => 
-  import("@/components/04-descriptive-statistics-sampling/4-1-central-tendency/4-1-0-CentralTendencyHub")
+// Dynamic imports for all components with updated file names
+const CentralTendencyIntro = dynamic(() => 
+  import('@/components/04-descriptive-statistics-sampling/4-1-central-tendency/4-1-1-CentralTendencyIntro'),
+  {
+    loading: () => <LoadingComponent />,
+    ssr: false
+  }
 );
-const CentralTendencyIntuitiveIntro = lazy(() => 
-  import("@/components/04-descriptive-statistics-sampling/4-1-central-tendency/4-1-1-CentralTendencyIntro")
+
+const DescriptiveStatsJourney = dynamic(() => 
+  import('@/components/04-descriptive-statistics-sampling/4-1-central-tendency/4-1-2-DescriptiveStatsJourney'),
+  {
+    loading: () => <LoadingComponent />,
+    ssr: false
+  }
 );
-const DescriptiveStatsJourney = lazy(() => 
-  import("@/components/04-descriptive-statistics-sampling/4-1-central-tendency/4-1-2-DescriptiveStatsJourney")
+
+const DescriptiveStatisticsFoundations = dynamic(() => 
+  import('@/components/04-descriptive-statistics-sampling/4-1-central-tendency/4-1-3-DescriptiveStatisticsFoundations'),
+  {
+    loading: () => <LoadingComponent />,
+    ssr: false
+  }
 );
-const DescriptiveStatisticsFoundations = lazy(() => 
-  import("@/components/04-descriptive-statistics-sampling/4-1-central-tendency/4-1-3-DescriptiveStatisticsFoundations")
-);
-const MathematicalFoundations = lazy(() => 
-  import("@/components/04-descriptive-statistics-sampling/4-1-central-tendency/4-1-4-MathematicalFoundations")
+
+const MathematicalFoundations = dynamic(() => 
+  import('@/components/04-descriptive-statistics-sampling/4-1-central-tendency/4-1-4-MathematicalFoundations'),
+  {
+    loading: () => <LoadingComponent />,
+    ssr: false
+  }
 );
 
 // Default dataset for consistency across components
@@ -53,311 +70,212 @@ const BackToHub = () => (
   </Link>
 );
 
-// Progress Navigator Component
-const StageNavigator = ({ stages, current, completed, onNavigate }) => {
-  const colors = createColorScheme('estimation');
-  
-  return (
-    <div className="mb-6 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-lg font-semibold text-gray-200">Your Learning Path</h3>
-        <span className="text-sm text-gray-400">
-          {completed.length} of {stages.length} stages completed
-        </span>
-      </div>
-      
-      <div className="flex items-center gap-2 overflow-x-auto pb-2">
-        {stages.map((stage, index) => {
-          const isCompleted = completed.includes(stage.id);
-          const isCurrent = current === stage.id;
-          const isAccessible = index === 0 || completed.includes(stages[index - 1]?.id);
-          
-          return (
-            <button
-              key={stage.id}
-              onClick={() => isAccessible && onNavigate(stage.id)}
-              disabled={!isAccessible}
-              className={cn(
-                "flex flex-col items-center p-3 rounded-lg transition-all min-w-[100px]",
-                isCurrent && "bg-purple-900/30 border-2 border-purple-600",
-                isCompleted && !isCurrent && "bg-green-900/20 border border-green-600/30",
-                !isCompleted && !isCurrent && isAccessible && "bg-gray-800/30 border border-gray-600/30 hover:bg-gray-700/30",
-                !isAccessible && "opacity-50 cursor-not-allowed"
-              )}
-            >
-              <span className="text-2xl mb-1">{stage.icon}</span>
-              <span className={cn(
-                "text-xs font-medium",
-                isCurrent && "text-purple-300",
-                isCompleted && !isCurrent && "text-green-300",
-                !isCompleted && !isCurrent && "text-gray-300"
-              )}>
-                {stage.name}
-              </span>
-              <span className="text-xs text-gray-500 mt-1">{stage.duration}</span>
-              <div className="mt-2">
-                {isCompleted ? (
-                  <CheckCircle2 className="w-4 h-4 text-green-400" />
-                ) : (
-                  <Circle className="w-4 h-4 text-gray-500" />
-                )}
-              </div>
-            </button>
-          );
-        })}
-      </div>
-      
-      {/* Progress bar */}
-      <div className="mt-4 h-2 bg-gray-700 rounded-full overflow-hidden">
-        <motion.div
-          className="h-full bg-gradient-to-r from-purple-600 to-purple-400"
-          initial={{ width: 0 }}
-          animate={{ width: `${(completed.length / stages.length) * 100}%` }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-        />
-      </div>
+// Loading component
+const LoadingComponent = () => (
+  <div className="flex items-center justify-center py-12">
+    <div className="flex items-center gap-3 text-neutral-400">
+      <Loader2 className="w-6 h-6 animate-spin" />
+      <span>Loading section...</span>
     </div>
-  );
-};
+  </div>
+);
 
-// Dataset Panel Component
-const DatasetPanel = ({ dataset, calculations, minimized }) => {
-  const [isMinimized, setIsMinimized] = useState(minimized);
-  
-  useEffect(() => {
-    setIsMinimized(minimized);
-  }, [minimized]);
-  
-  if (isMinimized) {
-    return (
-      <motion.div
-        className="fixed right-4 top-24 bg-gray-800/90 backdrop-blur-sm rounded-lg p-2 border border-gray-700 cursor-pointer"
-        onClick={() => setIsMinimized(false)}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        <BarChart3 className="w-5 h-5 text-purple-400" />
-      </motion.div>
-    );
+// Tab configuration with clean sequential numbering (4-1-1 through 4-1-4)
+const TABS = [
+  {
+    id: '4-1-1-intro',
+    label: 'Introduction',
+    icon: BarChart3,
+    description: 'Getting started with central tendency concepts',
+    component: CentralTendencyIntro,
+    color: '#10b981'
+  },
+  {
+    id: '4-1-2-journey',
+    label: 'Interactive Journey',
+    icon: Target,
+    description: 'Hands-on exploration of mean, median, mode',
+    component: DescriptiveStatsJourney,
+    color: '#3b82f6'
+  },
+  {
+    id: '4-1-3-foundations',
+    label: 'Statistical Foundations',
+    icon: BookOpen,
+    description: 'Deep dive into statistical concepts',
+    component: DescriptiveStatisticsFoundations,
+    color: '#6366f1'
+  },
+  {
+    id: '4-1-4-mathematical',
+    label: 'Mathematical Depth',
+    icon: Calculator,
+    description: 'Advanced mathematical understanding',
+    component: MathematicalFoundations,
+    color: '#7c3aed'
   }
-  
+];
+
+// Progress tracking
+function useTabProgress() {
+  const [completedTabs, setCompletedTabs] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('central-tendency-tab-progress');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('central-tendency-tab-progress', JSON.stringify(completedTabs));
+    }
+  }, [completedTabs]);
+
+  const markTabComplete = (tabId) => {
+    if (!completedTabs.includes(tabId)) {
+      setCompletedTabs(prev => [...prev, tabId]);
+    }
+  };
+
+  return { completedTabs, markTabComplete };
+}
+
+// Component wrapper to standardize interfaces
+const ComponentWrapper = ({ component: Component, tabId, onComplete, isActive }) => {
+  const handleComplete = () => {
+    console.log(`${tabId} section completed!`);
+    if (onComplete) {
+      onComplete(tabId);
+    }
+  };
+
+  if (!isActive) {
+    return null;
+  }
+
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      className="fixed right-4 top-24 w-64 bg-gray-800/90 backdrop-blur-sm rounded-lg p-4 border border-gray-700"
-    >
-      <div className="flex justify-between items-center mb-3">
-        <h4 className="text-sm font-semibold text-gray-200">Current Dataset</h4>
-        <button
-          onClick={() => setIsMinimized(true)}
-          className="text-gray-400 hover:text-gray-300"
-        >
-          ×
-        </button>
-      </div>
-      
-      <div className="space-y-2 text-sm">
-        <div className="p-2 bg-gray-900/50 rounded">
-          <span className="text-gray-400">Name:</span>
-          <span className="ml-2 text-gray-200">{dataset.name || 'Student Grades'}</span>
-        </div>
-        
-        <div className="p-2 bg-gray-900/50 rounded">
-          <span className="text-gray-400">Size:</span>
-          <span className="ml-2 text-gray-200">{dataset.values.length} values</span>
-        </div>
-        
-        {calculations.mean !== null && (
-          <div className="mt-3 pt-3 border-t border-gray-700 space-y-2">
-            <h5 className="text-xs font-semibold text-gray-300 uppercase">Calculations</h5>
-            {calculations.mean !== null && (
-              <div className="flex justify-between">
-                <span className="text-gray-400">Mean:</span>
-                <span className="text-gray-200 font-mono">{calculations.mean.toFixed(2)}</span>
-              </div>
-            )}
-            {calculations.median !== null && (
-              <div className="flex justify-between">
-                <span className="text-gray-400">Median:</span>
-                <span className="text-gray-200 font-mono">{calculations.median.toFixed(2)}</span>
-              </div>
-            )}
-            {calculations.stdDev !== null && (
-              <div className="flex justify-between">
-                <span className="text-gray-400">Std Dev:</span>
-                <span className="text-gray-200 font-mono">{calculations.stdDev.toFixed(2)}</span>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </motion.div>
+    <div className="w-full">
+      <Component onComplete={handleComplete} />
+    </div>
   );
 };
 
 // Main Page Component
 export default function DataDescriptionsPage() {
-  // Global state management
-  const [globalState, setGlobalState] = useState({
-    currentStage: 'introduction',
-    completedStages: [],
-    dataset: {
-      name: 'Student Grades',
-      values: defaultDataset,
-      source: 'preloaded'
-    },
-    calculations: {
-      mean: null,
-      median: null,
-      mode: null,
-      quartiles: { Q1: null, Q2: null, Q3: null },
-      variance: null,
-      stdDev: null,
-      outliers: []
-    },
-    userProgress: {
-      conceptsMastered: [],
-      exercisesCompleted: 0,
-      timeSpent: 0,
-      accuracy: null
-    }
-  });
+  const [activeTab, setActiveTab] = useState('4-1-1-intro');
+  const { completedTabs, markTabComplete } = useTabProgress();
 
-  // Update global state helper
-  const updateGlobalState = (updates) => {
-    setGlobalState(prev => ({
-      ...prev,
-      ...updates
-    }));
+  const handleTabComplete = (tabId) => {
+    markTabComplete(tabId);
   };
 
-  // Navigation logic
-  const navigateToStage = (stage) => {
-    setGlobalState(prev => ({
-      ...prev,
-      currentStage: stage,
-      completedStages: prev.currentStage !== stage && !prev.completedStages.includes(prev.currentStage) 
-        ? [...new Set([...prev.completedStages, prev.currentStage])]
-        : prev.completedStages
-    }));
-  };
-
-  // Stage completion handler
-  const handleStageComplete = (nextStage) => {
-    setGlobalState(prev => ({
-      ...prev,
-      completedStages: [...new Set([...prev.completedStages, prev.currentStage])],
-      currentStage: nextStage
-    }));
-  };
-
-  // Render current stage
-  const renderCurrentStage = () => {
-    switch (globalState.currentStage) {
-      case 'introduction':
-        return (
-          <IntroductionStage
-            globalState={globalState}
-            onComplete={() => handleStageComplete('journey')}
-          />
-        );
-      case 'journey':
-        return (
-          <JourneyStage
-            globalState={globalState}
-            updateGlobalState={updateGlobalState}
-            onComplete={() => handleStageComplete('foundations')}
-          />
-        );
-      case 'foundations':
-        return (
-          <FoundationsStage
-            globalState={globalState}
-            updateGlobalState={updateGlobalState}
-            onComplete={() => handleStageComplete('mathematical')}
-          />
-        );
-      case 'mathematical':
-        return (
-          <MathematicalStage
-            globalState={globalState}
-            onComplete={() => handleStageComplete('practice')}
-          />
-        );
-      case 'practice':
-        return (
-          <PracticeStage
-            globalState={globalState}
-            updateGlobalState={updateGlobalState}
-          />
-        );
-      default:
-        return <IntroductionStage globalState={globalState} onComplete={() => handleStageComplete('journey')} />;
-    }
-  };
-
-  // Load saved progress on mount
-  useEffect(() => {
-    const savedProgress = localStorage.getItem('dataDescriptionsProgress');
-    if (savedProgress) {
-      try {
-        const parsed = JSON.parse(savedProgress);
-        setGlobalState(prev => ({
-          ...prev,
-          ...parsed
-        }));
-      } catch (e) {
-        console.error('Failed to load saved progress:', e);
-      }
-    }
-  }, []);
-
-  // Save progress on state change
-  useEffect(() => {
-    if (globalState.completedStages.length > 0) {
-      localStorage.setItem('dataDescriptionsProgress', JSON.stringify({
-        completedStages: globalState.completedStages,
-        calculations: globalState.calculations,
-        userProgress: globalState.userProgress
-      }));
-    }
-  }, [globalState.completedStages, globalState.calculations, globalState.userProgress]);
+  const activeTabData = TABS.find(tab => tab.id === activeTab);
 
   return (
-    <VisualizationContainer className="data-descriptions-page max-w-7xl mx-auto">
+    <VisualizationContainer>
       <BackToHub />
       
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-100 mb-2">
-          Section 4.1: Data Descriptions
-        </h1>
-        <p className={cn(typography.description, "text-gray-300")}>
-          Master the fundamental tools of descriptive statistics through interactive exploration
+        <h1 className="text-3xl font-bold mb-2">Central Tendency & Data Descriptions</h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          Explore measures of central tendency: mean, median, and mode
         </p>
       </div>
-      
-      {/* Progress Navigator */}
-      <StageNavigator 
-        stages={stages}
-        current={globalState.currentStage}
-        completed={globalState.completedStages}
-        onNavigate={navigateToStage}
-      />
-      
-      {/* Main Content Area */}
-      <AnimatePresence mode="wait">
-        <Suspense fallback={<LoadingSpinner />}>
-          {renderCurrentStage()}
+
+      {/* Tab Navigation */}
+      <VisualizationSection className="bg-neutral-800/30 rounded-lg mb-6">
+        <div className="border-b border-neutral-700">
+          <div className="flex space-x-1 px-6 overflow-x-auto">
+            {TABS.map(({ id, label, icon: Icon, description, color }) => (
+              <button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap ${
+                  activeTab === id
+                    ? 'bg-neutral-700 text-white border-b-2'
+                    : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
+                }`}
+                style={{
+                  borderBottomColor: activeTab === id ? color : 'transparent'
+                }}
+              >
+                <Icon className="w-4 h-4" style={{ color: activeTab === id ? color : 'currentColor' }} />
+                <span>{label}</span>
+                {completedTabs.includes(id) && (
+                  <div className="w-2 h-2 bg-green-500 rounded-full ml-1" />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+        
+        {/* Active tab description */}
+        {activeTabData && (
+          <div className="px-6 py-4">
+            <div className="flex items-center gap-3">
+              <div 
+                className="p-2 rounded-lg"
+                style={{ backgroundColor: `${activeTabData.color}20` }}
+              >
+                <activeTabData.icon 
+                  className="w-5 h-5" 
+                  style={{ color: activeTabData.color }} 
+                />
+              </div>
+              <div>
+                <h3 className="font-semibold text-white">{activeTabData.label}</h3>
+                <p className="text-sm text-neutral-400">{activeTabData.description}</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </VisualizationSection>
+
+      {/* Tab Content */}
+      <motion.div
+        key={activeTab}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="max-w-6xl mx-auto"
+      >
+        <Suspense fallback={<LoadingComponent />}>
+          {TABS.map(tab => (
+            <ComponentWrapper
+              key={tab.id}
+              component={tab.component}
+              tabId={tab.id}
+              onComplete={handleTabComplete}
+              isActive={activeTab === tab.id}
+            />
+          ))}
         </Suspense>
-      </AnimatePresence>
-      
-      {/* Persistent Dataset Panel */}
-      <DatasetPanel 
-        dataset={globalState.dataset}
-        calculations={globalState.calculations}
-        minimized={globalState.currentStage === 'introduction'}
-      />
+      </motion.div>
+
+      {/* Progress indicator */}
+      <div className="fixed bottom-6 right-6 bg-neutral-800 rounded-lg p-3 shadow-lg border border-neutral-700">
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-neutral-400">Progress:</span>
+          <span className="font-semibold text-white">
+            {completedTabs.length}/{TABS.length}
+          </span>
+          <div className="flex gap-1 ml-2">
+            {TABS.map(tab => (
+              <div
+                key={tab.id}
+                className={`w-2 h-2 rounded-full ${
+                  completedTabs.includes(tab.id) 
+                    ? 'bg-green-500' 
+                    : activeTab === tab.id 
+                      ? 'bg-blue-500' 
+                      : 'bg-neutral-600'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
     </VisualizationContainer>
   );
 }
@@ -387,7 +305,7 @@ const IntroductionStage = ({ globalState, onComplete }) => {
       </div>
       
       <Suspense fallback={<LoadingSpinner />}>
-        <CentralTendencyIntuitiveIntro 
+        <CentralTendencyIntro 
           onInteraction={() => setHasInteracted(true)}
         />
       </Suspense>

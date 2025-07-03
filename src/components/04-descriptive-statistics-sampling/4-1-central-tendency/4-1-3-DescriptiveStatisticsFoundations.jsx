@@ -205,9 +205,18 @@ function DescriptiveStatisticsFoundations({ onComplete }) {
   
   // Render LaTeX
   useEffect(() => {
-    if (typeof window !== "undefined" && window.MathJax && mathRef.current) {
-      window.MathJax.typesetPromise([mathRef.current]).catch(console.error);
-    }
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && mathRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([mathRef.current]);
+        }
+        window.MathJax.typesetPromise([mathRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax(); // Try immediately
+    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
+    return () => clearTimeout(timeoutId);
   }, [currentSection, animationStep]);
   
   // Keyboard navigation

@@ -95,9 +95,25 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
   
   // Render LaTeX
   useEffect(() => {
-    if (typeof window !== "undefined" && window.MathJax && mathRef.current) {
-      window.MathJax.typesetPromise([mathRef.current]).catch(console.error);
-    }
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && mathRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([mathRef.current]);
+        }
+        window.MathJax.typesetPromise([mathRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax(); // Try immediately
+    const timeoutId1 = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
+    const timeoutId2 = setTimeout(processMathJax, 500); // Additional retry after 500ms
+    const timeoutId3 = setTimeout(processMathJax, 1000); // Final retry after 1s
+    
+    return () => {
+      clearTimeout(timeoutId1);
+      clearTimeout(timeoutId2);
+      clearTimeout(timeoutId3);
+    };
   }, [currentSection]);
   
   // Keyboard navigation

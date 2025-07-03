@@ -327,15 +327,11 @@ const RSquaredVisualization = ({ stats }) => {
       const innerWidth = width - margin.left - margin.right;
       const innerHeight = height - margin.top - margin.bottom;
       
-      // Create stacked bar
+      // Create data for the bar chart
       const data = [
         { type: "Explained", value: stats.rSquared * animationProgress },
         { type: "Unexplained", value: (1 - stats.rSquared) * animationProgress }
       ];
-      
-      const stack = d3.stack()
-        .keys(["value"])
-        .value((d, key) => d[key]);
       
       const xScale = d3.scaleLinear()
         .domain([0, 1])

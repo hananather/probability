@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 
 // Lazy load components for better performance
 const CLTGateway = lazy(() => import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions-new/4-3-3-CLTGateway'));
-const CLTPropertiesMerged = lazy(() => import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions-new/4-3-2-CLTProperties-merged'));
+const CLTPropertiesMerged = lazy(() => import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions-new/4-3-4-CLTProperties'));
 
 // Back to Hub button component - matches Chapter 6 style
 const BackToHub = ({ chapter = 4 }) => (

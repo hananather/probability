@@ -8,6 +8,8 @@ import { Button } from '../../ui/button';
 import { Card, CardContent } from '../../ui/card';
 import { VisualizationContainer, GraphContainer } from '@/components/ui/VisualizationContainer';
 import { RangeSlider } from '@/components/ui/RangeSlider';
+import { cn } from '../../../lib/utils';
+import { VisualizationSection } from '@/components/ui/VisualizationContainer';
 
 const CLTPropertiesMerged = () => {
   const [showTransformation, setShowTransformation] = useState(false);
@@ -75,11 +77,11 @@ const CLTPropertiesMerged = () => {
     
     gradient.append('stop')
       .attr('offset', '0%')
-      .attr('stop-color', '#1a1a2e');
+      .attr('stop-color', '#0f172a');
     
     gradient.append('stop')
       .attr('offset', '100%')
-      .attr('stop-color', '#16213e');
+      .attr('stop-color', '#1e293b');
 
     svg.append('rect')
       .attr('width', width)
@@ -118,7 +120,7 @@ const CLTPropertiesMerged = () => {
       .attr('text-anchor', 'middle')
       .style('font-weight', 'bold')
       .style('font-size', '16px')
-      .style('fill', '#fbbf24')
+      .style('fill', '#facc15')
       .text('Original Distribution')
       .style('opacity', 0)
       .transition()
@@ -134,7 +136,7 @@ const CLTPropertiesMerged = () => {
       .attr('y', plotHeight)
       .attr('width', d => xLeft(d.x1) - xLeft(d.x0) - 1)
       .attr('height', 0)
-      .attr('fill', '#f59e0b')
+      .attr('fill', '#fbbf24')
       .attr('opacity', 0.8)
       .transition()
       .duration(800)
@@ -164,7 +166,7 @@ const CLTPropertiesMerged = () => {
 
       arrow.append('path')
         .attr('d', 'M 0,0 L 40,0')
-        .attr('stroke', '#3b82f6')
+        .attr('stroke', '#60a5fa')
         .attr('stroke-width', 2)
         .attr('marker-end', 'url(#arrowhead)')
         .attr('stroke-dasharray', '40')
@@ -200,7 +202,7 @@ const CLTPropertiesMerged = () => {
         .attr('orient', 'auto')
         .append('polygon')
         .attr('points', '0,0 10,5 0,10')
-        .attr('fill', '#3b82f6');
+        .attr('fill', '#60a5fa');
 
       // "CLT Magic" text
       arrow.append('text')
@@ -255,7 +257,7 @@ const CLTPropertiesMerged = () => {
         .attr('y', plotHeight)
         .attr('width', d => xRight(d.x1) - xRight(d.x0) - 1)
         .attr('height', 0)
-        .attr('fill', '#10b981')
+        .attr('fill', '#34d399')
         .attr('opacity', 0.8)
         .transition()
         .duration(1000)
@@ -571,15 +573,16 @@ const CLTPropertiesMerged = () => {
   };
 
   return (
-    <VisualizationContainer title="Central Limit Theorem & Sampling Distribution Properties">
+    <VisualizationSection>
       <div ref={contentRef} className="space-y-8">
+        <h2 className="text-3xl font-bold text-blue-400 mb-4">Central Limit Theorem & Sampling Distribution Properties</h2>
         {/* CLT Introduction */}
-        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-8">
+        <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 rounded-xl p-8 border border-blue-600/30">
           <div className="flex items-start gap-4 mb-6">
-            <Sparkles className="w-8 h-8 text-indigo-600 flex-shrink-0 mt-1" />
+            <Sparkles className="w-8 h-8 text-blue-400 flex-shrink-0 mt-1" />
             <div>
-              <h2 className="text-2xl font-bold mb-3">The Magic of the Central Limit Theorem</h2>
-              <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
+              <h2 className="text-2xl font-bold text-blue-400 mb-3">The Magic of the Central Limit Theorem</h2>
+              <p className="text-neutral-300 leading-relaxed">
                 One of the most remarkable results in statistics: no matter what shape your original 
                 distribution has, the distribution of sample means approaches a normal distribution 
                 as sample size increases.
@@ -597,7 +600,7 @@ const CLTPropertiesMerged = () => {
                 <Button
                   onClick={() => setShowTransformation(true)}
                   size="lg"
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold px-8 py-3"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-3"
                 >
                   <Zap className="w-5 h-5 mr-2" />
                   See the Transformation
@@ -610,7 +613,7 @@ const CLTPropertiesMerged = () => {
                 transition={{ duration: 0.5 }}
                 className="space-y-6"
               >
-                <GraphContainer height="350px" className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg shadow-xl">
+                <GraphContainer height="350px" className="bg-gradient-to-br from-neutral-900 to-neutral-800 rounded-lg border border-blue-600/30">
                   <svg ref={transformationRef} style={{ width: '100%', height: 350 }} />
                 </GraphContainer>
                 
@@ -621,7 +624,7 @@ const CLTPropertiesMerged = () => {
                     transition={{ delay: 0.5 }}
                     className="space-y-6"
                   >
-                    <h3 className="text-xl font-bold text-center">
+                    <h3 className="text-xl font-semibold text-teal-400 text-center">
                       How Sample Size Affects the Distribution
                     </h3>
                     
@@ -645,7 +648,7 @@ const CLTPropertiesMerged = () => {
                           )}
                         </Button>
                         
-                        <div className="text-sm text-gray-400">
+                        <div className="text-sm text-neutral-400">
                           Or adjust manually:
                         </div>
                         
@@ -660,21 +663,21 @@ const CLTPropertiesMerged = () => {
                         />
                       </div>
                       
-                      <GraphContainer height="400px" className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg shadow-xl w-full">
+                      <GraphContainer height="400px" className="bg-gradient-to-br from-neutral-900 to-neutral-800 rounded-lg border border-blue-600/30 w-full">
                         <svg ref={sizeComparisonRef} style={{ width: '100%', height: 400 }} />
                       </GraphContainer>
                       
                       <div className="grid grid-cols-3 gap-4 text-center">
-                        <div className="p-4 bg-gray-900/50 rounded-lg">
-                          <div className="text-sm text-gray-400">Sample Size</div>
+                        <div className="p-4 bg-neutral-900/50 rounded-lg border border-blue-600/20">
+                          <div className="text-sm text-neutral-400">Sample Size</div>
                           <div className="text-2xl font-bold text-white">n = {sampleSize}</div>
                         </div>
-                        <div className="p-4 bg-gray-900/50 rounded-lg">
-                          <div className="text-sm text-gray-400">Standard Error</div>
+                        <div className="p-4 bg-neutral-900/50 rounded-lg border border-blue-600/20">
+                          <div className="text-sm text-neutral-400">Standard Error</div>
                           <div className="text-2xl font-bold text-blue-400">SE = {(15 / Math.sqrt(sampleSize)).toFixed(2)}</div>
                         </div>
-                        <div className="p-4 bg-gray-900/50 rounded-lg">
-                          <div className="text-sm text-gray-400">Shape</div>
+                        <div className="p-4 bg-neutral-900/50 rounded-lg border border-blue-600/20">
+                          <div className="text-sm text-neutral-400">Shape</div>
                           <div className="text-xl font-bold text-green-400">
                             {sampleSize < 30 ? 'Approaching' : 'Normal'}
                           </div>
@@ -696,12 +699,12 @@ const CLTPropertiesMerged = () => {
                 <Activity className="w-6 h-6 text-green-400" />
                 <h4 className="text-lg font-bold text-green-400">Shape Normalization</h4>
               </div>
-              <p className="text-sm text-gray-300 mb-4">
+              <p className="text-sm text-neutral-300 mb-4">
                 As n increases, the sampling distribution becomes increasingly normal, 
                 even if the population is skewed.
               </p>
-              <div className="p-4 bg-gray-900/50 rounded-lg">
-                <div className="text-xs font-mono text-gray-400 mb-2">Rule of Thumb:</div>
+              <div className="p-4 bg-neutral-900 rounded-lg border border-green-600/20">
+                <div className="text-xs font-mono text-neutral-400 mb-2">Rule of Thumb:</div>
                 <div className="text-lg font-bold text-white">n ≥ 30 → Normal</div>
               </div>
             </CardContent>
@@ -713,12 +716,12 @@ const CLTPropertiesMerged = () => {
                 <TrendingDown className="w-6 h-6 text-purple-400" />
                 <h4 className="text-lg font-bold text-purple-400">Variance Reduction</h4>
               </div>
-              <p className="text-sm text-gray-300 mb-4">
+              <p className="text-sm text-neutral-300 mb-4">
                 The spread decreases with the square root of sample size. Larger samples 
                 give more precise estimates.
               </p>
-              <div className="p-4 bg-gray-900/50 rounded-lg">
-                <div className="text-xs font-mono text-gray-400 mb-2">Standard Error:</div>
+              <div className="p-4 bg-neutral-900 rounded-lg border border-purple-600/20">
+                <div className="text-xs font-mono text-neutral-400 mb-2">Standard Error:</div>
                 <div className="text-lg font-bold text-white">
                   <span dangerouslySetInnerHTML={{ __html: `\\(\\text{SE} = \\sigma/\\sqrt{n}\\)` }} />
                 </div>
@@ -732,12 +735,12 @@ const CLTPropertiesMerged = () => {
                 <Zap className="w-6 h-6 text-blue-400" />
                 <h4 className="text-lg font-bold text-blue-400">√n Relationship</h4>
               </div>
-              <p className="text-sm text-gray-300 mb-4">
+              <p className="text-sm text-neutral-300 mb-4">
                 To cut the standard error in half, you need 4× the sample size. 
                 This is the law of diminishing returns.
               </p>
-              <div className="p-4 bg-gray-900/50 rounded-lg">
-                <div className="text-xs font-mono text-gray-400 mb-2">Example:</div>
+              <div className="p-4 bg-neutral-900 rounded-lg border border-blue-600/20">
+                <div className="text-xs font-mono text-neutral-400 mb-2">Example:</div>
                 <div className="text-lg font-bold text-white">n: 25→100, SE: ÷2</div>
               </div>
             </CardContent>
@@ -746,44 +749,44 @@ const CLTPropertiesMerged = () => {
 
         {/* Mathematical Foundation */}
         <div className="grid md:grid-cols-2 gap-6">
-          <Card className="bg-gray-900 border-gray-700">
+          <Card className="bg-neutral-800 border-blue-600/30">
             <CardContent className="p-6">
-              <h3 className="text-xl font-bold mb-4">Formal Statement</h3>
+              <h3 className="text-xl font-semibold text-teal-400 mb-4">Formal Statement</h3>
               <div className="space-y-4">
-                <div className="p-4 bg-gray-800 rounded-lg font-mono text-sm">
+                <div className="p-4 bg-neutral-900 rounded-lg font-mono text-sm border border-blue-600/20">
                   <p className="mb-2">If <span dangerouslySetInnerHTML={{ __html: `\\(X_1, X_2, ..., X_n\\)` }} /> are i.i.d. with:</p>
-                  <p className="ml-4 text-gray-300">• <span dangerouslySetInnerHTML={{ __html: `\\(E[X_i] = \\mu\\)` }} /></p>
-                  <p className="ml-4 text-gray-300">• <span dangerouslySetInnerHTML={{ __html: `\\(\\text{Var}(X_i) = \\sigma^2 < \\infty\\)` }} /></p>
+                  <p className="ml-4 text-neutral-300">• <span dangerouslySetInnerHTML={{ __html: `\\(E[X_i] = \\mu\\)` }} /></p>
+                  <p className="ml-4 text-neutral-300">• <span dangerouslySetInnerHTML={{ __html: `\\(\\text{Var}(X_i) = \\sigma^2 < \\infty\\)` }} /></p>
                   <p className="mt-3">Then as <span dangerouslySetInnerHTML={{ __html: `\\(n \\to \\infty\\)` }} />:</p>
                   <p className="ml-4 text-green-400 font-semibold text-base">
                     <span dangerouslySetInnerHTML={{ __html: `\\(\\sqrt{n}(\\bar{X}_n - \\mu)/\\sigma \\to N(0, 1)\\)` }} />
                   </p>
                 </div>
-                <p className="text-gray-400 text-sm">
+                <p className="text-neutral-400 text-sm">
                   In practice, n ≥ 30 often gives a good approximation.
                 </p>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gray-900 border-gray-700">
+          <Card className="bg-neutral-800 border-blue-600/30">
             <CardContent className="p-6">
-              <h3 className="text-xl font-bold mb-4">Key Formulas</h3>
+              <h3 className="text-xl font-semibold text-teal-400 mb-4">Key Formulas</h3>
               <div className="space-y-3">
-                <div className="p-3 bg-gray-800 rounded-lg">
-                  <div className="text-gray-400 text-sm mb-1">Mean of sampling distribution:</div>
+                <div className="p-3 bg-neutral-900 rounded-lg border border-blue-600/20">
+                  <div className="text-neutral-400 text-sm mb-1">Mean of sampling distribution:</div>
                   <div className="font-mono text-white text-lg">
                     <span dangerouslySetInnerHTML={{ __html: `\\(\\mu_{\\bar{x}} = \\mu\\)` }} />
                   </div>
                 </div>
-                <div className="p-3 bg-gray-800 rounded-lg">
-                  <div className="text-gray-400 text-sm mb-1">Standard error of the mean:</div>
+                <div className="p-3 bg-neutral-900 rounded-lg border border-blue-600/20">
+                  <div className="text-neutral-400 text-sm mb-1">Standard error of the mean:</div>
                   <div className="font-mono text-white text-lg">
                     <span dangerouslySetInnerHTML={{ __html: `\\(\\sigma_{\\bar{x}} = \\sigma/\\sqrt{n}\\)` }} />
                   </div>
                 </div>
-                <div className="p-3 bg-gray-800 rounded-lg">
-                  <div className="text-gray-400 text-sm mb-1">Distribution shape (CLT):</div>
+                <div className="p-3 bg-neutral-900 rounded-lg border border-blue-600/20">
+                  <div className="text-neutral-400 text-sm mb-1">Distribution shape (CLT):</div>
                   <div className="font-mono text-white text-lg">
                     <span dangerouslySetInnerHTML={{ __html: `\\(\\bar{X} \\sim N(\\mu, \\sigma^2/n)\\)` }} />
                   </div>
@@ -794,39 +797,39 @@ const CLTPropertiesMerged = () => {
         </div>
 
         {/* Key Conditions */}
-        <Card className="bg-gray-900 border-gray-700">
+        <Card className="bg-neutral-800 border-blue-600/30">
           <CardContent className="p-6">
-            <h3 className="text-xl font-bold mb-6">CLT Conditions</h3>
+            <h3 className="text-xl font-semibold text-teal-400 mb-6">CLT Conditions</h3>
             <div className="grid md:grid-cols-3 gap-4">
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-blue-900 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-blue-900/50 flex items-center justify-center flex-shrink-0 border border-blue-600/30">
                   <span className="text-sm font-bold text-blue-400">1</span>
                 </div>
                 <div>
                   <p className="font-semibold text-white">Independence</p>
-                  <p className="text-sm text-gray-400 mt-1">
+                  <p className="text-sm text-neutral-400 mt-1">
                     Observations must be independent
                   </p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-blue-900 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-blue-900/50 flex items-center justify-center flex-shrink-0 border border-blue-600/30">
                   <span className="text-sm font-bold text-blue-400">2</span>
                 </div>
                 <div>
                   <p className="font-semibold text-white">Identical Distribution</p>
-                  <p className="text-sm text-gray-400 mt-1">
+                  <p className="text-sm text-neutral-400 mt-1">
                     All observations from same distribution
                   </p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-blue-900 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-blue-900/50 flex items-center justify-center flex-shrink-0 border border-blue-600/30">
                   <span className="text-sm font-bold text-blue-400">3</span>
                 </div>
                 <div>
                   <p className="font-semibold text-white">Finite Variance</p>
-                  <p className="text-sm text-gray-400 mt-1">
+                  <p className="text-sm text-neutral-400 mt-1">
                     The variance must exist and be finite
                   </p>
                 </div>
@@ -836,16 +839,16 @@ const CLTPropertiesMerged = () => {
         </Card>
 
         {/* Practical Implications */}
-        <Card className="bg-gradient-to-r from-gray-900 to-gray-800 border-gray-700">
+        <Card className="bg-gradient-to-r from-neutral-900 to-neutral-800 border-blue-600/30">
           <CardContent className="p-6">
-            <h3 className="text-xl font-bold mb-4">What This Means for You</h3>
+            <h3 className="text-xl font-semibold text-blue-400 mb-4">What This Means for You</h3>
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
                   <ArrowRight className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="font-semibold text-white">Precision vs Cost</p>
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-neutral-400">
                       Quadrupling sample size only doubles precision - balance your needs
                     </p>
                   </div>
@@ -854,7 +857,7 @@ const CLTPropertiesMerged = () => {
                   <ArrowRight className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="font-semibold text-white">Universal Application</p>
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-neutral-400">
                       CLT justifies using normal-based methods even for non-normal data
                     </p>
                   </div>
@@ -865,7 +868,7 @@ const CLTPropertiesMerged = () => {
                   <ArrowRight className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="font-semibold text-white">Faster for Symmetric Data</p>
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-neutral-400">
                       CLT works faster when the population is already symmetric
                     </p>
                   </div>
@@ -874,7 +877,7 @@ const CLTPropertiesMerged = () => {
                   <ArrowRight className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="font-semibold text-white">Foundation of Inference</p>
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-neutral-400">
                       This theorem underpins confidence intervals and hypothesis testing
                     </p>
                   </div>
@@ -884,7 +887,7 @@ const CLTPropertiesMerged = () => {
           </CardContent>
         </Card>
       </div>
-    </VisualizationContainer>
+    </VisualizationSection>
   );
 };
 

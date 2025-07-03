@@ -15,14 +15,14 @@ import { cn } from '@/lib/utils';
 import { typography, colors } from '@/lib/design-system';
 
 // Lazy load all components
-const TDistributionExplorer = lazy(() => import('@/components/04-descriptive-statistics-sampling/4-4-1-TDistributionExplorer'));
-const FDistributionIntuitiveIntro = lazy(() => import('@/components/04-descriptive-statistics-sampling/4-5-1-FDistributionIntuitiveIntro'));
-const FDistributionExplorer = lazy(() => import('@/components/04-descriptive-statistics-sampling/4-5-1-FDistributionExplorer'));
-const FDistributionInteractiveJourney = lazy(() => import('@/components/04-descriptive-statistics-sampling/4-5-2-FDistributionInteractiveJourney'));
-const FDistributionWorkedExample = lazy(() => import('@/components/04-descriptive-statistics-sampling/4-5-2-FDistributionWorkedExample'));
-const FDistributionMasterclass = lazy(() => import('@/components/04-descriptive-statistics-sampling/4-5-3-FDistributionMasterclass'));
-const FDistributionMastery = lazy(() => import('@/components/04-descriptive-statistics-sampling/4-5-3-FDistributionMastery'));
-const FDistributionJourney = lazy(() => import('@/components/04-descriptive-statistics-sampling/4-5-4-FDistributionJourney'));
+const TDistributionExplorer = lazy(() => import('@/components/04-descriptive-statistics-sampling/4-4-central-limit-theorem/4-4-1-TDistributionExplorer'));
+const FDistributionIntuitiveIntro = lazy(() => import('@/components/04-descriptive-statistics-sampling/4-5-advanced-sampling/4-5-1-FDistributionIntuitiveIntro'));
+const FDistributionExplorer = lazy(() => import('@/components/04-descriptive-statistics-sampling/4-5-advanced-sampling/4-5-1-FDistributionExplorer'));
+const FDistributionInteractiveJourney = lazy(() => import('@/components/04-descriptive-statistics-sampling/4-5-advanced-sampling/4-5-2-FDistributionInteractiveJourney'));
+const FDistributionWorkedExample = lazy(() => import('@/components/04-descriptive-statistics-sampling/4-5-advanced-sampling/4-5-2-FDistributionWorkedExample'));
+const FDistributionMasterclass = lazy(() => import('@/components/04-descriptive-statistics-sampling/4-5-advanced-sampling/4-5-3-FDistributionMasterclass'));
+const FDistributionMastery = lazy(() => import('@/components/04-descriptive-statistics-sampling/4-5-advanced-sampling/4-5-3-FDistributionMastery'));
+const FDistributionJourney = lazy(() => import('@/components/04-descriptive-statistics-sampling/4-5-advanced-sampling/4-5-4-FDistributionJourney'));
 
 // Topic Navigator Component
 const TopicNavigator = ({ topics, current, onChange, progress }) => {
