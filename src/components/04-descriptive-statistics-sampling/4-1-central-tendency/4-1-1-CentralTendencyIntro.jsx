@@ -11,7 +11,9 @@ import { colors, typography, formatNumber, cn, createColorScheme } from '@/lib/d
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProgressBar } from '@/components/ui/ProgressBar';
-import { Calculator, Target, BarChart3, TrendingUp } from 'lucide-react';
+import { InteractiveJourneyNavigation } from '@/components/ui/InteractiveJourneyNavigation';
+import BackToHub from '@/components/ui/BackToHub';
+import { Calculator, Target, BarChart3, TrendingUp, CheckCircle2, XCircle, HelpCircle } from 'lucide-react';
 
 // Color scheme for central tendency
 const measureColors = {
@@ -21,6 +23,170 @@ const measureColors = {
   data: '#6b7280',      // Gray
   highlight: '#8b5cf6', // Purple
 };
+
+// Practice Problems Component
+const PracticeProblems = React.memo(function PracticeProblems({ mathRef }) {
+  const [answers, setAnswers] = useState({});
+  const [showSolutions, setShowSolutions] = useState({});
+  const [confidence, setConfidence] = useState({});
+  const [timeSpent, setTimeSpent] = useState({});
+  const [startTime, setStartTime] = useState({});
+  
+  const problems = [
+    {
+      id: 'p1',
+      difficulty: 'Easy',
+      points: 5,
+      examFrequency: 'Very Common',
+      question: 'A quality control engineer measures 6 components: 12.1, 11.9, 12.3, 12.0, 12.2, 13.5 mm. Calculate the mean, median, and mode.',
+      hint: 'Remember to sort for median!',
+      solution: {
+        mean: 12.33,
+        median: 12.15,
+        mode: 'No mode',
+        explanation: 'Step 1: Mean = (12.1 + 11.9 + 12.3 + 12.0 + 12.2 + 13.5) / 6 = 74.0 / 6 = 12.33\n\nStep 2: Sort data: 11.9, 12.0, 12.1, 12.2, 12.3, 13.5\nMedian = (12.1 + 12.2) / 2 = 12.15 (middle two values)\n\nStep 3: Mode = No repeated values'
+      }
+    },
+    {
+      id: 'p2',
+      question: 'House prices in a neighborhood (in thousands): 250, 280, 300, 320, 350, 850. Which measure best represents a typical house price?',
+      solution: {
+        answer: 'Median',
+        mean: 391.67,
+        median: 310,
+        explanation: 'The median (310) is best because the 850 is an outlier that pulls the mean (391.67) much higher than most houses.'
+      }
+    },
+    {
+      id: 'p3',
+      question: 'Exam scores have mean = 68, median = 72, mode = 78. What is the shape of the distribution?',
+      solution: {
+        answer: 'Left-skewed (negative skew)',
+        explanation: 'When mean < median < mode, the distribution is left-skewed. The tail extends to the left (lower scores).'
+      }
+    }
+  ];
+  
+  const handleAnswer = (problemId, value) => {
+    setAnswers({ ...answers, [problemId]: value });
+  };
+  
+  const toggleSolution = (problemId) => {
+    setShowSolutions({ ...showSolutions, [problemId]: !showSolutions[problemId] });
+  };
+  
+  return (
+    <div className="space-y-4" ref={mathRef}>
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-bold text-white">Practice Problems</h3>
+        <div className="text-sm text-neutral-400">
+          🎯 Total Points: {problems.reduce((sum, p) => sum + p.points, 0)}
+        </div>
+      </div>
+      <p className="text-neutral-300">
+        Test your understanding with these exam-style problems.
+      </p>
+      
+      {/* Confidence Tracker */}
+      <div className="bg-purple-900/20 border border-purple-600/30 p-3 rounded-lg">
+        <p className="text-xs font-semibold text-purple-400 mb-2">💪 Your Confidence Level:</p>
+        <div className="flex gap-4">
+          <span className={cn(
+            "text-xs",
+            Object.values(confidence).filter(c => c === 'high').length >= 2 ? "text-green-400" : "text-neutral-400"
+          )}>
+            ✅ Ready for exam
+          </span>
+          <span className={cn(
+            "text-xs",
+            Object.values(confidence).filter(c => c === 'medium').length >= 2 ? "text-amber-400" : "text-neutral-400"
+          )}>
+            🛠 Need more practice
+          </span>
+          <span className={cn(
+            "text-xs",
+            Object.values(confidence).filter(c => c === 'low').length >= 1 ? "text-red-400" : "text-neutral-400"
+          )}>
+            🆘 Review material
+          </span>
+        </div>
+      </div>
+      
+      {problems.map((problem, idx) => (
+        <div key={problem.id} className="bg-neutral-900 p-4 rounded-lg space-y-3">
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-2 flex-1">
+              <span className="text-purple-400 font-bold">Q{idx + 1}.</span>
+              <div className="flex-1">
+                <p className="text-neutral-300">{problem.question}</p>
+                <div className="flex gap-3 mt-2 text-xs">
+                  <span className={cn(
+                    "px-2 py-1 rounded",
+                    problem.difficulty === 'Easy' ? "bg-green-900/50 text-green-300" :
+                    problem.difficulty === 'Medium' ? "bg-amber-900/50 text-amber-300" :
+                    "bg-red-900/50 text-red-300"
+                  )}>
+                    {problem.difficulty}
+                  </span>
+                  <span className="px-2 py-1 bg-purple-900/50 text-purple-300 rounded">
+                    {problem.points} pts
+                  </span>
+                  <span className="px-2 py-1 bg-blue-900/50 text-blue-300 rounded">
+                    📈 {problem.examFrequency}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="ml-6">
+            <input
+              type="text"
+              className="w-full bg-neutral-800 text-white p-2 rounded border border-neutral-700 focus:border-purple-500 focus:outline-none"
+              placeholder="Enter your answer..."
+              value={answers[problem.id] || ''}
+              onChange={(e) => handleAnswer(problem.id, e.target.value)}
+            />
+          </div>
+          
+          <div className="ml-6 flex gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => toggleSolution(problem.id)}
+            >
+              {showSolutions[problem.id] ? 'Hide Solution' : 'Show Solution'}
+            </Button>
+          </div>
+          
+          {showSolutions[problem.id] && (
+            <div className="ml-6 bg-purple-900/20 border border-purple-600/30 p-3 rounded">
+              <p className="text-sm font-semibold text-purple-400 mb-2">Solution:</p>
+              <p className="text-sm text-neutral-300 whitespace-pre-line">
+                {problem.solution.explanation}
+              </p>
+              {problem.solution.answer && (
+                <p className="text-sm text-green-400 mt-2">
+                  Answer: {problem.solution.answer}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      ))}
+      
+      <div className="bg-amber-900/20 border border-amber-600/30 p-4 rounded-lg">
+        <p className="text-sm font-semibold text-amber-400 mb-2">Study Tips:</p>
+        <ul className="text-sm text-neutral-300 space-y-1">
+          <li>• Always sort data before finding the median</li>
+          <li>• Check for outliers - they affect the mean most</li>
+          <li>• Remember: mean is pulled toward the tail in skewed distributions</li>
+          <li>• For categorical data, only mode makes sense</li>
+        </ul>
+      </div>
+    </div>
+  );
+});
 
 // Learning sections
 const SECTIONS = [
@@ -53,15 +219,37 @@ const SECTIONS = [
     title: 'Comparing Measures',
     icon: TrendingUp,
     description: 'When to use each measure'
+  },
+  {
+    id: 'practice',
+    title: 'Practice Problems',
+    icon: Calculator,
+    description: 'Test your understanding'
   }
 ];
 
 // Sample dataset for demonstrations - designed to show clear differences
 const DEMO_DATA = [1, 2, 2, 2, 3, 4, 5, 6, 7, 8, 20, 25];
 
+// Engineering example data - measurement errors
+const ENGINEERING_DATA = {
+  title: "Component Thickness Measurements (mm)",
+  data: [9.8, 9.9, 10.0, 10.0, 10.1, 10.1, 10.2, 10.3, 10.4, 11.5],
+  context: "Quality control measurements with one potentially defective component"
+};
+
+// Exam score data
+const EXAM_DATA = {
+  title: "Statistics Midterm Scores",
+  data: [45, 52, 58, 62, 65, 68, 70, 72, 75, 78, 82, 85, 88, 92, 98],
+  context: "Class performance on recent midterm exam"
+};
+
 function CentralTendencyIntuitiveIntro({ onComplete }) {
   const [currentSection, setCurrentSection] = useState(0);
   const [data] = useState(DEMO_DATA);
+  const [microQuizAnswers, setMicroQuizAnswers] = useState({});
+  const [showQuizFeedback, setShowQuizFeedback] = useState({});
   const svgRef = useRef(null);
   const mathRef = useRef(null);
   const [hasCompleted, setHasCompleted] = useState(false);
@@ -658,24 +846,95 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
       case 0:
         return (
           <div className="space-y-4" ref={mathRef}>
+            {/* Attention-Grabbing Opening */}
+            <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 p-4 rounded-lg mb-4">
+              <h3 className="text-lg font-bold text-white mb-2">🎯 Real Scenario:</h3>
+              <p className="text-neutral-300">
+                Your professor announces: "The class average was 72% on the midterm." 
+                But wait... <strong className="text-amber-400">half the class failed!</strong> How is this possible?
+              </p>
+              <p className="text-sm text-neutral-400 mt-2">
+                Understanding central tendency will help you decode what statistics really mean - and ace your exams!
+              </p>
+            </div>
+            
             <h3 className="text-xl font-bold text-white">What is a Measure of Central Tendency?</h3>
             <p className="text-neutral-300">
               A measure of central tendency is a single value that represents the center or typical value of a dataset. 
               It provides a summary of where the data tends to cluster.
             </p>
-            <div className="bg-neutral-900 p-4 rounded-lg">
-              <p className="text-sm text-neutral-400 mb-2">Key Properties:</p>
-              <ul className="list-disc list-inside text-neutral-300 space-y-1">
-                <li>Represents the "typical" or "central" value</li>
-                <li>Reduces a dataset to a single number</li>
-                <li>Different measures capture different aspects of "center"</li>
+            
+            {/* What's In It For Me? */}
+            <div className="bg-amber-900/20 border border-amber-600/30 p-4 rounded-lg">
+              <p className="text-sm font-semibold text-amber-400 mb-2">🎓 What's In It For You?</p>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="flex items-start gap-2">
+                  <span className="text-green-400">✓</span>
+                  <span className="text-neutral-300"><strong>15%</strong> of exam questions</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-green-400">✓</span>
+                  <span className="text-neutral-300">Foundation for <strong>60%</strong> of course</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-green-400">✓</span>
+                  <span className="text-neutral-300">Used in <strong>every</strong> assignment</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-green-400">✓</span>
+                  <span className="text-neutral-300"><strong>5 min</strong> to learn basics</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Learning Objectives */}
+            <div className="bg-purple-900/20 border border-purple-600/30 p-4 rounded-lg">
+              <p className="text-sm font-semibold text-purple-400 mb-2">Learning Objectives:</p>
+              <ul className="list-disc list-inside text-neutral-300 space-y-1 text-sm">
+                <li>Calculate and interpret mean, median, and mode</li>
+                <li>Choose the appropriate measure for different data types</li>
+                <li>Understand the effect of outliers on each measure</li>
+                <li>Apply these concepts to exam-style problems</li>
               </ul>
             </div>
+            
+            {/* Visual Memory Aid */}
+            <div className="bg-neutral-900 p-4 rounded-lg">
+              <p className="text-sm text-neutral-400 mb-3">🧠 Quick Visual Memory Aid:</p>
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div className="bg-blue-900/20 p-3 rounded">
+                  <p className="text-2xl mb-1">⚖️</p>
+                  <p className="text-xs font-semibold text-blue-400">Mean</p>
+                  <p className="text-xs text-neutral-400">Balance point</p>
+                </div>
+                <div className="bg-green-900/20 p-3 rounded">
+                  <p className="text-2xl mb-1">🚶</p>
+                  <p className="text-xs font-semibold text-green-400">Median</p>
+                  <p className="text-xs text-neutral-400">Middle person</p>
+                </div>
+                <div className="bg-amber-900/20 p-3 rounded">
+                  <p className="text-2xl mb-1">👑</p>
+                  <p className="text-xs font-semibold text-amber-400">Mode</p>
+                  <p className="text-xs text-neutral-400">Most popular</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Real-world Context */}
+            <div className="bg-neutral-800/50 p-4 rounded-lg">
+              <p className="text-sm font-semibold text-blue-400 mb-2">Why This Matters:</p>
+              <p className="text-sm text-neutral-300">
+                In engineering: Summarizing measurement data, quality control<br/>
+                In research: Describing experimental results<br/>
+                In exams: <strong>~15% of statistics exam questions</strong> involve central tendency
+              </p>
+            </div>
+            
             <p className="text-neutral-300">
-              Our sample dataset: <span className="font-mono text-blue-400">{data.slice(0, -1).join(', ')}, <span className="text-red-400">{data[data.length - 1]}</span></span>
+              Our sample dataset: <span className="font-mono text-blue-400">{data.slice(0, -2).join(', ')}, <span className="text-amber-400">{data[data.length - 2]}</span>, <span className="text-red-400">{data[data.length - 1]}</span></span>
             </p>
             <p className="text-sm text-neutral-400 mt-2">
-              Note: The value <span className="text-red-400">15</span> is an outlier that will affect our measures differently.
+              Note: The values <span className="text-amber-400">20</span> and <span className="text-red-400">25</span> are potential outliers that will affect our measures differently.
             </p>
           </div>
         );
@@ -683,10 +942,12 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
       case 1:
         return (
           <div className="space-y-4" ref={mathRef}>
-            <h3 className="text-xl font-bold text-white">Arithmetic Mean</h3>
+            <h3 className="text-xl font-bold text-white mb-2">Arithmetic Mean</h3>
             <p className="text-neutral-300">
               The arithmetic mean is the sum of all values divided by the number of values.
             </p>
+            
+            {/* Formula with Step-by-Step */}
             <div className="bg-neutral-900 p-4 rounded-lg">
               <p className="text-center text-lg">
                 <span dangerouslySetInnerHTML={{ 
@@ -697,6 +958,25 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
                 Key property: <span dangerouslySetInnerHTML={{ __html: `\\(\\sum_{i=1}^{n} (x_i - \\bar{x}) = 0\\)` }} />
               </p>
             </div>
+            
+            {/* Exam-Style Example */}
+            <div className="bg-amber-900/20 border border-amber-600/30 p-4 rounded-lg">
+              <p className="text-sm font-semibold text-amber-400 mb-2">Exam Example:</p>
+              <p className="text-sm text-neutral-300 mb-2">
+                A quality control engineer measures 5 components: 10.1, 9.9, 10.2, 10.0, 10.3 mm.
+                Calculate the mean and interpret.
+              </p>
+              <div className="bg-neutral-900/50 p-3 rounded mt-2">
+                <p className="text-xs text-neutral-400">Solution:</p>
+                <p className="text-sm font-mono text-blue-300">
+                  x̄ = (10.1 + 9.9 + 10.2 + 10.0 + 10.3) / 5 = 50.5 / 5 = 10.1 mm
+                </p>
+                <p className="text-xs text-neutral-300 mt-1">
+                  The average thickness is 10.1 mm, suggesting the manufacturing process is centered slightly above the 10.0 mm target.
+                </p>
+              </div>
+            </div>
+            
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-neutral-900 p-3 rounded">
                 <p className="text-sm font-semibold text-blue-400">Properties</p>
@@ -713,16 +993,63 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
                   <li>• Data is symmetric</li>
                   <li>• No extreme outliers</li>
                   <li>• All values matter equally</li>
+                  <li>• Need further calculations</li>
                 </ul>
               </div>
             </div>
+            
+            {/* Standard Error Preview */}
+            <div className="mt-4 p-3 bg-purple-900/20 border border-purple-600/30 rounded">
+              <p className="text-xs font-semibold text-purple-400 mb-2">Preview: Standard Error</p>
+              <p className="text-xs text-neutral-300">
+                When we take a sample, the sample mean x̄ estimates the population mean μ.
+                The standard error <span dangerouslySetInnerHTML={{ __html: `\\(SE = \\frac{s}{\\sqrt{n}}\\)` }} /> tells us how precise this estimate is.
+              </p>
+            </div>
+            
             <div className="mt-4 p-3 bg-neutral-800 rounded">
               <p className="text-xs font-semibold text-purple-400 mb-2">Other Types of Means</p>
               <div className="space-y-1 text-xs text-neutral-300">
-                <div>• <strong>Weighted Mean:</strong> <span dangerouslySetInnerHTML={{ __html: `\\(\\bar{x}_w = \\frac{\\sum w_i x_i}{\\sum w_i}\\)` }} /></div>
-                <div>• <strong>Geometric Mean:</strong> <span dangerouslySetInnerHTML={{ __html: `\\((\\prod x_i)^{1/n}\\)` }} /></div>
-                <div>• <strong>Harmonic Mean:</strong> <span dangerouslySetInnerHTML={{ __html: `\\(\\frac{n}{\\sum 1/x_i}\\)` }} /></div>
+                <div>• <strong>Weighted Mean:</strong> <span dangerouslySetInnerHTML={{ __html: `\\(\\bar{x}_w = \\frac{\\sum w_i x_i}{\\sum w_i}\\)` }} /> (for rates)</div>
+                <div>• <strong>Geometric Mean:</strong> <span dangerouslySetInnerHTML={{ __html: `\\((\\prod x_i)^{1/n}\\)` }} /> (for growth)</div>
+                <div>• <strong>Harmonic Mean:</strong> <span dangerouslySetInnerHTML={{ __html: `\\(\\frac{n}{\\sum 1/x_i}\\)` }} /> (for speeds)</div>
               </div>
+            </div>
+            
+            {/* Micro Quiz */}
+            <div className="bg-purple-900/20 border border-purple-600/30 p-4 rounded-lg mt-4">
+              <p className="text-sm font-semibold text-purple-400 mb-2">🧠 Quick Check:</p>
+              <p className="text-sm text-neutral-300 mb-2">
+                Data: 2, 4, 6, 8, 10. What is the mean?
+              </p>
+              <div className="flex gap-2">
+                {[4, 5, 6, 7].map(answer => (
+                  <button
+                    key={answer}
+                    onClick={() => {
+                      setMicroQuizAnswers({...microQuizAnswers, mean: answer});
+                      setShowQuizFeedback({...showQuizFeedback, mean: true});
+                    }}
+                    className={cn(
+                      "px-3 py-1 rounded",
+                      microQuizAnswers.mean === answer
+                        ? answer === 6 
+                          ? "bg-green-600 text-white"
+                          : "bg-red-600 text-white"
+                        : "bg-neutral-700 text-white hover:bg-neutral-600"
+                    )}
+                  >
+                    {answer}
+                  </button>
+                ))}
+              </div>
+              {showQuizFeedback.mean && (
+                <p className="text-xs mt-2 text-neutral-300">
+                  {microQuizAnswers.mean === 6 
+                    ? "✅ Correct! (2+4+6+8+10)/5 = 30/5 = 6"
+                    : "❌ Try again! Add all values, then divide by count (5)"}
+                </p>
+              )}
             </div>
           </div>
         );
@@ -730,7 +1057,7 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
       case 2:
         return (
           <div className="space-y-4" ref={mathRef}>
-            <h3 className="text-xl font-bold text-white">Median</h3>
+            <h3 className="text-xl font-bold text-white mb-2">Median</h3>
             <p className="text-neutral-300">
               The median is the middle value when data is ordered from smallest to largest.
             </p>
@@ -761,9 +1088,53 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
                 <ul className="text-sm text-neutral-300 mt-1 space-y-1">
                   <li>• Data is skewed</li>
                   <li>• Outliers present</li>
-                  <li>• Ordinal data</li>
+                  <li>• Income/house prices</li>
                 </ul>
               </div>
+            </div>
+            
+            {/* Common Mistake Alert */}
+            <div className="bg-red-900/20 border border-red-600/30 p-3 rounded-lg">
+              <p className="text-xs font-semibold text-red-400">🚨 Common Exam Mistake:</p>
+              <p className="text-xs text-neutral-300">
+                Always SORT the data first! Forgetting this step costs easy marks.
+              </p>
+            </div>
+            
+            {/* Micro Quiz */}
+            <div className="bg-purple-900/20 border border-purple-600/30 p-4 rounded-lg mt-4">
+              <p className="text-sm font-semibold text-purple-400 mb-2">🧠 Quick Check:</p>
+              <p className="text-sm text-neutral-300 mb-2">
+                Data: 3, 7, 2, 9, 5. What is the median?
+              </p>
+              <div className="flex gap-2">
+                {[3, 5, 7, 9].map(answer => (
+                  <button
+                    key={answer}
+                    onClick={() => {
+                      setMicroQuizAnswers({...microQuizAnswers, median: answer});
+                      setShowQuizFeedback({...showQuizFeedback, median: true});
+                    }}
+                    className={cn(
+                      "px-3 py-1 rounded",
+                      microQuizAnswers.median === answer
+                        ? answer === 5 
+                          ? "bg-green-600 text-white"
+                          : "bg-red-600 text-white"
+                        : "bg-neutral-700 text-white hover:bg-neutral-600"
+                    )}
+                  >
+                    {answer}
+                  </button>
+                ))}
+              </div>
+              {showQuizFeedback.median && (
+                <p className="text-xs mt-2 text-neutral-300">
+                  {microQuizAnswers.median === 5 
+                    ? "✅ Correct! Sorted: 2, 3, 5, 7, 9. Middle value is 5."
+                    : "❌ Remember to SORT first! Then find the middle value."}
+                </p>
+              )}
             </div>
           </div>
         );
@@ -771,7 +1142,7 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
       case 3:
         return (
           <div className="space-y-4" ref={mathRef}>
-            <h3 className="text-xl font-bold text-white">Mode</h3>
+            <h3 className="text-xl font-bold text-white mb-2">Mode</h3>
             <p className="text-neutral-300">
               The mode is the value that appears most frequently in the dataset.
             </p>
@@ -810,6 +1181,15 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
                 </ul>
               </div>
             </div>
+            
+            {/* Real-World Example */}
+            <div className="bg-blue-900/20 border border-blue-600/30 p-3 rounded-lg">
+              <p className="text-xs font-semibold text-blue-400">🌍 Real Example:</p>
+              <p className="text-xs text-neutral-300">
+                Survey: "What's your major?" Engineering (45), Business (45), Science (20), Arts (10).<br/>
+                Mode = Engineering and Business (bimodal)
+              </p>
+            </div>
           </div>
         );
       
@@ -836,24 +1216,70 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
                 </div>
               </div>
             </div>
+            
+            {/* Decision Tree */}
+            <div className="bg-purple-900/20 border border-purple-600/30 p-4 rounded-lg">
+              <p className="text-sm font-semibold text-purple-400 mb-3">Which Measure to Use?</p>
+              <div className="space-y-2 text-sm">
+                <div className="bg-neutral-900/50 p-3 rounded">
+                  <p className="text-blue-400 font-semibold">Use Mean when:</p>
+                  <ul className="text-neutral-300 mt-1 space-y-1">
+                    <li>• Data is roughly symmetric</li>
+                    <li>• Need to do further calculations</li>
+                    <li>• Working with interval/ratio data</li>
+                  </ul>
+                </div>
+                <div className="bg-neutral-900/50 p-3 rounded">
+                  <p className="text-green-400 font-semibold">Use Median when:</p>
+                  <ul className="text-neutral-300 mt-1 space-y-1">
+                    <li>• Data contains outliers</li>
+                    <li>• Data is skewed</li>
+                    <li>• Working with ordinal data</li>
+                  </ul>
+                </div>
+                <div className="bg-neutral-900/50 p-3 rounded">
+                  <p className="text-amber-400 font-semibold">Use Mode when:</p>
+                  <ul className="text-neutral-300 mt-1 space-y-1">
+                    <li>• Data is categorical</li>
+                    <li>• Looking for most common value</li>
+                    <li>• Working with nominal data</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
             <div className="bg-neutral-900 p-4 rounded-lg">
               <p className="text-sm font-semibold text-purple-400 mb-2">Distribution Shape</p>
               <p className="text-sm text-neutral-300">
                 When mean {'>'} median {'>'} mode, the distribution is <strong>right-skewed</strong> (positively skewed).
               </p>
               <p className="text-sm text-neutral-300 mt-2">
-                Our data shows this pattern due to the outlier (15).
+                Our data shows this pattern due to the outliers (20, 25).
               </p>
               <div className="mt-3 pt-3 border-t border-neutral-700">
                 <p className="text-xs text-neutral-400">Quick reference:</p>
                 <ul className="text-xs text-neutral-300 mt-1 space-y-1">
-                  <li>• Right-skewed: Mean {'>'} Median {'>'} Mode</li>
+                  <li>• Right-skewed: Mean {'>'} Median {'>'} Mode (tail on right)</li>
                   <li>• Symmetric: Mean ≈ Median ≈ Mode</li>
-                  <li>• Left-skewed: Mean {'<'} Median {'<'} Mode</li>
+                  <li>• Left-skewed: Mean {'<'} Median {'<'} Mode (tail on left)</li>
                 </ul>
               </div>
             </div>
+            
+            {/* Exam Tip */}
+            <div className="bg-amber-900/20 border border-amber-600/30 p-3 rounded-lg">
+              <p className="text-xs font-semibold text-amber-400">Exam Tip:</p>
+              <p className="text-xs text-neutral-300">
+                Questions often ask you to identify distribution shape based on the relationship between mean, median, and mode. 
+                Remember: the mean is "pulled" toward the tail!
+              </p>
+            </div>
           </div>
+        );
+      
+      case 5:
+        return (
+          <PracticeProblems mathRef={mathRef} />
         );
       
       default:
@@ -866,16 +1292,6 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
       title="4.1 Central Tendency: An Intuitive Journey"
       className="min-h-screen max-w-7xl mx-auto"
     >
-      {/* Progress Bar */}
-      <div className="mb-6">
-        <ProgressBar 
-          current={currentSection + 1} 
-          total={SECTIONS.length}
-          variant="purple"
-          showSteps
-        />
-      </div>
-      
       {/* Section Header */}
       <motion.div 
         key={currentSection}
@@ -952,43 +1368,25 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
       </div>
       
       {/* Navigation */}
-      <div className="flex justify-between items-center mt-8">
-        <Button
-          variant="secondary"
-          onClick={() => setCurrentSection(Math.max(0, currentSection - 1))}
-          disabled={currentSection === 0}
-        >
-          ← {currentSection > 0 ? SECTIONS[currentSection - 1].title : 'Previous'}
-        </Button>
-        <div className="text-center">
-          <div className="text-sm text-neutral-400">
-            {currentSection + 1} of {SECTIONS.length}
-          </div>
-          <div className="text-xs text-neutral-500 mt-1">
-            Use ← → arrow keys
-          </div>
-        </div>
-        {currentSection < SECTIONS.length - 1 ? (
-          <Button
-            variant="primary"
-            onClick={() => setCurrentSection(currentSection + 1)}
-          >
-            {SECTIONS[currentSection + 1].title} →
-          </Button>
-        ) : (
-          <Button
-            variant={hasCompleted ? "secondary" : "primary"}
-            onClick={() => {
-              if (!hasCompleted) {
-                setHasCompleted(true);
-                if (onComplete) onComplete();
-              }
-            }}
-          >
-            {hasCompleted ? "✓ Completed" : "Complete Section"}
-          </Button>
-        )}
-      </div>
+      <InteractiveJourneyNavigation
+        currentSection={currentSection}
+        totalSections={SECTIONS.length}
+        onNavigate={setCurrentSection}
+        onComplete={() => {
+          if (!hasCompleted) {
+            setHasCompleted(true);
+            if (onComplete) onComplete();
+          }
+        }}
+        sectionTitles={SECTIONS.map(s => s.title)}
+        showProgress={true} // Show integrated progress bar
+        progressVariant="purple"
+        isCompleted={hasCompleted}
+        className="mt-8"
+      />
+      
+      {/* Back to Hub Button */}
+      <BackToHub chapter={4} bottom />
     </VisualizationContainer>
   );
 }

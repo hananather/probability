@@ -16,6 +16,16 @@ import BackToHub from "../ui/BackToHub";
 import SectionComplete from '@/components/ui/SectionComplete';
 import { createColorScheme, typography } from "@/lib/design-system";
 
+// Use Chapter 7 color scheme for consistency
+const colorScheme = createColorScheme('regression');
+
+// Animation constants for consistency (1.5s as per checklist)
+const ANIMATION_DURATION = 1.5;
+const ANIMATION_CONFIG = {
+  duration: ANIMATION_DURATION,
+  ease: "easeInOut"
+};
+
 // Helper function to get z-critical value
 const getZCritical = (confidence) => {
   const zTable = {
@@ -26,6 +36,272 @@ const getZCritical = (confidence) => {
   };
   return zTable[confidence] || 1.96;
 };
+
+// Mathematical Foundations Section with Enhanced Pedagogy
+const MathematicalFoundations = React.memo(function MathematicalFoundations() {
+  const contentRef = useRef(null);
+  const [currentStep, setCurrentStep] = useState(0);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [currentStep]);
+  
+  const steps = [
+    {
+      title: "Starting with the Binomial",
+      content: (
+        <div>
+          <p className="mb-3">
+            When we count successes in n trials, we have a binomial random variable:
+          </p>
+          <div className="text-center text-lg mb-3">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[X \\sim B(n, p)\\]` 
+            }} />
+          </div>
+          <div className="grid md:grid-cols-2 gap-4 mt-4">
+            <div className="rounded-lg p-4 border" style={{
+              backgroundColor: `${colorScheme.primary}15`,
+              borderColor: `${colorScheme.primary}50`
+            }}>
+              <p className="text-sm font-semibold text-purple-400 mb-2">Mean</p>
+              <span dangerouslySetInnerHTML={{ 
+                __html: `\\[E[X] = np\\]` 
+              }} />
+            </div>
+            <div className="rounded-lg p-4 border" style={{
+            backgroundColor: `${colorScheme.primary}20`,
+            borderColor: `${colorScheme.primary}50`
+          }}>
+              <p className="text-sm font-semibold text-blue-400 mb-2">Variance</p>
+              <span dangerouslySetInnerHTML={{ 
+                __html: `\\[Var(X) = np(1-p)\\]` 
+              }} />
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      title: "The Sample Proportion",
+      content: (
+        <div>
+          <p className="mb-3">
+            We estimate the population proportion p using the sample proportion:
+          </p>
+          <div className="text-center text-lg mb-4">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[\\hat{P} = \\frac{X}{n} = \\frac{\\text{number of successes}}{\\text{sample size}}\\]` 
+            }} />
+          </div>
+          <div className="bg-neutral-700/50 rounded-lg p-4">
+            <p className="text-sm font-semibold text-white mb-2">Properties of <span dangerouslySetInnerHTML={{ __html: `\\(\\hat{P}\\)` }} />:</p>
+            <div className="space-y-2">
+              <p>• <span dangerouslySetInnerHTML={{ __html: `\\(E[\\hat{P}] = E\\left[\\frac{X}{n}\\right] = \\frac{E[X]}{n} = \\frac{np}{n} = p\\)` }} /></p>
+              <p>• <span dangerouslySetInnerHTML={{ __html: `\\(Var(\\hat{P}) = Var\\left(\\frac{X}{n}\\right) = \\frac{Var(X)}{n^2} = \\frac{np(1-p)}{n^2} = \\frac{p(1-p)}{n}\\)` }} /></p>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      title: "Normal Approximation (CLT)",
+      content: (
+        <div>
+          <p className="mb-3">
+            By the Central Limit Theorem, for large n:
+          </p>
+          <div className="text-center text-lg mb-4">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[\\hat{P} \\approx N\\left(p, \\frac{p(1-p)}{n}\\right)\\]` 
+            }} />
+          </div>
+          <p className="mb-3">
+            Standardizing gives us:
+          </p>
+          <div className="text-center text-lg mb-4">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[Z = \\frac{\\hat{P} - p}{\\sqrt{\\frac{p(1-p)}{n}}} \\approx N(0,1)\\]` 
+            }} />
+          </div>
+          <div className="rounded-lg p-4 border" style={{
+            backgroundColor: `${colorScheme.secondary}20`,
+            borderColor: `${colorScheme.secondary}50`
+          }}>
+            <p className="text-sm">
+              <strong className="text-yellow-400">When is this valid?</strong> Both np ≥ 10 AND n(1-p) ≥ 10
+            </p>
+          </div>
+        </div>
+      )
+    },
+    {
+      title: "Building the Confidence Interval",
+      content: (
+        <div>
+          <p className="mb-3">
+            For a 100(1-α)% confidence interval:
+          </p>
+          <div className="text-center text-lg mb-4">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[P\\left(-z_{\\alpha/2} < \\frac{\\hat{P} - p}{\\sqrt{\\frac{p(1-p)}{n}}} < z_{\\alpha/2}\\right) = 1-\\alpha\\]` 
+            }} />
+          </div>
+          <p className="mb-3">
+            Rearranging to solve for p:
+          </p>
+          <div className="text-center text-lg mb-4">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[\\hat{P} - z_{\\alpha/2}\\sqrt{\\frac{p(1-p)}{n}} < p < \\hat{P} + z_{\\alpha/2}\\sqrt{\\frac{p(1-p)}{n}}\\]` 
+            }} />
+          </div>
+          <div className="rounded-lg p-4 border" style={{
+            backgroundColor: '#ef444420',
+            borderColor: '#ef444450'
+          }}>
+            <p className="text-sm">
+              <strong className="text-red-400">Problem:</strong> We don't know p! It appears in the standard error.
+            </p>
+          </div>
+        </div>
+      )
+    },
+    {
+      title: "The Wald Interval Solution",
+      content: (
+        <div>
+          <p className="mb-3">
+            We substitute <span dangerouslySetInnerHTML={{ __html: `\\(\\hat{p}\\)` }} /> for p in the standard error:
+          </p>
+          <div className="bg-gradient-to-br from-purple-900/20 to-purple-800/20 rounded-lg p-6 border border-purple-500/30">
+            <p className="text-sm font-semibold text-purple-400 mb-3">The Wald Confidence Interval:</p>
+            <div className="text-center text-lg">
+              <span dangerouslySetInnerHTML={{ 
+                __html: `\\[\\hat{p} \\pm z_{\\alpha/2}\\sqrt{\\frac{\\hat{p}(1-\\hat{p})}{n}}\\]` 
+              }} />
+            </div>
+          </div>
+          <div className="mt-4 grid md:grid-cols-2 gap-4">
+            <div className="bg-green-900/20 rounded-lg p-4 border border-green-500/30">
+              <p className="text-sm font-semibold text-green-400 mb-2">Advantages</p>
+              <ul className="text-sm space-y-1">
+                <li>• Simple to calculate</li>
+                <li>• Works well for moderate p</li>
+                <li>• Standard in most software</li>
+              </ul>
+            </div>
+            <div className="bg-orange-900/20 rounded-lg p-4 border border-orange-500/30">
+              <p className="text-sm font-semibold text-orange-400 mb-2">Limitations</p>
+              <ul className="text-sm space-y-1">
+                <li>• Poor for p near 0 or 1</li>
+                <li>• Can produce intervals outside [0,1]</li>
+                <li>• Coverage probability issues</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )
+    }
+  ];
+  
+  return (
+    <VisualizationSection>
+      <h3 className="font-bold text-white mb-6" style={{ fontSize: typography.h2 }}>
+        Mathematical Foundations: From Binomial to Confidence Interval
+      </h3>
+      
+      <div ref={contentRef} className="space-y-6">
+        {/* Progress indicator */}
+        <div className="flex items-center justify-between mb-6">
+          {steps.map((_, idx) => (
+            <div
+              key={idx}
+              className={`flex-1 h-2 mx-1 rounded-full transition-all duration-300 ${
+                idx <= currentStep
+                  ? 'bg-gradient-to-r from-purple-600 to-purple-500'
+                  : 'bg-neutral-700'
+              }`}
+            />
+          ))}
+        </div>
+        
+        {/* Current step content */}
+        <motion.div
+          key={currentStep}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={ANIMATION_CONFIG}
+          className="bg-neutral-800 rounded-xl p-6"
+        >
+          <h4 className="font-semibold text-white mb-4" style={{ fontSize: typography.h3 }}>
+            Step {currentStep + 1}: {steps[currentStep].title}
+          </h4>
+          {steps[currentStep].content}
+        </motion.div>
+        
+        {/* Navigation buttons */}
+        <div className="flex justify-between">
+          <button
+            onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
+            disabled={currentStep === 0}
+            className="px-4 py-2 rounded-lg transition-all duration-300"
+            style={{
+              backgroundColor: currentStep === 0 ? '#374151' : colorScheme.primary,
+              color: currentStep === 0 ? '#6b7280' : 'white',
+              cursor: currentStep === 0 ? 'not-allowed' : 'pointer',
+              opacity: currentStep === 0 ? 0.5 : 1
+            }}
+            onMouseEnter={(e) => {
+              if (currentStep !== 0) {
+                e.target.style.transform = 'scale(1.05)';
+                e.target.style.boxShadow = `0 0 20px ${colorScheme.primary}80`;
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'scale(1)';
+              e.target.style.boxShadow = 'none';
+            }}
+          >
+            Previous
+          </button>
+          <button
+            onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}
+            disabled={currentStep === steps.length - 1}
+            className="px-4 py-2 rounded-lg transition-all duration-300"
+            style={{
+              backgroundColor: currentStep === steps.length - 1 ? '#374151' : colorScheme.primary,
+              color: currentStep === steps.length - 1 ? '#6b7280' : 'white',
+              cursor: currentStep === steps.length - 1 ? 'not-allowed' : 'pointer',
+              opacity: currentStep === steps.length - 1 ? 0.5 : 1
+            }}
+            onMouseEnter={(e) => {
+              if (currentStep !== steps.length - 1) {
+                e.target.style.transform = 'scale(1.05)';
+                e.target.style.boxShadow = `0 0 20px ${colorScheme.primary}80`;
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'scale(1)';
+              e.target.style.boxShadow = 'none';
+            }}
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </VisualizationSection>
+  );
+});
 
 // Introduction section with LaTeX formulas
 const ProportionIntroduction = React.memo(function ProportionIntroduction() {
@@ -48,7 +324,7 @@ const ProportionIntroduction = React.memo(function ProportionIntroduction() {
   return (
     <div ref={contentRef} className="bg-neutral-800 rounded-lg p-6 max-w-4xl mx-auto">
       <div className="text-sm text-neutral-300 space-y-4">
-        <p className="text-lg font-semibold text-white mb-4">
+        <p className="font-semibold text-white mb-4" style={{ fontSize: typography.h3 }}>
           Confidence Intervals for Proportions
         </p>
         
@@ -121,33 +397,39 @@ const ConfidenceIntervalDisplay = React.memo(function ConfidenceIntervalDisplay(
         
         <div className="grid md:grid-cols-2 gap-6">
           <div className="bg-purple-900/20 rounded-lg p-4 border border-purple-500/30">
-            <p className="font-semibold text-purple-400 mb-3">Candidate A</p>
+            <p className="font-semibold mb-3" style={{ color: colorScheme.primary }}>Candidate A</p>
             <div className="space-y-2 text-sm">
               <p><span dangerouslySetInnerHTML={{ __html: `\\(\\hat{p}_A = 0.52\\)` }} /></p>
               <p><span dangerouslySetInnerHTML={{ __html: `\\(SE_A = \\sqrt{\\frac{0.52 \\times 0.48}{1000}} = ${se_A.toFixed(4)}\\)` }} /></p>
               <p><span dangerouslySetInnerHTML={{ __html: `\\(\\text{Margin} = 1.96 \\times ${se_A.toFixed(4)} = ${moe_A.toFixed(4)}\\)` }} /></p>
-              <p className="font-semibold text-purple-400 mt-2">
+              <p className="font-semibold mt-2" style={{ color: colorScheme.primary }}>
                 CI: [{(ci_A.lower * 100).toFixed(1)}%, {(ci_A.upper * 100).toFixed(1)}%]
               </p>
             </div>
           </div>
           
-          <div className="bg-blue-900/20 rounded-lg p-4 border border-blue-500/30">
-            <p className="font-semibold text-blue-400 mb-3">Candidate B</p>
+          <div className="rounded-lg p-4 border" style={{
+            backgroundColor: `${colorScheme.primary}20`,
+            borderColor: `${colorScheme.primary}50`
+          }}>
+            <p className="font-semibold mb-3" style={{ color: colorScheme.secondary }}>Candidate B</p>
             <div className="space-y-2 text-sm">
               <p><span dangerouslySetInnerHTML={{ __html: `\\(\\hat{p}_B = 0.48\\)` }} /></p>
               <p><span dangerouslySetInnerHTML={{ __html: `\\(SE_B = \\sqrt{\\frac{0.48 \\times 0.52}{1000}} = ${se_B.toFixed(4)}\\)` }} /></p>
               <p><span dangerouslySetInnerHTML={{ __html: `\\(\\text{Margin} = 1.96 \\times ${se_B.toFixed(4)} = ${moe_B.toFixed(4)}\\)` }} /></p>
-              <p className="font-semibold text-blue-400 mt-2">
+              <p className="font-semibold mt-2" style={{ color: colorScheme.secondary }}>
                 CI: [{(ci_B.lower * 100).toFixed(1)}%, {(ci_B.upper * 100).toFixed(1)}%]
               </p>
             </div>
           </div>
         </div>
         
-        <div className="mt-6 p-4 bg-yellow-900/20 rounded-lg border border-yellow-500/30">
+        <div className="mt-6 p-4 rounded-lg border" style={{
+          backgroundColor: `${colorScheme.secondary}30`,
+          borderColor: `${colorScheme.secondary}50`
+        }}>
           <p className="text-sm">
-            <strong className="text-yellow-400">Statistical Dead Heat!</strong> The confidence intervals overlap
+            <strong style={{ color: colorScheme.secondary }}>Statistical Dead Heat!</strong> The confidence intervals overlap
             ([{(ci_A.lower * 100).toFixed(1)}%, {(ci_A.upper * 100).toFixed(1)}%] vs [{(ci_B.lower * 100).toFixed(1)}%, {(ci_B.upper * 100).toFixed(1)}%]),
             meaning we cannot confidently predict a winner.
           </p>
@@ -209,23 +491,26 @@ const ElectionStory = React.memo(function ElectionStory({ onComplete }) {
   
   return (
     <VisualizationSection className="space-y-6">
-      <h3 className="text-xl font-bold text-white">The Election Story</h3>
+      <h3 className="font-bold text-white" style={{ fontSize: typography.h2 }}>The Election Story</h3>
       
       {stage === 'intro' && (
         <motion.div
-          className="bg-gradient-to-br from-purple-900/20 to-neutral-800 
-                     rounded-xl p-6 border border-purple-500/30"
+          style={{
+          background: `linear-gradient(to bottom right, ${colorScheme.primary}40, #262626)`,
+          borderColor: `${colorScheme.primary}50`
+        }}
+        className="rounded-xl p-6 border"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h4 className="text-lg font-bold text-purple-400 mb-4">
+          <h4 className="font-bold mb-4" style={{ fontSize: typography.h3, color: colorScheme.primary }}>
             The Election Dilemma
           </h4>
           
           <div className="prose prose-invert max-w-none">
             <p className="text-neutral-300">
               It's one week before a major election. A news organization wants to know:
-              <span className="text-purple-400 font-semibold"> Will Candidate A win?</span>
+              <span className="font-semibold" style={{ color: colorScheme.primary }}> Will Candidate A win?</span>
             </p>
             <p className="text-neutral-300 mt-3">
               They can't ask all 10 million voters, so they poll a random sample of 1,000 voters...
@@ -426,7 +711,7 @@ const NormalApproximationValidator = React.memo(function NormalApproximationVali
   
   return (
     <VisualizationSection>
-      <h3 className="text-xl font-bold text-white mb-4">
+      <h3 className="font-bold text-white mb-4" style={{ fontSize: typography.h2 }}>
         When Can We Use Normal Approximation?
       </h3>
       
@@ -569,7 +854,7 @@ const ProportionCIBuilder = React.memo(function ProportionCIBuilder() {
   return (
     <VisualizationSection>
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-xl font-bold text-white">
+        <h3 className="font-bold text-white" style={{ fontSize: typography.h2 }}>
           Proportion Confidence Interval Calculator
         </h3>
         <div className="flex gap-2">
@@ -671,8 +956,10 @@ const ProportionCIBuilder = React.memo(function ProportionCIBuilder() {
       
       {/* Results */}
       <motion.div
-        className="bg-gradient-to-br from-purple-900/20 to-neutral-800 
-                   rounded-xl p-6 border border-purple-500/30"
+        style={{
+          background: `linear-gradient(to bottom right, ${colorScheme.primary}40, #262626)`
+        }}
+        className="rounded-xl p-6 border border-purple-500/30"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         key={`${inputs.n}-${inputs.x}-${inputs.confidence}`}
@@ -756,6 +1043,207 @@ const ConditionCheckPanel = ({ n, pHat }) => {
   );
 };
 
+// Sample Size Calculator Section
+const SampleSizeCalculator = React.memo(function SampleSizeCalculator() {
+  const [inputs, setInputs] = useState({
+    confidence: 95,
+    marginError: 0.03,
+    pEstimate: 0.5,
+    useConservative: true
+  });
+  const contentRef = useRef(null);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [inputs]);
+  
+  // Calculate required sample size
+  const z = getZCritical(inputs.confidence);
+  const p = inputs.useConservative ? 0.5 : inputs.pEstimate;
+  const q = 1 - p;
+  const n = Math.ceil((z * z * p * q) / (inputs.marginError * inputs.marginError));
+  
+  return (
+    <VisualizationSection>
+      <h3 className="font-bold text-white mb-6" style={{ fontSize: typography.h2 }}>
+        Sample Size Determination
+      </h3>
+      
+      <div className="bg-gradient-to-br from-blue-900/20 to-cyan-900/20 rounded-lg p-6 border border-blue-500/30 mb-6">
+        <div className="flex items-start gap-3 mb-4">
+          <Calculator className="w-6 h-6 text-blue-400 mt-1" />
+          <div>
+            <h4 className="font-semibold text-blue-400 mb-2">
+              Planning Your Study
+            </h4>
+            <p className="text-sm text-neutral-300">
+              How many observations do you need to achieve your desired margin of error?
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <ControlGroup>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Confidence Level
+              </label>
+              <select
+                value={inputs.confidence}
+                onChange={(e) => setInputs({...inputs, confidence: Number(e.target.value)})}
+                className="w-full px-3 py-2 bg-neutral-700 rounded-lg text-white"
+              >
+                <option value={90}>90% (z = 1.645)</option>
+                <option value={95}>95% (z = 1.96)</option>
+                <option value={98}>98% (z = 2.326)</option>
+                <option value={99}>99% (z = 2.576)</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Desired Margin of Error: ±{(inputs.marginError * 100).toFixed(1)}%
+              </label>
+              <input
+                type="range"
+                min="0.005"
+                max="0.1"
+                step="0.005"
+                value={inputs.marginError}
+                onChange={(e) => setInputs({...inputs, marginError: Number(e.target.value)})}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-neutral-500 mt-1">
+                <span>±0.5%</span>
+                <span>±{(inputs.marginError * 100).toFixed(1)}%</span>
+                <span>±10%</span>
+              </div>
+            </div>
+            
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium text-gray-300">
+                  Proportion Estimate
+                </label>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={inputs.useConservative}
+                    onChange={(e) => setInputs({...inputs, useConservative: e.target.checked})}
+                    className="rounded"
+                  />
+                  <span className="text-neutral-400">Use conservative (p = 0.5)</span>
+                </label>
+              </div>
+              
+              {!inputs.useConservative && (
+                <div>
+                  <input
+                    type="range"
+                    min="0.1"
+                    max="0.9"
+                    step="0.05"
+                    value={inputs.pEstimate}
+                    onChange={(e) => setInputs({...inputs, pEstimate: Number(e.target.value)})}
+                    className="w-full"
+                    disabled={inputs.useConservative}
+                  />
+                  <div className="text-center text-sm text-neutral-400 mt-1">
+                    p = {inputs.pEstimate.toFixed(2)}
+                  </div>
+                </div>
+              )}
+            </div>
+          </ControlGroup>
+        </div>
+        
+        <div>
+          <div ref={contentRef} className="bg-gradient-to-br from-purple-900/20 to-purple-800/20 rounded-xl p-6 border border-purple-500/30">
+            <h4 className="font-semibold text-purple-400 mb-4">
+              Required Sample Size
+            </h4>
+            
+            <div className="text-center">
+              <div className="text-5xl font-mono text-white mb-4">
+                n = {n.toLocaleString()}
+              </div>
+              
+              <div className="bg-neutral-900/50 rounded-lg p-4 text-left">
+                <p className="text-sm font-semibold text-purple-400 mb-2">
+                  Formula:
+                </p>
+                <div className="text-center mb-3">
+                  <span dangerouslySetInnerHTML={{ 
+                    __html: `\\[n = \\left(\\frac{z_{\\alpha/2}^2 \\cdot p(1-p)}{E^2}\\right)\\]` 
+                  }} />
+                </div>
+                
+                <p className="text-sm font-semibold text-purple-400 mb-2">
+                  Calculation:
+                </p>
+                <div className="text-sm space-y-1 font-mono">
+                  <p>z = {z.toFixed(3)}</p>
+                  <p>p = {p.toFixed(2)}, q = {q.toFixed(2)}</p>
+                  <p>E = {inputs.marginError.toFixed(3)}</p>
+                  <p>n = ({z.toFixed(3)})² × {p.toFixed(2)} × {q.toFixed(2)} / ({inputs.marginError.toFixed(3)})²</p>
+                  <p className="text-purple-400 font-semibold">n = {n}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-4 p-4 bg-amber-900/20 rounded-lg border border-amber-500/30">
+            <p className="text-sm font-semibold text-amber-400 mb-2">
+              💡 Key Insights:
+            </p>
+            <ul className="text-sm text-neutral-300 space-y-1">
+              <li>• p = 0.5 gives the largest sample size (most conservative)</li>
+              <li>• Halving the margin of error quadruples the sample size</li>
+              <li>• Higher confidence requires larger samples</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      
+      {/* Common Sample Sizes Reference */}
+      <div className="mt-6 bg-neutral-800 rounded-lg p-6">
+        <h4 className="font-semibold text-white mb-4">
+          Common Sample Sizes for Polls
+        </h4>
+        <div className="grid md:grid-cols-3 gap-4">
+          <div className="text-center p-4 bg-neutral-900/50 rounded-lg">
+            <p className="text-sm text-neutral-400 mb-1">National Poll</p>
+            <p className="text-2xl font-mono text-blue-400">n = 1,067</p>
+            <p className="text-xs text-neutral-500">95% CI, ±3%</p>
+          </div>
+          <div className="text-center p-4 bg-neutral-900/50 rounded-lg">
+            <p className="text-sm text-neutral-400 mb-1">State Poll</p>
+            <p className="text-2xl font-mono text-purple-400">n = 600</p>
+            <p className="text-xs text-neutral-500">95% CI, ±4%</p>
+          </div>
+          <div className="text-center p-4 bg-neutral-900/50 rounded-lg">
+            <p className="text-sm text-neutral-400 mb-1">Quick Survey</p>
+            <p className="text-2xl font-mono text-emerald-400">n = 385</p>
+            <p className="text-xs text-neutral-500">95% CI, ±5%</p>
+          </div>
+        </div>
+      </div>
+    </VisualizationSection>
+  );
+});
+
 // Scenario Explorer
 const ScenarioExplorer = React.memo(function ScenarioExplorer() {
   const [selectedScenario, setSelectedScenario] = useState('election');
@@ -831,7 +1319,7 @@ const ScenarioExplorer = React.memo(function ScenarioExplorer() {
   
   return (
     <VisualizationSection>
-      <h3 className="text-xl font-bold text-white mb-6">
+      <h3 className="font-bold text-white mb-6" style={{ fontSize: typography.h2 }}>
         Real-World Applications
       </h3>
       
@@ -922,17 +1410,345 @@ const ScenarioExplorer = React.memo(function ScenarioExplorer() {
   );
 });
 
+// Exam Practice Problems Section
+const ExamPracticeProblems = React.memo(function ExamPracticeProblems() {
+  const [currentProblem, setCurrentProblem] = useState(0);
+  const [showSolution, setShowSolution] = useState(false);
+  const [userAnswers, setUserAnswers] = useState({});
+  const contentRef = useRef(null);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [currentProblem, showSolution]);
+  
+  const problems = [
+    {
+      id: 1,
+      difficulty: "Easy",
+      points: 10,
+      examFrequency: "85%",
+      question: "A quality control inspector randomly samples 200 circuit boards and finds 8 defective. Construct a 95% confidence interval for the true proportion of defective boards.",
+      data: { n: 200, x: 8, confidence: 95 },
+      solution: {
+        pHat: 0.04,
+        se: 0.0139,
+        z: 1.96,
+        margin: 0.0272,
+        lower: 0.0128,
+        upper: 0.0672,
+        steps: [
+          "Calculate sample proportion: p̂ = 8/200 = 0.04",
+          "Check conditions: np̂ = 200(0.04) = 8 < 10 ❌",
+          "Warning: Normal approximation may not be appropriate!",
+          "SE = √[0.04(0.96)/200] = 0.0139",
+          "Margin = 1.96 × 0.0139 = 0.0272",
+          "CI: 0.04 ± 0.0272 = [0.0128, 0.0672]",
+          "Or: [1.28%, 6.72%]"
+        ]
+      }
+    },
+    {
+      id: 2,
+      difficulty: "Medium",
+      points: 15,
+      examFrequency: "70%",
+      question: "A university survey of 1500 students shows 1125 support extending library hours. Find a 99% confidence interval for the true proportion of all students who support this change.",
+      data: { n: 1500, x: 1125, confidence: 99 },
+      solution: {
+        pHat: 0.75,
+        se: 0.0112,
+        z: 2.576,
+        margin: 0.0288,
+        lower: 0.7212,
+        upper: 0.7788,
+        steps: [
+          "Calculate sample proportion: p̂ = 1125/1500 = 0.75",
+          "Check conditions: np̂ = 1125 ≥ 10 ✓, n(1-p̂) = 375 ≥ 10 ✓",
+          "SE = √[0.75(0.25)/1500] = 0.0112",
+          "For 99% CI, z = 2.576",
+          "Margin = 2.576 × 0.0112 = 0.0288",
+          "CI: 0.75 ± 0.0288 = [0.7212, 0.7788]",
+          "Or: [72.12%, 77.88%]"
+        ]
+      }
+    },
+    {
+      id: 3,
+      difficulty: "Hard",
+      points: 20,
+      examFrequency: "40%",
+      question: "A medical trial tests a new treatment on 80 patients, with 68 showing improvement. (a) Construct a 95% CI for the success rate. (b) The old treatment has a 75% success rate. Based on your CI, is the new treatment significantly better?",
+      data: { n: 80, x: 68, confidence: 95 },
+      solution: {
+        pHat: 0.85,
+        se: 0.0399,
+        z: 1.96,
+        margin: 0.0782,
+        lower: 0.7718,
+        upper: 0.9282,
+        steps: [
+          "Part (a): Calculate sample proportion: p̂ = 68/80 = 0.85",
+          "Check conditions: np̂ = 68 ≥ 10 ✓, n(1-p̂) = 12 ≥ 10 ✓",
+          "SE = √[0.85(0.15)/80] = 0.0399",
+          "Margin = 1.96 × 0.0399 = 0.0782",
+          "CI: 0.85 ± 0.0782 = [0.7718, 0.9282]",
+          "Or: [77.18%, 92.82%]",
+          "Part (b): Old treatment rate (75%) is below the CI lower bound",
+          "Conclusion: Yes, new treatment is significantly better at α = 0.05"
+        ]
+      }
+    }
+  ];
+  
+  const problem = problems[currentProblem];
+  
+  return (
+    <VisualizationSection>
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="font-bold text-white" style={{ fontSize: typography.h2 }}>
+          Exam Practice Problems
+        </h3>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-neutral-400">
+            Problem {currentProblem + 1} of {problems.length}
+          </span>
+          <div className="flex gap-2">
+            {problems.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  setCurrentProblem(idx);
+                  setShowSolution(false);
+                }}
+                className="w-8 h-8 rounded-full transition-all duration-300"
+                style={{
+                  backgroundColor: idx === currentProblem ? colorScheme.primary : '#374151',
+                  color: idx === currentProblem ? 'white' : '#d1d5db',
+                  transform: idx === currentProblem ? 'scale(1.1)' : 'scale(1)',
+                  boxShadow: idx === currentProblem ? `0 0 15px ${colorScheme.primary}4D` : 'none'
+                }}
+                onMouseEnter={(e) => {
+                  if (idx !== currentProblem) {
+                    e.target.style.backgroundColor = '#4b5563';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (idx !== currentProblem) {
+                    e.target.style.backgroundColor = '#374151';
+                  }
+                }}
+              >
+                {idx + 1}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+      
+      <motion.div
+        key={problem.id}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-6"
+      >
+        {/* Problem Header */}
+        <div className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-lg p-4 border border-purple-500/30">
+          <div className="flex justify-between items-start mb-3">
+            <div className="flex gap-3">
+              <span className="px-3 py-1 rounded-full text-xs font-semibold"
+                style={{
+                  backgroundColor: problem.difficulty === 'Easy' ? `${colorScheme.chart.success}30` :
+                                  problem.difficulty === 'Medium' ? `${colorScheme.secondary}30` :
+                                  `${colorScheme.chart.error}30`,
+                  color: problem.difficulty === 'Easy' ? colorScheme.chart.success :
+                         problem.difficulty === 'Medium' ? colorScheme.secondary :
+                         colorScheme.chart.error
+                }}>
+                {problem.difficulty}
+              </span>
+              <span className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs font-semibold">
+                {problem.points} points
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-amber-400">
+              <AlertCircle className="w-4 h-4" />
+              <span>Appears on {problem.examFrequency} of exams</span>
+            </div>
+          </div>
+          
+          <p className="text-white">{problem.question}</p>
+        </div>
+        
+        {/* Your Work Space */}
+        {!showSolution && (
+          <div className="bg-neutral-800 rounded-lg p-6">
+            <h4 className="font-semibold text-white mb-4">Your Work Space</h4>
+            <div className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-neutral-400 mb-1">
+                    Sample Proportion (p̂)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.001"
+                    className="w-full px-3 py-2 bg-neutral-700 rounded text-white"
+                    placeholder="Calculate p̂..."
+                    onChange={(e) => setUserAnswers({
+                      ...userAnswers,
+                      [`${problem.id}_phat`]: e.target.value
+                    })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-neutral-400 mb-1">
+                    Standard Error
+                  </label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    className="w-full px-3 py-2 bg-neutral-700 rounded text-white"
+                    placeholder="Calculate SE..."
+                    onChange={(e) => setUserAnswers({
+                      ...userAnswers,
+                      [`${problem.id}_se`]: e.target.value
+                    })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-neutral-400 mb-1">
+                    Lower Bound
+                  </label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    className="w-full px-3 py-2 bg-neutral-700 rounded text-white"
+                    placeholder="CI lower bound..."
+                    onChange={(e) => setUserAnswers({
+                      ...userAnswers,
+                      [`${problem.id}_lower`]: e.target.value
+                    })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-neutral-400 mb-1">
+                    Upper Bound
+                  </label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    className="w-full px-3 py-2 bg-neutral-700 rounded text-white"
+                    placeholder="CI upper bound..."
+                    onChange={(e) => setUserAnswers({
+                      ...userAnswers,
+                      [`${problem.id}_upper`]: e.target.value
+                    })}
+                  />
+                </div>
+              </div>
+              
+              <button
+                onClick={() => setShowSolution(true)}
+                className="w-full py-3 text-white rounded-lg transition-all duration-300"
+                style={{
+                  backgroundColor: colorScheme.primary
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'scale(1.02)';
+                  e.target.style.boxShadow = `0 0 30px ${colorScheme.primary}80`;
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'scale(1)';
+                  e.target.style.boxShadow = 'none';
+                }}
+              >
+                Show Solution
+              </button>
+            </div>
+          </div>
+        )}
+        
+        {/* Solution */}
+        {showSolution && (
+          <motion.div
+            ref={contentRef}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="bg-gradient-to-br from-emerald-900/20 to-neutral-800 rounded-lg p-6 border border-emerald-500/30"
+          >
+            <h4 className="font-semibold text-emerald-400 mb-4">
+              Complete Solution
+            </h4>
+            
+            <div className="space-y-3">
+              {problem.solution.steps.map((step, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="flex items-start gap-3"
+                >
+                  <span className="text-emerald-400 font-mono">
+                    {idx + 1}.
+                  </span>
+                  <span className="text-neutral-200">
+                    {step}
+                  </span>
+                </motion.div>
+              ))}
+            </div>
+            
+            <div className="mt-6 p-4 bg-emerald-900/20 rounded-lg border border-emerald-500/30">
+              <p className="text-sm font-semibold text-emerald-400 mb-2">
+                Final Answer:
+              </p>
+              <p className="font-mono text-white">
+                {problem.confidence}% CI: [{(problem.solution.lower * 100).toFixed(2)}%, {(problem.solution.upper * 100).toFixed(2)}%]
+              </p>
+            </div>
+            
+            {/* Exam Tips */}
+            <div className="mt-4 p-4 bg-amber-900/20 rounded-lg border border-amber-500/30">
+              <p className="text-sm font-semibold text-amber-400 mb-1">
+                💡 Exam Tip:
+              </p>
+              <p className="text-sm text-neutral-300">
+                Always check the normal approximation conditions first! If they fail, 
+                mention it in your answer for partial credit.
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </motion.div>
+    </VisualizationSection>
+  );
+});
+
 // Common Mistakes Section
 const CommonMistakes = React.memo(function CommonMistakes() {
   return (
     <VisualizationSection>
-      <h3 className="text-xl font-bold text-white mb-4">
+      <h3 className="font-bold text-white mb-4" style={{ fontSize: typography.h2 }}>
         Common Mistakes to Avoid
       </h3>
       
       <div className="grid md:grid-cols-2 gap-4">
-        <div className="bg-red-900/20 rounded-lg p-4 border border-red-500/30">
-          <h4 className="font-semibold text-red-400 mb-2 flex items-center gap-2">
+        <div className="rounded-lg p-4 border" style={{
+          backgroundColor: `${colorScheme.chart.error}30`,
+          borderColor: `${colorScheme.chart.error}50`
+        }}>
+          <h4 className="font-semibold mb-2 flex items-center gap-2" style={{ color: colorScheme.chart.error }}>
             <XCircle className="w-5 h-5" />
             Using p instead of p̂
           </h4>
@@ -941,13 +1757,16 @@ const CommonMistakes = React.memo(function CommonMistakes() {
             in the standard error calculation.
           </p>
           <div className="bg-neutral-900 rounded p-2 text-center font-mono text-sm">
-            <span className="text-red-400 line-through">√(p(1-p)/n)</span>
-            <span className="text-green-400 ml-3">√(p̂(1-p̂)/n)</span>
+            <span className="line-through" style={{ color: colorScheme.chart.error }}>√(p(1-p)/n)</span>
+            <span className="ml-3" style={{ color: colorScheme.chart.success }}>√(p̂(1-p̂)/n)</span>
           </div>
         </div>
         
-        <div className="bg-red-900/20 rounded-lg p-4 border border-red-500/30">
-          <h4 className="font-semibold text-red-400 mb-2 flex items-center gap-2">
+        <div className="rounded-lg p-4 border" style={{
+          backgroundColor: `${colorScheme.chart.error}30`,
+          borderColor: `${colorScheme.chart.error}50`
+        }}>
+          <h4 className="font-semibold mb-2 flex items-center gap-2" style={{ color: colorScheme.chart.error }}>
             <XCircle className="w-5 h-5" />
             Ignoring np ≥ 10 rule
           </h4>
@@ -957,8 +1776,11 @@ const CommonMistakes = React.memo(function CommonMistakes() {
           </p>
         </div>
         
-        <div className="bg-red-900/20 rounded-lg p-4 border border-red-500/30">
-          <h4 className="font-semibold text-red-400 mb-2 flex items-center gap-2">
+        <div className="rounded-lg p-4 border" style={{
+          backgroundColor: `${colorScheme.chart.error}30`,
+          borderColor: `${colorScheme.chart.error}50`
+        }}>
+          <h4 className="font-semibold mb-2 flex items-center gap-2" style={{ color: colorScheme.chart.error }}>
             <XCircle className="w-5 h-5" />
             Misinterpreting overlapping CIs
           </h4>
@@ -1060,10 +1882,16 @@ export default function ProportionConfidenceInterval() {
   const [currentSection, setCurrentSection] = useState('intro');
   const [userProgress, setUserProgress] = useState({
     introCompleted: false,
+    foundationsCompleted: false,
     electionCompleted: false,
     theoryCompleted: false,
-    practiceCompleted: false
+    practiceCompleted: false,
+    advancedCompleted: false
   });
+  
+  // Calculate total sections dynamically
+  const totalSections = Object.keys(userProgress).length;
+  const completedSections = Object.values(userProgress).filter(Boolean).length;
   
   return (
     <VisualizationContainer
@@ -1072,19 +1900,36 @@ export default function ProportionConfidenceInterval() {
     >
       <BackToHub chapter={5} />
       
+      {/* Exam Alert Banner */}
+      <div className="mb-6 rounded-lg p-4 border" style={{
+        background: `linear-gradient(to right, ${colorScheme.secondary}30, ${colorScheme.secondary}20)`,
+        borderColor: `${colorScheme.secondary}50`
+      }}>
+        <div className="flex items-center gap-3">
+          <AlertCircle className="w-6 h-6" style={{ color: colorScheme.secondary }} />
+          <div>
+            <p className="font-semibold" style={{ color: colorScheme.secondary }}>⚠️ EXAM ALERT</p>
+            <p className="text-sm text-neutral-300">
+              This topic appears on <span className="font-bold" style={{ color: colorScheme.secondary }}>15% of all exams</span> • 
+              Estimated study time: <span className="font-bold">45 minutes</span>
+            </p>
+          </div>
+        </div>
+      </div>
+      
       {/* Progress Indicator */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm text-neutral-400">Your Progress</span>
           <span className="text-sm text-neutral-400">
-            {Object.values(userProgress).filter(Boolean).length} / 4 sections
+            {completedSections} / {totalSections} sections
           </span>
         </div>
         <div className="w-full bg-neutral-700 rounded-full h-2">
           <div 
             className="bg-gradient-to-r from-purple-600 to-emerald-600 h-2 rounded-full transition-all duration-300"
             style={{ 
-              width: `${(Object.values(userProgress).filter(Boolean).length / 4) * 100}%` 
+              width: `${(completedSections / totalSections) * 100}%` 
             }}
           />
         </div>
@@ -1101,6 +1946,16 @@ export default function ProportionConfidenceInterval() {
           }`}
         >
           Introduction
+        </button>
+        <button
+          onClick={() => setCurrentSection('foundations')}
+          className={`px-4 py-2 rounded-lg transition-all ${
+            currentSection === 'foundations' 
+              ? 'bg-purple-600 text-white' 
+              : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
+          }`}
+        >
+          Mathematical Foundations
         </button>
         <button
           onClick={() => setCurrentSection('election')}
@@ -1134,6 +1989,17 @@ export default function ProportionConfidenceInterval() {
         >
           Practice & Apply
         </button>
+        <button
+          onClick={() => setCurrentSection('advanced')}
+          className={`px-4 py-2 rounded-lg transition-all ${
+            currentSection === 'advanced' 
+              ? 'bg-indigo-600 text-white' 
+              : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
+          }`}
+          disabled={!userProgress.practiceCompleted}
+        >
+          Advanced Topics
+        </button>
       </div>
       
       {/* Content Sections */}
@@ -1152,9 +2018,48 @@ export default function ProportionConfidenceInterval() {
                 <button
                   onClick={() => {
                     setUserProgress({...userProgress, introCompleted: true});
+                    setCurrentSection('foundations');
+                  }}
+                  className="px-6 py-3 text-white rounded-lg transition-all duration-300"
+                  style={{
+                    backgroundColor: colorScheme.primary
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'scale(1.05)';
+                    e.target.style.boxShadow = `0 0 30px ${colorScheme.primary}80`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'scale(1)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                >
+                  Continue to Mathematical Foundations
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {currentSection === 'foundations' && (
+            <div className="space-y-8">
+              <MathematicalFoundations />
+              <div className="text-center">
+                <button
+                  onClick={() => {
+                    setUserProgress({...userProgress, foundationsCompleted: true});
                     setCurrentSection('election');
                   }}
-                  className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+                  className="px-6 py-3 text-white rounded-lg transition-all duration-300"
+                  style={{
+                    backgroundColor: colorScheme.primary
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'scale(1.05)';
+                    e.target.style.boxShadow = `0 0 30px ${colorScheme.primary}80`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'scale(1)';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 >
                   Continue to Election Story
                 </button>
@@ -1180,7 +2085,18 @@ export default function ProportionConfidenceInterval() {
                     setUserProgress({...userProgress, theoryCompleted: true});
                     setCurrentSection('practice');
                   }}
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                  className="px-6 py-3 text-white rounded-lg transition-all duration-300"
+                  style={{
+                    backgroundColor: colorScheme.secondary
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'scale(1.05)';
+                    e.target.style.boxShadow = `0 0 30px ${colorScheme.secondary}80`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'scale(1)';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 >
                   Continue to Practice
                 </button>
@@ -1191,9 +2107,54 @@ export default function ProportionConfidenceInterval() {
           {currentSection === 'practice' && (
             <div className="space-y-8">
               <ProportionCIBuilder />
+              <ExamPracticeProblems />
+              <SampleSizeCalculator />
               <ScenarioExplorer />
               <CommonMistakes />
               <KeyTakeaways />
+              
+              <div className="text-center">
+                <button
+                  onClick={() => {
+                    setUserProgress({...userProgress, practiceCompleted: true});
+                    setCurrentSection('advanced');
+                  }}
+                  className="px-6 py-3 text-white rounded-lg transition-all duration-300"
+                  style={{
+                    backgroundColor: colorScheme.chart.success
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'scale(1.05)';
+                    e.target.style.boxShadow = `0 0 30px ${colorScheme.chart.success}80`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'scale(1)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                >
+                  Continue to Advanced Topics
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {currentSection === 'advanced' && (
+            <div className="space-y-8">
+              {/* Placeholder for advanced topics like Wilson interval */}
+              <div className="bg-gradient-to-br from-indigo-900/20 to-purple-900/20 rounded-lg p-6 border border-indigo-500/30">
+                <h3 className="font-bold mb-4" style={{ fontSize: typography.h2, color: colorScheme.tertiary }}>
+                  Advanced Topics (Coming Soon)
+                </h3>
+                <p className="text-neutral-300 mb-4">
+                  In future updates, this section will cover:
+                </p>
+                <ul className="space-y-2 text-sm text-neutral-400">
+                  <li>• Wilson/Score confidence intervals</li>
+                  <li>• Agresti-Coull adjusted intervals</li>
+                  <li>• Bayesian credible intervals</li>
+                  <li>• Finite population corrections</li>
+                </ul>
+              </div>
               
               {/* Section Complete - Standardized Component */}
               <SectionComplete chapter={5} />

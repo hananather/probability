@@ -8,15 +8,25 @@ import {
   ControlGroup,
   StatsDisplay
 } from '@/components/ui/VisualizationContainer';
-import { colors, typography, formatNumber, cn, createColorScheme } from '@/lib/design-system';
+import { colors, typography, formatNumber, cn } from '@/lib/design-system';
 import { WorkedExample, ExampleSection, Formula, InsightBox, CalculationSteps } from '../../ui/WorkedExample';
 import { Button } from '@/components/ui/button';
 import { RangeSlider } from '@/components/ui/RangeSlider';
+import { InteractiveJourneyNavigation } from '@/components/ui/InteractiveJourneyNavigation';
+import BackToHub from '@/components/ui/BackToHub';
 import { ChevronLeft, ChevronRight, Calculator, BarChart3, TrendingUp, Database } from 'lucide-react';
 // import CentralTendencyJourney from './4-1-1-CentralTendencyJourney'; // Component archived
 
-// Color scheme for statistics
-const colorScheme = createColorScheme('estimation');
+// Color scheme for statistics - matching introduction
+const measureColors = {
+  mean: '#3b82f6',      // Blue
+  median: '#10b981',    // Green
+  mode: '#f59e0b',      // Amber
+  data: '#6b7280',      // Gray
+  highlight: '#8b5cf6', // Purple
+  grid: '#333',         // Grid lines
+  background: '#0a0a0a' // Dark background
+};
 
 // Section definitions
 const SECTIONS = [
@@ -54,6 +64,15 @@ const FoundationsSection = React.memo(function FoundationsSection() {
   
   return (
     <div ref={contentRef}>
+      {/* Opening Hook */}
+      <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 p-4 rounded-lg mb-6">
+        <p className="text-lg font-semibold text-white mb-2">🎯 Quick Scenario:</p>
+        <p className="text-neutral-300">
+          Your study group asks: "What was the typical exam score?" Three different students give three different answers - 
+          and they're all correct! How is this possible?
+        </p>
+      </div>
+      
       <WorkedExample title="What is Central Tendency?" variant="default">
         <ExampleSection title="Definition">
           <p className="mb-4 text-neutral-300 leading-relaxed">
@@ -68,11 +87,34 @@ const FoundationsSection = React.memo(function FoundationsSection() {
       
         <ExampleSection title="Why Multiple Measures?">
           <p className="mb-4 text-neutral-300">Different measures capture different aspects of "center":</p>
-          <ul className="list-disc list-inside space-y-3 ml-6 text-neutral-300">
-            <li><strong className="text-blue-400">Mean</strong>: The balance point of the data</li>
-            <li><strong className="text-green-400">Median</strong>: The middle value when ordered</li>
-            <li><strong className="text-amber-400">Mode</strong>: The most frequent value</li>
-          </ul>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div className="bg-blue-900/20 border border-blue-600/30 p-3 rounded-lg">
+              <div className="text-2xl mb-2 text-center">⚖️</div>
+              <p className="text-sm font-semibold text-blue-400 text-center">Mean</p>
+              <p className="text-xs text-neutral-300 text-center mt-1">The balance point</p>
+              <p className="text-xs text-neutral-400 mt-2">Best for: Symmetric data</p>
+            </div>
+            <div className="bg-green-900/20 border border-green-600/30 p-3 rounded-lg">
+              <div className="text-2xl mb-2 text-center">🚶</div>
+              <p className="text-sm font-semibold text-green-400 text-center">Median</p>
+              <p className="text-xs text-neutral-300 text-center mt-1">The middle value</p>
+              <p className="text-xs text-neutral-400 mt-2">Best for: Skewed data</p>
+            </div>
+            <div className="bg-amber-900/20 border border-amber-600/30 p-3 rounded-lg">
+              <div className="text-2xl mb-2 text-center">👑</div>
+              <p className="text-sm font-semibold text-amber-400 text-center">Mode</p>
+              <p className="text-xs text-neutral-300 text-center mt-1">Most frequent</p>
+              <p className="text-xs text-neutral-400 mt-2">Best for: Categories</p>
+            </div>
+          </div>
+          
+          {/* Exam Alert */}
+          <div className="mt-4 bg-red-900/20 border border-red-600/30 p-3 rounded-lg">
+            <p className="text-xs font-semibold text-red-400">⚠️ Exam Alert:</p>
+            <p className="text-xs text-neutral-300">
+              Questions often ask you to choose the "most appropriate" measure. Remember: it depends on your data type and distribution!
+            </p>
+          </div>
         </ExampleSection>
         
         <InsightBox variant="info">
@@ -130,7 +172,7 @@ const MeanSection = React.memo(function MeanSection() {
     svg.append("rect")
       .attr("width", w)
       .attr("height", h)
-      .attr("fill", "#0a0a0a");
+      .attr("fill", measureColors.background);
     
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
@@ -155,7 +197,7 @@ const MeanSection = React.memo(function MeanSection() {
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.3)
       .selectAll("line")
-      .style("stroke", colors.chart.grid);
+      .style("stroke", measureColors.grid);
     
     // X axis
     g.append("g")
@@ -163,14 +205,14 @@ const MeanSection = React.memo(function MeanSection() {
       .call(d3.axisBottom(xScale))
       .selectAll("text")
       .style("font-family", "monospace")
-      .attr("fill", colors.chart.text);
+      .attr("fill", "#999");
     
     // Y axis
     g.append("g")
       .call(d3.axisLeft(yScale))
       .selectAll("text")
       .style("font-family", "monospace")
-      .attr("fill", colors.chart.text);
+      .attr("fill", "#999");
     
     // Data points
     g.selectAll(".data-point")
@@ -180,7 +222,7 @@ const MeanSection = React.memo(function MeanSection() {
       .attr("cx", d => xScale(d))
       .attr("cy", yScale('Data Points') + yScale.bandwidth() / 2)
       .attr("r", 8)
-      .attr("fill", colorScheme.chart.primary)
+      .attr("fill", measureColors.data)
       .attr("stroke", "#fff")
       .attr("stroke-width", 2);
     
@@ -190,7 +232,7 @@ const MeanSection = React.memo(function MeanSection() {
       .attr("x2", xScale(mean))
       .attr("y1", 0)
       .attr("y2", innerHeight)
-      .attr("stroke", colorScheme.chart.secondary)
+      .attr("stroke", measureColors.mean)
       .attr("stroke-width", 3)
       .attr("stroke-dasharray", "5,5");
     
@@ -199,7 +241,7 @@ const MeanSection = React.memo(function MeanSection() {
       .attr("cx", xScale(mean))
       .attr("cy", yScale('Mean') + yScale.bandwidth() / 2)
       .attr("r", 10)
-      .attr("fill", colorScheme.chart.secondary)
+      .attr("fill", measureColors.mean)
       .attr("stroke", "#fff")
       .attr("stroke-width", 2);
     
@@ -208,7 +250,7 @@ const MeanSection = React.memo(function MeanSection() {
       .attr("x", xScale(mean))
       .attr("y", -10)
       .attr("text-anchor", "middle")
-      .attr("fill", colorScheme.chart.secondary)
+      .attr("fill", measureColors.mean)
       .style("font-family", "monospace")
       .style("font-weight", "bold")
       .text(`μ = ${mean.toFixed(2)}`);
@@ -337,7 +379,7 @@ const MedianSection = React.memo(function MedianSection() {
     svg.append("rect")
       .attr("width", w)
       .attr("height", h)
-      .attr("fill", "#0a0a0a");
+      .attr("fill", measureColors.background);
     
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
@@ -366,11 +408,11 @@ const MedianSection = React.memo(function MedianSection() {
       .attr("height", d => innerHeight - yScale(d))
       .attr("fill", (d, i) => {
         if (displayData.length % 2 === 1 && i === midIndex) {
-          return colorScheme.chart.secondary;
+          return measureColors.mean;
         } else if (displayData.length % 2 === 0 && (i === midIndex - 1 || i === midIndex)) {
-          return colorScheme.chart.secondary;
+          return measureColors.mean;
         }
-        return colorScheme.chart.primary;
+        return measureColors.data;
       })
       .attr("stroke", "#fff")
       .attr("stroke-width", 2);
@@ -394,14 +436,14 @@ const MedianSection = React.memo(function MedianSection() {
         .attr("x2", innerWidth)
         .attr("y1", yScale(median))
         .attr("y2", yScale(median))
-        .attr("stroke", colorScheme.chart.secondary)
+        .attr("stroke", measureColors.mean)
         .attr("stroke-width", 3)
         .attr("stroke-dasharray", "5,5");
       
       g.append("text")
         .attr("x", innerWidth + 5)
         .attr("y", yScale(median) + 5)
-        .attr("fill", colorScheme.chart.secondary)
+        .attr("fill", measureColors.mean)
         .style("font-family", "monospace")
         .style("font-weight", "bold")
         .text(`Median = ${median}`);
@@ -537,7 +579,7 @@ const ModeSection = React.memo(function ModeSection() {
     svg.append("rect")
       .attr("width", w)
       .attr("height", h)
-      .attr("fill", "#0a0a0a");
+      .attr("fill", measureColors.background);
     
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
@@ -567,7 +609,7 @@ const ModeSection = React.memo(function ModeSection() {
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.3)
       .selectAll("line")
-      .style("stroke", colors.chart.grid);
+      .style("stroke", measureColors.grid);
     
     // Bars
     g.selectAll(".bar")
@@ -578,7 +620,7 @@ const ModeSection = React.memo(function ModeSection() {
       .attr("y", d => yScale(d.count))
       .attr("width", xScale.bandwidth())
       .attr("height", d => innerHeight - yScale(d.count))
-      .attr("fill", d => modes.includes(d.value) ? colorScheme.chart.tertiary : colorScheme.chart.primary)
+      .attr("fill", d => modes.includes(d.value) ? measureColors.mode : measureColors.data)
       .attr("stroke", "#fff")
       .attr("stroke-width", 2);
     
@@ -588,14 +630,14 @@ const ModeSection = React.memo(function ModeSection() {
       .call(d3.axisBottom(xScale))
       .selectAll("text")
       .style("font-family", "monospace")
-      .attr("fill", colors.chart.text);
+      .attr("fill", "#999");
     
     // Y axis
     g.append("g")
       .call(d3.axisLeft(yScale))
       .selectAll("text")
       .style("font-family", "monospace")
-      .attr("fill", colors.chart.text);
+      .attr("fill", "#999");
     
     // Mode label
     if (modes.length > 0) {
@@ -603,7 +645,7 @@ const ModeSection = React.memo(function ModeSection() {
         .attr("x", innerWidth / 2)
         .attr("y", -10)
         .attr("text-anchor", "middle")
-        .attr("fill", colorScheme.chart.tertiary)
+        .attr("fill", measureColors.mode)
         .style("font-family", "monospace")
         .style("font-weight", "bold")
         .text(`Mode(s): ${modes.join(', ')}`);
@@ -766,7 +808,7 @@ const ComparisonSection = React.memo(function ComparisonSection() {
     svg.append("rect")
       .attr("width", w)
       .attr("height", h)
-      .attr("fill", "#0a0a0a");
+      .attr("fill", measureColors.background);
     
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
@@ -794,7 +836,7 @@ const ComparisonSection = React.memo(function ComparisonSection() {
       .attr("y", d => yScale(d.length))
       .attr("width", d => xScale(d.x1) - xScale(d.x0) - 1)
       .attr("height", d => innerHeight - yScale(d.length))
-      .attr("fill", colorScheme.chart.primary)
+      .attr("fill", measureColors.data)
       .attr("opacity", 0.7);
     
     // X axis
@@ -803,12 +845,12 @@ const ComparisonSection = React.memo(function ComparisonSection() {
       .call(d3.axisBottom(xScale))
       .selectAll("text")
       .style("font-family", "monospace")
-      .attr("fill", colors.chart.text);
+      .attr("fill", "#999");
     
     // Measure lines
     const measures = [
-      { value: stats.mean, color: colorScheme.chart.secondary, label: 'Mean' },
-      { value: stats.median, color: colorScheme.chart.tertiary, label: 'Median' },
+      { value: stats.mean, color: measureColors.mean, label: 'Mean' },
+      { value: stats.median, color: measureColors.median, label: 'Median' },
       { value: stats.mode, color: '#f59e0b', label: 'Mode' }
     ];
     
@@ -1049,7 +1091,7 @@ const PropertiesSection = React.memo(function PropertiesSection() {
     svg.append("rect")
       .attr("width", w)
       .attr("height", h)
-      .attr("fill", "#0a0a0a");
+      .attr("fill", measureColors.background);
     
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
@@ -1072,7 +1114,7 @@ const PropertiesSection = React.memo(function PropertiesSection() {
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.3)
       .selectAll("line")
-      .style("stroke", colors.chart.grid);
+      .style("stroke", measureColors.grid);
     
     // X axis
     g.append("g")
@@ -1080,14 +1122,14 @@ const PropertiesSection = React.memo(function PropertiesSection() {
       .call(d3.axisBottom(xScale))
       .selectAll("text")
       .style("font-family", "monospace")
-      .attr("fill", colors.chart.text);
+      .attr("fill", "#999");
     
     // Y axis
     g.append("g")
       .call(d3.axisLeft(yScale))
       .selectAll("text")
       .style("font-family", "monospace")
-      .attr("fill", colors.chart.text);
+      .attr("fill", "#999");
     
     // Data points
     data.forEach(x => {
@@ -1095,7 +1137,7 @@ const PropertiesSection = React.memo(function PropertiesSection() {
         .attr("cx", xScale(x))
         .attr("cy", innerHeight + 20)
         .attr("r", 5)
-        .attr("fill", colorScheme.chart.primary);
+        .attr("fill", measureColors.data);
     });
     
     // Current c value
@@ -1113,7 +1155,7 @@ const PropertiesSection = React.memo(function PropertiesSection() {
       .attr("x2", xScale(calculations.mean))
       .attr("y1", 0)
       .attr("y2", innerHeight)
-      .attr("stroke", colorScheme.chart.secondary)
+      .attr("stroke", measureColors.mean)
       .attr("stroke-width", 2)
       .attr("stroke-dasharray", "5,5");
     
@@ -1123,7 +1165,7 @@ const PropertiesSection = React.memo(function PropertiesSection() {
       .attr("x2", xScale(calculations.median))
       .attr("y1", 0)
       .attr("y2", innerHeight)
-      .attr("stroke", colorScheme.chart.tertiary)
+      .attr("stroke", measureColors.median)
       .attr("stroke-width", 2)
       .attr("stroke-dasharray", "5,5");
     
@@ -1195,6 +1237,90 @@ const PropertiesSection = React.memo(function PropertiesSection() {
           </div>
         </ControlGroup>
       </VisualizationSection>
+    </div>
+  );
+});
+
+// Speed Learning Component
+const SpeedLearningContent = React.memo(function SpeedLearningContent({ section }) {
+  const contentRef = useRef(null);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [section]);
+  
+  const essentials = {
+    'mean': {
+      formula: '\\(\\bar{x} = \\frac{\\sum x_i}{n}\\)',
+      when: 'Symmetric data, no outliers',
+      example: 'Test scores: 70, 75, 80, 85, 90 → Mean = 80',
+      tip: 'Sensitive to outliers!'
+    },
+    'median': {
+      formula: 'Middle value when sorted',
+      when: 'Skewed data or outliers present',
+      example: 'Income: 30k, 35k, 40k, 45k, 200k → Median = 40k',
+      tip: 'Always SORT first!'
+    },
+    'mode': {
+      formula: 'Most frequent value',
+      when: 'Categorical data',
+      example: 'Majors: Eng, Eng, Bus, Eng, Sci → Mode = Engineering',
+      tip: 'Can have multiple modes!'
+    }
+  };
+  
+  return (
+    <div ref={contentRef} className="space-y-4">
+      <div className="bg-amber-900/20 p-4 rounded-lg">
+        <h3 className="text-lg font-bold text-amber-400 mb-3">⚡ {section} - Exam Essentials Only</h3>
+        
+        {Object.entries(essentials).map(([measure, info]) => (
+          <div key={measure} className="bg-neutral-900 p-3 rounded mb-3">
+            <h4 className="font-semibold text-white capitalize mb-2">{measure}</h4>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p className="text-xs text-neutral-400">Formula:</p>
+                <p className="text-neutral-300">
+                  {info.formula.includes('\\(') ? 
+                    <span dangerouslySetInnerHTML={{ __html: info.formula }} /> : 
+                    info.formula
+                  }
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-neutral-400">When to use:</p>
+                <p className="text-neutral-300">{info.when}</p>
+              </div>
+            </div>
+            <div className="mt-2 p-2 bg-neutral-800 rounded">
+              <p className="text-xs text-neutral-400">Example:</p>
+              <p className="text-xs text-neutral-300">{info.example}</p>
+            </div>
+            <p className="text-xs text-amber-400 mt-1">💡 {info.tip}</p>
+          </div>
+        ))}
+      </div>
+      
+      <div className="bg-red-900/20 border border-red-600/30 p-3 rounded">
+        <p className="text-sm font-semibold text-red-400">🎯 Common Exam Pattern:</p>
+        <p className="text-xs text-neutral-300">
+          Mean {'>'} Median = Right-skewed (outliers on right)<br/>
+          Mean {'<'} Median = Left-skewed (outliers on left)<br/>
+          Mean = Median = Symmetric
+        </p>
+      </div>
     </div>
   );
 });
@@ -1290,8 +1416,10 @@ const DataTypesSection = React.memo(function DataTypesSection() {
 });
 
 // Main component
-function MathematicalFoundations() {
+function MathematicalFoundations({ onComplete }) {
   const [currentSection, setCurrentSection] = useState(0);
+  const [hasCompleted, setHasCompleted] = useState(false);
+  const [speedMode, setSpeedMode] = useState(false);
   
   const renderSection = () => {
     switch (SECTIONS[currentSection].id) {
@@ -1330,6 +1458,23 @@ function MathematicalFoundations() {
   return (
     <VisualizationContainer title="4.1 Central Tendency: Mathematical Foundations" className="max-w-7xl mx-auto">
       <div className="space-y-8">
+        {/* Speed Learning Mode Toggle */}
+        <div className="bg-amber-900/20 border border-amber-600/30 p-4 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-amber-400">🚀 Speed Learning Mode</p>
+              <p className="text-xs text-neutral-300">Get exam-ready in 5 minutes</p>
+            </div>
+            <Button
+              variant={speedMode ? "primary" : "secondary"}
+              size="sm"
+              onClick={() => setSpeedMode(!speedMode)}
+            >
+              {speedMode ? "Exit Speed Mode" : "Activate"}
+            </Button>
+          </div>
+        </div>
+        
         {/* Navigation */}
         <div className="bg-neutral-900 rounded-lg p-6 shadow-lg">
           <div className="flex items-center justify-between mb-6">
@@ -1339,57 +1484,20 @@ function MathematicalFoundations() {
               </h3>
               <p className="text-sm text-neutral-400 mt-1">
                 Section {currentSection + 1} of {SECTIONS.length}
+                {speedMode && <span className="text-amber-400 ml-2">⚡ Speed Mode</span>}
               </p>
-            </div>
-            <div className="flex gap-3">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setCurrentSection(Math.max(0, currentSection - 1))}
-                disabled={currentSection === 0}
-                className="flex items-center gap-2"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Previous
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setCurrentSection(Math.min(SECTIONS.length - 1, currentSection + 1))}
-                disabled={currentSection === SECTIONS.length - 1}
-                className="flex items-center gap-2"
-              >
-                Next
-                <ChevronRight className="w-4 h-4" />
-              </Button>
             </div>
           </div>
           
-          {/* Section indicators */}
-          <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-2">
-            {SECTIONS.map((section, idx) => (
-              <button
-                key={section.id}
-                onClick={() => setCurrentSection(idx)}
-                className={cn(
-                  "p-3 rounded-lg text-xs font-medium transition-all duration-200",
-                  "flex flex-col items-center justify-center",
-                  idx === currentSection 
-                    ? "bg-blue-600 text-white shadow-md transform scale-105" 
-                    : "bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-neutral-300"
-                )}
-                title={section.title}
-              >
-                <section.icon className="w-5 h-5 mb-1" />
-                <span className="font-bold">{idx + 1}</span>
-              </button>
-            ))}
-          </div>
         </div>
         
         {/* Content */}
         <div className="min-h-[600px] bg-neutral-950 rounded-lg p-6">
-          {renderSection()}
+          {speedMode ? (
+            <SpeedLearningContent section={SECTIONS[currentSection].id} />
+          ) : (
+            renderSection()
+          )}
         </div>
         
         {/* Summary Stats */}
@@ -1402,7 +1510,31 @@ function MathematicalFoundations() {
             ]}
           />
         </div>
+        
+        {/* Navigation at the Bottom */}
+        <InteractiveJourneyNavigation
+          currentSection={currentSection}
+          totalSections={SECTIONS.length}
+          onNavigate={setCurrentSection}
+          onComplete={() => {
+            if (!hasCompleted) {
+              setHasCompleted(true);
+              if (onComplete) {
+                onComplete();
+              }
+            }
+          }}
+          sectionTitles={SECTIONS.map(s => s.title)}
+          showProgress={true}
+          progressVariant="purple"
+          isCompleted={hasCompleted}
+          allowKeyboardNav={true}
+          className="mt-8"
+        />
       </div>
+      
+      {/* Back to Hub Button */}
+      <BackToHub chapter={4} bottom />
     </VisualizationContainer>
   );
 }

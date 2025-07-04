@@ -281,9 +281,9 @@ const RelationshipToRegression = React.memo(function RelationshipToRegression({ 
         </div>
       </div>
 
-      <div ref={contentRef} className="mt-6 bg-neutral-900/50 rounded-lg p-4">
+      <div className="mt-6 bg-neutral-900/50 rounded-lg p-4">
         <h4 className="font-bold text-white mb-3">Key Insights</h4>
-        <div className="text-sm text-neutral-300 space-y-2">
+        <div ref={contentRef} className="text-sm text-neutral-300 space-y-2">
           <p>• When <span dangerouslySetInnerHTML={{ __html: `\\(r = 0\\)` }} />, then <span dangerouslySetInnerHTML={{ __html: `\\(b_1 = 0\\)` }} /> (horizontal regression line)</p>
           <p>• The sign of the slope matches the sign of the correlation</p>
           <p>• Standardizing both variables (z-scores) makes <span dangerouslySetInnerHTML={{ __html: `\\(S_x = S_y = 1\\)` }} />, so <span dangerouslySetInnerHTML={{ __html: `\\(b_1 = r\\)` }} /></p>
@@ -1430,8 +1430,51 @@ export default function CorrelationCoefficient() {
         {/* Mathematical Properties */}
         <MathematicalProperties />
 
-        {/* Main Visualization */}
+        {/* Main Visualization with Controls */}
         <GraphContainer title="Interactive Correlation Explorer" className="!bg-transparent">
+          {/* Interactive Controls - Moved above the chart */}
+          <div className="mb-6 space-y-6">
+            <div>
+              <h4 className="text-lg font-bold text-white mb-4">Explore Different Scenarios</h4>
+              <ControlGroup label="Correlation Pattern">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                  {Object.entries(scenarios).map(([key, { name }]) => (
+                    <button
+                      key={key}
+                      onClick={() => setScenario(key)}
+                      className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+                        scenario === key
+                          ? 'bg-teal-600 text-white shadow-md ring-2 ring-teal-500/50'
+                          : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+                      }`}
+                    >
+                      {name}
+                    </button>
+                  ))}
+                </div>
+              </ControlGroup>
+
+              <ControlGroup label="Visualization Options">
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={showDeviations}
+                      onChange={(e) => setShowDeviations(e.target.checked)}
+                      className="rounded"
+                    />
+                    <span>Show deviations from means</span>
+                  </label>
+                </div>
+                <p className="text-xs text-neutral-500 mt-2">
+                  Green rectangles: positive contribution to correlation<br/>
+                  Red rectangles: negative contribution to correlation
+                </p>
+              </ControlGroup>
+            </div>
+          </div>
+
+          {/* Chart */}
           <svg ref={svgRef} className="w-full"></svg>
         </GraphContainer>
 
@@ -1442,49 +1485,6 @@ export default function CorrelationCoefficient() {
 
         {/* Relationship to Regression */}
         <RelationshipToRegression correlation={stats.r} data={currentData} />
-
-        {/* Interactive Controls */}
-        <VisualizationSection className="bg-neutral-800/50 rounded-lg p-6">
-          <h4 className="text-lg font-bold text-white mb-6">Explore Different Scenarios</h4>
-          
-          <div className="space-y-6">
-            <ControlGroup label="Correlation Pattern">
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                {Object.entries(scenarios).map(([key, { name }]) => (
-                  <button
-                    key={key}
-                    onClick={() => setScenario(key)}
-                    className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
-                      scenario === key
-                        ? 'bg-teal-600 text-white shadow-md ring-2 ring-teal-500/50'
-                        : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
-                    }`}
-                  >
-                    {name}
-                  </button>
-                ))}
-              </div>
-            </ControlGroup>
-
-            <ControlGroup label="Visualization Options">
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={showDeviations}
-                    onChange={(e) => setShowDeviations(e.target.checked)}
-                    className="rounded"
-                  />
-                  <span>Show deviations from means</span>
-                </label>
-              </div>
-              <p className="text-xs text-neutral-500 mt-2">
-                Green rectangles: positive contribution to correlation<br/>
-                Red rectangles: negative contribution to correlation
-              </p>
-            </ControlGroup>
-          </div>
-        </VisualizationSection>
 
         {/* Worked Example */}
         <div className="space-y-4">

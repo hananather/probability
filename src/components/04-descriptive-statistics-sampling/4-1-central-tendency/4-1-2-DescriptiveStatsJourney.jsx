@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from '@/components/ui/button';
 import { ProgressBar } from '@/components/ui/ProgressBar';
+import { InteractiveJourneyNavigation } from '@/components/ui/InteractiveJourneyNavigation';
+import BackToHub from '@/components/ui/BackToHub';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import * as d3 from 'd3';
@@ -11,27 +13,100 @@ const STAGES = [
     id: 'central-tendency',
     title: 'Central Tendency Analysis',
     icon: '📊',
-    description: 'Master mean, median, and mode with interactive calculations'
+    description: 'Master mean, median, and mode with interactive calculations',
+    examWeight: '25%',
+    timeEstimate: '5 min',
+    keySkills: ['Calculate mean', 'Find median', 'Identify mode', 'Choose appropriate measure']
   },
   {
     id: 'dispersion',
     title: 'Measuring Spread',
     icon: '📐',
-    description: 'Understand variance, standard deviation, and range'
+    description: 'Understand variance, standard deviation, and range',
+    examWeight: '20%',
+    timeEstimate: '5 min',
+    keySkills: ['Calculate variance', 'Find standard deviation', 'Interpret spread']
   },
   {
     id: 'quartiles',
     title: 'Quartiles & IQR',
     icon: '📦',
-    description: 'Explore the five-number summary and boxplots'
+    description: 'Explore the five-number summary and boxplots',
+    examWeight: '15%',
+    timeEstimate: '5 min',
+    keySkills: ['Find quartiles', 'Calculate IQR', 'Create boxplots']
   },
   {
     id: 'outliers',
     title: 'Outlier Detection',
     icon: '🔍',
-    description: 'Learn to identify and analyze outliers'
+    description: 'Learn to identify and analyze outliers',
+    examWeight: '10%',
+    timeEstimate: '3 min',
+    keySkills: ['1.5×IQR rule', 'Impact on measures', 'When to exclude']
   }
 ];
+
+// Knowledge Check Component
+const KnowledgeCheck = React.memo(function KnowledgeCheck({ stage, onComplete }) {
+  const [answer, setAnswer] = useState('');
+  const [showFeedback, setShowFeedback] = useState(false);
+  
+  const questions = {
+    'central-tendency': {
+      question: 'Which measure is most affected by outliers?',
+      options: ['Mean', 'Median', 'Mode'],
+      correct: 'Mean',
+      explanation: 'The mean uses all values in its calculation, so extreme values pull it toward them.'
+    },
+    'dispersion': {
+      question: 'What does a large standard deviation indicate?',
+      options: ['Data is spread out', 'Data is clustered', 'Data has outliers'],
+      correct: 'Data is spread out',
+      explanation: 'Large standard deviation means values are far from the mean on average.'
+    }
+  };
+  
+  const currentQ = questions[stage];
+  if (!currentQ) return null;
+  
+  return (
+    <div className="bg-purple-900/20 border border-purple-600/30 p-4 rounded-lg mt-4">
+      <p className="text-sm font-semibold text-purple-400 mb-2">🧠 Quick Check:</p>
+      <p className="text-sm text-neutral-300 mb-3">{currentQ.question}</p>
+      <div className="flex gap-2 mb-3">
+        {currentQ.options.map(opt => (
+          <button
+            key={opt}
+            onClick={() => {
+              setAnswer(opt);
+              setShowFeedback(true);
+              if (opt === currentQ.correct) {
+                setTimeout(() => onComplete(), 1500);
+              }
+            }}
+            className={cn(
+              "px-3 py-1 rounded text-sm",
+              answer === opt
+                ? opt === currentQ.correct
+                  ? "bg-green-600 text-white"
+                  : "bg-red-500 text-white"
+                : "bg-neutral-700 text-white hover:bg-neutral-600"
+            )}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+      {showFeedback && (
+        <p className="text-xs text-neutral-300">
+          {answer === currentQ.correct ? '✅ ' : '❌ '}
+          {currentQ.explanation}
+        </p>
+      )}
+    </div>
+  );
+});
 
 const StatisticalAnalysis = React.memo(function StatisticalAnalysis({ 
   data, activeStage, outlierMultiplier = 1.5 
@@ -116,7 +191,7 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
       case 0: // Central Tendency
         return (
           <div className="space-y-4">
-            <div className="bg-gradient-to-r from-purple-900/30 to-violet-900/30 p-4 rounded-lg">
+            <div className="bg-neutral-900 p-4 rounded-lg border border-neutral-700">
               <h5 className="text-sm font-semibold text-purple-300 mb-3">
                 Calculating Central Tendency
               </h5>
@@ -159,7 +234,7 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
                 </div>
               </div>
               
-              <div className="mt-4 bg-gradient-to-r from-indigo-900/30 to-purple-900/30 p-3 rounded-lg border border-indigo-600/30">
+              <div className="mt-4 bg-purple-900/20 p-3 rounded-lg border border-purple-600/30">
                 <strong className="text-indigo-300 text-sm">💡 Key Insight:</strong>
                 <div className="mt-1 text-xs text-indigo-200">
                   {Math.abs(stats.mean - stats.median) < stats.stdDev * 0.2 
@@ -176,7 +251,7 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
       case 1: // Dispersion
         return (
           <div className="space-y-4">
-            <div className="bg-gradient-to-r from-blue-900/30 to-cyan-900/30 p-4 rounded-lg">
+            <div className="bg-neutral-900 p-4 rounded-lg border border-neutral-700">
               <h5 className="text-sm font-semibold text-blue-300 mb-3">
                 Measuring Data Spread
               </h5>
@@ -219,7 +294,7 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
                 </div>
               </div>
               
-              <div className="mt-4 bg-gradient-to-r from-teal-900/30 to-cyan-900/30 p-3 rounded-lg border border-teal-600/30">
+              <div className="mt-4 bg-blue-900/20 p-3 rounded-lg border border-blue-600/30">
                 <strong className="text-teal-300 text-sm">📏 Interpretation:</strong>
                 <div className="mt-1 text-xs text-teal-200">
                   About 68% of your data falls within {stats.mean.toFixed(1)} ± {stats.stdDev.toFixed(1)} 
@@ -233,7 +308,7 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
       case 2: // Quartiles
         return (
           <div className="space-y-4">
-            <div className="bg-gradient-to-r from-emerald-900/30 to-teal-900/30 p-4 rounded-lg">
+            <div className="bg-neutral-900 p-4 rounded-lg border border-neutral-700">
               <h5 className="text-sm font-semibold text-emerald-300 mb-3">
                 Five-Number Summary & IQR
               </h5>
@@ -275,7 +350,7 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
                 </div>
               </div>
               
-              <div className="mt-4 bg-gradient-to-r from-green-900/30 to-emerald-900/30 p-3 rounded-lg border border-green-600/30">
+              <div className="mt-4 bg-green-900/20 p-3 rounded-lg border border-green-600/30">
                 <strong className="text-green-300 text-sm">🎯 Why IQR Matters:</strong>
                 <div className="mt-1 text-xs text-green-200">
                   IQR is robust to outliers - it only looks at the middle 50% of data, 
@@ -289,22 +364,22 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
       case 3: // Outliers
         return (
           <div className="space-y-4">
-            <div className="bg-gradient-to-r from-orange-900/30 to-red-900/30 p-4 rounded-lg">
-              <h5 className="text-sm font-semibold text-orange-300 mb-3">
+            <div className="bg-neutral-900 p-4 rounded-lg border border-amber-700/50">
+              <h5 className="text-sm font-semibold text-amber-300 mb-3">
                 Outlier Detection ({outlierMultiplier}×IQR Rule)
               </h5>
               
               <div className="space-y-3">
-                <div className="bg-black/30 p-3 rounded border border-orange-600/30">
+                <div className="bg-black/30 p-3 rounded border border-amber-600/30">
                   <div className="text-center">
-                    <div className="text-sm text-orange-200 mb-1">Lower Fence</div>
+                    <div className="text-sm text-amber-200 mb-1">Lower Fence</div>
                     <div className="font-mono text-base">
                       Q₁ - {outlierMultiplier} × IQR = {stats.q1.toFixed(2)} - {outlierMultiplier} × {stats.iqr.toFixed(2)} = {stats.lowerBound.toFixed(2)}
                     </div>
                   </div>
                 </div>
                 
-                <div className="bg-black/30 p-3 rounded border border-red-600/30">
+                <div className="bg-black/30 p-3 rounded border border-amber-600/30">
                   <div className="text-center">
                     <div className="text-sm text-red-200 mb-1">Upper Fence</div>
                     <div className="font-mono text-base">
@@ -313,9 +388,9 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
                   </div>
                 </div>
                 
-                <div className="bg-black/30 p-3 rounded border border-orange-600/30">
+                <div className="bg-black/30 p-3 rounded border border-amber-600/30">
                   <div className={cn("text-center text-sm", 
-                    stats.outliers.length > 0 ? "text-orange-300" : "text-emerald-300"
+                    stats.outliers.length > 0 ? "text-amber-300" : "text-emerald-300"
                   )}>
                     {stats.outliers.length > 0 
                       ? `⚠️ Outliers detected: ${stats.outliers.map(x => x.toFixed(2)).join(', ')}`
@@ -324,7 +399,7 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
                 </div>
               </div>
               
-              <div className="mt-4 bg-gradient-to-r from-rose-900/30 to-pink-900/30 p-3 rounded-lg border border-rose-600/30">
+              <div className="mt-4 bg-amber-900/20 p-3 rounded-lg border border-amber-600/30">
                 <strong className="text-rose-300 text-sm">🔍 Robustness Analysis:</strong>
                 <div className="mt-1 space-y-1 text-xs text-rose-200">
                   <div>• Mean is {Math.abs(stats.mean - stats.median) > stats.stdDev * 0.5 ? 'significantly' : 'slightly'} affected by outliers</div>
@@ -342,7 +417,7 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
   };
   
   return (
-    <div ref={contentRef} className="bg-gradient-to-br from-neutral-900/50 to-neutral-800/50 p-6 rounded-xl border border-neutral-700/50">
+    <div ref={contentRef} className="bg-neutral-950 p-6 rounded-xl border border-neutral-700">
       {renderStageContent()}
     </div>
   );
@@ -477,12 +552,13 @@ function InteractiveDataViz({ data, onDataChange, activeStage }) {
   );
 }
 
-export default function DescriptiveStatsJourney() {
+export default function DescriptiveStatsJourney({ onComplete }) {
   const [currentStage, setCurrentStage] = useState(0);
   const [completedStages, setCompletedStages] = useState([]);
   const [showStageSelect, setShowStageSelect] = useState(false);
   const [data, setData] = useState([5, 7, 8, 9, 10, 11, 12, 14, 15, 18]);
   const [interactionCount, setInteractionCount] = useState(0);
+  const [showKnowledgeCheck, setShowKnowledgeCheck] = useState(false);
   
   // Load progress from localStorage
   useEffect(() => {
@@ -519,6 +595,11 @@ export default function DescriptiveStatsJourney() {
     if (currentStage < STAGES.length - 1) {
       setCurrentStage(currentStage + 1);
       setInteractionCount(0);
+    } else {
+      // All stages completed - call onComplete
+      if (onComplete) {
+        onComplete();
+      }
     }
   };
   
@@ -542,7 +623,7 @@ export default function DescriptiveStatsJourney() {
   return (
     <div className="space-y-6">
       {/* Journey Header */}
-      <div className="bg-gradient-to-r from-indigo-900/20 to-purple-900/20 border border-indigo-600/30 rounded-lg p-6">
+      <div className="bg-neutral-900 border border-purple-600/30 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-2xl font-bold text-white mb-2">
@@ -561,13 +642,6 @@ export default function DescriptiveStatsJourney() {
           </Button>
         </div>
         
-        {/* Progress Bar */}
-        <ProgressBar
-          current={completedStages.length}
-          total={STAGES.length}
-          label="Journey Progress"
-          variant="purple"
-        />
       </div>
       
       {/* Stage Selection Panel */}
@@ -620,25 +694,6 @@ export default function DescriptiveStatsJourney() {
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
-          {currentStage > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentStage(currentStage - 1)}
-            >
-              Previous
-            </Button>
-          )}
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleStageComplete}
-            disabled={currentStage === STAGES.length - 1 && completedStages.includes(currentStage)}
-          >
-            {currentStage === STAGES.length - 1 ? 'Complete' : 'Next Stage'}
-          </Button>
-        </div>
       </div>
       
       {/* Interactive Visualization */}
@@ -664,9 +719,6 @@ export default function DescriptiveStatsJourney() {
         >
           Reset Data
         </Button>
-        <div className="ml-auto text-sm text-neutral-400">
-          Interactions: {interactionCount}
-        </div>
       </div>
       
       {/* Statistical Analysis */}
@@ -685,6 +737,26 @@ export default function DescriptiveStatsJourney() {
           />
         </motion.div>
       </AnimatePresence>
+      
+      {/* Navigation at the Bottom */}
+      <InteractiveJourneyNavigation
+        currentSection={currentStage}
+        totalSections={STAGES.length}
+        onNavigate={(newStage) => {
+          setCurrentStage(newStage);
+          setInteractionCount(0);
+        }}
+        onComplete={handleStageComplete}
+        sectionTitles={STAGES.map(s => s.title)}
+        showProgress={true}
+        progressVariant="purple"
+        isCompleted={completedStages.includes(currentStage)}
+        allowKeyboardNav={true}
+        className="mt-8"
+      />
+      
+      {/* Back to Hub Button */}
+      <BackToHub chapter={4} bottom />
     </div>
   );
 }

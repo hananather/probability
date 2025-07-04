@@ -10,6 +10,7 @@ import {
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
 import { Button } from '../ui/button';
 import { ProgressBar } from '../ui/ProgressBar';
+import BackToHub from '../ui/BackToHub';
 
 // Use probability color scheme
 const colorScheme = createColorScheme('probability');
@@ -192,7 +193,8 @@ const BayesVisualization = memo(function BayesVisualization({ values, scenario }
           .attr("width", xScale.bandwidth())
           .attr("height", barHeight)
           .attr("fill", colorScheme.primary)
-          .attr("opacity", 0.3);
+          .attr("opacity", 0.3)
+          .style("transition", "all 1.5s ease");
 
         // Defective portion
         const defectHeight = barHeight * factory.defectRate;
@@ -470,10 +472,12 @@ export default function BayesTheoremVisualizer() {
   };
 
   return (
-    <VisualizationContainer
-      title="Bayes' Theorem Visualizer"
-      description="Explore how prior beliefs are updated with new evidence to form posterior probabilities"
-    >
+    <div>
+      <BackToHub chapter={1} />
+      <VisualizationContainer
+        title="Bayes' Theorem Visualizer"
+        description="Explore how prior beliefs are updated with new evidence to form posterior probabilities"
+      >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main visualization area */}
         <div className="lg:col-span-2 space-y-6">
@@ -521,6 +525,7 @@ export default function BayesTheoremVisualizer() {
           />
         </div>
       </div>
-    </VisualizationContainer>
+      </VisualizationContainer>
+    </div>
   );
 }

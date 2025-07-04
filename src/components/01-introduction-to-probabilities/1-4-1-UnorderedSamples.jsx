@@ -12,6 +12,8 @@ import { Button } from '../ui/button';
 import { RangeSlider } from '../ui/RangeSlider';
 import { InfoIcon, ChevronRight, Calculator, Grid, BarChart3, Sparkles, Users, FileText } from 'lucide-react';
 import { tutorial_1_4_unordered } from '@/tutorials/chapter1';
+import { factorial } from '@/utils/distributions';
+import BackToHub from '../ui/BackToHub';
 
 const colorScheme = createColorScheme('probability');
 
@@ -31,15 +33,6 @@ export default function UnorderedSamples() {
   const [activeTab, setActiveTab] = useState('lottery');
   
   // Calculate combination value
-  const factorial = (num) => {
-    if (num <= 1) return 1;
-    let result = 1;
-    for (let i = 2; i <= num; i++) {
-      result *= i;
-    }
-    return result;
-  };
-  
   const combination = (n, r) => {
     if (r > n) return 0;
     if (r === 0 || r === n) return 1;
@@ -61,6 +54,7 @@ export default function UnorderedSamples() {
         </p>
       }
     >
+      <BackToHub chapter={1} />
       <div className="max-w-4xl mx-auto">
         {/* Tab Navigation */}
         <div className="mb-4">
@@ -186,15 +180,15 @@ export default function UnorderedSamples() {
         <div className="mt-4 flex items-center justify-between bg-gradient-to-r from-gray-800/40 to-gray-700/40 rounded-lg p-3 border border-gray-700/50">
           <div className="flex items-center gap-6 text-sm">
             <div>
-              <span className="text-gray-400">Permutations: </span>
-              <span className="font-mono text-green-400">{formatNumber(permutationValue)}</span>
+              <span className="text-gray-300">Permutations: </span>
+              <span className="font-mono text-teal-400">{formatNumber(permutationValue)}</span>
             </div>
             <div>
-              <span className="text-gray-400">Combinations: </span>
+              <span className="text-gray-300">Combinations: </span>
               <span className="font-mono text-cyan-400">{formatNumber(combinationValue)}</span>
             </div>
             <div>
-              <span className="text-gray-400">Relationship: </span>
+              <span className="text-gray-300">Relationship: </span>
               <span className="font-mono text-purple-400">C = P/{r}!</span>
             </div>
           </div>
@@ -278,15 +272,6 @@ const LotteryVisualization = React.memo(function LotteryVisualization({ n, r }) 
   // Generate ball numbers
   const balls = Array.from({ length: n }, (_, i) => i + 1);
 
-  // Helper function for factorial
-  const factorial = (num) => {
-    if (num <= 1) return 1;
-    let result = 1;
-    for (let i = 2; i <= num; i++) {
-      result *= i;
-    }
-    return result;
-  };
 
   // Generate permutations for visualization
   const generatePermutations = (arr) => {
@@ -802,7 +787,7 @@ const PascalTriangle = React.memo(function PascalTriangle({ n, r, onCellClick })
           .attr("marker-end", "url(#arrowhead)")
           .style("opacity", 0)
           .transition()
-          .duration(300)
+          .duration(1500)
           .style("opacity", 0.8);
       }
       
@@ -821,7 +806,7 @@ const PascalTriangle = React.memo(function PascalTriangle({ n, r, onCellClick })
           .attr("marker-end", "url(#arrowhead)")
           .style("opacity", 0)
           .transition()
-          .duration(300)
+          .duration(1500)
           .style("opacity", 0.8);
       }
     }
@@ -1194,15 +1179,6 @@ const FormulaDerivation = React.memo(function FormulaDerivation({ n, r }) {
   const [showAnimation, setShowAnimation] = useState(false);
   const maxSteps = 5;
 
-  const factorial = (num) => {
-    if (num <= 1) return 1;
-    let result = 1;
-    for (let i = 2; i <= num; i++) {
-      result *= i;
-    }
-    return result;
-  };
-
   const permutationValue = n >= r ? factorial(n) / factorial(n - r) : 0;
   const combinationValue = combination(n, r);
 
@@ -1221,7 +1197,7 @@ const FormulaDerivation = React.memo(function FormulaDerivation({ n, r }) {
 
   const FormulaStep = React.memo(({ children, visible, highlight }) => (
     <div className={cn(
-      "transition-all duration-500",
+      "transition-all duration-1500",
       visible ? "opacity-100 transform translate-y-0" : "opacity-0 transform translate-y-4",
       highlight && "bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-3 mt-2"
     )}>
@@ -1455,7 +1431,7 @@ const PermutationGrouping = React.memo(function PermutationGrouping({ n, r, anim
           permutations.map((perm, idx) => (
             <div 
               key={idx} 
-              className="bg-green-900/30 border border-green-500/50 rounded p-2 text-center transition-all duration-500"
+              className="bg-green-900/30 border border-green-500/50 rounded p-2 text-center transition-all duration-1500"
               style={{ 
                 animationDelay: `${idx * 100}ms`,
                 animation: animate ? 'fadeIn 0.5s ease-out' : 'none'

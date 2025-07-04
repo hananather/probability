@@ -7,6 +7,7 @@ import {
   Dices, Users, Pizza, CreditCard, Trophy, Coffee,
   RefreshCw, Check, X
 } from 'lucide-react';
+import { factorial } from '@/utils/distributions';
 
 const colorScheme = createColorScheme('probability');
 

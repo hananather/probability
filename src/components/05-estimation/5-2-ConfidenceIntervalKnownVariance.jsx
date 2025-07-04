@@ -62,14 +62,16 @@ const chapterColors = createColorScheme('estimation');
 const LEARNING_MODES = {
   INTUITIVE: 'intuitive',
   FORMAL: 'formal',
-  EXPLORATION: 'exploration'
+  EXPLORATION: 'exploration',
+  PRACTICE: 'practice'
 };
 
 // Mode colors
 const MODE_COLORS = {
   [LEARNING_MODES.INTUITIVE]: '#3b82f6', // blue
   [LEARNING_MODES.FORMAL]: '#8b5cf6', // purple
-  [LEARNING_MODES.EXPLORATION]: '#10b981' // emerald
+  [LEARNING_MODES.EXPLORATION]: '#10b981', // emerald
+  [LEARNING_MODES.PRACTICE]: '#f59e0b' // amber
 };
 
 // Isolated LaTeX Formula Component (Following LaTeX Guide Pattern)
@@ -93,7 +95,7 @@ const FormulaSection = React.memo(function FormulaSection() {
   
   return (
     <motion.div 
-      className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 rounded-lg p-4 my-4 border border-blue-700/30"
+      className="bg-gradient-to-r from-gray-900/20 to-gray-800/20 rounded-lg p-4 my-4 border border-gray-700/30"
       whileHover={{ scale: 1.01 }}
     >
       <h4 className="font-semibold text-emerald-400 mb-2">The Formula</h4>
@@ -143,10 +145,10 @@ const CIIntroduction = React.memo(function CIIntroduction({ mode, onModeChange, 
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 1.5 }}
       className="mb-8"
     >
-      <div className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+      <VisualizationSection className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
         <h2 className="text-2xl font-bold text-white mb-4">Learning Path</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -185,19 +187,20 @@ const CIIntroduction = React.memo(function CIIntroduction({ mode, onModeChange, 
                   {value === LEARNING_MODES.INTUITIVE && "Start with the 68-95-99.7 rule"}
                   {value === LEARNING_MODES.FORMAL && "Dive into critical values"}
                   {value === LEARNING_MODES.EXPLORATION && "Explore parameter effects"}
+                  {value === LEARNING_MODES.PRACTICE && "Practice exam-style problems"}
                 </p>
               </motion.button>
             );
           })}
         </div>
-      </div>
+      </VisualizationSection>
       
       <motion.div 
         ref={contentRef} 
         className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 mt-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.3 }}
+        transition={{ delay: 0.5 }}
       >
         <div className="text-sm text-neutral-300 space-y-3">
           <p className="text-lg font-semibold text-white mb-3">
@@ -431,7 +434,7 @@ const EmpiricalRuleExplorer = React.memo(({ isActive, onComplete }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 1.5 }}
     >
       <VisualizationSection>
         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
@@ -753,7 +756,7 @@ const CriticalValuesExplorer = React.memo(({ isActive, onComplete }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 1.5 }}
     >
       <VisualizationSection>
         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
@@ -958,7 +961,7 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 1.5 }}
     >
       <VisualizationSection>
         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
@@ -1067,7 +1070,7 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
               className="bg-gradient-to-br from-emerald-900/20 to-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-emerald-700/30"
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
-              transition={{ delay: 0.3 }}
+              transition={{ delay: 0.5 }}
             >
               <h4 className="font-semibold text-emerald-400 mb-3">Calculation Steps</h4>
               
@@ -1104,6 +1107,1260 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
 }, (prevProps, nextProps) => {
   // Only re-render if isActive changes
   return prevProps.isActive === nextProps.isActive;
+});
+
+// Practice Problems Module with Guided Solutions
+const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActive }) {
+  const contentRef = useRef(null);
+  const [currentProblem, setCurrentProblem] = useState(0);
+  const [showHint, setShowHint] = useState(false);
+  const [showSolution, setShowSolution] = useState(false);
+  const [userAnswer, setUserAnswer] = useState({ lower: '', upper: '' });
+  const [feedback, setFeedback] = useState('');
+  
+  const problems = [
+    {
+      id: 1,
+      difficulty: 'Easy',
+      scenario: 'A sample of 9 observations from a normal population with known standard deviation σ = 5 yields a sample mean x̄ = 19.93.',
+      question: 'Construct a 95% confidence interval for the population mean μ.',
+      data: { n: 9, sigma: 5, xBar: 19.93, confidence: 95 },
+      hints: [
+        'Start by finding the critical value z₀.₀₂₅ for 95% confidence',
+        'Calculate the standard error: SE = σ/√n = 5/√9',
+        'The margin of error is ME = z × SE'
+      ],
+      solution: {
+        steps: [
+          'Critical value: z₀.₀₂₅ = 1.96',
+          'Standard error: SE = 5/√9 = 5/3 = 1.667',
+          'Margin of error: ME = 1.96 × 1.667 = 3.27',
+          'CI = 19.93 ± 3.27 = [16.66, 23.20]'
+        ],
+        lower: 16.66,
+        upper: 23.20
+      }
+    },
+    {
+      id: 2,
+      difficulty: 'Medium',
+      scenario: 'A quality control engineer measures the diameter of ball bearings. From 25 measurements with σ = 0.05 mm, the sample mean is 10.02 mm.',
+      question: 'Find a 99% confidence interval for the true mean diameter.',
+      data: { n: 25, sigma: 0.05, xBar: 10.02, confidence: 99 },
+      hints: [
+        'For 99% confidence, you need z₀.₀₀₅',
+        'Remember: larger confidence level means wider interval',
+        'Check your calculations: SE = 0.05/√25 = 0.01'
+      ],
+      solution: {
+        steps: [
+          'Critical value: z₀.₀₀₅ = 2.576',
+          'Standard error: SE = 0.05/√25 = 0.05/5 = 0.01',
+          'Margin of error: ME = 2.576 × 0.01 = 0.02576',
+          'CI = 10.02 ± 0.02576 = [9.994, 10.046]'
+        ],
+        lower: 9.994,
+        upper: 10.046
+      }
+    },
+    {
+      id: 3,
+      difficulty: 'Medium',
+      scenario: 'Poll results show 520 out of 1000 voters support candidate A. Use normal approximation.',
+      question: 'Construct a 95% confidence interval for the true proportion of support.',
+      data: { n: 1000, pHat: 0.52, confidence: 95 },
+      hints: [
+        'This uses the proportion formula: p̂ ± z√(p̂(1-p̂)/n)',
+        'Standard error for proportion: SE = √(0.52×0.48/1000)',
+        'Same critical value as before for 95%: z = 1.96'
+      ],
+      solution: {
+        steps: [
+          'Sample proportion: p̂ = 520/1000 = 0.52',
+          'Standard error: SE = √(0.52×0.48/1000) = 0.0158',
+          'Margin of error: ME = 1.96 × 0.0158 = 0.031',
+          'CI = 0.52 ± 0.031 = [0.489, 0.551]'
+        ],
+        lower: 0.489,
+        upper: 0.551
+      }
+    },
+    {
+      id: 4,
+      difficulty: 'Hard',
+      scenario: 'A researcher wants to estimate average reaction time with margin of error at most 10 ms at 95% confidence. Previous studies suggest σ = 50 ms.',
+      question: 'What sample size is needed?',
+      data: { sigma: 50, E: 10, confidence: 95 },
+      hints: [
+        'Use the sample size formula: n ≥ (z×σ/E)²',
+        'For 95% confidence: z = 1.96',
+        'Square the entire fraction, not just the numerator'
+      ],
+      solution: {
+        steps: [
+          'Required: E ≤ 10, so z×σ/√n ≤ 10',
+          'Rearranging: n ≥ (z×σ/E)²',
+          'n ≥ (1.96×50/10)² = (9.8)² = 96.04',
+          'Need n ≥ 97 observations'
+        ],
+        answer: 97
+      }
+    },
+    {
+      id: 5,
+      difficulty: 'Hard',
+      scenario: 'Two methods give 95% CIs for the same parameter: Method A: [45.2, 54.8], Method B: [47.1, 52.9].',
+      question: 'Which method likely had a larger sample size? Explain.',
+      data: { ciA: { lower: 45.2, upper: 54.8 }, ciB: { lower: 47.1, upper: 52.9 } },
+      hints: [
+        'Compare the widths of the two intervals',
+        'Narrower CI suggests larger sample size (assuming same σ)',
+        'Width = 2 × margin of error'
+      ],
+      solution: {
+        steps: [
+          'Width A = 54.8 - 45.2 = 9.6',
+          'Width B = 52.9 - 47.1 = 5.8',
+          'Method B has narrower CI',
+          'Since ME = z×σ/√n, smaller ME implies larger n',
+          'Method B likely had larger sample size'
+        ],
+        answer: 'Method B'
+      }
+    }
+  ];
+  
+  const problem = problems[currentProblem];
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [currentProblem, showHint, showSolution]);
+  
+  const checkAnswer = () => {
+    if (problem.id <= 3) {
+      const userLower = parseFloat(userAnswer.lower);
+      const userUpper = parseFloat(userAnswer.upper);
+      const tolerance = 0.01;
+      
+      if (Math.abs(userLower - problem.solution.lower) < tolerance && 
+          Math.abs(userUpper - problem.solution.upper) < tolerance) {
+        setFeedback('Correct! Well done!');
+      } else {
+        setFeedback('Not quite. Check your calculations and try again.');
+      }
+    } else if (problem.id === 4) {
+      const userN = parseInt(userAnswer.lower);
+      if (userN === problem.solution.answer) {
+        setFeedback('Correct! You found the required sample size.');
+      } else {
+        setFeedback('Check your calculation. Remember to round up.');
+      }
+    } else {
+      // For explanation questions
+      setFeedback('Compare your reasoning with the solution.');
+    }
+  };
+  
+  if (!isActive) return null;
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 1.5 }}
+    >
+      <VisualizationSection>
+        <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+          <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
+          Practice Problems
+        </h3>
+        
+        <div className="flex gap-2 mb-4 flex-wrap">
+          {problems.map((p, i) => (
+            <motion.button
+              key={p.id}
+              onClick={() => {
+                setCurrentProblem(i);
+                setShowHint(false);
+                setShowSolution(false);
+                setUserAnswer({ lower: '', upper: '' });
+                setFeedback('');
+              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`px-3 py-1 rounded-lg text-sm ${
+                i === currentProblem 
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' 
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              Problem {p.id} ({p.difficulty})
+            </motion.button>
+          ))}
+        </div>
+        
+        <div ref={contentRef} className="space-y-4">
+          <motion.div 
+            className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50"
+            key={currentProblem}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                problem.difficulty === 'Easy' ? 'bg-green-900/50 text-green-400' :
+                problem.difficulty === 'Medium' ? 'bg-yellow-900/50 text-yellow-400' :
+                'bg-red-900/50 text-red-400'
+              }`}>
+                {problem.difficulty}
+              </span>
+              <h4 className="font-semibold text-white">Problem {problem.id}</h4>
+            </div>
+            
+            <p className="text-gray-300 mb-3">{problem.scenario}</p>
+            <p className="font-semibold text-emerald-400">{problem.question}</p>
+            
+            {problem.id <= 3 && (
+              <div className="mt-4 flex gap-3 items-center">
+                <span className="text-sm text-gray-400">Your answer:</span>
+                <input
+                  type="number"
+                  step="0.001"
+                  placeholder="Lower bound"
+                  value={userAnswer.lower}
+                  onChange={(e) => setUserAnswer({ ...userAnswer, lower: e.target.value })}
+                  className="px-3 py-1 bg-gray-800 rounded border border-gray-600 text-white w-32"
+                />
+                <span className="text-gray-400">to</span>
+                <input
+                  type="number"
+                  step="0.001"
+                  placeholder="Upper bound"
+                  value={userAnswer.upper}
+                  onChange={(e) => setUserAnswer({ ...userAnswer, upper: e.target.value })}
+                  className="px-3 py-1 bg-gray-800 rounded border border-gray-600 text-white w-32"
+                />
+                <motion.button
+                  onClick={checkAnswer}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-4 py-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg"
+                >
+                  Check
+                </motion.button>
+              </div>
+            )}
+            
+            {problem.id === 4 && (
+              <div className="mt-4 flex gap-3 items-center">
+                <span className="text-sm text-gray-400">Required n ≥</span>
+                <input
+                  type="number"
+                  placeholder="Sample size"
+                  value={userAnswer.lower}
+                  onChange={(e) => setUserAnswer({ ...userAnswer, lower: e.target.value })}
+                  className="px-3 py-1 bg-gray-800 rounded border border-gray-600 text-white w-32"
+                />
+                <motion.button
+                  onClick={checkAnswer}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-4 py-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg"
+                >
+                  Check
+                </motion.button>
+              </div>
+            )}
+            
+            {feedback && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className={`mt-3 text-sm ${
+                  feedback.includes('Correct') ? 'text-green-400' : 'text-yellow-400'
+                }`}
+              >
+                {feedback}
+              </motion.p>
+            )}
+          </motion.div>
+          
+          <div className="flex gap-3">
+            <motion.button
+              onClick={() => setShowHint(!showHint)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg"
+            >
+              {showHint ? 'Hide Hints' : 'Show Hints'}
+            </motion.button>
+            
+            <motion.button
+              onClick={() => setShowSolution(!showSolution)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg"
+            >
+              {showSolution ? 'Hide Solution' : 'Show Solution'}
+            </motion.button>
+          </div>
+          
+          <AnimatePresence>
+            {showHint && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="bg-blue-900/20 rounded-lg p-4 border border-blue-700/50"
+              >
+                <h5 className="font-semibold text-blue-400 mb-2">Hints:</h5>
+                <ul className="space-y-1 text-sm text-gray-300">
+                  {problem.hints.map((hint, i) => (
+                    <li key={i}>• {hint}</li>
+                  ))}
+                </ul>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          
+          <AnimatePresence>
+            {showSolution && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="bg-purple-900/20 rounded-lg p-4 border border-purple-700/50"
+              >
+                <h5 className="font-semibold text-purple-400 mb-2">Solution:</h5>
+                <ol className="space-y-2 text-sm text-gray-300">
+                  {problem.solution.steps.map((step, i) => (
+                    <li key={i} className="flex gap-2">
+                      <span className="text-purple-400">{i + 1}.</span>
+                      <span dangerouslySetInnerHTML={{ __html: step }} />
+                    </li>
+                  ))}
+                </ol>
+                {problem.solution.answer && (
+                  <p className="mt-3 font-semibold text-emerald-400">
+                    Answer: {problem.solution.answer}
+                  </p>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </VisualizationSection>
+    </motion.div>
+  );
+});
+
+// Career Relevance Module - "Why Should I Care?"
+const CareerRelevanceModule = React.memo(function CareerRelevanceModule({ isActive }) {
+  const contentRef = useRef(null);
+  const [selectedMajor, setSelectedMajor] = useState('business');
+  const [animationKey, setAnimationKey] = useState(0);
+  
+  const majorExamples = {
+    business: {
+      title: 'Business & Marketing',
+      icon: '📊',
+      examples: [
+        {
+          scenario: 'Market Research',
+          description: 'A streaming service surveys 1,000 users about a new feature.',
+          result: '62% like it, 95% CI: [59%, 65%]',
+          insight: 'With CI not including 50%, you can confidently recommend launching the feature.',
+          realWorld: 'Netflix uses this to decide which shows to produce.'
+        },
+        {
+          scenario: 'Sales Forecasting',
+          description: 'Q4 sales averaged $2.3M from 36 stores.',
+          result: '95% CI: [$2.1M, $2.5M]',
+          insight: 'Budget planning can count on at least $2.1M in revenue.',
+          realWorld: 'Target uses CIs for inventory planning.'
+        }
+      ]
+    },
+    psychology: {
+      title: 'Psychology & Social Sciences',
+      icon: '🧠',
+      examples: [
+        {
+          scenario: 'Therapy Effectiveness',
+          description: 'Depression scores improved by average 8.5 points in 50 patients.',
+          result: '95% CI: [6.2, 10.8] points',
+          insight: 'Since CI excludes 0, the therapy shows significant improvement.',
+          realWorld: 'Insurance companies use this to approve treatments.'
+        },
+        {
+          scenario: 'Memory Study',
+          description: 'Students recalled 72% of words after new technique.',
+          result: '95% CI: [68%, 76%]',
+          insight: 'Can publish that technique improves recall by at least 68%.',
+          realWorld: 'Educational apps use this to validate methods.'
+        }
+      ]
+    },
+    premed: {
+      title: 'Pre-Med & Healthcare',
+      icon: '⚕️',
+      examples: [
+        {
+          scenario: 'Drug Trial',
+          description: 'Blood pressure reduced by avg 12 mmHg in 100 patients.',
+          result: '95% CI: [10, 14] mmHg',
+          insight: 'FDA approval likely since entire CI shows meaningful reduction.',
+          realWorld: 'This is how Pfizer presents drug effectiveness.'
+        },
+        {
+          scenario: 'Diagnostic Accuracy',
+          description: 'New COVID test: 94% accurate in 500 samples.',
+          result: '95% CI: [92%, 96%]',
+          insight: 'Can market as "over 90% accurate" with confidence.',
+          realWorld: 'Abbott Labs used this for rapid test approval.'
+        }
+      ]
+    },
+    engineering: {
+      title: 'Engineering & Tech',
+      icon: '⚙️',
+      examples: [
+        {
+          scenario: 'Quality Control',
+          description: 'Circuit boards: avg failure rate 0.8% from 1000 units.',
+          result: '95% CI: [0.6%, 1.0%]',
+          insight: 'Below 2% spec limit - production continues.',
+          realWorld: 'Apple uses this for iPhone quality standards.'
+        },
+        {
+          scenario: 'Load Testing',
+          description: 'Server response time: avg 145ms under stress.',
+          result: '95% CI: [142ms, 148ms]',
+          insight: 'Stays under 150ms SLA - system passes.',
+          realWorld: 'Amazon uses this for AWS guarantees.'
+        }
+      ]
+    },
+    other: {
+      title: 'General Applications',
+      icon: '🎯',
+      examples: [
+        {
+          scenario: 'Sports Analytics',
+          description: 'Basketball player shoots 38% from 3-point line.',
+          result: '95% CI: [35%, 41%]',
+          insight: 'Above league average of 34% - worth the max contract.',
+          realWorld: 'NBA teams use this for player valuation.'
+        },
+        {
+          scenario: 'Social Media',
+          description: 'Instagram poll: 55% prefer new logo design.',
+          result: '95% CI: [52%, 58%]',
+          insight: 'Majority preference is statistically confirmed.',
+          realWorld: 'Companies A/B test everything this way.'
+        }
+      ]
+    }
+  };
+  
+  const currentExamples = majorExamples[selectedMajor];
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [selectedMajor]);
+  
+  useEffect(() => {
+    setAnimationKey(prev => prev + 1);
+  }, [selectedMajor]);
+  
+  if (!isActive) return null;
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 1.5 }}
+    >
+      <VisualizationSection>
+        <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+          <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>
+          Why Should I Care? Career Relevance
+        </h3>
+        
+        <div className="mb-6">
+          <p className="text-sm text-gray-400 mb-3">Select your field:</p>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(majorExamples).map(([key, value]) => (
+              <motion.button
+                key={key}
+                onClick={() => setSelectedMajor(key)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${
+                  selectedMajor === key 
+                    ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-lg' 
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                <span className="text-lg">{value.icon}</span>
+                <span className="text-sm font-medium">{value.title}</span>
+              </motion.button>
+            ))}
+          </div>
+        </div>
+        
+        <div ref={contentRef} className="space-y-4">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={animationKey}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 1.5 }}
+            >
+              {currentExamples.examples.map((example, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.2 }}
+                  className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-5 border border-gray-700/50 mb-4"
+                  whileHover={{ scale: 1.01 }}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-amber-400 font-bold">{i + 1}</span>
+                    </div>
+                    <div className="flex-1 space-y-3">
+                      <h4 className="font-bold text-white">{example.scenario}</h4>
+                      <p className="text-sm text-gray-300">{example.description}</p>
+                      
+                      <div className="bg-gray-800/50 rounded-lg p-3">
+                        <p className="text-center text-lg font-mono text-amber-400">
+                          {example.result}
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <p className="text-sm text-emerald-400">
+                          <strong>What this means:</strong> {example.insight}
+                        </p>
+                        <p className="text-xs text-gray-400 italic">
+                          💡 Real world: {example.realWorld}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </AnimatePresence>
+          
+          <motion.div 
+            className="bg-gradient-to-r from-amber-900/20 to-orange-900/20 rounded-xl p-4 border border-amber-700/50"
+            whileHover={{ scale: 1.01 }}
+          >
+            <h5 className="font-semibold text-amber-400 mb-2">🎯 The Bottom Line</h5>
+            <p className="text-sm text-gray-300">
+              Every field uses confidence intervals to make million-dollar decisions. 
+              Master this now, and you'll speak the language of data-driven professionals.
+            </p>
+          </motion.div>
+        </div>
+      </VisualizationSection>
+    </motion.div>
+  );
+});
+
+// Exam Success Accelerator Module
+const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
+  const contentRef = useRef(null);
+  const [mode, setMode] = useState('mistakes'); // 'mistakes', 'speed', 'formula', 'ready'
+  const [currentMistake, setCurrentMistake] = useState(0);
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [readinessScore, setReadinessScore] = useState(null);
+  
+  const commonMistakes = [
+    {
+      question: 'A 95% CI for μ is [45, 55]. What does this mean?',
+      wrong: '95% of the data falls between 45 and 55',
+      correct: 'If we repeated sampling many times, 95% of CIs would contain the true μ',
+      explanation: 'CIs are about the parameter (μ), not individual data points!',
+      tip: 'Remember: CI = confidence about WHERE the parameter is, not WHERE the data are'
+    },
+    {
+      question: 'Sample mean = 100, σ = 15, n = 9. Find 95% CI.',
+      wrong: 'CI = 100 ± 1.96(15) = [70.6, 129.4]',
+      correct: 'CI = 100 ± 1.96(15/√9) = 100 ± 9.8 = [90.2, 109.8]',
+      explanation: 'Must divide σ by √n to get standard error!',
+      tip: 'ALWAYS use σ/√n, never just σ'
+    },
+    {
+      question: 'Width of 99% CI vs 95% CI?',
+      wrong: '99% CI is 4% wider than 95% CI',
+      correct: '99% CI is about 31% wider (2.576/1.96 ≈ 1.31)',
+      explanation: 'Width ratio = critical value ratio',
+      tip: 'Memorize: 90% → 1.645, 95% → 1.96, 99% → 2.576'
+    }
+  ];
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [mode, currentMistake]);
+  
+  const checkReadiness = () => {
+    // Simple readiness assessment
+    const scores = {
+      formula: Math.random() > 0.3 ? 1 : 0,
+      interpretation: Math.random() > 0.4 ? 1 : 0,
+      calculation: Math.random() > 0.2 ? 1 : 0,
+      assumptions: Math.random() > 0.5 ? 1 : 0
+    };
+    const total = Object.values(scores).reduce((a, b) => a + b, 0);
+    setReadinessScore({ scores, total, percentage: (total / 4) * 100 });
+  };
+  
+  if (!isActive) return null;
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 1.5 }}
+    >
+      <VisualizationSection>
+        <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+          <span className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></span>
+          Exam Success Accelerator
+        </h3>
+        
+        <div className="flex flex-wrap gap-2 mb-4">
+          <motion.button
+            onClick={() => setMode('mistakes')}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className={`px-4 py-2 rounded-lg transition-all ${
+              mode === 'mistakes' 
+                ? 'bg-gradient-to-r from-red-600 to-pink-600 text-white' 
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
+          >
+            🚨 Common Mistakes
+          </motion.button>
+          
+          <motion.button
+            onClick={() => setMode('speed')}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className={`px-4 py-2 rounded-lg transition-all ${
+              mode === 'speed' 
+                ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white' 
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
+          >
+            ⚡ 10-Min Summary
+          </motion.button>
+          
+          <motion.button
+            onClick={() => setMode('formula')}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className={`px-4 py-2 rounded-lg transition-all ${
+              mode === 'formula' 
+                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white' 
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
+          >
+            📝 Formula Card
+          </motion.button>
+          
+          <motion.button
+            onClick={() => {
+              setMode('ready');
+              checkReadiness();
+            }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className={`px-4 py-2 rounded-lg transition-all ${
+              mode === 'ready' 
+                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white' 
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
+          >
+            ✅ Am I Ready?
+          </motion.button>
+        </div>
+        
+        <div ref={contentRef}>
+          {mode === 'mistakes' && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="space-y-4"
+            >
+              <div className="bg-gradient-to-br from-red-900/20 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-red-700/30">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="font-bold text-white">Mistake #{currentMistake + 1}</h4>
+                  <div className="flex gap-2">
+                    {commonMistakes.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          setCurrentMistake(i);
+                          setShowAnswer(false);
+                        }}
+                        className={`w-8 h-8 rounded-full ${
+                          i === currentMistake 
+                            ? 'bg-red-600 text-white' 
+                            : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <p className="text-white font-medium">{commonMistakes[currentMistake].question}</p>
+                  
+                  <div className="space-y-2">
+                    <div className="p-3 bg-red-900/30 rounded-lg border border-red-600/50">
+                      <p className="text-sm text-red-400">❌ Common Wrong Answer:</p>
+                      <p className="text-white">{commonMistakes[currentMistake].wrong}</p>
+                    </div>
+                    
+                    {showAnswer && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="space-y-2"
+                      >
+                        <div className="p-3 bg-green-900/30 rounded-lg border border-green-600/50">
+                          <p className="text-sm text-green-400">✓ Correct Answer:</p>
+                          <p className="text-white">{commonMistakes[currentMistake].correct}</p>
+                        </div>
+                        
+                        <div className="p-3 bg-blue-900/30 rounded-lg border border-blue-600/50">
+                          <p className="text-sm text-blue-400">💡 Why:</p>
+                          <p className="text-white">{commonMistakes[currentMistake].explanation}</p>
+                        </div>
+                        
+                        <div className="p-3 bg-amber-900/30 rounded-lg border border-amber-600/50">
+                          <p className="text-sm text-amber-400">🎯 Remember:</p>
+                          <p className="text-white font-semibold">{commonMistakes[currentMistake].tip}</p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </div>
+                  
+                  {!showAnswer && (
+                    <motion.button
+                      onClick={() => setShowAnswer(true)}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="w-full py-2 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-lg"
+                    >
+                      Show Correct Answer
+                    </motion.button>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+          
+          {mode === 'speed' && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="bg-gradient-to-br from-blue-900/20 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-blue-700/30"
+            >
+              <h4 className="font-bold text-blue-400 mb-4">⚡ 10-Minute Crash Course</h4>
+              
+              <div className="space-y-4">
+                <div className="border-l-4 border-blue-500 pl-4">
+                  <h5 className="font-semibold text-white mb-1">1. The Formula (2 min)</h5>
+                  <div className="bg-gray-800/50 rounded p-3 text-center">
+                    <span dangerouslySetInnerHTML={{ __html: `\\[CI = \\bar{x} \\pm z_{\\alpha/2} \\cdot \\frac{\\sigma}{\\sqrt{n}}\\]` }} />
+                  </div>
+                  <p className="text-sm text-gray-400 mt-2">That's it. Everything else is just plugging in numbers.</p>
+                </div>
+                
+                <div className="border-l-4 border-cyan-500 pl-4">
+                  <h5 className="font-semibold text-white mb-1">2. Critical Values (1 min)</h5>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="bg-gray-800/50 rounded p-2">
+                      <p className="text-xs text-gray-400">90%</p>
+                      <p className="font-mono text-cyan-400">1.645</p>
+                    </div>
+                    <div className="bg-gray-800/50 rounded p-2">
+                      <p className="text-xs text-gray-400">95%</p>
+                      <p className="font-mono text-cyan-400">1.96</p>
+                    </div>
+                    <div className="bg-gray-800/50 rounded p-2">
+                      <p className="text-xs text-gray-400">99%</p>
+                      <p className="font-mono text-cyan-400">2.576</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="border-l-4 border-teal-500 pl-4">
+                  <h5 className="font-semibold text-white mb-1">3. Quick Steps (2 min)</h5>
+                  <ol className="text-sm space-y-1 text-gray-300">
+                    <li>1️⃣ Calculate SE = σ/√n</li>
+                    <li>2️⃣ Find z (use table above)</li>
+                    <li>3️⃣ ME = z × SE</li>
+                    <li>4️⃣ CI = x̄ ± ME</li>
+                  </ol>
+                </div>
+                
+                <div className="border-l-4 border-emerald-500 pl-4">
+                  <h5 className="font-semibold text-white mb-1">4. Interpretation (3 min)</h5>
+                  <p className="text-sm text-gray-300">
+                    "We are [confidence]% confident that the true population mean lies between [lower] and [upper]."
+                  </p>
+                  <p className="text-sm text-red-400 mt-2">
+                    NOT: "95% of data is in this interval" ❌
+                  </p>
+                </div>
+                
+                <div className="border-l-4 border-purple-500 pl-4">
+                  <h5 className="font-semibold text-white mb-1">5. Sample Size (2 min)</h5>
+                  <div className="bg-gray-800/50 rounded p-3 text-center">
+                    <span dangerouslySetInnerHTML={{ __html: `\\[n \\geq \\left(\\frac{z \\cdot \\sigma}{E}\\right)^2\\]` }} />
+                  </div>
+                  <p className="text-sm text-gray-400 mt-1">E = desired margin of error</p>
+                </div>
+              </div>
+              
+              <div className="mt-6 p-3 bg-gradient-to-r from-blue-900/30 to-cyan-900/30 rounded-lg border border-blue-600/50">
+                <p className="text-sm text-blue-400 font-semibold">
+                  ⏱️ Total: 10 minutes to understand 90% of what you need!
+                </p>
+              </div>
+            </motion.div>
+          )}
+          
+          {mode === 'formula' && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="bg-gradient-to-br from-purple-900/20 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-700/30"
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="font-bold text-purple-400">Formula Card (Print-Ready)</h4>
+                <button className="text-sm px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700">
+                  📥 Download
+                </button>
+              </div>
+              
+              <div className="bg-gray-900/90 text-white p-6 rounded-lg space-y-4 border border-gray-700">
+                <h5 className="font-bold text-center text-lg border-b-2 border-gray-600 pb-2">
+                  Confidence Intervals (σ Known)
+                </h5>
+                
+                <div className="space-y-3">
+                  <div className="border-2 border-gray-600 rounded p-3">
+                    <p className="font-semibold mb-2">Main Formula:</p>
+                    <div className="text-center text-xl">
+                      <span dangerouslySetInnerHTML={{ __html: `\\[CI = \\bar{x} \\pm z_{\\alpha/2} \\cdot \\frac{\\sigma}{\\sqrt{n}}\\]` }} />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="border border-gray-600 rounded p-2">
+                      <p className="font-semibold text-sm">Standard Error:</p>
+                      <div className="text-center">
+                        <span dangerouslySetInnerHTML={{ __html: `\\[SE = \\frac{\\sigma}{\\sqrt{n}}\\]` }} />
+                      </div>
+                    </div>
+                    
+                    <div className="border border-gray-600 rounded p-2">
+                      <p className="font-semibold text-sm">Margin of Error:</p>
+                      <div className="text-center">
+                        <span dangerouslySetInnerHTML={{ __html: `\\[ME = z_{\\alpha/2} \\times SE\\]` }} />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="border border-gray-300 rounded p-2">
+                    <p className="font-semibold text-sm mb-1">Critical Values:</p>
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          <th>Confidence</th>
+                          <th>α</th>
+                          <th>z<sub>α/2</sub></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr><td>90%</td><td>0.10</td><td className="font-mono">1.645</td></tr>
+                        <tr><td>95%</td><td>0.05</td><td className="font-mono">1.96</td></tr>
+                        <tr><td>99%</td><td>0.01</td><td className="font-mono">2.576</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  <div className="border border-gray-300 rounded p-2">
+                    <p className="font-semibold text-sm">Sample Size:</p>
+                    <div className="text-center">
+                      <span dangerouslySetInnerHTML={{ __html: `\\[n \\geq \\left(\\frac{z_{\\alpha/2} \\cdot \\sigma}{E}\\right)^2\\]` }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+          
+          {mode === 'ready' && readinessScore && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="bg-gradient-to-br from-emerald-900/20 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-emerald-700/30"
+            >
+              <h4 className="font-bold text-emerald-400 mb-4">Exam Readiness Assessment</h4>
+              
+              <div className="space-y-4">
+                <div className="text-center mb-6">
+                  <div className="text-5xl font-bold text-white mb-2">
+                    {readinessScore.percentage}%
+                  </div>
+                  <p className="text-gray-400">Overall Readiness</p>
+                </div>
+                
+                <div className="space-y-3">
+                  {Object.entries(readinessScore.scores).map(([category, score]) => (
+                    <div key={category} className="flex items-center gap-3">
+                      <span className="w-32 text-sm capitalize">{category}:</span>
+                      <div className="flex-1 bg-gray-700 rounded-full h-4 overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${score * 100}%` }}
+                          transition={{ delay: 0.5, duration: 1.5 }}
+                          className={`h-full ${
+                            score === 1 ? 'bg-green-500' : 'bg-red-500'
+                          }`}
+                        />
+                      </div>
+                      <span className={`text-sm ${score === 1 ? 'text-green-400' : 'text-red-400'}`}>
+                        {score === 1 ? '✓' : '✗'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className={`p-4 rounded-lg border ${
+                  readinessScore.percentage >= 75 
+                    ? 'bg-green-900/30 border-green-600/50' 
+                    : 'bg-yellow-900/30 border-yellow-600/50'
+                }`}>
+                  <p className="font-semibold mb-2">
+                    {readinessScore.percentage >= 75 
+                      ? '🎉 You\'re ready for the exam!' 
+                      : '📚 Keep practicing these areas:'}
+                  </p>
+                  {readinessScore.percentage < 75 && (
+                    <ul className="text-sm space-y-1">
+                      {Object.entries(readinessScore.scores).map(([category, score]) => 
+                        score === 0 && (
+                          <li key={category} className="text-yellow-400">
+                            • Review {category}
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </div>
+      </VisualizationSection>
+    </motion.div>
+  );
+});
+
+// Real-World Interpretation Module
+const RealWorldInterpretationModule = React.memo(function RealWorldInterpretationModule({ isActive }) {
+  const contentRef = useRef(null);
+  const [scenario, setScenario] = useState(0);
+  const [selectedInterpretation, setSelectedInterpretation] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  
+  const scenarios = [
+    {
+      id: 1,
+      title: 'Political Polling',
+      context: 'A poll of 1000 voters shows 52% support for Candidate A with a margin of error of ±3.1% at 95% confidence.',
+      ci: '[48.9%, 55.1%]',
+      question: 'What does this confidence interval mean?',
+      options: [
+        {
+          text: 'We are 95% sure that exactly 52% of all voters support Candidate A.',
+          correct: false,
+          feedback: 'Incorrect. The 52% is just our sample estimate, not a certainty about the population.'
+        },
+        {
+          text: 'There is a 95% probability that the true support is between 48.9% and 55.1%.',
+          correct: false,
+          feedback: 'Common misconception! The true parameter is fixed - it\'s either in the interval or not.'
+        },
+        {
+          text: 'If we repeated this poll many times, about 95% of the intervals would contain the true support level.',
+          correct: true,
+          feedback: 'Correct! This is the proper frequentist interpretation of confidence intervals.'
+        },
+        {
+          text: '95% of voters have opinions between 48.9% and 55.1%.',
+          correct: false,
+          feedback: 'Incorrect. The interval is about the population parameter, not individual voters.'
+        }
+      ],
+      insight: 'Since the interval includes 50%, we cannot conclusively say Candidate A is ahead.'
+    },
+    {
+      id: 2,
+      title: 'Quality Control',
+      context: 'A factory produces widgets with target weight 100g. A sample of 25 widgets gives 95% CI: [98.5g, 101.5g].',
+      ci: '[98.5g, 101.5g]',
+      question: 'Should the factory adjust its machinery?',
+      options: [
+        {
+          text: '95% of widgets weigh between 98.5g and 101.5g.',
+          correct: false,
+          feedback: 'No - this interval estimates the mean weight, not the range of individual widgets.'
+        },
+        {
+          text: 'The process mean is likely close to the target since 100g is in the interval.',
+          correct: true,
+          feedback: 'Correct! The target value being in the CI suggests the process is on target.'
+        },
+        {
+          text: 'We need exactly 100g average, so adjustments are needed.',
+          correct: false,
+          feedback: 'Statistical variation is normal. Being exactly at 100g is unrealistic.'
+        },
+        {
+          text: 'The interval is too wide, so the process has too much variation.',
+          correct: false,
+          feedback: 'The interval width reflects sample size and population variance, not process control.'
+        }
+      ],
+      insight: 'The interval includes the target, suggesting the process is under control.'
+    },
+    {
+      id: 3,
+      title: 'Medical Testing',
+      context: 'A drug trial estimates mean reduction in blood pressure: 95% CI is [8.2, 11.8] mmHg.',
+      ci: '[8.2, 11.8] mmHg',
+      question: 'What can we conclude about the drug\'s effectiveness?',
+      options: [
+        {
+          text: 'Every patient will see a reduction between 8.2 and 11.8 mmHg.',
+          correct: false,
+          feedback: 'Incorrect. This is about the average effect, individual responses vary.'
+        },
+        {
+          text: 'The drug has no effect since the interval doesn\'t include 0.',
+          correct: false,
+          feedback: 'Actually the opposite! Not including 0 suggests a significant effect.'
+        },
+        {
+          text: 'The average reduction in the population is likely between 8.2 and 11.8 mmHg.',
+          correct: true,
+          feedback: 'Correct! The interval estimates the population mean effect.'
+        },
+        {
+          text: '95% of patients will benefit from the drug.',
+          correct: false,
+          feedback: 'The 95% refers to confidence in the interval, not the proportion who benefit.'
+        }
+      ],
+      insight: 'Since the entire interval is positive, we have strong evidence the drug reduces blood pressure on average.'
+    }
+  ];
+  
+  const currentScenario = scenarios[scenario];
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [scenario]);
+  
+  const handleSelection = (index) => {
+    setSelectedInterpretation(index);
+    setShowFeedback(true);
+  };
+  
+  if (!isActive) return null;
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 1.5 }}
+    >
+      <VisualizationSection>
+        <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+          <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+          Real-World Interpretation
+        </h3>
+        
+        <div className="flex gap-2 mb-4">
+          {scenarios.map((s, i) => (
+            <motion.button
+              key={s.id}
+              onClick={() => {
+                setScenario(i);
+                setSelectedInterpretation(null);
+                setShowFeedback(false);
+              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`px-3 py-1 rounded-lg text-sm ${
+                i === scenario 
+                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white' 
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              {s.title}
+            </motion.button>
+          ))}
+        </div>
+        
+        <div ref={contentRef} className="space-y-4">
+          <motion.div 
+            className="bg-gradient-to-br from-emerald-900/20 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-emerald-700/30"
+            key={scenario}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+          >
+            <h4 className="font-bold text-white mb-2">{currentScenario.title}</h4>
+            <p className="text-gray-300 mb-3">{currentScenario.context}</p>
+            <div className="bg-gray-800/50 rounded-lg p-3 mb-4">
+              <p className="text-center text-xl font-mono text-emerald-400">
+                95% CI: {currentScenario.ci}
+              </p>
+            </div>
+            <p className="font-semibold text-white mb-4">{currentScenario.question}</p>
+            
+            <div className="space-y-2">
+              {currentScenario.options.map((option, i) => (
+                <motion.button
+                  key={i}
+                  onClick={() => handleSelection(i)}
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
+                    selectedInterpretation === i
+                      ? option.correct
+                        ? 'bg-green-900/30 border-green-600'
+                        : 'bg-red-900/30 border-red-600'
+                      : 'bg-gray-800/50 border-gray-700 hover:border-gray-600'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="text-gray-400">{String.fromCharCode(65 + i)}.</span>
+                    <span className="text-gray-300">{option.text}</span>
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+          
+          <AnimatePresence>
+            {showFeedback && selectedInterpretation !== null && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className={`rounded-lg p-4 ${
+                  currentScenario.options[selectedInterpretation].correct
+                    ? 'bg-green-900/20 border border-green-700/50'
+                    : 'bg-red-900/20 border border-red-700/50'
+                }`}
+              >
+                <p className={`font-semibold mb-2 ${
+                  currentScenario.options[selectedInterpretation].correct
+                    ? 'text-green-400'
+                    : 'text-red-400'
+                }`}>
+                  {currentScenario.options[selectedInterpretation].correct ? '✓ Correct!' : '✗ Not quite'}
+                </p>
+                <p className="text-sm text-gray-300 mb-2">
+                  {currentScenario.options[selectedInterpretation].feedback}
+                </p>
+                <div className="mt-3 p-3 bg-blue-900/20 rounded border border-blue-700/50">
+                  <p className="text-sm text-blue-400 font-semibold mb-1">Key Insight:</p>
+                  <p className="text-sm text-gray-300">{currentScenario.insight}</p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          
+          <motion.div 
+            className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50"
+            whileHover={{ scale: 1.01 }}
+          >
+            <h5 className="font-semibold text-purple-400 mb-2">Remember:</h5>
+            <ul className="text-sm text-gray-300 space-y-1">
+              <li>• A confidence interval estimates a population parameter, not individual values</li>
+              <li>• The confidence level describes long-run coverage, not probability for this specific interval</li>
+              <li>• Wider intervals give more confidence but less precision</li>
+              <li>• Context matters - consider practical significance, not just statistical</li>
+            </ul>
+          </motion.div>
+        </div>
+      </VisualizationSection>
+    </motion.div>
+  );
 });
 
 // Parameter Effects Explorer
@@ -1160,7 +2417,7 @@ const ParameterEffectsExplorer = React.memo(({ isActive }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 1.5 }}
     >
       <VisualizationSection>
         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
@@ -1335,6 +2592,8 @@ export default function ConfidenceIntervalKnownVariance() {
         unlockMode(LEARNING_MODES.FORMAL);
       } else if (section === LEARNING_MODES.FORMAL) {
         unlockMode(LEARNING_MODES.EXPLORATION);
+      } else if (section === LEARNING_MODES.EXPLORATION) {
+        unlockMode(LEARNING_MODES.PRACTICE);
       }
     }
   };
@@ -1376,6 +2635,14 @@ export default function ConfidenceIntervalKnownVariance() {
         <InteractiveCIBuilder isActive={mode === LEARNING_MODES.EXPLORATION} />
       </div>
       
+      {/* PRACTICE Mode */}
+      <div style={{ display: mode === LEARNING_MODES.PRACTICE ? 'block' : 'none' }}>
+        <CareerRelevanceModule isActive={mode === LEARNING_MODES.PRACTICE} />
+        <ExamSuccessModule isActive={mode === LEARNING_MODES.PRACTICE} />
+        <PracticeProblemModule isActive={mode === LEARNING_MODES.PRACTICE} />
+        <RealWorldInterpretationModule isActive={mode === LEARNING_MODES.PRACTICE} />
+      </div>
+      
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -1411,7 +2678,7 @@ export default function ConfidenceIntervalKnownVariance() {
             </motion.div>
           </div>
           
-          {completedSections.length === 3 && (
+          {completedSections.length === 4 && (
             <motion.div 
               className="mt-4 bg-gradient-to-r from-emerald-900/30 to-blue-900/30 rounded-xl p-4 border border-emerald-700/50"
               initial={{ opacity: 0, y: 20 }}

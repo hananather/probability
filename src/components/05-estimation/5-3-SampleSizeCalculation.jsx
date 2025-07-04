@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import * as d3 from 'd3';
+import * as d3 from '@/utils/d3-utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Compass, 
@@ -24,17 +24,20 @@ import {
   GraphContainer,
   ControlGroup
 } from '../ui/VisualizationContainer';
-import { createColorScheme } from '@/lib/design-system';
+import { colors, typography, createColorScheme } from '@/lib/design-system';
+
+// Get consistent color scheme
+const chapterColors = createColorScheme('default');
 
 // Stage configuration
 const SampleSizeJourney = {
   DISCOVER: {
     id: 'DISCOVER',
     title: 'Discover the Relationships',
-    subtitle: 'How do n, E, σ, and confidence interact?',
+    subtitle: <>How do n, E, <span dangerouslySetInnerHTML={{ __html: '\\(\\sigma\\)' }} />, and confidence interact?</>,
     icon: Compass,
-    color: '#3b82f6',
-    gradient: 'from-blue-600 to-blue-700',
+    color: chapterColors.chart.primary,  // Teal
+    gradient: 'from-teal-600 to-teal-700',
     sections: ['VisualExploration', 'InteractiveRelationships', 'FirstInsights']
   },
   CALCULATE: {
@@ -42,8 +45,8 @@ const SampleSizeJourney = {
     title: 'Master the Calculations',
     subtitle: 'Apply the formula with confidence',
     icon: Calculator,
-    color: '#a855f7',
-    gradient: 'from-purple-600 to-purple-700',
+    color: chapterColors.chart.secondary,  // Yellow
+    gradient: 'from-yellow-600 to-yellow-700',
     sections: ['FormulaDerivation', 'GuidedExamples', 'PracticeMode']
   },
   APPLY: {
@@ -51,8 +54,8 @@ const SampleSizeJourney = {
     title: 'Real-World Applications',
     subtitle: 'Balance precision, confidence, and cost',
     icon: Briefcase,
-    color: '#10b981',
-    gradient: 'from-emerald-600 to-emerald-700',
+    color: chapterColors.chart.tertiary,  // Blue
+    gradient: 'from-blue-600 to-blue-700',
     sections: ['CostAnalysis', 'ScenarioPlanning', 'OptimizationTool']
   }
 };
@@ -126,6 +129,158 @@ const JourneyProgress = React.memo(function JourneyProgress({
         />
       </div>
     </div>
+  );
+});
+
+// Mathematical Foundation Component
+const MathematicalFoundation = React.memo(function MathematicalFoundation() {
+  const contentRef = useRef(null);
+  const [showDerivation, setShowDerivation] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [showDerivation, currentStep]);
+  
+  const derivationSteps = [
+    {
+      title: "Start with the confidence interval formula",
+      content: `\\[\\bar{X} \\pm z_{\\alpha/2} \\frac{\\sigma}{\\sqrt{n}}\\]`,
+      explanation: "This is our standard CI formula for known σ"
+    },
+    {
+      title: "The margin of error E is half the CI width",
+      content: `\\[E = z_{\\alpha/2} \\frac{\\sigma}{\\sqrt{n}}\\]`,
+      explanation: "We want to control this maximum error"
+    },
+    {
+      title: "Solve for n by rearranging",
+      content: `\\[\\sqrt{n} = \\frac{z_{\\alpha/2} \\times \\sigma}{E}\\]`,
+      explanation: "Multiply both sides by √n, divide by E"
+    },
+    {
+      title: "Square both sides to get n",
+      content: `\\[n = \\left(\\frac{z_{\\alpha/2} \\times \\sigma}{E}\\right)^2\\]`,
+      explanation: "This is our sample size formula!"
+    }
+  ];
+  
+  return (
+    <VisualizationSection className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-lg p-6 border border-blue-700/50">
+      <div ref={contentRef}>
+        <h3 className={`${typography.h2} mb-4`}>
+          Why Does the Formula Work?
+        </h3>
+        
+        <div className="grid md:grid-cols-2 gap-6 mb-6">
+          {/* Key Insight Card */}
+          <div className="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700/50">
+            <h4 className={`${typography.h3} mb-3`}>Key Insight</h4>
+            <p className="text-sm text-neutral-300 mb-3">
+              The margin of error E represents the maximum distance between our sample mean and the true population mean (with specified confidence).
+            </p>
+            <div className="bg-purple-900/20 rounded p-3 text-center">
+              <p className="text-sm text-purple-300">If we want E = 2 with 95% confidence:</p>
+              <p className="text-xs text-neutral-400 mt-1">
+                We're 95% sure the true mean is within ±2 of our sample mean
+              </p>
+            </div>
+          </div>
+          
+          {/* CLT Connection Card */}
+          <div className="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700/50">
+            <h4 className={`${typography.h3} mb-3`}>Central Limit Theorem Connection</h4>
+            <p className="text-sm text-neutral-300 mb-3">
+              By the CLT, <span dangerouslySetInnerHTML={{ __html: `\\(\\bar{X} \\sim N(\\mu, \\sigma^2/n)\\)` }} />
+            </p>
+            <p className="text-sm text-neutral-300">
+              As n increases:
+            </p>
+            <ul className="text-sm text-neutral-400 mt-2 space-y-1">
+              <li>• Standard error decreases: <span dangerouslySetInnerHTML={{ __html: `\\(\\sigma/\\sqrt{n} \\downarrow\\)` }} /></li>
+              <li>• Confidence interval narrows</li>
+              <li>• Estimates become more precise</li>
+            </ul>
+          </div>
+        </div>
+        
+        {/* Interactive Derivation */}
+        <div className="mt-6">
+          <button
+            onClick={() => setShowDerivation(!showDerivation)}
+            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-white font-medium transition-all"
+          >
+            {showDerivation ? 'Hide' : 'Show'} Step-by-Step Derivation
+          </button>
+          
+          <AnimatePresence>
+            {showDerivation && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-4"
+              >
+                <div className="bg-neutral-800/50 rounded-lg p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h5 className="font-semibold text-purple-400">Derivation Steps</h5>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
+                        className="px-3 py-1 bg-neutral-700 hover:bg-neutral-600 rounded text-sm"
+                        disabled={currentStep === 0}
+                      >
+                        Previous
+                      </button>
+                      <span className="px-3 py-1 text-sm">
+                        Step {currentStep + 1} of {derivationSteps.length}
+                      </span>
+                      <button
+                        onClick={() => setCurrentStep(Math.min(derivationSteps.length - 1, currentStep + 1))}
+                        className="px-3 py-1 bg-neutral-700 hover:bg-neutral-600 rounded text-sm"
+                        disabled={currentStep === derivationSteps.length - 1}
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <motion.div
+                    key={currentStep}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="space-y-4"
+                  >
+                    <h6 className="font-medium text-white">
+                      {derivationSteps[currentStep].title}
+                    </h6>
+                    <div className="text-2xl text-center text-purple-300 py-4 bg-neutral-900/50 rounded">
+                      <span dangerouslySetInnerHTML={{ 
+                        __html: derivationSteps[currentStep].content 
+                      }} />
+                    </div>
+                    <p className="text-sm text-neutral-400">
+                      {derivationSteps[currentStep].explanation}
+                    </p>
+                  </motion.div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </VisualizationSection>
   );
 });
 
@@ -308,7 +463,7 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
       .attr("stroke-dasharray", totalLength)
       .attr("stroke-dashoffset", totalLength)
       .transition()
-      .duration(2000)
+      .duration(1500)
       .attr("stroke-dashoffset", 0)
       .on("end", () => setAnimating(false));
     
@@ -323,7 +478,7 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
       .attr("fill", relationships[activeRelationship].color)
       .attr("opacity", 0)
       .transition()
-      .delay((d, i) => 2000 + i * 50)
+      .delay((d, i) => 1500 + i * 50)
       .duration(300)
       .attr("opacity", 0.8);
     
@@ -448,7 +603,7 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
       </div>
       
       {/* Visualization */}
-      <div className="bg-neutral-800 rounded-xl p-6">
+      <div className="rounded-xl p-6">
         <div className="flex justify-between items-start mb-6">
           <div>
             <h4 className="text-lg font-semibold text-white">
@@ -546,6 +701,660 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
         )}
       </div>
     </div>
+  );
+});
+
+// Quick Reference Card Component
+const QuickReferenceCard = React.memo(function QuickReferenceCard() {
+  const contentRef = useRef(null);
+  const [activeTab, setActiveTab] = useState('z-values');
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [activeTab]);
+  
+  return (
+    <VisualizationSection className="bg-gradient-to-br from-purple-900/20 to-blue-900/20 rounded-lg p-6 border border-purple-700/50">
+      <h3 className={`${typography.h2} mb-4`}>
+        Quick Reference Guide
+      </h3>
+      
+      <div className="flex gap-2 mb-4">
+        <button
+          onClick={() => setActiveTab('z-values')}
+          className={`px-4 py-2 rounded-lg font-medium transition-all ${
+            activeTab === 'z-values'
+              ? 'bg-purple-600 text-white'
+              : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+          }`}
+        >
+          Common z-values
+        </button>
+        <button
+          onClick={() => setActiveTab('formulas')}
+          className={`px-4 py-2 rounded-lg font-medium transition-all ${
+            activeTab === 'formulas'
+              ? 'bg-purple-600 text-white'
+              : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+          }`}
+        >
+          Formula Variations
+        </button>
+        <button
+          onClick={() => setActiveTab('checklist')}
+          className={`px-4 py-2 rounded-lg font-medium transition-all ${
+            activeTab === 'checklist'
+              ? 'bg-purple-600 text-white'
+              : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+          }`}
+        >
+          Decision Checklist
+        </button>
+      </div>
+      
+      <div ref={contentRef}>
+        {activeTab === 'z-values' && (
+          <div className="bg-neutral-800/50 rounded-lg p-4">
+            <h4 className="font-semibold text-white mb-3">Common Critical Values</h4>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-neutral-700">
+                  <th className="text-left py-2 text-neutral-400">Confidence Level</th>
+                  <th className="text-center py-2 text-neutral-400">α</th>
+                  <th className="text-center py-2 text-neutral-400">z<sub>α/2</sub></th>
+                  <th className="text-right py-2 text-neutral-400">Memorize?</th>
+                </tr>
+              </thead>
+              <tbody className="font-mono">
+                <tr className="border-b border-neutral-800">
+                  <td className="py-2">90%</td>
+                  <td className="text-center">0.10</td>
+                  <td className="text-center text-teal-400">1.645</td>
+                  <td className="text-right text-green-400">✓</td>
+                </tr>
+                <tr className="border-b border-neutral-800">
+                  <td className="py-2">95%</td>
+                  <td className="text-center">0.05</td>
+                  <td className="text-center text-teal-400">1.960</td>
+                  <td className="text-right text-green-400">✓✓</td>
+                </tr>
+                <tr className="border-b border-neutral-800">
+                  <td className="py-2">98%</td>
+                  <td className="text-center">0.02</td>
+                  <td className="text-center text-teal-400">2.326</td>
+                  <td className="text-right">-</td>
+                </tr>
+                <tr>
+                  <td className="py-2">99%</td>
+                  <td className="text-center">0.01</td>
+                  <td className="text-center text-teal-400">2.576</td>
+                  <td className="text-right text-green-400">✓</td>
+                </tr>
+              </tbody>
+            </table>
+            <p className="text-xs text-neutral-500 mt-3">
+              Tip: Remember 1.96 ≈ 2 for quick estimates
+            </p>
+          </div>
+        )}
+        
+        {activeTab === 'formulas' && (
+          <div className="space-y-4">
+            <div className="bg-neutral-800/50 rounded-lg p-4">
+              <h5 className="font-semibold text-white mb-2">For Population Mean (σ known)</h5>
+              <div className="text-center text-teal-300 py-2">
+                <span dangerouslySetInnerHTML={{ 
+                  __html: `\\[n = \\left(\\frac{z_{\\alpha/2} \\times \\sigma}{E}\\right)^2\\]` 
+                }} />
+              </div>
+            </div>
+            
+            <div className="bg-neutral-800/50 rounded-lg p-4">
+              <h5 className="font-semibold text-white mb-2">For Population Proportion</h5>
+              <div className="text-center text-teal-300 py-2">
+                <span dangerouslySetInnerHTML={{ 
+                  __html: `\\[n = \\left(\\frac{z_{\\alpha/2}}{E}\\right)^2 \\times p(1-p)\\]` 
+                }} />
+              </div>
+              <p className="text-xs text-neutral-500 mt-2">
+                Use p = 0.5 if unknown (conservative approach)
+              </p>
+            </div>
+            
+            <div className="bg-neutral-800/50 rounded-lg p-4">
+              <h5 className="font-semibold text-white mb-2">Finite Population Correction</h5>
+              <div className="text-center text-teal-300 py-2">
+                <span dangerouslySetInnerHTML={{ 
+                  __html: `\\[n_{\\text{adjusted}} = \\frac{n}{1 + \\frac{n-1}{N}}\\]` 
+                }} />
+              </div>
+              <p className="text-xs text-neutral-500 mt-2">
+                Use when n/N {'>'} 0.05
+              </p>
+            </div>
+          </div>
+        )}
+        
+        {activeTab === 'checklist' && (
+          <div className="bg-neutral-800/50 rounded-lg p-4">
+            <h4 className="font-semibold text-white mb-3">Sample Size Decision Flowchart</h4>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-teal-600 text-white text-xs flex items-center justify-center flex-shrink-0">1</div>
+                <div>
+                  <p className="font-medium text-white">Identify the parameter</p>
+                  <p className="text-neutral-400">Mean? Proportion? Difference?</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-teal-600 text-white text-xs flex items-center justify-center flex-shrink-0">2</div>
+                <div>
+                  <p className="font-medium text-white">Is σ known?</p>
+                  <p className="text-neutral-400">Yes → Use z | No → Use t (need pilot study)</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-teal-600 text-white text-xs flex items-center justify-center flex-shrink-0">3</div>
+                <div>
+                  <p className="font-medium text-white">Set requirements</p>
+                  <p className="text-neutral-400">E (precision), confidence level, σ estimate</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-teal-600 text-white text-xs flex items-center justify-center flex-shrink-0">4</div>
+                <div>
+                  <p className="font-medium text-white">Calculate n</p>
+                  <p className="text-neutral-400">ALWAYS round UP!</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-teal-600 text-white text-xs flex items-center justify-center flex-shrink-0">5</div>
+                <div>
+                  <p className="font-medium text-white">Check feasibility</p>
+                  <p className="text-neutral-400">Budget? Time? Add 10-20% for dropouts</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </VisualizationSection>
+  );
+});
+
+// Interactive Formula Builder Component
+const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder({ onComplete }) {
+  const contentRef = useRef(null);
+  const [selectedParts, setSelectedParts] = useState({
+    numerator: false,
+    denominator: false,
+    squared: false
+  });
+  const [understanding, setUnderstanding] = useState({
+    z: false,
+    sigma: false,
+    E: false,
+    squared: false
+  });
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [selectedParts]);
+  
+  const allUnderstood = Object.values(understanding).every(v => v);
+  
+  useEffect(() => {
+    if (allUnderstood && onComplete) {
+      onComplete('formula-builder');
+    }
+  }, [allUnderstood, onComplete]);
+  
+  return (
+    <VisualizationSection className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-lg p-6 border border-purple-700/50">
+      <div ref={contentRef}>
+        <h3 className="text-xl font-bold text-purple-400 mb-6">
+          Build the Formula Step by Step
+        </h3>
+        
+        <div className="text-center mb-8">
+          <p className="text-neutral-300 mb-4">
+            Click on each part to understand why it's in the formula
+          </p>
+          
+          {/* Interactive Formula Display */}
+          <div className="text-4xl font-mono inline-flex items-center gap-2">
+            <span className="text-neutral-500">n =</span>
+            
+            {/* Opening parenthesis */}
+            <motion.span
+              className={`cursor-pointer transition-all ${
+                selectedParts.squared ? 'text-purple-400' : 'text-neutral-500'
+              }`}
+              onClick={() => setSelectedParts({...selectedParts, squared: !selectedParts.squared})}
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              (
+            </motion.span>
+            
+            {/* Fraction */}
+            <div className="inline-flex flex-col items-center">
+              {/* Numerator */}
+              <motion.div
+                className={`cursor-pointer transition-all flex items-center gap-1 ${
+                  selectedParts.numerator ? 'text-blue-400' : 'text-neutral-400'
+                }`}
+                onClick={() => setSelectedParts({...selectedParts, numerator: !selectedParts.numerator})}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <span 
+                  className={understanding.z ? 'text-green-400' : ''}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setUnderstanding({...understanding, z: true});
+                  }}
+                >
+                  z
+                </span>
+                <span className="text-xs">α/2</span>
+                <span>×</span>
+                <span 
+                  className={understanding.sigma ? 'text-green-400' : ''}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setUnderstanding({...understanding, sigma: true});
+                  }}
+                >
+                  σ
+                </span>
+              </motion.div>
+              
+              {/* Fraction bar */}
+              <div className="w-full h-0.5 bg-neutral-500 my-1"></div>
+              
+              {/* Denominator */}
+              <motion.div
+                className={`cursor-pointer transition-all ${
+                  selectedParts.denominator ? 'text-yellow-400' : 'text-neutral-400'
+                }`}
+                onClick={() => {
+                  setSelectedParts({...selectedParts, denominator: !selectedParts.denominator});
+                  setUnderstanding({...understanding, E: true});
+                }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <span className={understanding.E ? 'text-green-400' : ''}>E</span>
+              </motion.div>
+            </div>
+            
+            {/* Closing parenthesis and square */}
+            <motion.span
+              className={`cursor-pointer transition-all ${
+                selectedParts.squared ? 'text-purple-400' : 'text-neutral-500'
+              }`}
+              onClick={() => {
+                setSelectedParts({...selectedParts, squared: !selectedParts.squared});
+                setUnderstanding({...understanding, squared: true});
+              }}
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              )²
+            </motion.span>
+          </div>
+        </div>
+        
+        {/* Explanations */}
+        <AnimatePresence mode="wait">
+          {selectedParts.numerator && (
+            <motion.div
+              key="numerator"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="bg-blue-900/20 rounded-lg p-4 mb-4 border border-blue-500/30"
+            >
+              <h5 className="font-semibold text-blue-400 mb-2">Why z × σ?</h5>
+              <p className="text-sm text-neutral-300">
+                This represents how many standard errors we need to capture for our confidence level. 
+                The z-value (like 1.96 for 95%) tells us how many standard deviations, and σ is the population 
+                standard deviation. Together they give us the "margin" we need.
+              </p>
+              <div className="mt-3 text-center">
+                <span dangerouslySetInnerHTML={{ 
+                  __html: `\\[\\text{Margin} = z_{\\alpha/2} \\times \\text{Standard Error}\\]` 
+                }} />
+              </div>
+            </motion.div>
+          )}
+          
+          {selectedParts.denominator && (
+            <motion.div
+              key="denominator"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="bg-yellow-900/20 rounded-lg p-4 mb-4 border border-yellow-500/30"
+            >
+              <h5 className="font-semibold text-yellow-400 mb-2">Why divide by E?</h5>
+              <p className="text-sm text-neutral-300">
+                E is our desired margin of error - how close we want to be to the true value. 
+                Smaller E means we need more precision, which requires a larger sample size. 
+                Think of it like zoom: to see finer details (smaller E), you need more data points.
+              </p>
+              <p className="text-xs text-neutral-500 mt-2">
+                If E = 1, we're okay being ±1 unit off. If E = 0.1, we want to be ±0.1 units off (10× more precise!).
+              </p>
+            </motion.div>
+          )}
+          
+          {selectedParts.squared && (
+            <motion.div
+              key="squared"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="bg-purple-900/20 rounded-lg p-4 mb-4 border border-purple-500/30"
+            >
+              <h5 className="font-semibold text-purple-400 mb-2">Why squared?</h5>
+              <p className="text-sm text-neutral-300">
+                Remember that standard error = σ/√n. When we solve for n, we need to square both sides 
+                to eliminate the square root. This creates the quadratic relationship: halving the error 
+                quadruples the sample size!
+              </p>
+              <div className="mt-3 text-center text-sm">
+                <span dangerouslySetInnerHTML={{ 
+                  __html: `\\[E = \\frac{z \\times \\sigma}{\\sqrt{n}} \\Rightarrow \\sqrt{n} = \\frac{z \\times \\sigma}{E} \\Rightarrow n = \\left(\\frac{z \\times \\sigma}{E}\\right)^2\\]` 
+                }} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        {/* Understanding Progress */}
+        <div className="mt-6 bg-neutral-800/50 rounded-lg p-4">
+          <h5 className="font-semibold text-white mb-3">Your Understanding</h5>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {Object.entries(understanding).map(([key, understood]) => (
+              <div 
+                key={key}
+                className={`p-3 rounded-lg text-center transition-all ${
+                  understood 
+                    ? 'bg-green-900/30 border border-green-500/50' 
+                    : 'bg-neutral-700/50 border border-neutral-600'
+                }`}
+              >
+                <p className="text-sm font-medium">
+                  {key === 'z' && 'Critical Value (z)'}
+                  {key === 'sigma' && 'Std Dev (σ)'}
+                  {key === 'E' && 'Margin of Error (E)'}
+                  {key === 'squared' && 'Why Squared'}
+                </p>
+                {understood && <Check className="w-4 h-4 text-green-400 mx-auto mt-1" />}
+              </div>
+            ))}
+          </div>
+          
+          {allUnderstood && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center text-green-400 mt-4 font-medium"
+            >
+              Great! You understand all parts of the formula! 🎉
+            </motion.p>
+          )}
+        </div>
+        
+        {/* Quick tip */}
+        <div className="mt-4 p-3 bg-purple-900/10 rounded-lg border border-purple-700/30">
+          <p className="text-sm text-purple-300">
+            <strong>Exam Tip:</strong> Remember this as "confidence × variability ÷ precision, all squared"
+          </p>
+        </div>
+      </div>
+    </VisualizationSection>
+  );
+});
+
+// Exam Practice Problems Component
+const ExamPracticeProblems = React.memo(function ExamPracticeProblems({ onComplete }) {
+  const contentRef = useRef(null);
+  const [selectedProblem, setSelectedProblem] = useState(0);
+  const [showSolution, setShowSolution] = useState(false);
+  const [userAnswer, setUserAnswer] = useState('');
+  const [feedback, setFeedback] = useState(null);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [selectedProblem, showSolution]);
+  
+  const problems = [
+    {
+      id: 1,
+      title: "Quality Control Problem",
+      question: "A manufacturer wants to estimate the mean weight of gear wheels with a margin of error of 0.5 grams at 95% confidence. From past data, σ = 2.3 grams. What sample size is needed?",
+      answer: 82,
+      solution: {
+        steps: [
+          "Given: E = 0.5, σ = 2.3, confidence = 95%",
+          "For 95% confidence: z₀.₀₂₅ = 1.96",
+          "n = (z × σ / E)² = (1.96 × 2.3 / 0.5)²",
+          "n = (9.016)² = 81.29",
+          "Round up: n = 82"
+        ],
+        trap: "Always round UP for sample size!"
+      }
+    },
+    {
+      id: 2,
+      title: "Clinical Trial Problem",
+      question: "A researcher needs to detect a 2 mmHg change in blood pressure with 99% confidence. Previous studies show σ = 8 mmHg. Find the required sample size.",
+      answer: 107,
+      solution: {
+        steps: [
+          "Given: E = 2, σ = 8, confidence = 99%",
+          "For 99% confidence: z₀.₀₀₅ = 2.576",
+          "n = (2.576 × 8 / 2)²",
+          "n = (10.304)² = 106.17",
+          "Round up: n = 107"
+        ],
+        trap: "99% confidence uses z = 2.576, not 2.58!"
+      }
+    },
+    {
+      id: 3,
+      title: "Budget Constraint Problem",
+      question: "You have budget for n = 100 subjects. With σ = 15 and 95% confidence, what margin of error can you achieve?",
+      answer: 2.94,
+      solution: {
+        steps: [
+          "Rearrange formula to solve for E",
+          "E = z × σ / √n",
+          "E = 1.96 × 15 / √100",
+          "E = 29.4 / 10 = 2.94",
+          "You can achieve ±2.94 margin of error"
+        ],
+        trap: "This is a 'reverse' problem - solve for E, not n"
+      }
+    }
+  ];
+  
+  const currentProblem = problems[selectedProblem];
+  
+  const checkAnswer = () => {
+    const userNum = parseFloat(userAnswer);
+    const correct = Math.abs(userNum - currentProblem.answer) < 0.01;
+    setFeedback({
+      correct,
+      message: correct 
+        ? "Correct! Well done." 
+        : `Not quite. The answer is ${currentProblem.answer}. ${currentProblem.solution.trap}`
+    });
+    if (correct && onComplete) {
+      onComplete('exam-practice');
+    }
+  };
+  
+  return (
+    <VisualizationSection>
+      <h3 className="text-xl font-bold text-purple-400 mb-6">
+        Exam-Style Practice Problems
+      </h3>
+      
+      {/* Problem Selector */}
+      <div className="flex gap-2 mb-6">
+        {problems.map((prob, idx) => (
+          <button
+            key={prob.id}
+            onClick={() => {
+              setSelectedProblem(idx);
+              setShowSolution(false);
+              setUserAnswer('');
+              setFeedback(null);
+            }}
+            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              selectedProblem === idx
+                ? 'bg-purple-600 text-white'
+                : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+            }`}
+          >
+            Problem {prob.id}
+          </button>
+        ))}
+      </div>
+      
+      <div ref={contentRef} className="space-y-6">
+        {/* Problem Statement */}
+        <div className="bg-neutral-800/50 rounded-lg p-6">
+          <h4 className="font-semibold text-white mb-3">
+            {currentProblem.title}
+          </h4>
+          <p className="text-neutral-300 mb-4">
+            {currentProblem.question}
+          </p>
+          
+          {/* Answer Input */}
+          <div className="flex gap-3 items-end">
+            <div className="flex-1">
+              <label className="block text-sm text-neutral-400 mb-2">
+                Your Answer:
+              </label>
+              <input
+                type="number"
+                value={userAnswer}
+                onChange={(e) => setUserAnswer(e.target.value)}
+                className="w-full px-4 py-2 bg-neutral-700 rounded-lg text-white font-mono"
+                placeholder="Enter your answer"
+                step="0.01"
+              />
+            </div>
+            <button
+              onClick={checkAnswer}
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-white font-medium"
+              disabled={!userAnswer}
+            >
+              Check Answer
+            </button>
+            <button
+              onClick={() => setShowSolution(!showSolution)}
+              className="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 rounded-lg text-white"
+            >
+              {showSolution ? 'Hide' : 'Show'} Solution
+            </button>
+          </div>
+          
+          {/* Feedback */}
+          {feedback && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={`mt-4 p-3 rounded-lg ${
+                feedback.correct
+                  ? 'bg-green-900/30 border border-green-500/50 text-green-400'
+                  : 'bg-red-900/30 border border-red-500/50 text-red-400'
+              }`}
+            >
+              {feedback.message}
+            </motion.div>
+          )}
+        </div>
+        
+        {/* Solution */}
+        <AnimatePresence>
+          {showSolution && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="bg-purple-900/20 rounded-lg p-6 border border-purple-500/30"
+            >
+              <h5 className="font-semibold text-purple-400 mb-4">
+                Step-by-Step Solution
+              </h5>
+              <div className="space-y-2">
+                {currentProblem.solution.steps.map((step, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    className="flex gap-3"
+                  >
+                    <span className="text-purple-400 font-mono">{idx + 1}.</span>
+                    <span className="text-neutral-300 font-mono text-sm">{step}</span>
+                  </motion.div>
+                ))}
+              </div>
+              <div className="mt-4 p-3 bg-yellow-900/20 rounded border border-yellow-600/30">
+                <p className="text-sm text-yellow-400">
+                  <strong>Common Trap:</strong> {currentProblem.solution.trap}
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </VisualizationSection>
   );
 });
 
@@ -727,25 +1536,25 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
                     <p className="flex items-center gap-2">
                       <span className="text-neutral-500">1.</span>
                       <span dangerouslySetInnerHTML={{ 
-                        __html: `\\(z_{${inputs.confidence}\\%} = ${getZ(inputs.confidence)}\\)` 
+                        __html: '\\(z_{' + inputs.confidence + '\\%} = ' + getZ(inputs.confidence) + '\\)' 
                       }} />
                     </p>
                     <p className="flex items-center gap-2">
                       <span className="text-neutral-500">2.</span>
                       <span dangerouslySetInnerHTML={{ 
-                        __html: `\\(n = \\left(\\frac{z \\times \\sigma}{E}\\right)^2\\)` 
+                        __html: '\\(n = \\left(\\frac{z \\times \\sigma}{E}\\right)^2\\)' 
                       }} />
                     </p>
                     <p className="flex items-center gap-2">
                       <span className="text-neutral-500">3.</span>
                       <span dangerouslySetInnerHTML={{ 
-                        __html: `\\(n = \\left(\\frac{${getZ(inputs.confidence)} \\times ${inputs.sigma}}{${inputs.E}}\\right)^2\\)` 
+                        __html: '\\(n = \\left(\\frac{' + getZ(inputs.confidence) + ' \\times ' + inputs.sigma + '}{' + inputs.E + '}\\right)^2\\)' 
                       }} />
                     </p>
                     <p className="flex items-center gap-2">
                       <span className="text-neutral-500">4.</span>
                       <span dangerouslySetInnerHTML={{ 
-                        __html: `\\(n = \\left(\\frac{${(getZ(inputs.confidence) * inputs.sigma).toFixed(2)}}{${inputs.E}}\\right)^2\\)` 
+                        __html: '\\(n = \\left(\\frac{' + (getZ(inputs.confidence) * inputs.sigma).toFixed(2) + '}{' + inputs.E + '}\\right)^2\\)' 
                       }} />
                     </p>
                     <p className="flex items-center gap-2">
@@ -1612,6 +2421,7 @@ const StageContent = React.memo(function StageContent({
     <div ref={contentRef} className="space-y-8">
       {stage.id === 'DISCOVER' && (
         <>
+          <MathematicalFoundation />
           <VisualExploration onComplete={onActivityComplete} />
           
           <motion.div
@@ -1635,35 +2445,9 @@ const StageContent = React.memo(function StageContent({
       
       {stage.id === 'CALCULATE' && (
         <>
-          <motion.div
-            className="bg-purple-900/20 rounded-lg p-6 border border-purple-500/30 mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <h4 className="font-semibold text-purple-400 mb-3">
-              The Sample Size Formula
-            </h4>
-            <div className="text-center py-4">
-              <p className="text-2xl font-mono" dangerouslySetInnerHTML={{ 
-                __html: `\\[n = \\left(\\frac{z_{\\alpha/2} \\times \\sigma}{E}\\right)^2\\]` 
-              }} />
-            </div>
-            <div className="grid md:grid-cols-3 gap-4 mt-4 text-sm">
-              <div className="text-center">
-                <p className="text-purple-400 font-mono">n</p>
-                <p className="text-xs text-neutral-400">Required sample size</p>
-              </div>
-              <div className="text-center">
-                <p className="text-purple-400 font-mono">z<sub>α/2</sub></p>
-                <p className="text-xs text-neutral-400">Critical value</p>
-              </div>
-              <div className="text-center">
-                <p className="text-purple-400 font-mono">σ</p>
-                <p className="text-xs text-neutral-400">Population std dev</p>
-              </div>
-            </div>
-          </motion.div>
-          
+          <QuickReferenceCard />
+          <InteractiveFormulaBuilder onComplete={onActivityComplete} />
+          <ExamPracticeProblems onComplete={onActivityComplete} />
           <SampleSizeCalculator 
             onComplete={onActivityComplete} 
             onSaveCalculation={onSaveCalculation}

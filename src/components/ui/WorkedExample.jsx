@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { colors, typography } from '@/lib/design-system';
 import { useMathJax } from '@/hooks/useMathJax';
@@ -107,13 +107,54 @@ export function InsightBox({ children, icon = "💡", variant = "default", class
  * Calculation steps display
  */
 export function CalculationSteps({ steps, className }) {
+  const contentRef = useRef(null);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [steps]);
+  
   return (
-    <div className={cn("space-y-1", className)}>
-      {steps.map((step, index) => (
-        <div key={index} className="font-mono text-sm">
-          {step}
-        </div>
-      ))}
+    <div ref={contentRef} className={cn("space-y-3", className)}>
+      {steps.map((step, index) => {
+        // Handle both string and object formats
+        if (typeof step === 'string') {
+          return (
+            <div key={index} className="font-mono text-sm">
+              {step}
+            </div>
+          );
+        }
+        
+        // Handle object format with label, content, and explanation
+        return (
+          <div key={index} className="space-y-1">
+            <div className="flex items-start gap-2">
+              <span className="font-semibold text-neutral-300">{step.label}:</span>
+              <div className="flex-1">
+                <div className="font-mono text-sm text-neutral-100">
+                  <span dangerouslySetInnerHTML={{ __html: step.content }} />
+                </div>
+                {step.explanation && (
+                  <div className="text-sm text-neutral-400 mt-1">
+                    {step.explanation}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
