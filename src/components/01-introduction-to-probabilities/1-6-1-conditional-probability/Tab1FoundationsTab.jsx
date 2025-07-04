@@ -6,6 +6,7 @@ import SectionBasedContent, {
   MathFormula, 
   InteractiveElement 
 } from '@/components/ui/SectionBasedContent';
+import MathJaxSection from '@/components/ui/MathJaxSection';
 import { WorkedExample, ExampleSection, InsightBox, Formula } from '@/components/ui/WorkedExample';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -47,27 +48,9 @@ const SECTIONS = [
   {
     id: 'intuition',
     title: 'Building Intuition',
-    content: ({ sectionIndex, isCompleted }) => {
-      const contentRef = useRef(null);
-      
-      useEffect(() => {
-        const processMathJax = () => {
-          if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-            if (window.MathJax.typesetClear) {
-              window.MathJax.typesetClear([contentRef.current]);
-            }
-            window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-          }
-        };
-        
-        processMathJax();
-        const timeoutId = setTimeout(processMathJax, 100);
-        return () => clearTimeout(timeoutId);
-      }, []);
-      
-      return (
-        <SectionContent>
-          <div ref={contentRef}>
+    content: ({ sectionIndex, isCompleted }) => (
+      <SectionContent>
+        <MathJaxSection>
             <WorkedExample title="Understanding Conditional Probability">
               <ExampleSection title="The Core Idea">
                 <p className="mb-4 text-neutral-300">
@@ -120,35 +103,16 @@ const SECTIONS = [
               💡 Remember: P(A|B) ≠ P(B|A) in general. The probability of "rain given clouds" 
               is very different from "clouds given rain"!
             </InsightBox>
-          </div>
-        </SectionContent>
-      );
-    }
+        </MathJaxSection>
+      </SectionContent>
+    )
   },
   {
     id: 'formal-definition',
     title: 'Formal Definition',
-    content: ({ sectionIndex, isCompleted }) => {
-      const contentRef = useRef(null);
-      
-      useEffect(() => {
-        const processMathJax = () => {
-          if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-            if (window.MathJax.typesetClear) {
-              window.MathJax.typesetClear([contentRef.current]);
-            }
-            window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-          }
-        };
-        
-        processMathJax();
-        const timeoutId = setTimeout(processMathJax, 100);
-        return () => clearTimeout(timeoutId);
-      }, []);
-      
-      return (
-        <SectionContent>
-          <div ref={contentRef}>
+    content: ({ sectionIndex, isCompleted }) => (
+      <SectionContent>
+        <MathJaxSection>
             <WorkedExample title="Mathematical Foundations">
               <ExampleSection title="Definition of Conditional Probability">
                 <Formula>
@@ -210,10 +174,9 @@ const SECTIONS = [
                 </div>
               </ExampleSection>
             </WorkedExample>
-          </div>
-        </SectionContent>
-      );
-    }
+        </MathJaxSection>
+      </SectionContent>
+    )
   },
   {
     id: 'why-matters',
@@ -288,6 +251,7 @@ export default function Tab1FoundationsTab({ onComplete }) {
       chapter={1}
       progressVariant="green"
       showBackToHub={false}
+      showHeader={false}
     />
   );
 }

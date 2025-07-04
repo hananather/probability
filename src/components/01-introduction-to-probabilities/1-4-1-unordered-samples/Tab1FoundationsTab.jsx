@@ -91,8 +91,8 @@ const SECTIONS = [
         </WorkedExample>
         
         <InsightBox variant="info">
-          💡 Key Insight: Combinations count unique groups. If {`{Alice, Bob, Charlie}`} is the same as 
-          {`{Charlie, Alice, Bob}`} for your problem, you need combinations!
+          💡 Key Insight: Combinations count unique groups. If {"{Alice, Bob, Charlie}"} is the same as 
+          {"{Charlie, Alice, Bob}"} for your problem, you need combinations!
         </InsightBox>
       </SectionContent>
     )
@@ -241,6 +241,7 @@ export default function FoundationsTab({ onComplete }) {
       chapter={1}
       progressVariant="green"
       showBackToHub={false}
+      showHeader={false}
     />
   );
 }

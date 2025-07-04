@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
  * @param {number} props.chapter - Chapter number for BackToHub
  * @param {string} props.progressVariant - Progress bar color variant
  * @param {boolean} props.showBackToHub - Whether to show BackToHub button (default: true)
+ * @param {boolean} props.showHeader - Whether to show the main header section (default: true)
  * 
  * Section configuration:
  * {
@@ -36,7 +37,8 @@ export default function SectionBasedContent({
   onComplete,
   chapter,
   progressVariant = 'purple',
-  showBackToHub = true
+  showBackToHub = true,
+  showHeader = true
 }) {
   const [currentSection, setCurrentSection] = useState(0);
   const [completedSections, setCompletedSections] = useState([]);
@@ -91,16 +93,18 @@ export default function SectionBasedContent({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-neutral-900 border border-purple-600/30 rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-2xl font-bold text-white mb-2">{title}</h2>
-            {description && (
-              <p className="text-neutral-300">{description}</p>
-            )}
+      {showHeader && (
+        <div className="bg-neutral-900 border border-purple-600/30 rounded-lg p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-2">{title}</h2>
+              {description && (
+                <p className="text-neutral-300">{description}</p>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Section Header */}
       <VisualizationSection className="bg-neutral-900/50 p-4 rounded-lg border border-neutral-700/50">

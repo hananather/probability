@@ -61,6 +61,7 @@ export default function Tab1FoundationsTab({ onComplete }) {
       onComplete={onComplete}
       progressVariant="green"
       showBackToHub={false}
+      showHeader={false}
     />
   );
 }

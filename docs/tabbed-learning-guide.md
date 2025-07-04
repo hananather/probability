@@ -1,8 +1,4 @@
 # Tabification Prompt - Transform Components to Learning Modules
-
-## 🎯 MASTER PROMPT FOR TABIFYING COMPONENTS
-
-```
 Transform the following into a tabbed learning module:
 
 INPUTS:
@@ -23,22 +19,25 @@ IMPORTANT: The existing component is ALWAYS preserved as-is and becomes one of t
 TAB STRUCTURE:
 
 TAB 1 - FOUNDATIONS (Green #10b981):
-□ Section 1: "Can You Solve This?" - Real exam problem for motivation
+□ Section 1: "Can You Solve This?" - Problem for motivation (try to use course content`/Users/hananather/Desktop/Javascript/prob-lab/course-materials/content`)
 □ Section 2: "Building Intuition" - Plain language before math
 □ Section 3: "Formal Definition" - Mathematical rigor with LaTeX
-□ Section 4: "Why This Matters" - ML/AI applications, tech careers
+□ Section 4: "Why This Matters" 
+- relevance to future topics in the course (if applicable)
+- relevance to other courses (if applicable) 
+
 
 TAB 2 - WORKED EXAMPLES (Blue #3b82f6):
 □ Section 1: "Basic Example" - Simple case with steps
-□ Section 2: "Exam-Level Example" - Complex problem fully solved
-□ Section 3: "Variations" - Different types they'll encounter
-□ Section 4: "Practice Time" - Interactive practice
+□ Section 2: "Example 2" - Complex problem fully solved (from course content`/Users/hananather/Desktop/Javascript/prob-lab/course-materials/content`)
+□ Section 3: "Variations" - Different types they'll encounter (if applicable)
+□ Section 4: "Short Quiz to test your understanding" - Interactive practice (from course content`/Users/hananather/Desktop/Javascript/prob-lab/course-materials/content`)
 
 TAB 3 - QUICK REFERENCE (Violet #7c3aed):
 □ Section 1: "Formula Sheet" - All formulas with when to use
 □ Section 2: "Decision Guide" - If X then Y flowchart
 □ Section 3: "Common Mistakes" - What to avoid
-□ Section 4: "Speed Practice" - 5 timed problems
+□ Section 4: "Practice Problems" -  problems
 
 TAB 4 - ORIGINAL COMPONENT (Keep original color):
 □ ALWAYS include the existing component that's being "tabified"
@@ -144,8 +143,63 @@ export default function [Topic]Page() {
 4. **Real Motivations**: Connect to ML/AI/tech industry applications
 5. **Exam Focus**: Use real exam problems without fake statistics
 
+## 🛡️ Critical Best Practices (Prevent Common Errors)
+
+### **React Hooks Rules**
+- **NEVER put hooks inside section content functions** - Always at component top level
+- **Extract section components** - Move hooks to separate components outside arrays
+- **Consistent hook order** - Same hooks called every render regardless of content
+
+### **Hydration Safety**
+- **NO localStorage in useState initializer** - Always start with empty/default state
+- **Load after hydration** - Use `useEffect` to populate from localStorage  
+- **Add isHydrated flag** - Track when client-side data is loaded
+- **Conditional progress UI** - Only render completion indicators after hydration
+
+### **Safe Hook Pattern**
+```js
+// ❌ BAD - Hooks in content functions
+const SECTIONS = [{
+  content: () => {
+    const [state] = useState(); // BREAKS RULES
+    return <div>...</div>;
+  }
+}];
+
+// ✅ GOOD - Hooks at top level
+const SectionComponent = ({ state, setState }) => <div>...</div>;
+
+export default function Tab() {
+  const [state, setState] = useState(); // All hooks here
+  const SECTIONS = [{
+    content: () => <SectionComponent state={state} setState={setState} />
+  }];
+}
+```
+
+### **Safe Hydration Pattern**
+```js
+function useProgress(key) {
+  const [data, setData] = useState([]); // Empty start
+  const [isHydrated, setIsHydrated] = useState(false);
+  
+  useEffect(() => {
+    const saved = localStorage.getItem(key);
+    if (saved) setData(JSON.parse(saved));
+    setIsHydrated(true);
+  }, []);
+  
+  return { data, isHydrated };
+}
+
+// Render: {isHydrated && <ProgressDots />}
+```
+
 ## ✅ Quality Checks
 
+- [ ] All hooks at component top level (no hooks in content functions)
+- [ ] localStorage only in useEffect (not useState initializer)
+- [ ] Progress UI wrapped in isHydrated check
 - [ ] Original component works unchanged in its tab
 - [ ] All LaTeX renders correctly
 - [ ] Arrow keys navigate between sections
@@ -153,3 +207,5 @@ export default function [Topic]Page() {
 - [ ] No fake statistics or gamification
 - [ ] Connects to real-world applications
 - [ ] Build passes: `npm run build && npm run lint`
+
+**Remember: Server and client must render identically on first pass!**

@@ -70,10 +70,49 @@ export function ExampleSection({ title, children, className }) {
 
 /**
  * Formula display within worked example
+ * Properly handles LaTeX rendering with MathJax processing
+ * 
+ * Usage:
+ *   <Formula latex="E[X] = \mu" />  // For LaTeX strings
+ *   <Formula>{content}</Formula>    // For JSX content with LaTeX
  */
-export function Formula({ children, className }) {
+export function Formula({ children, latex, className, inline = false }) {
+  const contentRef = useRef(null);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [children, latex]);
+  
+  // If latex prop is provided, render it properly with delimiters
+  if (latex) {
+    const delimiter = inline ? '\\(' : '\\[';
+    const endDelimiter = inline ? '\\)' : '\\]';
+    
+    return (
+      <div 
+        ref={contentRef} 
+        className={cn(inline ? "inline-block" : "my-4 text-center", className)}
+        dangerouslySetInnerHTML={{ 
+          __html: `${delimiter}${latex}${endDelimiter}` 
+        }}
+      />
+    );
+  }
+  
+  // Otherwise render children (for JSX content that may contain LaTeX)
   return (
-    <div className={cn("my-2", className)}>
+    <div ref={contentRef} className={cn("my-4 text-center", className)}>
       {children}
     </div>
   );
@@ -170,5 +209,28 @@ export function RealWorldExample({ title = "Real-world Example:", children, clas
         {children}
       </div>
     </InsightBox>
+  );
+}
+
+/**
+ * Step component for step-by-step solutions
+ */
+export function Step({ number, description, children, className }) {
+  return (
+    <div className={cn("mb-4 p-4 bg-neutral-900 rounded-lg border border-neutral-700", className)}>
+      <div className="flex items-start gap-3">
+        <div className="flex-shrink-0">
+          <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+            {number}
+          </div>
+        </div>
+        <div className="flex-1">
+          <h5 className="font-semibold text-white mb-2">{description}</h5>
+          <div className="text-neutral-300">
+            {children}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

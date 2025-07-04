@@ -45,19 +45,25 @@ const LoadingComponent = () => (
 
 // Progress tracking hook
 function useTabProgress(storageKey) {
-  const [completedTabs, setCompletedTabs] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? JSON.parse(saved) : [];
-    }
-    return [];
-  });
+  const [completedTabs, setCompletedTabs] = useState([]);
+  const [isHydrated, setIsHydrated] = useState(false);
 
+  // Load from localStorage after hydration
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        setCompletedTabs(JSON.parse(saved));
+      }
+      setIsHydrated(true);
+    }
+  }, [storageKey]);
+
+  useEffect(() => {
+    if (isHydrated && typeof window !== 'undefined') {
       localStorage.setItem(storageKey, JSON.stringify(completedTabs));
     }
-  }, [completedTabs, storageKey]);
+  }, [completedTabs, storageKey, isHydrated]);
 
   const markTabComplete = (tabId) => {
     if (!completedTabs.includes(tabId)) {
@@ -72,7 +78,7 @@ function useTabProgress(storageKey) {
     }
   };
 
-  return { completedTabs, markTabComplete, resetProgress };
+  return { completedTabs, markTabComplete, resetProgress, isHydrated };
 }
 
 // Component wrapper to standardize interfaces
@@ -104,7 +110,7 @@ export default function TabbedLearningPage({
   colorScheme = 'purple'
 }) {
   const [activeTab, setActiveTab] = useState(tabs[0]?.id || '');
-  const { completedTabs, markTabComplete, resetProgress } = useTabProgress(storageKey);
+  const { completedTabs, markTabComplete, resetProgress, isHydrated } = useTabProgress(storageKey);
   const colors = createColorScheme(colorScheme);
 
   const handleTabComplete = (tabId) => {
@@ -145,7 +151,7 @@ export default function TabbedLearningPage({
               >
                 <Icon className="w-4 h-4" style={{ color: activeTab === id ? color : 'currentColor' }} />
                 <span>{label}</span>
-                {completedTabs.includes(id) && (
+                {isHydrated && completedTabs.includes(id) && (
                   <div className="w-2 h-2 bg-green-500 rounded-full ml-1" />
                 )}
               </button>
@@ -196,30 +202,32 @@ export default function TabbedLearningPage({
         </Suspense>
       </motion.div>
 
-      {/* Progress indicator */}
-      <div className="fixed bottom-6 right-6 bg-neutral-800 rounded-lg p-3 shadow-lg border border-neutral-700">
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-neutral-400">Progress:</span>
-          <span className="font-semibold text-white">
-            {completedTabs.length}/{tabs.length} ({progressPercentage}%)
-          </span>
-          <div className="flex gap-1 ml-2">
-            {tabs.map(tab => (
-              <div
-                key={tab.id}
-                className={cn(
-                  "w-2 h-2 rounded-full",
-                  completedTabs.includes(tab.id) 
-                    ? 'bg-green-500' 
-                    : activeTab === tab.id 
-                      ? 'bg-blue-500' 
-                      : 'bg-neutral-600'
-                )}
-              />
-            ))}
+      {/* Progress indicator - only show after hydration */}
+      {isHydrated && (
+        <div className="fixed bottom-6 right-6 bg-neutral-800 rounded-lg p-3 shadow-lg border border-neutral-700">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-neutral-400">Progress:</span>
+            <span className="font-semibold text-white">
+              {completedTabs.length}/{tabs.length} ({progressPercentage}%)
+            </span>
+            <div className="flex gap-1 ml-2">
+              {tabs.map(tab => (
+                <div
+                  key={tab.id}
+                  className={cn(
+                    "w-2 h-2 rounded-full",
+                    completedTabs.includes(tab.id) 
+                      ? 'bg-green-500' 
+                      : activeTab === tab.id 
+                        ? 'bg-blue-500' 
+                        : 'bg-neutral-600'
+                  )}
+                />
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </VisualizationContainer>
   );
 }

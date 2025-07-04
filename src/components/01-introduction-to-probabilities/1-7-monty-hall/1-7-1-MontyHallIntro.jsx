@@ -8,7 +8,7 @@ import { Button } from '../../ui/button';
 import { cn } from '../../../lib/design-system';
 import MontyDoor from './components/MontyDoor';
 
-const MontyHallIntro = ({ onComplete }) => {
+const MontyHallIntro = ({ onStageComplete }) => {
   const [stage, setStage] = useState('intro'); // intro, quiz, reveal
   const [quizAnswer, setQuizAnswer] = useState(null);
   const [hoveredDoor, setHoveredDoor] = useState(null);
@@ -211,7 +211,7 @@ const MontyHallIntro = ({ onComplete }) => {
               Ready to see why switching is better?
             </p>
             <Button
-              onClick={onComplete}
+              onClick={onStageComplete}
               variant="success"
               size="lg"
             >

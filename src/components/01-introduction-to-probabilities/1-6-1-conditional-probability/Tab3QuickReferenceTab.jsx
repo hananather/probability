@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SectionBasedContent, { 
   SectionContent, 
   MathFormula, 
   InteractiveElement 
 } from '@/components/ui/SectionBasedContent';
+import MathJaxSection from '@/components/ui/MathJaxSection';
 import { WorkedExample, ExampleSection, InsightBox, Formula } from '@/components/ui/WorkedExample';
 import { Button } from '@/components/ui/button';
 import { createColorScheme } from '@/lib/design-system';
@@ -173,27 +174,9 @@ const SECTIONS = [
   {
     id: 'formula-sheet',
     title: 'Formula Sheet',
-    content: ({ sectionIndex, isCompleted }) => {
-      const contentRef = useRef(null);
-      
-      useEffect(() => {
-        const processMathJax = () => {
-          if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-            if (window.MathJax.typesetClear) {
-              window.MathJax.typesetClear([contentRef.current]);
-            }
-            window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-          }
-        };
-        
-        processMathJax();
-        const timeoutId = setTimeout(processMathJax, 100);
-        return () => clearTimeout(timeoutId);
-      }, []);
-      
-      return (
-        <SectionContent>
-          <div ref={contentRef}>
+    content: ({ sectionIndex, isCompleted }) => (
+      <SectionContent>
+        <MathJaxSection>
             <WorkedExample title="Essential Formulas">
               <ExampleSection title="Core Formulas">
                 <div className="space-y-4">
@@ -265,10 +248,9 @@ const SECTIONS = [
                 </div>
               </ExampleSection>
             </WorkedExample>
-          </div>
-        </SectionContent>
-      );
-    }
+        </MathJaxSection>
+      </SectionContent>
+    )
   },
   {
     id: 'decision-guide',
@@ -313,7 +295,7 @@ const SECTIONS = [
                   
                   <div className="ml-4 border-l-2 border-amber-500 pl-4">
                     <p className="text-neutral-300 font-medium">
-                      Have: Partition {A₁, A₂, ...} → Need: P(B)
+                      Have: Partition {`{A₁, A₂, ...} → Need: P(B)`}
                     </p>
                     <p className="text-sm text-amber-400 mt-1">
                       ✓ Use total probability: P(B) = Σ P(B|Aᵢ)·P(Aᵢ)
@@ -381,7 +363,7 @@ const SECTIONS = [
               
               <div className="bg-red-900/20 p-4 rounded-lg border border-red-600/30">
                 <h5 className="font-semibold text-red-400 mb-2">
-                  ❌ Mistake 2: Forgetting P(B) > 0 requirement
+                  ❌ Mistake 2: Forgetting P(B) {`>`} 0 requirement
                 </h5>
                 <p className="text-neutral-300 text-sm">
                   P(A|B) is undefined when P(B) = 0

@@ -10,7 +10,7 @@ import {
 import { colors, typography, cn, createColorScheme } from '../../../lib/design-system';
 import { Button } from '../../ui/button';
 import { useSafeMathJax } from '../../../utils/mathJaxFix';
-import { ChevronRight, Eye, EyeOff } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { tutorial_1_7_2 } from '@/tutorials/chapter1';
 
 // Color scheme for Bayesian inference
@@ -516,8 +516,7 @@ const BayesianCalculation = memo(function BayesianCalculation({ selectedDoor, re
 function MontyHallBayesian() {
   const [selectedDoor, setSelectedDoor] = useState(null);
   const [revealedDoor, setRevealedDoor] = useState(null);
-  const [showSteps, setShowSteps] = useState(0);
-  const [autoAdvance, setAutoAdvance] = useState(false);
+  const [showSteps, setShowSteps] = useState(4);
   const [stage, setStage] = useState('initial'); // initial, selected, revealed
   const [userDecision, setUserDecision] = useState(null); // 'switch' | 'stay' | null
   const [showResult, setShowResult] = useState(false);
@@ -526,9 +525,8 @@ function MontyHallBayesian() {
   const reset = () => {
     setSelectedDoor(null);
     setRevealedDoor(null);
-    setShowSteps(0);
+    setShowSteps(4);
     setStage('initial');
-    setAutoAdvance(false);
     setUserDecision(null);
     setShowResult(false);
   };
@@ -549,15 +547,6 @@ function MontyHallBayesian() {
     }, 1000);
   };
   
-  // Auto advance through steps
-  useEffect(() => {
-    if (autoAdvance && stage === 'revealed' && showSteps < 4) {
-      const timer = setTimeout(() => {
-        setShowSteps(prev => prev + 1);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [autoAdvance, showSteps, stage]);
   
   // Handle user decision
   const makeDecision = (decision) => {
@@ -594,23 +583,6 @@ function MontyHallBayesian() {
               </p>
             </div>
             <div className="flex gap-2">
-              <Button
-                onClick={() => setAutoAdvance(!autoAdvance)}
-                variant={autoAdvance ? "primary" : "secondary"}
-                disabled={stage !== 'revealed'}
-              >
-                {autoAdvance ? (
-                  <>
-                    <Eye className="w-4 h-4 mr-2" />
-                    Auto Steps On
-                  </>
-                ) : (
-                  <>
-                    <EyeOff className="w-4 h-4 mr-2" />
-                    Auto Steps Off
-                  </>
-                )}
-              </Button>
               <Button onClick={reset} variant="neutral">
                 Reset
               </Button>
@@ -676,21 +648,32 @@ function MontyHallBayesian() {
           
           {/* Bayesian Calculation - Full width */}
           <div className="space-y-4">
-            {/* Step Controls */}
+            {/* Step Controls - Always visible when doors are revealed */}
             {stage === 'revealed' && (
               <VisualizationSection className="p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-bold text-white">3. Bayesian Analysis</h4>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4].map(step => (
+                  <div className="flex gap-2">
+                    {[
+                      { step: 1, color: 'blue' },
+                      { step: 2, color: 'emerald' },
+                      { step: 3, color: 'amber' },
+                      { step: 4, color: 'green' }
+                    ].map(({ step, color }) => (
                       <button
                         key={step}
                         onClick={() => setShowSteps(step)}
                         className={cn(
-                          "w-8 h-8 rounded-full text-xs font-bold transition-all",
+                          "w-8 h-8 rounded-full text-xs font-bold transition-all border",
                           showSteps >= step 
-                            ? "bg-blue-600 text-white" 
-                            : "bg-neutral-700 text-neutral-400 hover:bg-neutral-600"
+                            ? color === 'blue' ? "bg-blue-600 text-white border-blue-500" :
+                              color === 'emerald' ? "bg-emerald-600 text-white border-emerald-500" :
+                              color === 'amber' ? "bg-amber-600 text-white border-amber-500" :
+                              "bg-green-600 text-white border-green-500"
+                            : color === 'blue' ? "bg-blue-900/20 text-blue-300 border-blue-600/30 hover:bg-blue-900/40" :
+                              color === 'emerald' ? "bg-emerald-900/20 text-emerald-300 border-emerald-600/30 hover:bg-emerald-900/40" :
+                              color === 'amber' ? "bg-amber-900/20 text-amber-300 border-amber-600/30 hover:bg-amber-900/40" :
+                              "bg-green-900/20 text-green-300 border-green-600/30 hover:bg-green-900/40"
                         )}
                       >
                         {step}

@@ -79,7 +79,6 @@ export function InteractiveJourneyNavigation({
           current={currentSection + 1}
           total={totalSections}
           variant={progressVariant}
-          showSteps
         />
       </motion.div>
 

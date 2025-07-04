@@ -12,6 +12,7 @@ Reflect ALL  possible sources of problems from different dimensions. For each is
 - No overlapping and cluttered UI. 
 - All the animations are exceptionally smooth, use vibrant colours that match the aesthetic and use /Users/hananather/Desktop/Javascript/prob-lab/src/components/landing/landing-animations.jsx guidance on how to build great animations that we are using on the home page 
 
+-Use a emojis sparingly.
 
 1. Deep Analysis Phase
 - Before writing any code, thoroughly analyze the problem:

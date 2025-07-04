@@ -59,15 +59,15 @@ function QuizQuestion({ question, options, correctIndex, explanation, onAnswer, 
               onClick={() => handleAnswerSelect(index)}
               disabled={isAnswered}
               className={`
-                w-full p-4 rounded-lg border text-left transition-all duration-200
-                ${isAnswered ? 'cursor-not-allowed' : 'cursor-pointer hover:scale-[1.01]'}
+                w-full p-4 rounded-lg border text-left transition-all duration-300 ease-out
+                ${isAnswered ? 'cursor-not-allowed' : 'cursor-pointer hover:scale-[1.02] hover:shadow-lg'}
                 ${
                   showAsCorrect
-                    ? 'bg-green-500/20 border-green-500/50 shadow-sm shadow-green-500/20'
+                    ? 'bg-green-500/20 border-green-500/50 shadow-lg shadow-green-500/30 scale-[1.02]'
                     : showAsIncorrect
-                    ? 'bg-red-500/20 border-red-500/50 shadow-sm shadow-red-500/20'
+                    ? 'bg-red-500/20 border-red-500/50 shadow-lg shadow-red-500/30 scale-[1.02]'
                     : isSelected
-                    ? 'bg-blue-500/20 border-blue-500/50 shadow-sm'
+                    ? 'bg-blue-500/20 border-blue-500/50 shadow-md'
                     : 'bg-neutral-900 border-neutral-800 hover:bg-neutral-800/50'
                 }
               `}
@@ -76,12 +76,12 @@ function QuizQuestion({ question, options, correctIndex, explanation, onAnswer, 
                 <div className="flex items-center gap-3">
                   <div
                     className={`
-                      w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all
+                      w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-300 ease-out
                       ${
                         showAsCorrect
-                          ? 'border-green-500 bg-green-500'
+                          ? 'border-green-500 bg-green-500 scale-110'
                           : showAsIncorrect
-                          ? 'border-red-500 bg-red-500'
+                          ? 'border-red-500 bg-red-500 scale-110'
                           : isSelected
                           ? 'border-blue-500 bg-blue-500'
                           : 'border-neutral-600'
@@ -89,19 +89,19 @@ function QuizQuestion({ question, options, correctIndex, explanation, onAnswer, 
                     `}
                   >
                     {isSelected && !showFeedback && (
-                      <div className="w-2 h-2 bg-white rounded-full" />
+                      <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
                     )}
-                    {showAsCorrect && <CheckCircle className="w-3 h-3 text-white" />}
-                    {showAsIncorrect && <XCircle className="w-3 h-3 text-white" />}
+                    {showAsCorrect && <CheckCircle className="w-3 h-3 text-white animate-bounce" />}
+                    {showAsIncorrect && <XCircle className="w-3 h-3 text-white animate-bounce" />}
                   </div>
                   <span
                     className={`
-                      text-sm
+                      text-sm transition-colors duration-300
                       ${
                         showAsCorrect
-                          ? 'text-green-300'
+                          ? 'text-green-300 font-medium'
                           : showAsIncorrect
-                          ? 'text-red-300'
+                          ? 'text-red-300 font-medium'
                           : 'text-neutral-200'
                       }
                     `}
@@ -110,7 +110,7 @@ function QuizQuestion({ question, options, correctIndex, explanation, onAnswer, 
                   </span>
                 </div>
                 {showAsCorrect && !isSelected && (
-                  <span className="text-xs text-green-400">Correct answer</span>
+                  <span className="text-xs text-green-400 animate-pulse">Correct answer</span>
                 )}
               </div>
             </button>
@@ -127,27 +127,28 @@ function QuizQuestion({ question, options, correctIndex, explanation, onAnswer, 
               disabled={selectedAnswer === null}
               variant="primary"
               size="default"
-              className="min-w-[120px]"
+              className="min-w-[120px] transition-all duration-300 hover:scale-105"
             >
               Submit
             </Button>
           ) : (
             <>
               {isCorrect ? (
-                <div className="flex items-center gap-2 text-green-400">
-                  <CheckCircle className="w-5 h-5" />
+                <div className="flex items-center gap-2 text-green-400 animate-pulse">
+                  <CheckCircle className="w-5 h-5 animate-bounce" />
                   <span className="font-medium">Correct!</span>
                 </div>
               ) : (
                 <>
-                  <div className="flex items-center gap-2 text-red-400">
-                    <XCircle className="w-5 h-5" />
+                  <div className="flex items-center gap-2 text-red-400 animate-pulse">
+                    <XCircle className="w-5 h-5 animate-bounce" />
                     <span className="font-medium">Not quite right</span>
                   </div>
                   <Button
                     onClick={handleTryAgain}
                     variant="neutral"
                     size="sm"
+                    className="transition-all duration-300 hover:scale-105"
                   >
                     Try Again
                   </Button>
@@ -161,7 +162,7 @@ function QuizQuestion({ question, options, correctIndex, explanation, onAnswer, 
         {showFeedback && showExplanation && explanation && (
           <div
             className={`
-              p-3 rounded-lg text-sm
+              p-3 rounded-lg text-sm transition-all duration-500 ease-out animate-in slide-in-from-top-2
               ${
                 isCorrect
                   ? 'bg-green-500/10 border border-green-500/30 text-green-300'
@@ -218,6 +219,7 @@ export function QuizBreak({
   question, 
   options, 
   correct,
+  correctIndex, // Add support for correctIndex prop
   // Multiple questions props
   questions,
   // Common props
@@ -228,9 +230,11 @@ export function QuizBreak({
   const isMultipleMode = questions && questions.length > 0;
   
   // Convert single question to array format for unified handling
+  // Support both 'correct' and 'correctIndex' props for backward compatibility
+  const correctAnswerIndex = correctIndex !== undefined ? correctIndex : correct;
   const allQuestions = isMultipleMode 
     ? questions 
-    : [{ question, options, correctIndex: correct }];
+    : [{ question, options, correctIndex: correctAnswerIndex }];
   
   const [answeredCorrectly, setAnsweredCorrectly] = useState(new Set());
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -317,8 +321,11 @@ export function QuizBreak({
           
           {/* Next question indicator for multiple questions */}
           {isMultipleMode && answeredCorrectly.has(currentQuestion) && !allQuestionsAnswered && (
-            <div className="mt-4 flex items-center justify-between p-3 rounded-lg bg-green-500/10 border border-green-500/30">
-              <span className="text-sm text-green-300">Great! You got this one right.</span>
+            <div className="mt-4 flex items-center justify-between p-3 rounded-lg bg-green-500/10 border border-green-500/30 transition-all duration-500 ease-out animate-in slide-in-from-top-2">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 animate-bounce" />
+                <span className="text-sm text-green-300">Great! You got this one right.</span>
+              </div>
               {currentQuestion < allQuestions.length - 1 && (
                 <button
                   onClick={() => {
@@ -329,7 +336,7 @@ export function QuizBreak({
                       setCurrentQuestion(nextUnanswered);
                     }
                   }}
-                  className="text-sm text-green-400 hover:text-green-300 flex items-center gap-1 transition-colors"
+                  className="text-sm text-green-400 hover:text-green-300 flex items-center gap-1 transition-all duration-300 hover:scale-105"
                 >
                   Next question →
                 </button>
@@ -339,26 +346,35 @@ export function QuizBreak({
           
           {/* Single question feedback */}
           {!isMultipleMode && answeredCorrectly.has(0) && (
-            <div className="mt-4 p-3 rounded-lg text-sm bg-green-500/10 border border-green-500/30 text-green-300">
-              Great job! You got it right. Let's continue to the next section.
+            <div className="mt-4 p-3 rounded-lg text-sm bg-green-500/10 border border-green-500/30 text-green-300 transition-all duration-500 ease-out animate-in slide-in-from-top-2">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 animate-bounce" />
+                <span>Great job! You got it right. Let's continue to the next section.</span>
+              </div>
             </div>
           )}
           
           {/* Multiple questions completion message */}
           {isMultipleMode && allQuestionsAnswered && (
-            <div className="mt-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
-              <p className="text-sm text-green-400">
-                Excellent! You've completed all questions. Continue to the next section.
-              </p>
+            <div className="mt-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg transition-all duration-500 ease-out animate-in slide-in-from-top-2">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 animate-bounce" />
+                <p className="text-sm text-green-400">
+                  Excellent! You've completed all questions. Continue to the next section.
+                </p>
+              </div>
             </div>
           )}
           
           {/* Gate message for multiple questions */}
           {isMultipleMode && !allQuestionsAnswered && (
-            <div className="mt-6 p-4 bg-blue-600/10 border border-blue-600/20 rounded-lg">
-              <p className="text-sm text-blue-400">
-                Answer all questions correctly to continue to the next section
-              </p>
+            <div className="mt-6 p-4 bg-blue-600/10 border border-blue-600/20 rounded-lg transition-all duration-500 ease-out animate-in slide-in-from-top-2">
+              <div className="flex items-center gap-2">
+                <HelpCircle className="w-5 h-5 animate-pulse" />
+                <p className="text-sm text-blue-400">
+                  Answer all questions correctly to continue to the next section
+                </p>
+              </div>
             </div>
           )}
         </div>
@@ -503,3 +519,8 @@ export function MultipleChoiceQuestion({
 
 // Backward compatibility alias
 export { QuizBreak as QuizGate };
+
+// Static markers for production builds (survive minification)
+QuizBreak._isQuizBreak = true;
+SectionBreak._isSectionBreak = true;
+MultipleChoiceQuestion._isQuizBreak = true;

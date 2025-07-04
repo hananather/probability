@@ -205,6 +205,7 @@ export default function FoundationsTab({ onComplete }) {
       onComplete={onComplete}
       chapter={1}
       progressVariant="green"
+      showHeader={false}
     />
   );
 }

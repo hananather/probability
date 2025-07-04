@@ -97,7 +97,7 @@ const SECTIONS = [
               </div>
               <div className="flex items-start gap-2">
                 <span className="text-green-400">•</span>
-                <span><strong>r > n:</strong> Always equals 0</span>
+                <span><strong>r {`>`} n:</strong> Always equals 0</span>
               </div>
             </div>
           </VisualizationSection>
@@ -254,186 +254,207 @@ const SECTIONS = [
   {
     id: 'speed-practice',
     title: 'Speed Practice',
-    content: ({ sectionIndex, isCompleted }) => {
-      const [currentProblem, setCurrentProblem] = useState(0);
-      const [userAnswer, setUserAnswer] = useState('');
-      const [showResult, setShowResult] = useState(false);
-      const [score, setScore] = useState(0);
-      const [timeLeft, setTimeLeft] = useState(60);
-      const [isActive, setIsActive] = useState(false);
-      const [attempted, setAttempted] = useState(0);
-      
-      const problems = [
-        { question: "C(7,3) = ?", answer: 35 },
-        { question: "C(10,2) = ?", answer: 45 },
-        { question: "C(5,5) = ?", answer: 1 },
-        { question: "C(8,6) = ?", answer: 28 },
-        { question: "C(12,1) = ?", answer: 12 },
-      ];
-      
-      useEffect(() => {
-        let interval = null;
-        if (isActive && timeLeft > 0) {
-          interval = setInterval(() => {
-            setTimeLeft(time => time - 1);
-          }, 1000);
-        } else if (timeLeft === 0) {
-          setIsActive(false);
-        }
-        return () => clearInterval(interval);
-      }, [isActive, timeLeft]);
-      
-      const startPractice = () => {
-        setIsActive(true);
-        setCurrentProblem(0);
-        setScore(0);
-        setTimeLeft(60);
-        setUserAnswer('');
-        setShowResult(false);
-        setAttempted(0);
-      };
-      
-      const checkAnswer = () => {
-        if (!userAnswer) return;
-        
-        const isCorrect = parseInt(userAnswer) === problems[currentProblem].answer;
-        if (isCorrect) {
-          setScore(score + 1);
-        }
-        setAttempted(attempted + 1);
-        setShowResult(true);
-        
-        setTimeout(() => {
-          if (currentProblem < problems.length - 1 && timeLeft > 0) {
-            setCurrentProblem(currentProblem + 1);
-            setUserAnswer('');
-            setShowResult(false);
-          } else {
-            setIsActive(false);
-          }
-        }, 1500);
-      };
-      
-      return (
-        <SectionContent>
-          <div className="text-center space-y-6">
-            <div>
-              <h3 className="text-xl font-semibold text-neutral-200 mb-2">
-                60-Second Challenge
-              </h3>
-              <p className="text-neutral-400">
-                Solve as many combination problems as you can!
-              </p>
-            </div>
-            
-            {!isActive && attempted === 0 ? (
-              <Button 
-                variant="primary" 
-                size="lg"
-                onClick={startPractice}
-                className="mx-auto"
-              >
-                Start Speed Practice
-              </Button>
-            ) : (
-              <div className="max-w-md mx-auto space-y-4">
-                {/* Timer and Score */}
-                <div className="flex justify-between items-center bg-neutral-800 p-4 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <Timer className="w-5 h-5 text-yellow-400" />
-                    <span className="font-mono text-lg">{timeLeft}s</span>
-                  </div>
-                  <div className="text-lg">
-                    Score: <span className="font-bold text-green-400">{score}/{attempted}</span>
-                  </div>
-                </div>
-                
-                {isActive ? (
-                  <div className="bg-neutral-900 p-6 rounded-lg">
-                    <p className="text-2xl font-mono font-bold text-cyan-400 mb-4">
-                      {problems[currentProblem].question}
-                    </p>
-                    
-                    <div className="flex gap-2 items-center justify-center">
-                      <input
-                        type="number"
-                        value={userAnswer}
-                        onChange={(e) => setUserAnswer(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && checkAnswer()}
-                        className="w-32 px-3 py-2 text-lg text-center bg-neutral-800 border border-neutral-600 rounded"
-                        placeholder="Answer"
-                        disabled={showResult}
-                      />
-                      <Button
-                        variant="success"
-                        onClick={checkAnswer}
-                        disabled={!userAnswer || showResult}
-                      >
-                        Submit
-                      </Button>
-                    </div>
-                    
-                    {showResult && (
-                      <div className={cn(
-                        "mt-4 p-2 rounded text-center",
-                        parseInt(userAnswer) === problems[currentProblem].answer
-                          ? "bg-green-900/30 text-green-400"
-                          : "bg-red-900/30 text-red-400"
-                      )}>
-                        {parseInt(userAnswer) === problems[currentProblem].answer
-                          ? "Correct! ✓"
-                          : `Wrong. Answer: ${problems[currentProblem].answer}`}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="bg-neutral-900 p-6 rounded-lg">
-                    <h4 className="text-lg font-semibold text-neutral-200 mb-4">
-                      Practice Complete!
-                    </h4>
-                    <div className="text-3xl font-bold text-cyan-400 mb-4">
-                      {score}/{problems.length}
-                    </div>
-                    <p className="text-neutral-400 mb-4">
-                      {score === problems.length 
-                        ? "Perfect score! You're ready for any exam!"
-                        : score >= problems.length * 0.8
-                        ? "Great job! You're almost there!"
-                        : "Keep practicing to improve your speed!"}
-                    </p>
-                    <Button 
-                      variant="primary"
-                      onClick={startPractice}
-                    >
-                      Try Again
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-          
-          <VisualizationSection className="bg-neutral-900/50 rounded-lg p-4 mt-6">
-            <h4 className="font-semibold text-neutral-200 mb-3">Speed Tips</h4>
-            <ul className="space-y-2 text-sm text-neutral-300">
-              <li>• For C(n,2): Use n×(n-1)/2</li>
-              <li>• For C(n,1): Always equals n</li>
-              <li>• For C(n,n-1): Equals n</li>
-              <li>• Use symmetry for large r values</li>
-            </ul>
-          </VisualizationSection>
-        </SectionContent>
-      );
-    }
+    content: ({ sectionIndex, isCompleted }) => (
+      <SectionContent>
+        <div className="text-center mb-6">
+          <h3 className="text-xl font-semibold text-neutral-200 mb-2">
+            60-Second Challenge
+          </h3>
+          <p className="text-neutral-400">
+            Speed practice content will be populated dynamically...
+          </p>
+        </div>
+      </SectionContent>
+    )
   }
 ];
 
 export default function QuickReferenceTab({ onComplete }) {
+  // Move all hooks to component top level
+  const [currentProblem, setCurrentProblem] = useState(0);
+  const [userAnswer, setUserAnswer] = useState('');
+  const [showResult, setShowResult] = useState(false);
+  const [score, setScore] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(60);
+  const [isActive, setIsActive] = useState(false);
+  const [attempted, setAttempted] = useState(0);
+  
+  const problems = [
+    { question: "C(7,3) = ?", answer: 35 },
+    { question: "C(10,2) = ?", answer: 45 },
+    { question: "C(5,5) = ?", answer: 1 },
+    { question: "C(8,6) = ?", answer: 28 },
+    { question: "C(12,1) = ?", answer: 12 },
+  ];
+  
+  useEffect(() => {
+    let interval = null;
+    if (isActive && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft(time => time - 1);
+      }, 1000);
+    } else if (timeLeft === 0) {
+      setIsActive(false);
+    }
+    return () => clearInterval(interval);
+  }, [isActive, timeLeft]);
+  
+  const startPractice = () => {
+    setIsActive(true);
+    setCurrentProblem(0);
+    setScore(0);
+    setTimeLeft(60);
+    setUserAnswer('');
+    setShowResult(false);
+    setAttempted(0);
+  };
+  
+  const checkAnswer = () => {
+    if (!userAnswer) return;
+    
+    const isCorrect = parseInt(userAnswer) === problems[currentProblem].answer;
+    if (isCorrect) {
+      setScore(score + 1);
+    }
+    setAttempted(attempted + 1);
+    setShowResult(true);
+    
+    setTimeout(() => {
+      if (currentProblem < problems.length - 1 && timeLeft > 0) {
+        setCurrentProblem(currentProblem + 1);
+        setUserAnswer('');
+        setShowResult(false);
+      } else {
+        setIsActive(false);
+      }
+    }, 1500);
+  };
+
+  // Create sections with state passed down
+  const sectionsWithState = SECTIONS.map((section, index) => {
+    if (index === 3) { // Speed Practice section
+      return {
+        ...section,
+        content: ({ sectionIndex, isCompleted }) => (
+          <SectionContent>
+            <div className="text-center space-y-6">
+              <div>
+                <h3 className="text-xl font-semibold text-neutral-200 mb-2">
+                  60-Second Challenge
+                </h3>
+                <p className="text-neutral-400">
+                  Solve as many combination problems as you can!
+                </p>
+              </div>
+              
+              {!isActive && attempted === 0 ? (
+                <Button 
+                  variant="primary" 
+                  size="lg"
+                  onClick={startPractice}
+                  className="mx-auto"
+                >
+                  Start Speed Practice
+                </Button>
+              ) : (
+                <div className="max-w-md mx-auto space-y-4">
+                  {/* Timer and Score */}
+                  <div className="flex justify-between items-center bg-neutral-800 p-4 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Timer className="w-5 h-5 text-yellow-400" />
+                      <span className="font-mono text-lg">{timeLeft}s</span>
+                    </div>
+                    <div className="text-lg">
+                      Score: <span className="font-bold text-green-400">{score}/{attempted}</span>
+                    </div>
+                  </div>
+                  
+                  {isActive ? (
+                    <div className="bg-neutral-900 p-6 rounded-lg">
+                      <p className="text-2xl font-mono font-bold text-cyan-400 mb-4">
+                        {problems[currentProblem].question}
+                      </p>
+                      
+                      <div className="flex gap-2 items-center justify-center">
+                        <input
+                          type="number"
+                          value={userAnswer}
+                          onChange={(e) => setUserAnswer(e.target.value)}
+                          onKeyPress={(e) => e.key === 'Enter' && checkAnswer()}
+                          className="w-32 px-3 py-2 text-lg text-center bg-neutral-800 border border-neutral-600 rounded"
+                          placeholder="Answer"
+                          disabled={showResult}
+                        />
+                        <Button
+                          variant="success"
+                          onClick={checkAnswer}
+                          disabled={!userAnswer || showResult}
+                        >
+                          Submit
+                        </Button>
+                      </div>
+                      
+                      {showResult && (
+                        <div className={cn(
+                          "mt-4 p-2 rounded text-center",
+                          parseInt(userAnswer) === problems[currentProblem].answer
+                            ? "bg-green-900/30 text-green-400"
+                            : "bg-red-900/30 text-red-400"
+                        )}>
+                          {parseInt(userAnswer) === problems[currentProblem].answer
+                            ? "Correct! ✓"
+                            : `Wrong. Answer: ${problems[currentProblem].answer}`}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="bg-neutral-900 p-6 rounded-lg">
+                      <h4 className="text-lg font-semibold text-neutral-200 mb-4">
+                        Practice Complete!
+                      </h4>
+                      <div className="text-3xl font-bold text-cyan-400 mb-4">
+                        {score}/{problems.length}
+                      </div>
+                      <p className="text-neutral-400 mb-4">
+                        {score === problems.length 
+                          ? "Perfect score! You're ready for any exam!"
+                          : score >= problems.length * 0.8
+                          ? "Great job! You're almost there!"
+                          : "Keep practicing to improve your speed!"}
+                      </p>
+                      <Button 
+                        variant="primary"
+                        onClick={startPractice}
+                      >
+                        Try Again
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            <VisualizationSection className="bg-neutral-900/50 rounded-lg p-4 mt-6">
+              <h4 className="font-semibold text-neutral-200 mb-3">Speed Tips</h4>
+              <ul className="space-y-2 text-sm text-neutral-300">
+                <li>• For C(n,2): Use n×(n-1)/2</li>
+                <li>• For C(n,1): Always equals n</li>
+                <li>• For C(n,n-1): Equals n</li>
+                <li>• Use symmetry for large r values</li>
+              </ul>
+            </VisualizationSection>
+          </SectionContent>
+        )
+      };
+    }
+    return section;
+  });
+
   return (
     <SectionBasedContent
       title="Quick Reference & Practice"
       description="Everything you need for exams in one place"
-      sections={SECTIONS}
+      sections={sectionsWithState}
       onComplete={onComplete}
       chapter={1}
       progressVariant="violet"

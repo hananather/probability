@@ -6,6 +6,7 @@ import SectionBasedContent, {
   MathFormula, 
   InteractiveElement 
 } from '@/components/ui/SectionBasedContent';
+import MathJaxSection from '@/components/ui/MathJaxSection';
 import { WorkedExample, ExampleSection, InsightBox, Formula } from '@/components/ui/WorkedExample';
 import { createColorScheme } from '@/lib/design-system';
 
@@ -15,27 +16,9 @@ const SECTIONS = [
   {
     id: 'basic-example',
     title: 'Basic Example',
-    content: ({ sectionIndex, isCompleted }) => {
-      const contentRef = useRef(null);
-      
-      useEffect(() => {
-        const processMathJax = () => {
-          if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-            if (window.MathJax.typesetClear) {
-              window.MathJax.typesetClear([contentRef.current]);
-            }
-            window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-          }
-        };
-        
-        processMathJax();
-        const timeoutId = setTimeout(processMathJax, 100);
-        return () => clearTimeout(timeoutId);
-      }, []);
-      
-      return (
-        <SectionContent>
-          <div ref={contentRef}>
+    content: ({ sectionIndex, isCompleted }) => (
+      <SectionContent>
+        <MathJaxSection>
             <WorkedExample title="Dice Roll Example">
               <ExampleSection title="Problem">
                 <p className="text-neutral-300">
@@ -87,35 +70,16 @@ const SECTIONS = [
               💡 Quick Check: When working with finite sample spaces, you can often 
               verify by counting directly within the conditional space!
             </InsightBox>
-          </div>
-        </SectionContent>
-      );
-    }
+        </MathJaxSection>
+      </SectionContent>
+    )
   },
   {
     id: 'exam-level',
     title: 'Exam-Level Example',
-    content: ({ sectionIndex, isCompleted }) => {
-      const contentRef = useRef(null);
-      
-      useEffect(() => {
-        const processMathJax = () => {
-          if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-            if (window.MathJax.typesetClear) {
-              window.MathJax.typesetClear([contentRef.current]);
-            }
-            window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-          }
-        };
-        
-        processMathJax();
-        const timeoutId = setTimeout(processMathJax, 100);
-        return () => clearTimeout(timeoutId);
-      }, []);
-      
-      return (
-        <SectionContent>
-          <div ref={contentRef}>
+    content: ({ sectionIndex, isCompleted }) => (
+      <SectionContent>
+        <MathJaxSection>
             <WorkedExample title="Medical Testing Problem">
               <ExampleSection title="Problem">
                 <p className="text-neutral-300">
@@ -188,35 +152,16 @@ const SECTIONS = [
               ⚠️ This is why doctors order follow-up tests! A single positive result for a rare 
               condition is often a false alarm.
             </InsightBox>
-          </div>
-        </SectionContent>
-      );
-    }
+        </MathJaxSection>
+      </SectionContent>
+    )
   },
   {
     id: 'variations',
     title: 'Variations',
-    content: ({ sectionIndex, isCompleted }) => {
-      const contentRef = useRef(null);
-      
-      useEffect(() => {
-        const processMathJax = () => {
-          if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-            if (window.MathJax.typesetClear) {
-              window.MathJax.typesetClear([contentRef.current]);
-            }
-            window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-          }
-        };
-        
-        processMathJax();
-        const timeoutId = setTimeout(processMathJax, 100);
-        return () => clearTimeout(timeoutId);
-      }, []);
-      
-      return (
-        <SectionContent>
-          <div ref={contentRef}>
+    content: ({ sectionIndex, isCompleted }) => (
+      <SectionContent>
+        <MathJaxSection>
             <WorkedExample title="Common Problem Types">
               <ExampleSection title="Type 1: Multiple Conditions">
                 <div className="bg-neutral-800 p-3 rounded mb-3">
@@ -286,117 +231,117 @@ const SECTIONS = [
                 </p>
               </ExampleSection>
             </WorkedExample>
-          </div>
-        </SectionContent>
-      );
-    }
+        </MathJaxSection>
+      </SectionContent>
+    )
   },
   {
     id: 'practice',
     title: 'Practice Time',
-    content: ({ sectionIndex, isCompleted }) => {
-      const contentRef = useRef(null);
-      const [showSolutions, setShowSolutions] = React.useState(false);
-      
-      useEffect(() => {
-        const processMathJax = () => {
-          if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-            if (window.MathJax.typesetClear) {
-              window.MathJax.typesetClear([contentRef.current]);
-            }
-            window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-          }
-        };
-        
-        processMathJax();
-        const timeoutId = setTimeout(processMathJax, 100);
-        return () => clearTimeout(timeoutId);
-      }, [showSolutions]);
-      
-      return (
-        <SectionContent>
-          <div ref={contentRef}>
-            <WorkedExample title="Practice Problems">
-              <ExampleSection title="Problem 1: Card Drawing">
-                <p className="text-neutral-300">
-                  From a standard deck, you draw a card. Given that it's a face card (J, Q, K), 
-                  what's the probability it's a heart?
-                </p>
-                {showSolutions && (
-                  <div className="mt-3 bg-green-900/20 p-3 rounded">
-                    <p className="text-sm text-neutral-300">
-                      Solution: There are 12 face cards total, 3 are hearts.
-                    </p>
-                    <div className="mt-2" dangerouslySetInnerHTML={{ 
-                      __html: `\\[P(\\text{Heart}|\\text{Face}) = \\frac{3}{12} = \\frac{1}{4}\\]` 
-                    }} />
-                  </div>
-                )}
-              </ExampleSection>
-              
-              <ExampleSection title="Problem 2: Quality Control">
-                <p className="text-neutral-300">
-                  A factory has two machines: A produces 60% of output with 5% defect rate, 
-                  B produces 40% with 3% defect rate. If a product is defective, what's the 
-                  probability it came from machine A?
-                </p>
-                {showSolutions && (
-                  <div className="mt-3 bg-green-900/20 p-3 rounded">
-                    <p className="text-sm text-neutral-300">Solution:</p>
-                    <div className="mt-2" dangerouslySetInnerHTML={{ 
-                      __html: `\\[P(A|\\text{Defect}) = \\frac{(0.05)(0.6)}{(0.05)(0.6) + (0.03)(0.4)} = \\frac{0.03}{0.042} \\approx 0.714\\]` 
-                    }} />
-                  </div>
-                )}
-              </ExampleSection>
-              
-              <ExampleSection title="Problem 3: Independence Check">
-                <p className="text-neutral-300">
-                  In a class, 40% study math, 30% study physics, and 20% study both. 
-                  Are studying math and physics independent?
-                </p>
-                {showSolutions && (
-                  <div className="mt-3 bg-green-900/20 p-3 rounded">
-                    <p className="text-sm text-neutral-300">
-                      Solution: Check if P(M∩P) = P(M)·P(P)
-                    </p>
-                    <p className="text-sm text-neutral-300 mt-1">
-                      0.20 ≠ (0.40)(0.30) = 0.12
-                    </p>
-                    <p className="text-sm text-neutral-300 mt-1">
-                      <strong>Not independent!</strong> Students who study one are more likely to study the other.
-                    </p>
-                  </div>
-                )}
-              </ExampleSection>
-              
-              <div className="mt-6 text-center">
-                <button
-                  onClick={() => setShowSolutions(!showSolutions)}
-                  className="px-6 py-2 bg-[#3b82f6] hover:bg-[#3b82f6]/80 text-white rounded-lg transition-all duration-1500"
-                >
-                  {showSolutions ? 'Hide Solutions' : 'Show Solutions'}
-                </button>
-              </div>
-            </WorkedExample>
-            
-            <InsightBox variant="success">
-              🎯 Practice Tip: Try solving each problem before checking the solution. 
-              Focus on identifying the given information and what you're looking for!
-            </InsightBox>
-          </div>
-        </SectionContent>
-      );
-    }
+    content: ({ sectionIndex, isCompleted }) => (
+      <SectionContent>
+        <div className="text-center mb-6">
+          <h3 className="text-xl font-semibold text-neutral-200 mb-2">Practice Problems</h3>
+          <p className="text-neutral-400">Practice content will be populated dynamically...</p>
+        </div>
+      </SectionContent>
+    )
   }
 ];
 
 export default function Tab2WorkedExamplesTab({ onComplete }) {
+  // Move useState hook to component top level
+  const [showSolutions, setShowSolutions] = React.useState(false);
+
+  // Create sections with state passed down
+  const sectionsWithState = SECTIONS.map((section, index) => {
+    if (index === 3) { // Practice section
+      return {
+        ...section,
+        content: ({ sectionIndex, isCompleted }) => (
+          <SectionContent>
+            <MathJaxSection>
+              <WorkedExample title="Practice Problems">
+                <ExampleSection title="Problem 1: Card Drawing">
+                  <p className="text-neutral-300">
+                    From a standard deck, you draw a card. Given that it's a face card (J, Q, K), 
+                    what's the probability it's a heart?
+                  </p>
+                  {showSolutions && (
+                    <div className="mt-3 bg-green-900/20 p-3 rounded">
+                      <p className="text-sm text-neutral-300">
+                        Solution: There are 12 face cards total, 3 are hearts.
+                      </p>
+                      <div className="mt-2" dangerouslySetInnerHTML={{ 
+                        __html: `\\[P(\\text{Heart}|\\text{Face}) = \\frac{3}{12} = \\frac{1}{4}\\]` 
+                      }} />
+                    </div>
+                  )}
+                </ExampleSection>
+                
+                <ExampleSection title="Problem 2: Quality Control">
+                  <p className="text-neutral-300">
+                    A factory has two machines: A produces 60% of output with 5% defect rate, 
+                    B produces 40% with 3% defect rate. If a product is defective, what's the 
+                    probability it came from machine A?
+                  </p>
+                  {showSolutions && (
+                    <div className="mt-3 bg-green-900/20 p-3 rounded">
+                      <p className="text-sm text-neutral-300">Solution:</p>
+                      <div className="mt-2" dangerouslySetInnerHTML={{ 
+                        __html: `\\[P(A|\\text{Defect}) = \\frac{(0.05)(0.6)}{(0.05)(0.6) + (0.03)(0.4)} = \\frac{0.03}{0.042} \\approx 0.714\\]` 
+                      }} />
+                    </div>
+                  )}
+                </ExampleSection>
+                
+                <ExampleSection title="Problem 3: Independence Check">
+                  <p className="text-neutral-300">
+                    In a class, 40% study math, 30% study physics, and 20% study both. 
+                    Are studying math and physics independent?
+                  </p>
+                  {showSolutions && (
+                    <div className="mt-3 bg-green-900/20 p-3 rounded">
+                      <p className="text-sm text-neutral-300">
+                        Solution: Check if P(M∩P) = P(M)·P(P)
+                      </p>
+                      <p className="text-sm text-neutral-300 mt-1">
+                        0.20 ≠ (0.40)(0.30) = 0.12
+                      </p>
+                      <p className="text-sm text-neutral-300 mt-1">
+                        <strong>Not independent!</strong> Students who study one are more likely to study the other.
+                      </p>
+                    </div>
+                  )}
+                </ExampleSection>
+                
+                <div className="mt-6 text-center">
+                  <button
+                    onClick={() => setShowSolutions(!showSolutions)}
+                    className="px-6 py-2 bg-[#3b82f6] hover:bg-[#3b82f6]/80 text-white rounded-lg transition-all duration-1500"
+                  >
+                    {showSolutions ? 'Hide Solutions' : 'Show Solutions'}
+                  </button>
+                </div>
+              </WorkedExample>
+              
+              <InsightBox variant="success">
+                🎯 Practice Tip: Try solving each problem before checking the solution. 
+                Focus on identifying the given information and what you're looking for!
+              </InsightBox>
+            </MathJaxSection>
+          </SectionContent>
+        )
+      };
+    }
+    return section;
+  });
+
   return (
     <SectionBasedContent
       title="Worked Examples"
       description="Step-by-step solutions to exam problems"
-      sections={SECTIONS}
+      sections={sectionsWithState}
       onComplete={onComplete}
       chapter={1}
       progressVariant="blue"

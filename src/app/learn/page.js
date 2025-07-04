@@ -1,14 +1,22 @@
 "use client";
 import React, { useState } from 'react';
 import { SizingPatterns } from '../../components/learn/SizingPatterns';
+import { Chapter7Showcase } from '../../components/learn/Chapter7Showcase';
+import { ComponentLibrary } from '../../components/learn/ComponentLibrary';
+import { GoldStandardShowcase } from '../../components/learn/GoldStandardShowcase';
+import { ComponentUsageTest } from '../../components/learn/ComponentUsageTest';
 import { Button } from '../../components/ui/button';
 import Link from 'next/link';
 import { cn } from '../../lib/design-system';
 
 export default function LearnPage() {
-  const [activeComponent, setActiveComponent] = useState('sizing');
+  const [activeComponent, setActiveComponent] = useState('goldstandard');
   
   const components = [
+    { id: 'goldstandard', name: '🏆 Gold Standard Components', component: GoldStandardShowcase },
+    { id: 'usagetest', name: '🧪 Usage Test', component: ComponentUsageTest },
+    { id: 'components', name: 'Component Library', component: ComponentLibrary },
+    { id: 'chapter7', name: 'Chapter 7 Design Patterns', component: Chapter7Showcase },
     { id: 'sizing', name: 'SVG & Container Sizing', component: SizingPatterns },
     // Add more learning components here as you create them
   ];
