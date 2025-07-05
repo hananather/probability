@@ -9,6 +9,7 @@ import { ExponentialDistributionWorkedExample } from "./3-4-2-ExponentialDistrib
 import { ProgressBar, ProgressNavigation } from "../ui/ProgressBar";
 import { Button } from "../ui/button";
 import { tutorial_3_4_1 } from '@/tutorials/chapter3';
+import BackToHub from '../ui/BackToHub';
 
 // Define learning stages
 const learningStages = [
@@ -233,8 +234,8 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
   // Chart ref
   const pdfChartRef = useRef(null);
   
-  // Create color scheme - using 'estimation' scheme for consistency
-  const colors = createColorScheme('estimation');
+  // Create color scheme - using 'probability' scheme for Chapter 3
+  const colors = createColorScheme('probability');
   
   // Calculate mean
   const meanValue = 1/lambda;
@@ -343,7 +344,7 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
       .style("fill", "#e5e7eb")
       .text("Time (t)");
     
-    // Draw the curve - using blue from Chapter 2
+    // Draw the curve - using primary color from color scheme
     const line = d3.line()
       .x(d => x(d.x))
       .y(d => y(d.y))
@@ -352,7 +353,7 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
     g.append("path")
       .datum(data)
       .attr("fill", "none")
-      .attr("stroke", "#3B82F6") // Blue like Chapter 2
+      .attr("stroke", colors.chart.primary)
       .attr("stroke-width", 3)
       .attr("d", line);
     
@@ -368,7 +369,7 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
         .attr("x2", x(t))
         .attr("y1", height)
         .attr("y2", y(yValue))
-        .attr("stroke", "#F59E0B") // Amber accent
+        .attr("stroke", colors.chart.accent)
         .attr("stroke-width", 2)
         .attr("stroke-dasharray", "5,5");
       
@@ -377,7 +378,7 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
         .attr("cx", x(t))
         .attr("cy", y(yValue))
         .attr("r", 6)
-        .attr("fill", "#F59E0B")
+        .attr("fill", colors.chart.accent)
         .attr("stroke", "#1f2937")
         .attr("stroke-width", 2);
       
@@ -386,7 +387,7 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
         .attr("x", x(t))
         .attr("y", y(yValue) - 10)
         .attr("text-anchor", "middle")
-        .attr("fill", "#F59E0B")
+        .attr("fill", colors.chart.accent)
         .style("font-size", "12px")
         .style("font-weight", "bold")
         .text(`(${t.toFixed(1)}, ${yValue.toFixed(3)})`);
@@ -401,7 +402,7 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
         
         g.append("path")
           .datum(areaData)
-          .attr("fill", "#10B981") // Green for area
+          .attr("fill", colors.chart.secondary)
           .attr("opacity", 0.3)
           .attr("d", area);
       }
@@ -414,7 +415,7 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
         .attr("x2", x(meanValue))
         .attr("y1", 0)
         .attr("y2", height)
-        .attr("stroke", "#8B5CF6") // Purple for mean
+        .attr("stroke", colors.chart.tertiary)
         .attr("stroke-width", 2)
         .attr("stroke-dasharray", "10,5");
       
@@ -422,12 +423,12 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
         .attr("x", x(meanValue))
         .attr("y", -5)
         .attr("text-anchor", "middle")
-        .attr("fill", "#8B5CF6")
+        .attr("fill", colors.chart.tertiary)
         .style("font-size", "12px")
         .style("font-weight", "bold")
         .text(`μ = ${meanValue.toFixed(2)}`);
     }
-  }, [lambda, showCDF, t, meanValue, colors.chart, stage]);
+  }, [lambda, showCDF, t, meanValue, colors, stage]);
   
   return (
     <VisualizationContainer 
@@ -436,6 +437,7 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
       tutorialSteps={tutorial_3_4_1}
       tutorialKey="exponential-distribution-3-4-1"
     >
+      <BackToHub />
       <div className="space-y-6">
         {/* Progress Bar */}
         <ProgressBar 

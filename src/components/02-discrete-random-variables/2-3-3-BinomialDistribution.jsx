@@ -281,9 +281,18 @@ export default function BinomialDistribution() {
   
   // Process MathJax
   useEffect(() => {
-    if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-      window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-    }
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax(); // Try immediately
+    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
+    return () => clearTimeout(timeoutId);
   }, [n, p]);
   
   // Update dimensions on resize

@@ -368,11 +368,18 @@ const FunctionTransformations = () => {
   
   // Process MathJax
   useEffect(() => {
-    if (typeof window !== "undefined" && window.MathJax?.typesetPromise && statsRef.current) {
-      window.MathJax.typesetPromise([statsRef.current]).catch(() => {
-        // Silent error: MathJax processing error
-      });
-    }
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && statsRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([statsRef.current]);
+        }
+        window.MathJax.typesetPromise([statsRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax(); // Try immediately
+    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
+    return () => clearTimeout(timeoutId);
   }, [functionType, customA, customB, customC]);
   
   const stats = calculateStats();
@@ -631,14 +638,14 @@ const FunctionTransformations = () => {
                 For non-linear transformations:
               </p>
               <div className="text-xs font-mono text-teal-400">
-                E[g(X)] = {stats.direct.toFixed(3)}
+                <span dangerouslySetInnerHTML={{ __html: `E[g(X)] = ${stats.direct.toFixed(3)}` }} />
               </div>
               <p className="text-xs text-neutral-400 mt-1">
-                Note: E[g(X)] ≠ g(E[X]) in general!
+                <span dangerouslySetInnerHTML={{ __html: `Note: E[g(X)] \neq g(E[X]) in general!` }} />
               </p>
               {functionType === 'square' && (
                 <p className="text-xs text-neutral-500 mt-2">
-                  g(E[X]) = ({stats.original.mean.toFixed(2)})² = {(stats.original.mean ** 2).toFixed(3)}
+                  <span dangerouslySetInnerHTML={{ __html: `g(E[X]) = (${stats.original.mean.toFixed(2)})^2 = ${(stats.original.mean ** 2).toFixed(3)}` }} />
                 </p>
               )}
             </div>
@@ -650,9 +657,7 @@ const FunctionTransformations = () => {
             <div className="text-xs text-neutral-300 space-y-1">
               {functionType === 'square' && (
                 <>
-                  <p>• The square function maps negative values to positive, creating symmetry</p>
-                  <p>• Multiple X values can map to the same Y value (e.g., X = -2 and X = 2 both map to Y = 4)</p>
-                  <p>• <span dangerouslySetInnerHTML={{ __html: `\\(\\text{Var}(X^2) \\neq [\\text{Var}(X)]^2\\)` }} /></p>
+                  <p>• <span dangerouslySetInnerHTML={{ __html: `The square function maps negative values to positive, creating symmetry` }} /></p>                  <p>• <span dangerouslySetInnerHTML={{ __html: `Multiple X values can map to the same Y value (e.g., \(X = -2\) and \(X = 2\) both map to \(Y = 4\))` }} /></p>                  <p>• <span dangerouslySetInnerHTML={{ __html: `\(\text{Var}(X^2) \neq [\text{Var}(X)]^2\)` }} /></p>
                 </>
               )}
               {functionType === 'abs' && (

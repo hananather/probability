@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useRef } from "react";
+import { useSafeMathJax } from '../../utils/mathJaxFix';
 import { cn } from '../../lib/utils';
 
 const ExponentialDistributionWorkedExample = React.memo(function ExponentialDistributionWorkedExample({
@@ -17,26 +18,8 @@ const ExponentialDistributionWorkedExample = React.memo(function ExponentialDist
   const stdDev = Math.sqrt(variance);
   const survivalProb = Math.exp(-lambda * t);
   
-  // Use the standard MathJax processing pattern with multiple retries
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax(); // Try immediately
-    const timeoutId1 = setTimeout(processMathJax, 100); // Retry after 100ms
-    const timeoutId2 = setTimeout(processMathJax, 500); // Additional retry after 500ms
-    
-    return () => {
-      clearTimeout(timeoutId1);
-      clearTimeout(timeoutId2);
-    };
-  }, [lambda, t]);
+  // Use safe MathJax processing with error handling
+  useSafeMathJax(contentRef, [lambda, t]);
   
   return (
     <div
@@ -68,7 +51,7 @@ const ExponentialDistributionWorkedExample = React.memo(function ExponentialDist
             2. Probability Density Function (PDF):
           </p>
           <div className="ml-4 my-2" dangerouslySetInnerHTML={{ 
-            __html: `$$f(t) = \\lambda e^{-\\lambda t} = ${lambda} e^{-${lambda} \\cdot ${t}} = ${pdfValue.toFixed(4)}$$` 
+            __html: `\\[f(t) = \\lambda e^{-\\lambda t} = ${lambda} e^{-${lambda} \\cdot ${t}} = ${pdfValue.toFixed(4)}\\]` 
           }} />
           <p className="text-xs text-gray-400 ml-4">
             for <span dangerouslySetInnerHTML={{ __html: `\\(t \\ge 0\\)` }} />, and <span dangerouslySetInnerHTML={{ __html: `\\(f(t) = 0\\)` }} /> for <span dangerouslySetInnerHTML={{ __html: `\\(t < 0\\)` }} />
@@ -81,7 +64,7 @@ const ExponentialDistributionWorkedExample = React.memo(function ExponentialDist
             3. Cumulative Distribution Function (CDF):
           </p>
           <div className="ml-4 my-2" dangerouslySetInnerHTML={{ 
-            __html: `$$F(t) = P(T \\le ${t}) = 1 - e^{-\\lambda t} = 1 - e^{-${lambda} \\cdot ${t}} = ${cdfValue.toFixed(4)}$$` 
+            __html: `\\[F(t) = P(T \\le ${t}) = 1 - e^{-\\lambda t} = 1 - e^{-${lambda} \\cdot ${t}} = ${cdfValue.toFixed(4)}\\]` 
           }} />
         </div>
         

@@ -18,6 +18,7 @@ import { Info, Sparkles, ArrowRight, CheckCircle, BarChart3, TrendingUp } from "
 import { ProgressBar, ProgressNavigation } from '@/components/ui/ProgressBar';
 import { useSafeMathJax } from '../../utils/mathJaxFix';
 import { tutorial_3_1_1 } from '@/tutorials/chapter3';
+import BackToHub from '../ui/BackToHub';
 
 // Color scheme for the visualization - using vibrant colors
 const colorScheme = createColorScheme('estimation'); // Violet/Cyan/Amber for better visibility
@@ -742,6 +743,7 @@ const ContinuousDistributionsPDF = () => {
       tutorialSteps={tutorial_3_1_1}
       tutorialKey="continuous-distributions-pdf-3-1-1"
     >
+      <BackToHub />
       <div className="space-y-6">
         {/* Progress Bar */}
         <ProgressBar 

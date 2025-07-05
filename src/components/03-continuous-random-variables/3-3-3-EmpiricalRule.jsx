@@ -9,6 +9,7 @@ import { Play, Pause, RotateCcw, BarChart } from "lucide-react";
 import * as jStat from "jstat";
 import { VisualizationContainer } from "../ui/VisualizationContainer";
 import { tutorial_3_3_3 } from '@/tutorials/chapter3';
+import BackToHub from '../ui/BackToHub';
 
 // LaTeX-containing components wrapped in React.memo to prevent re-renders
 const ParameterLabel = memo(function ParameterLabel({ label, symbol }) {
@@ -121,7 +122,7 @@ const RuleExplanation = memo(function RuleExplanation({ rule, sigmaRange, percen
   return (
     <div 
       ref={ruleRef}
-      className={`p-2 rounded transition-all ${
+      className={`p-2 rounded transition-all duration-200 cursor-pointer hover:scale-105 ${
         isSelected ? `${color}/20 border border-${color}/30` : 'opacity-50'
       }`}
     >
@@ -536,6 +537,7 @@ const EmpiricalRule = () => {
       tutorialSteps={tutorial_3_3_3}
       tutorialKey="empirical-rule-3-3-3"
     >
+      <BackToHub />
       <div className="w-full" ref={containerRef}>
         <Card className="overflow-hidden">
           <CardHeader className="pb-2">
@@ -600,7 +602,7 @@ const EmpiricalRule = () => {
                     max="150"
                     value={mu}
                     onChange={(e) => setMu(Number(e.target.value))}
-                    className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                    className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer transition-all duration-200 hover:bg-gray-600"
                   />
                 </div>
                 
@@ -615,7 +617,7 @@ const EmpiricalRule = () => {
                     max="30"
                     value={sigma}
                     onChange={(e) => setSigma(Number(e.target.value))}
-                    className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                    className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer transition-all duration-200 hover:bg-gray-600"
                   />
                 </div>
               </div>

@@ -10,6 +10,7 @@ import { jStat } from "jstat";
 import { Tutorial } from "../ui/Tutorial";
 import { Clock, Zap, ChartBar, Target } from "lucide-react";
 import { tutorial_3_5_1 } from '@/tutorials/chapter3';
+import BackToHub from '../ui/BackToHub';
 
 const GammaDistribution = React.memo(function GammaDistribution() {
   // Core state
@@ -107,7 +108,7 @@ const GammaDistribution = React.memo(function GammaDistribution() {
       )
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.2)
-      .style("stroke", "#374151");
+      .style("stroke", colors.chart.grid || "#374151");
     
     g.append("g")
       .attr("class", "grid")
@@ -117,24 +118,24 @@ const GammaDistribution = React.memo(function GammaDistribution() {
       )
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.2)
-      .style("stroke", "#374151");
+      .style("stroke", colors.chart.grid || "#374151");
     
     // Axes
     g.append("g")
       .attr("transform", `translate(0,${height})`)
       .call(d3.axisBottom(x))
-      .style("color", "#9ca3af");
+      .style("color", colors.chart.text || "#9ca3af");
     
     g.append("g")
       .call(d3.axisLeft(y))
-      .style("color", "#9ca3af");
+      .style("color", colors.chart.text || "#9ca3af");
     
     // Labels
     g.append("text")
       .attr("x", width / 2)
       .attr("y", height + 45)
       .attr("text-anchor", "middle")
-      .attr("fill", "#e5e7eb")
+      .attr("fill", colors.chart.text || "#e5e7eb")
       .style("font-size", "14px")
       .text("Time");
     
@@ -143,7 +144,7 @@ const GammaDistribution = React.memo(function GammaDistribution() {
       .attr("y", -50)
       .attr("x", -height / 2)
       .attr("text-anchor", "middle")
-      .attr("fill", "#e5e7eb")
+      .attr("fill", colors.chart.text || "#e5e7eb")
       .style("font-size", "14px")
       .text("Probability Density");
     
@@ -219,7 +220,7 @@ const GammaDistribution = React.memo(function GammaDistribution() {
       const numExp = Math.floor(shape);
       const expColors = d3.scaleOrdinal()
         .domain(d3.range(numExp))
-        .range(["#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6"]);
+        .range([colors.chart.primary, colors.chart.secondary, colors.chart.accent, colors.chart.tertiary, colors.chart.quaternary || colors.chart.primary]);
       
       for (let i = 0; i < numExp; i++) {
         const expData = [];
@@ -381,7 +382,7 @@ const GammaDistribution = React.memo(function GammaDistribution() {
               <p className="text-sm text-gray-300 mb-2">Probability Density Function:</p>
               <div className="text-center py-2" ref={contentRef}>
                 <span dangerouslySetInnerHTML={{ 
-                  __html: `$$f(x) = \\frac{\\lambda^k}{\\Gamma(k)} x^{k-1} e^{-\\lambda x}$$` 
+                  __html: `\\[f(x) = \\frac{\\lambda^k}{\\Gamma(k)} x^{k-1} e^{-\\lambda x}\\]` 
                 }} />
               </div>
             </div>
@@ -409,6 +410,7 @@ const GammaDistribution = React.memo(function GammaDistribution() {
       tutorialSteps={tutorial_3_5_1}
       tutorialKey="gamma-distribution-3-5-1"
     >
+      <BackToHub />
       <Tutorial
         steps={tutorialSteps}
         persistKey="gamma-distribution-simplified"

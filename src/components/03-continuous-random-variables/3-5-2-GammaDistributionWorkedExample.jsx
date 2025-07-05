@@ -7,6 +7,7 @@ import { RangeSlider } from "../ui/RangeSlider";
 import { useSafeMathJax } from '../../utils/mathJaxFix';
 import { colors, typography, components, formatNumber, createColorScheme } from '../../lib/design-system';
 import { VisualizationContainer, ControlGroup } from '../ui/VisualizationContainer';
+import BackToHub from '../ui/BackToHub';
 
 // Use probability color scheme
 const colorScheme = createColorScheme('probability');
@@ -106,12 +107,12 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
     
     gradient.append("stop")
       .attr("offset", "0%")
-      .attr("stop-color", "#3b82f6")
+      .attr("stop-color", colorScheme.primary)
       .attr("stop-opacity", 0.8);
     
     gradient.append("stop")
       .attr("offset", "100%")
-      .attr("stop-color", "#3b82f6")
+      .attr("stop-color", colorScheme.primary)
       .attr("stop-opacity", 0.1);
     
     // Add grid
@@ -126,7 +127,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.3)
       .selectAll("line")
-      .style("stroke", colors.chart.grid);
+      .style("stroke", colorScheme.grid || "#374151");
     
     // Add axes
     svg.append("g")
@@ -136,7 +137,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
       .attr("x", width / 2)
       .attr("y", 40)
       .style("text-anchor", "middle")
-      .style("fill", colors.chart.text)
+      .style("fill", colorScheme.text || "#e5e7eb")
       .text("x");
     
     svg.append("g")
@@ -147,7 +148,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
       .attr("y", -40)
       .attr("x", -height / 2)
       .style("text-anchor", "middle")
-      .style("fill", colors.chart.text)
+      .style("fill", colorScheme.text || "#e5e7eb")
       .text("f(x)");
     
     // Area under curve
@@ -159,7 +160,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
     
     svg.append("path")
       .datum(distributionData)
-      .attr("fill", "#3b82f6")
+      .attr("fill", colorScheme.primary)
       .attr("opacity", 0.3)
       .attr("d", area);
     
@@ -172,7 +173,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
     svg.append("path")
       .datum(distributionData)
       .attr("fill", "none")
-      .attr("stroke", "#3b82f6")
+      .attr("stroke", colorScheme.primary)
       .attr("stroke-width", 2)
       .attr("d", line);
     
@@ -182,7 +183,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
       .attr("x2", xScale(mean))
       .attr("y1", margin.top)
       .attr("y2", height - margin.bottom)
-      .attr("stroke", "#3b82f6")
+      .attr("stroke", colorScheme.secondary)
       .attr("stroke-width", 2)
       .attr("stroke-dasharray", "5,5");
     
@@ -190,7 +191,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
       .attr("x", xScale(mean))
       .attr("y", margin.top - 5)
       .attr("text-anchor", "middle")
-      .style("fill", "#3b82f6")
+      .style("fill", colorScheme.secondary)
       .style("font-size", "12px")
       .text(`μ = ${mean.toFixed(2)}`);
     
@@ -201,7 +202,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
         .attr("x2", xScale(mode))
         .attr("y1", margin.top)
         .attr("y2", height - margin.bottom)
-        .attr("stroke", "#3b82f6")
+        .attr("stroke", colorScheme.tertiary)
         .attr("stroke-width", 2)
         .attr("stroke-dasharray", "3,3");
       
@@ -209,7 +210,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
         .attr("x", xScale(mode))
         .attr("y", margin.top - 5)
         .attr("text-anchor", "middle")
-        .style("fill", "#3b82f6")
+        .style("fill", colorScheme.tertiary)
         .style("font-size", "12px")
         .text(`Mode = ${mode.toFixed(2)}`);
     }
@@ -258,19 +259,8 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
   const FormulaSection = React.memo(({ children, expanded }) => {
     const ref = useRef(null);
     
-    useEffect(() => {
-      const processMathJax = () => {
-        if (typeof window !== "undefined" && window.MathJax?.typesetPromise && ref.current) {
-          if (window.MathJax.typesetClear) {
-            window.MathJax.typesetClear([ref.current]);
-          }
-          window.MathJax.typesetPromise([ref.current]).catch(console.error);
-        }
-      };
-      processMathJax();
-      const timeoutId = setTimeout(processMathJax, 100);
-      return () => clearTimeout(timeoutId);
-    }, [expanded]);
+    // Use safe MathJax processing with error handling
+    useSafeMathJax(ref, [expanded]);
     
     return <div ref={ref}>{children}</div>;
   });
@@ -593,6 +583,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
           )}
         </div>
       </div>
+      <BackToHub chapter={3} bottom={true} />
     </VisualizationContainer>
   );
 });

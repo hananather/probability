@@ -17,6 +17,7 @@ import { ProgressBar, ProgressNavigation } from "../ui/ProgressBar";
 import { Tutorial } from "../ui/Tutorial";
 import ZTableExplorer from "./ZTableExplorer";
 import { tutorial_3_3_4 } from '@/tutorials/chapter3';
+import BackToHub from '../ui/BackToHub';
 
 const ZTableLookup = () => {
   const colors = createColorScheme('hypothesis'); // Using hypothesis scheme for better vibrancy
@@ -529,6 +530,7 @@ const ZTableLookup = () => {
       tutorialSteps={tutorial_3_3_4}
       tutorialKey="z-table-lookup-3-3-4"
     >
+      <BackToHub />
       <div ref={contentRef} className="space-y-6">
         {/* Tutorial Component */}
         {showTutorial && (

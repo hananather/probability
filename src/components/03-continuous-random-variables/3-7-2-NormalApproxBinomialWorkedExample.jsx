@@ -345,19 +345,8 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
   const Step2NormalParameters = React.memo(function Step2NormalParameters({ n, p, mu, variance, sigma }) {
     const stepRef = useRef(null);
     
-    useEffect(() => {
-      const processMathJax = () => {
-        if (typeof window !== "undefined" && window.MathJax?.typesetPromise && stepRef.current) {
-          if (window.MathJax.typesetClear) {
-            window.MathJax.typesetClear([stepRef.current]);
-          }
-          window.MathJax.typesetPromise([stepRef.current]).catch(console.error);
-        }
-      };
-      processMathJax();
-      const timeoutId = setTimeout(processMathJax, 100);
-      return () => clearTimeout(timeoutId);
-    }, [n, p, mu, variance, sigma]);
+    // Use safe MathJax processing with error handling
+    useSafeMathJax(stepRef, [n, p, mu, variance, sigma]);
     
     return (
       <div ref={stepRef} className={cn(
@@ -380,19 +369,8 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
   const ZScoreCalculation = React.memo(function ZScoreCalculation({ probType, showCC, k, mu, sigma }) {
     const stepRef = useRef(null);
     
-    useEffect(() => {
-      const processMathJax = () => {
-        if (typeof window !== "undefined" && window.MathJax?.typesetPromise && stepRef.current) {
-          if (window.MathJax.typesetClear) {
-            window.MathJax.typesetClear([stepRef.current]);
-          }
-          window.MathJax.typesetPromise([stepRef.current]).catch(console.error);
-        }
-      };
-      processMathJax();
-      const timeoutId = setTimeout(processMathJax, 100);
-      return () => clearTimeout(timeoutId);
-    }, [probType, showCC, k, mu, sigma]);
+    // Use safe MathJax processing with error handling
+    useSafeMathJax(stepRef, [probType, showCC, k, mu, sigma]);
     
     return (
       <div ref={stepRef}>

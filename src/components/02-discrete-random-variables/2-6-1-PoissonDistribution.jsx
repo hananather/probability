@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
   VisualizationContainer, 
   ControlGroup
@@ -38,13 +38,14 @@ const TABS = [
 ];
 
 // Main Component
-export default function PoissonDistribution() {
+const PoissonDistribution = React.memo(function PoissonDistribution() {
   const [lambda, setLambda] = useState(3);
   const [windowSize, setWindowSize] = useState(2);
   const [activeTab, setActiveTab] = useState('timeline');
   const [isAnimating, setIsAnimating] = useState(false);
   const [singleEventMode, setSingleEventMode] = useState(false);
   const [eventAnimation, setEventAnimation] = useState(null);
+  const contentRef = useRef(null);
   
   // Calculate statistics
   const mean = lambda;
@@ -53,6 +54,21 @@ export default function PoissonDistribution() {
   
   // Handle edge cases for performance
   const effectiveLambda = lambda > 5 ? 5 : lambda; // Limit visual elements for performance
+
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax(); // Try immediately
+    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
+    return () => clearTimeout(timeoutId);
+  }, [lambda]);
   
   return (
     <VisualizationContainer
@@ -74,7 +90,7 @@ export default function PoissonDistribution() {
               The Poisson distribution is the only discrete distribution where:
             </p>
             <div className="mt-2 font-mono text-yellow-400 text-lg bg-yellow-500/10 px-3 py-1 rounded-lg inline-block">
-              E[X] = Var[X] = λ
+              <span dangerouslySetInnerHTML={{ __html: `E[X] = \text{Var}(X) = \lambda` }} />
             </div>
           </div>
           <div className="text-right">
@@ -149,14 +165,8 @@ export default function PoissonDistribution() {
       {/* Mathematical Formula */}
       <div className="bg-gray-800/50 rounded-lg p-4 mb-6">
         <h3 className="text-sm font-medium text-gray-300 mb-2">Probability Mass Function</h3>
-        <div className="text-center py-2">
-          <span className="text-lg">
-            P(X = k) = 
-            <span className="text-blue-400 mx-2">
-              λ<sup>k</sup> × e<sup>-λ</sup>
-            </span>
-            / k!
-          </span>
+        <div ref={contentRef} className="text-center py-2">
+          <span className="text-lg" dangerouslySetInnerHTML={{ __html: `\(P(X = k) = \frac{\lambda^k e^{-\lambda}}{k!}\)` }} />
         </div>
         <div className="text-xs text-gray-400 text-center mt-2">
           where k = 0, 1, 2, ... (number of events)
@@ -220,4 +230,6 @@ export default function PoissonDistribution() {
       </div>
     </VisualizationContainer>
   );
-}
+});
+
+export default PoissonDistribution;

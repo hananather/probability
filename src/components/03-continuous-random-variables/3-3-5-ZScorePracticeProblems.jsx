@@ -8,6 +8,7 @@ import { CheckCircle, XCircle, RefreshCw, HelpCircle, ChevronRight } from "lucid
 import * as jStat from "jstat";
 import { VisualizationContainer } from "../ui/VisualizationContainer";
 import { tutorial_3_3_5 } from '@/tutorials/chapter3';
+import BackToHub from '../ui/BackToHub';
 
 // Memoized component for problem type buttons to prevent re-renders
 const ProblemTypeButton = React.memo(({ type, isSelected, onClick }) => {
@@ -250,19 +251,8 @@ const ZScorePracticeProblems = () => {
   const ProblemDisplay = React.memo(({ problemNumber, question }) => {
     const contentRef = useRef(null);
     
-    useEffect(() => {
-      const processMathJax = () => {
-        if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-          if (window.MathJax.typesetClear) {
-            window.MathJax.typesetClear([contentRef.current]);
-          }
-          window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-        }
-      };
-      processMathJax();
-      const timeoutId = setTimeout(processMathJax, 100);
-      return () => clearTimeout(timeoutId);
-    }, [question]);
+    // Use safe MathJax processing with error handling
+    useSafeMathJax(contentRef, [question]);
     
     return (
       <div ref={contentRef} className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
@@ -279,19 +269,8 @@ const ZScorePracticeProblems = () => {
   const HintDisplay = React.memo(({ hint }) => {
     const contentRef = useRef(null);
     
-    useEffect(() => {
-      const processMathJax = () => {
-        if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-          if (window.MathJax.typesetClear) {
-            window.MathJax.typesetClear([contentRef.current]);
-          }
-          window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-        }
-      };
-      processMathJax();
-      const timeoutId = setTimeout(processMathJax, 100);
-      return () => clearTimeout(timeoutId);
-    }, [hint]);
+    // Use safe MathJax processing with error handling
+    useSafeMathJax(contentRef, [hint]);
     
     return (
       <div ref={contentRef} className="mt-3 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
@@ -304,19 +283,8 @@ const ZScorePracticeProblems = () => {
   const SolutionDisplay = React.memo(({ solution }) => {
     const contentRef = useRef(null);
     
-    useEffect(() => {
-      const processMathJax = () => {
-        if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-          if (window.MathJax.typesetClear) {
-            window.MathJax.typesetClear([contentRef.current]);
-          }
-          window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-        }
-      };
-      processMathJax();
-      const timeoutId = setTimeout(processMathJax, 100);
-      return () => clearTimeout(timeoutId);
-    }, [solution]);
+    // Use safe MathJax processing with error handling
+    useSafeMathJax(contentRef, [solution]);
     
     return (
       <div ref={contentRef} className="pt-3 border-t border-gray-700">
@@ -431,7 +399,7 @@ const ZScorePracticeProblems = () => {
                         value={userAnswer}
                         onChange={(e) => setUserAnswer(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && checkAnswer()}
-                        className="flex-1 px-4 py-3 text-lg font-mono border rounded-lg bg-gray-900 border-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="flex-1 px-4 py-3 text-lg font-mono border rounded-lg bg-gray-900 border-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200 hover:border-gray-600"
                         placeholder="Enter your answer..."
                         disabled={showFeedback}
                       />
@@ -520,6 +488,7 @@ const ZScorePracticeProblems = () => {
         </Card>
         </div>
       </div>
+      <BackToHub chapter={3} bottom={true} />
     </VisualizationContainer>
   );
 };

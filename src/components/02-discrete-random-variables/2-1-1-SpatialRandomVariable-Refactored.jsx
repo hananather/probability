@@ -20,7 +20,7 @@ const SpatialRandomVariable = () => {
   const [paintMode, setPaintMode] = useState(null); // 'add' or 'remove'
   
   // Ref for MathJax content container
-  const mathJaxContainerRef = useRef(null);
+  const contentRef = useRef(null);
   
   // Constants
   const WIDTH_GRID = 780;
@@ -41,15 +41,6 @@ const SpatialRandomVariable = () => {
     const usedColors = regions.map(r => r.color);
     return AVAILABLE_COLORS.find(c => !usedColors.includes(c)) || AVAILABLE_COLORS[0];
   }, [regions]);
-  
-  // Helper function to process MathJax
-  const processMathJax = useCallback((elements) => {
-    if (typeof window !== 'undefined' && window.MathJax?.typesetPromise) {
-      window.MathJax.typesetPromise(elements).catch(() => {
-        // MathJax error handled silently
-      });
-    }
-  }, []);
   
   // Initialize hexagon grid
   useEffect(() => {
@@ -483,16 +474,22 @@ const SpatialRandomVariable = () => {
   
   // Process MathJax on mount and updates
   useEffect(() => {
-    if (mathJaxContainerRef.current) {
-      const elements = mathJaxContainerRef.current.querySelectorAll('.mathjax-content');
-      if (elements.length > 0) {
-        processMathJax(Array.from(elements));
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
       }
-    }
-  }, [sampleData.total, processMathJax]);
+    };
+    
+    processMathJax(); // Try immediately
+    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
+    return () => clearTimeout(timeoutId);
+  }, [sampleData.total]);
   
   return (
-    <div ref={mathJaxContainerRef} className="bg-neutral-800 rounded-lg shadow-xl overflow-hidden w-full">
+    <div ref={contentRef} className="bg-neutral-800 rounded-lg shadow-xl overflow-hidden w-full">
       {/* Header */}
       <div className="bg-neutral-900 border-b border-neutral-700 px-4 py-3">
         <div className="flex items-center justify-between">
@@ -628,11 +625,11 @@ const SpatialRandomVariable = () => {
           
           {/* Distribution Chart */}
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-base font-semibold text-teal-400 mathjax-content">
-              \(P(X = x)\)
+            <h3 className="text-base font-semibold text-teal-400">
+              <span dangerouslySetInnerHTML={{ __html: `\(P(X = x)\)` }} />
             </h3>
             <div className="text-sm">
-              <span className="text-neutral-400 mathjax-content">\(n = \)</span>
+              <span className="text-neutral-400"><span dangerouslySetInnerHTML={{ __html: `\(n = \)` }} /></span>
               <span className="font-mono text-teal-400 font-medium">{sampleData.total}</span>
             </div>
           </div>
@@ -651,13 +648,13 @@ const SpatialRandomVariable = () => {
           {/* Statistics */}
           <div className="mt-4 pt-4 border-t border-neutral-700 space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-neutral-400 mathjax-content">\(E[X]\)</span>
+              <span className="text-sm text-neutral-400"><span dangerouslySetInnerHTML={{ __html: `\(E[X]\)` }} /></span>
               <span className="font-mono text-teal-400 font-medium text-lg">
                 {stats.mean.toFixed(3)}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-neutral-400 mathjax-content">\(\text{Var}(X)\)</span>
+              <span className="text-sm text-neutral-400"><span dangerouslySetInnerHTML={{ __html: `\(\text{Var}(X)\)` }} /></span>
               <span className="font-mono text-teal-400 font-medium text-lg">
                 {stats.variance.toFixed(3)}
               </span>

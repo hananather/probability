@@ -10,6 +10,7 @@ import { ProgressBar, ProgressNavigation } from "../ui/ProgressBar";
 import { Button } from "../ui/button";
 import { VisualizationContainer } from '../ui/VisualizationContainer';
 import { tutorial_3_7_1 } from '@/tutorials/chapter3';
+import BackToHub from '../ui/BackToHub';
 
 // Add custom styles for the sliders
 const sliderStyles = `
@@ -647,6 +648,7 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
       tutorialSteps={tutorial_3_7_1}
       tutorialKey="normal-approx-binomial-3-7-1"
     >
+      <BackToHub />
       <div ref={contentRef} className="min-h-screen flex flex-col bg-gradient-to-br from-neutral-900 to-neutral-950">
         <Tutorial
           steps={tutorialSteps}

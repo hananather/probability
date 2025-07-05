@@ -45,6 +45,7 @@ export default function GeometricDistribution() {
   const pmfSvgRef = useRef(null);
   const animationRef = useRef(null);
   const isAnimatingRef = useRef(false);
+  const contentRef = useRef(null);
   
   // Calculate statistics with edge case handling
   const expectedValue = p > 0 ? 1 / p : Infinity;
@@ -67,6 +68,21 @@ export default function GeometricDistribution() {
     
     return pmfData;
   }, [p, expectedValue]);
+
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax(); // Try immediately
+    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
+    return () => clearTimeout(timeoutId);
+  }, [p]);
   
   // Initialize PMF visualization
   useEffect(() => {
@@ -450,16 +466,12 @@ export default function GeometricDistribution() {
                 <div className="mt-3 pt-3 border-t border-gray-700">
                   <div className="text-xs space-y-1">
                     <div>
-                      <span className="text-gray-400">E[X] = </span>
-                      <span className="font-mono text-orange-400">
-                        1/p = 1/{p.toFixed(2)} = {expectedValue < 100 ? expectedValue.toFixed(1) : "∞"}
-                      </span>
+                      <span className="text-gray-400" dangerouslySetInnerHTML={{ __html: `E[X] =` }} />
+                      <span className="font-mono text-orange-400" dangerouslySetInnerHTML={{ __html: `\\(1/p = 1/${p.toFixed(2)} = ${expectedValue < 100 ? expectedValue.toFixed(1) : "\\infty"}\\)` }} />
                     </div>
                     <div>
-                      <span className="text-gray-400">Var[X] = </span>
-                      <span className="font-mono text-orange-400">
-                        (1-p)/p² = {variance < 1000 ? variance.toFixed(2) : "∞"}
-                      </span>
+                      <span className="text-gray-400" dangerouslySetInnerHTML={{ __html: `Var[X] =` }} />
+                      <span className="font-mono text-orange-400" dangerouslySetInnerHTML={{ __html: `\\((1-p)/p^2 = ${variance < 1000 ? variance.toFixed(2) : "\\infty"}\\)` }} />
                     </div>
                   </div>
                 </div>

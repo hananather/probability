@@ -80,6 +80,7 @@ export default function NegativeBinomialDistribution() {
   const pmfSvgRef = useRef(null);
   const animationFrameRef = useRef(null);
   const timeoutRef = useRef(null);
+  const contentRef = useRef(null);
   
   // Derived values
   const isGeometric = r === 1;
@@ -104,6 +105,21 @@ export default function NegativeBinomialDistribution() {
     
     return pmfData;
   }, [r, validP, expectedValue]);
+
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax(); // Try immediately
+    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
+    return () => clearTimeout(timeoutId);
+  }, [r, p]);
   
   // Initialize PMF visualization
   useEffect(() => {
@@ -497,16 +513,12 @@ export default function NegativeBinomialDistribution() {
               <div className="mt-3 pt-3 border-t border-gray-700">
                 <div className="text-xs space-y-1">
                   <div>
-                    <span className="text-gray-400">E[X] = </span>
-                    <span className="font-mono text-orange-400">
-                      r/p = {r}/{validP.toFixed(2)} = {expectedValue.toFixed(1)}
-                    </span>
+                    <span className="text-gray-400" dangerouslySetInnerHTML={{ __html: `E[X] =` }} />
+                    <span className="font-mono text-orange-400" dangerouslySetInnerHTML={{ __html: `\(r/p = ${r}/${validP.toFixed(2)} = ${expectedValue.toFixed(1)}\)` }} />
                   </div>
                   <div>
-                    <span className="text-gray-400">Var[X] = </span>
-                    <span className="font-mono text-orange-400">
-                      r(1-p)/p² = {variance.toFixed(2)}
-                    </span>
+                    <span className="text-gray-400" dangerouslySetInnerHTML={{ __html: `Var[X] =` }} />
+                    <span className="font-mono text-orange-400" dangerouslySetInnerHTML={{ __html: `\(r(1-p)/p^2 = ${variance.toFixed(2)}\)` }} />
                   </div>
                 </div>
               </div>

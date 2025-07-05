@@ -58,8 +58,9 @@ const STAGES = [
 ];
 
 // Binomial story animation
-const BinomialStory = ({ isActive }) => {
+const BinomialStory = React.memo(function BinomialStory({ isActive }) {
   const svgRef = useRef(null);
+  const contentRef = useRef(null);
   
   useEffect(() => {
     if (!svgRef.current) return;
@@ -192,7 +193,7 @@ const BinomialStory = ({ isActive }) => {
           .attr("text-anchor", "middle")
           .attr("fill", "#f97316")
           .style("font-size", "12px")
-          .text(`Expected: ${expectedValue}`)
+          .text(`E[X] = ${expectedValue}`)
           .attr("opacity", 0)
           .transition()
           .duration(500)
@@ -216,13 +217,33 @@ const BinomialStory = ({ isActive }) => {
     }
     
   }, [isActive]);
+
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax(); // Try immediately
+    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
+    return () => clearTimeout(timeoutId);
+  }, [isActive]);
   
-  return <svg ref={svgRef} className="w-full" />;
-};
+  return (
+    <div ref={contentRef} className="w-full h-full flex items-center justify-center">
+      <svg ref={svgRef} className="w-full" />
+    </div>
+  );
+});
 
 // Geometric story animation
-const GeometricStory = ({ isActive }) => {
+const GeometricStory = React.memo(function GeometricStory({ isActive }) {
   const svgRef = useRef(null);
+  const contentRef = useRef(null);
   
   useEffect(() => {
     if (!svgRef.current) return;
@@ -354,12 +375,17 @@ const GeometricStory = ({ isActive }) => {
     
   }, [isActive]);
   
-  return <svg ref={svgRef} className="w-full" />;
-};
+  return (
+    <div ref={contentRef} className="w-full h-full flex items-center justify-center">
+      <svg ref={svgRef} className="w-full" />
+    </div>
+  );
+});
 
 // Poisson story animation
-const PoissonStory = ({ isActive }) => {
+const PoissonStory = React.memo(function PoissonStory({ isActive }) {
   const svgRef = useRef(null);
+  const contentRef = useRef(null);
   
   useEffect(() => {
     if (!svgRef.current) return;
@@ -480,14 +506,34 @@ const PoissonStory = ({ isActive }) => {
     }
     
   }, [isActive]);
+
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax(); // Try immediately
+    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
+    return () => clearTimeout(timeoutId);
+  }, [isActive]);
   
-  return <svg ref={svgRef} className="w-full" />;
-};
+  return (
+    <div ref={contentRef} className="w-full h-full flex items-center justify-center">
+      <svg ref={svgRef} className="w-full" />
+    </div>
+  );
+});
 
 // Binomial to Poisson morphing animation
-const BinomialPoissonMorph = ({ isActive }) => {
+const BinomialPoissonMorph = React.memo(function BinomialPoissonMorph({ isActive }) {
   const svgRef = useRef(null);
   const animationRef = useRef(null);
+  const contentRef = useRef(null);
   
   useEffect(() => {
     if (!svgRef.current) return;
@@ -706,10 +752,10 @@ const BinomialPoissonMorph = ({ isActive }) => {
   }, [isActive]);
   
   return <svg ref={svgRef} className="w-full" />;
-};
+});
 
 // Negative Binomial story animation
-const NegativeBinomialStory = ({ isActive }) => {
+const NegativeBinomialStory = React.memo(function NegativeBinomialStory({ isActive }) {
   const svgRef = useRef(null);
   
   useEffect(() => {
@@ -865,10 +911,10 @@ const NegativeBinomialStory = ({ isActive }) => {
   }, [isActive]);
   
   return <svg ref={svgRef} className="w-full" />;
-};
+});
 
 // Distribution relationships diagram
-const RelationshipsDiagram = ({ isActive }) => {
+const RelationshipsDiagram = React.memo(function RelationshipsDiagram({ isActive }) {
   const svgRef = useRef(null);
   
   useEffect(() => {
@@ -1098,10 +1144,10 @@ const RelationshipsDiagram = ({ isActive }) => {
   }, [isActive]);
   
   return <svg ref={svgRef} className="w-full" />;
-};
+});
 
 // Main component
-export default function DistributionStories() {
+const DistributionStories = React.memo(function DistributionStories() {
   const [currentStage, setCurrentStage] = useState(0);
   const [visitedStages, setVisitedStages] = useState([0]);
   
@@ -1236,4 +1282,6 @@ export default function DistributionStories() {
       </div>
     </div>
   );
-}
+});
+
+export default DistributionStories;

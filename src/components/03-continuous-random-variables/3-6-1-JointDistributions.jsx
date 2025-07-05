@@ -9,6 +9,7 @@ import * as d3 from "@/utils/d3-utils";
 import { cn } from '../../lib/utils';
 import { useSafeMathJax } from '../../utils/mathJaxFix';
 import { tutorial_3_6_1 } from '@/tutorials/chapter3';
+import BackToHub from '../ui/BackToHub';
 
 // LaTeX formula component
 const LaTeXFormula = React.memo(function LaTeXFormula({ formula, isBlock = false }) {
@@ -391,6 +392,7 @@ const JointDistributions = () => {
         title="Joint Continuous Distributions"
         description="Explore how two continuous random variables interact through their joint probability density function"
       >
+        <BackToHub />
         <div className="space-y-6">
           {/* Controls */}
           <div className="space-y-4">

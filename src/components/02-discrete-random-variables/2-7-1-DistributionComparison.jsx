@@ -569,7 +569,7 @@ const ProbabilityCalculator = React.memo(({ leftDist, rightDist, leftParams, rig
 ProbabilityCalculator.displayName = 'ProbabilityCalculator';
 
 // Main component
-export default function DistributionComparison() {
+const DistributionComparison = React.memo(function DistributionComparison() {
   const [leftDist, setLeftDist] = useState('binomial');
   const [rightDist, setRightDist] = useState('poisson');
   const [leftParams, setLeftParams] = useState(DISTRIBUTIONS.binomial.params);
@@ -828,4 +828,6 @@ export default function DistributionComparison() {
       </div>
     </VisualizationContainer>
   );
-}
+});
+
+export default DistributionComparison;

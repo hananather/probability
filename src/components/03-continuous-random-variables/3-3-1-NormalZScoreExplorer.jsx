@@ -14,6 +14,7 @@ import { RotateCcw } from "lucide-react";
 import * as jStat from "jstat";
 import { useSafeMathJax } from '../../utils/mathJaxFix';
 import { tutorial_3_3_1 } from '@/tutorials/chapter3';
+import BackToHub from '../ui/BackToHub';
 
 // LaTeX content wrapper component to prevent re-renders
 const LatexContent = memo(function LatexContent({ children }) {
@@ -81,12 +82,12 @@ const NormalVisualization = memo(({
     
     primaryGradient.append("stop")
       .attr("offset", "0%")
-      .attr("stop-color", "#06b6d4")
+      .attr("stop-color", colorScheme.primary)
       .attr("stop-opacity", 0.8);
     
     primaryGradient.append("stop")
       .attr("offset", "100%")
-      .attr("stop-color", "#0891b2")
+      .attr("stop-color", colorScheme.secondary)
       .attr("stop-opacity", 0.3);
     
     svg.append("rect")
@@ -215,7 +216,7 @@ const NormalVisualization = memo(({
     if (!isInitialized.current) return;
     
     const { margin, plotHeight, innerWidth } = scalesRef.current.dimensions;
-    const colorScheme = createColorScheme('inference');
+    const colorScheme = createColorScheme('probability');
     
     // Fixed scales
     const xScaleTop = d3.scaleLinear()
@@ -320,7 +321,7 @@ const NormalVisualization = memo(({
     elementsRef.current.lineTop
       .datum(topData)
       .attr("d", lineTop)
-      .attr("stroke", "#06b6d4")
+      .attr("stroke", colorScheme.primary)
       .attr("stroke-width", 3)
       .attr("fill", "none")
       .attr("filter", "drop-shadow(0 0 8px rgba(6, 182, 212, 0.5))");
@@ -328,7 +329,7 @@ const NormalVisualization = memo(({
     elementsRef.current.lineBottom
       .datum(bottomData)
       .attr("d", lineBottom)
-      .attr("stroke", "#06b6d4")
+      .attr("stroke", colorScheme.primary)
       .attr("stroke-width", 3)
       .attr("fill", "none")
       .attr("filter", "drop-shadow(0 0 8px rgba(6, 182, 212, 0.5))");
@@ -339,7 +340,7 @@ const NormalVisualization = memo(({
       .attr("y1", margin.top)
       .attr("x2", xScaleTop(mu))
       .attr("y2", margin.top + plotHeight)
-      .attr("stroke", "#fbbf24")
+      .attr("stroke", colorScheme.tertiary)
       .attr("stroke-width", 2)
       .attr("opacity", 0.6)
       .attr("stroke-dasharray", "5,5")
@@ -374,7 +375,7 @@ const NormalVisualization = memo(({
       .style("font-size", "12px")
       .style("font-family", "monospace")
       .style("font-weight", "500")
-      .style("fill", "#fbbf24")
+      .style("fill", colorScheme.tertiary)
       .style("opacity", 0.8)
       .text(d => `${d.n > 0 ? '+' : ''}${d.n}σ`);
     
@@ -386,7 +387,7 @@ const NormalVisualization = memo(({
       .attr("y1", margin.top)
       .attr("x2", xScaleTop(xValue))
       .attr("y2", margin.top + plotHeight)
-      .attr("stroke", "#f97316")
+      .attr("stroke", colorScheme.tertiary)
       .attr("stroke-width", 3)
       .attr("stroke-dasharray", "5,5")
       .attr("filter", "drop-shadow(0 0 6px rgba(249, 115, 22, 0.5))");
@@ -396,7 +397,7 @@ const NormalVisualization = memo(({
       .attr("y1", margin.top + plotHeight + 140) // Updated for new spacing
       .attr("x2", xScaleBottom(zScore))
       .attr("y2", margin.top + plotHeight + 140 + plotHeight)
-      .attr("stroke", "#f97316")
+      .attr("stroke", colorScheme.tertiary)
       .attr("stroke-width", 3)
       .attr("stroke-dasharray", "5,5")
       .attr("filter", "drop-shadow(0 0 6px rgba(249, 115, 22, 0.5))");
@@ -409,7 +410,7 @@ const NormalVisualization = memo(({
       .style("font-size", "16px")
       .style("font-family", "monospace")
       .style("font-weight", "600")
-      .style("fill", "#f97316")
+      .style("fill", colorScheme.tertiary)
       .style("filter", "drop-shadow(0 0 6px rgba(249, 115, 22, 0.5))")
       .text(`x = ${xValue.toFixed(1)}`);
     
@@ -420,7 +421,7 @@ const NormalVisualization = memo(({
       .style("font-size", "16px")
       .style("font-family", "monospace")
       .style("font-weight", "600")
-      .style("fill", "#f97316")
+      .style("fill", colorScheme.tertiary)
       .style("filter", "drop-shadow(0 0 6px rgba(249, 115, 22, 0.5))")
       .text(`z = ${zScore.toFixed(3)}`);
     
@@ -433,7 +434,7 @@ const NormalVisualization = memo(({
     const g = elementsRef.current.g;
     const xScaleTop = scalesRef.current.xScaleTop;
     const { margin, plotHeight } = scalesRef.current.dimensions;
-    const colorScheme = createColorScheme('inference');
+    const colorScheme = createColorScheme('probability');
     
     // Remove existing marker if any
     if (elementsRef.current.draggableMarker) {
@@ -473,7 +474,7 @@ const NormalVisualization = memo(({
 });
 
 const NormalZScoreExplorer = () => {
-  const colorScheme = createColorScheme('inference');
+  const colorScheme = createColorScheme('probability');
   
   // Parameters
   const [mu, setMu] = useState(100);
@@ -767,6 +768,7 @@ const NormalZScoreExplorer = () => {
           probability={probability}
         />
       </VisualizationSection>
+      <BackToHub chapter={3} bottom={true} />
     </VisualizationContainer>
   );
 };

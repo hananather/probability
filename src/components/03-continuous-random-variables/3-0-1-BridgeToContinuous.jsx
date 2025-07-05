@@ -10,6 +10,7 @@ import { ProgressBar, ProgressNavigation } from '@/components/ui/ProgressBar';
 import { cn } from '../../lib/utils';
 import { useSafeMathJax } from '../../utils/mathJaxFix';
 import { tutorial_3_0_1 } from '@/tutorials/chapter3';
+import BackToHub from '../ui/BackToHub';
 
 // Memoized LaTeX component to prevent re-rendering
 const LaTeXFormula = React.memo(function LaTeXFormula({ formula, isBlock = false }) {
@@ -434,6 +435,7 @@ const BridgeToContinuous = () => {
       tutorialSteps={tutorial_3_0_1}
       tutorialKey="bridge-to-continuous-3-0-1"
     >
+      <BackToHub />
       <div ref={contentRef} className="space-y-6">
         {/* Progress Bar */}
         <ProgressBar 

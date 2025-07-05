@@ -6,6 +6,7 @@ import { Button } from '../ui/button';
 import { VisualizationContainer } from '../ui/VisualizationContainer';
 import * as d3 from "@/utils/d3-utils";
 import { useSafeMathJax } from '../../utils/mathJaxFix';
+import BackToHub from '../ui/BackToHub';
 
 // LaTeX formula component
 const LaTeXFormula = React.memo(function LaTeXFormula({ formula, isBlock = false }) {
@@ -294,6 +295,7 @@ export const JointProbabilityCalculator = () => {
       title="Interactive Probability Calculator"
       description="Click and drag to select a region and calculate P(X∈A, Y∈B)"
     >
+      <BackToHub />
       <div className="space-y-6" ref={contentRef}>
         {/* Controls */}
         <div className="space-y-4">
