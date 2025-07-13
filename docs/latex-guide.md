@@ -160,3 +160,60 @@ const FormulaSection = React.memo(function FormulaSection({ params }) {
 
 ## LaTeX in Custom Components
 UI components may not handle LaTeX props correctly. Use direct elements with dangerouslySetInnerHTML instead.
+
+## CRITICAL: Hub Components Requirements
+
+### ⚠️ Required CSS Classes for MathJax
+**ALWAYS use `font-mono` class** - MathJax depends on monospace font context:
+
+```jsx
+// ✅ CORRECT - Required pattern for all hubs
+<div className="text-2xl font-mono text-cyan-400">
+  <span dangerouslySetInnerHTML={{ __html: `\\(${latex}\\)` }} />
+</div>
+
+// ❌ WRONG - Missing font-mono breaks MathJax
+<div className="text-2xl text-cyan-400">
+  <span dangerouslySetInnerHTML={{ __html: `\\(${latex}\\)` }} />
+</div>
+```
+
+### ⚠️ Avoid Flexbox Containers
+**Never wrap LaTeX in flex containers** - Disrupts MathJax DOM processing:
+
+```jsx
+// ❌ WRONG - Flex containers break MathJax
+<div className="flex items-center">
+  <span dangerouslySetInnerHTML={{ __html: `\\(${latex}\\)` }} />
+</div>
+
+// ✅ CORRECT - Direct container structure
+<div className="text-2xl font-mono text-cyan-400">
+  <span dangerouslySetInnerHTML={{ __html: `\\(${latex}\\)` }} />
+</div>
+```
+
+### ⚠️ Use Proper MathJax Hook
+**Always use `useMathJax` hook** - Don't manually process:
+
+```jsx
+// ✅ CORRECT - Use the hook
+import { useMathJax } from "../../hooks/useMathJax";
+
+const YourComponent = () => {
+  const contentRef = useMathJax([dependencies]);
+  return <div ref={contentRef}>...</div>;
+};
+
+// ❌ WRONG - Manual processing is unreliable
+useEffect(() => {
+  window.MathJax?.typesetPromise([ref.current]);
+}, []);
+```
+
+### Hub Component Checklist
+- [ ] `font-mono` class present
+- [ ] No flex containers around LaTeX
+- [ ] Using `useMathJax` hook
+- [ ] `dangerouslySetInnerHTML` for all LaTeX
+- [ ] Proper ref attachment

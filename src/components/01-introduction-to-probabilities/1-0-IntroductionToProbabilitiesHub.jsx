@@ -5,6 +5,7 @@ import ChapterHub from "../shared/ChapterHub";
 import { motion } from "framer-motion";
 import { Card } from "../ui/card";
 import { createColorScheme } from "@/lib/design-system";
+import { useMathJax } from "../../hooks/useMathJax";
 import { 
   CircleDot, Calculator, Grid3x3, Shuffle, 
   Dices, GitBranch, BrainCircuit, AlertTriangle, DoorOpen
@@ -15,28 +16,14 @@ const colors = createColorScheme('probability');
 
 // Key Concepts Card
 const KeyConceptsCard = React.memo(() => {
-  const contentRef = useRef(null);
   const concepts = [
     { term: "Sample Space", definition: "All possible outcomes", latex: "S = \\{\\omega_1, \\omega_2, ..., \\omega_n\\}" },
     { term: "Probability", definition: "Likelihood of an event", latex: "P(A) = \\frac{|A|}{|S|}" },
     { term: "Conditional", definition: "Given that B occurred", latex: "P(A|B) = \\frac{P(A \\cap B)}{P(B)}" },
     { term: "Bayes' Theorem", definition: "Update beliefs with evidence", latex: "P(A|B) = \\frac{P(B|A)P(A)}{P(B)}" },
   ];
-
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax(); // Try immediately
-    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
-    return () => clearTimeout(timeoutId);
-  }, []);
+  
+  const contentRef = useMathJax([concepts]);
 
   return (
     <Card ref={contentRef} className="mb-8 p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
@@ -69,34 +56,75 @@ const KeyConceptsCard = React.memo(() => {
 // All Chapter 1 sections
 const CHAPTER_1_SECTIONS = [
   {
-    id: 'sample-spaces-events',
-    title: '1.1 Sample Spaces and Events',
-    subtitle: 'Sets and probability foundations',
-    description: 'Master the fundamentals of sample spaces, events, and set operations. Learn to use Venn diagrams to visualize probability concepts.',
+    id: 'pebble-world',
+    title: '1.1 Pebble World Foundation',
+    subtitle: 'Physical intuition for probability',
+    description: 'Build intuitive understanding of probability through the Pebble World model. Learn the physical foundations before the mathematical notation.',
     icon: CircleDot,
     difficulty: 'Beginner',
-    estimatedTime: '20 min',
+    estimatedTime: '15 min',
     prerequisites: [],
     learningGoals: [
-      'Define sample spaces and events',
-      'Perform set operations (union, intersection, complement)',
-      'Create and interpret Venn diagrams',
-      'Apply De Morgan\'s laws'
+      'Understand probability as physical intuition',
+      'Distinguish equal vs unequal mass scenarios',
+      'Connect pebble picking to mathematical concepts',
+      'Build foundation for set notation'
+    ],
+    route: '/chapter1/pebble-world',
+    color: '#10b981',
+    question: "What happens when we randomly pick pebbles from a bag?",
+    preview: "Interactive pebble world simulation with card deck examples"
+  },
+  {
+    id: 'probability-dictionary',
+    title: '1.2 English-to-Math Translation',
+    subtitle: 'The probability language bridge',
+    description: 'Master the translation between everyday English and mathematical notation. Your essential reference for converting word problems to math.',
+    icon: Calculator,
+    difficulty: 'Beginner',
+    estimatedTime: '20 min',
+    prerequisites: ['pebble-world'],
+    learningGoals: [
+      'Translate English phrases to set notation',
+      'Use the complete translation dictionary',
+      'Avoid common translation mistakes',
+      'Practice with interactive challenges'
+    ],
+    route: '/chapter1/probability-dictionary',
+    color: '#3b82f6',
+    question: "How do we translate between English and mathematical notation?",
+    preview: "Interactive translation practice with complete reference dictionary"
+  },
+  {
+    id: 'sample-spaces-events',
+    title: '1.3 Sample Spaces & Set Operations',
+    subtitle: 'Events, sets, and the grammar of probability',
+    description: 'Master sample spaces, events, and set operations in one unified approach. Learn Venn diagrams, De Morgan\'s laws, and how to build complex events.',
+    icon: Grid3x3,
+    difficulty: 'Beginner',
+    estimatedTime: '30 min',
+    prerequisites: ['pebble-world', 'probability-dictionary'],
+    learningGoals: [
+      'Define sample spaces and events clearly',
+      'Master union, intersection, complement, and difference',
+      'Apply De Morgan\'s laws to solve problems',
+      'Use Venn diagrams for visualization',
+      'Build complex events from simple operations'
     ],
     route: '/chapter1/sample-spaces-events',
-    color: '#10b981',
-    question: "What are all the possible outcomes of an experiment?",
-    preview: "Interactive Venn diagram explorer"
+    color: '#8b5cf6',
+    question: "How do we describe and combine probability events?",
+    preview: "Interactive Venn diagrams with De Morgan's laws and real examples"
   },
   {
     id: 'counting-techniques',
-    title: '1.2 Counting Techniques',
+    title: '1.4 Counting Techniques',
     subtitle: 'Fundamental counting principle',
     description: 'Learn systematic counting methods for multi-stage procedures. Master the multiplication principle for complex scenarios.',
     icon: Calculator,
     difficulty: 'Beginner',
     estimatedTime: '25 min',
-    prerequisites: [],
+    prerequisites: ['sample-spaces-events'],
     learningGoals: [
       'Apply the fundamental counting principle',
       'Solve multi-stage counting problems',
@@ -110,10 +138,10 @@ const CHAPTER_1_SECTIONS = [
   },
   {
     id: 'ordered-samples',
-    title: '1.3 Ordered Samples',
+    title: '1.5 Ordered Samples',
     subtitle: 'Permutations and arrangements',
     description: 'Understand when order matters. Calculate permutations with and without replacement using factorial notation.',
-    icon: Grid3x3,
+    icon: Shuffle,
     difficulty: 'Beginner',
     estimatedTime: '20 min',
     prerequisites: ['counting-techniques'],
@@ -130,7 +158,7 @@ const CHAPTER_1_SECTIONS = [
   },
   {
     id: 'unordered-samples',
-    title: '1.4 Unordered Samples',
+    title: '1.6 Unordered Samples',
     subtitle: 'Combinations and selections',
     description: 'Master combinations when order doesn\'t matter. Calculate binomial coefficients and explore Pascal\'s triangle.',
     icon: Shuffle,
@@ -150,7 +178,7 @@ const CHAPTER_1_SECTIONS = [
   },
   {
     id: 'probability-event',
-    title: '1.5 Probability of an Event',
+    title: '1.7 Probability of an Event',
     subtitle: 'Classical probability definition',
     description: 'Apply the classical definition of probability. Master the addition rule and calculate probabilities from counting.',
     icon: Dices,
@@ -170,7 +198,7 @@ const CHAPTER_1_SECTIONS = [
   },
   {
     id: 'conditional-probability',
-    title: '1.6 Conditional Probability',
+    title: '1.8 Conditional Probability',
     subtitle: 'Probability given information',
     description: 'Master conditional probability and independence. Apply the multiplication rule and Law of Total Probability.',
     icon: GitBranch,
@@ -190,7 +218,7 @@ const CHAPTER_1_SECTIONS = [
   },
   {
     id: 'bayes-theorem',
-    title: '1.7 Bayes\' Theorem',
+    title: '1.9 Bayes\' Theorem',
     subtitle: 'Updating beliefs with evidence',
     description: 'Learn to update probabilities with new evidence. Apply Bayes\' theorem to real-world problems like medical testing.',
     icon: BrainCircuit,
@@ -210,7 +238,7 @@ const CHAPTER_1_SECTIONS = [
   },
   {
     id: 'probabilistic-fallacies',
-    title: '1.8 Probabilistic Fallacies',
+    title: '1.10 Probabilistic Fallacies',
     subtitle: 'Common probability mistakes',
     description: 'Identify and avoid common probability errors. Understand the gambler\'s fallacy, base rate neglect, and more.',
     icon: AlertTriangle,
@@ -230,7 +258,7 @@ const CHAPTER_1_SECTIONS = [
   },
   {
     id: 'monty-hall-masterclass',
-    title: '1.9 Monty Hall Masterclass',
+    title: '1.11 Monty Hall Masterclass',
     subtitle: 'The famous probability paradox',
     description: 'Explore the counterintuitive Monty Hall problem through interactive simulations. See why switching doors doubles your chances of winning!',
     icon: DoorOpen,
