@@ -70,7 +70,7 @@ const CHAPTER_1_SECTIONS = [
       'Connect pebble picking to mathematical concepts',
       'Build foundation for set notation'
     ],
-    route: '/chapter1/pebble-world',
+    route: '/chapter1/01-pebble-world',
     color: '#10b981',
     question: "What happens when we randomly pick pebbles from a bag?",
     preview: "Interactive pebble world simulation with card deck examples"
@@ -90,7 +90,7 @@ const CHAPTER_1_SECTIONS = [
       'Avoid common translation mistakes',
       'Practice with interactive challenges'
     ],
-    route: '/chapter1/probability-dictionary',
+    route: '/chapter1/02-probability-dictionary',
     color: '#3b82f6',
     question: "How do we translate between English and mathematical notation?",
     preview: "Interactive translation practice with complete reference dictionary"
@@ -111,7 +111,7 @@ const CHAPTER_1_SECTIONS = [
       'Use Venn diagrams for visualization',
       'Build complex events from simple operations'
     ],
-    route: '/chapter1/sample-spaces-events',
+    route: '/chapter1/03-sample-spaces-events',
     color: '#8b5cf6',
     question: "How do we describe and combine probability events?",
     preview: "Interactive Venn diagrams with De Morgan's laws and real examples"
@@ -131,7 +131,7 @@ const CHAPTER_1_SECTIONS = [
       'Use tree diagrams for visualization',
       'Distinguish when to add vs multiply'
     ],
-    route: '/chapter1/counting-techniques',
+    route: '/chapter1/04-counting-techniques',
     color: '#10b981',
     question: "How many ways can something happen?",
     preview: "Tree diagram builder"
@@ -151,7 +151,7 @@ const CHAPTER_1_SECTIONS = [
       'Apply factorial notation correctly',
       'Solve real-world ordering problems'
     ],
-    route: '/chapter1/ordered-samples',
+    route: '/chapter1/05-ordered-samples',
     color: '#10b981',
     question: "In how many ways can we arrange items?",
     preview: "Permutation visualizer"
@@ -171,7 +171,7 @@ const CHAPTER_1_SECTIONS = [
       'Apply Pascal\'s triangle properties',
       'Distinguish permutations from combinations'
     ],
-    route: '/chapter1/unordered-samples',
+    route: '/chapter1/06-unordered-samples',
     color: '#3b82f6',
     question: "How many ways can we choose without order?",
     preview: "Combination calculator with Pascal's triangle"
@@ -191,7 +191,7 @@ const CHAPTER_1_SECTIONS = [
       'Calculate complement probabilities',
       'Verify probability axioms'
     ],
-    route: '/chapter1/probability-event',
+    route: '/chapter1/07-probability-event',
     color: '#3b82f6',
     question: "What's the chance of an event occurring?",
     preview: "Probability calculator with visual representations"
@@ -211,7 +211,7 @@ const CHAPTER_1_SECTIONS = [
       'Apply multiplication rule',
       'Use probability trees effectively'
     ],
-    route: '/chapter1/conditional-probability',
+    route: '/chapter1/08-conditional-probability',
     color: '#3b82f6',
     question: "How does new information change probabilities?",
     preview: "Interactive conditional probability visualizer"
@@ -231,7 +231,7 @@ const CHAPTER_1_SECTIONS = [
       'Solve diagnostic test problems',
       'Update beliefs sequentially'
     ],
-    route: '/chapter1/bayes-theorem-visualizer',
+    route: '/chapter1/09-bayes-theorem-visualizer',
     color: '#8b5cf6',
     question: "How do we update our beliefs with evidence?",
     preview: "Bayes' theorem calculator and visualizer"
@@ -251,7 +251,7 @@ const CHAPTER_1_SECTIONS = [
       'Avoid the gambler\'s fallacy',
       'Apply correct probabilistic reasoning'
     ],
-    route: '/chapter1/probabilistic-fallacies',
+    route: '/chapter1/10-probabilistic-fallacies',
     color: '#8b5cf6',
     question: "What probability mistakes should we avoid?",
     preview: "Interactive fallacy demonstrations"
@@ -271,7 +271,7 @@ const CHAPTER_1_SECTIONS = [
       'Run simulations to verify results',
       'Grasp why intuition fails here'
     ],
-    route: '/chapter1/monty-hall-masterclass',
+    route: '/chapter1/11-monty-hall-masterclass',
     color: '#8b5cf6',
     question: "Should you switch doors to double your chances?",
     preview: "Interactive Monty Hall game and simulator"

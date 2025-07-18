@@ -514,11 +514,11 @@ export default function NegativeBinomialDistribution() {
                 <div className="text-xs space-y-1">
                   <div>
                     <span className="text-gray-400" dangerouslySetInnerHTML={{ __html: `E[X] =` }} />
-                    <span className="font-mono text-orange-400" dangerouslySetInnerHTML={{ __html: `\(r/p = ${r}/${validP.toFixed(2)} = ${expectedValue.toFixed(1)}\)` }} />
+                    <span className="font-mono text-orange-400" dangerouslySetInnerHTML={{ __html: `\\(r/p = ${r}/${validP.toFixed(2)} = ${expectedValue.toFixed(1)}\\)` }} />
                   </div>
                   <div>
                     <span className="text-gray-400" dangerouslySetInnerHTML={{ __html: `Var[X] =` }} />
-                    <span className="font-mono text-orange-400" dangerouslySetInnerHTML={{ __html: `\(r(1-p)/p^2 = ${variance.toFixed(2)}\)` }} />
+                    <span className="font-mono text-orange-400" dangerouslySetInnerHTML={{ __html: `\\(r(1-p)/p^2 = ${variance.toFixed(2)}\\)` }} />
                   </div>
                 </div>
               </div>

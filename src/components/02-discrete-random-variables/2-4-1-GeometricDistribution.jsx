@@ -347,7 +347,7 @@ export default function GeometricDistribution() {
               <span className="text-gray-300">Probability Mass Function:</span>
             </div>
             <div className="text-xl" dangerouslySetInnerHTML={{ 
-              __html: `\\(P(X = k) = (1-p)^{k-1} \\times p\\)` 
+              __html: `\(P(X = k) = (1-p)^{k-1} \times p\)` 
             }} />
             <div className="text-sm text-gray-400">
               where k is the number of trials until first success
@@ -467,11 +467,11 @@ export default function GeometricDistribution() {
                   <div className="text-xs space-y-1">
                     <div>
                       <span className="text-gray-400" dangerouslySetInnerHTML={{ __html: `E[X] =` }} />
-                      <span className="font-mono text-orange-400" dangerouslySetInnerHTML={{ __html: `\\(1/p = 1/${p.toFixed(2)} = ${expectedValue < 100 ? expectedValue.toFixed(1) : "\\infty"}\\)` }} />
+                      <span className="font-mono text-orange-400" dangerouslySetInnerHTML={{ __html: `\(1/p = 1/${p.toFixed(2)} = ${expectedValue < 100 ? expectedValue.toFixed(1) : "\\infty"}\)` }} />
                     </div>
                     <div>
                       <span className="text-gray-400" dangerouslySetInnerHTML={{ __html: `Var[X] =` }} />
-                      <span className="font-mono text-orange-400" dangerouslySetInnerHTML={{ __html: `\\((1-p)/p^2 = ${variance < 1000 ? variance.toFixed(2) : "\\infty"}\\)` }} />
+                      <span className="font-mono text-orange-400" dangerouslySetInnerHTML={{ __html: `\((1-p)/p^2 = ${variance < 1000 ? variance.toFixed(2) : "\\infty"}\)` }} />
                     </div>
                   </div>
                 </div>

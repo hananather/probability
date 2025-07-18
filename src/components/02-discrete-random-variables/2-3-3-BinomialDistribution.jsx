@@ -505,7 +505,7 @@ export default function BinomialDistribution() {
               <div className="text-xs bg-neutral-900 px-3 py-1 rounded border border-neutral-700">
                 <span className="text-neutral-400">Formula: </span>
                 <span className="text-teal-400" dangerouslySetInnerHTML={{ 
-                  __html: `\\(P(X = k) = \\binom{n}{k} p^k (1-p)^{n-k}\\)` 
+                  __html: `\(P(X = k) = \binom{n}{k} p^k (1-p)^{n-k}\) `
                 }} />
               </div>
             </div>
