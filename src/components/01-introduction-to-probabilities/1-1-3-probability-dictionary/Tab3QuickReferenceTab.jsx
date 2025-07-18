@@ -20,72 +20,72 @@ const SECTIONS = [
         ],
         rows: [
           {
-            aspect: "Events and occurrences",
+            category: "Events and occurrences",
             english: "sample space",
             sets: "\\(S\\)"
           },
           {
-            aspect: "",
+            category: "",
             english: "s is a possible outcome",
             sets: "\\(s \\in S\\)"
           },
           {
-            aspect: "",
+            category: "",
             english: "A is an event",
             sets: "\\(A \\subseteq S\\)"
           },
           {
-            aspect: "",
+            category: "",
             english: "A occurred",
             sets: "\\(s_{\\text{actual}} \\in A\\)"
           },
           {
-            aspect: "",
+            category: "",
             english: "something must happen",
             sets: "\\(s_{\\text{actual}} \\in S\\)"
           },
           {
-            aspect: "New events from old events",
+            category: "New events from old events",
             english: "A or B (inclusive)",
             sets: "\\(A \\cup B\\)"
           },
           {
-            aspect: "",
+            category: "",
             english: "A and B",
             sets: "\\(A \\cap B\\)"
           },
           {
-            aspect: "",
+            category: "",
             english: "not A",
             sets: "\\(A^c\\)"
           },
           {
-            aspect: "",
+            category: "",
             english: "A or B, but not both",
             sets: "\\((A \\cap B^c) \\cup (A^c \\cap B)\\)"
           },
           {
-            aspect: "",
+            category: "",
             english: "at least one of A₁, ..., Aₙ",
             sets: "\\(A_1 \\cup \\cdots \\cup A_n\\)"
           },
           {
-            aspect: "",
+            category: "",
             english: "all of A₁, ..., Aₙ",
             sets: "\\(A_1 \\cap \\cdots \\cap A_n\\)"
           },
           {
-            aspect: "Relationships between events",
+            category: "Relationships between events",
             english: "A implies B",
             sets: "\\(A \\subseteq B\\)"
           },
           {
-            aspect: "",
+            category: "",
             english: "A and B are mutually exclusive",
             sets: "\\(A \\cap B = \\emptyset\\)"
           },
           {
-            aspect: "",
+            category: "",
             english: "A₁, ..., Aₙ are a partition of S",
             sets: "\\(A_1 \\cup \\cdots \\cup A_n = S, A_i \\cap A_j = \\emptyset\\) for \\(i \\neq j\\)"
           }
@@ -122,49 +122,49 @@ const SECTIONS = [
         ],
         rows: [
           {
-            aspect: "Basic identification",
+            category: "Basic identification",
             question: "What's the full set of possibilities?",
             keywords: "sample space, all possible outcomes",
             notation: "\\(S\\)"
           },
           {
-            aspect: "",
+            category: "",
             question: "What specific outcomes am I interested in?",
             keywords: "event, happens, occurs",
             notation: "\\(A, B, C\\) (subsets of \\(S\\))"
           },
           {
-            aspect: "Combinations",
+            category: "Combinations",
             question: "Do I want EITHER outcome?",
             keywords: "or, at least one, any of",
             notation: "\\(A \\cup B\\) (union)"
           },
           {
-            aspect: "",
+            category: "",
             question: "Do I want BOTH outcomes?",
             keywords: "and, all of, both",
             notation: "\\(A \\cap B\\) (intersection)"
           },
           {
-            aspect: "",
+            category: "",
             question: "Do I want the OPPOSITE?",
             keywords: "not, doesn't happen, fails",
             notation: "\\(A^c\\) (complement)"
           },
           {
-            aspect: "Conditional",
+            category: "Conditional",
             question: "Am I given some information?",
             keywords: "given that, if, provided that, knowing",
             notation: "\\(P(A|B)\\) (conditional)"
           },
           {
-            aspect: "Relationships",
+            category: "Relationships",
             question: "Does one event guarantee another?",
             keywords: "implies, if...then, always leads to",
             notation: "\\(A \\subseteq B\\) (subset)"
           },
           {
-            aspect: "",
+            category: "",
             question: "Can both events happen together?",
             keywords: "mutually exclusive, can't both occur",
             notation: "\\(A \\cap B = \\emptyset\\)"

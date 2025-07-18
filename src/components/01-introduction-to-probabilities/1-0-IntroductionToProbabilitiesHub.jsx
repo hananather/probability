@@ -57,7 +57,7 @@ const KeyConceptsCard = React.memo(() => {
 const CHAPTER_1_SECTIONS = [
   {
     id: 'pebble-world',
-    title: '1.1 Pebble World Foundation',
+    title: '1.1 Foundation',
     subtitle: 'Physical intuition for probability',
     description: 'Build intuitive understanding of probability through the Pebble World model. Learn the physical foundations before the mathematical notation.',
     icon: CircleDot,
@@ -217,7 +217,7 @@ const CHAPTER_1_SECTIONS = [
     preview: "Interactive conditional probability visualizer"
   },
   {
-    id: 'bayes-theorem',
+    id: 'bayes-theorem-visualizer',
     title: '1.9 Bayes\' Theorem',
     subtitle: 'Updating beliefs with evidence',
     description: 'Learn to update probabilities with new evidence. Apply Bayes\' theorem to real-world problems like medical testing.',
@@ -244,7 +244,7 @@ const CHAPTER_1_SECTIONS = [
     icon: AlertTriangle,
     difficulty: 'Advanced',
     estimatedTime: '25 min',
-    prerequisites: ['conditional-probability', 'bayes-theorem'],
+    prerequisites: ['conditional-probability', 'bayes-theorem-visualizer'],
     learningGoals: [
       'Recognize common probability fallacies',
       'Understand base rate neglect',
@@ -264,7 +264,7 @@ const CHAPTER_1_SECTIONS = [
     icon: DoorOpen,
     difficulty: 'Advanced',
     estimatedTime: '30 min',
-    prerequisites: ['conditional-probability', 'bayes-theorem'],
+    prerequisites: ['conditional-probability', 'bayes-theorem-visualizer'],
     learningGoals: [
       'Understand the Monty Hall problem',
       'Apply Bayes\' theorem to the solution',

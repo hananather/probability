@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import SectionBasedContent, { 
   SectionContent, 
   MathFormula, 
@@ -15,38 +15,64 @@ import { Clock, CheckCircle2, XCircle } from 'lucide-react';
 const colorScheme = createColorScheme('probability');
 
 // Speed Practice Component
-const SpeedPractice = () => {
+const SpeedPractice = React.memo(() => {
+  const contentRef = useRef(null);
   const [currentProblem, setCurrentProblem] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [score, setScore] = useState({ correct: 0, total: 0 });
   const [timeLeft, setTimeLeft] = useState(120); // 2 minutes per problem
   const [isActive, setIsActive] = useState(false);
   
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [currentProblem, showAnswer]);
+  
   const problems = [
     {
       question: "P(A) = 0.3, P(B) = 0.4, P(A∩B) = 0.12. Find P(A|B).",
+      questionLatex: "\\(P(A) = 0.3\\), \\(P(B) = 0.4\\), \\(P(A \\cap B) = 0.12\\). Find \\(P(A|B)\\).",
       answer: "0.3",
-      solution: "P(A|B) = P(A∩B)/P(B) = 0.12/0.4 = 0.3"
+      solution: "P(A|B) = P(A∩B)/P(B) = 0.12/0.4 = 0.3",
+      solutionLatex: "\\(P(A|B) = \\frac{P(A \\cap B)}{P(B)} = \\frac{0.12}{0.4} = 0.3\\)"
     },
     {
       question: "P(A) = 0.5, P(B|A) = 0.6. Find P(A∩B).",
+      questionLatex: "\\(P(A) = 0.5\\), \\(P(B|A) = 0.6\\). Find \\(P(A \\cap B)\\).",
       answer: "0.3",
-      solution: "P(A∩B) = P(B|A)·P(A) = 0.6×0.5 = 0.3"
+      solution: "P(A∩B) = P(B|A)·P(A) = 0.6×0.5 = 0.3",
+      solutionLatex: "\\(P(A \\cap B) = P(B|A) \\cdot P(A) = 0.6 \\times 0.5 = 0.3\\)"
     },
     {
       question: "P(A) = 0.4, P(B) = 0.5, P(A|B) = 0.4. Are A and B independent?",
+      questionLatex: "\\(P(A) = 0.4\\), \\(P(B) = 0.5\\), \\(P(A|B) = 0.4\\). Are A and B independent?",
       answer: "Yes",
-      solution: "P(A|B) = P(A) = 0.4, so they are independent"
+      solution: "P(A|B) = P(A) = 0.4, so they are independent",
+      solutionLatex: "\\(P(A|B) = P(A) = 0.4\\), so they are independent"
     },
     {
       question: "Disease rate: 1%, Test sensitivity: 90%, Test specificity: 95%. P(Disease|Positive) = ?",
+      questionLatex: "Disease rate: 1%, Test sensitivity: 90%, Test specificity: 95%. \\(P(\\text{Disease}|\\text{Positive}) = ?\\)",
       answer: "≈ 0.154",
-      solution: "Using Bayes: P(D|+) = (0.9×0.01)/[(0.9×0.01)+(0.05×0.99)] ≈ 0.154"
+      solution: "Using Bayes: P(D|+) = (0.9×0.01)/[(0.9×0.01)+(0.05×0.99)] ≈ 0.154",
+      solutionLatex: "Using Bayes: \\(P(D|+) = \\frac{0.9 \\times 0.01}{(0.9 \\times 0.01) + (0.05 \\times 0.99)} \\approx 0.154\\)"
     },
     {
       question: "Urn has 3 red, 2 blue balls. Draw 2 without replacement. P(2nd red | 1st red) = ?",
+      questionLatex: "Urn has 3 red, 2 blue balls. Draw 2 without replacement. \\(P(\\text{2nd red} | \\text{1st red}) = ?\\)",
       answer: "1/2",
-      solution: "After drawing 1 red: 2 red, 2 blue remain. P = 2/4 = 1/2"
+      solution: "After drawing 1 red: 2 red, 2 blue remain. P = 2/4 = 1/2",
+      solutionLatex: "After drawing 1 red: 2 red, 2 blue remain. \\(P = \\frac{2}{4} = \\frac{1}{2}\\)"
     }
   ];
   
@@ -88,7 +114,7 @@ const SpeedPractice = () => {
   };
   
   return (
-    <div className="space-y-4">
+    <div ref={contentRef} className="space-y-4 font-mono">
       <div className="flex items-center justify-between mb-4">
         <h4 className="text-base font-medium text-neutral-300">
           Problem {currentProblem + 1} of {problems.length}
@@ -107,9 +133,9 @@ const SpeedPractice = () => {
       </div>
       
       <div className="bg-neutral-800 p-6 rounded-lg">
-        <p className="text-lg text-neutral-200 mb-4">
-          {problems[currentProblem].question}
-        </p>
+        <div className="text-lg text-neutral-200 mb-4">
+          <span dangerouslySetInnerHTML={{ __html: problems[currentProblem].questionLatex }} />
+        </div>
         
         {!isActive && !showAnswer && (
           <button
@@ -147,7 +173,9 @@ const SpeedPractice = () => {
             </div>
             <div className="bg-neutral-700 p-3 rounded">
               <p className="text-sm font-semibold text-neutral-300">Solution:</p>
-              <p className="text-neutral-300">{problems[currentProblem].solution}</p>
+              <div className="text-neutral-300">
+                <span dangerouslySetInnerHTML={{ __html: problems[currentProblem].solutionLatex }} />
+              </div>
             </div>
             {currentProblem < problems.length - 1 ? (
               <button
@@ -168,7 +196,7 @@ const SpeedPractice = () => {
       </div>
     </div>
   );
-};
+});
 
 const SECTIONS = [
   {

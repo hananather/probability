@@ -1,5 +1,4 @@
 import './globals.css';
-import 'katex/dist/katex.min.css';
 import { MathJaxProvider } from '../components/shared/MathJaxProvider';
 import { LayoutWrapper } from '../components/shared/LayoutWrapper';
 

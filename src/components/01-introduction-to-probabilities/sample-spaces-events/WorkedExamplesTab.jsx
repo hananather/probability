@@ -32,7 +32,7 @@ const SECTIONS = [
               },
               {
                 label: "Step 3: Define events of interest",
-                content: "A = 'at least one head' = \\{\\text{HH}, \\text{HT}, \\text{TH}\\}",
+                content: "\\(A = \\text{'at least one head'} = \\{\\text{HH}, \\text{HT}, \\text{TH}\\}\\)",
                 explanation: "Convert words to specific outcomes"
               },
               {
@@ -68,17 +68,17 @@ const SECTIONS = [
             steps={[
               { 
                 label: "Step 1: Define outcomes",
-                content: "P = Pass (60%), F = Fail (40%)",
+                content: "\\(P = \\text{Pass (60%), } F = \\text{Fail (40%)}\\)",
                 explanation: "Convert percentages to probabilities"
               },
               {
                 label: "Step 2: Sample space for 3 tests",
                 content: "\\(S = \\{\\text{PPP}, \\text{PPF}, \\text{PFP}, \\text{PFF}, \\text{FPP}, \\text{FPF}, \\text{FFP}, \\text{FFF}\\}\\)",
-                explanation: "2³ = 8 total outcomes"
+                explanation: "\\(2^3 = 8\\) total outcomes"
               },
               {
                 label: "Step 3: Event 'at least one passes'",
-                content: "A = all outcomes except FFF",
+                content: "\\(A = \\text{all outcomes except FFF}\\)",
                 explanation: "Complement is often easier!"
               },
               {
@@ -158,22 +158,22 @@ const SECTIONS = [
             steps={[
               { 
                 label: "Step 1: Define the events",
-                content: "B = 'Blood test positive', U = 'Urine test positive'",
+                content: "\\(B = \\text{'Blood test positive'}, U = \\text{'Urine test positive'}\\)",
                 explanation: "Clear definitions prevent confusion"
               },
               {
                 label: "Step 2: Express in set notation",
-                content: "We want P((B ∩ U)ᶜ)",
+                content: "\\(\\text{We want } P((B \\cap U)^c)\\)",
                 explanation: "'NOT (both positive)' = complement of intersection"
               },
               {
                 label: "Step 3: Apply De Morgan's Law",
-                content: "(B ∩ U)ᶜ = Bᶜ ∪ Uᶜ",
+                content: "\\((B \\cap U)^c = B^c \\cup U^c\\)",
                 explanation: "This transforms the problem!"
               },
               {
                 label: "Step 4: Interpret the result",
-                content: "Bᶜ ∪ Uᶜ = 'Blood negative OR Urine negative (or both)'",
+                content: "\\(B^c \\cup U^c = \\text{'Blood negative OR Urine negative (or both)'}\\)",
                 explanation: "De Morgan makes the calculation much easier"
               }
             ]}

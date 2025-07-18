@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import TabbedLearningPage from '@/components/ui/TabbedLearningPage';
-import { BookOpen, Target, Zap, Activity } from 'lucide-react';
+import { BookOpen, Target, Zap } from 'lucide-react';
 
 // Import new tabs from new folder (with tab numbers for clarity)
 const FoundationsTab = dynamic(() => 
@@ -18,11 +18,6 @@ const QuickReferenceTab = dynamic(() =>
   { ssr: false }
 );
 
-// Import original component from its ORIGINAL location (unchanged)
-const BayesTheoremVisualizer = dynamic(() => 
-  import('@/components/01-introduction-to-probabilities/1-7-2-BayesTheoremVisualizer'), 
-  { ssr: false }
-);
 
 export default function BayesTheoremVisualizerPage() {
   const TABS = [
@@ -49,14 +44,6 @@ export default function BayesTheoremVisualizerPage() {
       component: QuickReferenceTab, 
       color: '#7c3aed',
       description: 'Formulas, decision guides, and speed practice'
-    },
-    { 
-      id: 'interactive-visualizer', 
-      label: 'Interactive Visualizer', 
-      icon: Activity,
-      component: BayesTheoremVisualizer, 
-      color: '#ec4899',
-      description: 'Explore Bayes\' Theorem with interactive scenarios'
     }
   ];
   

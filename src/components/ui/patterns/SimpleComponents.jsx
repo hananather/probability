@@ -26,7 +26,7 @@ export const SimpleFormulaCard = React.memo(function SimpleFormulaCard({ title, 
   return (
     <div ref={contentRef} className={cn("bg-neutral-900/50 rounded-lg p-4", className)}>
       <h4 className={`font-bold text-white mb-3`}>{title}</h4>
-      <div className={`text-center my-3 ${themeColors[theme]} overflow-x-auto`}>
+      <div className={`text-center my-3 ${themeColors[theme]} overflow-x-auto font-mono`}>
         <span dangerouslySetInnerHTML={{ __html: `\\[${formula}\\]` }} />
       </div>
       {description && (
@@ -122,7 +122,7 @@ export const SimpleFormulaGrid = React.memo(function SimpleFormulaGrid({ title, 
         {formulas.map((formula, index) => (
           <div key={index} className="bg-neutral-900/50 rounded-lg p-4">
             <h5 className="font-semibold text-white mb-2">{formula.title}</h5>
-            <div className="text-center text-neutral-200 overflow-x-auto">
+            <div className="text-center text-neutral-200 overflow-x-auto font-mono">
               <span dangerouslySetInnerHTML={{ __html: `\\[${formula.formula}\\]` }} />
             </div>
             {formula.description && (
@@ -149,7 +149,7 @@ export const SimpleCalculationBox = React.memo(function SimpleCalculationBox({ t
   return (
     <div ref={contentRef} className={cn("bg-neutral-900/50 rounded-lg p-4", className)}>
       <h4 className="font-bold text-white mb-3">{title}</h4>
-      <div className="text-center my-3 overflow-x-auto">
+      <div className="text-center my-3 overflow-x-auto font-mono">
         <span dangerouslySetInnerHTML={{ __html: `\\[${formula}\\]` }} />
       </div>
       {explanation && (

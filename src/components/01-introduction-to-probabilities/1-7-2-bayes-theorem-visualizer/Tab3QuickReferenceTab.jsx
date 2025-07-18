@@ -167,10 +167,14 @@ const DecisionGuideSection = React.memo(function DecisionGuideSection() {
 
 // Section 3: Common Mistakes
 const CommonMistakesSection = React.memo(function CommonMistakesSection() {
-  const contentRef = useMathJax([]);
+  const contentRef = useMathJax([
+    'P(H)', 'P(\\text{positive test | disease}) \\neq P(\\text{disease | positive test})',
+    'P(\\text{Evidence})', 'P(\\text{Evidence}) = P(\\text{Evidence}|H_1) \\times P(H_1) + P(\\text{Evidence}|H_2) \\times P(H_2) + \\ldots',
+    'P(\\text{Hypothesis | Evidence})', 'P(\\text{Evidence})'
+  ]);
 
   return (
-    <div ref={contentRef} className="space-y-6">
+    <div ref={contentRef} className="space-y-6 font-mono">
       <div className="grid grid-cols-1 gap-4">
         <div className="bg-red-900/20 p-4 rounded-lg border border-red-600/30">
           <h4 className="font-semibold text-red-400 mb-3 flex items-center gap-2">
@@ -224,8 +228,14 @@ const CommonMistakesSection = React.memo(function CommonMistakesSection() {
 
 // Section 4: Speed Tips
 const SpeedTipsSection = React.memo(function SpeedTipsSection() {
+  const contentRef = useMathJax([
+    'P(H|D) \\approx \\frac{P(D|H) \\times P(H)}{P(D|\\neg H) \\times P(\\neg H)}',
+    'P(\\neg H) \\approx 1',
+    'P(\\text{Evidence})'
+  ]);
+
   return (
-    <div className="space-y-6">
+    <div ref={contentRef} className="space-y-6 font-mono">
       <div className="bg-gradient-to-br from-green-900/20 to-teal-900/20 border border-green-700/50 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-green-300 mb-4">⚡ Speed Calculation Tips</h3>
         

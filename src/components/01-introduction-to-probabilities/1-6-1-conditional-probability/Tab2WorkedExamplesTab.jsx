@@ -103,9 +103,9 @@ const SECTIONS = [
                   </ul>
                   <p className="text-neutral-300 mt-2">Given information:</p>
                   <ul className="list-disc list-inside ml-4 space-y-1 text-neutral-300">
-                    <li>P(D) = 0.001</li>
-                    <li>P(+|D) = 0.95 (sensitivity)</li>
-                    <li>P(-|D<sup>c</sup>) = 0.98 → P(+|D<sup>c</sup>) = 0.02</li>
+                    <li><span dangerouslySetInnerHTML={{ __html: `\(P(D) = 0.001\)` }} /></li>
+                    <li><span dangerouslySetInnerHTML={{ __html: `\(P(+|D) = 0.95\)` }} /> (sensitivity)</li>
+                    <li><span dangerouslySetInnerHTML={{ __html: `\(P(-|D^c) = 0.98 \rightarrow P(+|D^c) = 0.02\)` }} /></li>
                   </ul>
                 </div>
               </ExampleSection>
@@ -176,7 +176,7 @@ const SECTIONS = [
                   }} />
                 </Formula>
                 <p className="text-sm text-neutral-400 mt-2">
-                  Example: P(Rain|Cloudy AND Humid)
+                  Example: <span dangerouslySetInnerHTML={{ __html: `\(P(\text{Rain}|\text{Cloudy} \cap \text{Humid})\)` }} />
                 </p>
               </ExampleSection>
               
@@ -207,9 +207,9 @@ const SECTIONS = [
                 <div className="space-y-2 mt-3">
                   <p className="text-neutral-300">A and B are independent if:</p>
                   <ul className="list-disc list-inside ml-4 space-y-1 text-sm text-neutral-300">
-                    <li>P(A|B) = P(A)</li>
-                    <li>P(B|A) = P(B)</li>
-                    <li>P(A∩B) = P(A)·P(B)</li>
+                    <li><span dangerouslySetInnerHTML={{ __html: `\(P(A|B) = P(A)\)` }} /></li>
+                    <li><span dangerouslySetInnerHTML={{ __html: `\(P(B|A) = P(B)\)` }} /></li>
+                    <li><span dangerouslySetInnerHTML={{ __html: `\(P(A \cap B) = P(A) \cdot P(B)\)` }} /></li>
                   </ul>
                 </div>
               </ExampleSection>
@@ -303,10 +303,10 @@ export default function Tab2WorkedExamplesTab({ onComplete }) {
                   {showSolutions && (
                     <div className="mt-3 bg-green-900/20 p-3 rounded">
                       <p className="text-sm text-neutral-300">
-                        Solution: Check if P(M∩P) = P(M)·P(P)
+                        Solution: Check if <span dangerouslySetInnerHTML={{ __html: `\\(P(M \\cap P) = P(M) \\cdot P(P)\\)` }} />
                       </p>
                       <p className="text-sm text-neutral-300 mt-1">
-                        0.20 ≠ (0.40)(0.30) = 0.12
+                        <span dangerouslySetInnerHTML={{ __html: `\\(0.20 \\neq (0.40)(0.30) = 0.12\\)` }} />
                       </p>
                       <p className="text-sm text-neutral-300 mt-1">
                         <strong>Not independent!</strong> Students who study one are more likely to study the other.
