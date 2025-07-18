@@ -1,6 +1,7 @@
 "use client";
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { cn } from '../../../lib/design-system';
+import { useMathJax } from '../../../hooks/useMathJax';
 
 /**
  * SimpleFormulaCard - Ultra-simple reusable formula card
@@ -11,24 +12,8 @@ import { cn } from '../../../lib/design-system';
  * @param {string} props.description - Optional description
  * @param {string} props.theme - Color: 'teal', 'blue', 'purple', 'green', 'yellow'
  */
-export function SimpleFormulaCard({ title, formula, description, theme = 'teal', className }) {
-  const contentRef = useRef(null);
-  
-  // MathJax processing
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [formula]);
+export const SimpleFormulaCard = React.memo(function SimpleFormulaCard({ title, formula, description, theme = 'teal', className }) {
+  const contentRef = useMathJax([formula]);
 
   const themeColors = {
     teal: 'text-teal-400',
@@ -49,7 +34,7 @@ export function SimpleFormulaCard({ title, formula, description, theme = 'teal',
       )}
     </div>
   );
-}
+});
 
 /**
  * SimpleInsightBox - Ultra-simple insight/conclusion box
@@ -59,23 +44,8 @@ export function SimpleFormulaCard({ title, formula, description, theme = 'teal',
  * @param {React.ReactNode} props.children - Content
  * @param {string} props.theme - Color: 'teal', 'blue', 'green', 'orange', 'red'
  */
-export function SimpleInsightBox({ title = "Insight", children, theme = 'teal', className }) {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [children]);
+export const SimpleInsightBox = React.memo(function SimpleInsightBox({ title = "Insight", children, theme = 'teal', className }) {
+  const contentRef = useMathJax([children]);
 
   const themes = {
     teal: {
@@ -118,7 +88,7 @@ export function SimpleInsightBox({ title = "Insight", children, theme = 'teal', 
       </div>
     </div>
   );
-}
+});
 
 /**
  * SimpleFormulaGrid - Grid of formulas side-by-side
@@ -128,23 +98,8 @@ export function SimpleInsightBox({ title = "Insight", children, theme = 'teal', 
  * @param {Array} props.formulas - Array of {title, formula, description}
  * @param {string} props.theme - Color theme
  */
-export function SimpleFormulaGrid({ title, formulas, theme = 'purple', className }) {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+export const SimpleFormulaGrid = React.memo(function SimpleFormulaGrid({ title, formulas, theme = 'purple', className }) {
+  const contentRef = useMathJax([formulas]);
 
   const themeColors = {
     purple: 'text-purple-400',
@@ -178,7 +133,7 @@ export function SimpleFormulaGrid({ title, formulas, theme = 'purple', className
       </div>
     </div>
   );
-}
+});
 
 /**
  * SimpleCalculationBox - Single calculation step
@@ -188,23 +143,8 @@ export function SimpleFormulaGrid({ title, formulas, theme = 'purple', className
  * @param {string} props.formula - LaTeX formula
  * @param {string} props.explanation - Optional explanation
  */
-export function SimpleCalculationBox({ title, formula, explanation, className }) {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [formula]);
+export const SimpleCalculationBox = React.memo(function SimpleCalculationBox({ title, formula, explanation, className }) {
+  const contentRef = useMathJax([formula]);
 
   return (
     <div ref={contentRef} className={cn("bg-neutral-900/50 rounded-lg p-4", className)}>
@@ -217,7 +157,7 @@ export function SimpleCalculationBox({ title, formula, explanation, className })
       )}
     </div>
   );
-}
+});
 
 // Pre-built common formulas for easy copy-paste
 export const commonFormulas = {

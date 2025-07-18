@@ -231,7 +231,7 @@ const CHAPTER_1_SECTIONS = [
       'Solve diagnostic test problems',
       'Update beliefs sequentially'
     ],
-    route: '/chapter1/bayes-theorem',
+    route: '/chapter1/bayes-theorem-visualizer',
     color: '#8b5cf6',
     question: "How do we update our beliefs with evidence?",
     preview: "Bayes' theorem calculator and visualizer"

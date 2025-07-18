@@ -142,6 +142,52 @@ const SECTIONS = [
     )
   },
   {
+    id: 'demorgans-example',
+    title: "De Morgan's Laws in Action",
+    content: ({ sectionIndex, isCompleted }) => (
+      <SectionContent>
+        <WorkedExample title="Medical Testing: De Morgan's Law Application">
+          <ExampleSection title="The Problem">
+            <p className="text-neutral-300">
+              A medical test has two components: Blood test (B) and Urine test (U). 
+              We want to find the probability that "NOT (both tests are positive)".
+            </p>
+          </ExampleSection>
+          
+          <CalculationSteps
+            steps={[
+              { 
+                label: "Step 1: Define the events",
+                content: "B = 'Blood test positive', U = 'Urine test positive'",
+                explanation: "Clear definitions prevent confusion"
+              },
+              {
+                label: "Step 2: Express in set notation",
+                content: "We want P((B ∩ U)ᶜ)",
+                explanation: "'NOT (both positive)' = complement of intersection"
+              },
+              {
+                label: "Step 3: Apply De Morgan's Law",
+                content: "(B ∩ U)ᶜ = Bᶜ ∪ Uᶜ",
+                explanation: "This transforms the problem!"
+              },
+              {
+                label: "Step 4: Interpret the result",
+                content: "Bᶜ ∪ Uᶜ = 'Blood negative OR Urine negative (or both)'",
+                explanation: "De Morgan makes the calculation much easier"
+              }
+            ]}
+          />
+          
+          <InsightBox variant="success">
+            🎯 Key Insight: De Morgan's laws transform difficult "NOT (A AND B)" problems 
+            into easier "(NOT A) OR (NOT B)" problems!
+          </InsightBox>
+        </WorkedExample>
+      </SectionContent>
+    )
+  },
+  {
     id: 'practice',
     title: 'Practice Time',
     content: ({ sectionIndex, isCompleted }) => (
@@ -156,14 +202,26 @@ const SECTIONS = [
           {/* Integrate the existing Venn diagram component */}
           <VennDiagramSection />
           
-          <div className="mt-4 space-y-2">
-            <h5 className="font-semibold text-neutral-300">Try these:</h5>
-            <ol className="list-decimal list-inside text-sm text-neutral-400 ml-4 space-y-1">
-              <li>Create A ∪ B (union)</li>
-              <li>Create A ∩ B (intersection)</li>
-              <li>Create A' (complement)</li>
-              <li>Verify De Morgan's Law: (A∪B)' = A'∩B'</li>
-            </ol>
+          <div className="mt-4 space-y-4">
+            <div>
+              <h5 className="font-semibold text-neutral-300 mb-2">Try these operations:</h5>
+              <ol className="list-decimal list-inside text-sm text-neutral-400 ml-4 space-y-1">
+                <li>Create A ∪ B (union)</li>
+                <li>Create A ∩ B (intersection)</li>
+                <li>Create A' (complement)</li>
+                <li>Verify De Morgan's Law: (A∪B)' = A'∩B'</li>
+              </ol>
+            </div>
+            
+            <div className="bg-teal-900/20 p-4 rounded-lg border border-teal-600/30">
+              <h5 className="font-semibold text-teal-400 mb-2">Challenge Problems</h5>
+              <ol className="list-decimal list-inside text-sm text-neutral-300 ml-4 space-y-2">
+                <li>Create the set "A but not B" using A ∩ Bᶜ</li>
+                <li>Show that A ∪ Aᶜ = S (entire sample space)</li>
+                <li>Prove that A ∩ Aᶜ = ∅ (empty set)</li>
+                <li>Build "exactly one of A or B" using (A ∩ Bᶜ) ∪ (Aᶜ ∩ B)</li>
+              </ol>
+            </div>
           </div>
         </InteractiveElement>
       </SectionContent>

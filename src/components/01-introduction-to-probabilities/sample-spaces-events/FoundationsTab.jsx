@@ -109,34 +109,70 @@ const SECTIONS = [
             </p>
           </ExampleSection>
           
-          <ExampleSection title="Set Operations">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-2 bg-neutral-800 rounded">
-                <span className="text-neutral-300">Union:</span>
-                <MathFormula block={false}>
-                  <span dangerouslySetInnerHTML={{ 
-                    __html: `\\(A \\cup B\\)` 
-                  }} />
-                </MathFormula>
-                <span className="text-sm text-neutral-400">A OR B</span>
+          <ExampleSection title="Set Operations - The Building Blocks">
+            <div className="space-y-4">
+              <div className="bg-blue-900/20 p-4 rounded-lg border border-blue-600/30">
+                <h5 className="font-semibold text-blue-400 mb-3">Basic Operations</h5>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-2 bg-neutral-800 rounded">
+                    <span className="text-neutral-300">Union:</span>
+                    <MathFormula block={false}>
+                      <span dangerouslySetInnerHTML={{ 
+                        __html: `\\(A \\cup B\\)` 
+                      }} />
+                    </MathFormula>
+                    <span className="text-sm text-neutral-400">A OR B</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 bg-neutral-800 rounded">
+                    <span className="text-neutral-300">Intersection:</span>
+                    <MathFormula block={false}>
+                      <span dangerouslySetInnerHTML={{ 
+                        __html: `\\(A \\cap B\\)` 
+                      }} />
+                    </MathFormula>
+                    <span className="text-sm text-neutral-400">A AND B</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 bg-neutral-800 rounded">
+                    <span className="text-neutral-300">Complement:</span>
+                    <MathFormula block={false}>
+                      <span dangerouslySetInnerHTML={{ 
+                        __html: `\\(A^c\\) or \\(A'\\)` 
+                      }} />
+                    </MathFormula>
+                    <span className="text-sm text-neutral-400">NOT A</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 bg-neutral-800 rounded">
+                    <span className="text-neutral-300">Difference:</span>
+                    <MathFormula block={false}>
+                      <span dangerouslySetInnerHTML={{ 
+                        __html: `\\(A \\setminus B\\)` 
+                      }} />
+                    </MathFormula>
+                    <span className="text-sm text-neutral-400">A but not B</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center justify-between p-2 bg-neutral-800 rounded">
-                <span className="text-neutral-300">Intersection:</span>
-                <MathFormula block={false}>
-                  <span dangerouslySetInnerHTML={{ 
-                    __html: `\\(A \\cap B\\)` 
-                  }} />
-                </MathFormula>
-                <span className="text-sm text-neutral-400">A AND B</span>
-              </div>
-              <div className="flex items-center justify-between p-2 bg-neutral-800 rounded">
-                <span className="text-neutral-300">Complement:</span>
-                <MathFormula block={false}>
-                  <span dangerouslySetInnerHTML={{ 
-                    __html: `\\(A^c\\) or \\(A'\\)` 
-                  }} />
-                </MathFormula>
-                <span className="text-sm text-neutral-400">NOT A</span>
+              
+              <div className="bg-purple-900/20 p-4 rounded-lg border border-purple-600/30">
+                <h5 className="font-semibold text-purple-400 mb-3">De Morgan's Laws - The Master Rules</h5>
+                <div className="space-y-2">
+                  <div className="bg-neutral-800 p-3 rounded">
+                    <MathFormula block={false}>
+                      <span dangerouslySetInnerHTML={{ 
+                        __html: `\\((A \\cup B)^c = A^c \\cap B^c\\)` 
+                      }} />
+                    </MathFormula>
+                    <p className="text-xs text-neutral-400 mt-1">NOT (A OR B) = (NOT A) AND (NOT B)</p>
+                  </div>
+                  <div className="bg-neutral-800 p-3 rounded">
+                    <MathFormula block={false}>
+                      <span dangerouslySetInnerHTML={{ 
+                        __html: `\\((A \\cap B)^c = A^c \\cup B^c\\)` 
+                      }} />
+                    </MathFormula>
+                    <p className="text-xs text-neutral-400 mt-1">NOT (A AND B) = (NOT A) OR (NOT B)</p>
+                  </div>
+                </div>
               </div>
             </div>
           </ExampleSection>
