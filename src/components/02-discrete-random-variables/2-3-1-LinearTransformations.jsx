@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion } from "framer-motion";
+import { Card } from "../ui/card";
 import * as d3 from "@/utils/d3-utils";
 import { VisualizationContainer } from '../ui/VisualizationContainer';
 import { tutorial_2_3_1 } from '@/tutorials/chapter2.jsx';
@@ -51,6 +53,59 @@ const LinearTransformations = () => {
     const variance = expectationSquared - expectation * expectation;
     return { expectation, variance, sd: Math.sqrt(variance) };
   };
+
+  // Key Concepts Card with LaTeX (using LinearRegressionHub scaffolding)
+  const LinearTransformationConceptsCard = React.memo(() => {
+    const contentRef = useRef(null);
+    const concepts = [
+      { term: "Linear Transformation", definition: "Scaling and shifting a random variable", latex: "Y = aX + b" },
+      { term: "Expected Value Rule", definition: "Expectation of linear transformation", latex: "E[aX + b] = aE[X] + b" },
+      { term: "Variance Rule", definition: "Variance under linear transformation", latex: "\\text{Var}(aX + b) = a^2\\text{Var}(X)" },
+      { term: "Standard Deviation", definition: "Square root of variance", latex: "\\text{SD}(aX + b) = |a|\\text{SD}(X)" },
+    ];
+
+    useEffect(() => {
+      const processMathJax = () => {
+        if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+          if (window.MathJax.typesetClear) {
+            window.MathJax.typesetClear([contentRef.current]);
+          }
+          window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        }
+      };
+      
+      processMathJax(); // Try immediately
+      const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
+      return () => clearTimeout(timeoutId);
+    }, []);
+
+    return (
+      <Card ref={contentRef} className="mb-8 p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
+        <h3 className="text-xl font-bold text-white mb-4">Linear Transformation Concepts</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {concepts.map((concept, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.1 }}
+              className="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50"
+            >
+              <div className="flex items-start justify-between">
+                <div>
+                  <h4 className="font-semibold text-white">{concept.term}</h4>
+                  <p className="text-sm text-gray-400 mt-1">{concept.definition}</p>
+                </div>
+                <div className="text-lg font-mono text-teal-400">
+                  <span dangerouslySetInnerHTML={{ __html: `\\(${concept.latex}\\)` }} />
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </Card>
+    );
+  });
   
   // Animation constants
   const width = 800;
@@ -326,21 +381,6 @@ const LinearTransformations = () => {
     
   }, [a, b, showOriginal, showTransformed]);
   
-  // Process MathJax
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && statsRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([statsRef.current]);
-        }
-        window.MathJax.typesetPromise([statsRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax(); // Try immediately
-    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
-    return () => clearTimeout(timeoutId);
-  }, [a, b]);
   
   // Animate transformation
   const animateTransformation = () => {
@@ -371,22 +411,47 @@ const LinearTransformations = () => {
   const transformedStats = calculateStats(getTransformedDistribution());
   
   return (
-    <VisualizationContainer
-      title="Linear Transformations"
-      tutorialSteps={tutorial_2_3_1}
-      tutorialKey="linear-transformations-2-3-1"
-    >
-      <div className="bg-neutral-800 rounded-lg shadow-xl overflow-hidden">
+    <div className="min-h-screen bg-gray-950">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8"
+        >
+          <h1 className="text-4xl font-bold text-white mb-2">
+            Linear Transformations Explorer
+          </h1>
+          <p className="text-xl text-gray-400">
+            Explore how linear transformations affect distributions, expectation, and variance
+          </p>
+        </motion.div>
+
+        {/* Key Concepts Card */}
+        <LinearTransformationConceptsCard />
+
+        {/* Introduction Text */}
+        <Card className="mb-8 p-6 bg-gradient-to-br from-teal-900/20 to-cyan-900/20 border-teal-700/50">
+          <h2 className="text-2xl font-bold text-white mb-3">What are Linear Transformations?</h2>
+          <p className="text-gray-300">
+            Linear transformations of the form Y = aX + b are fundamental in probability theory. 
+            They allow us to scale and shift random variables while understanding exactly how 
+            these operations affect the mean, variance, and overall distribution shape.
+          </p>
+        </Card>
+
+        {/* Interactive Component */}
+        <Card className="p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
       {/* Header */}
-      <div className="bg-neutral-900 border-b border-neutral-700 px-6 py-4">
+      <div className="bg-neutral-900 rounded-t-lg border-b border-neutral-700 px-6 py-4 -m-6 mb-6">
         <h3 className="text-xl font-bold text-white">Linear Transformations: Y = aX + b</h3>
         <p className="text-sm text-neutral-400 mt-1">
-          Explore how linear transformations affect distributions, expectation, and variance
+          Interactive exploration of how transformations affect probability distributions
         </p>
       </div>
       
       {/* Controls */}
-      <div className="px-6 py-4 border-b border-neutral-700 bg-neutral-800">
+      <div className="px-6 py-4 border-b border-neutral-700 bg-neutral-800/50 rounded-lg mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Parameter Controls */}
           <div className="space-y-3">
@@ -462,7 +527,7 @@ const LinearTransformations = () => {
       </div>
       
       {/* Visualization */}
-      <div className="p-6">
+      <div className="mb-6">
         <svg
           ref={svgRef}
           width={width}
@@ -473,9 +538,8 @@ const LinearTransformations = () => {
       </div>
       
       {/* Statistics Panel */}
-      <div className="px-6 pb-6" ref={statsRef}>
-        <div className="bg-neutral-900 rounded-lg p-4">
-          <h4 className="text-lg font-semibold text-white mb-3">Properties of Linear Transformations</h4>
+      <div className="bg-neutral-900 rounded-lg p-4">
+        <h4 className="text-lg font-semibold text-white mb-3">Properties of Linear Transformations</h4>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Expectation */}
@@ -483,11 +547,11 @@ const LinearTransformations = () => {
               <h5 className="text-sm font-medium text-teal-400 mb-2">Expectation</h5>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-neutral-400" dangerouslySetInnerHTML={{ __html: `\\(E[X]\\)` }} />
+                  <span className="text-neutral-400">E[X]</span>
                   <span className="font-mono text-white">{baseStats.expectation.toFixed(3)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-neutral-400" dangerouslySetInnerHTML={{ __html: `\\(E[Y] = E[aX + b]\\)` }} />
+                  <span className="text-neutral-400">E[Y] = E[aX + b]</span>
                   <span className="font-mono text-white">{transformedStats.expectation.toFixed(3)}</span>
                 </div>
                 <div className="pt-2 mt-2 border-t border-neutral-700">
@@ -504,11 +568,11 @@ const LinearTransformations = () => {
               <h5 className="text-sm font-medium text-teal-400 mb-2">Variance</h5>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-neutral-400" dangerouslySetInnerHTML={{ __html: `\\(\\text{Var}(X)\\)` }} />
+                  <span className="text-neutral-400">Var(X)</span>
                   <span className="font-mono text-white">{baseStats.variance.toFixed(3)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-neutral-400" dangerouslySetInnerHTML={{ __html: `\\(\\text{Var}(Y) = \\text{Var}(aX + b)\\)` }} />
+                  <span className="text-neutral-400">Var(Y) = Var(aX + b)</span>
                   <span className="font-mono text-white">{transformedStats.variance.toFixed(3)}</span>
                 </div>
                 <div className="pt-2 mt-2 border-t border-neutral-700">
@@ -525,15 +589,15 @@ const LinearTransformations = () => {
           <div className="mt-4 p-3 bg-neutral-800 rounded-md">
             <h5 className="text-sm font-medium text-amber-400 mb-2">Key Properties</h5>
             <ul className="space-y-1 text-xs text-neutral-300">
-              <li>• <span dangerouslySetInnerHTML={{ __html: `\\(E[aX + b] = aE[X] + b\\)` }} /> - Expectation is affected by both scaling and shifting</li>
-              <li>• <span dangerouslySetInnerHTML={{ __html: `\\(\\text{Var}(aX + b) = a^2\\text{Var}(X)\\)` }} /> - Variance is only affected by scaling, not shifting</li>
-              <li>• <span dangerouslySetInnerHTML={{ __html: `\\(\\text{SD}(aX + b) = |a|\\text{SD}(X)\\)` }} /> - Standard deviation scales by |a|</li>
+              <li>• E[aX + b] = aE[X] + b - Expectation is affected by both scaling and shifting</li>
+              <li>• Var(aX + b) = a²Var(X) - Variance is only affected by scaling, not shifting</li>
+              <li>• SD(aX + b) = |a|SD(X) - Standard deviation scales by |a|</li>
             </ul>
           </div>
-        </div>
+      </div>
+        </Card>
       </div>
     </div>
-    </VisualizationContainer>
   );
 };
 

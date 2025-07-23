@@ -230,7 +230,7 @@ const CHAPTER_2_SECTIONS = [
   }
 ];
 
-export default function DiscreteDistributionsHub() {
+export default function DiscreteRandomVariablesHub() {
   const router = useRouter();
 
   const handleSectionClick = (section) => {

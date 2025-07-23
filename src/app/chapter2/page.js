@@ -1,5 +1,5 @@
-import DiscreteDistributionsHub from '@/components/02-discrete-distributions-new/2-0-DiscreteDistributionsHub';
+import DiscreteRandomVariablesHub from '@/components/02-discrete-random-variables/DiscreteRandomVariablesHub';
 
 export default function Chapter2Page() {
-  return <DiscreteDistributionsHub />;
+  return <DiscreteRandomVariablesHub />;
 }

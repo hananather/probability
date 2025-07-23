@@ -1,8 +1,13 @@
 "use client";
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { motion } from "framer-motion";
+import { Card } from "../ui/card";
+import { createColorScheme } from "@/lib/design-system";
+import { RangeSlider, SliderPresets } from '@/components/ui/RangeSlider';
 import * as d3 from "@/utils/d3-utils";
 import { cn } from '@/lib/design-system';
-import { RangeSlider, SliderPresets } from '@/components/ui/RangeSlider';
+
+// Import existing binomial utilities
 import { 
   binomialPMF, 
   generateBinomialPMFData, 
@@ -11,17 +16,71 @@ import {
   clearBinomialCache 
 } from '@/utils/distributions';
 
-// Import new shared components
+// Import shared components
 import PMFBarChart from '@/components/shared/distributions/PMFBarChart';
 import SingleRunControls from '@/components/shared/distributions/SingleRunControls';
 import AnimatedOutcome from '@/components/shared/distributions/AnimatedOutcome';
 import { distributionThemes, getThemeStyles } from '@/utils/distribution-theme';
 
-// Get theme and styles for binomial distribution
+// Get consistent color scheme for binomial
+const colors = createColorScheme('binomial');
 const theme = distributionThemes.binomial;
 const themeStyles = getThemeStyles('binomial');
 
-// Trial History Component
+// Key Concepts Card with LaTeX (using LinearRegressionHub scaffolding)
+const BinomialConceptsCard = React.memo(() => {
+  const contentRef = useRef(null);
+  const concepts = [
+    { term: "PMF Formula", definition: "Probability mass function", latex: "P(X = k) = \\binom{n}{k} p^k (1-p)^{n-k}" },
+    { term: "Expected Value", definition: "Average number of successes", latex: "E[X] = np" },
+    { term: "Variance", definition: "Measure of spread", latex: "\\text{Var}(X) = np(1-p)" },
+    { term: "Standard Deviation", definition: "Square root of variance", latex: "\\sigma = \\sqrt{np(1-p)}" },
+  ];
+
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax(); // Try immediately
+    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
+    return () => clearTimeout(timeoutId);
+  }, []);
+
+  return (
+    <Card ref={contentRef} className="mb-8 p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
+      <h3 className="text-xl font-bold text-white mb-4">Binomial Distribution Concepts</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {concepts.map((concept, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.1 }}
+            className="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <h4 className="font-semibold text-white">{concept.term}</h4>
+                <p className="text-sm text-gray-400 mt-1">{concept.definition}</p>
+              </div>
+              <div className="text-lg font-mono text-teal-400">
+                <span dangerouslySetInnerHTML={{ __html: `\\(${concept.latex}\\)` }} />
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </Card>
+  );
+});
+
+// Trial History Component (preserved from original)
 const TrialHistory = ({ trials, n, theme, showRecent = 10 }) => {
   const svgRef = useRef(null);
   
@@ -89,29 +148,11 @@ const TrialHistory = ({ trials, n, theme, showRecent = 10 }) => {
       .y(d => y(d.successes))
       .curve(d3.curveMonotoneX);
     
-    // Add gradient
-    const gradient = svg.append("defs")
-      .append("linearGradient")
-      .attr("id", "line-gradient")
-      .attr("gradientUnits", "userSpaceOnUse")
-      .attr("x1", 0).attr("y1", y(0))
-      .attr("x2", 0).attr("y2", y(n));
-    
-    gradient.append("stop")
-      .attr("offset", "0%")
-      .attr("stop-color", theme.secondary)
-      .attr("stop-opacity", 1);
-    
-    gradient.append("stop")
-      .attr("offset", "100%")
-      .attr("stop-color", theme.primary)
-      .attr("stop-opacity", 1);
-    
     // Draw line
     g.append("path")
       .datum(displayData)
       .attr("fill", "none")
-      .attr("stroke", "url(#line-gradient)")
+      .attr("stroke", theme.primary)
       .attr("stroke-width", 2)
       .attr("d", line)
       .style("filter", "drop-shadow(0 2px 4px rgba(0,0,0,0.3))");
@@ -153,20 +194,6 @@ const TrialHistory = ({ trials, n, theme, showRecent = 10 }) => {
         g.select(".tooltip").remove();
       });
     
-    // Expected value line
-    const expectedValue = n * (trials[0]?.length ? trials.reduce((sum, trial) => 
-      sum + trial.filter(o => o).length, 0) / trials.length / n : 0.5);
-    
-    g.append("line")
-      .attr("x1", 0)
-      .attr("x2", innerWidth)
-      .attr("y1", y(expectedValue * n))
-      .attr("y2", y(expectedValue * n))
-      .attr("stroke", theme.accent)
-      .attr("stroke-width", 2)
-      .attr("stroke-dasharray", "5,5")
-      .attr("opacity", 0.6);
-    
     // Axes
     g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
@@ -205,6 +232,7 @@ const TrialHistory = ({ trials, n, theme, showRecent = 10 }) => {
   return <svg ref={svgRef} className="w-full" style={{ height: 250 }} />;
 };
 
+// Main Binomial Distribution Component (using LinearRegressionHub scaffolding)
 export default function BinomialDistribution() {
   // Parameters with validation
   const [n, setN] = useState(10);
@@ -229,7 +257,6 @@ export default function BinomialDistribution() {
   const [multipleRunCount, setMultipleRunCount] = useState(100);
   
   // Refs
-  const contentRef = useRef(null);
   const animationTimeoutRef = useRef(null);
   const [dimensions, setDimensions] = useState({ width: 500, height: 350 });
   const containerRef = useRef(null);
@@ -279,31 +306,14 @@ export default function BinomialDistribution() {
     }, {});
   }, [trials]);
   
-  // Process MathJax
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax(); // Try immediately
-    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
-    return () => clearTimeout(timeoutId);
-  }, [n, p]);
-  
   // Update dimensions on resize
   useEffect(() => {
     const updateDimensions = () => {
       if (containerRef.current) {
         const { width } = containerRef.current.getBoundingClientRect();
-        // Standard chart sizing for consistency with other components
         setDimensions({
-          width: Math.min(width - 48, 800), // Max 800px width
-          height: 400 // Fixed height like LinearTransformations
+          width: Math.min(width - 48, 800),
+          height: 400
         });
       }
     };
@@ -343,17 +353,14 @@ export default function BinomialDistribution() {
     
     const animateFlip = () => {
       if (flipIndex >= n) {
-        // Trial complete
         setTrials(prev => [...prev, trial]);
         setIsRunning(false);
         setCurrentFlipIndex(-1);
         setIsFlipping(false);
-        // Keep current trial displayed for visual feedback
         setTimeout(() => setCurrentTrial([]), 2000);
         return;
       }
       
-      // Animate current flip
       setIsFlipping(true);
       
       setTimeout(() => {
@@ -377,7 +384,6 @@ export default function BinomialDistribution() {
     setIsRunning(true);
     setCurrentTrial([]);
     
-    // Generate all trials
     const newTrials = [];
     for (let i = 0; i < multipleRunCount; i++) {
       const trial = [];
@@ -387,7 +393,6 @@ export default function BinomialDistribution() {
       newTrials.push(trial);
     }
     
-    // Add with animation
     let index = 0;
     const addBatch = () => {
       const batchSize = Math.min(10, multipleRunCount - index);
@@ -421,248 +426,189 @@ export default function BinomialDistribution() {
     setCurrentFlipIndex(-1);
     setIsFlipping(false);
   }, []);
-  
-  // Current flip outcome display
-  const FlipDisplay = () => {
-    if (!singleRunMode || currentFlipIndex < 0) return null;
-    
-    return (
-      <div className="mt-3 p-2 bg-neutral-800/50 rounded-lg border border-neutral-700">
-        <h4 className="text-sm font-semibold text-teal-400 mb-2">Current Trial Progress</h4>
-        <div className="flex flex-wrap gap-2 mb-2">
-          {[...Array(n)].map((_, i) => {
-            const outcome = currentTrial[i];
-            const isCurrent = i === currentFlipIndex;
-            const hasOutcome = i < currentTrial.length;
-            
-            return (
-              <div key={i} className="relative">
-                {isCurrent && isFlipping && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <AnimatedOutcome
-                      type="coin"
-                      outcome={outcome}
-                      isAnimating={true}
-                      theme={theme}
-                      size="small"
-                    />
-                  </div>
-                )}
-                <div className={cn(
-                  "w-12 h-12 rounded-full flex items-center justify-center",
-                  "border-2 transition-all duration-300",
-                  hasOutcome && !isCurrent ? (
-                    outcome ? "bg-teal-500/20 border-teal-500" : "bg-neutral-600/20 border-neutral-600"
-                  ) : (
-                    isCurrent ? "border-teal-400 animate-pulse" : "border-neutral-600"
-                  )
-                )}>
-                  {hasOutcome && !isCurrent && (
-                    <span className={cn(
-                      "text-lg font-bold",
-                      outcome ? "text-teal-400" : "text-neutral-400"
-                    )}>
-                      {outcome ? "H" : "T"}
-                    </span>
-                  )}
-                  {!hasOutcome && !isCurrent && (
-                    <span className="text-neutral-500 text-sm">{i + 1}</span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        {currentTrial.length > 0 && (
-          <div className="text-sm text-neutral-400">
-            Successes so far: <span className="font-mono text-teal-400">
-              {currentTrial.filter(o => o).length}
-            </span>
-          </div>
-        )}
-      </div>
-    );
-  };
-  
+
   return (
-    <div className="bg-neutral-800 rounded-lg shadow-xl overflow-hidden">
-      {/* Header Section */}
-      <div className="bg-neutral-900 border-b border-neutral-700 px-6 py-4">
-        <h3 className="text-xl font-bold text-white">Binomial Distribution Explorer</h3>
-        <p className="text-sm text-neutral-400 mt-1">
-          Models the number of successes in <span className="font-semibold text-teal-400">n</span> independent trials, 
-          each with success probability <span className="font-semibold text-teal-400">p</span>
-        </p>
-      </div>
-      
-      {/* Controls Section - Compact */}
-      <div className="px-6 py-4 border-b border-neutral-700 bg-neutral-800">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Left: Parameters */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-medium text-neutral-300">Parameters</h4>
-              <div className="text-xs bg-neutral-900 px-3 py-1 rounded border border-neutral-700">
-                <span className="text-neutral-400">Formula: </span>
-                <span className="text-teal-400" dangerouslySetInnerHTML={{ 
-                  __html: `\(P(X = k) = \binom{n}{k} p^k (1-p)^{n-k}\) `
-                }} />
+    <div className="min-h-screen bg-gray-950">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8"
+        >
+          <h1 className="text-4xl font-bold text-white mb-2">
+            Binomial Distribution Explorer
+          </h1>
+          <p className="text-xl text-gray-400">
+            Model the number of successes in n independent trials
+          </p>
+        </motion.div>
+
+        {/* Key Concepts Card */}
+        <BinomialConceptsCard />
+
+        {/* Introduction Text */}
+        <Card className="mb-8 p-6 bg-gradient-to-br from-teal-900/20 to-cyan-900/20 border-teal-700/50">
+          <h2 className="text-2xl font-bold text-white mb-3">What is the Binomial Distribution?</h2>
+          <p className="text-gray-300">
+            The binomial distribution models the number of successes in a fixed number of independent trials, 
+            each with the same probability of success. From coin flips to quality control, 
+            it's one of the most fundamental probability distributions in statistics.
+          </p>
+        </Card>
+
+        {/* Interactive Component */}
+        <Card ref={containerRef} className="p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
+          {/* Controls Section */}
+          <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Left: Parameters */}
+            <div>
+              <h4 className="text-lg font-semibold text-white mb-4">Parameters</h4>
+              
+              {!paramValidation.valid && (
+                <div className="mb-3 p-2 bg-red-900/20 border border-red-500/50 rounded text-xs text-red-400">
+                  {paramValidation.errors.join(', ')}
+                </div>
+              )}
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="flex items-center justify-between text-sm font-medium text-gray-300 mb-2">
+                    <span>Number of Trials (n)</span>
+                    <span className="font-mono text-teal-400">{n}</span>
+                  </label>
+                  <RangeSlider
+                    value={n}
+                    onChange={(value) => setN(Math.round(value))}
+                    min={1}
+                    max={50}
+                    step={1}
+                    formatValue={v => v}
+                  />
+                </div>
+                
+                <div>
+                  <label className="flex items-center justify-between text-sm font-medium text-gray-300 mb-2">
+                    <span>Success Probability (p)</span>
+                    <span className="font-mono text-teal-400">{p.toFixed(2)}</span>
+                  </label>
+                  <RangeSlider
+                    value={p}
+                    onChange={setP}
+                    {...SliderPresets.probability}
+                  />
+                </div>
               </div>
             </div>
             
-            {!paramValidation.valid && (
-              <div className="mb-3 p-2 bg-red-900/20 border border-red-500/50 rounded text-xs text-red-400">
-                {paramValidation.errors.join(', ')}
-              </div>
-            )}
+            {/* Right: Simulation Controls */}
+            <div>
+              <h4 className="text-lg font-semibold text-white mb-4">Simulation Controls</h4>
+              <SingleRunControls
+                singleRunMode={singleRunMode}
+                onToggleSingleRun={setSingleRunMode}
+                onRunSingle={runSingleTrial}
+                onRunMultiple={runMultipleTrials}
+                onReset={handleReset}
+                isRunning={isRunning}
+                runCount={trials.length}
+                multipleRunCount={multipleRunCount}
+                onMultipleRunCountChange={setMultipleRunCount}
+                theme={theme}
+                singleRunLabel="Flip Coins"
+                multipleRunLabel={`Run ${multipleRunCount} Trials`}
+              />
+            </div>
+          </div>
+          
+          {/* PMF Chart */}
+          <div className="mb-6">
+            <PMFBarChart
+              data={pmfData}
+              dimensions={dimensions}
+              theme={theme}
+              labels={{ x: 'Number of Successes (k)', y: 'Probability' }}
+              showGrid={true}
+              animate={true}
+              highlights={highlightData}
+              showValues={pmfData.length <= 20}
+            />
+          </div>
+          
+          {/* Statistics Row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
+              <div className="text-sm text-gray-400 mb-1">Expected Value</div>
+              <div className="text-xl font-mono text-teal-400">{stats.mean.toFixed(2)}</div>
+              {observedStats && (
+                <div className="text-xs text-gray-500 mt-1">
+                  Observed: {observedStats.mean.toFixed(2)}
+                </div>
+              )}
+            </div>
             
-            <div className="space-y-3">
-              <div>
-                <label className="flex items-center justify-between text-sm font-medium text-neutral-300 mb-2">
-                  <span>Number of Trials (n)</span>
-                  <span className="font-mono text-teal-400">{n}</span>
-                </label>
-                <RangeSlider
-                  value={n}
-                  onChange={(value) => setN(Math.round(value))}
-                  min={1}
-                  max={50}
-                  step={1}
-                  formatValue={v => v}
+            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
+              <div className="text-sm text-gray-400 mb-1">Variance</div>
+              <div className="text-xl font-mono text-teal-400">{stats.variance.toFixed(2)}</div>
+              {observedStats && (
+                <div className="text-xs text-gray-500 mt-1">
+                  Observed: {observedStats.variance.toFixed(2)}
+                </div>
+              )}
+            </div>
+            
+            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
+              <div className="text-sm text-gray-400 mb-1">Std Deviation</div>
+              <div className="text-xl font-mono text-teal-400">{stats.stdDev.toFixed(2)}</div>
+              {observedStats && (
+                <div className="text-xs text-gray-500 mt-1">
+                  Observed: {observedStats.stdDev.toFixed(2)}
+                </div>
+              )}
+            </div>
+            
+            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
+              <div className="text-sm text-gray-400 mb-1">Parameters</div>
+              <div className="text-sm">
+                <span className="text-gray-300">n = </span>
+                <span className="font-mono text-teal-400">{n}</span>
+                <span className="text-gray-300">, p = </span>
+                <span className="font-mono text-teal-400">{p.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Trial Results */}
+          {trials.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Trial History */}
+              <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
+                <h4 className="text-lg font-semibold text-white mb-3">Trial History</h4>
+                <TrialHistory 
+                  trials={trials} 
+                  n={n}
+                  theme={theme}
+                  showRecent={10}
                 />
               </div>
               
-              <div>
-                <label className="flex items-center justify-between text-sm font-medium text-neutral-300 mb-2">
-                  <span>Success Probability (p)</span>
-                  <span className="font-mono text-teal-400">{p.toFixed(2)}</span>
-                </label>
-                <RangeSlider
-                  value={p}
-                  onChange={setP}
-                  {...SliderPresets.probability}
-                />
+              {/* Success Counts */}
+              <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
+                <h4 className="text-lg font-semibold text-white mb-3">Success Count Distribution</h4>
+                <div className="grid grid-cols-3 gap-2 text-sm">
+                  {Object.entries(successCounts)
+                    .sort(([a], [b]) => Number(a) - Number(b))
+                    .map(([k, count]) => (
+                    <div key={k} className="flex justify-between bg-gray-900/50 rounded px-3 py-2">
+                      <span className="text-gray-400">k={k}:</span>
+                      <span className="font-mono text-teal-300">{count}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-          
-          {/* Right: Simulation Controls */}
-          <div>
-            <h4 className="text-sm font-medium text-neutral-300 mb-3">Simulation Controls</h4>
-            <SingleRunControls
-              singleRunMode={singleRunMode}
-              onToggleSingleRun={setSingleRunMode}
-              onRunSingle={runSingleTrial}
-              onRunMultiple={runMultipleTrials}
-              onReset={handleReset}
-              isRunning={isRunning}
-              runCount={trials.length}
-              multipleRunCount={multipleRunCount}
-              onMultipleRunCountChange={setMultipleRunCount}
-              theme={theme}
-              singleRunLabel="Flip Coins"
-              multipleRunLabel={`Run ${multipleRunCount} Trials`}
-            />
-          </div>
-        </div>
-      </div>
-      
-      {/* Visualization Section */}
-      <div ref={contentRef} className="p-6">
-        {/* PMF Chart - Centerpiece */}
-        <div ref={containerRef} className="mb-4">
-          <PMFBarChart
-            data={pmfData}
-            dimensions={dimensions}
-            theme={theme}
-            labels={{ x: 'Number of Successes (k)', y: 'Probability' }}
-            showGrid={true}
-            animate={true}
-            highlights={highlightData}
-            showValues={pmfData.length <= 20}
-          />
-        </div>
-        
-        {/* Compact Statistics Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-          {/* Expected Value */}
-          <div className="bg-neutral-900 rounded-lg p-3 border border-neutral-700">
-            <div className="text-xs text-neutral-400 mb-1">Expected Value</div>
-            <div className="text-lg font-mono text-teal-400">{stats.mean.toFixed(2)}</div>
-            {observedStats && (
-              <div className="text-xs text-neutral-500 mt-1">
-                Observed: {observedStats.mean.toFixed(2)}
-              </div>
-            )}
-          </div>
-          
-          {/* Variance */}
-          <div className="bg-neutral-900 rounded-lg p-3 border border-neutral-700">
-            <div className="text-xs text-neutral-400 mb-1">Variance</div>
-            <div className="text-lg font-mono text-teal-400">{stats.variance.toFixed(2)}</div>
-            {observedStats && (
-              <div className="text-xs text-neutral-500 mt-1">
-                Observed: {observedStats.variance.toFixed(2)}
-              </div>
-            )}
-          </div>
-          
-          {/* Standard Deviation */}
-          <div className="bg-neutral-900 rounded-lg p-3 border border-neutral-700">
-            <div className="text-xs text-neutral-400 mb-1">Std Deviation</div>
-            <div className="text-lg font-mono text-teal-400">{stats.stdDev.toFixed(2)}</div>
-            {observedStats && (
-              <div className="text-xs text-neutral-500 mt-1">
-                Observed: {observedStats.stdDev.toFixed(2)}
-              </div>
-            )}
-          </div>
-          
-          {/* Current Parameters */}
-          <div className="bg-neutral-900 rounded-lg p-3 border border-neutral-700">
-            <div className="text-xs text-neutral-400 mb-1">Current Parameters</div>
-            <div className="text-sm">
-              <span className="text-neutral-300">n = </span>
-              <span className="font-mono text-teal-400">{n}</span>
-              <span className="text-neutral-300">, p = </span>
-              <span className="font-mono text-teal-400">{p.toFixed(2)}</span>
-            </div>
-          </div>
-        </div>
-        
-        {/* Current Trial Display */}
-        <FlipDisplay />
-        
-        {/* Trial Results Section */}
-        {trials.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Trial History */}
-            <div className="bg-neutral-900 rounded-lg p-4">
-              <h4 className="text-base font-semibold text-white mb-3">Trial History</h4>
-              <TrialHistory 
-                trials={trials} 
-                n={n}
-                theme={theme}
-                showRecent={10}
-              />
-            </div>
-            
-            {/* Success Counts */}
-            <div className="bg-neutral-900 rounded-lg p-4">
-              <h4 className="text-base font-semibold text-white mb-3">Success Count Distribution</h4>
-              <div className="grid grid-cols-3 gap-2 text-sm">
-                {Object.entries(successCounts)
-                  .sort(([a], [b]) => Number(a) - Number(b))
-                  .map(([k, count]) => (
-                  <div key={k} className="flex justify-between bg-neutral-800/50 rounded px-3 py-2">
-                    <span className="text-neutral-400">k={k}:</span>
-                    <span className="font-mono text-teal-300">{count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
+          )}
+        </Card>
       </div>
     </div>
   );

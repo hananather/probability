@@ -1,5 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { motion } from "framer-motion";
+import { Card } from "../ui/card";
 import * as d3 from "@/utils/d3-utils";
 import { 
   VisualizationContainer, 
@@ -58,6 +60,59 @@ function negativeBinomialPMF(k, r, p) {
   return Math.exp(logBinom + logProb);
 }
 
+// Key Concepts Card with LaTeX (using LinearRegressionHub scaffolding)
+const NegativeBinomialConceptsCard = React.memo(() => {
+  const contentRef = useRef(null);
+  const concepts = [
+    { term: "PMF Formula", definition: "Probability mass function", latex: "P(X = k) = \\binom{k-1}{r-1} p^r (1-p)^{k-r}" },
+    { term: "Expected Value", definition: "Average number of trials", latex: "E[X] = \\frac{r}{p}" },
+    { term: "Variance", definition: "Measure of spread", latex: "\\text{Var}(X) = \\frac{r(1-p)}{p^2}" },
+    { term: "Standard Deviation", definition: "Square root of variance", latex: "\\sigma = \\sqrt{\\frac{r(1-p)}{p^2}}" },
+  ];
+
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax(); // Try immediately
+    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
+    return () => clearTimeout(timeoutId);
+  }, []);
+
+  return (
+    <Card ref={contentRef} className="mb-8 p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
+      <h3 className="text-xl font-bold text-white mb-4">Negative Binomial Distribution Concepts</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {concepts.map((concept, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.1 }}
+            className="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <h4 className="font-semibold text-white">{concept.term}</h4>
+                <p className="text-sm text-gray-400 mt-1">{concept.definition}</p>
+              </div>
+              <div className="text-lg font-mono text-violet-400">
+                <span dangerouslySetInnerHTML={{ __html: `\\(${concept.latex}\\)` }} />
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </Card>
+  );
+});
+
 export default function NegativeBinomialDistribution() {
   // State
   const [r, setR] = useState(3);
@@ -80,7 +135,6 @@ export default function NegativeBinomialDistribution() {
   const pmfSvgRef = useRef(null);
   const animationFrameRef = useRef(null);
   const timeoutRef = useRef(null);
-  const contentRef = useRef(null);
   
   // Derived values
   const isGeometric = r === 1;
@@ -106,20 +160,7 @@ export default function NegativeBinomialDistribution() {
     return pmfData;
   }, [r, validP, expectedValue]);
 
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax(); // Try immediately
-    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
-    return () => clearTimeout(timeoutId);
-  }, [r, p]);
+  // MathJax processing is now handled by the useMathJax hook
   
   // Initialize PMF visualization
   useEffect(() => {
@@ -392,32 +433,38 @@ export default function NegativeBinomialDistribution() {
   };
   
   return (
-    <VisualizationContainer
-      title="Negative Binomial Distribution: Waiting for Multiple Successes"
-      className="max-w-6xl"
-    >
-      <div className="space-y-6">
-        {/* Mathematical Formula */}
-        <VisualizationSection className="bg-gray-800/50 p-4 rounded-lg">
-          <div className="text-center space-y-2">
-            <div className="text-lg">
-              <span className="text-gray-300">
-                {isGeometric ? "Geometric Distribution (Special Case)" : "Negative Binomial Distribution"}
-              </span>
-            </div>
-            <div className="text-xl" dangerouslySetInnerHTML={{ 
-              __html: isGeometric 
-                ? `\\(P(X = k) = p(1-p)^{k-1}\\)`
-                : `\\(P(X = k) = \\binom{k-1}{r-1} p^r (1-p)^{k-r}\\)`
-            }} />
-            <div className="text-sm text-gray-400">
-              where k is the number of trials to get {r} success{r > 1 ? 'es' : ''}
-            </div>
-          </div>
-        </VisualizationSection>
+    <div className="min-h-screen bg-gray-950">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8"
+        >
+          <h1 className="text-4xl font-bold text-white mb-2">
+            Negative Binomial Distribution Explorer
+          </h1>
+          <p className="text-xl text-gray-400">
+            Model the number of trials needed to get r successes
+          </p>
+        </motion.div>
+
+        {/* Key Concepts Card */}
+        <NegativeBinomialConceptsCard />
+
+        {/* Introduction Text */}
+        <Card className="mb-8 p-6 bg-gradient-to-br from-violet-900/20 to-purple-900/20 border-violet-700/50">
+          <h2 className="text-2xl font-bold text-white mb-3">What is the Negative Binomial Distribution?</h2>
+          <p className="text-gray-300">
+            The negative binomial distribution models the number of trials needed to achieve a fixed number of successes. 
+            It generalizes the geometric distribution from "waiting for 1 success" to "waiting for r successes". 
+            From quality control to medical trials, it's crucial for modeling repeated success scenarios.
+          </p>
+        </Card>
         
-        {/* Main Content */}
-        <div className="grid lg:grid-cols-3 gap-6">
+        {/* Interactive Component */}
+        <Card className="p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
+          <div className="grid lg:grid-cols-3 gap-6">
           {/* Left: Controls and Stats */}
           <div className="space-y-4">
             <VisualizationSection>
@@ -512,13 +559,11 @@ export default function NegativeBinomialDistribution() {
               />
               <div className="mt-3 pt-3 border-t border-gray-700">
                 <div className="text-xs space-y-1">
-                  <div>
-                    <span className="text-gray-400" dangerouslySetInnerHTML={{ __html: `E[X] =` }} />
-                    <span className="font-mono text-orange-400" dangerouslySetInnerHTML={{ __html: `\\(r/p = ${r}/${validP.toFixed(2)} = ${expectedValue.toFixed(1)}\\)` }} />
+                  <div className="text-gray-400">
+                    Expected value formula: E[X] = r/p
                   </div>
-                  <div>
-                    <span className="text-gray-400" dangerouslySetInnerHTML={{ __html: `Var[X] =` }} />
-                    <span className="font-mono text-orange-400" dangerouslySetInnerHTML={{ __html: `\\(r(1-p)/p^2 = ${variance.toFixed(2)}\\)` }} />
+                  <div className="text-gray-400">
+                    Variance formula: Var[X] = r(1-p)/p²
                   </div>
                 </div>
               </div>
@@ -683,35 +728,9 @@ export default function NegativeBinomialDistribution() {
               </div>
             </GraphContainer>
           </div>
-        </div>
+          </div>
+        </Card>
       </div>
-      
-      {/* Animation Styles */}
-      <style jsx>{`
-        @keyframes bounceIn {
-          0% { 
-            opacity: 0;
-            transform: scale(0.3) rotate(-180deg);
-          }
-          50% { 
-            transform: scale(1.1) rotate(10deg);
-          }
-          100% { 
-            opacity: 1;
-            transform: scale(1) rotate(0deg);
-          }
-        }
-        
-        .shadow-glow {
-          box-shadow: 0 0 10px rgba(251, 191, 36, 0.6);
-        }
-        
-        @keyframes milestoneGlow {
-          0% { box-shadow: 0 0 5px rgba(251, 191, 36, 0.4); }
-          50% { box-shadow: 0 0 15px rgba(251, 191, 36, 0.8); }
-          100% { box-shadow: 0 0 5px rgba(251, 191, 36, 0.4); }
-        }
-      `}</style>
-    </VisualizationContainer>
+    </div>
   );
 }

@@ -1,5 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+import { Card } from "../ui/card";
 import { 
   VisualizationContainer, 
   ControlGroup
@@ -37,23 +39,15 @@ const TABS = [
   { id: 'approximation', label: 'Binomial Approximation', icon: <Calculator className="w-3 h-3" /> }
 ];
 
-// Main Component
-const PoissonDistribution = React.memo(function PoissonDistribution() {
-  const [lambda, setLambda] = useState(3);
-  const [windowSize, setWindowSize] = useState(2);
-  const [activeTab, setActiveTab] = useState('timeline');
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [singleEventMode, setSingleEventMode] = useState(false);
-  const [eventAnimation, setEventAnimation] = useState(null);
+// Key Concepts Card with LaTeX (using LinearRegressionHub scaffolding)
+const PoissonConceptsCard = React.memo(() => {
   const contentRef = useRef(null);
-  
-  // Calculate statistics
-  const mean = lambda;
-  const variance = lambda;
-  const stdDev = Math.sqrt(variance);
-  
-  // Handle edge cases for performance
-  const effectiveLambda = lambda > 5 ? 5 : lambda; // Limit visual elements for performance
+  const concepts = [
+    { term: "PMF Formula", definition: "Probability mass function", latex: "P(X = k) = \\frac{\\lambda^k e^{-\\lambda}}{k!}" },
+    { term: "Expected Value", definition: "Average number of events", latex: "E[X] = \\lambda" },
+    { term: "Variance", definition: "Equal to the mean", latex: "\\text{Var}(X) = \\lambda" },
+    { term: "Unique Property", definition: "Mean equals variance", latex: "E[X] = \\text{Var}(X) = \\lambda" },
+  ];
 
   useEffect(() => {
     const processMathJax = () => {
@@ -68,39 +62,85 @@ const PoissonDistribution = React.memo(function PoissonDistribution() {
     processMathJax(); // Try immediately
     const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
     return () => clearTimeout(timeoutId);
-  }, [lambda]);
-  
+  }, []);
+
   return (
-    <VisualizationContainer
-      title="Poisson Distribution"
-      description="Explore the Poisson distribution - modeling the number of events occurring in a fixed interval"
-    >
-      {/* Enhanced header with gradient background */}
-      <div className="relative bg-gradient-to-r from-blue-900/50 to-blue-800/40 rounded-xl p-5 mb-6 border border-blue-600/60 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-amber-500/10" />
-        <div className="relative z-10 flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-semibold text-blue-400 mb-2 flex items-center gap-2">
-              <span className="p-1.5 bg-blue-500/20 rounded-lg">
-                <span className="block w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
-              </span>
-              Unique Property
-            </h3>
-            <p className="text-sm text-gray-300">
-              The Poisson distribution is the only discrete distribution where:
-            </p>
-            <div className="mt-2 font-mono text-yellow-400 text-lg bg-yellow-500/10 px-3 py-1 rounded-lg inline-block">
-              <span dangerouslySetInnerHTML={{ __html: `E[X] = \text{Var}(X) = \lambda` }} />
+    <Card ref={contentRef} className="mb-8 p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
+      <h3 className="text-xl font-bold text-white mb-4">Poisson Distribution Concepts</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {concepts.map((concept, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.1 }}
+            className="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <h4 className="font-semibold text-white">{concept.term}</h4>
+                <p className="text-sm text-gray-400 mt-1">{concept.definition}</p>
+              </div>
+              <div className="text-lg font-mono text-blue-400">
+                <span dangerouslySetInnerHTML={{ __html: `\\(${concept.latex}\\)` }} />
+              </div>
             </div>
-          </div>
-          <div className="text-right">
-            <div className="text-sm text-gray-400 mb-1">Current λ</div>
-            <div className="text-4xl font-mono font-bold bg-gradient-to-r from-blue-400 to-blue-500 bg-clip-text text-transparent">
-              {formatNumber(lambda, 1)}
-            </div>
-          </div>
-        </div>
+          </motion.div>
+        ))}
       </div>
+    </Card>
+  );
+});
+
+// Main Component
+const PoissonDistribution = React.memo(function PoissonDistribution() {
+  const [lambda, setLambda] = useState(3);
+  const [windowSize, setWindowSize] = useState(2);
+  const [activeTab, setActiveTab] = useState('timeline');
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [singleEventMode, setSingleEventMode] = useState(false);
+  const [eventAnimation, setEventAnimation] = useState(null);
+  
+  // Calculate statistics
+  const mean = lambda;
+  const variance = lambda;
+  const stdDev = Math.sqrt(variance);
+  
+  // Handle edge cases for performance
+  const effectiveLambda = lambda > 5 ? 5 : lambda; // Limit visual elements for performance
+
+  return (
+    <div className="min-h-screen bg-gray-950">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8"
+        >
+          <h1 className="text-4xl font-bold text-white mb-2">
+            Poisson Distribution Explorer
+          </h1>
+          <p className="text-xl text-gray-400">
+            Model the number of events occurring in a fixed interval
+          </p>
+        </motion.div>
+
+        {/* Key Concepts Card */}
+        <PoissonConceptsCard />
+
+        {/* Introduction Text */}
+        <Card className="mb-8 p-6 bg-gradient-to-br from-blue-900/20 to-cyan-900/20 border-blue-700/50">
+          <h2 className="text-2xl font-bold text-white mb-3">What is the Poisson Distribution?</h2>
+          <p className="text-gray-300">
+            The Poisson distribution models the number of events occurring in a fixed interval of time or space. 
+            From phone calls per hour to defects per product, it's essential for modeling rare events. 
+            Its unique property is that the mean equals the variance, making it particularly elegant for analysis.
+          </p>
+        </Card>
+
+        {/* Interactive Component */}
+        <Card className="p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
       
       {/* Parameter Controls */}
       <ControlGroup>
@@ -162,16 +202,6 @@ const PoissonDistribution = React.memo(function PoissonDistribution() {
         )}
       </ControlGroup>
       
-      {/* Mathematical Formula */}
-      <div className="bg-gray-800/50 rounded-lg p-4 mb-6">
-        <h3 className="text-sm font-medium text-gray-300 mb-2">Probability Mass Function</h3>
-        <div ref={contentRef} className="text-center py-2">
-          <span className="text-lg" dangerouslySetInnerHTML={{ __html: `\(P(X = k) = \frac{\lambda^k e^{-\lambda}}{k!}\)` }} />
-        </div>
-        <div className="text-xs text-gray-400 text-center mt-2">
-          where k = 0, 1, 2, ... (number of events)
-        </div>
-      </div>
       
       {/* Tab Navigation */}
       <div className="flex space-x-1 mb-6 bg-gray-800/50 rounded-lg p-1">
@@ -228,7 +258,9 @@ const PoissonDistribution = React.memo(function PoissonDistribution() {
           <div className="text-2xl font-mono text-gray-300">{formatNumber(stdDev, 2)}</div>
         </div>
       </div>
-    </VisualizationContainer>
+        </Card>
+      </div>
+    </div>
   );
 });
 

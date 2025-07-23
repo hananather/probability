@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { motion } from "framer-motion";
+import { Card } from "../ui/card";
 import * as d3 from "@/utils/d3-utils";
 import { hexbin as d3Hexbin } from 'd3-hexbin';
 import { VisualizationContainer } from '../ui/VisualizationContainer';
@@ -76,6 +78,59 @@ const SpatialRandomVariable = () => {
   const { discoveries, markDiscovered } = useDiscoveries(discoveryDefinitions);
   const [hasCreatedRegions, setHasCreatedRegions] = useState(false);
   const [samplingCount, setSamplingCount] = useState(0);
+
+  // Key Concepts Card with LaTeX (using LinearRegressionHub scaffolding)
+  const SpatialRandomVariableConceptsCard = React.memo(() => {
+    const contentRef = useRef(null);
+    const concepts = [
+      { term: "Random Variable", definition: "A function mapping outcomes to numbers", latex: "X: \\Omega \\to \\mathbb{R}" },
+      { term: "Probability Mass Function", definition: "Probability for each value", latex: "P(X = x) = \\frac{\\text{Area}(x)}{\\text{Total Area}}" },
+      { term: "Expected Value", definition: "Weighted average of outcomes", latex: "E[X] = \\sum_{x} x \\cdot P(X = x)" },
+      { term: "Variance", definition: "Measure of spread around mean", latex: "\\text{Var}(X) = E[X^2] - (E[X])^2" },
+    ];
+
+    useEffect(() => {
+      const processMathJax = () => {
+        if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+          if (window.MathJax.typesetClear) {
+            window.MathJax.typesetClear([contentRef.current]);
+          }
+          window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        }
+      };
+      
+      processMathJax(); // Try immediately
+      const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
+      return () => clearTimeout(timeoutId);
+    }, []);
+
+    return (
+      <Card ref={contentRef} className="mb-8 p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
+        <h3 className="text-xl font-bold text-white mb-4">Spatial Random Variable Concepts</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {concepts.map((concept, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.1 }}
+              className="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50"
+            >
+              <div className="flex items-start justify-between">
+                <div>
+                  <h4 className="font-semibold text-white">{concept.term}</h4>
+                  <p className="text-sm text-gray-400 mt-1">{concept.definition}</p>
+                </div>
+                <div className="text-lg font-mono text-teal-400">
+                  <span dangerouslySetInnerHTML={{ __html: `\\(${concept.latex}\\)` }} />
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </Card>
+    );
+  });
   
   // Constants - Responsive layout
   const WIDTH_GRID = 720;
@@ -793,29 +848,6 @@ const SpatialRandomVariable = () => {
     };
   }, []);
   
-  // Process MathJax for distribution panel
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise) {
-        const elements = [];
-        if (distPanelRef.current) elements.push(distPanelRef.current);
-        if (statsRef.current) elements.push(statsRef.current);
-        
-        if (elements.length > 0) {
-          elements.forEach(el => {
-            if (window.MathJax.typesetClear) {
-              window.MathJax.typesetClear([el]);
-            }
-          });
-          window.MathJax.typesetPromise(elements).catch(console.error);
-        }
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [updateTrigger]); // Changed to updateTrigger to ensure it runs on every update
   
   const stats = calculateStats();
   
@@ -835,11 +867,37 @@ const SpatialRandomVariable = () => {
   };
   
   return (
-    <VisualizationContainer
-      title="Spatial Random Variable"
-      tutorialSteps={tutorial_2_1_1}
-      tutorialKey="spatial-random-variable-2-1-1"
-    >
+    <div className="min-h-screen bg-gray-950">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8"
+        >
+          <h1 className="text-4xl font-bold text-white mb-2">
+            Spatial Random Variable Explorer
+          </h1>
+          <p className="text-xl text-gray-400">
+            Discover how random variables map spatial outcomes to numerical values
+          </p>
+        </motion.div>
+
+        {/* Key Concepts Card */}
+        <SpatialRandomVariableConceptsCard />
+
+        {/* Introduction Text */}
+        <Card className="mb-8 p-6 bg-gradient-to-br from-teal-900/20 to-cyan-900/20 border-teal-700/50">
+          <h2 className="text-2xl font-bold text-white mb-3">What is a Spatial Random Variable?</h2>
+          <p className="text-gray-300">
+            A spatial random variable assigns numerical values to different regions of space. 
+            By drawing regions and assigning values, you can explore how probability mass functions 
+            emerge from spatial distributions and understand the fundamental concepts of expectation and variance.
+          </p>
+        </Card>
+
+        {/* Interactive Component */}
+        <Card className="p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
       <div className="bg-neutral-800 rounded-lg shadow-xl overflow-hidden w-full">
       {/* Top: Header with Instructions */}
       <div className="bg-neutral-900 border-b border-neutral-700 px-4 py-2">
@@ -958,10 +1016,10 @@ const SpatialRandomVariable = () => {
           {/* Distribution Header */}
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold text-teal-400">
-              <span dangerouslySetInnerHTML={{ __html: `\\(P(X = x)\\)` }} />
+              P(X = x)
             </h3>
             <div className="text-sm">
-              <span className="text-neutral-400" dangerouslySetInnerHTML={{ __html: `\\(n = \\)` }} />
+              <span className="text-neutral-400">n = </span>
               <span className="font-mono text-teal-400">{totalRef.current || 0}</span>
             </div>
           </div>
@@ -981,13 +1039,13 @@ const SpatialRandomVariable = () => {
           {/* Stats */}
           <div className="mt-3 pt-3 border-t border-neutral-700 space-y-1" ref={statsRef}>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-neutral-400" dangerouslySetInnerHTML={{ __html: `\\(E[X]\\)` }} />
+              <span className="text-sm text-neutral-400">E[X]</span>
               <span className="font-mono text-teal-400 font-medium">
                 {stats.mean.toFixed(3)}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-neutral-400" dangerouslySetInnerHTML={{ __html: `\\(\\text{Var}(X)\\)` }} />
+              <span className="text-sm text-neutral-400">Var(X)</span>
               <span className="font-mono text-teal-400 font-medium">
                 {stats.variance.toFixed(3)}
               </span>
@@ -1005,7 +1063,9 @@ const SpatialRandomVariable = () => {
         </div>
       </div>
     </div>
-    </VisualizationContainer>
+        </Card>
+      </div>
+    </div>
   );
 };
 

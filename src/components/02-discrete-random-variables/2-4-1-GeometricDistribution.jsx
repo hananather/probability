@@ -1,5 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { motion } from "framer-motion";
+import { Card } from "../ui/card";
 import * as d3 from "@/utils/d3-utils";
 import { 
   VisualizationContainer, 
@@ -31,6 +33,59 @@ const geometricColors = {
   }
 };
 
+// Key Concepts Card with LaTeX (using LinearRegressionHub scaffolding)
+const GeometricConceptsCard = React.memo(() => {
+  const contentRef = useRef(null);
+  const concepts = [
+    { term: "PMF Formula", definition: "Probability mass function", latex: "P(X = k) = (1-p)^{k-1} p" },
+    { term: "Expected Value", definition: "Average number of trials", latex: "E[X] = \\frac{1}{p}" },
+    { term: "Variance", definition: "Measure of spread", latex: "\\text{Var}(X) = \\frac{1-p}{p^2}" },
+    { term: "Standard Deviation", definition: "Square root of variance", latex: "\\sigma = \\sqrt{\\frac{1-p}{p^2}}" },
+  ];
+
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax(); // Try immediately
+    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
+    return () => clearTimeout(timeoutId);
+  }, []);
+
+  return (
+    <Card ref={contentRef} className="mb-8 p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
+      <h3 className="text-xl font-bold text-white mb-4">Geometric Distribution Concepts</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {concepts.map((concept, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.1 }}
+            className="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <h4 className="font-semibold text-white">{concept.term}</h4>
+                <p className="text-sm text-gray-400 mt-1">{concept.definition}</p>
+              </div>
+              <div className="text-lg font-mono text-orange-400">
+                <span dangerouslySetInnerHTML={{ __html: `\\(${concept.latex}\\)` }} />
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </Card>
+  );
+});
+
 export default function GeometricDistribution() {
   // State
   const [p, setP] = useState(0.3); // probability of success
@@ -45,7 +100,6 @@ export default function GeometricDistribution() {
   const pmfSvgRef = useRef(null);
   const animationRef = useRef(null);
   const isAnimatingRef = useRef(false);
-  const contentRef = useRef(null);
   
   // Calculate statistics with edge case handling
   const expectedValue = p > 0 ? 1 / p : Infinity;
@@ -69,20 +123,7 @@ export default function GeometricDistribution() {
     return pmfData;
   }, [p, expectedValue]);
 
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax(); // Try immediately
-    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
-    return () => clearTimeout(timeoutId);
-  }, [p]);
+  // MathJax processing is now handled by the useMathJax hook
   
   // Initialize PMF visualization
   useEffect(() => {
@@ -335,28 +376,38 @@ export default function GeometricDistribution() {
   }, [p, isAnimating, stopAnimation]);
   
   return (
-    <VisualizationContainer
-      title="Geometric Distribution: Waiting for Success"
-      className="max-w-6xl"
-    >
-      <div className="space-y-6">
-        {/* Mathematical Formula */}
-        <VisualizationSection className="bg-gray-800/50 p-4 rounded-lg">
-          <div className="text-center space-y-2">
-            <div className="text-lg">
-              <span className="text-gray-300">Probability Mass Function:</span>
-            </div>
-            <div className="text-xl" dangerouslySetInnerHTML={{ 
-              __html: `\(P(X = k) = (1-p)^{k-1} \times p\)` 
-            }} />
-            <div className="text-sm text-gray-400">
-              where k is the number of trials until first success
-            </div>
-          </div>
-        </VisualizationSection>
+    <div className="min-h-screen bg-gray-950">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8"
+        >
+          <h1 className="text-4xl font-bold text-white mb-2">
+            Geometric Distribution Explorer
+          </h1>
+          <p className="text-xl text-gray-400">
+            Model the number of trials needed to get the first success
+          </p>
+        </motion.div>
+
+        {/* Key Concepts Card */}
+        <GeometricConceptsCard />
+
+        {/* Introduction Text */}
+        <Card className="mb-8 p-6 bg-gradient-to-br from-orange-900/20 to-amber-900/20 border-orange-700/50">
+          <h2 className="text-2xl font-bold text-white mb-3">What is the Geometric Distribution?</h2>
+          <p className="text-gray-300">
+            The geometric distribution models the number of trials needed to get the first success in a sequence of independent trials. 
+            From flipping coins until heads to waiting for the first defective product, 
+            it's essential for understanding "waiting time" problems in probability.
+          </p>
+        </Card>
         
-        {/* Main Content */}
-        <div className="grid lg:grid-cols-3 gap-6">
+        {/* Interactive Component */}
+        <Card className="p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
+          <div className="grid lg:grid-cols-3 gap-6">
           {/* Left: Controls and Stats */}
           <div className="space-y-4">
             <VisualizationSection>
@@ -465,13 +516,11 @@ export default function GeometricDistribution() {
               {p > 0 && p <= 1 && (
                 <div className="mt-3 pt-3 border-t border-gray-700">
                   <div className="text-xs space-y-1">
-                    <div>
-                      <span className="text-gray-400" dangerouslySetInnerHTML={{ __html: `E[X] =` }} />
-                      <span className="font-mono text-orange-400" dangerouslySetInnerHTML={{ __html: `\(1/p = 1/${p.toFixed(2)} = ${expectedValue < 100 ? expectedValue.toFixed(1) : "\\infty"}\)` }} />
+                    <div className="text-gray-400">
+                      Expected value formula: E[X] = 1/p
                     </div>
-                    <div>
-                      <span className="text-gray-400" dangerouslySetInnerHTML={{ __html: `Var[X] =` }} />
-                      <span className="font-mono text-orange-400" dangerouslySetInnerHTML={{ __html: `\((1-p)/p^2 = ${variance < 1000 ? variance.toFixed(2) : "\\infty"}\)` }} />
+                    <div className="text-gray-400">
+                      Variance formula: Var[X] = (1-p)/p²
                     </div>
                   </div>
                 </div>
@@ -572,27 +621,9 @@ export default function GeometricDistribution() {
               </div>
             </GraphContainer>
           </div>
-        </div>
+          </div>
+        </Card>
       </div>
-      
-      <style jsx>{`
-        @keyframes fadeInScale {
-          from {
-            opacity: 0;
-            transform: scale(0.5) rotate(-180deg);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1.1) rotate(0deg);
-          }
-        }
-        
-        @keyframes pulseGlow {
-          0% { box-shadow: 0 0 10px rgba(249, 115, 22, 0.5); }
-          50% { box-shadow: 0 0 20px rgba(249, 115, 22, 0.8); }
-          100% { box-shadow: 0 0 10px rgba(249, 115, 22, 0.5); }
-        }
-      `}</style>
-    </VisualizationContainer>
+    </div>
   );
 }

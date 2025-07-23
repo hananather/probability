@@ -127,7 +127,8 @@
       "Bash(then rm -rf /Users/hananather/Desktop/Javascript/prob-lab/src/app/tutorials)",
       "Bash(else echo \"Tutorials directory is not empty or doesn''t exist\")",
       "Bash(diff:*)",
-      "Bash(do echo \"=== $file ===\")"
+      "Bash(do echo \"=== $file ===\")",
+      "WebFetch(domain:localhost)"
     ],
     "deny": []
   }
