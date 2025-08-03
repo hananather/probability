@@ -123,7 +123,7 @@ export const GraphContainer = ({
         'relative',
         className
       )}
-      style={{ height: height, overflow: 'visible' }}
+      style={{ height: height }}
     >
       {children}
     </div>

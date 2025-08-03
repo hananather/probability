@@ -193,13 +193,13 @@ const CountingTechniques = memo(function CountingTechniques() {
     const height = 500;
     
     // Set viewBox
-    svg.attr("viewBox", `0 0 ${containerWidth} 580`);
+    svg.attr("viewBox", `0 0 ${containerWidth} 560`);
     
     // Dark background
     svg.append("rect")
       .attr("class", "background")
       .attr("width", containerWidth)
-      .attr("height", 580)
+      .attr("height", 560)
       .attr("fill", "#0a0a0a");
     
     // Create tree layout
@@ -800,8 +800,8 @@ const CountingTechniques = memo(function CountingTechniques() {
         </div>
 
         {/* Right Panel - Visualization */}
-        <div className="lg:w-2/3 flex flex-col gap-4">
-          <GraphContainer height="600px">
+        <div className="lg:w-2/3 flex flex-col gap-16">
+          <div>
             <div className="px-4 pt-4 pb-2">
               <h4 className="text-base font-bold text-white">
                 {combinations ? 'Combination' : 'Permutation'} Tree
@@ -816,7 +816,7 @@ const CountingTechniques = memo(function CountingTechniques() {
               </p>
             </div>
             <svg ref={svgRef} style={{ width: "100%", height: 560 }} />
-          </GraphContainer>
+          </div>
           
           {/* Worked Example */}
           {showWorkedExample && (
