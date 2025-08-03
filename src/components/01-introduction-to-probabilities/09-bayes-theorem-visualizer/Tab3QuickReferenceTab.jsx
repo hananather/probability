@@ -5,7 +5,7 @@ import SectionBasedContent from '@/components/ui/SectionBasedContent';
 import { SimpleFormulaCard, SimpleInsightBox } from '@/components/ui/patterns/SimpleComponents';
 import { ComparisonTable } from '@/components/ui/patterns/ComparisonTable';
 import { useMathJax } from '@/hooks/useMathJax';
-import { Calculator, AlertTriangle, Timer, ChevronRight } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 
 const SECTIONS = [
   {
@@ -273,19 +273,6 @@ const SpeedTipsSection = React.memo(function SpeedTipsSection() {
         </div>
       </div>
 
-      <SimpleInsightBox variant="success" className="border-green-700/50">
-        <h4 className="font-semibold text-green-400 mb-2 flex items-center gap-2">
-          <Timer className="w-4 h-4" />
-          Exam Time Management
-        </h4>
-        <div className="text-neutral-300 space-y-2">
-          <p><strong>Step 1 (30 sec):</strong> Identify what you're solving for</p>
-          <p><strong>Step 2 (60 sec):</strong> Write down all given probabilities</p>
-          <p><strong>Step 3 (90 sec):</strong> Calculate <span dangerouslySetInnerHTML={{ __html: '\\(P(\\text{Evidence})\\)' }} /> using total probability</p>
-          <p><strong>Step 4 (60 sec):</strong> Apply Bayes' theorem</p>
-          <p><strong>Step 5 (30 sec):</strong> Sanity check your answer</p>
-        </div>
-      </SimpleInsightBox>
     </div>
   );
 });

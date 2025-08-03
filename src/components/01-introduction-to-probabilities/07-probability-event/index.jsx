@@ -10,6 +10,7 @@ import {
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../../lib/design-system';
 import { tutorial_1_5_1 } from '@/tutorials/chapter1';
 import { useMathJax } from '@/hooks/useMathJax';
+import SVGErrorBoundary, { getSafeSVGDimensions } from '../../ui/error-handling/SVGErrorBoundary';
 
 // Use probability color scheme
 const colorScheme = createColorScheme('probability');
@@ -148,38 +149,8 @@ function ProbabilityEvent() {
   useEffect(() => {
     if (!svgRef.current) return;
     
-    // Store the bounding rect immediately to prevent race conditions
-    let width = 800; // Default width
-    let height = 500; // Default height
-    
-    try {
-      const boundingRect = svgRef.current.getBoundingClientRect();
-      // Validate dimensions and ensure they are valid numbers
-      if (boundingRect && 
-          typeof boundingRect.width === 'number' && 
-          boundingRect.width > 0 && 
-          !isNaN(boundingRect.width) &&
-          isFinite(boundingRect.width)) {
-        width = boundingRect.width;
-      }
-      if (boundingRect && 
-          typeof boundingRect.height === 'number' && 
-          boundingRect.height > 0 && 
-          !isNaN(boundingRect.height) &&
-          isFinite(boundingRect.height)) {
-        height = boundingRect.height;
-      }
-    } catch (error) {
-      // Use proper error handling instead of console.warn
-      if (process.env.NODE_ENV === 'development') {
-        console.error('SVG dimension error in ProbabilityEvent:', error);
-      }
-      // Dimensions already set to safe defaults above
-    }
-    
-    // Final validation to ensure dimensions are safe for SVG
-    width = Math.max(300, Math.min(width, 2000)); // Clamp between 300-2000px
-    height = Math.max(200, Math.min(height, 1200)); // Clamp between 200-1200px
+    // Use safe dimension extraction
+    const { width, height } = getSafeSVGDimensions(svgRef.current, { width: 800, height: 500 });
     
     const svg = d3.select(svgRef.current);
     const margin = { top: 120, right: 40, bottom: 60, left: 60 }; // Increased top margin from 80 to 120
@@ -731,7 +702,12 @@ function ProbabilityEvent() {
         {/* Right Panel */}
         <div className="lg:w-2/3 space-y-4">
           <GraphContainer height="550px">
-            <svg ref={svgRef} style={{ width: "100%", height: 550 }} />
+            <SVGErrorBoundary 
+              fallbackMessage="The probability visualization encountered a rendering issue. This may be due to SVG dimension problems or D3 rendering conflicts. Please try resetting the experiment or refreshing the page."
+              showRetry={true}
+            >
+              <svg ref={svgRef} style={{ width: "100%", height: 550 }} />
+            </SVGErrorBoundary>
           </GraphContainer>
           
           {showDiceExample && (

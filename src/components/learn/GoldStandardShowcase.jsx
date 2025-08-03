@@ -253,6 +253,7 @@ const componentShowcases = {
             title={cipiData.title}
             columns={cipiData.columns}
             rows={cipiData.rows}
+            showAspectColumn={true}
           />
           
           <SimpleComparisonTable
@@ -264,6 +265,7 @@ const componentShowcases = {
               { aspect: "Formula", left: "\\(y = mx + b\\)", right: "\\(y = ax^2 + bx + c\\)" },
               { aspect: "Use Case", left: "Linear relationships", right: "Curved relationships" }
             ]}
+            showAspectColumn={true}
           />
         </div>
       );

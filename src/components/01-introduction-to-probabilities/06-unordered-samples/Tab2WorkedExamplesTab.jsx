@@ -15,16 +15,19 @@ import { useMathJax } from '@/hooks/useMathJax';
 const PracticeSection = ({ showSolutions, toggleSolution }) => {
   const contentRef = useRef(null);
   
-  // Process MathJax when solutions are toggled
+  // Use MathJax hook for proper rendering
+  const mathJaxRef = useMathJax([showSolutions.p1, showSolutions.p2, showSolutions.p3]);
+  
+  // Merge refs
   useEffect(() => {
-    if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-      window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+    if (mathJaxRef.current) {
+      contentRef.current = mathJaxRef.current;
     }
-  }, [showSolutions.p1, showSolutions.p2, showSolutions.p3]);
+  }, [mathJaxRef]);
   
   return (
     <SectionContent>
-      <div ref={contentRef} className="space-y-6">
+      <div ref={mathJaxRef} className="space-y-6">
         <div className="text-center mb-6">
           <h3 className="text-xl font-semibold text-neutral-200">Test Your Skills!</h3>
           <p className="text-neutral-400">Try these problems, then check your answers</p>

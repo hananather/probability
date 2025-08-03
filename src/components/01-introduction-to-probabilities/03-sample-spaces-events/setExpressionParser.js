@@ -236,7 +236,10 @@ export function parseSetExpression(expression) {
     // Sort for consistency
     return result.sort((a, b) => a - b);
   } catch (error) {
-    console.error('Parse error:', error.message);
+    // Only log parse errors in development mode
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Set expression parse error:', error.message);
+    }
     return null;
   }
 }

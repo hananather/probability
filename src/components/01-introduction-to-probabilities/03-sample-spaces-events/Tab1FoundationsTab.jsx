@@ -19,7 +19,7 @@ const SECTIONS = [
         <div ref={contentRef} className="space-y-6">
           <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 p-6 rounded-lg border border-blue-600/30">
             <h4 className="font-semibold text-blue-400 mb-4 text-lg">
-              🔧 Set Operations: The Building Blocks of Complex Events
+              Set Operations: The Building Blocks of Complex Events
             </h4>
             <p className="text-neutral-200 mb-4">
               Just as sentences are built from words using grammatical rules, complex probability events 
@@ -85,7 +85,7 @@ const SECTIONS = [
         <div ref={contentRef} className="space-y-6">
           <div className="bg-neutral-800/50 p-6 rounded-lg">
             <h4 className="font-semibold text-white mb-4 text-lg">
-              📚 Complete Operation Definitions
+              Complete Operation Definitions
             </h4>
             <p className="text-neutral-200 mb-4">
               Each set operation has a precise mathematical definition and a clear intuitive interpretation. 
@@ -135,7 +135,7 @@ const SECTIONS = [
           
           <div className="grid md:grid-cols-2 gap-6">
             <div className="bg-green-900/20 p-5 rounded-lg border border-green-600/30">
-              <h5 className="font-semibold text-green-400 mb-3 text-lg">🔄 Complement</h5>
+              <h5 className="font-semibold text-green-400 mb-3 text-lg">Complement</h5>
               <div className="space-y-3">
                 <p className="text-neutral-200 text-sm">
                   <strong>Key Insight:</strong> Complement is <em>relative to the sample space</em> - 
@@ -153,7 +153,7 @@ const SECTIONS = [
             </div>
             
             <div className="bg-orange-900/20 p-5 rounded-lg border border-orange-600/30">
-              <h5 className="font-semibold text-orange-400 mb-3 text-lg">➖ Difference</h5>
+              <h5 className="font-semibold text-orange-400 mb-3 text-lg">Difference</h5>
               <div className="space-y-3">
                 <p className="text-neutral-200 text-sm">
                   <strong>Key Insight:</strong> Difference is <em>subtraction of sets</em> - 
@@ -194,7 +194,7 @@ const SECTIONS = [
           
           <div className="space-y-6">
             <div className="bg-blue-900/20 p-5 rounded-lg border border-blue-600/30">
-              <h5 className="font-semibold text-blue-400 mb-3 text-lg">🔄 Commutative Laws</h5>
+              <h5 className="font-semibold text-blue-400 mb-3 text-lg">Commutative Laws</h5>
               <div className="space-y-3">
                 <div className="bg-neutral-800/50 p-4 rounded">
                   <div className="grid md:grid-cols-2 gap-4">
@@ -238,7 +238,7 @@ const SECTIONS = [
             </div>
             
             <div className="bg-purple-900/20 p-5 rounded-lg border border-purple-600/30">
-              <h5 className="font-semibold text-purple-400 mb-3 text-lg">🔄 Distributive Laws</h5>
+              <h5 className="font-semibold text-purple-400 mb-3 text-lg">Distributive Laws</h5>
               <div className="space-y-3">
                 <div className="bg-neutral-800/50 p-4 rounded">
                   <div className="space-y-3">
@@ -260,7 +260,7 @@ const SECTIONS = [
             </div>
             
             <div className="bg-orange-900/20 p-5 rounded-lg border border-orange-600/30">
-              <h5 className="font-semibold text-orange-400 mb-3 text-lg">🔧 Identity and Complement Laws</h5>
+              <h5 className="font-semibold text-orange-400 mb-3 text-lg">Identity and Complement Laws</h5>
               <div className="space-y-3">
                 <div className="bg-neutral-800/50 p-4 rounded">
                   <div className="grid md:grid-cols-2 gap-4 text-sm">
@@ -309,7 +309,7 @@ const SECTIONS = [
         <div ref={contentRef} className="space-y-6">
           <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 p-6 rounded-lg border border-purple-600/30">
             <h4 className="font-semibold text-purple-400 mb-4 text-lg">
-              👑 De Morgan's Laws: The Crown Jewels of Logic
+              De Morgan's Laws: The Crown Jewels of Logic
             </h4>
             <p className="text-neutral-200 mb-4">
               De Morgan's Laws are arguably the most important rules in all of logic and probability. 
@@ -377,7 +377,7 @@ const SECTIONS = [
           </div>
           
           <div className="bg-cyan-900/20 p-6 rounded-lg border border-cyan-600/30">
-            <h5 className="font-semibold text-cyan-400 mb-4 text-lg">🧠 Intuitive Understanding</h5>
+            <h5 className="font-semibold text-cyan-400 mb-4 text-lg">Intuitive Understanding</h5>
             
             <div className="space-y-4">
               <div className="bg-neutral-800/50 p-4 rounded">
@@ -413,7 +413,7 @@ const SECTIONS = [
             
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <h6 className="font-semibold text-white mb-3">🔄 Transformation Power</h6>
+                <h6 className="font-semibold text-white mb-3">Transformation Power</h6>
                 <ul className="list-disc list-inside space-y-2 text-sm text-neutral-300 ml-4">
                   <li>Convert complex "NOT" expressions into simpler forms</li>
                   <li>Transform difficult union problems into intersection problems</li>
@@ -423,7 +423,7 @@ const SECTIONS = [
               </div>
               
               <div>
-                <h6 className="font-semibold text-white mb-3">🌐 Universal Applications</h6>
+                <h6 className="font-semibold text-white mb-3">Universal Applications</h6>
                 <ul className="list-disc list-inside space-y-2 text-sm text-neutral-300 ml-4">
                   <li>Digital circuit design and Boolean algebra</li>
                   <li>Database query optimization</li>

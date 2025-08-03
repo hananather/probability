@@ -686,12 +686,11 @@ export default function ProbabilisticFallacies() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <VisualizationContainer
-        title="Probabilistic Fallacies Explorer"
-        description="Understand common mistakes in probabilistic reasoning and how to avoid them"
-      >
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
+    <VisualizationContainer
+      title="Probabilistic Fallacies Explorer"
+      description="Understand common mistakes in probabilistic reasoning and how to avoid them"
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
         {/* Fallacy selector */}
         <div>
           <div className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 border border-gray-700/50 rounded-lg p-6 mb-8 transition-all duration-200 hover:border-gray-600/50">
@@ -748,8 +747,7 @@ export default function ProbabilisticFallacies() {
         <div>
           {fallacies[selectedFallacy].component}
         </div>
-        </div>
-      </VisualizationContainer>
-    </div>
+      </div>
+    </VisualizationContainer>
   );
 }

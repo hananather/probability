@@ -64,7 +64,7 @@ const SECTIONS = [
               <FormulaDisplay formula={`D^c = S \\setminus D = \\{\\text{Server1, Server2, Server3, Server4, Server5}\\} \\setminus \\{\\text{Server1, Server2, Server5}\\}`} />
               <FormulaDisplay formula={`D^c = \\{\\text{Server3, Server4}\\}`} />
               <SimpleInsightBox theme="green" title="Complement Check">
-                <span dangerouslySetInnerHTML={{ __html: `Notice: \\(D \\cup D^c = \\{\\text{Server1, Server2, Server5}\\} \\cup \\{\\text{Server3, Server4}\\} = S\\) ✓` }} />
+                <span dangerouslySetInnerHTML={{ __html: `Notice: \\(D \\cup D^c = \\{\\text{Server1, Server2, Server5}\\} \\cup \\{\\text{Server3, Server4}\\} = S\\)` }} />
               </SimpleInsightBox>
             </CalculationStep>
           </StepByStepCalculation>
@@ -112,7 +112,7 @@ const SECTIONS = [
                 <p className="text-neutral-300">
                   Right side: <span dangerouslySetInnerHTML={{ __html: `\\(D^c \\cap A^c = \\emptyset\\)` }} />
                 </p>
-                <p className="text-green-400 font-semibold mt-2">✓ Both sides are equal! De Morgan's Law verified.</p>
+                <p className="text-green-400 font-semibold mt-2">Both sides are equal! De Morgan's Law verified.</p>
               </div>
               
               <InterpretationBox theme="purple" title="Why This Works">
@@ -197,7 +197,7 @@ const SECTIONS = [
               </div>
               <FormulaDisplay formula={`|(F \\cup H)^c| = |F^c \\cap H^c| = 30`} />
               <SimpleInsightBox theme="green" title="Verification">
-                <span dangerouslySetInnerHTML={{ __html: `Total cards = 52, \\(|F \\cup H| = 12 + 13 - 3 = 22\\), so \\(|(F \\cup H)^c| = 52 - 22 = 30\\) ✓` }} />
+                <span dangerouslySetInnerHTML={{ __html: `Total cards = 52, \\(|F \\cup H| = 12 + 13 - 3 = 22\\), so \\(|(F \\cup H)^c| = 52 - 22 = 30\\)` }} />
               </SimpleInsightBox>
             </CalculationStep>
           </StepByStepCalculation>

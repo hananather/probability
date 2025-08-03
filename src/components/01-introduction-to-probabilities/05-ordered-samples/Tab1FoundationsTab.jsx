@@ -58,7 +58,7 @@ const SECTIONS = [
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-blue-900/20 p-4 rounded-lg">
-                  <h5 className="font-semibold text-blue-400 mb-3">Deep Real-World Applications:</h5>
+                  <h5 className="font-semibold text-blue-400 mb-3">Real-World Applications:</h5>
                   <div className="space-y-3">
                     <div>
                       <p className="font-medium text-blue-300 text-sm">Supply Chain Optimization</p>

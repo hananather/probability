@@ -1,54 +1,104 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as d3 from "@/utils/d3-utils";
 
 /**
- * Custom hook for D3 visualizations with proper cleanup
+ * Custom hook for D3 visualizations with proper cleanup and error handling
  * @param {Function} drawFunction - Function that draws the visualization
  * @param {Array} dependencies - Array of dependencies that should trigger redraw
- * @returns {Object} ref - SVG ref to attach to the element
+ * @param {Object} options - Configuration options
+ * @returns {Object} { ref, error, isReady } - SVG ref, error state, and ready state
  */
-export function useD3Cleanup(drawFunction, dependencies = []) {
+export function useD3Cleanup(drawFunction, dependencies = [], options = {}) {
   const svgRef = useRef(null);
+  const [error, setError] = useState(null);
+  const [isReady, setIsReady] = useState(false);
+  const { onError = null } = options;
   
   useEffect(() => {
     const svgElement = svgRef.current;
     
-    if (!svgElement) return;
-    
-    // Clear any existing content and transitions
-    const svg = d3.select(svgElement);
-    svg.selectAll("*").interrupt();
-    svg.selectAll("*").remove();
-    
-    // Get dimensions safely
-    let width = 600; // Default width
-    let height = 400; // Default height
+    if (!svgElement) {
+      setIsReady(false);
+      return;
+    }
+
+    setError(null);
+    setIsReady(false);
     
     try {
-      const rect = svgElement.getBoundingClientRect();
-      if (rect && rect.width > 0) {
-        width = rect.width;
-        height = rect.height || height;
+      // Clear any existing content and transitions
+      const svg = d3.select(svgElement);
+      svg.selectAll("*").interrupt();
+      svg.selectAll("*").remove();
+      
+      // Get dimensions safely
+      let width = 600; // Default width
+      let height = 400; // Default height
+      
+      try {
+        const rect = svgElement.getBoundingClientRect();
+        if (rect && rect.width > 0) {
+          width = rect.width;
+          height = rect.height || height;
+        }
+      } catch (dimensionError) {
+        const error = new Error(`Failed to get SVG dimensions: ${dimensionError.message}`);
+        error.type = 'DIMENSION_ERROR';
+        error.originalError = dimensionError;
+        
+        if (onError) {
+          onError(error);
+        }
+        
+        // Only log in development
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(error.message);
+        }
+        
+        // Continue with defaults - this is not a fatal error
       }
-    } catch (error) {
-      console.warn('Failed to get SVG dimensions, using defaults:', error);
+      
+      // Call the draw function with svg selection and dimensions
+      drawFunction(svg, { width, height });
+      setIsReady(true);
+      
+    } catch (drawError) {
+      const error = new Error(`D3 visualization error: ${drawError.message}`);
+      error.type = 'DRAW_ERROR';
+      error.originalError = drawError;
+      
+      setError(error);
+      setIsReady(false);
+      
+      if (onError) {
+        onError(error);
+      }
+      
+      // Only log in development
+      if (process.env.NODE_ENV === 'development') {
+        console.error('D3 draw function error:', drawError);
+      }
     }
-    
-    // Call the draw function with svg selection and dimensions
-    drawFunction(svg, { width, height });
     
     // Cleanup function
     return () => {
       if (svgElement) {
-        const svg = d3.select(svgElement);
-        svg.selectAll("*").interrupt();
-        svg.selectAll("*").remove();
+        try {
+          const svg = d3.select(svgElement);
+          svg.selectAll("*").interrupt();
+          svg.selectAll("*").remove();
+        } catch (cleanupError) {
+          // Cleanup errors are not critical, just log in development
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('D3 cleanup error:', cleanupError);
+          }
+        }
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [drawFunction, ...dependencies]);
   
-  return svgRef;
+  return { ref: svgRef, error, isReady };
 }
 
 /**

@@ -19,7 +19,8 @@ export function ComparisonTable({
   title, 
   columns,
   rows,
-  className 
+  className,
+  showAspectColumn = false // Make aspect column optional, default to false
 }) {
   const tableRef = useRef(null);
   
@@ -43,12 +44,14 @@ export function ComparisonTable({
     <VisualizationSection className={className}>
       {title && <h3 className="text-xl font-bold text-white mb-4">{title}</h3>}
       <div ref={tableRef} className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[1000px]">
+        <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-neutral-700">
-              <th className="text-left py-3 px-4 text-neutral-400">Aspect</th>
+              {showAspectColumn && (
+                <th className="text-left py-2 px-3 text-neutral-400">Aspect</th>
+              )}
               {columns.map((col, index) => (
-                <th key={index} className={cn("text-center py-3 px-4", col.color || "text-white")}>
+                <th key={index} className={cn("text-center py-2 px-3", col.color || "text-white")}>
                   {col.title}
                 </th>
               ))}
@@ -57,11 +60,13 @@ export function ComparisonTable({
           <tbody>
             {rows.map((row, rowIndex) => (
               <tr key={rowIndex} className={rowIndex < rows.length - 1 ? "border-b border-neutral-700/50" : ""}>
-                <td className="py-3 px-4 text-neutral-300 font-semibold">
-                  <span dangerouslySetInnerHTML={{ __html: row.aspect }} />
-                </td>
+                {showAspectColumn && (
+                  <td className="py-2 px-3 text-neutral-300 font-semibold">
+                    <span dangerouslySetInnerHTML={{ __html: row.aspect }} />
+                  </td>
+                )}
                 {columns.map((col, colIndex) => (
-                  <td key={colIndex} className="text-center py-3 px-4">
+                  <td key={colIndex} className="text-center py-2 px-3">
                     {typeof row[col.key] === 'string' ? (
                       <span dangerouslySetInnerHTML={{ __html: row[col.key] }} />
                     ) : (
@@ -146,7 +151,7 @@ export const createCIPIComparison = () => ({
  * @param {Object} props.headers - { left: "Column 1", right: "Column 2" }
  * @param {Object} props.colors - { left: "text-blue-400", right: "text-green-400" }
  */
-export function SimpleComparisonTable({ title, data, headers, colors, className }) {
+export function SimpleComparisonTable({ title, data, headers, colors, className, showAspectColumn = false }) {
   const tableRef = useRef(null);
   
   useEffect(() => {
@@ -168,10 +173,12 @@ export function SimpleComparisonTable({ title, data, headers, colors, className 
     <div className={cn("bg-neutral-900/50 rounded-lg p-4", className)}>
       {title && <h4 className="font-bold text-white mb-3">{title}</h4>}
       <div ref={tableRef} className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[600px]">
+        <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-neutral-700">
-              <th className="text-left py-2 px-3 text-neutral-400">Aspect</th>
+              {showAspectColumn && (
+                <th className="text-left py-2 px-3 text-neutral-400">Aspect</th>
+              )}
               <th className={cn("text-center py-2 px-3", colors?.left || "text-blue-400")}>
                 {headers?.left || "Option A"}
               </th>
@@ -183,9 +190,11 @@ export function SimpleComparisonTable({ title, data, headers, colors, className 
           <tbody>
             {data.map((row, index) => (
               <tr key={index} className={index < data.length - 1 ? "border-b border-neutral-700/50" : ""}>
-                <td className="py-2 px-3 text-neutral-300 font-medium">
-                  <span dangerouslySetInnerHTML={{ __html: row.aspect }} />
-                </td>
+                {showAspectColumn && (
+                  <td className="py-2 px-3 text-neutral-300 font-medium">
+                    <span dangerouslySetInnerHTML={{ __html: row.aspect }} />
+                  </td>
+                )}
                 <td className="text-center py-2 px-3">
                   <span dangerouslySetInnerHTML={{ __html: row.left }} />
                 </td>

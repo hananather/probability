@@ -2,6 +2,14 @@
  * Error handling utilities for probability components
  */
 
+import { 
+  createMathErrorHandler, 
+  createValidationErrorHandler,
+  createStandardError,
+  ERROR_TYPES,
+  ERROR_SEVERITY 
+} from './errorReporting.js';
+
 // Small epsilon for floating point comparisons
 export const EPSILON = 1e-10;
 
@@ -33,14 +41,50 @@ export function clamp(value, min, max) {
 /**
  * Validate probability value
  * @param {number} prob 
- * @returns {number} Clamped probability between 0 and 1
+ * @param {Object} options - Validation options
+ * @returns {Object} { value: number, isValid: boolean, error?: string }
  */
-export function validateProbability(prob) {
+export function validateProbability(prob, options = {}) {
+  const { throwOnError = false, defaultValue = 0 } = options;
+  const validationErrorHandler = createValidationErrorHandler('probability');
+  
   if (typeof prob !== 'number' || isNaN(prob)) {
-    console.warn('Invalid probability value:', prob);
-    return 0;
+    const error = validationErrorHandler(
+      `Invalid probability value: ${prob}. Expected a number between 0 and 1.`,
+      { inputValue: prob, expectedType: 'number' }
+    );
+    
+    if (throwOnError) {
+      throw error;
+    }
+    
+    return {
+      value: defaultValue,
+      isValid: false,
+      error: error.message
+    };
   }
-  return clamp(prob, 0, 1);
+  
+  const clampedValue = clamp(prob, 0, 1);
+  const wasClampedNeeded = clampedValue !== prob;
+  
+  if (wasClampedNeeded) {
+    const clampError = validationErrorHandler(
+      `Probability ${prob} was clamped to ${clampedValue}`,
+      { originalValue: prob, clampedValue }
+    );
+    
+    return {
+      value: clampedValue,
+      isValid: false,
+      error: clampError.message
+    };
+  }
+  
+  return {
+    value: clampedValue,
+    isValid: true
+  };
 }
 
 /**
@@ -105,19 +149,47 @@ export function safePermutation(n, r) {
  * Create error boundary for calculations
  * @param {Function} fn 
  * @param {*} defaultValue 
+ * @param {Object} options - Error handling options
  * @returns {*}
  */
-export function withErrorBoundary(fn, defaultValue = 0) {
+export function withErrorBoundary(fn, defaultValue = 0, options = {}) {
+  const { throwOnError = false, onError = null } = options;
+  const mathErrorHandler = createMathErrorHandler(fn.name || 'anonymous');
+  
   return (...args) => {
     try {
       const result = fn(...args);
       if (!isFinite(result)) {
-        console.warn('Non-finite result from calculation:', fn.name, args);
+        const error = mathErrorHandler(
+          new Error(`Non-finite result: ${result}`),
+          { functionName: fn.name, args, result }
+        );
+        
+        if (onError) {
+          onError(error);
+        }
+        
+        if (throwOnError) {
+          throw error;
+        }
+        
         return defaultValue;
       }
       return result;
-    } catch (error) {
-      console.error('Calculation error:', error, fn.name, args);
+    } catch (originalError) {
+      const error = mathErrorHandler(originalError, { 
+        functionName: fn.name, 
+        args 
+      });
+      
+      if (onError) {
+        onError(error);
+      }
+      
+      if (throwOnError) {
+        throw error;
+      }
+      
       return defaultValue;
     }
   };
@@ -126,18 +198,45 @@ export function withErrorBoundary(fn, defaultValue = 0) {
 /**
  * Validate SVG dimensions
  * @param {DOMRect} rect 
- * @param {Object} defaults 
- * @returns {Object} Valid dimensions
+ * @param {Object} options - Validation options
+ * @returns {Object} { dimensions: Object, isValid: boolean, error?: string }
  */
-export function validateSVGDimensions(rect, defaults = { width: 600, height: 400 }) {
+export function validateSVGDimensions(rect, options = {}) {
+  const { 
+    defaults = { width: 600, height: 400 }, 
+    throwOnError = false,
+    onError = null 
+  } = options;
+  
   if (!rect || rect.width <= 0 || rect.height <= 0) {
-    console.warn('Invalid SVG dimensions, using defaults:', rect);
-    return defaults;
+    const error = createStandardError(
+      `Invalid SVG dimensions: ${rect ? `width: ${rect.width}, height: ${rect.height}` : 'null rect'}. Using defaults.`,
+      ERROR_TYPES.SVG_ERROR,
+      ERROR_SEVERITY.MEDIUM,
+      { rect, defaults }
+    );
+    
+    if (onError) {
+      onError(error);
+    }
+    
+    if (throwOnError) {
+      throw error;
+    }
+    
+    return {
+      dimensions: defaults,
+      isValid: false,
+      error: error.message
+    };
   }
   
   return {
-    width: rect.width,
-    height: rect.height
+    dimensions: {
+      width: rect.width,
+      height: rect.height
+    },
+    isValid: true
   };
 }
 

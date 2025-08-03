@@ -1,6 +1,8 @@
 "use client";
 
 import React from 'react';
+import { handleGlobalError } from '@/utils/errorReporting';
+import { showErrorNotification } from '@/contexts/NotificationContext';
 
 class MathErrorBoundary extends React.Component {
   constructor(props) {
@@ -14,8 +16,14 @@ class MathErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    // Log the error for debugging
-    console.error('Mathematical calculation error:', error, errorInfo);
+    // Use centralized error handling
+    const formattedError = handleGlobalError(error, errorInfo, 'MathErrorBoundary');
+    
+    // Show user notification if available
+    showErrorNotification(error, {
+      title: 'Mathematical Error',
+      technicalDetails: formattedError.technicalDetails
+    });
   }
 
   render() {

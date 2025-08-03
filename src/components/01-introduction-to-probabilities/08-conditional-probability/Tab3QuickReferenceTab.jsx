@@ -429,7 +429,7 @@ export default function Tab3QuickReferenceTab({ onComplete }) {
   return (
     <SectionBasedContent
       title="Quick Reference"
-      description="Everything you need for the exam"
+      description="Essential formulas and practice problems"
       sections={SECTIONS}
       onComplete={onComplete}
       chapter={1}

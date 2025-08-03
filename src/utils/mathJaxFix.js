@@ -4,7 +4,7 @@
  * This utility ensures LaTeX renders on initial page load
  * by implementing a robust retry mechanism with proper error handling
  */
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 /**
  * Safe MathJax processing wrapper with error handling
@@ -14,16 +14,34 @@ import { useEffect } from 'react';
  * @returns {Promise} Promise that resolves when processing is complete or fails gracefully
  */
 export const safeMathJaxProcess = async (element, options = {}) => {
-  const { silent = true, maxRetries = 3 } = options;
+  const { silent = true, maxRetries = 3, onError = null } = options;
   
   if (!element || !document.contains(element)) {
-    if (!silent) console.warn('MathJax: Element not found or not in DOM');
-    return;
+    const error = new Error('MathJax: Element not found or not in DOM');
+    error.type = 'ELEMENT_NOT_FOUND';
+    
+    if (onError) {
+      onError(error);
+    }
+    
+    if (!silent && process.env.NODE_ENV === 'development') {
+      console.warn(error.message);
+    }
+    return { success: false, error };
   }
   
   if (typeof window === 'undefined' || !window.MathJax || !window.MathJax.typesetPromise) {
-    if (!silent) console.warn('MathJax: Library not loaded yet');
-    return;
+    const error = new Error('MathJax: Library not loaded yet');
+    error.type = 'LIBRARY_NOT_READY';
+    
+    if (onError) {
+      onError(error);
+    }
+    
+    if (!silent && process.env.NODE_ENV === 'development') {
+      console.warn(error.message);
+    }
+    return { success: false, error };
   }
   
   let attempt = 0;
@@ -37,16 +55,30 @@ export const safeMathJaxProcess = async (element, options = {}) => {
       
       // Process the element
       await window.MathJax.typesetPromise([element]);
-      return; // Success!
+      return { success: true }; // Success!
       
     } catch (error) {
       attempt++;
-      if (!silent && attempt === maxRetries) {
-        console.warn(`MathJax: Failed to process after ${maxRetries} attempts`, {
-          error: error.message,
-          element: element.tagName,
-          content: element.textContent?.substring(0, 50) + '...'
-        });
+      if (attempt === maxRetries) {
+        const finalError = new Error(`MathJax: Failed to process after ${maxRetries} attempts: ${error.message}`);
+        finalError.type = 'PROCESSING_FAILED';
+        finalError.originalError = error;
+        finalError.element = element.tagName;
+        finalError.content = element.textContent?.substring(0, 50) + '...';
+        
+        if (options.onError) {
+          options.onError(finalError);
+        }
+        
+        if (!silent && process.env.NODE_ENV === 'development') {
+          console.warn(finalError.message, {
+            error: error.message,
+            element: element.tagName,
+            content: element.textContent?.substring(0, 50) + '...'
+          });
+        }
+        
+        return { success: false, error: finalError };
       }
       
       // Wait before retry
@@ -92,19 +124,32 @@ export const processMathJaxWithRetry = (element, dependencies = []) => {
             timeoutIds = [];
           })
           .catch((error) => {
-            // Log warning on final attempt only
+            // Handle error on final attempt
             if (attempts >= maxAttempts - 1) {
-              console.warn('MathJax: Processing failed after maximum attempts', {
-                error: error.message,
-                element: element.tagName
-              });
+              const finalError = new Error(`MathJax: Processing failed after maximum attempts: ${error.message}`);
+              finalError.type = 'PROCESSING_FAILED';
+              finalError.originalError = error;
+              finalError.element = element.tagName;
+              
+              if (process.env.NODE_ENV === 'development') {
+                console.warn(finalError.message, {
+                  error: error.message,
+                  element: element.tagName
+                });
+              }
             }
             scheduleRetry();
           });
       } catch (err) {
-        // Log warning on final attempt only
+        // Handle error on final attempt only
         if (attempts >= maxAttempts - 1) {
-          console.warn('MathJax: Processing error', err.message);
+          const finalError = new Error(`MathJax: Processing error: ${err.message}`);
+          finalError.type = 'PROCESSING_ERROR';
+          finalError.originalError = err;
+          
+          if (process.env.NODE_ENV === 'development') {
+            console.warn(finalError.message);
+          }
         }
         scheduleRetry();
       }
@@ -163,6 +208,104 @@ export const useReliableMathJax = (ref, dependencies = []) => {
 };
 
 /**
+ * Enhanced MathJax hook with loading state support
+ * @param {Array} dependencies - React dependencies for re-processing
+ * @param {Object} options - Configuration options
+ * @returns {Object} { ref, isLoading, error }
+ */
+export const useEnhancedMathJax = (dependencies = [], options = {}) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const containerRef = useRef(null);
+  const mountedRef = useRef(true);
+  
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+  
+  useEffect(() => {
+    if (!containerRef.current) return;
+    
+    let attempts = 0;
+    const maxAttempts = options.maxRetries || 10;
+    const baseDelay = 100;
+    let timeoutIds = [];
+    
+    setIsLoading(true);
+    setError(null);
+    
+    const attemptProcess = async () => {
+      if (!mountedRef.current || !containerRef.current || !document.contains(containerRef.current)) {
+        return;
+      }
+      
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise) {
+        try {
+          // Clear previous rendering
+          if (window.MathJax.typesetClear) {
+            window.MathJax.typesetClear([containerRef.current]);
+          }
+          
+          // Process the element
+          await window.MathJax.typesetPromise([containerRef.current]);
+          
+          if (mountedRef.current) {
+            setIsLoading(false);
+            setError(null);
+          }
+          
+          // Clear any remaining timeouts
+          timeoutIds.forEach(id => clearTimeout(id));
+          timeoutIds = [];
+        } catch (err) {
+          if (attempts >= maxAttempts - 1) {
+            if (mountedRef.current) {
+              setError(err);
+              setIsLoading(false);
+            }
+            const finalError = new Error(`MathJax: Processing failed after maximum attempts: ${err.message}`);
+            finalError.type = 'PROCESSING_FAILED';
+            finalError.originalError = err;
+            
+            if (process.env.NODE_ENV === 'development') {
+              console.warn(finalError.message);
+            }
+          } else {
+            scheduleRetry();
+          }
+        }
+      } else {
+        scheduleRetry();
+      }
+    };
+    
+    const scheduleRetry = () => {
+      attempts++;
+      if (attempts < maxAttempts && mountedRef.current) {
+        const delay = Math.min(baseDelay * Math.pow(1.5, attempts), 2000);
+        const timeoutId = setTimeout(attemptProcess, delay);
+        timeoutIds.push(timeoutId);
+      } else if (mountedRef.current) {
+        setError(new Error('MathJax not available after maximum attempts'));
+        setIsLoading(false);
+      }
+    };
+    
+    // Start processing
+    attemptProcess();
+    
+    // Cleanup
+    return () => {
+      timeoutIds.forEach(id => clearTimeout(id));
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, dependencies);
+  
+  return { ref: containerRef, isLoading, error };
+};
+
+/**
  * Global initialization to catch any missed LaTeX on page load
  * Call this once in your app's root
  */
@@ -189,10 +332,17 @@ export const initGlobalMathJaxProcessor = () => {
       
       if (mathElements.length > 0) {
         window.MathJax.typesetPromise(mathElements).catch((error) => {
-          console.warn('MathJax: Global processing error', {
-            error: error.message,
-            elementCount: mathElements.length
-          });
+          const globalError = new Error(`MathJax: Global processing error: ${error.message}`);
+          globalError.type = 'GLOBAL_PROCESSING_ERROR';
+          globalError.originalError = error;
+          globalError.elementCount = mathElements.length;
+          
+          if (process.env.NODE_ENV === 'development') {
+            console.warn(globalError.message, {
+              error: error.message,
+              elementCount: mathElements.length
+            });
+          }
         });
       }
     } else {
@@ -253,7 +403,13 @@ export const useSafeMathJax = (ref, dependencies = [], options = {}) => {
       try {
         await safeMathJaxProcess(element, options);
       } catch (error) {
-        console.warn('MathJax: Unexpected error in hook', error.message);
+        const hookError = new Error(`MathJax: Unexpected error in hook: ${error.message}`);
+        hookError.type = 'HOOK_ERROR';
+        hookError.originalError = error;
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(hookError.message);
+        }
       }
     };
     
@@ -301,3 +457,13 @@ export const LaTeX = ({ children, inline = true, className = "" }) => {
     />
   );
 };
+
+// Loading skeleton for MathJax content
+export const MathJaxSkeleton = ({ className = "" }) => {
+  return (
+    <div className={`animate-pulse ${className}`}>
+      <div className="h-6 bg-gray-700 rounded w-3/4"></div>
+    </div>
+  );
+};
+

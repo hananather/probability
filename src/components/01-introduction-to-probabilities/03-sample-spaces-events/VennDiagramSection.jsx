@@ -343,7 +343,10 @@ export default function VennDiagramSection() {
       const regions = operation.regions || parseSetExpression(operation.value);
       setHighlightedRegions(regions);
     } catch (error) {
-      console.error('Error parsing set expression:', error);
+      // Only log parsing errors in development mode
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error parsing set expression:', error);
+      }
       setHighlightedRegions([]);
     }
   };

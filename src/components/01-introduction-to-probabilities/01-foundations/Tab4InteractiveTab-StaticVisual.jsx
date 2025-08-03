@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { SemanticGradientCard, SemanticGradientGrid } from '@/components/ui/patterns/SemanticGradientCard';
 import { SimpleInsightBox } from '@/components/ui/patterns/SimpleComponents';
 import { useSafeMathJax } from '@/utils/mathJaxFix';
+import SharedNavigation from '../shared/SharedNavigation';
 
 // Pebble Component - Simple circle with color and size
 const Pebble = ({ color, size = 'normal', isSelected = false, onClick, className = '' }) => {
@@ -506,14 +507,19 @@ export default function Tab4InteractiveTabStaticVisual({ onComplete }) {
         {activeScenario === 'concepts' && <ConceptualSection />}
       </div>
 
-      {/* Completion */}
-      {onComplete && (
-        <div className="text-center mt-8">
-          <Button onClick={onComplete} variant="primary" size="lg">
-            Continue to Next Section
-          </Button>
-        </div>
-      )}
+      {/* Bottom Navigation */}
+      <SharedNavigation
+        currentStep={activeScenario === 'equal' ? 0 : activeScenario === 'unequal' ? 1 : 2}
+        totalSteps={3}
+        onNavigate={(index) => {
+          const scenarios = ['equal', 'unequal', 'concepts'];
+          setActiveScenario(scenarios[index]);
+        }}
+        onComplete={onComplete}
+        showProgress={true}
+        nextLabel="Next Scenario"
+        previousLabel="Previous Scenario"
+      />
     </div>
   );
 }

@@ -10,6 +10,8 @@ import {
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../../lib/design-system';
 import { Button } from '../../ui/button';
 import { MathematicalDiscoveries, useDiscoveries } from '../../ui/MathematicalDiscoveries';
+import { useMathJax } from '@/hooks/useMathJax';
+import { getSafeSVGDimensions } from '../../ui/error-handling/SVGErrorBoundary';
 // import { tutorial_1_6_1 } from '@/tutorials/chapter1';
 
 // Use probability color scheme
@@ -36,30 +38,12 @@ function calcEventOverlap(event1, event2) {
 
 // Bayes' Theorem Component
 const BayesTheoremExample = memo(function BayesTheoremExample({ eventsData }) {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    // MathJax timeout pattern
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {
-          // MathJax error handled silently
-        });
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [eventsData]);
+  const contentRef = useMathJax([eventsData]);
   
   // Calculate all necessary probabilities with safe division
-  const pA = Math.max(0, eventsData[0].width);
-  const pB = Math.max(0, eventsData[1].width);
-  const pAB = Math.max(0, calcEventOverlap(eventsData[0], eventsData[1]));
+  const pA = eventsData && eventsData.length > 0 ? Math.max(0, eventsData[0].width) : 0;
+  const pB = eventsData && eventsData.length > 1 ? Math.max(0, eventsData[1].width) : 0;
+  const pAB = eventsData && eventsData.length > 1 ? Math.max(0, calcEventOverlap(eventsData[0], eventsData[1])) : 0;
   
   // Safe division with epsilon comparison for floating point precision
   const EPSILON = 1e-10;
@@ -104,10 +88,10 @@ const BayesTheoremExample = memo(function BayesTheoremExample({ eventsData }) {
 
 // Joint Probability Table Component
 const JointProbabilityTable = memo(function JointProbabilityTable({ eventsData }) {
-  // Calculate all joint probabilities
-  const pA = eventsData[0].width;
-  const pB = eventsData[1].width;
-  const pAB = calcEventOverlap(eventsData[0], eventsData[1]);
+  // Calculate all joint probabilities with null checks
+  const pA = eventsData && eventsData.length > 0 ? eventsData[0].width : 0;
+  const pB = eventsData && eventsData.length > 1 ? eventsData[1].width : 0;
+  const pAB = eventsData && eventsData.length > 1 ? calcEventOverlap(eventsData[0], eventsData[1]) : 0;
   const pAnotB = pA - pAB;
   const pBnotA = pB - pAB;
   const pNotAnotB = 1 - pA - pB + pAB;
@@ -164,25 +148,7 @@ const JointProbabilityTable = memo(function JointProbabilityTable({ eventsData }
 
 // Worked Example Component for Conditional Probability
 const ConditionalProbWorkedExample = memo(function ConditionalProbWorkedExample({ eventA, eventB, overlap, perspective }) {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    // MathJax timeout pattern
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {
-          // MathJax error handled silently
-        });
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [eventA, eventB, overlap, perspective]);
+  const contentRef = useMathJax([eventA, eventB, overlap, perspective]);
   
   const pA = eventA.width;
   const pB = eventB.width;
@@ -237,32 +203,14 @@ const ConditionalProbWorkedExample = memo(function ConditionalProbWorkedExample(
 
 // Law of Total Probability Component
 const TotalProbabilityExample = memo(function TotalProbabilityExample({ eventsData, eventHistory }) {
-  const contentRef = useRef(null);
+  const contentRef = useMathJax([eventsData, eventHistory]);
   
-  useEffect(() => {
-    // MathJax timeout pattern
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {
-          // MathJax error handled silently
-        });
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [eventsData, eventHistory]);
-  
-  const pA = eventsData[0].width;
-  const pB = eventsData[1].width;
-  const pC = eventsData[2].width;
-  const pAB = calcEventOverlap(eventsData[0], eventsData[1]);
-  const pAC = calcEventOverlap(eventsData[0], eventsData[2]);
-  const pBC = calcEventOverlap(eventsData[1], eventsData[2]);
+  const pA = eventsData && eventsData.length > 0 ? eventsData[0].width : 0;
+  const pB = eventsData && eventsData.length > 1 ? eventsData[1].width : 0;
+  const pC = eventsData && eventsData.length > 2 ? eventsData[2].width : 0;
+  const pAB = eventsData && eventsData.length > 1 ? calcEventOverlap(eventsData[0], eventsData[1]) : 0;
+  const pAC = eventsData && eventsData.length > 2 ? calcEventOverlap(eventsData[0], eventsData[2]) : 0;
+  const pBC = eventsData && eventsData.length > 2 ? calcEventOverlap(eventsData[1], eventsData[2]) : 0;
   
   // Total samples for empirical calculation
   const totalSamples = Object.values(eventHistory).reduce((a, b) => a + b, 0) || 1;
@@ -377,20 +325,26 @@ function ConditionalProbability() {
   
   // Calculate overlap between events
   function calcOverlap(index, perspective) {
+    // Add null checks for eventsData
+    if (!eventsData || eventsData.length === 0) return 0;
+    
     let a1, a2;
-    if (perspective === 'a') {
+    if (perspective === 'a' && eventsData.length > 0) {
       a1 = eventsData[0].x;
       a2 = a1 + eventsData[0].width;
-    } else if (perspective === 'b') {
+    } else if (perspective === 'b' && eventsData.length > 1) {
       a1 = eventsData[1].x;
       a2 = a1 + eventsData[1].width;
-    } else if (perspective === 'c') {
+    } else if (perspective === 'c' && eventsData.length > 2) {
       a1 = eventsData[2].x;
       a2 = a1 + eventsData[2].width;
     } else {
       a1 = 0;
       a2 = 1;
     }
+    
+    // Check if index is valid
+    if (index >= eventsData.length) return 0;
     
     const b1 = eventsData[index].x;
     const b2 = b1 + eventsData[index].width;
@@ -411,9 +365,10 @@ function ConditionalProbability() {
   
   // Get domain width based on perspective
   function getDomainWidth() {
-    if (currentPerspective === 'a') return eventsData[0].width;
-    if (currentPerspective === 'b') return eventsData[1].width;
-    if (currentPerspective === 'c') return eventsData[2].width;
+    if (!eventsData || eventsData.length === 0) return 1;
+    if (currentPerspective === 'a' && eventsData.length > 0) return eventsData[0].width;
+    if (currentPerspective === 'b' && eventsData.length > 1) return eventsData[1].width;
+    if (currentPerspective === 'c' && eventsData.length > 2) return eventsData[2].width;
     return 1;
   }
   
@@ -428,7 +383,7 @@ function ConditionalProbability() {
     
     try {
       const svg = d3.select(svgBallRef.current);
-      const { width } = svgBallRef.current.getBoundingClientRect();
+      const { width } = getSafeSVGDimensions(svgBallRef.current, { width: 800, height: 400 });
       const height = 400;
       const margin = { top: 40, right: 30, bottom: 40, left: 30 };
       
@@ -1039,7 +994,7 @@ function ConditionalProbability() {
     
     try {
       const svg = d3.select(svgProbRef.current);
-      const { width } = svgProbRef.current.getBoundingClientRect();
+      const { width } = getSafeSVGDimensions(svgProbRef.current, { width: 800, height: 180 });
       const height = 180; // Reduced height to fit better
       const margin = { top: 30, right: 40, bottom: 50, left: 60 };
     
