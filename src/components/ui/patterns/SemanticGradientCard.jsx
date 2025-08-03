@@ -79,7 +79,7 @@ export function SemanticGradientCard({
         {description && <p className="mb-2">{description}</p>}
         {formula && (
           <div className={`text-center my-3 ${currentTheme.formula} overflow-x-auto`}>
-            <span dangerouslySetInnerHTML={{ __html: `\\[${formula}\\]` }} />
+            <span dangerouslySetInnerHTML={{ __html: formula }} />
           </div>
         )}
         {note && (

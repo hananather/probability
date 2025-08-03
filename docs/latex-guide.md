@@ -123,8 +123,40 @@ const YourWorkedExample = React.memo(function YourWorkedExample({ props }) {
 });
 ```
 
+## CRITICAL: Props vs Hardcoded LaTeX
+
+### ⚠️ Template Literals vs Regular Quotes
+When passing LaTeX as props, **you MUST use template literals**, not regular quotes:
+
+```jsx
+// ❌ WRONG - Regular quotes break when passed as props
+<SemanticCard formula="\\rho_{\\text{XY}}" />
+
+// ✅ CORRECT - Template literals preserve escaping
+<SemanticCard formula={`\\rho_{\\text{XY}}`} />
+```
+
+### Why This Matters
+React/Next.js prop serialization handles escape sequences differently:
+- Regular quotes (`"..."`) → Backslashes get stripped during prop passing
+- Template literals (`` `...` ``) → Backslashes are preserved correctly
+
+### Best Practice: Include Delimiters in Props
+When passing LaTeX formulas as props, include the delimiters:
+
+```jsx
+// ❌ WRONG - Adding delimiters in component
+<Card formula="\\rho_{\\text{XY}}" />
+// Component does: <span dangerouslySetInnerHTML={{ __html: `\\[${formula}\\]` }} />
+
+// ✅ CORRECT - Include delimiters in the prop
+<Card formula={`\\[\\rho_{\\text{XY}}\\]`} />
+// Component does: <span dangerouslySetInnerHTML={{ __html: formula }} />
+```
+
 ## Common Mistakes to Avoid
 
+### 1. Basic LaTeX Rendering
 ```jsx
 // ❌ WRONG - Won't render
 <span>\(E[X] = \mu\)</span>
@@ -136,6 +168,26 @@ const YourWorkedExample = React.memo(function YourWorkedExample({ props }) {
 <button>Show <span dangerouslySetInnerHTML={{ __html: `\\(E[X] = \\mu\\)` }} /></button>
 <p>Step with inline math <span dangerouslySetInnerHTML={{ __html: `\\(E[X^2]\\)` }} />:</p>
 ```
+
+### 2. Multi-Letter Subscripts
+**CRITICAL**: Multi-letter subscripts must be wrapped in `\text{}` to prevent MathJax errors:
+
+```jsx
+// ❌ WRONG - Causes "Can't find variable: XY" error
+<span dangerouslySetInnerHTML={{ __html: `\\[\\rho_{XY} = \\rho_{YX}\\]` }} />
+
+// ✅ CORRECT - Use \text{} for multi-letter subscripts
+<span dangerouslySetInnerHTML={{ __html: `\\[\\rho_{\\text{XY}} = \\rho_{\\text{YX}}\\]` }} />
+
+// ✅ Single letters work without \text{}
+<span dangerouslySetInnerHTML={{ __html: `\\[\\sigma_X\\]` }} />
+```
+
+**Rule**: Any subscript with more than one letter needs `\text{}`:
+- `_{X}` → Works (single letter)
+- `_{XY}` → Breaks (MathJax looks for JS variable)
+- `_{\\text{XY}}` → Works (properly escaped text)
+- `_{\\text{sample}}` → Works (descriptive subscripts)
 
 ### LaTeX Re-rendering Issues
 **Problem**: LaTeX "unrenders" when component state changes (e.g., during simulations)

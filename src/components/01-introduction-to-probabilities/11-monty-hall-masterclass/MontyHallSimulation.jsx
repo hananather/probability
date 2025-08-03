@@ -12,6 +12,7 @@ import { Button } from '../../ui/button';
 import { Play, RotateCcw, BarChart3 } from 'lucide-react';
 import { useSafeMathJax } from '../../../utils/mathJaxFix';
 import { tutorial_1_7_3 } from '@/tutorials/chapter1';
+import MathErrorBoundary from '@/components/ui/error-handling/MathErrorBoundary';
 
 // Use sampling color scheme
 const colorScheme = createColorScheme('sampling');
@@ -28,17 +29,20 @@ const ConvergenceChart = memo(function ConvergenceChart({ data, theoretical }) {
     const height = 400;
     const margin = { top: 20, right: 80, bottom: 50, left: 60 };
     
-    svg.selectAll("*").remove();
+    // Clear existing elements with proper selection
+    svg.select("g.convergence-chart").remove();
+    
     svg.attr("viewBox", `0 0 ${width} ${height}`);
     
     const g = svg.append("g")
+      .attr("class", "convergence-chart")
       .attr("transform", `translate(${margin.left},${margin.top})`);
     
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
     // Scales - dynamic x-axis that extends as needed
-    const maxTrials = Math.max(100, data[data.length - 1]?.trial || 100);
+    const maxTrials = Math.max(100, (data && data.length > 0) ? (data[data.length - 1]?.trial || 100) : 100);
     const x = d3.scaleLinear()
       .domain([0, maxTrials])
       .range([0, innerWidth]);
@@ -158,8 +162,9 @@ const ConvergenceChart = memo(function ConvergenceChart({ data, theoretical }) {
     }
     
     // Current point markers
-    if (data.length > 0) {
+    if (data && data.length > 0) {
       const lastPoint = data[data.length - 1];
+      if (!lastPoint) return; // Safety check
       
       g.append("circle")
         .attr("cx", x(lastPoint.trial))
@@ -284,6 +289,14 @@ const ConvergenceChart = memo(function ConvergenceChart({ data, theoretical }) {
       .style("font-size", "12px")
       .text("Theory");
     
+    // Cleanup function
+    return () => {
+      if (svgRef.current) {
+        const svg = d3.select(svgRef.current);
+        svg.selectAll("*").interrupt();
+        svg.select("g.convergence-chart").remove();
+      }
+    };
   }, [data, theoretical]);
   
   return <svg ref={svgRef} style={{ width: "100%", height: "400px" }} />;
@@ -301,10 +314,13 @@ const DistributionHistogram = memo(function DistributionHistogram({ switchWins, 
     const height = 250;
     const margin = { top: 20, right: 20, bottom: 40, left: 50 };
     
-    svg.selectAll("*").remove();
+    // Clear existing elements with proper selection
+    svg.select("g.histogram-chart").remove();
+    
     svg.attr("viewBox", `0 0 ${width} ${height}`);
     
     const g = svg.append("g")
+      .attr("class", "histogram-chart")
       .attr("transform", `translate(${margin.left},${margin.top})`);
     
     const innerWidth = width - margin.left - margin.right;
@@ -327,29 +343,37 @@ const DistributionHistogram = memo(function DistributionHistogram({ switchWins, 
       .domain([0, d3.max([...switchBins, ...stayBins], d => d.length)])
       .range([innerHeight, 0]);
     
-    // Draw stay histogram
+    // Draw stay histogram with proper data join
     g.selectAll(".bar-stay")
       .data(stayBins)
-      .enter().append("rect")
-      .attr("class", "bar-stay")
+      .join(
+        enter => enter.append("rect")
+          .attr("class", "bar-stay")
+          .attr("fill", colorScheme.chart.secondary)
+          .attr("opacity", 0.6),
+        update => update,
+        exit => exit.remove()
+      )
       .attr("x", d => x(d.x0))
       .attr("width", d => x(d.x1) - x(d.x0) - 1)
       .attr("y", d => y(d.length))
-      .attr("height", d => innerHeight - y(d.length))
-      .attr("fill", colorScheme.chart.secondary)
-      .attr("opacity", 0.6);
+      .attr("height", d => innerHeight - y(d.length));
     
-    // Draw switch histogram (offset slightly)
+    // Draw switch histogram with proper data join (offset slightly)
     g.selectAll(".bar-switch")
       .data(switchBins)
-      .enter().append("rect")
-      .attr("class", "bar-switch")
+      .join(
+        enter => enter.append("rect")
+          .attr("class", "bar-switch")
+          .attr("fill", colorScheme.chart.primary)
+          .attr("opacity", 0.6),
+        update => update,
+        exit => exit.remove()
+      )
       .attr("x", d => x(d.x0) + 1)
       .attr("width", d => x(d.x1) - x(d.x0) - 1)
       .attr("y", d => y(d.length))
-      .attr("height", d => innerHeight - y(d.length))
-      .attr("fill", colorScheme.chart.primary)
-      .attr("opacity", 0.6);
+      .attr("height", d => innerHeight - y(d.length));
     
     // Axes
     g.append("g")
@@ -388,13 +412,21 @@ const DistributionHistogram = memo(function DistributionHistogram({ switchWins, 
       .attr("stroke-width", 2)
       .attr("stroke-dasharray", "3,3");
     
+    // Cleanup function
+    return () => {
+      if (svgRef.current) {
+        const svg = d3.select(svgRef.current);
+        svg.selectAll("*").interrupt();
+        svg.select("g.histogram-chart").remove();
+      }
+    };
   }, [switchWins, stayWins, bins]);
   
   return <svg ref={svgRef} style={{ width: "100%", height: "250px" }} />;
 });
 
 // Main Simulation Component
-function MontyHallSimulation() {
+const MontyHallSimulation = memo(function MontyHallSimulation() {
   // Simulation state
   const [totalGames, setTotalGames] = useState(0);
   const [convergenceData, setConvergenceData] = useState([
@@ -418,6 +450,7 @@ function MontyHallSimulation() {
   
   // Refs for maintaining state during animation
   const statsRef = useRef({ switch: { wins: 0, total: 0 }, stay: { wins: 0, total: 0 } });
+  const animationTimerRef = useRef(null);
   
   // Theoretical values
   const theoretical = { stay: 1/3, switch: 2/3 };
@@ -519,7 +552,7 @@ function MontyHallSimulation() {
     
     // Animate the updates
     let processed = 0;
-    const animationTimer = setInterval(() => {
+    animationTimerRef.current = setInterval(() => {
       const batchEnd = Math.min(processed + 2, results.length);
       const batch = results.slice(processed, batchEnd);
       
@@ -529,11 +562,22 @@ function MontyHallSimulation() {
       }
       
       if (processed >= results.length) {
-        clearInterval(animationTimer);
+        clearInterval(animationTimerRef.current);
+        animationTimerRef.current = null;
         setIsSimulating(false);
       }
     }, delay);
   }, [isSimulating, runGame, updateStats]);
+  
+  // Cleanup effect for animation timer
+  useEffect(() => {
+    return () => {
+      if (animationTimerRef.current) {
+        clearInterval(animationTimerRef.current);
+        animationTimerRef.current = null;
+      }
+    };
+  }, []);
   
   // Reset simulation
   const reset = useCallback(() => {
@@ -569,20 +613,24 @@ function MontyHallSimulation() {
   };
   
   return (
-    <VisualizationContainer
-      title="Monty Hall Problem: Large-Scale Simulation"
-      description={
-        <p className={typography.description}>
-          Watch the <span className="text-cyan-400">Law of Large Numbers</span> in action! 
-          As we simulate thousands of games, the win rates converge to their 
-          <span className="text-amber-400"> theoretical values</span>: 
-          33.3% for staying and 66.7% for switching.
-        </p>
-      }
-      tutorialSteps={tutorial_1_7_3}
-      tutorialKey="monty-hall-simulation"
+    <MathErrorBoundary
+      fallbackMessage="The Monty Hall simulation encountered an error. This may be due to complex probability calculations or D3 chart rendering issues. Please try refreshing the page or resetting the simulation."
+      showRetry={true}
     >
-      <div className="flex flex-col gap-6">
+      <VisualizationContainer
+        title="Monty Hall Problem: Large-Scale Simulation"
+        description={
+          <p className={typography.description}>
+            Watch the <span className="text-cyan-400">Law of Large Numbers</span> in action! 
+            As we simulate thousands of games, the win rates converge to their 
+            <span className="text-amber-400"> theoretical values</span>: 
+            33.3% for staying and 66.7% for switching.
+          </p>
+        }
+        tutorialSteps={tutorial_1_7_3}
+        tutorialKey="monty-hall-simulation"
+      >
+        <div className="flex flex-col gap-6">
         {/* Control Panel */}
         <VisualizationSection className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -914,7 +962,8 @@ function MontyHallSimulation() {
         </div>
       </div>
     </VisualizationContainer>
+    </MathErrorBoundary>
   );
-}
+});
 
 export default MontyHallSimulation;

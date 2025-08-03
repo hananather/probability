@@ -18,13 +18,13 @@ export default function Tab2WorkedExamplesTab({ onComplete }) {
     {
       id: 'basic-example',
       title: 'Basic Example',
-      icon: '📊',
+      icon: 'Chart',
       content: () => <BasicExampleSection />
     },
     {
       id: 'exam-level',
       title: 'Exam-Level Example',
-      icon: '🎯',
+      icon: 'Target',
       content: () => <ExamLevelSection />
     },
     {
@@ -36,7 +36,7 @@ export default function Tab2WorkedExamplesTab({ onComplete }) {
     {
       id: 'practice',
       title: 'Practice Time',
-      icon: '✏️',
+      icon: 'Edit',
       content: () => <PracticeSection />
     }
   ];
@@ -61,7 +61,7 @@ const BasicExampleSection = React.memo(function BasicExampleSection() {
   return (
     <div ref={contentRef} className="space-y-6">
       <div className="bg-gradient-to-br from-blue-900/20 to-cyan-900/20 border border-blue-700/50 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-blue-300 mb-4">📊 Factory Quality Control Problem</h3>
+        <h3 className="text-lg font-semibold text-blue-300 mb-4">Factory Quality Control Problem</h3>
         <p className="text-neutral-300 mb-4">
           A factory produces widgets with the following characteristics:
         </p>
@@ -80,18 +80,18 @@ const BasicExampleSection = React.memo(function BasicExampleSection() {
           <p className="text-neutral-300 mb-3">
             We want to find <span dangerouslySetInnerHTML={{ __html: `\\(P(\\text{Defective}|\\text{Fail Test})\\)` }} />
           </p>
-          <FormulaDisplay formula="P(\text{Defective}|\text{Fail Test}) = \frac{P(\text{Fail Test}|\text{Defective}) \cdot P(\text{Defective})}{P(\text{Fail Test})}" />
+          <FormulaDisplay formula={`P(\\text{Defective}|\\text{Fail Test}) = \\frac{P(\\text{Fail Test}|\\text{Defective}) \\cdot P(\\text{Defective})}{P(\\text{Fail Test})}`} />
         </CalculationStep>
 
         <CalculationStep title="Step 2: Calculate P(Fail Test) using Total Probability" variant="default">
-          <FormulaDisplay formula="P(\text{Fail Test}) = P(\text{Fail Test}|\text{Defective}) \cdot P(\text{Defective}) + P(\text{Fail Test}|\text{Good}) \cdot P(\text{Good})" />
-          <FormulaDisplay formula="= 0.98 \times 0.02 + 0.05 \times 0.98" />
-          <FormulaDisplay formula="= 0.0196 + 0.049 = 0.0686" />
+          <FormulaDisplay formula={`P(\\text{Fail Test}) = P(\\text{Fail Test}|\\text{Defective}) \\cdot P(\\text{Defective}) + P(\\text{Fail Test}|\\text{Good}) \\cdot P(\\text{Good})`} />
+          <FormulaDisplay formula={`= 0.98 \\times 0.02 + 0.05 \\times 0.98`} />
+          <FormulaDisplay formula={`= 0.0196 + 0.049 = 0.0686`} />
         </CalculationStep>
 
         <CalculationStep title="Step 3: Apply Bayes' Theorem" variant="highlight">
-          <FormulaDisplay formula="P(\text{Defective}|\text{Fail Test}) = \frac{0.98 \times 0.02}{0.0686}" />
-          <FormulaDisplay formula="= \frac{0.0196}{0.0686} \approx 0.286" />
+          <FormulaDisplay formula={`P(\\text{Defective}|\\text{Fail Test}) = \\frac{0.98 \\times 0.02}{0.0686}`} />
+          <FormulaDisplay formula={`= \\frac{0.0196}{0.0686} \\approx 0.286`} />
           <p className="mt-4 font-semibold text-green-400 text-center">
             Answer: About 28.6% chance the widget is defective
           </p>
@@ -116,7 +116,7 @@ const ExamLevelSection = React.memo(function ExamLevelSection() {
   return (
     <div ref={contentRef} className="space-y-6">
       <div className="bg-gradient-to-br from-teal-900/20 to-blue-900/20 border border-teal-700/50 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-teal-300 mb-4">🎯 Multi-Hypothesis Problem</h3>
+        <h3 className="text-lg font-semibold text-teal-300 mb-4">Multi-Hypothesis Problem</h3>
         <p className="text-neutral-300 mb-4 font-semibold">Three boxes contain colored balls:</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div className="bg-neutral-800/50 p-3 rounded border border-neutral-600/30">
@@ -143,22 +143,22 @@ const ExamLevelSection = React.memo(function ExamLevelSection() {
       <StepByStepCalculation title="Multi-Hypothesis Solution" theme="teal">
         <CalculationStep title="Step 1: Calculate P(Red | Each Box)" variant="default">
           <div className="space-y-2">
-            <FormulaDisplay formula="P(\text{Red}|A) = \frac{2}{5} = 0.4" />
-            <FormulaDisplay formula="P(\text{Red}|B) = \frac{3}{5} = 0.6" />
-            <FormulaDisplay formula="P(\text{Red}|C) = \frac{1}{5} = 0.2" />
+            <FormulaDisplay formula={`P(\\text{Red}|A) = \\frac{2}{5} = 0.4`} />
+            <FormulaDisplay formula={`P(\\text{Red}|B) = \\frac{3}{5} = 0.6`} />
+            <FormulaDisplay formula={`P(\\text{Red}|C) = \\frac{1}{5} = 0.2`} />
           </div>
         </CalculationStep>
 
         <CalculationStep title="Step 2: Calculate Total P(Red)" variant="default">
-          <FormulaDisplay formula="P(\text{Red}) = P(\text{Red}|A)P(A) + P(\text{Red}|B)P(B) + P(\text{Red}|C)P(C)" />
-          <FormulaDisplay formula="= 0.4 \times 0.3 + 0.6 \times 0.5 + 0.2 \times 0.2" />
-          <FormulaDisplay formula="= 0.12 + 0.30 + 0.04 = 0.46" />
+          <FormulaDisplay formula={`P(\\text{Red}) = P(\\text{Red}|A)P(A) + P(\\text{Red}|B)P(B) + P(\\text{Red}|C)P(C)`} />
+          <FormulaDisplay formula={`= 0.4 \\times 0.3 + 0.6 \\times 0.5 + 0.2 \\times 0.2`} />
+          <FormulaDisplay formula={`= 0.12 + 0.30 + 0.04 = 0.46`} />
         </CalculationStep>
 
         <CalculationStep title="Step 3: Apply Bayes' Theorem" variant="highlight">
-          <FormulaDisplay formula="P(B|\text{Red}) = \frac{P(\text{Red}|B) \cdot P(B)}{P(\text{Red})}" />
-          <FormulaDisplay formula="= \frac{0.6 \times 0.5}{0.46} = \frac{0.30}{0.46}" />
-          <FormulaDisplay formula="= \frac{15}{23} \approx 0.652" />
+          <FormulaDisplay formula={`P(B|\\text{Red}) = \\frac{P(\\text{Red}|B) \\cdot P(B)}{P(\\text{Red})}`} />
+          <FormulaDisplay formula={`= \\frac{0.6 \\times 0.5}{0.46} = \\frac{0.30}{0.46}`} />
+          <FormulaDisplay formula={`= \\frac{15}{23} \\approx 0.652`} />
           <p className="mt-4 font-semibold text-green-400 text-center">
             Answer: 65.2% chance it came from Box B
           </p>
@@ -167,9 +167,9 @@ const ExamLevelSection = React.memo(function ExamLevelSection() {
         <CalculationStep title="Step 4: Verification" variant="default">
           <p className="text-neutral-300 mb-3">All posterior probabilities should sum to 1:</p>
           <div className="space-y-1">
-            <FormulaDisplay formula="P(A|\text{Red}) = \frac{0.12}{0.46} \approx 0.261" />
-            <FormulaDisplay formula="P(B|\text{Red}) = \frac{0.30}{0.46} \approx 0.652" />
-            <FormulaDisplay formula="P(C|\text{Red}) = \frac{0.04}{0.46} \approx 0.087" />
+            <FormulaDisplay formula={`P(A|\\text{Red}) = \\frac{0.12}{0.46} \\approx 0.261`} />
+            <FormulaDisplay formula={`P(B|\\text{Red}) = \\frac{0.30}{0.46} \\approx 0.652`} />
+            <FormulaDisplay formula={`P(C|\\text{Red}) = \\frac{0.04}{0.46} \\approx 0.087`} />
           </div>
           <p className="mt-3 text-center text-green-400 font-semibold">✓ Sum = 0.261 + 0.652 + 0.087 = 1.000 ✓</p>
         </CalculationStep>
@@ -367,7 +367,7 @@ const PracticeSection = React.memo(function PracticeSection() {
   return (
     <div ref={contentRef} className="space-y-6">
       <div className="bg-gradient-to-br from-purple-900/20 to-blue-900/20 border border-purple-700/50 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-purple-300 mb-4">✏️ Test Your Understanding</h3>
+        <h3 className="text-lg font-semibold text-purple-300 mb-4">Test Your Understanding</h3>
         
         {/* Score display */}
         <div className="flex justify-between items-center p-4 bg-neutral-800/50 rounded-lg mb-6">

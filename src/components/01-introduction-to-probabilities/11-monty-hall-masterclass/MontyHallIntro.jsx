@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   VisualizationContainer, 
   VisualizationSection
@@ -8,15 +8,41 @@ import { Button } from '../../ui/button';
 import { cn } from '../../../lib/design-system';
 import MontyDoor from './components/MontyDoor';
 
+// Animation timing constants
+const ANIMATION_CONSTANTS = {
+  QUIZ_REVEAL_DELAY: 500, // Delay before revealing quiz answer
+};
+
 const MontyHallIntro = ({ onStageComplete }) => {
   const [stage, setStage] = useState('intro'); // intro, quiz, reveal
   const [quizAnswer, setQuizAnswer] = useState(null);
   const [hoveredDoor, setHoveredDoor] = useState(null);
+  
+  // Ref for cleanup
+  const quizTimeoutRef = useRef(null);
 
   const handleQuizAnswer = (answer) => {
     setQuizAnswer(answer);
-    setTimeout(() => setStage('reveal'), 500);
+    
+    // Clear any existing timeout
+    if (quizTimeoutRef.current) {
+      clearTimeout(quizTimeoutRef.current);
+    }
+    
+    quizTimeoutRef.current = setTimeout(() => {
+      setStage('reveal');
+      quizTimeoutRef.current = null;
+    }, ANIMATION_CONSTANTS.QUIZ_REVEAL_DELAY);
   };
+  
+  // Cleanup effect for component unmount
+  useEffect(() => {
+    return () => {
+      if (quizTimeoutRef.current) {
+        clearTimeout(quizTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <VisualizationContainer 

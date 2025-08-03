@@ -4,7 +4,7 @@ import React from 'react';
 import dynamic from 'next/dynamic';
 import TabbedLearningPage from '@/components/ui/TabbedLearningPage';
 import BackToHub from '@/components/ui/BackToHub';
-import { BookOpen, Target, Zap, Shuffle } from 'lucide-react';
+import { BookOpen, Target, Zap } from 'lucide-react';
 
 // Import new tabs from new folder (with tab numbers for clarity)
 const FoundationsTab = dynamic(() => 
@@ -17,12 +17,6 @@ const WorkedExamplesTab = dynamic(() =>
 );
 const QuickReferenceTab = dynamic(() => 
   import('@/components/01-introduction-to-probabilities/05-ordered-samples/Tab3QuickReferenceTab'), 
-  { ssr: false }
-);
-
-// Import original component from its ORIGINAL location (unchanged)
-const OrderedSamples = dynamic(() => 
-  import('@/components/01-introduction-to-probabilities/05-ordered-samples'), 
   { ssr: false }
 );
 
@@ -51,14 +45,6 @@ export default function OrderedSamplesPage() {
       description: 'Everything you need for the exam',
       component: QuickReferenceTab, 
       color: '#7c3aed' // Violet
-    },
-    { 
-      id: 'interactive', 
-      label: 'Interactive Visualization', 
-      icon: Shuffle,
-      description: 'Explore ordered sampling with interactive animations',
-      component: OrderedSamples, 
-      color: '#ec4899' // Pink (original component color)
     }
   ];
   

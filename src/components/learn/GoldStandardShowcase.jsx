@@ -22,29 +22,29 @@ const componentShowcases = {
         <SemanticGradientCard
           title="1. Symmetry Property"
           description="Correlation is symmetric:"
-          formula="\\rho_{XY} = \\rho_{YX}"
+          formula={`\\[\\rho_{\\text{XY}} = \\rho_{\\text{YX}}\\]`}
           note="The correlation between X and Y equals the correlation between Y and X"
           theme="teal"
         />
         <SemanticGradientCard
           title="2. Bounded Values"
           description="Correlation is always bounded:"
-          formula="-1 \\leq \\rho \\leq 1"
-          note="By Cauchy-Schwarz inequality: \\(|\\text{Cov}(X,Y)| \\leq \\sigma_X \\sigma_Y\\)"
+          formula={`\\[-1 \\leq \\rho \\leq 1\\]`}
+          note={`By Cauchy-Schwarz inequality: \\(|\\text{Cov}(X,Y)| \\leq \\sigma_X \\sigma_Y\\)`}
           theme="blue"
         />
         <SemanticGradientCard
           title="3. Scale Invariance"
           description="Linear transformations preserve correlation:"
-          formula="\\rho(aX+b, cY+d) = \\text{sign}(ac) \\cdot \\rho(X,Y)"
-          note="for constants \\(a, b, c, d\\) where \\(a \\neq 0, c \\neq 0\\)"
+          formula={`\\[\\rho(aX+b, cY+d) = \\text{sign}(ac) \\cdot \\rho(X,Y)\\]`}
+          note={`for constants \\(a, b, c, d\\) where \\(a \\neq 0, c \\neq 0\\)`}
           theme="yellow"
         />
         <SemanticGradientCard
           title="4. Perfect Correlation"
           description="When \\(|\\rho| = 1\\):"
-          formula="Y = aX + b"
-          note="Perfect linear relationship: \\(\\rho = 1\\) if \\(a > 0\\), \\(\\rho = -1\\) if \\(a < 0\\)"
+          formula={`\\[Y = aX + b\\]`}
+          note={`Perfect linear relationship: \\(\\rho = 1\\) if \\(a > 0\\), \\(\\rho = -1\\) if \\(a < 0\\)`}
           theme="green"
         />
       </SemanticGradientGrid>
@@ -112,11 +112,11 @@ const componentShowcases = {
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <p className="mb-2">Sum of X values:</p>
-              <FormulaDisplay formula="\\sum x_i = 15.94" />
+              <FormulaDisplay formula={`\\sum x_i = 15.94`} />
             </div>
             <div>
               <p className="mb-2">Sum of Y values:</p>
-              <FormulaDisplay formula="\\sum y_i = 3563.2" />
+              <FormulaDisplay formula={`\\sum y_i = 3563.2`} />
             </div>
           </div>
         </CalculationStep>
@@ -126,18 +126,18 @@ const componentShowcases = {
           <p className="mb-3">Using the computational formula:</p>
           
           <NestedCalculation label="For X:">
-            <FormulaDisplay formula="S_{xx} = \\sum x_i^2 - \\frac{(\\sum x_i)^2}{n} = 12.74 - \\frac{(15.94)^2}{20} = 0.389" />
+            <FormulaDisplay formula={`S_{\\text{xx}} = \\sum x_i^2 - \\frac{(\\sum x_i)^2}{n} = 12.74 - \\frac{(15.94)^2}{20} = 0.389`} />
           </NestedCalculation>
           
           <NestedCalculation label="For Y:">
-            <FormulaDisplay formula="S_{yy} = \\sum y_i^2 - \\frac{(\\sum y_i)^2}{n} = 635042 - \\frac{(3563.2)^2}{20} = 168.2" />
+            <FormulaDisplay formula={`S_{\\text{yy}} = \\sum y_i^2 - \\frac{(\\sum y_i)^2}{n} = 635042 - \\frac{(3563.2)^2}{20} = 168.2`} />
           </NestedCalculation>
         </CalculationStep>
 
         {/* Final Step */}
         <CalculationStep title="Step 3: Calculate Correlation">
           <p>Apply the formula:</p>
-          <FormulaDisplay formula="r = \\frac{S_{xy}}{\\sqrt{S_{xx} \\cdot S_{yy}}} = \\frac{12.47}{\\sqrt{0.389 \\times 168.2}} = 0.846" />
+          <FormulaDisplay formula={`r = \\frac{S_{\\text{xy}}}{\\sqrt{S_{\\text{xx}} \\cdot S_{\\text{yy}}}} = \\frac{12.47}{\\sqrt{0.389 \\times 168.2}} = 0.846`} />
         </CalculationStep>
       </StepByStepCalculation>
     ))
@@ -159,7 +159,7 @@ const componentShowcases = {
 
         <TestStatistic
           description="Under H₀, the test statistic follows a t-distribution:"
-          formula="t = \\frac{r\\sqrt{n-2}}{\\sqrt{1-r^2}} \\sim t(n-2)"
+          formula={`t = \\frac{r\\sqrt{n-2}}{\\sqrt{1-r^2}} \\sim t(n-2)`}
           calculation="t = \\frac{0.846\\sqrt{18}}{\\sqrt{1-0.846^2}} = 6.82"
           note="with df = n - 2 = 18 degrees of freedom"
           theme="blue"

@@ -45,7 +45,7 @@ export const SimpleFormulaCard = React.memo(function SimpleFormulaCard({ title, 
  * @param {string} props.theme - Color: 'teal', 'blue', 'green', 'orange', 'red'
  */
 export const SimpleInsightBox = React.memo(function SimpleInsightBox({ title = "Insight", children, theme = 'teal', className }) {
-  const contentRef = useMathJax([children]);
+  const contentRef = useMathJax([]);
 
   const themes = {
     teal: {

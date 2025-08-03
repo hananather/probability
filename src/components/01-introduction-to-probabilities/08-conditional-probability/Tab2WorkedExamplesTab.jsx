@@ -67,7 +67,7 @@ const SECTIONS = [
             </WorkedExample>
             
             <InsightBox variant="tip">
-              💡 Quick Check: When working with finite sample spaces, you can often 
+              Quick Check: When working with finite sample spaces, you can often 
               verify by counting directly within the conditional space!
             </InsightBox>
         </MathJaxSection>
@@ -149,7 +149,7 @@ const SECTIONS = [
             </WorkedExample>
             
             <InsightBox variant="warning">
-              ⚠️ This is why doctors order follow-up tests! A single positive result for a rare 
+              This is why doctors order follow-up tests! A single positive result for a rare 
               condition is often a false alarm.
             </InsightBox>
         </MathJaxSection>
@@ -303,10 +303,10 @@ export default function Tab2WorkedExamplesTab({ onComplete }) {
                   {showSolutions && (
                     <div className="mt-3 bg-green-900/20 p-3 rounded">
                       <p className="text-sm text-neutral-300">
-                        Solution: Check if <span dangerouslySetInnerHTML={{ __html: `\\(P(M \\cap P) = P(M) \\cdot P(P)\\)` }} />
+                        Solution: Check if <span className="font-mono" dangerouslySetInnerHTML={{ __html: `\\(P(M \\cap P) = P(M) \\cdot P(P)\\)` }} />
                       </p>
                       <p className="text-sm text-neutral-300 mt-1">
-                        <span dangerouslySetInnerHTML={{ __html: `\\(0.20 \\neq (0.40)(0.30) = 0.12\\)` }} />
+                        <span className="font-mono" dangerouslySetInnerHTML={{ __html: `\\(0.20 \\neq (0.40)(0.30) = 0.12\\)` }} />
                       </p>
                       <p className="text-sm text-neutral-300 mt-1">
                         <strong>Not independent!</strong> Students who study one are more likely to study the other.
@@ -326,7 +326,7 @@ export default function Tab2WorkedExamplesTab({ onComplete }) {
               </WorkedExample>
               
               <InsightBox variant="success">
-                🎯 Practice Tip: Try solving each problem before checking the solution. 
+                Practice Tip: Try solving each problem before checking the solution. 
                 Focus on identifying the given information and what you're looking for!
               </InsightBox>
             </MathJaxSection>

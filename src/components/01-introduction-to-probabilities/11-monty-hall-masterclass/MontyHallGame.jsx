@@ -17,6 +17,11 @@ import { tutorial_1_7_1 } from '@/tutorials/chapter1';
 // Use probability color scheme
 const colorScheme = createColorScheme('probability');
 
+// Animation timing constants
+const ANIMATION_CONSTANTS = {
+  DOOR_REVEAL_TIMEOUT: 600, // Timeout for door reveal animation
+};
+
 // LaTeX content wrapper
 const LatexContent = memo(function LatexContent({ children }) {
   const contentRef = useRef(null);
@@ -34,16 +39,59 @@ const Door = memo(function Door({
   isLoser,
   onClick, 
   disabled,
-  stage
+  stage,
+  isFocused,
+  onFocus
 }) {
   const doorRef = useRef(null);
   const [isAnimating, setIsAnimating] = useState(false);
+  
+  // Generate descriptive ARIA label based on door state
+  const getAriaLabel = () => {
+    let label = `Door ${index + 1}`;
+    
+    if (isRevealed) {
+      label += `, revealed, contains ${hasCar ? 'the car' : 'a goat'}`;
+    } else if (isSelected && stage === 'initial') {
+      label += ', your initial choice';
+    } else if (isSelected && stage === 'revealed') {
+      label += ', your current choice';
+    }
+    
+    if (stage === 'final') {
+      if (isWinner) {
+        label += ', you won!';
+      } else if (isLoser) {
+        label += ', you lost';
+      }
+    }
+    
+    if (disabled) {
+      label += ', not selectable';
+    } else {
+      label += ', click to select';
+    }
+    
+    return label;
+  };
+  
+  // Generate live region announcement for state changes
+  const getStatusAnnouncement = () => {
+    if (stage === 'final') {
+      if (isWinner) return `Door ${index + 1} had the car! You won!`;
+      if (isLoser) return `Door ${index + 1} had a goat. You lost.`;
+    }
+    if (isRevealed && !hasCar) {
+      return `Door ${index + 1} revealed to contain a goat`;
+    }
+    return '';
+  };
   
   // Animate door reveal
   useEffect(() => {
     if (isRevealed && doorRef.current) {
       setIsAnimating(true);
-      const timeout = setTimeout(() => setIsAnimating(false), 600);
+      const timeout = setTimeout(() => setIsAnimating(false), ANIMATION_CONSTANTS.DOOR_REVEAL_TIMEOUT);
       return () => clearTimeout(timeout);
     }
   }, [isRevealed]);
@@ -67,13 +115,36 @@ const Door = memo(function Door({
     <div 
       ref={doorRef}
       className={cn(
-        "relative cursor-pointer transition-all duration-300",
-        disabled && "cursor-not-allowed opacity-60",
-        isAnimating && "animate-pulse"
+        "relative transition-all duration-300 focus-within:outline-none",
+        disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer",
+        isAnimating && "animate-pulse",
+        isFocused && !disabled && "ring-2 ring-blue-400 ring-offset-2 ring-offset-gray-900"
       )}
-      onClick={() => !disabled && onClick(index)}
       style={{ filter: getDoorGlow() }}
     >
+      {/* Accessible button overlay */}
+      <button
+        className="absolute inset-0 w-full h-full bg-transparent border-none outline-none z-10"
+        onClick={() => !disabled && onClick(index)}
+        onFocus={() => onFocus && onFocus(index)}
+        disabled={disabled}
+        aria-label={getAriaLabel()}
+        aria-pressed={isSelected}
+        aria-describedby={isRevealed ? `door-${index}-status` : undefined}
+        tabIndex={disabled ? -1 : 0}
+      />
+      
+      {/* Hidden status announcements for screen readers */}
+      {getStatusAnnouncement() && (
+        <div 
+          id={`door-${index}-status`}
+          className="sr-only"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {getStatusAnnouncement()}
+        </div>
+      )}
       {/* Door Frame */}
       <svg width="120" height="160" viewBox="0 0 120 160">
         {/* Door Background */}
@@ -181,13 +252,16 @@ const ProbabilityChart = memo(function ProbabilityChart({
     const height = 200;
     const margin = { top: 20, right: 20, bottom: 40, left: 50 };
     
-    svg.selectAll("*").remove();
+    // Clear existing elements with proper selection
+    svg.select("g.chart-container").remove();
+    
     svg.attr("viewBox", `0 0 ${width} ${height}`);
     
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
     const g = svg.append("g")
+      .attr("class", "chart-container")
       .attr("transform", `translate(${margin.left},${margin.top})`);
     
     // Scales
@@ -271,6 +345,15 @@ const ProbabilityChart = memo(function ProbabilityChart({
     g.selectAll(".tick text")
       .attr("fill", "#e5e7eb");
       
+    // Cleanup function for D3 transitions
+    // Cleanup function
+    return () => {
+      if (svgRef.current) {
+        const svg = d3.select(svgRef.current);
+        svg.selectAll("*").interrupt();
+        svg.select("g.chart-container").remove();
+      }
+    };
   }, [probabilities, currentStrategy, animateChange]);
   
   return <svg ref={svgRef} style={{ width: "100%", height: "200px" }} />;
@@ -278,11 +361,11 @@ const ProbabilityChart = memo(function ProbabilityChart({
 
 // Game History Component
 const GameHistory = memo(function GameHistory({ history, showRecent = 10 }) {
-  if (history.length === 0) return null;
+  if (!history || history.length === 0) return null;
   
-  const displayHistory = showRecent ? history.slice(-showRecent) : history;
-  const wins = history.filter(g => g.won).length;
-  const winRate = history.length > 0 ? (wins / history.length * 100).toFixed(1) : 0;
+  const displayHistory = showRecent ? (history || []).slice(-showRecent) : (history || []);
+  const wins = (history || []).filter(g => g.won).length;
+  const winRate = history && history.length > 0 ? (wins / history.length * 100).toFixed(1) : 0;
   
   return (
     <div className="space-y-2">
@@ -312,7 +395,7 @@ const GameHistory = memo(function GameHistory({ history, showRecent = 10 }) {
 });
 
 // Main Monty Hall Component
-function MontyHallInteractive({ embedded = false, onGameComplete, onStageComplete }) {
+const MontyHallInteractive = memo(function MontyHallInteractive({ embedded = false, onGameComplete, onStageComplete }) {
   // Game state
   const [stage, setStage] = useState('initial'); // initial, revealed, final
   const [carPosition, setCarPosition] = useState(Math.floor(Math.random() * 3));
@@ -323,12 +406,20 @@ function MontyHallInteractive({ embedded = false, onGameComplete, onStageComplet
   const [autoStrategy, setAutoStrategy] = useState('switch'); // switch, stay, random
   const [gameSpeed, setGameSpeed] = useState(1000);
   
+  // Accessibility state
+  const [focusedDoor, setFocusedDoor] = useState(0);
+  const [gameStateAnnouncement, setGameStateAnnouncement] = useState('');
+  
   // Statistics
   const [gameHistory, setGameHistory] = useState([]);
   const [interactionCount, setInteractionCount] = useState(0);
   
   // Refs
   const autoPlayInterval = useRef(null);
+  const gameResetTimeout = useRef(null);
+  const doorRevealTimeout = useRef(null);
+  const stageCompleteTimeout = useRef(null);
+  const gameContainerRef = useRef(null);
   
   // Calculate probabilities
   const calculateStats = useCallback(() => {
@@ -355,13 +446,21 @@ function MontyHallInteractive({ embedded = false, onGameComplete, onStageComplet
     if (stage === 'initial' && selectedDoor === null) {
       setSelectedDoor(doorIndex);
       setInteractionCount(prev => prev + 1);
+      setGameStateAnnouncement(`You selected door ${doorIndex + 1}. Monty is revealing a door with a goat.`);
+      
+      // Clear any existing door reveal timeout
+      if (doorRevealTimeout.current) {
+        clearTimeout(doorRevealTimeout.current);
+      }
       
       // Monty reveals a door after selection
-      setTimeout(() => {
+      doorRevealTimeout.current = setTimeout(() => {
         const availableDoors = [0, 1, 2].filter(d => d !== doorIndex && d !== carPosition);
         const doorToReveal = availableDoors[Math.floor(Math.random() * availableDoors.length)];
         setRevealedDoor(doorToReveal);
         setStage('revealed');
+        setGameStateAnnouncement(`Monty revealed door ${doorToReveal + 1} with a goat. You can stay with door ${doorIndex + 1} or switch to the remaining door.`);
+        doorRevealTimeout.current = null;
       }, 500);
     } else if (stage === 'revealed' && doorIndex !== revealedDoor) {
       // Make final choice
@@ -373,6 +472,10 @@ function MontyHallInteractive({ embedded = false, onGameComplete, onStageComplet
       const won = doorIndex === carPosition;
       setGameHistory(prev => [...prev, { strategy, won }]);
       
+      // Announce result
+      const resultText = won ? `Congratulations! You won! Door ${doorIndex + 1} had the car.` : `Sorry! You lost. Door ${doorIndex + 1} had a goat. The car was behind door ${carPosition + 1}.`;
+      setGameStateAnnouncement(resultText);
+      
       // Call onGameComplete callback if provided
       if (onGameComplete) {
         onGameComplete({ strategy, won });
@@ -382,23 +485,98 @@ function MontyHallInteractive({ embedded = false, onGameComplete, onStageComplet
       if (onStageComplete) {
         const newHistory = [...gameHistory, { strategy, won }];
         if (newHistory.length === 3 || newHistory.length === 5) {
+          // Clear any existing stage complete timeout
+          if (stageCompleteTimeout.current) {
+            clearTimeout(stageCompleteTimeout.current);
+          }
+          
           // Trigger completion after 3 or 5 games
-          setTimeout(() => {
+          stageCompleteTimeout.current = setTimeout(() => {
             onStageComplete(newHistory.length);
+            stageCompleteTimeout.current = null;
           }, 1500); // Give time to see the result
         }
       }
     }
-  }, [stage, selectedDoor, carPosition, revealedDoor, onGameComplete]);
+  }, [stage, selectedDoor, carPosition, revealedDoor, onGameComplete, gameHistory]);
   
   // Reset game
   const resetGame = useCallback(() => {
+    // Clear any pending timeouts
+    if (doorRevealTimeout.current) {
+      clearTimeout(doorRevealTimeout.current);
+      doorRevealTimeout.current = null;
+    }
+    if (stageCompleteTimeout.current) {
+      clearTimeout(stageCompleteTimeout.current);
+      stageCompleteTimeout.current = null;
+    }
+    
     setStage('initial');
     setCarPosition(Math.floor(Math.random() * 3));
     setSelectedDoor(null);
     setRevealedDoor(null);
     setFinalChoice(null);
+    setFocusedDoor(0);
+    setGameStateAnnouncement('New game started. Choose a door to begin.');
   }, []);
+  
+  // Keyboard navigation handlers
+  const handleKeyDown = useCallback((e) => {
+    if (autoPlay || stage === 'final') return;
+    
+    switch (e.key) {
+      case 'ArrowLeft':
+        e.preventDefault();
+        setFocusedDoor(prev => (prev - 1 + 3) % 3);
+        break;
+      case 'ArrowRight':
+        e.preventDefault();
+        setFocusedDoor(prev => (prev + 1) % 3);
+        break;
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        if (stage === 'revealed' && focusedDoor === revealedDoor) {
+          // Can't select revealed door
+          setGameStateAnnouncement(`Door ${focusedDoor + 1} is already revealed and cannot be selected.`);
+          return;
+        }
+        if (stage === 'initial' && selectedDoor !== null) {
+          // Already selected a door in initial stage
+          return;
+        }
+        selectDoor(focusedDoor);
+        break;
+      case 'Escape':
+        e.preventDefault();
+        if (stage !== 'initial' || selectedDoor !== null) {
+          resetGame();
+        }
+        break;
+      default:
+        break;
+    }
+  }, [autoPlay, stage, focusedDoor, revealedDoor, selectedDoor, selectDoor, resetGame]);
+  
+  // Focus management
+  useEffect(() => {
+    if (gameContainerRef.current) {
+      gameContainerRef.current.addEventListener('keydown', handleKeyDown);
+      return () => {
+        if (gameContainerRef.current) {
+          gameContainerRef.current.removeEventListener('keydown', handleKeyDown);
+        }
+      };
+    }
+  }, [handleKeyDown]);
+  
+  // Auto-focus game container on mount and stage changes
+  useEffect(() => {
+    if (gameContainerRef.current && !autoPlay) {
+      gameContainerRef.current.focus();
+    }
+  }, [stage, autoPlay]);
   
   // Auto play logic
   useEffect(() => {
@@ -423,17 +601,40 @@ function MontyHallInteractive({ embedded = false, onGameComplete, onStageComplet
           selectDoor(finalDoor);
         } else if (stage === 'final') {
           // Reset for next game
-          setTimeout(resetGame, gameSpeed / 2);
+          gameResetTimeout.current = setTimeout(resetGame, gameSpeed / 2);
         }
       }, gameSpeed);
       
       return () => {
         if (autoPlayInterval.current) {
           clearInterval(autoPlayInterval.current);
+          autoPlayInterval.current = null;
+        }
+        if (gameResetTimeout.current) {
+          clearTimeout(gameResetTimeout.current);
+          gameResetTimeout.current = null;
         }
       };
     }
   }, [autoPlay, stage, autoStrategy, gameSpeed, selectDoor, resetGame, selectedDoor, revealedDoor]);
+  
+  // Cleanup effect on component unmount
+  useEffect(() => {
+    return () => {
+      if (autoPlayInterval.current) {
+        clearInterval(autoPlayInterval.current);
+      }
+      if (gameResetTimeout.current) {
+        clearTimeout(gameResetTimeout.current);
+      }
+      if (doorRevealTimeout.current) {
+        clearTimeout(doorRevealTimeout.current);
+      }
+      if (stageCompleteTimeout.current) {
+        clearTimeout(stageCompleteTimeout.current);
+      }
+    };
+  }, []);
   
   // Stop auto play on manual interaction
   const handleManualAction = useCallback((action) => {
@@ -687,10 +888,17 @@ function MontyHallInteractive({ embedded = false, onGameComplete, onStageComplet
               </div>
               
               {/* Doors */}
-              <div className={cn(
-                "flex justify-center",
-                embedded ? "gap-6" : "gap-4"
-              )}>
+              <div 
+                className={cn(
+                  "flex justify-center",
+                  embedded ? "gap-6" : "gap-4"
+                )}
+                role="group"
+                aria-label="Three doors - choose one to find the car"
+                ref={gameContainerRef}
+                tabIndex={-1}
+                style={{ outline: 'none' }}
+              >
                 {[0, 1, 2].map(i => (
                   <div key={i} className={embedded ? "scale-110" : ""}>
                     <Door
@@ -707,22 +915,46 @@ function MontyHallInteractive({ embedded = false, onGameComplete, onStageComplet
                         stage === 'final'
                       }
                       stage={stage}
+                      isFocused={focusedDoor === i}
+                      onFocus={setFocusedDoor}
                     />
                   </div>
                 ))}
               </div>
               
+              {/* Screen reader live region for game state announcements */}
+              <div 
+                className="sr-only" 
+                aria-live="assertive" 
+                aria-atomic="true"
+                role="status"
+              >
+                {gameStateAnnouncement}
+              </div>
+              
+              {/* Keyboard instructions */}
+              <div className="text-center mt-4">
+                <p className="text-xs text-neutral-500">
+                  Use arrow keys to navigate, Enter/Space to select, Escape to reset
+                </p>
+              </div>
+              
               {/* Decision Buttons for Revealed Stage */}
               {stage === 'revealed' && !autoPlay && (
-                <div className={cn(
-                  "flex justify-center gap-4",
-                  embedded && "mt-8"
-                )}>
+                <div 
+                  className={cn(
+                    "flex justify-center gap-4",
+                    embedded && "mt-8"
+                  )}
+                  role="group"
+                  aria-label="Choose your final decision: stay or switch"
+                >
                   <Button
                     onClick={() => handleManualAction(() => selectDoor(selectedDoor))}
                     variant="secondary"
                     size={embedded ? "xl" : "lg"}
                     className={embedded ? "px-6 py-3" : ""}
+                    aria-describedby="stay-description"
                   >
                     Stay with Door {selectedDoor + 1}
                   </Button>
@@ -734,9 +966,18 @@ function MontyHallInteractive({ embedded = false, onGameComplete, onStageComplet
                     variant="primary"
                     size={embedded ? "xl" : "lg"}
                     className={embedded ? "px-6 py-3" : ""}
+                    aria-describedby="switch-description"
                   >
                     Switch to Door {[0, 1, 2].find(d => d !== selectedDoor && d !== revealedDoor) + 1}
                   </Button>
+                  
+                  {/* Hidden descriptions for screen readers */}
+                  <div id="stay-description" className="sr-only">
+                    Keep your original choice of door {selectedDoor + 1}. Probability of winning: 33.3%
+                  </div>
+                  <div id="switch-description" className="sr-only">
+                    Switch to the other remaining door. Probability of winning: 66.7%
+                  </div>
                 </div>
               )}
               
@@ -748,8 +989,10 @@ function MontyHallInteractive({ embedded = false, onGameComplete, onStageComplet
                     variant="primary"
                     size="lg"
                     className="px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+                    aria-label="Start a new game"
+                    autoFocus
                   >
-                    <RotateCcw className="w-5 h-5 mr-2" />
+                    <RotateCcw className="w-5 h-5 mr-2" aria-hidden="true" />
                     Play Again
                   </Button>
                 </div>
@@ -853,6 +1096,6 @@ function MontyHallInteractive({ embedded = false, onGameComplete, onStageComplet
       {content}
     </VisualizationContainer>
   );
-}
+});
 
 export default MontyHallInteractive;

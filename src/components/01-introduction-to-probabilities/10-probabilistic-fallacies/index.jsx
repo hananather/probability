@@ -14,6 +14,12 @@ import { ProgressBar } from '../../ui/ProgressBar';
 // Use probability color scheme
 const colorScheme = createColorScheme('probability');
 
+// Animation timing constants
+const ANIMATION_CONSTANTS = {
+  COIN_FLIP_INTERVAL: 500, // Interval for auto coin flipping
+  TRANSITION_DURATION: 300, // Duration for D3 transitions
+};
+
 // Gambler's Fallacy Simulator
 const GamblersFallacy = memo(function GamblersFallacy() {
   const [history, setHistory] = useState([]);
@@ -23,52 +29,68 @@ const GamblersFallacy = memo(function GamblersFallacy() {
 
   const flipCoin = () => {
     const result = Math.random() < 0.5 ? 'H' : 'T';
-    setHistory(prev => [...prev.slice(-19), result]);
+    setHistory(prev => [...(prev || []).slice(-19), result]);
   };
 
   useEffect(() => {
     if (autoFlip) {
-      const interval = setInterval(flipCoin, 500);
+      const interval = setInterval(flipCoin, ANIMATION_CONSTANTS.COIN_FLIP_INTERVAL);
       return () => clearInterval(interval);
     }
   }, [autoFlip]);
 
   // Calculate streaks
-  const currentStreak = history.length > 0 ? 
-    history.slice().reverse().findIndex(flip => flip !== history[history.length - 1]) : 0;
-  const streakType = history.length > 0 ? history[history.length - 1] : null;
+  const currentStreak = (history && history.length > 0) ? 
+    history.slice().reverse().findIndex(flip => {
+      const lastFlip = (history && history.length > 0) ? history[history.length - 1] : null;
+      return lastFlip ? flip !== lastFlip : false;
+    }) : 0;
+  const streakType = (history && history.length > 0) ? history[history.length - 1] : null;
 
   // Count heads and tails
-  const headsCount = history.filter(f => f === 'H').length;
-  const tailsCount = history.filter(f => f === 'T').length;
-  const total = history.length;
+  const headsCount = (history || []).filter(f => f === 'H').length;
+  const tailsCount = (history || []).filter(f => f === 'T').length;
+  const total = (history || []).length;
 
   useEffect(() => {
-    if (!svgRef.current || history.length === 0) return;
+    if (!svgRef.current || !history || history.length === 0) return;
 
     const svg = d3.select(svgRef.current);
-    svg.selectAll("*").remove();
-
     const width = 600;
     const height = 100;
     const coinSize = 25;
     const spacing = 5;
 
-    const g = svg
-      .attr("width", width)
-      .attr("height", height)
-      .append("g")
-      .attr("transform", "translate(10, 25)");
+    // Set SVG dimensions
+    svg.attr("width", width).attr("height", height);
 
-    // Draw coins
+    // Get or create main container
+    let g = svg.select("g.coin-container");
+    if (g.empty()) {
+      g = svg.append("g")
+        .attr("class", "coin-container")
+        .attr("transform", "translate(10, 25)");
+    }
+
+    // Update coins using proper D3 data join
     const coins = g.selectAll("g.coin")
-      .data(history.slice(-20))
-      .enter()
+      .data((history || []).slice(-20), (d, i) => `${d}-${i}`);
+
+    // Remove exiting coins
+    coins.exit()
+      .transition()
+      .duration(ANIMATION_CONSTANTS.TRANSITION_DURATION)
+      .style("opacity", 0)
+      .remove();
+
+    // Enter new coins
+    const coinsEnter = coins.enter()
       .append("g")
       .attr("class", "coin")
-      .attr("transform", (d, i) => `translate(${i * (coinSize + spacing)}, 0)`);
+      .attr("transform", (d, i) => `translate(${i * (coinSize + spacing)}, 0)`)
+      .style("opacity", 0);
 
-    coins.append("circle")
+    coinsEnter.append("circle")
       .attr("cx", coinSize / 2)
       .attr("cy", coinSize / 2)
       .attr("r", coinSize / 2)
@@ -76,7 +98,7 @@ const GamblersFallacy = memo(function GamblersFallacy() {
       .attr("stroke", "#fff")
       .attr("stroke-width", 2);
 
-    coins.append("text")
+    coinsEnter.append("text")
       .attr("x", coinSize / 2)
       .attr("y", coinSize / 2)
       .attr("text-anchor", "middle")
@@ -86,6 +108,20 @@ const GamblersFallacy = memo(function GamblersFallacy() {
       .attr("font-size", "14px")
       .text(d => d);
 
+    // Update all coins (enter + existing)
+    coins.merge(coinsEnter)
+      .transition()
+      .duration(ANIMATION_CONSTANTS.TRANSITION_DURATION)
+      .style("opacity", 1)
+      .attr("transform", (d, i) => `translate(${i * (coinSize + spacing)}, 0)`);
+
+    // Cleanup function for D3
+    return () => {
+      if (svgRef.current) {
+        const svg = d3.select(svgRef.current);
+        svg.selectAll("*").interrupt();
+      }
+    };
   }, [history]);
 
   return (
@@ -201,8 +237,6 @@ const SimpsonsParadox = memo(function SimpsonsParadox() {
     if (!svgRef.current) return;
 
     const svg = d3.select(svgRef.current);
-    svg.selectAll("*").remove();
-
     const width = 600;
     const height = 320;
     const margin = { top: 40, right: 60, bottom: 80, left: 60 };
@@ -214,20 +248,27 @@ const SimpsonsParadox = memo(function SimpsonsParadox() {
       .attr("height", height)
       .style("overflow", "visible");
     
-    // Add background for better visibility
-    svg.append("rect")
-      .attr("width", width)
-      .attr("height", height)
-      .attr("fill", "#1f2937")
-      .attr("opacity", 0.8);
+    // Get or create background
+    let background = svg.select("rect.chart-background");
+    if (background.empty()) {
+      background = svg.append("rect")
+        .attr("class", "chart-background")
+        .attr("width", width)
+        .attr("height", height)
+        .attr("fill", "#1f2937")
+        .attr("opacity", 0.8);
+    }
+
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
 
-    const g = svg
-      .attr("width", width)
-      .attr("height", height)
-      .append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
+    // Get or create main container
+    let g = svg.select("g.chart-container");
+    if (g.empty()) {
+      g = svg.append("g")
+        .attr("class", "chart-container")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+    }
 
     if (!showSeparated) {
       // Combined view
@@ -383,6 +424,13 @@ const SimpsonsParadox = memo(function SimpsonsParadox() {
         .text("Success Rates by Severity");
     }
 
+    // Cleanup function for D3
+    return () => {
+      if (svgRef.current) {
+        const svg = d3.select(svgRef.current);
+        svg.selectAll("*").interrupt();
+      }
+    };
   }, [showSeparated]);
 
   return (
@@ -549,7 +597,7 @@ const ProsecutorsFallacy = memo(function ProsecutorsFallacy() {
   const [matchProbability, setMatchProbability] = useState(0.000001);
 
   const expectedMatches = populationSize * matchProbability;
-  const probabilityGivenMatch = 1 / Math.max(1, Math.round(expectedMatches));
+  const probabilityGivenMatch = expectedMatches > 0 ? 1 / Math.max(1, Math.round(expectedMatches)) : 0;
 
   return (
     <div className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 border border-gray-700/50 rounded-lg p-6 transition-all duration-200 hover:border-gray-600/50">
@@ -577,7 +625,7 @@ const ProsecutorsFallacy = memo(function ProsecutorsFallacy() {
 
         <ControlGroup>
           <label className="text-neutral-300 text-sm block mb-2">
-            Match Probability: <span className="text-orange-400 font-mono">1 in {Math.round(1/matchProbability).toLocaleString()}</span>
+            Match Probability: <span className="text-orange-400 font-mono">1 in {matchProbability > 0 ? Math.round(1/matchProbability).toLocaleString() : '∞'}</span>
           </label>
           <input
             type="range"
@@ -593,7 +641,7 @@ const ProsecutorsFallacy = memo(function ProsecutorsFallacy() {
 
       <div className="bg-neutral-800/50 border border-neutral-700/50 rounded-lg p-4 mb-4">
         <p className="text-white text-sm">
-          <strong className="text-orange-400">Scenario:</strong> DNA evidence matches with probability 1 in {Math.round(1/matchProbability).toLocaleString()}
+          <strong className="text-orange-400">Scenario:</strong> DNA evidence matches with probability 1 in {matchProbability > 0 ? Math.round(1/matchProbability).toLocaleString() : '∞'}
         </p>
         <p className="text-white text-sm mt-2">
           <strong className="text-cyan-400">Expected matches in population:</strong> <span className="font-mono text-yellow-400">{formatNumber(expectedMatches, 1)}</span>

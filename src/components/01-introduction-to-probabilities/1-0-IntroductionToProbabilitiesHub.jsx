@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { useRouter } from 'next/navigation';
 import ChapterHub from "../shared/ChapterHub";
 import { motion } from "framer-motion";
@@ -17,10 +17,10 @@ const colors = createColorScheme('probability');
 // Key Concepts Card
 const KeyConceptsCard = React.memo(() => {
   const concepts = [
-    { term: "Sample Space", definition: "All possible outcomes", latex: "S = \\{\\omega_1, \\omega_2, ..., \\omega_n\\}" },
-    { term: "Probability", definition: "Likelihood of an event", latex: "P(A) = \\frac{|A|}{|S|}" },
-    { term: "Conditional", definition: "Given that B occurred", latex: "P(A|B) = \\frac{P(A \\cap B)}{P(B)}" },
-    { term: "Bayes' Theorem", definition: "Update beliefs with evidence", latex: "P(A|B) = \\frac{P(B|A)P(A)}{P(B)}" },
+    { term: "Sample Space", definition: "All possible outcomes", latex: `S = \\{\\omega_1, \\omega_2, ..., \\omega_n\\}` },
+    { term: "Probability", definition: "Likelihood of an event", latex: `P(A) = \\frac{|A|}{|S|}` },
+    { term: "Conditional", definition: "Given that B occurred", latex: `P(A|B) = \\frac{P(A \\cap B)}{P(B)}` },
+    { term: "Bayes' Theorem", definition: "Update beliefs with evidence", latex: `P(A|B) = \\frac{P(B|A)P(A)}{P(B)}` },
   ];
   
   const contentRef = useMathJax([concepts]);
@@ -35,14 +35,14 @@ const KeyConceptsCard = React.memo(() => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.1 }}
-            className="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50"
+            className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50"
           >
-            <div className="flex items-start justify-between">
+            <div className="flex flex-col space-y-2">
               <div>
                 <h4 className="font-semibold text-white">{concept.term}</h4>
-                <p className="text-sm text-gray-400 mt-1">{concept.definition}</p>
+                <p className="text-sm text-gray-400">{concept.definition}</p>
               </div>
-              <div className="text-2xl font-mono text-cyan-400">
+              <div className="text-lg font-mono text-cyan-400 overflow-x-auto">
                 <span dangerouslySetInnerHTML={{ __html: `\\(${concept.latex}\\)` }} />
               </div>
             </div>
@@ -56,10 +56,10 @@ const KeyConceptsCard = React.memo(() => {
 // All Chapter 1 sections
 const CHAPTER_1_SECTIONS = [
   {
-    id: 'pebble-world',
-    title: '1.1 Foundation',
+    id: 'foundations',
+    title: '1.1 Foundations',
     subtitle: 'Physical intuition for probability',
-    description: 'Build intuitive understanding of probability through the Pebble World model. Learn the physical foundations before the mathematical notation.',
+    description: 'Build intuitive understanding of probability through physical models. Learn the physical foundations before the mathematical notation.',
     icon: CircleDot,
     difficulty: 'Beginner',
     estimatedTime: '15 min',
@@ -70,10 +70,10 @@ const CHAPTER_1_SECTIONS = [
       'Connect pebble picking to mathematical concepts',
       'Build foundation for set notation'
     ],
-    route: '/chapter1/01-pebble-world',
+    route: '/chapter1/01-foundations',
     color: '#10b981',
     question: "What happens when we randomly pick pebbles from a bag?",
-    preview: "Interactive pebble world simulation with card deck examples"
+    preview: "Interactive simulation with card deck examples"
   },
   {
     id: 'probability-dictionary',
@@ -83,7 +83,7 @@ const CHAPTER_1_SECTIONS = [
     icon: Calculator,
     difficulty: 'Beginner',
     estimatedTime: '20 min',
-    prerequisites: ['pebble-world'],
+    prerequisites: ['foundations'],
     learningGoals: [
       'Translate English phrases to set notation',
       'Use the complete translation dictionary',
@@ -103,7 +103,7 @@ const CHAPTER_1_SECTIONS = [
     icon: Grid3x3,
     difficulty: 'Beginner',
     estimatedTime: '30 min',
-    prerequisites: ['pebble-world', 'probability-dictionary'],
+    prerequisites: ['foundations', 'probability-dictionary'],
     learningGoals: [
       'Define sample spaces and events clearly',
       'Master union, intersection, complement, and difference',

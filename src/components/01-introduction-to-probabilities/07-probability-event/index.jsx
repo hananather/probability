@@ -9,31 +9,19 @@ import {
 } from '../../ui/VisualizationContainer';
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../../lib/design-system';
 import { tutorial_1_5_1 } from '@/tutorials/chapter1';
+import { useMathJax } from '@/hooks/useMathJax';
 
 // Use probability color scheme
 const colorScheme = createColorScheme('probability');
 
+// Animation timing constants
+const ANIMATION_CONSTANTS = {
+  HOVER_TRANSITION_DURATION: 150, // Duration for hover animations
+};
+
 // Worked Example Component for Dice
 const DiceWorkedExample = memo(function DiceWorkedExample({ event }) {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    // MathJax timeout pattern
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          // Silent error: MathJax error
-        });
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [event]);
+  const contentRef = useMathJax([event]);
   
   const examples = {
     even: {
@@ -151,7 +139,7 @@ function ProbabilityEvent() {
     });
     if (success) setSuccesses(prev => prev + 1);
     
-    setHistory(prev => [...prev.slice(-99), { outcome, success }]);
+    setHistory(prev => [...(prev || []).slice(-99), { outcome, success }]);
     
     return { outcome, success };
   }
@@ -166,30 +154,56 @@ function ProbabilityEvent() {
     
     try {
       const boundingRect = svgRef.current.getBoundingClientRect();
-      if (boundingRect && boundingRect.width > 0) {
+      // Validate dimensions and ensure they are valid numbers
+      if (boundingRect && 
+          typeof boundingRect.width === 'number' && 
+          boundingRect.width > 0 && 
+          !isNaN(boundingRect.width) &&
+          isFinite(boundingRect.width)) {
         width = boundingRect.width;
       }
+      if (boundingRect && 
+          typeof boundingRect.height === 'number' && 
+          boundingRect.height > 0 && 
+          !isNaN(boundingRect.height) &&
+          isFinite(boundingRect.height)) {
+        height = boundingRect.height;
+      }
     } catch (error) {
-      console.warn('Failed to get SVG dimensions, using defaults:', error);
+      // Use proper error handling instead of console.warn
+      if (process.env.NODE_ENV === 'development') {
+        console.error('SVG dimension error in ProbabilityEvent:', error);
+      }
+      // Dimensions already set to safe defaults above
     }
+    
+    // Final validation to ensure dimensions are safe for SVG
+    width = Math.max(300, Math.min(width, 2000)); // Clamp between 300-2000px
+    height = Math.max(200, Math.min(height, 1200)); // Clamp between 200-1200px
     
     const svg = d3.select(svgRef.current);
     const margin = { top: 120, right: 40, bottom: 60, left: 60 }; // Increased top margin from 80 to 120
     
-    svg.selectAll("*").remove();
+    // Clear existing elements with proper selection
+    svg.select("rect.probability-background").remove();
+    svg.select("g.probability-chart").remove();
+    
     svg.attr("viewBox", `0 0 ${width} ${height}`);
     
     // Background
     svg.append("rect")
+      .attr("class", "probability-background")
       .attr("width", width)
       .attr("height", height)
       .attr("fill", "#0a0a0a");
     
     const g = svg.append("g")
+      .attr("class", "probability-chart")
       .attr("transform", `translate(${margin.left},${margin.top})`);
     
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
+    // Ensure inner dimensions are positive
+    const innerWidth = Math.max(100, width - margin.left - margin.right);
+    const innerHeight = Math.max(100, height - margin.top - margin.bottom);
     
     // Create probability visualization for dice
     const event = getCurrentEvent();
@@ -282,13 +296,13 @@ function ProbabilityEvent() {
           .on('mouseover', function() {
             d3.select(this)
               .transition()
-              .duration(150)
+              .duration(ANIMATION_CONSTANTS.HOVER_TRANSITION_DURATION)
               .attr('transform', `translate(${x}, ${diceY}) scale(1.1)`);
           })
           .on('mouseout', function() {
             d3.select(this)
               .transition()
-              .duration(150)
+              .duration(ANIMATION_CONSTANTS.HOVER_TRANSITION_DURATION)
               .attr('transform', `translate(${x}, ${diceY}) scale(1)`);
           });
         
@@ -354,6 +368,15 @@ function ProbabilityEvent() {
         .style('font-weight', '600')
         .text(`Favorable: {${event.values.join(', ')}}`);
     
+    // Cleanup function for D3
+    return () => {
+      if (svgRef.current) {
+        const svg = d3.select(svgRef.current);
+        svg.selectAll("*").interrupt();
+        svg.select("rect.probability-background").remove();
+        svg.select("g.probability-chart").remove();
+      }
+    };
   }, [eventType, trials, successes]);
   
   // Run multiple trials

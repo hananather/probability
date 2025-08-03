@@ -1,0 +1,98 @@
+
+> prob-lab@0.1.0 build
+> next build
+
+   ▲ Next.js 15.3.0
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 3.0s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/74) ...
+   Generating static pages (18/74) 
+   Generating static pages (36/74) 
+   Generating static pages (55/74) 
+ ✓ Generating static pages (74/74)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                           Size  First Load JS
+┌ ○ /                                              4.55 kB         119 kB
+├ ○ /_not-found                                      990 B         105 kB
+├ ○ /chapter1                                      7.34 kB         164 kB
+├ ○ /chapter1/01-foundations                       3.36 kB         161 kB
+├ ○ /chapter1/02-probability-dictionary            3.32 kB         161 kB
+├ ○ /chapter1/03-sample-spaces-events              3.22 kB         161 kB
+├ ○ /chapter1/04-counting-techniques               7.45 kB         167 kB
+├ ○ /chapter1/05-ordered-samples                   3.24 kB         161 kB
+├ ○ /chapter1/06-unordered-samples                 3.23 kB         161 kB
+├ ○ /chapter1/07-probability-event                 6.29 kB         166 kB
+├ ○ /chapter1/08-conditional-probability           3.41 kB         161 kB
+├ ○ /chapter1/09-bayes-theorem-visualizer          3.27 kB         161 kB
+├ ○ /chapter1/10-probabilistic-fallacies           9.64 kB         163 kB
+├ ○ /chapter1/11-monty-hall-masterclass            23.2 kB         219 kB
+├ ○ /chapter2                                      6.18 kB         162 kB
+├ ○ /chapter2-old                                  4.56 kB         108 kB
+├ ○ /chapter2/binomial-distribution                3.92 kB         119 kB
+├ ○ /chapter2/distribution-stories                 11.9 kB         198 kB
+├ ○ /chapter2/expectation-variance                  3.3 kB         166 kB
+├ ○ /chapter2/geometric-distribution               10.2 kB         200 kB
+├ ○ /chapter2/negative-binomial                    10.9 kB         200 kB
+├ ○ /chapter2/poisson-distribution                 11.7 kB         201 kB
+├ ○ /chapter2/random-variables                     10.8 kB         205 kB
+├ ○ /chapter2/transformations                      11.1 kB         206 kB
+├ ○ /chapter3                                      6.21 kB         162 kB
+├ ○ /chapter3-old                                  3.24 kB         107 kB
+├ ○ /chapter3/expectation-variance                  3.9 kB         119 kB
+├ ○ /chapter3/exponential                          3.93 kB         119 kB
+├ ○ /chapter3/gamma                                3.96 kB         119 kB
+├ ○ /chapter3/introduction                          3.9 kB         119 kB
+├ ○ /chapter3/joint-distributions                  3.98 kB         119 kB
+├ ○ /chapter3/normal-approximation                 3.97 kB         119 kB
+├ ○ /chapter3/normal-distributions                    4 kB         119 kB
+├ ○ /chapter3/probability-density                  3.93 kB         119 kB
+├ ○ /chapter4                                      6.82 kB         163 kB
+├ ○ /chapter4/central-limit-theorem                10.3 kB         165 kB
+├ ○ /chapter4/data-descriptions                    3.16 kB         161 kB
+├ ○ /chapter4/sampling-distributions               3.57 kB         161 kB
+├ ○ /chapter4/sampling-distributions-reprise       6.57 kB         165 kB
+├ ○ /chapter4/visual-summaries                     3.17 kB         161 kB
+├ ○ /chapter5                                      5.72 kB         162 kB
+├ ○ /chapter5/confidence-intervals-known           21.2 kB         211 kB
+├ ○ /chapter5/confidence-intervals-unknown         17.8 kB         228 kB
+├ ○ /chapter5/proportions                          13.3 kB         199 kB
+├ ○ /chapter5/sample-size                            14 kB         211 kB
+├ ○ /chapter5/statistical-inference                20.7 kB         210 kB
+├ ○ /chapter6                                      5.86 kB         166 kB
+├ ○ /chapter6/debug                                1.01 kB         108 kB
+├ ○ /chapter6/difference-two-proportions             13 kB         220 kB
+├ ○ /chapter6/errors-and-power                     5.77 kB         217 kB
+├ ○ /chapter6/hypothesis-fundamentals              10.2 kB         160 kB
+├ ○ /chapter6/paired-two-sample                    15.5 kB         197 kB
+├ ○ /chapter6/test-for-proportion                  14.8 kB         193 kB
+├ ○ /chapter6/test-mean-known-variance               202 B         218 kB
+├ ○ /chapter6/test-mean-known-variance-comparison  1.04 kB         219 kB
+├ ○ /chapter6/test-mean-unknown-variance           16.9 kB         224 kB
+├ ○ /chapter6/testhub                                159 B         104 kB
+├ ○ /chapter6/types-of-hypotheses                  19.2 kB         222 kB
+├ ○ /chapter6/unpaired-two-sample                    11 kB         181 kB
+├ ○ /chapter7                                      5.69 kB         162 kB
+├ ○ /chapter7/analysis-of-variance                 10.5 kB         217 kB
+├ ○ /chapter7/coefficient-of-determination         11.7 kB         201 kB
+├ ○ /chapter7/confidence-prediction-intervals        11 kB         218 kB
+├ ○ /chapter7/correlation-coefficient              14.2 kB         204 kB
+├ ○ /chapter7/hypothesis-testing-regression        11.4 kB         218 kB
+├ ○ /chapter7/simple-linear-regression               12 kB         202 kB
+├ ○ /learn                                         24.3 kB         181 kB
+├ ○ /legacy-components                             18.3 kB         193 kB
+├ ○ /lesson-based-approach                         7.21 kB         122 kB
+├ ○ /overview                                      35.1 kB         219 kB
+└ ○ /test-quiz                                     3.02 kB         118 kB
++ First Load JS shared by all                       104 kB
+  ├ chunks/1684-41230fef135ccc03.js                46.4 kB
+  ├ chunks/4bd1b696-3b67282c34a9576f.js            53.2 kB
+  └ other shared chunks (total)                    4.11 kB
+
+
+○  (Static)  prerendered as static content
+

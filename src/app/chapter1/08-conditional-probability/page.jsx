@@ -17,10 +17,8 @@ const QuickReferenceTab = dynamic(() =>
   import('@/components/01-introduction-to-probabilities/08-conditional-probability/Tab3QuickReferenceTab'), 
   { ssr: false }
 );
-
-// Import original component from its ORIGINAL location (unchanged)
-const ConditionalProbability = dynamic(() => 
-  import('@/components/01-introduction-to-probabilities/08-conditional-probability'), 
+const InteractiveTab = dynamic(() => 
+  import('@/components/01-introduction-to-probabilities/08-conditional-probability/Tab4InteractiveTab'), 
   { ssr: false }
 );
 
@@ -55,7 +53,7 @@ export default function ConditionalProbabilityPage() {
       label: 'Interactive Visualization', 
       icon: GitBranch,
       description: 'Explore conditional probability with interactive demos',
-      component: ConditionalProbability, 
+      component: InteractiveTab, 
       color: '#60a5fa' // Light blue (original component color)
     }
   ];

@@ -1,39 +1,25 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import SectionBasedContent from '@/components/ui/SectionBasedContent';
 import { StepByStepCalculation, CalculationStep, FormulaDisplay } from '@/components/ui/patterns/StepByStepCalculation';
 import { ComparisonTable } from '@/components/ui/patterns/ComparisonTable';
 import { InterpretationBox } from '@/components/ui/patterns/InterpretationBox';
 import { SimpleInsightBox } from '@/components/ui/patterns/SimpleComponents';
+import { useMathJax } from '@/hooks/useMathJax';
 
 const SECTIONS = [
   {
     id: 'card-deck-foundation',
     title: 'Card Deck: A Complete Example',
     content: ({ sectionIndex, isCompleted }) => {
-      const contentRef = useRef(null);
-      
-      useEffect(() => {
-        const processMathJax = () => {
-          if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-            if (window.MathJax.typesetClear) {
-              window.MathJax.typesetClear([contentRef.current]);
-            }
-            window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-          }
-        };
-        
-        processMathJax();
-        const timeoutId = setTimeout(processMathJax, 100);
-        return () => clearTimeout(timeoutId);
-      }, []);
+      const contentRef = useMathJax([]);
       
       return (
         <div ref={contentRef} className="space-y-6">
           <div className="bg-blue-900/20 p-6 rounded-lg border border-blue-600/30">
             <h4 className="font-semibold text-blue-400 mb-4 text-lg">
-              🂠 The Perfect Pebble World Example
+              The Perfect Foundation Example
             </h4>
             <p className="text-neutral-200 mb-4">
               A standard deck of 52 playing cards is the ideal example for understanding sample spaces, 
@@ -48,17 +34,17 @@ const SECTIONS = [
               </p>
               <div className="bg-neutral-800/50 p-4 rounded mb-3">
                 <p className="text-neutral-200 mb-2">
-                  <strong>Sample Space:</strong> <span dangerouslySetInnerHTML={{ __html: `\(S = \text{all 52 cards}\)` }} />
+                  <strong>Sample Space:</strong> <span dangerouslySetInnerHTML={{ __html: `\\(S = \\text{all 52 cards}\\)` }} />
                 </p>
                 <p className="text-sm text-neutral-400">
                   Each card is equally likely to be drawn (equal mass pebbles)
                 </p>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-neutral-300">
-                <div className="bg-red-900/30 p-2 rounded text-center">♥️ Hearts (13)</div>
-                <div className="bg-red-900/30 p-2 rounded text-center">♦️ Diamonds (13)</div>
-                <div className="bg-gray-800 p-2 rounded text-center">♠️ Spades (13)</div>
-                <div className="bg-gray-800 p-2 rounded text-center">♣️ Clubs (13)</div>
+                <div className="bg-red-900/30 p-2 rounded text-center">♥ Hearts (13)</div>
+                <div className="bg-red-900/30 p-2 rounded text-center">♦ Diamonds (13)</div>
+                <div className="bg-gray-800 p-2 rounded text-center">♠ Spades (13)</div>
+                <div className="bg-gray-800 p-2 rounded text-center">♣ Clubs (13)</div>
               </div>
             </CalculationStep>
 
@@ -70,7 +56,7 @@ const SECTIONS = [
                 <div className="bg-red-900/20 p-3 rounded border border-red-600/30">
                   <p className="text-red-400 font-semibold">Event A: Card is an Ace</p>
                   <p className="text-sm text-neutral-300">
-                    <span dangerouslySetInnerHTML={{ __html: `\(A = \{A\heartsuit, A\diamondsuit, A\spadesuit, A\clubsuit\}\)` }} />
+                    <span dangerouslySetInnerHTML={{ __html: `\\(A = \\{A\\heartsuit, A\\diamondsuit, A\\spadesuit, A\\clubsuit\\}\\)` }} />
                   </p>
                   <p className="text-xs text-neutral-400">Physical: 4 pebbles labeled "Ace"</p>
                 </div>
@@ -78,7 +64,7 @@ const SECTIONS = [
                 <div className="bg-gray-800/50 p-3 rounded border border-gray-600/30">
                   <p className="text-gray-300 font-semibold">Event B: Card has a Black Suit</p>
                   <p className="text-sm text-neutral-300">
-                    <span dangerouslySetInnerHTML={{ __html: `\(B = \{\text{all spades and clubs}\}\)` }} />
+                    <span dangerouslySetInnerHTML={{ __html: `\\(B = \\{\\text{all spades and clubs}\\}\\)` }} />
                   </p>
                   <p className="text-xs text-neutral-400">Physical: 26 black pebbles (spades + clubs)</p>
                 </div>
@@ -86,7 +72,7 @@ const SECTIONS = [
                 <div className="bg-red-900/20 p-3 rounded border border-red-600/30">
                   <p className="text-red-400 font-semibold">Event H: Card is a Heart</p>
                   <p className="text-sm text-neutral-300">
-                    <span dangerouslySetInnerHTML={{ __html: `\(H = \{\text{all 13 hearts}\}\)` }} />
+                    <span dangerouslySetInnerHTML={{ __html: `\\(H = \\{\\text{all 13 hearts}\\}\\)` }} />
                   </p>
                   <p className="text-xs text-neutral-400">Physical: 13 red pebbles with heart symbols</p>
                 </div>
@@ -96,17 +82,17 @@ const SECTIONS = [
             <CalculationStep title="Step 3: Calculate Basic Probabilities" variant="highlight">
               <div className="space-y-4">
                 <div>
-                  <FormulaDisplay formula="P(A) = \frac{|A|}{|S|} = \frac{4}{52} = \frac{1}{13} \approx 0.077" />
+                  <FormulaDisplay formula={`P(A) = \\frac{|A|}{|S|} = \\frac{4}{52} = \\frac{1}{13} \\approx 0.077`} />
                   <p className="text-sm text-neutral-400 mt-1">About 7.7% chance of drawing an ace</p>
                 </div>
                 
                 <div>
-                  <FormulaDisplay formula="P(B) = \frac{|B|}{|S|} = \frac{26}{52} = \frac{1}{2} = 0.5" />
+                  <FormulaDisplay formula={`P(B) = \\frac{|B|}{|S|} = \\frac{26}{52} = \\frac{1}{2} = 0.5`} />
                   <p className="text-sm text-neutral-400 mt-1">Exactly 50% chance of drawing a black card</p>
                 </div>
                 
                 <div>
-                  <FormulaDisplay formula="P(H) = \frac{|H|}{|S|} = \frac{13}{52} = \frac{1}{4} = 0.25" />
+                  <FormulaDisplay formula={`P(H) = \\frac{|H|}{|S|} = \\frac{13}{52} = \\frac{1}{4} = 0.25`} />
                   <p className="text-sm text-neutral-400 mt-1">Exactly 25% chance of drawing a heart</p>
                 </div>
               </div>
@@ -127,22 +113,7 @@ const SECTIONS = [
     id: 'set-operations-detailed',
     title: 'Set Operations with Cards',
     content: ({ sectionIndex, isCompleted }) => {
-      const contentRef = useRef(null);
-      
-      useEffect(() => {
-        const processMathJax = () => {
-          if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-            if (window.MathJax.typesetClear) {
-              window.MathJax.typesetClear([contentRef.current]);
-            }
-            window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-          }
-        };
-        
-        processMathJax();
-        const timeoutId = setTimeout(processMathJax, 100);
-        return () => clearTimeout(timeoutId);
-      }, []);
+      const contentRef = useMathJax([]);
       
       return (
         <div ref={contentRef} className="space-y-6">
@@ -158,8 +129,8 @@ const SECTIONS = [
                 </p>
               </div>
               
-              <FormulaDisplay formula="A \cap H = \{A\heartsuit\}" />
-              <FormulaDisplay formula="P(A \cap H) = \frac{|A \cap H|}{|S|} = \frac{1}{52} \approx 0.019" />
+              <FormulaDisplay formula={`A \\cap H = \\{A\\heartsuit\\}`} />
+              <FormulaDisplay formula={`P(A \\cap H) = \\frac{|A \\cap H|}{|S|} = \\frac{1}{52} \\approx 0.019`} />
               
               <InterpretationBox theme="green">
                 <p>
@@ -180,16 +151,16 @@ const SECTIONS = [
                   Count all pebbles that are "Ace" OR "Heart" (or both). But be careful not to double-count!
                 </p>
                 <ul className="list-disc list-inside text-xs text-neutral-400 ml-4">
-                  <li>4 Ace pebbles (including A♥️)</li>
-                  <li>13 Heart pebbles (including A♥️)</li>
+                  <li>4 Ace pebbles (including A♥)</li>
+                  <li>13 Heart pebbles (including A♥)</li>
                   <li>Total unique pebbles: 4 + 13 - 1 = 16</li>
                 </ul>
               </div>
               
               <div className="space-y-2">
-                <FormulaDisplay formula="A \cup H = \{A\heartsuit, A\diamondsuit, A\spadesuit, A\clubsuit, 2\heartsuit, 3\heartsuit, \ldots, K\heartsuit\}" />
-                <FormulaDisplay formula="|A \cup H| = |A| + |H| - |A \cap H| = 4 + 13 - 1 = 16" />
-                <FormulaDisplay formula="P(A \cup H) = \frac{16}{52} = \frac{4}{13} \approx 0.308" />
+                <FormulaDisplay formula={`A \\cup H = \\{A\\heartsuit, A\\diamondsuit, A\\spadesuit, A\\clubsuit, 2\\heartsuit, 3\\heartsuit, \\ldots, K\\heartsuit\\}`} />
+                <FormulaDisplay formula={`|A \\cup H| = |A| + |H| - |A \\cap H| = 4 + 13 - 1 = 16`} />
+                <FormulaDisplay formula={`P(A \\cup H) = \\frac{16}{52} = \\frac{4}{13} \\approx 0.308`} />
               </div>
               
               <SimpleInsightBox theme="orange" title="Why We Subtract">
@@ -213,9 +184,9 @@ const SECTIONS = [
               </div>
               
               <div className="space-y-2">
-                <FormulaDisplay formula="B^c = S \setminus B = \text{all red cards (hearts and diamonds)}" />
-                <FormulaDisplay formula="|B^c| = |S| - |B| = 52 - 26 = 26" />
-                <FormulaDisplay formula="P(B^c) = 1 - P(B) = 1 - 0.5 = 0.5" />
+                <FormulaDisplay formula={`B^c = S \\setminus B = \\text{all red cards (hearts and diamonds)}`} />
+                <FormulaDisplay formula={`|B^c| = |S| - |B| = 52 - 26 = 26`} />
+                <FormulaDisplay formula={`P(B^c) = 1 - P(B) = 1 - 0.5 = 0.5`} />
               </div>
               
               <InterpretationBox theme="purple">
@@ -234,28 +205,13 @@ const SECTIONS = [
     id: 'multiple-methods',
     title: 'Multiple Solution Approaches',
     content: ({ sectionIndex, isCompleted }) => {
-      const contentRef = useRef(null);
-      
-      useEffect(() => {
-        const processMathJax = () => {
-          if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-            if (window.MathJax.typesetClear) {
-              window.MathJax.typesetClear([contentRef.current]);
-            }
-            window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-          }
-        };
-        
-        processMathJax();
-        const timeoutId = setTimeout(processMathJax, 100);
-        return () => clearTimeout(timeoutId);
-      }, []);
+      const contentRef = useMathJax([]);
       
       return (
         <div ref={contentRef} className="space-y-6">
           <div className="bg-purple-900/20 p-6 rounded-lg border border-purple-600/30">
             <h4 className="font-semibold text-purple-400 mb-4 text-lg">
-              🔄 The Power of Multiple Approaches
+              The Power of Multiple Approaches
             </h4>
             <p className="text-neutral-200">
               Let's solve the same problem using different methods to build flexibility and confidence.
@@ -270,11 +226,11 @@ const SECTIONS = [
               <div className="bg-neutral-800/50 p-4 rounded mb-3">
                 <ul className="list-disc list-inside text-sm text-neutral-300 space-y-1">
                   <li>Red cards: 26 (all hearts and diamonds)</li>
-                  <li>Black aces: 2 (A♠️ and A♣️ - not counted yet)</li>
+                  <li>Black aces: 2 (A♠ and A♣ - not counted yet)</li>
                   <li>Total favorable: 26 + 2 = 28</li>
                 </ul>
               </div>
-              <FormulaDisplay formula="P(\text{Red or Ace}) = \frac{28}{52} = \frac{7}{13} \approx 0.538" />
+              <FormulaDisplay formula={`P(\\text{Red or Ace}) = \\frac{28}{52} = \\frac{7}{13} \\approx 0.538`} />
             </CalculationStep>
 
             <CalculationStep title="Method 2: Inclusion-Exclusion" variant="default">
@@ -283,10 +239,10 @@ const SECTIONS = [
               </p>
               <div className="space-y-2">
                 <p className="text-sm text-neutral-400">Let R = red cards, A = aces</p>
-                <FormulaDisplay formula="P(R) = \frac{26}{52} = \frac{1}{2}" />
-                <FormulaDisplay formula="P(A) = \frac{4}{52} = \frac{1}{13}" />
-                <FormulaDisplay formula="P(R \cap A) = \frac{2}{52} = \frac{1}{26}" />
-                <FormulaDisplay formula="P(R \cup A) = \frac{1}{2} + \frac{1}{13} - \frac{1}{26} = \frac{13 + 2 - 1}{26} = \frac{14}{26} = \frac{7}{13}" />
+                <FormulaDisplay formula={`P(R) = \\frac{26}{52} = \\frac{1}{2}`} />
+                <FormulaDisplay formula={`P(A) = \\frac{4}{52} = \\frac{1}{13}`} />
+                <FormulaDisplay formula={`P(R \\cap A) = \\frac{2}{52} = \\frac{1}{26}`} />
+                <FormulaDisplay formula={`P(R \\cup A) = \\frac{1}{2} + \\frac{1}{13} - \\frac{1}{26} = \\frac{13 + 2 - 1}{26} = \\frac{14}{26} = \\frac{7}{13}`} />
               </div>
             </CalculationStep>
 
@@ -305,15 +261,15 @@ const SECTIONS = [
                 </ul>
               </div>
               <div className="space-y-2">
-                <FormulaDisplay formula="P(\text{Black non-ace}) = \frac{24}{52} = \frac{6}{13}" />
-                <FormulaDisplay formula="P(\text{Red or Ace}) = 1 - \frac{6}{13} = \frac{7}{13}" />
+                <FormulaDisplay formula={`P(\\text{Black non-ace}) = \\frac{24}{52} = \\frac{6}{13}`} />
+                <FormulaDisplay formula={`P(\\text{Red or Ace}) = 1 - \\frac{6}{13} = \\frac{7}{13}`} />
               </div>
             </CalculationStep>
             
             <div className="bg-green-900/20 p-4 rounded border border-green-600/30">
-              <h5 className="font-semibold text-green-400 mb-2">✅ All Methods Give Same Answer!</h5>
+              <h5 className="font-semibold text-green-400 mb-2">All Methods Give Same Answer!</h5>
               <p className="text-neutral-300 text-sm">
-                <span dangerouslySetInnerHTML={{ __html: `\(P(\text{Red or Ace}) = \frac{7}{13} \approx 0.538\)` }} /> 
+                <span dangerouslySetInnerHTML={{ __html: `\\(P(\\text{Red or Ace}) = \\frac{7}{13} \\approx 0.538\\)` }} /> 
                 in all three approaches. This validates our understanding and builds confidence.
               </p>
             </div>
@@ -340,32 +296,17 @@ const SECTIONS = [
     id: 'why-cards-matter',
     title: 'Why This Example Is Perfect',
     content: ({ sectionIndex, isCompleted }) => {
-      const contentRef = useRef(null);
-      
-      useEffect(() => {
-        const processMathJax = () => {
-          if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-            if (window.MathJax.typesetClear) {
-              window.MathJax.typesetClear([contentRef.current]);
-            }
-            window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-          }
-        };
-        
-        processMathJax();
-        const timeoutId = setTimeout(processMathJax, 100);
-        return () => clearTimeout(timeoutId);
-      }, []);
+      const contentRef = useMathJax([]);
       
       return (
         <div ref={contentRef} className="space-y-6">
           <div className="bg-gradient-to-br from-cyan-900/20 to-blue-900/20 p-6 rounded-lg border border-cyan-600/30">
             <h4 className="font-semibold text-cyan-400 mb-4 text-lg">
-              🎯 Why Cards Are the Perfect Teaching Tool
+              Why Cards Are the Perfect Teaching Tool
             </h4>
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <h5 className="font-semibold text-green-400 mb-3">✅ Perfect Mathematical Properties</h5>
+                <h5 className="font-semibold text-green-400 mb-3">Perfect Mathematical Properties</h5>
                 <ul className="list-disc list-inside space-y-2 text-sm text-neutral-300 ml-4">
                   <li><strong>Finite sample space:</strong> Exactly 52 outcomes</li>
                   <li><strong>Equal probability:</strong> Each card equally likely</li>
@@ -376,7 +317,7 @@ const SECTIONS = [
               </div>
               
               <div>
-                <h5 className="font-semibold text-purple-400 mb-3">💪 Builds Essential Skills</h5>
+                <h5 className="font-semibold text-purple-400 mb-3">Builds Essential Skills</h5>
                 <ul className="list-disc list-inside space-y-2 text-sm text-neutral-300 ml-4">
                   <li><strong>Set operations:</strong> Unions, intersections, complements</li>
                   <li><strong>Multiple approaches:</strong> Different solution methods</li>
@@ -390,15 +331,15 @@ const SECTIONS = [
           
           <div className="bg-orange-900/20 p-6 rounded-lg border border-orange-600/30">
             <h4 className="font-semibold text-orange-400 mb-4 text-lg">
-              🔢 The Magic Number: 2⁵²
+              The Magic Number: 2⁵²
             </h4>
             <div className="space-y-3">
               <p className="text-neutral-200">
-                With 52 cards, there are <span dangerouslySetInnerHTML={{ __html: `\(2^{52}\)` }} /> possible events 
+                With 52 cards, there are <span dangerouslySetInnerHTML={{ __html: `\\(2^{52}\\)` }} /> possible events 
                 (subsets of the sample space). That's:
               </p>
               <div className="bg-neutral-800/50 p-4 rounded text-center">
-                <span className="text-orange-400 font-mono text-lg" dangerouslySetInnerHTML={{ __html: `\(2^{52} \approx 4.5 \times 10^{15}\)` }} />
+                <span className="text-orange-400 font-mono text-lg" dangerouslySetInnerHTML={{ __html: `\\(2^{52} \\approx 4.5 \\times 10^{15}\\)` }} />
               </div>
               <p className="text-neutral-300 text-sm">
                 That's about 4.5 quadrillion possible events! Yet we can understand them all 
@@ -409,14 +350,14 @@ const SECTIONS = [
           
           <div className="bg-purple-900/20 p-6 rounded-lg border border-purple-600/30">
             <h4 className="font-semibold text-purple-400 mb-4 text-lg">
-              🚀 Your Probability Foundation
+              Your Probability Foundation
             </h4>
             <p className="text-neutral-200 mb-4">
               You now have a rock-solid foundation in probability thinking:
             </p>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="bg-neutral-800/50 p-4 rounded">
-                <h5 className="font-semibold text-cyan-400 mb-2">🧠 Mental Model</h5>
+                <h5 className="font-semibold text-cyan-400 mb-2">Mental Model</h5>
                 <ul className="list-disc list-inside text-xs text-neutral-300 space-y-1">
                   <li>Physical pebble selection process</li>
                   <li>Sample spaces as complete inventories</li>
@@ -425,7 +366,7 @@ const SECTIONS = [
               </div>
               
               <div className="bg-neutral-800/50 p-4 rounded">
-                <h5 className="font-semibold text-cyan-400 mb-2">⚙️ Mathematical Tools</h5>
+                <h5 className="font-semibold text-cyan-400 mb-2">Mathematical Tools</h5>
                 <ul className="list-disc list-inside text-xs text-neutral-300 space-y-1">
                   <li>Set operations and their meanings</li>
                   <li>Multiple solution approaches</li>

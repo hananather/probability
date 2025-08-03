@@ -36,6 +36,16 @@ export default function HypothesisTestingGame() {
   // Initialize game on mount
   useEffect(() => {
     initializeGame();
+    
+    // Cleanup function to prevent memory leaks
+    return () => {
+      if (meterRef.current) {
+        d3.select(meterRef.current).select("g.evidence-meter-chart").remove();
+      }
+      if (historyRef.current) {
+        d3.select(historyRef.current).select("g.flip-history-chart").remove();
+      }
+    };
   }, []);
   
   // Initialize or reset game
@@ -168,8 +178,8 @@ export default function HypothesisTestingGame() {
     const stats = calculateStats(flipArray);
     const svg = d3.select(meterRef.current);
     
-    // Clear previous
-    svg.selectAll("*").remove();
+    // Clear previous with proper class-based cleanup
+    svg.select("g.evidence-meter-chart").remove();
     
     const width = 400;
     const height = 60;
@@ -179,7 +189,8 @@ export default function HypothesisTestingGame() {
     svg.attr("viewBox", `0 0 ${width} ${height}`);
     
     const g = svg.append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
+      .attr("class", "evidence-meter-chart")
+      .attr("transform", `translate(${margin.left},${margin.top})`);    
     
     // Create gradient
     const gradient = svg.append("defs")
@@ -280,7 +291,8 @@ export default function HypothesisTestingGame() {
     const recentFlips = flipArray.slice(-20);
     const svg = d3.select(historyRef.current);
     
-    svg.selectAll("*").remove();
+    // Clear previous with proper class-based cleanup
+    svg.select("g.flip-history-chart").remove();
     
     const width = 400;
     const height = 70;
@@ -290,6 +302,7 @@ export default function HypothesisTestingGame() {
     svg.attr("viewBox", `0 0 ${width} ${height}`);
     
     const g = svg.append("g")
+      .attr("class", "flip-history-chart")
       .attr("transform", `translate(${width/2 - (recentFlips.length * spacing)/2}, 35)`);
     
     // Draw coins

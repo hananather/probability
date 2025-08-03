@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
+import { useMathJax } from '../../../hooks/useMathJax';
 import SectionBasedContent from '@/components/ui/SectionBasedContent';
 import { StepByStepCalculation, CalculationStep, FormulaDisplay } from '@/components/ui/patterns/StepByStepCalculation';
 import { SimpleInsightBox } from '@/components/ui/patterns/SimpleComponents';
@@ -12,17 +13,22 @@ import { motion } from 'framer-motion';
 // Use consistent color scheme
 const colorScheme = createColorScheme('purple');
 
+// Animation timing constants
+const ANIMATION_CONSTANTS = {
+  LONG_ANIMATION_DURATION: 1.5, // Duration for main section animations
+};
+
 // Animation variants
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 1.5 }
+  transition: { duration: ANIMATION_CONSTANTS.LONG_ANIMATION_DURATION }
 };
 
 const scaleIn = {
   initial: { opacity: 0, scale: 0.95 },
   animate: { opacity: 1, scale: 1 },
-  transition: { duration: 1.5 }
+  transition: { duration: ANIMATION_CONSTANTS.LONG_ANIMATION_DURATION }
 };
 
 export default function Tab1FoundationsTab({ onComplete }) {
@@ -30,25 +36,21 @@ export default function Tab1FoundationsTab({ onComplete }) {
     {
       id: 'solve-this',
       title: 'Can You Solve This?',
-      icon: '🏥',
       content: () => <SolveThisSection />
     },
     {
       id: 'building-intuition',
       title: 'Building Intuition',
-      icon: '🧠',
       content: () => <BuildingIntuitionSection />
     },
     {
       id: 'formal-definition',
       title: 'Formal Definition',
-      icon: '📐',
       content: () => <FormalDefinitionSection />
     },
     {
       id: 'why-matters',
       title: 'Why This Matters',
-      icon: '🚀',
       content: () => <WhyThisMattersSection />
     }
   ];
@@ -68,29 +70,14 @@ export default function Tab1FoundationsTab({ onComplete }) {
 
 // Section 1: Can You Solve This?
 function SolveThisSection() {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  const contentRef = useMathJax([]);
 
   return (
     <div ref={contentRef} className="space-y-6">
       <div className="bg-gradient-to-br from-red-900/20 to-red-800/20 border border-red-700/50 rounded-lg p-6">
         <h3 className="text-lg font-bold text-red-400 mb-4 flex items-center gap-2">
           <AlertTriangle className="w-5 h-5" />
-          🏥 Real Exam Problem
+          Real Exam Problem
         </h3>
         
         <p className="text-neutral-300 mb-4 font-semibold">
@@ -140,22 +127,7 @@ function SolveThisSection() {
 
 // Section 2: Building Intuition
 function BuildingIntuitionSection() {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  const contentRef = useMathJax([]);
 
   return (
     <div ref={contentRef} className="space-y-6">
@@ -227,28 +199,13 @@ function BuildingIntuitionSection() {
 
 // Section 3: Formal Definition
 function FormalDefinitionSection() {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  const contentRef = useMathJax([]);
 
   return (
     <div ref={contentRef} className="space-y-6">
       <StepByStepCalculation title="📐 The Mathematical Framework" theme="purple">
         <CalculationStep title="Bayes' Theorem Formula" variant="highlight">
-          <FormulaDisplay formula="P(H|D) = \frac{P(D|H) \cdot P(H)}{P(D)}" />
+          <FormulaDisplay formula={`P(H|D) = \\frac{P(D|H) \\cdot P(H)}{P(D)}`} />
           
           <div className="mt-6 space-y-3">
             {[
@@ -278,12 +235,12 @@ function FormalDefinitionSection() {
           <div className="space-y-4">
             <div>
               <p className="text-sm text-neutral-400 mb-2">Expanded form (when calculating P(D)):</p>
-              <FormulaDisplay formula="P(H|D) = \frac{P(D|H) \cdot P(H)}{P(D|H) \cdot P(H) + P(D|\neg H) \cdot P(\neg H)}" />
+              <FormulaDisplay formula={`P(H|D) = \\frac{P(D|H) \\cdot P(H)}{P(D|H) \\cdot P(H) + P(D|\\neg H) \\cdot P(\\neg H)}`} />
             </div>
             
             <div>
               <p className="text-sm text-neutral-400 mb-2">Odds form (useful for sequential updates):</p>
-              <FormulaDisplay formula="\frac{P(H|D)}{P(\neg H|D)} = \frac{P(D|H)}{P(D|\neg H)} \cdot \frac{P(H)}{P(\neg H)}" />
+              <FormulaDisplay formula={`\\frac{P(H|D)}{P(\\neg H|D)} = \\frac{P(D|H)}{P(D|\\neg H)} \\cdot \\frac{P(H)}{P(\\neg H)}`} />
             </div>
           </div>
         </CalculationStep>
@@ -303,94 +260,72 @@ function FormalDefinitionSection() {
 
 // Section 4: Why This Matters
 function WhyThisMattersSection() {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  const contentRef = useMathJax([]);
 
   return (
     <div ref={contentRef} className="space-y-6">
       <div className="bg-gradient-to-br from-purple-900/20 to-blue-900/20 border border-purple-600/30 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-purple-300 mb-4">🚀 Applications in Tech & AI</h3>
+        <h3 className="text-lg font-semibold text-purple-300 mb-4">Applications in Mathematics and Science</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div className="bg-neutral-800/50 p-4 rounded-lg border border-purple-600/30">
             <h4 className="font-bold text-purple-400 mb-3 flex items-center gap-2">
               <Target className="w-5 h-5" />
-              Machine Learning
+              Statistical Inference
             </h4>
             <ul className="space-y-2 text-sm text-neutral-300">
-              <li>• <strong>Naive Bayes Classifiers:</strong> Spam detection, sentiment analysis</li>
-              <li>• <strong>Bayesian Neural Networks:</strong> Uncertainty quantification in deep learning</li>
-              <li>• <strong>A/B Testing:</strong> Determining which version performs better</li>
-              <li>• <strong>Recommendation Systems:</strong> Netflix, YouTube algorithms</li>
+              <li>• <strong>Hypothesis Testing:</strong> Updating prior beliefs with experimental data</li>
+              <li>• <strong>Bayesian Statistics:</strong> Parameter estimation and model comparison</li>
+              <li>• <strong>Decision Theory:</strong> Optimal decision making under uncertainty</li>
+              <li>• <strong>Information Theory:</strong> Quantifying information gain from observations</li>
             </ul>
           </div>
 
           <div className="bg-neutral-800/50 p-4 rounded-lg border border-blue-600/30">
             <h4 className="font-bold text-blue-400 mb-3 flex items-center gap-2">
               <Brain className="w-5 h-5" />
-              Artificial Intelligence
+              Scientific Applications
             </h4>
             <ul className="space-y-2 text-sm text-neutral-300">
-              <li>• <strong>Computer Vision:</strong> Object detection and tracking</li>
-              <li>• <strong>Natural Language Processing:</strong> Language models, translation</li>
-              <li>• <strong>Robotics:</strong> SLAM (Simultaneous Localization and Mapping)</li>
-              <li>• <strong>Autonomous Vehicles:</strong> Sensor fusion and decision making</li>
+              <li>• <strong>Medical Diagnosis:</strong> Interpreting test results with base rates</li>
+              <li>• <strong>Physics:</strong> Particle physics experiments and cosmological inference</li>
+              <li>• <strong>Genetics:</strong> Inferring evolutionary relationships and disease risk</li>
+              <li>• <strong>Ecology:</strong> Species distribution modeling and population dynamics</li>
             </ul>
           </div>
         </div>
         
         <div className="bg-green-900/20 p-4 rounded-lg border border-green-600/30">
-          <h4 className="font-bold text-green-400 mb-3">Real Industry Examples</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {[
-              { company: 'Google', application: 'Search ranking algorithms' },
-              { company: 'Tesla', application: 'Autopilot sensor fusion' },
-              { company: 'OpenAI', application: 'GPT uncertainty estimation' }
-            ].map((item, idx) => (
-              <div key={idx} className="text-center">
-                <p className="font-semibold text-white">{item.company}</p>
-                <p className="text-sm text-neutral-400">{item.application}</p>
-              </div>
-            ))}
-          </div>
+          <h4 className="font-bold text-green-400 mb-3">Theoretical Foundations</h4>
+          <p className="text-neutral-300 mb-2">
+            Bayes' Theorem provides the mathematical foundation for:
+          </p>
+          <ul className="list-disc list-inside text-sm text-neutral-300 ml-4 space-y-1">
+            <li>Conditional probability and independence</li>
+            <li>The relationship between likelihood and posterior probability</li>
+            <li>Coherent updating of beliefs in light of evidence</li>
+            <li>The formal connection between causation and correlation</li>
+          </ul>
         </div>
       </div>
 
       <SimpleInsightBox variant="success" className="border-orange-700/50">
-        <h4 className="font-semibold text-orange-400 mb-2">Career Relevance</h4>
+        <h4 className="font-semibold text-orange-400 mb-2">Mathematical Significance</h4>
         <p className="text-neutral-300 mb-3">
-          Understanding Bayes' Theorem is essential for roles in:
+          Bayes' Theorem represents one of the most profound insights in probability theory,
+          providing a rigorous framework for reasoning under uncertainty.
         </p>
-        <div className="flex flex-wrap gap-2">
-          {['Data Science', 'ML Engineering', 'Quantitative Analysis', 'AI Research', 'Risk Assessment'].map((role, idx) => (
-            <span 
-              key={idx}
-              className="px-3 py-1 bg-neutral-800 rounded-full text-sm text-neutral-300"
-            >
-              {role}
-            </span>
-          ))}
-        </div>
+        <p className="text-neutral-300">
+          Its influence extends from pure mathematics to philosophy of science, 
+          offering a coherent approach to the problem of induction and the nature of scientific inference.
+        </p>
       </SimpleInsightBox>
 
       <div className="bg-neutral-800/50 p-4 rounded-lg border border-neutral-600/30">
         <p className="text-center text-neutral-400 italic">
-          "Bayes' Theorem is to machine learning what calculus is to physics - 
-          a fundamental tool that appears everywhere once you know how to look for it."
+          "Probability theory is nothing but common sense reduced to calculation."
+          <br/>
+          <span className="text-sm">- Pierre-Simon Laplace</span>
         </p>
       </div>
     </div>

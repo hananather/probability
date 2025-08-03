@@ -1466,10 +1466,10 @@ const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActi
   );
 });
 
-// Career Relevance Module - "Why Should I Care?"
-const CareerRelevanceModule = React.memo(function CareerRelevanceModule({ isActive }) {
+// Theoretical Foundations Module
+const TheoreticalFoundationsModule = React.memo(function TheoreticalFoundationsModule({ isActive }) {
   const contentRef = useRef(null);
-  const [selectedMajor, setSelectedMajor] = useState('business');
+  const [selectedTopic, setSelectedTopic] = useState('foundations');
   const [animationKey, setAnimationKey] = useState(0);
   
   const majorExamples = {
@@ -1575,7 +1575,7 @@ const CareerRelevanceModule = React.memo(function CareerRelevanceModule({ isActi
     }
   };
   
-  const currentExamples = majorExamples[selectedMajor];
+  const currentExamples = majorExamples[selectedTopic];
   
   useEffect(() => {
     const processMathJax = () => {
@@ -1590,11 +1590,11 @@ const CareerRelevanceModule = React.memo(function CareerRelevanceModule({ isActi
     processMathJax();
     const timeoutId = setTimeout(processMathJax, 100);
     return () => clearTimeout(timeoutId);
-  }, [selectedMajor]);
+  }, [selectedTopic]);
   
   useEffect(() => {
     setAnimationKey(prev => prev + 1);
-  }, [selectedMajor]);
+  }, [selectedTopic]);
   
   if (!isActive) return null;
   
@@ -1608,20 +1608,20 @@ const CareerRelevanceModule = React.memo(function CareerRelevanceModule({ isActi
       <VisualizationSection>
         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
           <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>
-          Why Should I Care? Career Relevance
+          Theoretical Foundations
         </h3>
         
         <div className="mb-6">
-          <p className="text-sm text-gray-400 mb-3">Select your field:</p>
+          <p className="text-sm text-gray-400 mb-3">Select a topic:</p>
           <div className="flex flex-wrap gap-2">
             {Object.entries(majorExamples).map(([key, value]) => (
               <motion.button
                 key={key}
-                onClick={() => setSelectedMajor(key)}
+                onClick={() => setSelectedTopic(key)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${
-                  selectedMajor === key 
+                  selectedTopic === key 
                     ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-lg' 
                     : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}
@@ -1670,7 +1670,7 @@ const CareerRelevanceModule = React.memo(function CareerRelevanceModule({ isActi
                           <strong>What this means:</strong> {example.insight}
                         </p>
                         <p className="text-xs text-gray-400 italic">
-                          💡 Real world: {example.realWorld}
+                          Significance: {example.significance}
                         </p>
                       </div>
                     </div>
@@ -1684,10 +1684,10 @@ const CareerRelevanceModule = React.memo(function CareerRelevanceModule({ isActi
             className="bg-gradient-to-r from-amber-900/20 to-orange-900/20 rounded-xl p-4 border border-amber-700/50"
             whileHover={{ scale: 1.01 }}
           >
-            <h5 className="font-semibold text-amber-400 mb-2">🎯 The Bottom Line</h5>
+            <h5 className="font-semibold text-amber-400 mb-2">Key Insight</h5>
             <p className="text-sm text-gray-300">
-              Every field uses confidence intervals to make million-dollar decisions. 
-              Master this now, and you'll speak the language of data-driven professionals.
+              Confidence intervals provide a rigorous mathematical framework for quantifying uncertainty,
+              forming the foundation of modern statistical inference and scientific reasoning.
             </p>
           </motion.div>
         </div>
@@ -2637,7 +2637,7 @@ export default function ConfidenceIntervalKnownVariance() {
       
       {/* PRACTICE Mode */}
       <div style={{ display: mode === LEARNING_MODES.PRACTICE ? 'block' : 'none' }}>
-        <CareerRelevanceModule isActive={mode === LEARNING_MODES.PRACTICE} />
+        <TheoreticalFoundationsModule isActive={mode === LEARNING_MODES.PRACTICE} />
         <ExamSuccessModule isActive={mode === LEARNING_MODES.PRACTICE} />
         <PracticeProblemModule isActive={mode === LEARNING_MODES.PRACTICE} />
         <RealWorldInterpretationModule isActive={mode === LEARNING_MODES.PRACTICE} />

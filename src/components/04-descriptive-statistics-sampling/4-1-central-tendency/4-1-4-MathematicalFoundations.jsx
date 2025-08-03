@@ -1241,8 +1241,8 @@ const PropertiesSection = React.memo(function PropertiesSection() {
   );
 });
 
-// Speed Learning Component
-const SpeedLearningContent = React.memo(function SpeedLearningContent({ section }) {
+// Focused Learning Component
+const FocusedContent = React.memo(function FocusedContent({ section }) {
   const contentRef = useRef(null);
   
   useEffect(() => {
@@ -1262,7 +1262,7 @@ const SpeedLearningContent = React.memo(function SpeedLearningContent({ section 
   
   const essentials = {
     'mean': {
-      formula: '\\(\\bar{x} = \\frac{\\sum x_i}{n}\\)',
+      formula: `\\(\\bar{x} = \\frac{\\sum x_i}{n}\\)`,
       when: 'Symmetric data, no outliers',
       example: 'Test scores: 70, 75, 80, 85, 90 → Mean = 80',
       tip: 'Sensitive to outliers!'
@@ -1284,7 +1284,7 @@ const SpeedLearningContent = React.memo(function SpeedLearningContent({ section 
   return (
     <div ref={contentRef} className="space-y-4">
       <div className="bg-amber-900/20 p-4 rounded-lg">
-        <h3 className="text-lg font-bold text-amber-400 mb-3">⚡ {section} - Exam Essentials Only</h3>
+        <h3 className="text-lg font-bold text-amber-400 mb-3">{section} - Key Concepts</h3>
         
         {Object.entries(essentials).map(([measure, info]) => (
           <div key={measure} className="bg-neutral-900 p-3 rounded mb-3">
@@ -1419,7 +1419,7 @@ const DataTypesSection = React.memo(function DataTypesSection() {
 function MathematicalFoundations({ onComplete }) {
   const [currentSection, setCurrentSection] = useState(0);
   const [hasCompleted, setHasCompleted] = useState(false);
-  const [speedMode, setSpeedMode] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
   
   const renderSection = () => {
     switch (SECTIONS[currentSection].id) {
@@ -1458,19 +1458,19 @@ function MathematicalFoundations({ onComplete }) {
   return (
     <VisualizationContainer title="4.1 Central Tendency: Mathematical Foundations" className="max-w-7xl mx-auto">
       <div className="space-y-8">
-        {/* Speed Learning Mode Toggle */}
-        <div className="bg-amber-900/20 border border-amber-600/30 p-4 rounded-lg">
+        {/* Focused Learning Mode Toggle */}
+        <div className="bg-neutral-900 border border-neutral-700 p-4 rounded-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold text-amber-400">🚀 Speed Learning Mode</p>
-              <p className="text-xs text-neutral-300">Get exam-ready in 5 minutes</p>
+              <p className="text-sm font-semibold text-white">Focused Learning Mode</p>
+              <p className="text-xs text-neutral-400">Concentrate on essential concepts</p>
             </div>
             <Button
-              variant={speedMode ? "primary" : "secondary"}
+              variant={focusMode ? "primary" : "secondary"}
               size="sm"
-              onClick={() => setSpeedMode(!speedMode)}
+              onClick={() => setSpeedMode(!focusMode)}
             >
-              {speedMode ? "Exit Speed Mode" : "Activate"}
+              {focusMode ? "Exit Focus Mode" : "Enable Focus"}
             </Button>
           </div>
         </div>
@@ -1484,7 +1484,7 @@ function MathematicalFoundations({ onComplete }) {
               </h3>
               <p className="text-sm text-neutral-400 mt-1">
                 Section {currentSection + 1} of {SECTIONS.length}
-                {speedMode && <span className="text-amber-400 ml-2">⚡ Speed Mode</span>}
+                {focusMode && <span className="text-blue-400 ml-2">Focus Mode</span>}
               </p>
             </div>
           </div>
@@ -1493,8 +1493,8 @@ function MathematicalFoundations({ onComplete }) {
         
         {/* Content */}
         <div className="min-h-[600px] bg-neutral-950 rounded-lg p-6">
-          {speedMode ? (
-            <SpeedLearningContent section={SECTIONS[currentSection].id} />
+          {focusMode ? (
+            <FocusedContent section={SECTIONS[currentSection].id} />
           ) : (
             renderSection()
           )}

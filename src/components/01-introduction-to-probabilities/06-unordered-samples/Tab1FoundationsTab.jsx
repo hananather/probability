@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import SectionBasedContent, { 
   SectionContent, 
   MathFormula, 
@@ -9,15 +9,6 @@ import SectionBasedContent, {
 import { WorkedExample, ExampleSection, InsightBox, Formula } from '@/components/ui/WorkedExample';
 import { Button } from '@/components/ui/button';
 
-// MathJax processing helper
-const processMathJax = (ref) => {
-  if (typeof window !== "undefined" && window.MathJax?.typesetPromise && ref.current) {
-    if (window.MathJax.typesetClear) {
-      window.MathJax.typesetClear([ref.current]);
-    }
-    window.MathJax.typesetPromise([ref.current]).catch(console.error);
-  }
-};
 
 const SECTIONS = [
   {
@@ -27,10 +18,10 @@ const SECTIONS = [
       <SectionContent>
         <div className="bg-amber-900/20 p-4 rounded-lg border border-amber-600/30">
           <h4 className="font-semibold text-amber-400 mb-3">
-            📝 A Real Exam Problem:
+            A Real Exam Problem:
           </h4>
           <p className="text-neutral-300 mb-3">
-            A data science team of 5 people needs to be selected from 12 qualified candidates for a special project at Google. 
+            A team of 5 people needs to be selected from 12 qualified candidates. 
             How many different teams can be formed?
           </p>
           <div className="mt-4 space-y-2">
@@ -69,7 +60,7 @@ const SECTIONS = [
           <ExampleSection title="Real-World Examples">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-green-900/20 p-4 rounded-lg border border-green-600/30">
-                <h5 className="font-semibold text-green-400 mb-2">✓ Order DOESN'T Matter (Combinations)</h5>
+                <h5 className="font-semibold text-green-400 mb-2">Order DOESN'T Matter (Combinations)</h5>
                 <ul className="space-y-2 text-sm text-neutral-300">
                   <li>• Selecting a committee of 3 from 10 people</li>
                   <li>• Choosing 6 lottery numbers from 49</li>
@@ -78,7 +69,7 @@ const SECTIONS = [
                 </ul>
               </div>
               <div className="bg-red-900/20 p-4 rounded-lg border border-red-600/30">
-                <h5 className="font-semibold text-red-400 mb-2">✗ Order DOES Matter (Permutations)</h5>
+                <h5 className="font-semibold text-red-400 mb-2">Order DOES Matter (Permutations)</h5>
                 <ul className="space-y-2 text-sm text-neutral-300">
                   <li>• Assigning President, VP, Secretary roles</li>
                   <li>• Creating a 4-digit PIN code</li>
@@ -91,7 +82,7 @@ const SECTIONS = [
         </WorkedExample>
         
         <InsightBox variant="info">
-          💡 Key Insight: Combinations count unique groups. If {"{Alice, Bob, Charlie}"} is the same as 
+          Key Insight: Combinations count unique groups. If {"{Alice, Bob, Charlie}"} is the same as 
           {"{Charlie, Alice, Bob}"} for your problem, you need combinations!
         </InsightBox>
       </SectionContent>
@@ -104,13 +95,7 @@ const SECTIONS = [
       <SectionContent>
         <WorkedExample title="The Combination Formula">
           <ExampleSection title="Mathematical Definition">
-            <Formula>
-              <div className="text-center">
-                <span dangerouslySetInnerHTML={{ 
-                  __html: `\\[C(n,r) = \\binom{n}{r} = \\frac{n!}{r!(n-r)!}\\]` 
-                }} />
-              </div>
-            </Formula>
+            <Formula latex="C(n,r) = \binom{n}{r} = \frac{n!}{r!(n-r)!}" />
             <p className="mt-2 text-sm text-neutral-400 text-center">
               Choose r items from n items (order doesn't matter)
             </p>
@@ -120,19 +105,17 @@ const SECTIONS = [
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <div className="bg-purple-900/20 p-3 rounded-lg flex-shrink-0">
-                  <span className="text-2xl">1️⃣</span>
+                  <span className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">1</span>
                 </div>
                 <div>
                   <p className="font-semibold text-purple-400">Start with permutations</p>
-                  <span dangerouslySetInnerHTML={{ 
-                    __html: `\\(P(n,r) = \\frac{n!}{(n-r)!}\\)` 
-                  }} />
+                  <Formula latex="P(n,r) = \frac{n!}{(n-r)!}" inline />
                 </div>
               </div>
               
               <div className="flex items-center gap-3">
                 <div className="bg-purple-900/20 p-3 rounded-lg flex-shrink-0">
-                  <span className="text-2xl">2️⃣</span>
+                  <span className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">2</span>
                 </div>
                 <div>
                   <p className="font-semibold text-purple-400">Each group counted r! times</p>
@@ -142,13 +125,11 @@ const SECTIONS = [
               
               <div className="flex items-center gap-3">
                 <div className="bg-purple-900/20 p-3 rounded-lg flex-shrink-0">
-                  <span className="text-2xl">3️⃣</span>
+                  <span className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">3</span>
                 </div>
                 <div>
                   <p className="font-semibold text-purple-400">Divide by r!</p>
-                  <span dangerouslySetInnerHTML={{ 
-                    __html: `\\(C(n,r) = \\frac{P(n,r)}{r!} = \\frac{n!}{r!(n-r)!}\\)` 
-                  }} />
+                  <Formula latex="C(n,r) = \frac{P(n,r)}{r!} = \frac{n!}{r!(n-r)!}" inline />
                 </div>
               </div>
             </div>
@@ -158,15 +139,11 @@ const SECTIONS = [
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="bg-neutral-800 p-3 rounded">
                 <p className="text-sm font-semibold text-cyan-400 mb-1">Symmetry</p>
-                <span dangerouslySetInnerHTML={{ 
-                  __html: `\\(C(n,r) = C(n,n-r)\\)` 
-                }} />
+                <Formula latex="C(n,r) = C(n,n-r)" inline />
               </div>
               <div className="bg-neutral-800 p-3 rounded">
                 <p className="text-sm font-semibold text-cyan-400 mb-1">Pascal's Identity</p>
-                <span dangerouslySetInnerHTML={{ 
-                  __html: `\\(C(n,r) = C(n-1,r-1) + C(n-1,r)\\)` 
-                }} />
+                <Formula latex="C(n,r) = C(n-1,r-1) + C(n-1,r)" inline />
               </div>
             </div>
           </ExampleSection>
@@ -176,31 +153,31 @@ const SECTIONS = [
   },
   {
     id: 'why-matters',
-    title: 'Why This Matters',
+    title: 'Mathematical Significance',
     content: ({ sectionIndex, isCompleted }) => (
       <SectionContent>
         <div className="space-y-6">
           <div className="bg-gradient-to-br from-indigo-900/20 to-purple-900/20 p-4 rounded-lg border border-indigo-600/30">
             <h4 className="font-semibold text-indigo-400 mb-3">
-              🚀 Applications in Tech & AI
+              Applications in Mathematics and Science
             </h4>
             <div className="space-y-3">
               <div className="border-l-4 border-indigo-500 pl-4">
-                <p className="font-semibold text-neutral-200">Machine Learning</p>
+                <p className="font-semibold text-neutral-200">Statistical Analysis</p>
                 <p className="text-sm text-neutral-400">
-                  Feature selection: Choosing k features from n total features for model training
+                  Combinations are fundamental to hypothesis testing and experimental design
                 </p>
               </div>
               <div className="border-l-4 border-purple-500 pl-4">
-                <p className="font-semibold text-neutral-200">A/B Testing</p>
+                <p className="font-semibold text-neutral-200">Discrete Mathematics</p>
                 <p className="text-sm text-neutral-400">
-                  Selecting test groups: How many ways to choose control groups from user population
+                  Graph theory, network analysis, and optimization problems rely on combinatorial methods
                 </p>
               </div>
               <div className="border-l-4 border-blue-500 pl-4">
-                <p className="font-semibold text-neutral-200">Data Science Teams</p>
+                <p className="font-semibold text-neutral-200">Quantum Mechanics</p>
                 <p className="text-sm text-neutral-400">
-                  Team formation at companies like Google, Meta, Amazon for cross-functional projects
+                  Particle states and quantum configurations use combinatorial principles
                 </p>
               </div>
             </div>
@@ -208,22 +185,22 @@ const SECTIONS = [
           
           <div className="bg-green-900/20 p-4 rounded-lg border border-green-600/30">
             <h4 className="font-semibold text-green-400 mb-2">
-              ✅ Career Relevance
+              Theoretical Foundations
             </h4>
             <p className="text-neutral-300 mb-2">
-              Combinations appear in technical interviews at top tech companies:
+              Combinations form the basis for understanding:
             </p>
             <ul className="list-disc list-inside text-sm text-neutral-300 ml-4 space-y-1">
-              <li>Algorithm complexity analysis (choosing k elements from n)</li>
-              <li>Database query optimization (index selection)</li>
-              <li>Network reliability (choosing backup servers)</li>
-              <li>Distributed systems (quorum selection)</li>
+              <li>Binomial theorem and Pascal's triangle</li>
+              <li>Probability distributions (binomial, hypergeometric)</li>
+              <li>Partition theory and generating functions</li>
+              <li>Error-correcting codes and information theory</li>
             </ul>
           </div>
           
           <InsightBox variant="success">
-            🎯 Master combinations now → Excel in probability theory → 
-            Ace statistics courses → Land data science roles at top companies
+            Understanding combinations provides the foundation for advanced topics in 
+            probability theory, statistical inference, and discrete mathematics.
           </InsightBox>
         </div>
       </SectionContent>

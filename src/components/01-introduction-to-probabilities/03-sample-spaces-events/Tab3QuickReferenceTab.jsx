@@ -140,13 +140,13 @@ const SECTIONS = [
           <div className="grid md:grid-cols-2 gap-4">
             <SimpleFormulaCard 
               title="Absorption Laws" 
-              formula="A \\cup (A \\cap B) = A \\\\ A \\cap (A \\cup B) = A"
+              formula={`A \\cup (A \\cap B) = A \\\\ A \\cap (A \\cup B) = A`}
               description="A absorbs combinations with itself"
               theme="blue"
             />
             <SimpleFormulaCard 
               title="Distributive Laws" 
-              formula="A \\cap (B \\cup C) = (A \\cap B) \\cup (A \\cap C) \\\\ A \\cup (B \\cap C) = (A \\cup B) \\cap (A \\cup C)"
+              formula={`A \\cap (B \\cup C) = (A \\cap B) \\cup (A \\cap C) \\\\ A \\cup (B \\cap C) = (A \\cup B) \\cap (A \\cup C)`}
               description="Operations distribute over each other"
               theme="blue"
             />
@@ -250,7 +250,7 @@ const SECTIONS = [
     content: ({ sectionIndex, isCompleted }) => (
       <div className="space-y-6">
         <div className="bg-red-900/20 p-4 rounded-lg border border-red-600/30">
-          <h4 className="font-semibold text-red-400 mb-3">❌ Mistake #1: Confusing AND/OR with ∩/∪</h4>
+          <h4 className="font-semibold text-red-400 mb-3">Mistake #1: Confusing AND/OR with ∩/∪</h4>
           <div className="text-sm space-y-2">
             <p className="text-neutral-300">
               <strong>Wrong:</strong> "A and B" → A ∪ B
@@ -265,7 +265,7 @@ const SECTIONS = [
         </div>
 
         <div className="bg-red-900/20 p-4 rounded-lg border border-red-600/30">
-          <h4 className="font-semibold text-red-400 mb-3">❌ Mistake #2: Incorrect De Morgan's Application</h4>
+          <h4 className="font-semibold text-red-400 mb-3">Mistake #2: Incorrect De Morgan's Application</h4>
           <div className="text-sm space-y-2">
             <p className="text-neutral-300">
               <strong>Wrong:</strong> (A ∪ B)ᶜ = Aᶜ ∪ Bᶜ
@@ -280,7 +280,7 @@ const SECTIONS = [
         </div>
 
         <div className="bg-red-900/20 p-4 rounded-lg border border-red-600/30">
-          <h4 className="font-semibold text-red-400 mb-3">❌ Mistake #3: Forgetting the Universal Set</h4>
+          <h4 className="font-semibold text-red-400 mb-3">Mistake #3: Forgetting the Universal Set</h4>
           <div className="text-sm space-y-2">
             <p className="text-neutral-300">
               <strong>Wrong:</strong> Aᶜ = "everything not in A"
@@ -295,7 +295,7 @@ const SECTIONS = [
         </div>
 
         <div className="bg-red-900/20 p-4 rounded-lg border border-red-600/30">
-          <h4 className="font-semibold text-red-400 mb-3">❌ Mistake #4: Order of Operations</h4>
+          <h4 className="font-semibold text-red-400 mb-3">Mistake #4: Order of Operations</h4>
           <div className="text-sm space-y-2">
             <p className="text-neutral-300">
               <strong>Ambiguous:</strong> A ∪ B ∩ C

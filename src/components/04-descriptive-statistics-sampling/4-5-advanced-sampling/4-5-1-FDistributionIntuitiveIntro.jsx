@@ -268,7 +268,7 @@ const FDistributionIntuitiveIntro = () => {
       id: 'variance-concept',
       title: 'Understanding Variance',
       description: 'Variance measures how spread out data points are from their mean',
-      formula: '\\sigma^2 = \\frac{1}{n}\\sum_{i=1}^{n}(x_i - \\mu)^2',
+      formula: `\\sigma^2 = \\frac{1}{n}\\sum_{i=1}^{n}(x_i - \\mu)^2`,
       discovered: currentStage !== 'story',
       category: 'concept'
     },
@@ -276,7 +276,7 @@ const FDistributionIntuitiveIntro = () => {
       id: 'f-ratio',
       title: 'The F-Ratio',
       description: 'F-statistic is the ratio of two variances',
-      formula: 'F = \\frac{s_1^2}{s_2^2}',
+      formula: `F = \\frac{s_1^2}{s_2^2}`,
       discovered: currentStage === 'compare' || currentStage === 'formalize',
       category: 'formula'
     },
@@ -298,7 +298,7 @@ const FDistributionIntuitiveIntro = () => {
       id: 'degrees-of-freedom',
       title: 'Degrees of Freedom',
       description: 'F-distribution has two parameters: df₁ and df₂',
-      formula: 'F \\sim F(df_1, df_2)',
+      formula: `F \\sim F(df_1, df_2)`,
       discovered: currentStage === 'formalize' && samplesGenerated > 0,
       category: 'formula'
     },

@@ -6,180 +6,211 @@ import { StepByStepCalculation, CalculationStep, FormulaDisplay } from '@/compon
 import { ComparisonTable } from '@/components/ui/patterns/ComparisonTable';
 import { InterpretationBox } from '@/components/ui/patterns/InterpretationBox';
 import { SimpleInsightBox } from '@/components/ui/patterns/SimpleComponents';
+import { useMathJax } from '@/hooks/useMathJax';
 
 const SECTIONS = [
   {
     id: 'basic-operations',
     title: 'Basic Set Operations Example',
-    content: ({ sectionIndex, isCompleted }) => (
-      <div className="space-y-6">
-        <StepByStepCalculation title="Working with Server Components" theme="blue">
-          <CalculationStep title="The Setup" variant="default">
-            <p className="text-neutral-300 mb-3">
-              A web application has three main components. Let's define:
-            </p>
-            <div className="space-y-2">
-              <div className="bg-neutral-800 rounded p-3">
-                <p className="text-sm"><strong>D</strong> = Database is working = {Server1, Server2, Server5}</p>
+    content: ({ sectionIndex, isCompleted }) => {
+      const contentRef = useMathJax([sectionIndex, isCompleted]);
+      
+      return (
+        <div ref={contentRef} className="space-y-6">
+          <StepByStepCalculation title="Working with Server Components" theme="blue">
+            <CalculationStep title="The Setup" variant="default">
+              <p className="text-neutral-300 mb-3">
+                A web application has three main components. Let's define:
+              </p>
+              <div className="space-y-2">
+                <div className="bg-neutral-800 rounded p-3">
+                  <p className="text-sm"><strong>D</strong> = Database is working = {'{'} Server1, Server2, Server5 {'}'}</p>
+                </div>
+                <div className="bg-neutral-800 rounded p-3">
+                  <p className="text-sm"><strong>A</strong> = API is working = {'{'} Server2, Server3, Server4 {'}'}</p>
+                </div>
+                <div className="bg-neutral-800 rounded p-3">
+                  <p className="text-sm"><strong>S</strong> = All servers = {'{'} Server1, Server2, Server3, Server4, Server5 {'}'}</p>
+                </div>
               </div>
-              <div className="bg-neutral-800 rounded p-3">
-                <p className="text-sm"><strong>A</strong> = API is working = {Server2, Server3, Server4}</p>
-              </div>
-              <div className="bg-neutral-800 rounded p-3">
-                <p className="text-sm"><strong>S</strong> = All servers = {Server1, Server2, Server3, Server4, Server5}</p>
-              </div>
-            </div>
-          </CalculationStep>
+            </CalculationStep>
 
-          <CalculationStep title="Union: D ∪ A (Either component working)" variant="default">
-            <p className="text-neutral-300 mb-3">
-              Find all servers where <em>either</em> the database <em>or</em> API is working:
-            </p>
-            <FormulaDisplay formula="D \cup A = \{Server1, Server2, Server5\} \cup \{Server2, Server3, Server4\}" />
-            <FormulaDisplay formula="D \cup A = \{Server1, Server2, Server3, Server4, Server5\}" />
-            <InterpretationBox theme="blue">
-              The union includes Server2 only once (no duplicates in sets)
-            </InterpretationBox>
-          </CalculationStep>
+            <CalculationStep title="Union: D ∪ A (Either component working)" variant="default">
+              <p className="text-neutral-300 mb-3">
+                Find all servers where <em>either</em> the database <em>or</em> API is working:
+              </p>
+              <FormulaDisplay formula={`D \\cup A = \\{\\text{Server1, Server2, Server5}\\} \\cup \\{\\text{Server2, Server3, Server4}\\}`} />
+              <FormulaDisplay formula={`D \\cup A = \\{\\text{Server1, Server2, Server3, Server4, Server5}\\}`} />
+              <InterpretationBox theme="blue">
+                The union includes Server2 only once (no duplicates in sets)
+              </InterpretationBox>
+            </CalculationStep>
 
-          <CalculationStep title="Intersection: D ∩ A (Both components working)" variant="default">
-            <p className="text-neutral-300 mb-3">
-              Find servers where <em>both</em> database <em>and</em> API are working:
-            </p>
-            <FormulaDisplay formula="D \cap A = \{Server1, Server2, Server5\} \cap \{Server2, Server3, Server4\}" />
-            <FormulaDisplay formula="D \cap A = \{Server2\}" />
-            <InterpretationBox theme="teal">
-              Only Server2 appears in both sets
-            </InterpretationBox>
-          </CalculationStep>
+            <CalculationStep title="Intersection: D ∩ A (Both components working)" variant="default">
+              <p className="text-neutral-300 mb-3">
+                Find servers where <em>both</em> database <em>and</em> API are working:
+              </p>
+              <FormulaDisplay formula={`D \\cap A = \\{\\text{Server1, Server2, Server5}\\} \\cap \\{\\text{Server2, Server3, Server4}\\}`} />
+              <FormulaDisplay formula={`D \\cap A = \\{\\text{Server2}\\}`} />
+              <InterpretationBox theme="teal">
+                Only Server2 appears in both sets
+              </InterpretationBox>
+            </CalculationStep>
 
-          <CalculationStep title="Complement: Dᶜ (Database not working)" variant="highlight">
-            <p className="text-neutral-300 mb-3">
-              Find servers where the database is <em>not</em> working:
-            </p>
-            <FormulaDisplay formula="D^c = S \setminus D = \{Server1, Server2, Server3, Server4, Server5\} \setminus \{Server1, Server2, Server5\}" />
-            <FormulaDisplay formula="D^c = \{Server3, Server4\}" />
-            <SimpleInsightBox theme="green" title="Complement Check">
-              Notice: D ∪ Dᶜ = {Server1, Server2, Server5} ∪ {Server3, Server4} = S ✓
-            </SimpleInsightBox>
-          </CalculationStep>
-        </StepByStepCalculation>
-      </div>
-    )
+            <CalculationStep title="Complement: Dᶜ (Database not working)" variant="highlight">
+              <p className="text-neutral-300 mb-3">
+                Find servers where the database is <em>not</em> working:
+              </p>
+              <FormulaDisplay formula={`D^c = S \\setminus D = \\{\\text{Server1, Server2, Server3, Server4, Server5}\\} \\setminus \\{\\text{Server1, Server2, Server5}\\}`} />
+              <FormulaDisplay formula={`D^c = \\{\\text{Server3, Server4}\\}`} />
+              <SimpleInsightBox theme="green" title="Complement Check">
+                <span dangerouslySetInnerHTML={{ __html: `Notice: \\(D \\cup D^c = \\{\\text{Server1, Server2, Server5}\\} \\cup \\{\\text{Server3, Server4}\\} = S\\) ✓` }} />
+              </SimpleInsightBox>
+            </CalculationStep>
+          </StepByStepCalculation>
+        </div>
+      );
+    }
   },
   {
     id: 'demorgans-proof',
     title: "Proving De Morgan's Laws",
-    content: ({ sectionIndex, isCompleted }) => (
-      <div className="space-y-6">
-        <StepByStepCalculation title="De Morgan's First Law: (A ∪ B)ᶜ = Aᶜ ∩ Bᶜ" theme="purple">
-          <CalculationStep title="Using the Server Example" variant="default">
-            <p className="text-neutral-300 mb-3">
-              Let's prove this using our server data:
-            </p>
-            <div className="space-y-2 text-sm">
-              <p>D = {Server1, Server2, Server5}</p>
-              <p>A = {Server2, Server3, Server4}</p>
-              <p>S = {Server1, Server2, Server3, Server4, Server5}</p>
-            </div>
-          </CalculationStep>
-
-          <CalculationStep title="Step 1: Calculate Left Side (A ∪ B)ᶜ" variant="default">
-            <FormulaDisplay formula="D \cup A = \{Server1, Server2, Server3, Server4, Server5\}" />
-            <FormulaDisplay formula="(D \cup A)^c = S \setminus (D \cup A) = \{Server1, Server2, Server3, Server4, Server5\} \setminus \{Server1, Server2, Server3, Server4, Server5\}" />
-            <FormulaDisplay formula="(D \cup A)^c = \emptyset" />
-          </CalculationStep>
-
-          <CalculationStep title="Step 2: Calculate Right Side Aᶜ ∩ Bᶜ" variant="default">
-            <FormulaDisplay formula="D^c = \{Server3, Server4\}" />
-            <FormulaDisplay formula="A^c = \{Server1, Server5\}" />
-            <FormulaDisplay formula="D^c \cap A^c = \{Server3, Server4\} \cap \{Server1, Server5\} = \emptyset" />
-          </CalculationStep>
-
-          <CalculationStep title="Step 3: Compare Results" variant="highlight">
-            <div className="bg-green-900/20 p-4 rounded border border-green-600/30">
-              <p className="text-neutral-300">Left side: (D ∪ A)ᶜ = ∅</p>
-              <p className="text-neutral-300">Right side: Dᶜ ∩ Aᶜ = ∅</p>
-              <p className="text-green-400 font-semibold mt-2">✓ Both sides are equal! De Morgan's Law verified.</p>
-            </div>
-            
-            <InterpretationBox theme="purple" title="Why This Works">
-              <p>
-                In this case, D ∪ A = S (all servers), so (D ∪ A)ᶜ = ∅. 
-                And since Dᶜ and Aᶜ don't overlap, their intersection is also ∅.
+    content: ({ sectionIndex, isCompleted }) => {
+      const contentRef = useMathJax([sectionIndex, isCompleted]);
+      
+      return (
+        <div ref={contentRef} className="space-y-6">
+          <StepByStepCalculation title="De Morgan's First Law: (A ∪ B)ᶜ = Aᶜ ∩ Bᶜ" theme="purple">
+            <CalculationStep title="Using the Server Example" variant="default">
+              <p className="text-neutral-300 mb-3">
+                Let's prove this using our server data:
               </p>
-            </InterpretationBox>
-          </CalculationStep>
-        </StepByStepCalculation>
-      </div>
-    )
+              <div className="space-y-2 text-sm">
+                <p>D = {'{'} Server1, Server2, Server5 {'}'}</p>
+                <p>A = {'{'} Server2, Server3, Server4 {'}'}</p>
+                <p>S = {'{'} Server1, Server2, Server3, Server4, Server5 {'}'}</p>
+              </div>
+            </CalculationStep>
+
+            <CalculationStep title="Step 1: Calculate Left Side (D ∪ A)ᶜ" variant="default">
+              <FormulaDisplay formula={`D \\cup A = \\{\\text{Server1, Server2, Server3, Server4, Server5}\\}`} />
+              <FormulaDisplay formula={`(D \\cup A)^c = S \\setminus (D \\cup A) = \\{\\text{Server1, ..., Server5}\\} \\setminus \\{\\text{Server1, ..., Server5}\\}`} />
+              <FormulaDisplay formula={`(D \\cup A)^c = \\emptyset`} />
+            </CalculationStep>
+
+            <CalculationStep title="Step 2: Calculate Right Side Dᶜ ∩ Aᶜ" variant="default">
+              <FormulaDisplay formula={`D^c = \\{\\text{Server3, Server4}\\}`} />
+              <FormulaDisplay formula={`A^c = \\{\\text{Server1, Server5}\\}`} />
+              <FormulaDisplay formula={`D^c \\cap A^c = \\{\\text{Server3, Server4}\\} \\cap \\{\\text{Server1, Server5}\\} = \\emptyset`} />
+            </CalculationStep>
+
+            <CalculationStep title="Step 3: Compare Results" variant="highlight">
+              <div className="bg-green-900/20 p-4 rounded border border-green-600/30">
+                <p className="text-neutral-300">
+                  Left side: <span dangerouslySetInnerHTML={{ __html: `\\((D \\cup A)^c = \\emptyset\\)` }} />
+                </p>
+                <p className="text-neutral-300">
+                  Right side: <span dangerouslySetInnerHTML={{ __html: `\\(D^c \\cap A^c = \\emptyset\\)` }} />
+                </p>
+                <p className="text-green-400 font-semibold mt-2">✓ Both sides are equal! De Morgan's Law verified.</p>
+              </div>
+              
+              <InterpretationBox theme="purple" title="Why This Works">
+                <p>
+                  In this case, D ∪ A = S (all servers), so (D ∪ A)ᶜ = ∅. 
+                  And since Dᶜ and Aᶜ don't overlap, their intersection is also ∅.
+                </p>
+              </InterpretationBox>
+            </CalculationStep>
+          </StepByStepCalculation>
+        </div>
+      );
+    }
   },
   {
-    id: 'complex-expressions',
-    title: 'Building Complex Expressions',
-    content: ({ sectionIndex, isCompleted }) => (
-      <div className="space-y-6">
-        <StepByStepCalculation title="Multi-Component System Analysis" theme="teal">
-          <CalculationStep title="The Scenario" variant="default">
-            <div className="bg-teal-900/20 p-4 rounded border border-teal-600/30">
-              <p className="text-neutral-300 mb-3">
-                A cloud system has three services: Authentication (A), Database (D), and Cache (C). 
-                We want to analyze different failure scenarios.
-              </p>
-              <div className="text-sm space-y-1">
-                <p>A = {Server1, Server3, Server5}</p>
-                <p>D = {Server2, Server3, Server4}</p>
-                <p>C = {Server1, Server4, Server5}</p>
+    id: 'card-example',
+    title: 'Real-World Example: Card Game',
+    content: ({ sectionIndex, isCompleted }) => {
+      const contentRef = useMathJax([sectionIndex, isCompleted]);
+      
+      return (
+        <div ref={contentRef} className="space-y-6">
+          <StepByStepCalculation title="Analyzing a Card Game with Set Operations" theme="teal">
+            <CalculationStep title="The Setup" variant="default">
+              <div className="bg-teal-900/20 p-4 rounded border border-teal-600/30">
+                <p className="text-neutral-300 mb-3">
+                  From a standard deck of 52 cards, let's define these events:
+                </p>
+                <div className="text-sm space-y-1">
+                  <p><strong>F</strong> = Face cards (J, Q, K) = 12 cards</p>
+                  <p><strong>R</strong> = Red cards (♥, ♦) = 26 cards</p>
+                  <p><strong>H</strong> = Hearts (♥) = 13 cards</p>
+                </div>
               </div>
-            </div>
-          </CalculationStep>
+            </CalculationStep>
 
-          <CalculationStep title="Scenario 1: 'At least one service fails'" variant="default">
-            <p className="text-neutral-300 mb-3">
-              Translation: NOT(all services working) = (A ∩ D ∩ C)ᶜ
-            </p>
-            <FormulaDisplay formula="A \cap D \cap C = \{Server1, Server3, Server5\} \cap \{Server2, Server3, Server4\} \cap \{Server1, Server4, Server5\}" />
-            <FormulaDisplay formula="A \cap D \cap C = \{Server3\} \cap \{Server1, Server4, Server5\} = \emptyset" />
-            <FormulaDisplay formula="(A \cap D \cap C)^c = S \setminus \emptyset = S" />
-            <InterpretationBox theme="teal">
-              Since no server runs all three services, "at least one service fails" is always true (probability = 1)
-            </InterpretationBox>
-          </CalculationStep>
+            <CalculationStep title="Example 1: Face Card OR Red Card" variant="default">
+              <p className="text-neutral-300 mb-3">
+                Find: <span dangerouslySetInnerHTML={{ __html: `\\(F \\cup R\\)` }} /> - Cards that are face cards OR red cards
+              </p>
+              <div className="bg-neutral-800 rounded p-3 text-sm mb-3">
+                <p>We need to count:</p>
+                <ul className="list-disc list-inside ml-4 mt-2">
+                  <li>All face cards: 12 cards</li>
+                  <li>All red cards: 26 cards</li>
+                  <li>But don't double-count red face cards!</li>
+                </ul>
+              </div>
+              <FormulaDisplay formula={`|F \\cup R| = |F| + |R| - |F \\cap R|`} />
+              <FormulaDisplay formula={`|F \\cup R| = 12 + 26 - 6 = 32`} />
+              <InterpretationBox theme="teal">
+                6 cards are both face cards AND red (J♥, Q♥, K♥, J♦, Q♦, K♦)
+              </InterpretationBox>
+            </CalculationStep>
 
-          <CalculationStep title="Scenario 2: 'Authentication works but database fails'" variant="default">
-            <p className="text-neutral-300 mb-3">
-              Translation: A ∩ Dᶜ (A AND NOT D)
-            </p>
-            <FormulaDisplay formula="D^c = S \setminus D = \{Server1, Server5\}" />
-            <FormulaDisplay formula="A \cap D^c = \{Server1, Server3, Server5\} \cap \{Server1, Server5\}" />
-            <FormulaDisplay formula="A \cap D^c = \{Server1, Server5\}" />
-            <InterpretationBox theme="blue">
-              Servers 1 and 5 have authentication but no database service
-            </InterpretationBox>
-          </CalculationStep>
+            <CalculationStep title="Example 2: Hearts BUT NOT Face Cards" variant="default">
+              <p className="text-neutral-300 mb-3">
+                Find: <span dangerouslySetInnerHTML={{ __html: `\\(H \\setminus F\\)` }} /> - Hearts that are not face cards
+              </p>
+              <FormulaDisplay formula={`H \\setminus F = \\{A♥, 2♥, 3♥, 4♥, 5♥, 6♥, 7♥, 8♥, 9♥, 10♥\\}`} />
+              <FormulaDisplay formula={`|H \\setminus F| = 13 - 3 = 10`} />
+              <InterpretationBox theme="blue">
+                We remove the 3 heart face cards (J♥, Q♥, K♥) from the 13 hearts
+              </InterpretationBox>
+            </CalculationStep>
 
-          <CalculationStep title="Scenario 3: 'Exactly two services work'" variant="highlight">
-            <p className="text-neutral-300 mb-3">
-              This is more complex - we need servers where exactly 2 of the 3 services work:
-            </p>
-            <div className="space-y-2 text-sm">
-              <FormulaDisplay formula="(A \cap D \cap C^c) \cup (A \cap D^c \cap C) \cup (A^c \cap D \cap C)" />
-            </div>
-            <div className="bg-neutral-800 rounded p-3 text-sm space-y-1">
-              <p>A ∩ D ∩ Cᶜ = {Server3} ∩ {Server2, Server3, Server4} = ∅</p>
-              <p>A ∩ Dᶜ ∩ C = {Server1, Server5} ∩ {Server1, Server4, Server5} = {Server1, Server5}</p>
-              <p>Aᶜ ∩ D ∩ C = {Server2, Server4} ∩ {Server2, Server3, Server4} ∩ {Server1, Server4, Server5} = {Server4}</p>
-            </div>
-            <FormulaDisplay formula="\text{Result: } \{Server1, Server4, Server5\}" />
-          </CalculationStep>
-        </StepByStepCalculation>
-      </div>
-    )
+            <CalculationStep title="Example 3: Using De Morgan's Law" variant="highlight">
+              <p className="text-neutral-300 mb-3">
+                Find: Cards that are NOT (Face card OR Heart)
+              </p>
+              <p className="text-neutral-300 mb-2">
+                Using De Morgan's Law: <span dangerouslySetInnerHTML={{ __html: `\\((F \\cup H)^c = F^c \\cap H^c\\)` }} />
+              </p>
+              <div className="bg-neutral-800 rounded p-3 text-sm mb-3">
+                <p>This means: NOT face card AND NOT heart</p>
+                <p className="mt-2">These are the number cards (A-10) in spades, clubs, and diamonds:</p>
+                <ul className="list-disc list-inside ml-4 mt-1">
+                  <li>Spades: A♠ through 10♠ (10 cards)</li>
+                  <li>Clubs: A♣ through 10♣ (10 cards)</li>
+                  <li>Diamonds: A♦ through 10♦ (10 cards)</li>
+                </ul>
+              </div>
+              <FormulaDisplay formula={`|(F \\cup H)^c| = |F^c \\cap H^c| = 30`} />
+              <SimpleInsightBox theme="green" title="Verification">
+                <span dangerouslySetInnerHTML={{ __html: `Total cards = 52, \\(|F \\cup H| = 12 + 13 - 3 = 22\\), so \\(|(F \\cup H)^c| = 52 - 22 = 30\\) ✓` }} />
+              </SimpleInsightBox>
+            </CalculationStep>
+          </StepByStepCalculation>
+        </div>
+      );
+    }
   },
   {
     id: 'operation-properties',
     title: 'Key Properties and Laws',
     content: ({ sectionIndex, isCompleted }) => {
+      const contentRef = useMathJax([sectionIndex, isCompleted]);
+      
       const operationProperties = {
         title: "Important Set Operation Properties",
         columns: [
@@ -240,7 +271,7 @@ const SECTIONS = [
       };
 
       return (
-        <div className="space-y-6">
+        <div ref={contentRef} className="space-y-6">
           <ComparisonTable {...operationProperties} />
           
           <InterpretationBox theme="green" title="Why These Properties Matter">

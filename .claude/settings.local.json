@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": [
       "WebFetch(domain:docs.anthropic.com)",
@@ -128,7 +129,17 @@
       "Bash(else echo \"Tutorials directory is not empty or doesn''t exist\")",
       "Bash(diff:*)",
       "Bash(do echo \"=== $file ===\")",
-      "WebFetch(domain:localhost)"
+      "WebFetch(domain:localhost)",
+      "Bash(git log:*)",
+      "Bash(claude mcp:*)",
+      "Bash(open http://localhost:3001/learn)",
+      "Bash(timeout 10 npm run build:*)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"dangerouslySetInnerHTML.*__html\" src/components/learn/LaTeXDiagnostic.jsx -A 1 -B 1)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"dangerouslySetInnerHTML.*__html.*formula\" src/components/ui/patterns/LaTeXTestComponents.jsx -A 1 -B 1)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"DirectComparisonTest formula=\" src/components/learn/LaTeXEmpiricalTest.jsx)",
+      "Bash(do echo -e \"\\nChecking $dir:\")",
+      "Bash(timeout 15s npm run dev)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"ComparisonTable.*headers=\" /Users/hananather/Desktop/Javascript/prob-lab/src/components/01-introduction-to-probabilities -g \"*.jsx\" -n)"
     ],
     "deny": []
   }

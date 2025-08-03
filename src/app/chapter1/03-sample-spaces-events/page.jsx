@@ -7,17 +7,17 @@ import { BookOpen, Target, Zap } from 'lucide-react';
 
 // Dynamic imports for tab components
 const FoundationsTab = dynamic(() => 
-  import('@/components/01-introduction-to-probabilities/03-sample-spaces-events/FoundationsTab'),
+  import('@/components/01-introduction-to-probabilities/03-sample-spaces-events/Tab1FoundationsTab'),
   { ssr: false }
 );
 
 const WorkedExamplesTab = dynamic(() => 
-  import('@/components/01-introduction-to-probabilities/03-sample-spaces-events/WorkedExamplesTab'),
+  import('@/components/01-introduction-to-probabilities/03-sample-spaces-events/Tab2WorkedExamplesTab'),
   { ssr: false }
 );
 
 const QuickReferenceTab = dynamic(() => 
-  import('@/components/01-introduction-to-probabilities/03-sample-spaces-events/QuickReferenceTab'),
+  import('@/components/01-introduction-to-probabilities/03-sample-spaces-events/Tab3QuickReferenceTab'),
   { ssr: false }
 );
 

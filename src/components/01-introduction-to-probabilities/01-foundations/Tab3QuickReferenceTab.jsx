@@ -14,13 +14,13 @@ const SECTIONS = [
         <div className="grid md:grid-cols-2 gap-4">
           <SimpleFormulaCard 
             title="Equal Mass Pebbles" 
-            formula="P(A) = \frac{\text{Number in event}}{\text{Total number}}"
+            formula={`P(A) = \\frac{\\text{Number in event}}{\\text{Total number}}`}
             description="When all outcomes are equally likely"
             theme="purple"
           />
           <SimpleFormulaCard 
             title="Unequal Mass Pebbles" 
-            formula="P(A) = \frac{\text{Mass of event}}{\text{Total mass}}"
+            formula={`P(A) = \\frac{\\text{Mass of event}}{\\text{Total mass}}`}
             description="When outcomes have different probabilities"
             theme="purple"
           />
@@ -28,7 +28,7 @@ const SECTIONS = [
 
         <SimpleFormulaCard 
           title="Complement Rule" 
-          formula="P(A^c) = 1 - P(A)"
+          formula={`P(A^c) = 1 - P(A)`}
           description="Probability of 'not A' = 1 minus probability of A"
           theme="teal"
         />
@@ -49,7 +49,7 @@ const SECTIONS = [
     title: 'When to Use What',
     content: ({ sectionIndex, isCompleted }) => {
       const decisionData = {
-        title: "Pebble World Decision Guide",
+        title: "Probability Decision Guide",
         columns: [
           { key: 'scenario', title: 'Scenario Type', color: 'text-blue-400' },
           { key: 'approach', title: 'Which Model?', color: 'text-green-400' },
@@ -107,7 +107,7 @@ const SECTIONS = [
     content: ({ sectionIndex, isCompleted }) => (
       <div className="space-y-6">
         <div className="bg-red-900/20 p-4 rounded-lg border border-red-600/30">
-          <h4 className="font-semibold text-red-400 mb-3">❌ Common Mistake #1</h4>
+          <h4 className="font-semibold text-red-400 mb-3">Common Mistake #1</h4>
           <p className="text-neutral-300 mb-2">
             <strong>Forgetting to check if outcomes are equally likely</strong>
           </p>
@@ -117,7 +117,7 @@ const SECTIONS = [
         </div>
 
         <div className="bg-red-900/20 p-4 rounded-lg border border-red-600/30">
-          <h4 className="font-semibold text-red-400 mb-3">❌ Common Mistake #2</h4>
+          <h4 className="font-semibold text-red-400 mb-3">Common Mistake #2</h4>
           <p className="text-neutral-300 mb-2">
             <strong>Confusing "or" with "and"</strong>
           </p>
@@ -127,7 +127,7 @@ const SECTIONS = [
         </div>
 
         <div className="bg-red-900/20 p-4 rounded-lg border border-red-600/30">
-          <h4 className="font-semibold text-red-400 mb-3">❌ Common Mistake #3</h4>
+          <h4 className="font-semibold text-red-400 mb-3">Common Mistake #3</h4>
           <p className="text-neutral-300 mb-2">
             <strong>Forgetting probabilities must sum to 1</strong>
           </p>

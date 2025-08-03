@@ -1055,19 +1055,19 @@ const BaseballHeights = React.memo(function BaseballHeights() {
           <StatCard
             label="Sample Mean"
             value={`${xBar}"`}
-            formula="\\bar{X} = \\frac{1}{n}\\sum X_i"
+            formula={`\\bar{X} = \\frac{1}{n}\\sum X_i`}
             color="blue"
           />
           <StatCard
             label="Sample Variance"
             value={s2.toFixed(4)}
-            formula="S^2 = \\frac{1}{n-1}\\sum(X_i - \\bar{X})^2"
+            formula={`S^2 = \\frac{1}{n-1}\\sum(X_i - \\bar{X})^2`}
             color="purple"
           />
           <StatCard
             label="Standard Error"
             value={se.toFixed(4)}
-            formula="SE(\\bar{X}) = \\frac{S}{\\sqrt{n}}"
+            formula={`SE(\\bar{X}) = \\frac{S}{\\sqrt{n}}`}
             color="teal"
           />
         </div>

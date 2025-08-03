@@ -151,7 +151,7 @@ const MathematicalProperties = React.memo(function MathematicalProperties() {
           <div className="text-sm text-neutral-300">
             <p className="mb-2">Correlation is symmetric:</p>
             <div className="text-center text-teal-400 my-3">
-              <span dangerouslySetInnerHTML={{ __html: `\\[\\rho_{XY} = \\rho_{YX}\\]` }} />
+              <span dangerouslySetInnerHTML={{ __html: `\\[\\rho_{\\text{XY}} = \\rho_{\\text{YX}}\\]` }} />
             </div>
             <p className="text-xs text-neutral-400">
               The correlation between X and Y equals the correlation between Y and X
@@ -881,7 +881,9 @@ const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGaller
     if (!svgRef.current) return;
     
     const svg = d3.select(svgRef.current);
-    svg.selectAll("*").remove();
+    
+    // Clear previous content with proper cleanup
+    svg.selectAll("g.main-group").remove();
     
     const width = svgRef.current.clientWidth;
     const height = 300;
@@ -891,6 +893,7 @@ const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGaller
       .attr("width", width)
       .attr("height", height)
       .append("g")
+      .attr("class", "main-group")
       .attr("transform", `translate(${margin.left},${margin.top})`);
     
     const innerWidth = width - margin.left - margin.right;
@@ -972,20 +975,31 @@ const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGaller
         .attr("stroke-dasharray", selectedPattern === 'no-correlation' ? "5,5" : "none");
     }
     
-    // Add scatter points
-    g.selectAll(".dot")
-      .data(data)
-      .enter().append("circle")
+    // Add scatter points using proper data join
+    const dots = g.selectAll(".dot")
+      .data(data, (d, i) => `${selectedPattern}-${i}`);
+    
+    // Exit old points
+    dots.exit().remove();
+    
+    // Enter new points
+    const dotsEnter = dots.enter().append("circle")
       .attr("class", "dot")
       .attr("cx", d => x(d.x))
       .attr("cy", d => y(d.y))
       .attr("r", 0)
       .attr("fill", pattern.color)
-      .attr("opacity", 0.8)
+      .attr("opacity", 0.8);
+    
+    // Update existing + new points
+    dotsEnter.merge(dots)
       .transition()
       .duration(500)
       .delay((d, i) => i * 30)
-      .attr("r", 4);
+      .attr("cx", d => x(d.x))
+      .attr("cy", d => y(d.y))
+      .attr("r", 4)
+      .attr("fill", pattern.color);
     
     // Add correlation value
     const r = calculateR(data);
@@ -998,6 +1012,13 @@ const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGaller
       .style("fill", pattern.color)
       .text(`r = ${r.toFixed(3)}`);
     
+    // Cleanup function
+    return () => {
+      if (svgRef.current) {
+        const svg = d3.select(svgRef.current);
+        svg.selectAll(".main-group").remove();
+      }
+    };
   }, [selectedPattern]);
   
   return (
@@ -1242,7 +1263,9 @@ export default function CorrelationCoefficient() {
     if (!svgRef.current) return;
     
     const svg = d3.select(svgRef.current);
-    svg.selectAll("*").remove();
+    
+    // Clear previous content with proper cleanup
+    svg.selectAll("g.main-visualization").remove();
     
     const width = svgRef.current.clientWidth;
     const height = 500;
@@ -1252,6 +1275,7 @@ export default function CorrelationCoefficient() {
       .attr("width", width)
       .attr("height", height)
       .append("g")
+      .attr("class", "main-visualization")
       .attr("transform", `translate(${margin.left},${margin.top})`);
     
     const innerWidth = width - margin.left - margin.right;
@@ -1343,23 +1367,31 @@ export default function CorrelationCoefficient() {
         .attr("stroke-dasharray", "5,5")
         .attr("opacity", 0.5);
       
-      // Add deviation rectangles
-      currentData.forEach((d, i) => {
+        // Add deviation rectangles using proper data join
+      const deviationData = currentData.map((d, i) => {
         const devX = d.x - stats.meanX;
         const devY = d.y - stats.meanY;
         const color = (devX * devY > 0) ? "#10b981" : "#ef4444";
-        
-        g.append("rect")
-          .attr("x", Math.min(x(d.x), x(stats.meanX)))
-          .attr("y", Math.min(y(d.y), y(stats.meanY)))
-          .attr("width", Math.abs(x(d.x) - x(stats.meanX)))
-          .attr("height", Math.abs(y(d.y) - y(stats.meanY)))
-          .attr("fill", color)
-          .attr("opacity", 0.1)
-          .attr("stroke", color)
-          .attr("stroke-width", 0.5)
-          .attr("stroke-opacity", 0.3);
+        return { ...d, color, index: i };
       });
+      
+      const deviationRects = g.selectAll(".deviation-rect")
+        .data(deviationData, d => `deviation-${d.index}`);
+      
+      deviationRects.exit().remove();
+      
+      deviationRects.enter().append("rect")
+        .attr("class", "deviation-rect")
+        .merge(deviationRects)
+        .attr("x", d => Math.min(x(d.x), x(stats.meanX)))
+        .attr("y", d => Math.min(y(d.y), y(stats.meanY)))
+        .attr("width", d => Math.abs(x(d.x) - x(stats.meanX)))
+        .attr("height", d => Math.abs(y(d.y) - y(stats.meanY)))
+        .attr("fill", d => d.color)
+        .attr("opacity", 0.1)
+        .attr("stroke", d => d.color)
+        .attr("stroke-width", 0.5)
+        .attr("stroke-opacity", 0.3);
     }
     
     // Calculate and draw regression line
@@ -1380,21 +1412,32 @@ export default function CorrelationCoefficient() {
       .attr("stroke-width", 2)
       .attr("opacity", 0.8);
     
-    // Add scatter points
-    g.selectAll(".dot")
-      .data(currentData)
-      .enter().append("circle")
+    // Add scatter points using proper data join
+    const dots = g.selectAll(".dot")
+      .data(currentData, (d, i) => `dot-${scenario}-${i}`);
+    
+    // Exit old points
+    dots.exit().remove();
+    
+    // Enter new points
+    const dotsEnter = dots.enter().append("circle")
       .attr("class", "dot")
       .attr("cx", d => x(d.x))
       .attr("cy", d => y(d.y))
       .attr("r", 0)
       .attr("fill", "#3b82f6")
       .attr("stroke", "#ffffff")
-      .attr("stroke-width", 1.5)
+      .attr("stroke-width", 1.5);
+    
+    // Update existing + new points
+    dotsEnter.merge(dots)
       .transition()
       .duration(500)
       .delay((d, i) => i * 50)
-      .attr("r", 6);
+      .attr("cx", d => x(d.x))
+      .attr("cy", d => y(d.y))
+      .attr("r", 6)
+      .attr("fill", "#3b82f6");
     
     // Add correlation value display
     g.append("text")
@@ -1406,6 +1449,13 @@ export default function CorrelationCoefficient() {
       .style("fill", stats.r > 0 ? "#3b82f6" : "#ef4444")
       .text(`r = ${stats.r.toFixed(3)}`);
     
+    // Cleanup function
+    return () => {
+      if (svgRef.current) {
+        const svg = d3.select(svgRef.current);
+        svg.selectAll(".main-visualization").remove();
+      }
+    };
   }, [currentData, showDeviations, stats]);
   
   return (

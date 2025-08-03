@@ -41,30 +41,30 @@ export const JointDistributionWorkedExample = () => {
         <div>
           <p className="mb-2">Given the joint PDF:</p>
           <LaTeXFormula 
-            formula="f_{X,Y}(x,y) = \\begin{cases} 
+            formula={`f_{X,Y}(x,y) = \\begin{cases} 
               6xy & 0 \\leq x \\leq 1, 0 \\leq y \\leq 1-x \\\\
               0 & \\text{otherwise}
-            \\end{cases}" 
+            \\end{cases}`} 
             isBlock={true}
           />
-          <p className="mt-2">Find the marginal PDFs <LaTeXFormula formula="f_X(x)" /> and <LaTeXFormula formula="f_Y(y)" />.</p>
+          <p className="mt-2">Find the marginal PDFs <LaTeXFormula formula={`f_X(x)`} /> and <LaTeXFormula formula={`f_Y(y)`} />.</p>
         </div>
       ),
       solution: (
         <div className="space-y-4">
           <div>
-            <p className="font-semibold text-blue-400 mb-2">Finding <LaTeXFormula formula="f_X(x)" />:</p>
-            <p>For <LaTeXFormula formula="0 \\leq x \\leq 1" />:</p>
+            <p className="font-semibold text-blue-400 mb-2">Finding <LaTeXFormula formula={`f_X(x)`} />:</p>
+            <p>For <LaTeXFormula formula={`0 \\leq x \\leq 1`} />:</p>
             <LaTeXFormula 
-              formula="f_X(x) = \\int_{0}^{1-x} 6xy \\, dy = 6x \\left[\\frac{y^2}{2}\\right]_0^{1-x} = 3x(1-x)^2" 
+              formula={`f_X(x) = \\int_{0}^{1-x} 6xy \\, dy = 6x \\left[\\frac{y^2}{2}\\right]_0^{1-x} = 3x(1-x)^2`} 
               isBlock={true}
             />
           </div>
           <div>
-            <p className="font-semibold text-green-400 mb-2">Finding <LaTeXFormula formula="f_Y(y)" />:</p>
-            <p>For <LaTeXFormula formula="0 \\leq y \\leq 1" />:</p>
+            <p className="font-semibold text-green-400 mb-2">Finding <LaTeXFormula formula={`f_Y(y)`} />:</p>
+            <p>For <LaTeXFormula formula={`0 \\leq y \\leq 1`} />:</p>
             <LaTeXFormula 
-              formula="f_Y(y) = \\int_{0}^{1-y} 6xy \\, dx = 6y \\left[\\frac{x^2}{2}\\right]_0^{1-y} = 3y(1-y)^2" 
+              formula={`f_Y(y) = \\int_{0}^{1-y} 6xy \\, dx = 6y \\left[\\frac{x^2}{2}\\right]_0^{1-y} = 3y(1-y)^2`} 
               isBlock={true}
             />
           </div>
@@ -81,10 +81,10 @@ export const JointDistributionWorkedExample = () => {
         <div>
           <p className="mb-2">For random variables X and Y with joint PDF:</p>
           <LaTeXFormula 
-            formula="f_{X,Y}(x,y) = \\begin{cases} 
+            formula={`f_{X,Y}(x,y) = \\begin{cases} 
               4xy & 0 \\leq x \\leq 1, 0 \\leq y \\leq 1 \\\\
               0 & \\text{otherwise}
-            \\end{cases}" 
+            \\end{cases}`} 
             isBlock={true}
           />
           <p className="mt-2">Are X and Y independent?</p>
@@ -98,23 +98,23 @@ export const JointDistributionWorkedExample = () => {
               <div>
                 <p className="text-blue-400 text-sm mb-1">For X:</p>
                 <LaTeXFormula 
-                  formula="f_X(x) = \\int_0^1 4xy \\, dy = 2x" 
+                  formula={`f_X(x) = \\int_0^1 4xy \\, dy = 2x`} 
                   isBlock={true}
                 />
               </div>
               <div>
                 <p className="text-green-400 text-sm mb-1">For Y:</p>
                 <LaTeXFormula 
-                  formula="f_Y(y) = \\int_0^1 4xy \\, dx = 2y" 
+                  formula={`f_Y(y) = \\int_0^1 4xy \\, dx = 2y`} 
                   isBlock={true}
                 />
               </div>
             </div>
           </div>
           <div>
-            <p className="font-semibold mb-2">Step 2: Check if <LaTeXFormula formula="f_{X,Y}(x,y) = f_X(x) \\cdot f_Y(y)" /></p>
+            <p className="font-semibold mb-2">Step 2: Check if <LaTeXFormula formula={`f_{X,Y}(x,y) = f_X(x) \\cdot f_Y(y)`} /></p>
             <LaTeXFormula 
-              formula="f_X(x) \\cdot f_Y(y) = 2x \\cdot 2y = 4xy = f_{X,Y}(x,y)" 
+              formula={`f_X(x) \\cdot f_Y(y) = 2x \\cdot 2y = 4xy = f_{X,Y}(x,y)`} 
               isBlock={true}
             />
             <p className="text-green-400 font-semibold mt-2">✓ Yes, X and Y are independent!</p>
@@ -128,31 +128,31 @@ export const JointDistributionWorkedExample = () => {
         <div>
           <p className="mb-2">Given the joint PDF from Example 1:</p>
           <LaTeXFormula 
-            formula="f_{X,Y}(x,y) = 6xy \\text{ for } 0 \\leq x \\leq 1, 0 \\leq y \\leq 1-x" 
+            formula={`f_{X,Y}(x,y) = 6xy \\text{ for } 0 \\leq x \\leq 1, 0 \\leq y \\leq 1-x`} 
             isBlock={true}
           />
-          <p className="mt-2">Find <LaTeXFormula formula="P(Y > 0.5 | X = 0.3)" />.</p>
+          <p className="mt-2">Find <LaTeXFormula formula={`P(Y > 0.5 | X = 0.3)`} />.</p>
         </div>
       ),
       solution: (
         <div className="space-y-4">
           <div>
-            <p className="font-semibold mb-2">Step 1: Find the conditional PDF <LaTeXFormula formula="f_{Y|X}(y|x=0.3)" /></p>
-            <p>We already found <LaTeXFormula formula="f_X(0.3) = 3(0.3)(1-0.3)^2 = 0.441" /></p>
+            <p className="font-semibold mb-2">Step 1: Find the conditional PDF <LaTeXFormula formula={`f_{Y|X}(y|x=0.3)`} /></p>
+            <p>We already found <LaTeXFormula formula={`f_X(0.3) = 3(0.3)(1-0.3)^2 = 0.441`} /></p>
             <LaTeXFormula 
-              formula="f_{Y|X}(y|0.3) = \\frac{f_{X,Y}(0.3,y)}{f_X(0.3)} = \\frac{6(0.3)y}{0.441} = \\frac{1.8y}{0.441}" 
+              formula={`f_{Y|X}(y|0.3) = \\frac{f_{X,Y}(0.3,y)}{f_X(0.3)} = \\frac{6(0.3)y}{0.441} = \\frac{1.8y}{0.441}`} 
               isBlock={true}
             />
-            <p className="text-sm text-neutral-400">for <LaTeXFormula formula="0 \\leq y \\leq 0.7" /></p>
+            <p className="text-sm text-neutral-400">for <LaTeXFormula formula={`0 \\leq y \\leq 0.7`} /></p>
           </div>
           <div>
             <p className="font-semibold mb-2">Step 2: Calculate the probability</p>
             <LaTeXFormula 
-              formula="P(Y > 0.5 | X = 0.3) = \\int_{0.5}^{0.7} \\frac{1.8y}{0.441} \\, dy" 
+              formula={`P(Y > 0.5 | X = 0.3) = \\int_{0.5}^{0.7} \\frac{1.8y}{0.441} \\, dy`} 
               isBlock={true}
             />
             <LaTeXFormula 
-              formula="= \\frac{1.8}{0.441} \\left[\\frac{y^2}{2}\\right]_{0.5}^{0.7} = \\frac{1.8}{0.441} \\cdot \\frac{0.49 - 0.25}{2} = 0.490" 
+              formula={`= \\frac{1.8}{0.441} \\left[\\frac{y^2}{2}\\right]_{0.5}^{0.7} = \\frac{1.8}{0.441} \\cdot \\frac{0.49 - 0.25}{2} = 0.490`} 
               isBlock={true}
             />
           </div>

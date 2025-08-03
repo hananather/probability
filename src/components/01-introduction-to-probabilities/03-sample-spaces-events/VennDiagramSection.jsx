@@ -5,6 +5,7 @@ import * as d3 from "@/utils/d3-utils";
 import { Button } from '@/components/ui/button';
 import { GraphContainer, ControlGroup } from '@/components/ui/VisualizationContainer';
 import { parseSetExpression } from './setExpressionParser';
+import MathErrorBoundary from '@/components/ui/error-handling/MathErrorBoundary';
 
 // Simplified Venn diagram for the practice section
 export default function VennDiagramSection() {
@@ -37,16 +38,24 @@ export default function VennDiagramSection() {
     const width = 400;
     const height = 400;
     
-    svg.selectAll("*").remove();
+    // Clear existing elements with proper selection
+    svg.select("rect.venn-background").remove();
+    svg.select("rect.universal-set").remove();
+    svg.select("defs").remove();
+    svg.select("g.venn-regions").remove();
+    svg.select("g.venn-circles").remove();
+    svg.select("g.venn-labels").remove();
     
     // Background
     svg.append("rect")
+      .attr("class", "venn-background")
       .attr("width", width)
       .attr("height", height)
       .attr("fill", "#0a0a0a");
     
     // Universal set
     svg.append("rect")
+      .attr("class", "universal-set")
       .attr("x", 20)
       .attr("y", 20)
       .attr("width", width - 40)
@@ -68,7 +77,7 @@ export default function VennDiagramSection() {
     });
     
     // Create highlighting regions
-    const g = svg.append("g");
+    const g = svg.append("g").attr("class", "venn-regions");
     
     // Create mask for intersections to properly subtract overlaps
     defs.append("mask")
@@ -315,6 +324,13 @@ export default function VennDiagramSection() {
         return highlightedRegions.includes(region) ? 'rgba(139, 92, 246, 0.4)' : 'transparent';
       });
     
+    // Cleanup function for D3
+    return () => {
+      if (svgRef.current) {
+        const svg = d3.select(svgRef.current);
+        svg.selectAll("*").interrupt();
+      }
+    };
   }, [selectedSet, highlightedRegions]);
 
   const handleOperation = (operation) => {
@@ -333,35 +349,40 @@ export default function VennDiagramSection() {
   };
 
   return (
-    <div className="space-y-4">
-      <GraphContainer height="400px" className="bg-black/50 rounded-lg overflow-hidden">
-        <svg ref={svgRef} width="100%" height="100%" viewBox="0 0 400 400" />
-      </GraphContainer>
-      
-      <ControlGroup>
-        <div className="space-y-3">
-          <label className="text-sm text-neutral-400">Try these operations:</label>
-          <div className="grid grid-cols-2 gap-2">
-            {operations.map((op) => (
-              <Button
-                key={op.value}
-                variant={selectedSet === op.value ? "primary" : "secondary"}
-                size="sm"
-                onClick={() => handleOperation(op)}
-                className="justify-start"
-              >
-                <span className="font-mono">{op.label}</span>
-              </Button>
-            ))}
-          </div>
-          
-          {selectedSet && (
-            <div className="mt-2 p-2 bg-purple-900/20 rounded text-sm text-purple-300">
-              {operations.find(op => op.value === selectedSet)?.hint}
+    <MathErrorBoundary 
+      fallbackMessage="The Venn diagram visualization encountered an error. This may be due to complex set expressions or D3 rendering issues. Please try refreshing or selecting a different operation."
+      showRetry={true}
+    >
+      <div className="space-y-4">
+        <GraphContainer height="400px" className="bg-black/50 rounded-lg overflow-hidden">
+          <svg ref={svgRef} width="100%" height="100%" viewBox="0 0 400 400" />
+        </GraphContainer>
+        
+        <ControlGroup>
+          <div className="space-y-3">
+            <label className="text-sm text-neutral-400">Try these operations:</label>
+            <div className="grid grid-cols-2 gap-2">
+              {operations.map((op) => (
+                <Button
+                  key={op.value}
+                  variant={selectedSet === op.value ? "primary" : "secondary"}
+                  size="sm"
+                  onClick={() => handleOperation(op)}
+                  className="justify-start"
+                >
+                  <span className="font-mono">{op.label}</span>
+                </Button>
+              ))}
             </div>
-          )}
-        </div>
-      </ControlGroup>
-    </div>
+            
+            {selectedSet && (
+              <div className="mt-2 p-2 bg-purple-900/20 rounded text-sm text-purple-300">
+                {operations.find(op => op.value === selectedSet)?.hint}
+              </div>
+            )}
+          </div>
+        </ControlGroup>
+      </div>
+    </MathErrorBoundary>
   );
 }

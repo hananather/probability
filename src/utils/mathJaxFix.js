@@ -280,3 +280,24 @@ export const useSafeMathJax = (ref, dependencies = [], options = {}) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, dependencies);
 };
+
+// LaTeX formatter to ensure proper escaping
+export const formatLatex = (latex, inline = true) => {
+  // Ensure proper escaping of curly braces in sets
+  const formatted = latex
+    .replace(/\\\{/g, '\\\\{')
+    .replace(/\\\}/g, '\\\\}');
+  
+  return inline ? `\\(${formatted}\\)` : `\\[${formatted}\\]`;
+};
+
+// Component wrapper for LaTeX content
+export const LaTeX = ({ children, inline = true, className = "" }) => {
+  const formatted = formatLatex(children, inline);
+  return (
+    <span 
+      className={className}
+      dangerouslySetInnerHTML={{ __html: formatted }} 
+    />
+  );
+};

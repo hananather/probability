@@ -12,6 +12,11 @@ import { createColorScheme } from '@/lib/design-system';
 // Use Chapter 7 consistent colors
 const chapterColors = createColorScheme('probability');
 
+// Animation timing constants
+const ANIMATION_CONSTANTS = {
+  TRANSITION_DURATION: 300, // Duration for D3 transitions
+};
+
 export default function Tab4InteractiveTab({ onComplete }) {
   const [pebbles, setPebbles] = useState([
     { id: 1, color: 'red', mass: 1, x: 0, y: 0 },
@@ -27,8 +32,9 @@ export default function Tab4InteractiveTab({ onComplete }) {
   const [equalMass, setEqualMass] = useState(true);
   
   const svgRef = useRef(null);
+  const timeoutRef = useRef(null);
 
-  // Initialize pebble positions
+  // Initialize pebble positions only once
   useEffect(() => {
     if (!svgRef.current) return;
     
@@ -39,18 +45,20 @@ export default function Tab4InteractiveTab({ onComplete }) {
     const bagRadius = 150;
     
     // Arrange pebbles in a circle inside the bag
-    const updatedPebbles = pebbles.map((pebble, index) => {
-      const angle = (index / pebbles.length) * 2 * Math.PI;
-      const radius = bagRadius * 0.6;
-      return {
-        ...pebble,
-        x: bagCenterX + Math.cos(angle) * radius + (Math.random() - 0.5) * 30,
-        y: bagCenterY + Math.sin(angle) * radius + (Math.random() - 0.5) * 30
-      };
-    });
-    
-    setPebbles(updatedPebbles);
-  }, []);
+    setPebbles(prev => prev.map((pebble, index) => {
+      // Only update position if not already set
+      if (pebble.x === 0 && pebble.y === 0) {
+        const angle = (index / prev.length) * 2 * Math.PI;
+        const radius = bagRadius * 0.6;
+        return {
+          ...pebble,
+          x: bagCenterX + Math.cos(angle) * radius + (Math.random() - 0.5) * 30,
+          y: bagCenterY + Math.sin(angle) * radius + (Math.random() - 0.5) * 30
+        };
+      }
+      return pebble;
+    }));
+  }, []); // Empty dependency array - run only once
 
   // D3 visualization
   useEffect(() => {
@@ -60,11 +68,18 @@ export default function Tab4InteractiveTab({ onComplete }) {
     const width = 600;
     const height = 400;
     
-    svg.selectAll("*").remove();
+    // Clear existing elements with proper selection
+    svg.select("rect.pebble-background").remove();
+    svg.select("circle.bag-outline").remove();
+    svg.select("text.bag-label").remove();
+    svg.select("text.selected-info").remove();
+    svg.select("g.pebbles-container").remove();
+    
     svg.attr("viewBox", `0 0 ${width} ${height}`);
     
     // Background
     svg.append("rect")
+      .attr("class", "pebble-background")
       .attr("width", width)
       .attr("height", height)
       .attr("fill", "#0a0a0a");
@@ -75,6 +90,7 @@ export default function Tab4InteractiveTab({ onComplete }) {
     const bagRadius = 150;
     
     svg.append("circle")
+      .attr("class", "bag-outline")
       .attr("cx", bagCenterX)
       .attr("cy", bagCenterY)
       .attr("r", bagRadius)
@@ -84,6 +100,7 @@ export default function Tab4InteractiveTab({ onComplete }) {
       .attr("stroke-dasharray", "10,5");
     
     svg.append("text")
+      .attr("class", "bag-label")
       .attr("x", bagCenterX)
       .attr("y", bagCenterY - bagRadius - 20)
       .attr("text-anchor", "middle")
@@ -91,14 +108,37 @@ export default function Tab4InteractiveTab({ onComplete }) {
       .attr("font-size", "16px")
       .text("Probability Bag");
     
-    // Draw pebbles
+    // Create pebbles container
+    const pebblesContainer = svg.append("g").attr("class", "pebbles-container");
+    
+    // Draw pebbles using proper D3 data join
     const pebbleRadius = equalMass ? 12 : undefined;
     
-    svg.selectAll(".pebble")
-      .data(pebbles)
-      .enter()
+    const pebbleSelection = pebblesContainer.selectAll(".pebble")
+      .data(pebbles, d => d.id);
+    
+    // Remove exiting pebbles
+    pebbleSelection.exit()
+      .transition()
+      .duration(ANIMATION_CONSTANTS.TRANSITION_DURATION)
+      .attr("r", 0)
+      .style("opacity", 0)
+      .remove();
+    
+    // Enter new pebbles
+    const pebblesEnter = pebbleSelection.enter()
       .append("circle")
       .attr("class", "pebble")
+      .attr("cx", d => d.x)
+      .attr("cy", d => d.y)
+      .attr("r", 0)
+      .style("opacity", 0)
+      .style("cursor", "pointer");
+    
+    // Update all pebbles (enter + existing)
+    pebbleSelection.merge(pebblesEnter)
+      .transition()
+      .duration(ANIMATION_CONSTANTS.TRANSITION_DURATION)
       .attr("cx", d => d.x)
       .attr("cy", d => d.y)
       .attr("r", d => equalMass ? pebbleRadius : 8 + d.mass * 6)
@@ -112,19 +152,24 @@ export default function Tab4InteractiveTab({ onComplete }) {
       })
       .attr("stroke", d => selectedPebble?.id === d.id ? "#fbbf24" : "none")
       .attr("stroke-width", 3)
-      .attr("opacity", 0.8)
-      .style("cursor", "pointer")
+      .attr("opacity", 0.8);
+    
+    // Add click handlers to all pebbles (enter + update)
+    pebblesContainer.selectAll(".pebble")
       .on("click", function(event, d) {
+        event.stopPropagation();
         setSelectedPebble(d);
         
         // Highlight selected pebble
-        svg.selectAll(".pebble")
+        pebblesContainer.selectAll(".pebble")
           .attr("stroke", p => p.id === d.id ? "#fbbf24" : "none");
       });
     
-    // Show selected pebble info
+    // Show selected pebble info with proper cleanup
+    svg.select("text.selected-info").remove(); // Remove any existing text
     if (selectedPebble) {
       svg.append("text")
+        .attr("class", "selected-info")
         .attr("x", 20)
         .attr("y", height - 60)
         .attr("fill", "#fbbf24")
@@ -132,7 +177,29 @@ export default function Tab4InteractiveTab({ onComplete }) {
         .text(`Selected: ${selectedPebble.color} pebble (mass: ${selectedPebble.mass})`);
     }
     
+    // Cleanup function for D3
+    return () => {
+      if (svgRef.current) {
+        const svg = d3.select(svgRef.current);
+        svg.selectAll("*").interrupt();
+        svg.select("rect.pebble-background").remove();
+        svg.select("circle.bag-outline").remove();
+        svg.select("text.bag-label").remove();
+        svg.select("text.selected-info").remove();
+        svg.select("g.pebbles-container").remove();
+      }
+    };
   }, [pebbles, selectedPebble, equalMass]);
+
+  // Cleanup effect for timeouts
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, []);
 
   const pickRandomPebble = () => {
     if (isSimulating) return;
@@ -163,7 +230,10 @@ export default function Tab4InteractiveTab({ onComplete }) {
       }));
     }
     
-    setTimeout(() => setIsSimulating(false), 500);
+    timeoutRef.current = setTimeout(() => {
+      setIsSimulating(false);
+      timeoutRef.current = null;
+    }, 500);
   };
 
   const resetSimulation = () => {
@@ -197,7 +267,7 @@ export default function Tab4InteractiveTab({ onComplete }) {
   const totalMass = pebbles.reduce((sum, p) => sum + p.mass, 0);
 
   return (
-    <VisualizationContainer title="Interactive Pebble World" className="p-4">
+    <VisualizationContainer title="Interactive Explorer" className="p-4">
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Left Panel - Controls */}
         <div className="lg:w-1/3 space-y-4">
@@ -262,30 +332,30 @@ export default function Tab4InteractiveTab({ onComplete }) {
                 <>
                   <div className="flex justify-between">
                     <span className="text-red-400">P(Red):</span>
-                    <span>{(redCount/totalCount).toFixed(3)}</span>
+                    <span>{totalCount > 0 ? (redCount/totalCount).toFixed(3) : 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-blue-400">P(Blue):</span>
-                    <span>{(blueCount/totalCount).toFixed(3)}</span>
+                    <span>{totalCount > 0 ? (blueCount/totalCount).toFixed(3) : 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-green-400">P(Green):</span>
-                    <span>{(greenCount/totalCount).toFixed(3)}</span>
+                    <span>{totalCount > 0 ? (greenCount/totalCount).toFixed(3) : 'N/A'}</span>
                   </div>
                 </>
               ) : (
                 <>
                   <div className="flex justify-between">
                     <span className="text-red-400">P(Red):</span>
-                    <span>{(redMass/totalMass).toFixed(3)}</span>
+                    <span>{totalMass > 0 ? (redMass/totalMass).toFixed(3) : 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-blue-400">P(Blue):</span>
-                    <span>{(blueMass/totalMass).toFixed(3)}</span>
+                    <span>{totalMass > 0 ? (blueMass/totalMass).toFixed(3) : 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-green-400">P(Green):</span>
-                    <span>{(greenMass/totalMass).toFixed(3)}</span>
+                    <span>{totalMass > 0 ? (greenMass/totalMass).toFixed(3) : 'N/A'}</span>
                   </div>
                 </>
               )}
@@ -298,15 +368,15 @@ export default function Tab4InteractiveTab({ onComplete }) {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-red-400">Red picked:</span>
-                  <span>{results.red} ({((results.red/results.total)*100).toFixed(1)}%)</span>
+                  <span>{results.red} ({results.total > 0 ? ((results.red/results.total)*100).toFixed(1) : 0}%)</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-blue-400">Blue picked:</span>
-                  <span>{results.blue} ({((results.blue/results.total)*100).toFixed(1)}%)</span>
+                  <span>{results.blue} ({results.total > 0 ? ((results.blue/results.total)*100).toFixed(1) : 0}%)</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-green-400">Green picked:</span>
-                  <span>{results.green} ({((results.green/results.total)*100).toFixed(1)}%)</span>
+                  <span>{results.green} ({results.total > 0 ? ((results.green/results.total)*100).toFixed(1) : 0}%)</span>
                 </div>
                 <hr className="border-neutral-700" />
                 <div className="flex justify-between font-bold">

@@ -5,9 +5,9 @@
  * following the standardized 3-tab structure.
  */
 
-export { default as FoundationsTab } from './FoundationsTab';
-export { default as WorkedExamplesTab } from './WorkedExamplesTab';
-export { default as QuickReferenceTab } from './QuickReferenceTab';
+export { default as Tab1FoundationsTab } from './Tab1FoundationsTab';
+export { default as Tab2WorkedExamplesTab } from './Tab2WorkedExamplesTab';
+export { default as Tab3QuickReferenceTab } from './Tab3QuickReferenceTab';
 
 // Export main component as default
-export { default } from './FoundationsTab';
+export { default } from './Tab1FoundationsTab';

@@ -17,7 +17,7 @@ export const chapters = [
     title: 'Chapter 1: Introduction to Probabilities',
     path: '/chapter1',
     sections: [
-      { title: '1.1 Foundation', url: '/chapter1/01-pebble-world' },
+      { title: '1.1 Foundations', url: '/chapter1/01-foundations' },
       { title: '1.2 English-to-Math Translation', url: '/chapter1/02-probability-dictionary' },
       { title: '1.3 Sample Spaces & Set Operations', url: '/chapter1/03-sample-spaces-events' },
       { title: '1.4 Counting Techniques', url: '/chapter1/04-counting-techniques' },

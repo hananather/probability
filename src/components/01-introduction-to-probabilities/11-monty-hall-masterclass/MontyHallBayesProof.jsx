@@ -13,6 +13,12 @@ import { useSafeMathJax } from '../../../utils/mathJaxFix';
 import { ChevronRight } from 'lucide-react';
 import { tutorial_1_7_2 } from '@/tutorials/chapter1';
 
+// Animation timing constants
+const ANIMATION_CONSTANTS = {
+  BAR_ANIMATION_DURATION: 800, // Duration for bar chart animations
+  BAR_ANIMATION_DELAY: 100, // Delay between bar animations
+};
+
 // Color scheme for Bayesian inference
 const colorScheme = createColorScheme('inference');
 
@@ -35,16 +41,21 @@ const BayesianTree = memo(function BayesianTree({ selectedDoor, revealedDoor, hi
     const height = 400;
     const margin = { top: 40, right: 40, bottom: 40, left: 40 };
     
-    svg.selectAll("*").remove();
+    // Clear existing elements with proper selection
+    svg.select("rect.bayes-background").remove();
+    svg.select("g.bayes-tree").remove();
+    
     svg.attr("viewBox", `0 0 ${width} ${height}`);
     
     // Background
     svg.append("rect")
+      .attr("class", "bayes-background")
       .attr("width", width)
       .attr("height", height)
       .attr("fill", "#0a0a0a");
     
     const g = svg.append("g")
+      .attr("class", "bayes-tree")
       .attr("transform", `translate(${margin.left},${margin.top})`);
     
     const innerWidth = width - margin.left - margin.right;
@@ -85,11 +96,15 @@ const BayesianTree = memo(function BayesianTree({ selectedDoor, revealedDoor, hi
     
     // Root to car positions
     ['car1', 'car2', 'car3'].forEach(carId => {
-      edges.push({
-        source: nodes.find(n => n.id === 'root'),
-        target: nodes.find(n => n.id === carId),
-        prob: '1/3'
-      });
+      const sourceNode = (nodes || []).find(n => n.id === 'root');
+      const targetNode = (nodes || []).find(n => n.id === carId);
+      if (sourceNode && targetNode) {
+        edges.push({
+          source: sourceNode,
+          target: targetNode,
+          prob: '1/3'
+        });
+      }
     });
     
     // Draw edges
@@ -194,6 +209,15 @@ const BayesianTree = memo(function BayesianTree({ selectedDoor, revealedDoor, hi
         .text(`By revealing door ${revealedDoor + 1}, the probability shifts to the remaining door`);
     }
     
+    // Cleanup function for D3
+    return () => {
+      if (svgRef.current) {
+        const svg = d3.select(svgRef.current);
+        svg.selectAll("*").interrupt();
+        svg.select("rect.bayes-background").remove();
+        svg.select("g.bayes-tree").remove();
+      }
+    };
   }, [selectedDoor, revealedDoor, highlightPath]);
   
   return <svg ref={svgRef} style={{ width: "100%", height: "400px" }} />;
@@ -211,10 +235,13 @@ const ProbabilityUpdate = memo(function ProbabilityUpdate({ stage, selectedDoor,
     const height = 300;
     const margin = { top: 20, right: 20, bottom: 60, left: 60 };
     
-    svg.selectAll("*").remove();
+    // Clear existing elements with proper selection
+    svg.select("g.probability-chart").remove();
+    
     svg.attr("viewBox", `0 0 ${width} ${height}`);
     
     const g = svg.append("g")
+      .attr("class", "probability-chart")
       .attr("transform", `translate(${margin.left},${margin.top})`);
     
     const innerWidth = width - margin.left - margin.right;
@@ -284,8 +311,8 @@ const ProbabilityUpdate = memo(function ProbabilityUpdate({ stage, selectedDoor,
     
     // Animate bars
     bars.transition()
-      .duration(800)
-      .delay((d, i) => i * 100)
+      .duration(ANIMATION_CONSTANTS.BAR_ANIMATION_DURATION)
+      .delay((d, i) => i * ANIMATION_CONSTANTS.BAR_ANIMATION_DELAY)
       .attr("y", d => y(d.prob))
       .attr("height", d => innerHeight - y(d.prob));
     
@@ -335,6 +362,14 @@ const ProbabilityUpdate = memo(function ProbabilityUpdate({ stage, selectedDoor,
         'Updated Probabilities (Posterior)'
       );
       
+    // Cleanup function for D3
+    return () => {
+      if (svgRef.current) {
+        const svg = d3.select(svgRef.current);
+        svg.selectAll("*").interrupt();
+        svg.select("g.probability-chart").remove();
+      }
+    };
   }, [stage, selectedDoor, revealedDoor]);
   
   return <svg ref={svgRef} style={{ width: "100%", height: "300px" }} />;
@@ -521,8 +556,26 @@ function MontyHallBayesian() {
   const [userDecision, setUserDecision] = useState(null); // 'switch' | 'stay' | null
   const [showResult, setShowResult] = useState(false);
   
+  // Ref for cleanup
+  const revealTimeoutRef = useRef(null);
+  
+  // Cleanup effect for component unmount
+  useEffect(() => {
+    return () => {
+      if (revealTimeoutRef.current) {
+        clearTimeout(revealTimeoutRef.current);
+      }
+    };
+  }, []);
+  
   // Reset function
   const reset = () => {
+    // Clear timeout on reset
+    if (revealTimeoutRef.current) {
+      clearTimeout(revealTimeoutRef.current);
+      revealTimeoutRef.current = null;
+    }
+    
     setSelectedDoor(null);
     setRevealedDoor(null);
     setShowSteps(4);
@@ -536,14 +589,20 @@ function MontyHallBayesian() {
     setSelectedDoor(doorIndex);
     setStage('selected');
     
+    // Clear any existing timeout
+    if (revealTimeoutRef.current) {
+      clearTimeout(revealTimeoutRef.current);
+    }
+    
     // Auto-reveal after delay
-    setTimeout(() => {
+    revealTimeoutRef.current = setTimeout(() => {
       // Monty reveals a random goat door
       const carPosition = Math.floor(Math.random() * 3);
       const availableDoors = [0, 1, 2].filter(d => d !== doorIndex && d !== carPosition);
       const doorToReveal = availableDoors[Math.floor(Math.random() * availableDoors.length)];
       setRevealedDoor(doorToReveal);
       setStage('revealed');
+      revealTimeoutRef.current = null;
     }, 1000);
   };
   

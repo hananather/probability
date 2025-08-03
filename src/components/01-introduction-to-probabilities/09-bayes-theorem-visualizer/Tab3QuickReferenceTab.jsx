@@ -51,35 +51,35 @@ const FormulaSheetSection = React.memo(function FormulaSheetSection() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <SimpleFormulaCard 
           title="Basic Bayes' Theorem" 
-          formula="P(H|D) = \\frac{P(D|H) \\cdot P(H)}{P(D)}"
+          formula={`P(H|D) = \\frac{P(D|H) \\cdot P(H)}{P(D)}`}
           description="Single hypothesis, single evidence"
           theme="purple"
         />
         
         <SimpleFormulaCard 
           title="Expanded Form (Binary)" 
-          formula="P(H|D) = \\frac{P(D|H) \\cdot P(H)}{P(D|H) \\cdot P(H) + P(D|\\neg H) \\cdot P(\\neg H)}"
+          formula={`P(H|D) = \\frac{P(D|H) \\cdot P(H)}{P(D|H) \\cdot P(H) + P(D|\\neg H) \\cdot P(\\neg H)}`}
           description="Two hypotheses: positive and negative"
           theme="purple"
         />
         
         <SimpleFormulaCard 
           title="Multiple Hypotheses" 
-          formula="P(H_i|D) = \\frac{P(D|H_i) \\cdot P(H_i)}{\\sum_j P(D|H_j) \\cdot P(H_j)}"
+          formula={`P(H_i|D) = \\frac{P(D|H_i) \\cdot P(H_i)}{\\sum_j P(D|H_j) \\cdot P(H_j)}`}
           description="More than 2 hypotheses"
           theme="purple"
         />
         
         <SimpleFormulaCard 
           title="Odds Form" 
-          formula="\\frac{P(H|D)}{P(\\neg H|D)} = \\frac{P(D|H)}{P(D|\\neg H)} \\cdot \\frac{P(H)}{P(\\neg H)}"
+          formula={`\\frac{P(H|D)}{P(\\neg H|D)} = \\frac{P(D|H)}{P(D|\\neg H)} \\cdot \\frac{P(H)}{P(\\neg H)}`}
           description="Quick mental math: multiply likelihood ratio by prior odds"
           theme="purple"
         />
       </div>
 
       <div className="bg-neutral-800/50 p-4 rounded-lg border border-neutral-600/30">
-        <h4 className="font-semibold text-neutral-300 mb-3">📊 Quick Conversion Reference</h4>
+        <h4 className="font-semibold text-neutral-300 mb-3">Quick Conversion Reference</h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
           <div>
             <p className="text-purple-400 font-semibold">Probability → Odds</p>
@@ -153,7 +153,7 @@ const DecisionGuideSection = React.memo(function DecisionGuideSection() {
       <ComparisonTable {...decisionData} />
       
       <SimpleInsightBox variant="info" className="border-purple-700/50">
-        <h4 className="font-semibold text-purple-400 mb-2">🎯 Quick Decision Guide</h4>
+        <h4 className="font-semibold text-purple-400 mb-2">Quick Decision Guide</h4>
         <ul className="space-y-1 text-neutral-300">
           <li><strong>1 hypothesis:</strong> Use basic form</li>
           <li><strong>2 hypotheses:</strong> Use expanded form (easier calculation)</li>
@@ -213,7 +213,7 @@ const CommonMistakesSection = React.memo(function CommonMistakesSection() {
       </div>
 
       <SimpleInsightBox variant="warning" className="border-red-700/50">
-        <h4 className="font-semibold text-red-400 mb-2">✅ Verification Checklist</h4>
+        <h4 className="font-semibold text-red-400 mb-2">Verification Checklist</h4>
         <ul className="space-y-1 text-neutral-300 text-sm">
           <li>□ Did I identify what I'm looking for? <span dangerouslySetInnerHTML={{ __html: '\\(P(\\text{Hypothesis | Evidence})\\)' }} /></li>
           <li>□ Did I write down all given probabilities?</li>
@@ -237,7 +237,7 @@ const SpeedTipsSection = React.memo(function SpeedTipsSection() {
   return (
     <div ref={contentRef} className="space-y-6 font-mono">
       <div className="bg-gradient-to-br from-green-900/20 to-teal-900/20 border border-green-700/50 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-green-300 mb-4">⚡ Speed Calculation Tips</h3>
+        <h3 className="text-lg font-semibold text-green-300 mb-4">Speed Calculation Tips</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-neutral-800/50 p-4 rounded border border-neutral-600/30">

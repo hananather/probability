@@ -1,573 +1,280 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import SectionBasedContent, { 
-  SectionContent, 
-  InteractiveElement 
-} from '@/components/ui/SectionBasedContent';
+import React, { useState, useEffect } from 'react';
+import { ChevronRight, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import SectionBasedContent, { SectionContent } from '@/components/ui/SectionBasedContent';
 import { WorkedExample, ExampleSection, InsightBox, Formula } from '@/components/ui/WorkedExample';
 import { Button } from '@/components/ui/button';
-import { VisualizationSection } from '@/components/ui/VisualizationContainer';
-import { ChevronRight, AlertCircle, Clock, CheckCircle2 } from 'lucide-react';
+import { SimpleInsightBox } from '@/components/ui/patterns/SimpleComponents';
+import { ComparisonTable } from '@/components/ui/patterns/ComparisonTable';
+import { useMathJax } from '@/hooks/useMathJax';
 
-// Create section content components outside to avoid conditional hooks
-const FormulasSection = ({ expandedFormula, setExpandedFormula }) => {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [expandedFormula]);
-  
-  const formulas = [
-    {
-      id: 'with-replacement',
-      name: 'Ordered WITH Replacement',
-      formula: 'n^r',
-      latex: '\\[\\text{Ways} = n^r\\]',
-      when: 'Items can be reused (passwords, dice rolls)',
-      example: '3-digit PIN: 10^3 = 1000',
-      calculation: 'Multiply n by itself r times'
-    },
-    {
-      id: 'without-replacement',
-      name: 'Ordered WITHOUT Replacement (Permutation)',
-      formula: 'P(n,r) = n!/(n-r)!',
-      latex: '\\[P(n,r) = \\frac{n!}{(n-r)!} = n \\times (n-1) \\times \\cdots \\times (n-r+1)\\]',
-      when: 'Each item used at most once (rankings, assignments)',
-      example: 'Top 3 from 10: P(10,3) = 10×9×8 = 720',
-      calculation: 'Multiply decreasing numbers starting from n'
-    },
-    {
-      id: 'all-items',
-      name: 'Arrange ALL Items',
-      formula: 'n!',
-      latex: '\\[n! = n \\times (n-1) \\times (n-2) \\times \\cdots \\times 1\\]',
-      when: 'Arranging all n distinct items',
-      example: '5 books on shelf: 5! = 120',
-      calculation: 'Special case of P(n,n)'
-    },
-    {
-      id: 'circular',
-      name: 'Circular Arrangements',
-      formula: '(n-1)!',
-      latex: '\\[(n-1)!\\]',
-      when: 'Arranging in a circle (rotations are same)',
-      example: '6 people around table: 5! = 120',
-      calculation: 'Fix one position, arrange the rest'
-    }
-  ];
-  
-  return (
-    <SectionContent>
-      <div ref={contentRef}>
-        <WorkedExample title="Essential Formulas for Ordered Sampling">
-          <div className="space-y-3">
-            {formulas.map(f => (
-              <div 
-                key={f.id}
-                className={`border rounded-lg overflow-hidden transition-all ${
-                  expandedFormula === f.id 
-                    ? 'border-purple-600 bg-purple-900/10' 
-                    : 'border-neutral-700 bg-neutral-800/50'
-                }`}
-              >
-                <button
-                  onClick={() => setExpandedFormula(expandedFormula === f.id ? null : f.id)}
-                  className="w-full p-4 text-left flex items-center justify-between hover:bg-neutral-700/30 transition-colors"
-                >
-                  <div>
-                    <h5 className="font-semibold text-white">{f.name}</h5>
-                    <code className="text-sm text-purple-400 font-mono">{f.formula}</code>
-                  </div>
-                  <ChevronRight 
-                    className={`w-5 h-5 text-neutral-400 transition-transform ${
-                      expandedFormula === f.id ? 'rotate-90' : ''
-                    }`}
-                  />
-                </button>
-                
-                {expandedFormula === f.id && (
-                  <div className="p-4 border-t border-neutral-700">
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-sm font-semibold text-neutral-300 mb-1">Formula:</p>
-                        <div dangerouslySetInnerHTML={{ __html: f.latex }} />
-                      </div>
-                      
-                      <div>
-                        <p className="text-sm font-semibold text-green-400 mb-1">When to use:</p>
-                        <p className="text-sm text-neutral-300">{f.when}</p>
-                      </div>
-                      
-                      <div>
-                        <p className="text-sm font-semibold text-blue-400 mb-1">Example:</p>
-                        <p className="text-sm font-mono text-neutral-300">{f.example}</p>
-                      </div>
-                      
-                      <div>
-                        <p className="text-sm font-semibold text-amber-400 mb-1">How to calculate:</p>
-                        <p className="text-sm text-neutral-300">{f.calculation}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
+const SECTIONS = [
+  {
+    id: 'core-formulas',
+    title: 'Core Formulas',
+    content: ({ sectionIndex, isCompleted }) => (
+      <SectionContent>
+        <WorkedExample title="Essential Permutation Formulas">
+          <div className="space-y-6">
+            <div className="bg-neutral-800/50 p-4 rounded-lg">
+              <h5 className="font-semibold text-violet-400 mb-2">With Replacement</h5>
+              <Formula latex="n^r" />
+              <p className="text-sm text-neutral-300 mt-2">Choose r items from n options, can reuse</p>
+              <p className="text-xs text-neutral-400 mt-1">Example: 3-digit PIN using 0-9: 10³ = 1,000</p>
+            </div>
+            
+            <div className="bg-neutral-800/50 p-4 rounded-lg">
+              <h5 className="font-semibold text-violet-400 mb-2">Without Replacement</h5>
+              <Formula latex="P(n,r) = \frac{n!}{(n-r)!}" />
+              <p className="text-sm text-neutral-300 mt-2">Choose r items from n options, no reuse</p>
+              <p className="text-xs text-neutral-400 mt-1">Example: Choose president, VP from 10: P(10,2) = 90</p>
+            </div>
+            
+            <div className="bg-neutral-800/50 p-4 rounded-lg">
+              <h5 className="font-semibold text-violet-400 mb-2">All Items</h5>
+              <Formula latex="n!" />
+              <p className="text-sm text-neutral-300 mt-2">Arrange all n distinct items</p>
+              <p className="text-xs text-neutral-400 mt-1">Example: Arrange 5 books: 5! = 120</p>
+            </div>
+            
+            <div className="bg-neutral-800/50 p-4 rounded-lg">
+              <h5 className="font-semibold text-violet-400 mb-2">Circular</h5>
+              <Formula latex="(n-1)!" />
+              <p className="text-sm text-neutral-300 mt-2">Arrange n items in a circle</p>
+              <p className="text-xs text-neutral-400 mt-1">Example: 5 people at round table: 4! = 24</p>
+            </div>
           </div>
-          
-          <InsightBox variant="info" className="mt-4">
-            💡 Pro Tip: Most exam problems use either n^r (with replacement) or P(n,r) (without). 
-            Master these two and you'll handle 90% of questions!
-          </InsightBox>
         </WorkedExample>
-      </div>
-    </SectionContent>
-  );
-};
-
-const DecisionGuideSection = ({ currentStep, setCurrentStep }) => {
-  const decisionTree = [
-    {
-      question: "Does order matter in your problem?",
-      yes: { next: 1, hint: "Positions/sequences are different" },
-      no: { result: "Use Combinations (not covered here)", hint: "Groups/sets are the same" }
-    },
-    {
-      question: "Can items be used more than once?",
-      yes: { result: "Use n^r", hint: "With replacement" },
-      no: { next: 2, hint: "Without replacement" }
-    },
-    {
-      question: "Are you using all n items?",
-      yes: { result: "Use n!", hint: "Full permutation" },
-      no: { result: "Use P(n,r) = n!/(n-r)!", hint: "Partial permutation" }
-    }
-  ];
-  
-  const currentNode = decisionTree[currentStep];
-  const answer = currentNode.yes?.result || currentNode.no?.result || null;
-  
-  return (
-    <SectionContent>
-      <WorkedExample title="Interactive Decision Flowchart">
-        <ExampleSection title="Answer the questions to find your formula">
-          <div className="bg-neutral-800 p-6 rounded-lg">
-            <div className="text-center mb-6">
-              <h4 className="text-lg font-semibold text-white mb-2">
-                Step {currentStep + 1}: {currentNode.question}
-              </h4>
-            </div>
-            
-            {!answer && (
-              <div className="flex gap-4 justify-center">
-                <button
-                  onClick={() => {
-                    if (currentNode.yes.next !== undefined) {
-                      setCurrentStep(currentNode.yes.next);
-                    }
-                  }}
-                  className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
-                >
-                  Yes
-                  <p className="text-xs mt-1 opacity-75">{currentNode.yes.hint}</p>
-                </button>
-                
-                <button
-                  onClick={() => {
-                    if (currentNode.no.next !== undefined) {
-                      setCurrentStep(currentNode.no.next);
-                    }
-                  }}
-                  className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-                >
-                  No
-                  <p className="text-xs mt-1 opacity-75">{currentNode.no.hint}</p>
-                </button>
+      </SectionContent>
+    )
+  },
+  {
+    id: 'problem-solving',
+    title: 'Problem Solving Techniques',
+    content: ({ sectionIndex, isCompleted }) => (
+      <SectionContent>
+        <WorkedExample title="How to Approach Permutation Problems">
+          <ExampleSection title="Step-by-Step Strategy">
+            <div className="space-y-4">
+              <div className="bg-neutral-800 p-4 rounded-lg">
+                <h5 className="font-semibold text-violet-400 mb-2">1. Identify Type</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm text-neutral-300 ml-4">
+                  <li>Can items repeat? → Use n^r</li>
+                  <li>Order matters, no repeat? → Use P(n,r)</li>
+                  <li>Arranging all items? → Use n!</li>
+                  <li>Circular arrangement? → Use (n-1)!</li>
+                </ul>
               </div>
-            )}
-            
-            {currentNode.yes?.result && (
-              <div className="bg-green-900/20 p-4 rounded-lg text-center">
-                <p className="text-green-400 font-semibold mb-2">✅ Formula Found!</p>
-                <p className="text-2xl font-mono text-white">{currentNode.yes.result}</p>
-                <p className="text-sm text-neutral-400 mt-2">{currentNode.yes.hint}</p>
+              
+              <div className="bg-neutral-800 p-4 rounded-lg">
+                <h5 className="font-semibold text-violet-400 mb-2">2. Common Patterns</h5>
+                <ComparisonTable
+                  columns={[
+                    { key: 'keyword', title: 'Keyword' },
+                    { key: 'formula', title: 'Formula' },
+                    { key: 'example', title: 'Example' }
+                  ]}
+                  rows={[
+                    { aspect: "codes/passwords", keyword: "codes/passwords", formula: "n^r", example: "4-digit code: 10^4" },
+                    { aspect: "lineup/ranking", keyword: "lineup/ranking", formula: "P(n,r)", example: "Top 3 from 10: P(10,3)" },
+                    { aspect: "arrange all", keyword: "arrange all", formula: "n!", example: "Arrange 6 people: 6!" },
+                    { aspect: "around table", keyword: "around table", formula: "(n-1)!", example: "8 at round table: 7!" }
+                  ]}
+                />
               </div>
-            )}
-            
-            {currentNode.no?.result && (
-              <div className="bg-amber-900/20 p-4 rounded-lg text-center">
-                <p className="text-amber-400 font-semibold mb-2">📝 Note:</p>
-                <p className="text-lg text-white">{currentNode.no.result}</p>
-                <p className="text-sm text-neutral-400 mt-2">{currentNode.no.hint}</p>
-              </div>
-            )}
-            
-            <Button 
-              onClick={() => setCurrentStep(0)}
-              variant="outline"
-              size="sm"
-              className="mt-4"
-            >
-              Start Over
-            </Button>
-          </div>
-        </ExampleSection>
-        
-        <ExampleSection title="Quick Decision Rules">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="bg-blue-900/20 p-3 rounded-lg">
-              <h5 className="font-semibold text-blue-400 mb-2">Keywords for "With Replacement"</h5>
-              <ul className="text-sm text-neutral-300 space-y-1">
-                <li>• "can be repeated"</li>
-                <li>• "with replacement"</li>
-                <li>• "multiple times"</li>
-                <li>• "reusable"</li>
-              </ul>
-            </div>
-            
-            <div className="bg-green-900/20 p-3 rounded-lg">
-              <h5 className="font-semibold text-green-400 mb-2">Keywords for "Without Replacement"</h5>
-              <ul className="text-sm text-neutral-300 space-y-1">
-                <li>• "distinct positions"</li>
-                <li>• "different items"</li>
-                <li>• "no repetition"</li>
-                <li>• "unique assignments"</li>
-              </ul>
-            </div>
-          </div>
-        </ExampleSection>
-      </WorkedExample>
-    </SectionContent>
-  );
-};
-
-const MistakesSection = ({ expandedMistake, setExpandedMistake }) => {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [expandedMistake]);
-  
-  const mistakes = [
-    {
-      id: 'wrong-formula',
-      title: 'Using the wrong formula type',
-      wrong: 'Using P(n,r) when items can repeat',
-      right: 'Use n^r for with replacement, P(n,r) for without',
-      example: '4-digit PIN uses 10^4, not P(10,4)'
-    },
-    {
-      id: 'order-confusion',
-      title: 'Confusing permutations with combinations',
-      wrong: 'Using C(n,r) when order matters',
-      right: 'Permutations when order matters, combinations when it doesn\'t',
-      example: 'Race positions need P(n,r), team selection needs C(n,r)'
-    },
-    {
-      id: 'calculation-error',
-      title: 'Calculation errors with factorials',
-      wrong: 'P(10,3) = 10!/(10-3)! = 10!/7! = 10!',
-      right: 'P(10,3) = 10!/7! = 10×9×8 = 720',
-      example: 'Cancel out the (n-r)! properly'
-    },
-    {
-      id: 'circular-fix',
-      title: 'Forgetting circular arrangement adjustment',
-      wrong: 'Using n! for circular arrangements',
-      right: 'Use (n-1)! for circular arrangements',
-      example: '6 people around table: 5!, not 6!'
-    }
-  ];
-  
-  return (
-    <SectionContent>
-      <div ref={contentRef}>
-        <WorkedExample title="Avoid These Common Pitfalls">
-          <ExampleSection title="Click each mistake to learn more">
-            <div className="space-y-3">
-              {mistakes.map(mistake => (
-                <div
-                  key={mistake.id}
-                  className="border border-neutral-700 rounded-lg overflow-hidden"
-                >
-                  <button
-                    onClick={() => setExpandedMistake(
-                      expandedMistake === mistake.id ? null : mistake.id
-                    )}
-                    className="w-full p-4 text-left flex items-start gap-3 hover:bg-neutral-800 transition-colors"
-                  >
-                    <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1">
-                      <h5 className="font-semibold text-white">{mistake.title}</h5>
-                      {expandedMistake === mistake.id && (
-                        <div className="mt-3 space-y-3">
-                          <div className="bg-red-900/20 p-3 rounded">
-                            <p className="text-sm font-semibold text-red-400 mb-1">❌ Wrong:</p>
-                            <p className="text-sm text-neutral-300">{mistake.wrong}</p>
-                          </div>
-                          
-                          <div className="bg-green-900/20 p-3 rounded">
-                            <p className="text-sm font-semibold text-green-400 mb-1">✅ Right:</p>
-                            <p className="text-sm text-neutral-300">{mistake.right}</p>
-                          </div>
-                          
-                          <div className="bg-blue-900/20 p-3 rounded">
-                            <p className="text-sm font-semibold text-blue-400 mb-1">Example:</p>
-                            <p className="text-sm text-neutral-300">{mistake.example}</p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                </div>
-              ))}
             </div>
           </ExampleSection>
-          
-          <InsightBox variant="warning">
-            ⚠️ Most Common Error: Not recognizing whether replacement is allowed. 
-            Always check: "Can I use the same item twice?"
-          </InsightBox>
         </WorkedExample>
-      </div>
-    </SectionContent>
-  );
-};
+      </SectionContent>
+    )
+  },
+  {
+    id: 'common-mistakes',
+    title: 'Common Mistakes',
+    content: ({ sectionIndex, isCompleted }) => (
+      <SectionContent>
+        <WorkedExample title="Avoid These Errors">
+          <div className="space-y-4">
+            <SimpleInsightBox variant="error">
+              <h5 className="font-semibold mb-2">Mistake #1: Confusing P(n,r) with C(n,r)</h5>
+              <p className="text-sm">P(n,r) is for order matters, C(n,r) is for order doesn't matter</p>
+            </SimpleInsightBox>
+            
+            <SimpleInsightBox variant="error">
+              <h5 className="font-semibold mb-2">Mistake #2: Forgetting circular reduces by 1</h5>
+              <p className="text-sm">Circular arrangements: (n-1)! not n!</p>
+            </SimpleInsightBox>
+            
+            <SimpleInsightBox variant="error">
+              <h5 className="font-semibold mb-2">Mistake #3: Wrong formula for codes</h5>
+              <p className="text-sm">Codes with repeating digits use n^r, not P(n,r)</p>
+            </SimpleInsightBox>
+          </div>
+        </WorkedExample>
+      </SectionContent>
+    )
+  },
+  {
+    id: 'practice-problems',
+    title: 'Practice Problems',
+    content: ({ sectionIndex, isCompleted }) => (
+      <PracticeSection />
+    )
+  }
+];
 
-const SpeedPracticeSection = ({ 
-  currentProblem, 
-  setCurrentProblem, 
-  timeLeft, 
-  setTimeLeft, 
-  isRunning, 
-  setIsRunning, 
-  score, 
-  setScore, 
-  answers, 
-  setAnswers, 
-  showResults, 
-  setShowResults 
-}) => {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [currentProblem, showResults]);
-  
-  useEffect(() => {
-    let interval = null;
-    if (isRunning && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft(time => time - 1);
-      }, 1000);
-    } else if (timeLeft === 0) {
-      setIsRunning(false);
-      setShowResults(true);
-    }
-    return () => clearInterval(interval);
-  }, [isRunning, timeLeft, setTimeLeft, setIsRunning, setShowResults]);
+const PracticeSection = () => {
+  const [currentProblem, setCurrentProblem] = useState(0);
+  const [showAnswer, setShowAnswer] = useState(false);
+  const contentRef = useMathJax([currentProblem, showAnswer]);
   
   const problems = [
     {
       question: "How many 3-letter codes using A-Z?",
-      answer: "17576",
-      solution: "26^3 = 17,576",
-      formula: "n^r with replacement"
+      answer: "17,576",
+      solution: "26³ = 26 × 26 × 26 = 17,576",
+      formula: "n^r with replacement",
+      explanation: "Each position can be any of 26 letters, with repetition allowed"
     },
     {
       question: "Arrange 4 people in a line?",
       answer: "24",
-      solution: "4! = 24",
-      formula: "n! for all items"
+      solution: "4! = 4 × 3 × 2 × 1 = 24",
+      formula: "n! for all items",
+      explanation: "First position has 4 choices, second has 3, third has 2, last has 1"
     },
     {
       question: "Select president, VP from 7 people?",
       answer: "42",
-      solution: "P(7,2) = 7×6 = 42",
-      formula: "P(n,r) without replacement"
+      solution: "P(7,2) = 7!/(7-2)! = 7!/5! = 7 × 6 = 42",
+      formula: "P(n,r) without replacement",
+      explanation: "President: 7 choices, then VP: 6 remaining choices"
     },
     {
       question: "5 people around circular table?",
       answer: "24",
       solution: "(5-1)! = 4! = 24",
-      formula: "Circular arrangement"
+      formula: "Circular arrangement",
+      explanation: "Fix one person's position, arrange the other 4"
     },
     {
       question: "3-digit numbers using 0-9, no repeat?",
       answer: "720",
-      solution: "P(10,3) = 10×9×8 = 720",
-      formula: "P(n,r) without replacement"
+      solution: "P(10,3) = 10!/(10-3)! = 10!/7! = 10 × 9 × 8 = 720",
+      formula: "P(n,r) without replacement",
+      explanation: "First digit: 10 choices, second: 9, third: 8"
     }
   ];
   
-  const startPractice = () => {
-    setIsRunning(true);
-    setTimeLeft(60);
-    setScore(0);
-    setAnswers({});
-    setShowResults(false);
-    setCurrentProblem(0);
+  const nextProblem = () => {
+    if (currentProblem < problems.length - 1) {
+      setCurrentProblem(prev => prev + 1);
+      setShowAnswer(false);
+    }
   };
   
-  const handleAnswer = (problemIndex, answer) => {
-    setAnswers(prev => ({ ...prev, [problemIndex]: answer }));
+  const previousProblem = () => {
+    if (currentProblem > 0) {
+      setCurrentProblem(prev => prev - 1);
+      setShowAnswer(false);
+    }
   };
   
-  const calculateScore = () => {
-    let correct = 0;
-    problems.forEach((p, i) => {
-      if (answers[i]?.trim() === p.answer) {
-        correct++;
-      }
-    });
-    return correct;
+  const toggleAnswer = () => {
+    setShowAnswer(!showAnswer);
   };
   
   return (
     <SectionContent>
       <div ref={contentRef}>
-        <WorkedExample title="60-Second Challenge">
-          {!isRunning && !showResults && (
-            <ExampleSection title="Ready for Speed Practice?">
-              <div className="text-center py-8">
-                <p className="text-neutral-300 mb-4">
-                  Answer 5 permutation problems in 60 seconds!
-                </p>
-                <Button onClick={startPractice} size="lg">
-                  Start Challenge
-                </Button>
-              </div>
-            </ExampleSection>
-          )}
+        <WorkedExample title="Practice Problems">
+          <div className="mb-4">
+            <p className="text-neutral-300">
+              Work through these problems at your own pace. Click "Show Answer" when ready.
+            </p>
+          </div>
           
-          {isRunning && (
-            <ExampleSection title={`Time Left: ${timeLeft}s`}>
-              <div className="space-y-4">
-                {problems.map((problem, index) => (
-                  <div key={index} className="bg-neutral-800 p-3 rounded-lg">
-                    <p className="text-sm text-neutral-300 mb-2">
-                      {index + 1}. {problem.question}
-                    </p>
-                    <input
-                      type="text"
-                      value={answers[index] || ''}
-                      onChange={(e) => handleAnswer(index, e.target.value)}
-                      className="w-full px-2 py-1 bg-neutral-900 border border-neutral-700 rounded text-white text-sm"
-                      placeholder="Your answer"
-                    />
+          <ExampleSection title={`Problem ${currentProblem + 1} of ${problems.length}`}>
+            <div className="space-y-4">
+              <div className="bg-neutral-800/50 rounded-lg p-6">
+                <p className="text-xl text-neutral-100">
+                  {problems[currentProblem].question}
+                </p>
+              </div>
+              
+              {!showAnswer ? (
+                <div className="flex justify-center">
+                  <Button 
+                    onClick={toggleAnswer}
+                    className="bg-violet-600 hover:bg-violet-700"
+                  >
+                    Show Answer
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="bg-green-900/20 border border-green-600/30 rounded-lg p-4">
+                    <h5 className="font-semibold text-green-400 mb-2">Answer</h5>
+                    <p className="text-2xl font-bold text-white">{problems[currentProblem].answer}</p>
                   </div>
-                ))}
-                
-                <Button 
-                  onClick={() => {
-                    setIsRunning(false);
-                    setShowResults(true);
-                  }}
-                  variant="outline"
-                  className="w-full"
-                >
-                  Submit Early
-                </Button>
-              </div>
-              
-              <div className="mt-4 bg-neutral-900 rounded-full h-2 overflow-hidden">
-                <div 
-                  className="bg-blue-500 h-full transition-all duration-1000"
-                  style={{ width: `${(timeLeft / 60) * 100}%` }}
-                />
-              </div>
-            </ExampleSection>
-          )}
-          
-          {showResults && (
-            <ExampleSection title="Results">
-              <div className="text-center mb-6">
-                <p className="text-3xl font-bold text-white">
-                  Score: {calculateScore()}/5
-                </p>
-                <p className="text-neutral-400 mt-2">
-                  {calculateScore() >= 4 ? 'Excellent!' : 
-                   calculateScore() >= 2 ? 'Good effort!' : 
-                   'Keep practicing!'}
-                </p>
-              </div>
-              
-              <div className="space-y-3">
-                {problems.map((problem, index) => {
-                  const userAnswer = answers[index]?.trim();
-                  const isCorrect = userAnswer === problem.answer;
                   
-                  return (
-                    <div 
-                      key={index}
-                      className={`p-3 rounded-lg border ${
-                        isCorrect 
-                          ? 'bg-green-900/20 border-green-600' 
-                          : 'bg-red-900/20 border-red-600'
-                      }`}
+                  <div className="bg-blue-900/20 border border-blue-600/30 rounded-lg p-4">
+                    <h5 className="font-semibold text-blue-400 mb-2">Solution</h5>
+                    <p className="text-neutral-200">{problems[currentProblem].solution}</p>
+                    <p className="text-sm text-blue-300 mt-2">
+                      Using: {problems[currentProblem].formula}
+                    </p>
+                  </div>
+                  
+                  <div className="bg-neutral-800/50 rounded-lg p-4">
+                    <h5 className="font-semibold text-neutral-300 mb-2">Explanation</h5>
+                    <p className="text-sm text-neutral-400">
+                      {problems[currentProblem].explanation}
+                    </p>
+                  </div>
+                  
+                  <div className="flex gap-3 justify-center">
+                    {currentProblem > 0 && (
+                      <Button
+                        onClick={previousProblem}
+                        variant="secondary"
+                      >
+                        Previous
+                      </Button>
+                    )}
+                    {currentProblem < problems.length - 1 && (
+                      <Button
+                        onClick={nextProblem}
+                        className="bg-violet-600 hover:bg-violet-700"
+                      >
+                        Next Problem
+                      </Button>
+                    )}
+                    <Button
+                      onClick={toggleAnswer}
+                      variant="outline"
                     >
-                      <div className="flex items-start gap-2">
-                        {isCorrect ? (
-                          <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5" />
-                        ) : (
-                          <AlertCircle className="w-5 h-5 text-red-500 mt-0.5" />
-                        )}
-                        <div className="flex-1">
-                          <p className="text-sm text-neutral-300">
-                            {problem.question}
-                          </p>
-                          <p className="text-xs text-neutral-400 mt-1">
-                            Your answer: {userAnswer || '(no answer)'} | 
-                            Correct: {problem.solution}
-                          </p>
-                          <p className="text-xs text-blue-400 mt-1">
-                            Formula: {problem.formula}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              
-              <Button 
-                onClick={startPractice}
-                className="w-full mt-4"
-              >
-                Try Again
-              </Button>
-            </ExampleSection>
-          )}
+                      Hide Answer
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </ExampleSection>
+          
+          <div className="mt-6 bg-blue-900/20 p-4 rounded-lg border border-blue-600/30">
+            <h5 className="font-semibold text-blue-400 mb-2">
+              Problem-Solving Tips
+            </h5>
+            <ul className="list-disc list-inside space-y-1 text-sm text-neutral-300 ml-4">
+              <li>Read carefully - does order matter?</li>
+              <li>Can items be reused?</li>
+              <li>Are you arranging all items or just some?</li>
+              <li>Is it a circular arrangement?</li>
+              <li>Double-check your arithmetic</li>
+            </ul>
+          </div>
         </WorkedExample>
       </div>
     </SectionContent>
@@ -575,77 +282,15 @@ const SpeedPracticeSection = ({
 };
 
 export default function Tab3QuickReferenceTab({ onComplete }) {
-  // All hooks called consistently at the top level
-  const [expandedFormula, setExpandedFormula] = useState(null);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [expandedMistake, setExpandedMistake] = useState(null);
-  const [currentProblem, setCurrentProblem] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(60);
-  const [isRunning, setIsRunning] = useState(false);
-  const [score, setScore] = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [showResults, setShowResults] = useState(false);
-
-  const SECTIONS = [
-    {
-      id: 'formulas',
-      title: 'Formula Sheet',
-      content: ({ sectionIndex, isCompleted }) => (
-        <FormulasSection 
-          expandedFormula={expandedFormula} 
-          setExpandedFormula={setExpandedFormula} 
-        />
-      )
-    },
-    {
-      id: 'decision-guide',
-      title: 'Decision Guide',
-      content: ({ sectionIndex, isCompleted }) => (
-        <DecisionGuideSection 
-          currentStep={currentStep} 
-          setCurrentStep={setCurrentStep} 
-        />
-      )
-    },
-    {
-      id: 'mistakes',
-      title: 'Common Mistakes',
-      content: ({ sectionIndex, isCompleted }) => (
-        <MistakesSection 
-          expandedMistake={expandedMistake} 
-          setExpandedMistake={setExpandedMistake} 
-        />
-      )
-    },
-    {
-      id: 'speed-practice',
-      title: 'Speed Practice',
-      content: ({ sectionIndex, isCompleted }) => (
-        <SpeedPracticeSection
-          currentProblem={currentProblem}
-          setCurrentProblem={setCurrentProblem}
-          timeLeft={timeLeft}
-          setTimeLeft={setTimeLeft}
-          isRunning={isRunning}
-          setIsRunning={setIsRunning}
-          score={score}
-          setScore={setScore}
-          answers={answers}
-          setAnswers={setAnswers}
-          showResults={showResults}
-          setShowResults={setShowResults}
-        />
-      )
-    }
-  ];
-
   return (
     <SectionBasedContent
-      title="Quick Reference - Ordered Sampling"
-      description="Everything you need at your fingertips"
+      title="Quick Reference"
+      description="Essential formulas and practice problems"
       sections={SECTIONS}
       onComplete={onComplete}
+      chapter={1}
       progressVariant="violet"
+      showBackToHub={false}
     />
   );
 }

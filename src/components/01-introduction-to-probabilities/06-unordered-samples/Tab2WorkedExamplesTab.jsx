@@ -9,14 +9,133 @@ import SectionBasedContent, {
 import { WorkedExample, ExampleSection, InsightBox, Formula } from '@/components/ui/WorkedExample';
 import { Button } from '@/components/ui/button';
 import { VisualizationSection } from '@/components/ui/VisualizationContainer';
+import { useMathJax } from '@/hooks/useMathJax';
+
+// Practice section component - extracted to use hooks properly
+const PracticeSection = ({ showSolutions, toggleSolution }) => {
+  const contentRef = useRef(null);
+  
+  // Process MathJax when solutions are toggled
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+      window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+    }
+  }, [showSolutions.p1, showSolutions.p2, showSolutions.p3]);
+  
+  return (
+    <SectionContent>
+      <div ref={contentRef} className="space-y-6">
+        <div className="text-center mb-6">
+          <h3 className="text-xl font-semibold text-neutral-200">Test Your Skills!</h3>
+          <p className="text-neutral-400">Try these problems, then check your answers</p>
+        </div>
+      
+        {/* Problem 1 */}
+        <div className="bg-neutral-800 p-4 rounded-lg">
+          <p className="font-semibold text-amber-400 mb-2">Problem 1: Lottery Selection</p>
+          <p className="text-neutral-300 mb-3">
+            In a 6/49 lottery, you choose 6 numbers from 1 to 49. What's the probability of winning the jackpot?
+          </p>
+          <Button 
+            variant="info" 
+            size="sm"
+            onClick={() => toggleSolution('p1')}
+          >
+            {showSolutions.p1 ? 'Hide' : 'Show'} Solution
+          </Button>
+          
+          {showSolutions.p1 && (
+            <div className="mt-4 bg-neutral-900 p-4 rounded">
+              <div className="text-center">
+                <span dangerouslySetInnerHTML={{ 
+                  __html: `\\[C(49,6) = \\frac{49!}{6!43!} = 13,983,816\\]` 
+                }} />
+              </div>
+              <p className="text-sm text-neutral-300 mt-2">
+                Probability = 1/13,983,816 ≈ 0.0000000715
+              </p>
+            </div>
+          )}
+        </div>
+        
+        {/* Problem 2 */}
+        <div className="bg-neutral-800 p-4 rounded-lg">
+          <p className="font-semibold text-amber-400 mb-2">Problem 2: Pizza Toppings</p>
+          <p className="text-neutral-300 mb-3">
+            A pizza shop offers 12 toppings. How many different 4-topping pizzas can you make?
+          </p>
+          <Button 
+            variant="info" 
+            size="sm"
+            onClick={() => toggleSolution('p2')}
+          >
+            {showSolutions.p2 ? 'Hide' : 'Show'} Solution
+          </Button>
+          
+          {showSolutions.p2 && (
+            <div className="mt-4 bg-neutral-900 p-4 rounded">
+              <div className="text-center">
+                <span dangerouslySetInnerHTML={{ 
+                  __html: `\\[C(12,4) = \\frac{12!}{4!8!} = \\frac{12 \\times 11 \\times 10 \\times 9}{4 \\times 3 \\times 2 \\times 1} = 495\\]` 
+                }} />
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Problem 3 */}
+        <div className="bg-neutral-800 p-4 rounded-lg">
+          <p className="font-semibold text-amber-400 mb-2">Problem 3: Scientific Peer Review</p>
+          <p className="text-neutral-300 mb-3">
+            A journal has 20 submitted papers and can only publish 5 in their special issue. 
+            If your paper is among the submissions, what's the probability it gets selected?
+          </p>
+          <Button 
+            variant="info" 
+            size="sm"
+            onClick={() => toggleSolution('p3')}
+          >
+            {showSolutions.p3 ? 'Hide' : 'Show'} Solution
+          </Button>
+          
+          {showSolutions.p3 && (
+            <div className="mt-4 bg-neutral-900 p-4 rounded">
+              <p className="text-sm text-neutral-300 mb-2">
+                Ways your paper is selected: C(19,4) = 3,876<br/>
+                Total ways to select 5 papers: C(20,5) = 15,504
+              </p>
+              <div className="text-center">
+                <span dangerouslySetInnerHTML={{ 
+                  __html: `\\[P(\\text{selected}) = \\frac{C(19,4)}{C(20,5)} = \\frac{3,876}{15,504} = \\frac{5}{20} = 0.25\\]` 
+                }} />
+              </div>
+              <p className="text-sm text-neutral-400 mt-2">
+                The probability equals 5/20, which makes intuitive sense: 5 slots for 20 papers.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <InsightBox variant="info" className="mt-6">
+        These examples demonstrate how combinations appear naturally when order doesn't matter. 
+        The key insight: C(n,r) counts selections, not arrangements.
+      </InsightBox>
+    </SectionContent>
+  );
+};
 
 const SECTIONS = [
   {
     id: 'basic-example',
     title: 'Basic Example',
-    content: ({ sectionIndex, isCompleted }) => (
-      <SectionContent>
-        <WorkedExample title="Team Selection Problem">
+    content: ({ sectionIndex, isCompleted }) => {
+      const contentRef = useMathJax([]);
+      
+      return (
+        <SectionContent>
+          <div ref={contentRef}>
+            <WorkedExample title="Team Selection Problem">
           <ExampleSection title="Problem">
             <div className="bg-blue-900/20 p-4 rounded-lg">
               <p className="text-neutral-300">
@@ -77,19 +196,25 @@ const SECTIONS = [
           </ExampleSection>
         </WorkedExample>
         
-        <InsightBox variant="tip">
-          💡 Pro Tip: Cancel out factorials early! Notice how 5! canceled out immediately, 
-          saving us from calculating large numbers.
-        </InsightBox>
-      </SectionContent>
-    )
+            <InsightBox variant="tip">
+              Pro Tip: Cancel out factorials early! Notice how 5! canceled out immediately, 
+              saving us from calculating large numbers.
+            </InsightBox>
+          </div>
+        </SectionContent>
+      );
+    }
   },
   {
     id: 'exam-level',
     title: 'Exam-Level Example',
-    content: ({ sectionIndex, isCompleted }) => (
-      <SectionContent>
-        <WorkedExample title="Complex Selection with Constraints">
+    content: ({ sectionIndex, isCompleted }) => {
+      const contentRef = useMathJax([]);
+      
+      return (
+        <SectionContent>
+          <div ref={contentRef}>
+            <WorkedExample title="Complex Selection with Constraints">
           <ExampleSection title="Problem">
             <div className="bg-amber-900/20 p-4 rounded-lg">
               <p className="text-neutral-300 mb-2">
@@ -163,18 +288,24 @@ const SECTIONS = [
         </WorkedExample>
         
         <InsightBox variant="warning">
-          ⚠️ Common Mistake: Don't add the combinations - multiply them! 
+          Common Mistake: Don't add the combinations - multiply them! 
           This is the multiplication principle in action.
         </InsightBox>
-      </SectionContent>
-    )
+          </div>
+        </SectionContent>
+      );
+    }
   },
   {
     id: 'variations',
     title: 'Variations',
-    content: ({ sectionIndex, isCompleted }) => (
-      <SectionContent>
-        <WorkedExample title="Common Variations You'll Encounter">
+    content: ({ sectionIndex, isCompleted }) => {
+      const contentRef = useMathJax([]);
+      
+      return (
+        <SectionContent>
+          <div ref={contentRef}>
+            <WorkedExample title="Common Variations You'll Encounter">
           <ExampleSection title="Type 1: At Least / At Most">
             <div className="bg-blue-900/20 p-4 rounded-lg mb-4">
               <p className="font-semibold text-blue-400">Problem:</p>
@@ -254,8 +385,10 @@ const SECTIONS = [
             </div>
           </div>
         </VisualizationSection>
-      </SectionContent>
-    )
+          </div>
+        </SectionContent>
+      );
+    }
   },
   {
     id: 'practice',
@@ -274,7 +407,11 @@ const SECTIONS = [
 
 export default function WorkedExamplesTab({ onComplete }) {
   // Move the useState hook to component top level
-  const [showSolutions, setShowSolutions] = useState({});
+  const [showSolutions, setShowSolutions] = useState({
+    p1: false,
+    p2: false,
+    p3: false
+  });
   
   const toggleSolution = (problem) => {
     setShowSolutions(prev => ({ ...prev, [problem]: !prev[problem] }));
@@ -286,105 +423,10 @@ export default function WorkedExamplesTab({ onComplete }) {
       return {
         ...section,
         content: ({ sectionIndex, isCompleted }) => (
-          <SectionContent>
-            <div className="space-y-6">
-              <div className="text-center mb-6">
-                <h3 className="text-xl font-semibold text-neutral-200">Test Your Skills!</h3>
-                <p className="text-neutral-400">Try these problems, then check your answers</p>
-              </div>
-              
-              {/* Problem 1 */}
-              <div className="bg-neutral-800 p-4 rounded-lg">
-                <p className="font-semibold text-amber-400 mb-2">Problem 1: Lottery Selection</p>
-                <p className="text-neutral-300 mb-3">
-                  In a 6/49 lottery, you choose 6 numbers from 1 to 49. What's the probability of winning the jackpot?
-                </p>
-                <Button 
-                  variant="info" 
-                  size="sm"
-                  onClick={() => toggleSolution('p1')}
-                >
-                  {showSolutions.p1 ? 'Hide' : 'Show'} Solution
-                </Button>
-                
-                {showSolutions.p1 && (
-                  <div className="mt-4 bg-neutral-900 p-4 rounded">
-                    <div className="text-center">
-                      <span dangerouslySetInnerHTML={{ 
-                        __html: `\\[C(49,6) = \\frac{49!}{6!43!} = 13,983,816\\]` 
-                      }} />
-                    </div>
-                    <p className="text-sm text-neutral-300 mt-2">
-                      Probability = 1/13,983,816 ≈ 0.0000000715
-                    </p>
-                  </div>
-                )}
-              </div>
-              
-              {/* Problem 2 */}
-              <div className="bg-neutral-800 p-4 rounded-lg">
-                <p className="font-semibold text-amber-400 mb-2">Problem 2: Pizza Toppings</p>
-                <p className="text-neutral-300 mb-3">
-                  A pizza shop offers 12 toppings. How many different 4-topping pizzas can you make?
-                </p>
-                <Button 
-                  variant="info" 
-                  size="sm"
-                  onClick={() => toggleSolution('p2')}
-                >
-                  {showSolutions.p2 ? 'Hide' : 'Show'} Solution
-                </Button>
-                
-                {showSolutions.p2 && (
-                  <div className="mt-4 bg-neutral-900 p-4 rounded">
-                    <div className="text-center">
-                      <span dangerouslySetInnerHTML={{ 
-                        __html: `\\[C(12,4) = \\frac{12!}{4!8!} = \\frac{12 \\times 11 \\times 10 \\times 9}{4 \\times 3 \\times 2 \\times 1} = 495\\]` 
-                      }} />
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              {/* Problem 3 */}
-              <div className="bg-neutral-800 p-4 rounded-lg">
-                <p className="font-semibold text-amber-400 mb-2">Problem 3: Data Science Interview</p>
-                <p className="text-neutral-300 mb-3">
-                  Google interviews 20 candidates and needs to hire 5 data scientists. 
-                  If you're one of the candidates, what's the probability you get hired?
-                </p>
-                <Button 
-                  variant="info" 
-                  size="sm"
-                  onClick={() => toggleSolution('p3')}
-                >
-                  {showSolutions.p3 ? 'Hide' : 'Show'} Solution
-                </Button>
-                
-                {showSolutions.p3 && (
-                  <div className="mt-4 bg-neutral-900 p-4 rounded">
-                    <p className="text-sm text-neutral-300 mb-2">
-                      Ways you're selected: C(19,4) = 3,876<br/>
-                      Total ways to select 5: C(20,5) = 15,504
-                    </p>
-                    <div className="text-center">
-                      <span dangerouslySetInnerHTML={{ 
-                        __html: `\\[P(\\text{hired}) = \\frac{C(19,4)}{C(20,5)} = \\frac{3,876}{15,504} = \\frac{5}{20} = 0.25\\]` 
-                      }} />
-                    </div>
-                    <p className="text-sm text-green-400 mt-2">
-                      25% chance - not bad odds!
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <InsightBox variant="success" className="mt-6">
-              🎯 Ready for exams? You should now be able to identify and solve combination problems 
-              in under 2 minutes!
-            </InsightBox>
-          </SectionContent>
+          <PracticeSection 
+            showSolutions={showSolutions}
+            toggleSolution={toggleSolution}
+          />
         )
       };
     }

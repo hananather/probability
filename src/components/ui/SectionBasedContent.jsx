@@ -134,12 +134,12 @@ export default function SectionBasedContent({
         className="min-h-[400px]"
       >
         <AnimatePresence mode="wait">
-          {typeof currentSectionData.content === 'function' 
-            ? currentSectionData.content({ 
-                sectionIndex: currentSection, 
-                isCompleted: isCurrentSectionCompleted 
+          {React.isValidElement(currentSectionData.content) 
+            ? currentSectionData.content
+            : React.createElement(currentSectionData.content, {
+                sectionIndex: currentSection,
+                isCompleted: isCurrentSectionCompleted
               })
-            : currentSectionData.content
           }
         </AnimatePresence>
       </motion.div>

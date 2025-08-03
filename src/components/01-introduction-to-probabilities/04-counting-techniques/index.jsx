@@ -8,6 +8,8 @@ import {
 } from '../../ui/VisualizationContainer';
 import { colors, typography, cn, createColorScheme } from '../../../lib/design-system';
 import { tutorial_1_2_1 } from '@/tutorials/chapter1';
+import { useMathJax } from '@/hooks/useMathJax';
+import MathErrorBoundary from '@/components/ui/error-handling/MathErrorBoundary';
 
 // Use probability color scheme
 const colorScheme = createColorScheme('probability');
@@ -33,25 +35,7 @@ function nPr(n, r) {
 
 // Worked Example Component (Simplified)
 const PermCombWorkedExample = memo(function PermCombWorkedExample({ n, r, isPermutation }) {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    // MathJax timeout pattern
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          // Silent error: MathJax error
-        });
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [n, r, isPermutation]);
+  const contentRef = useMathJax([n, r, isPermutation]);
   
   const permCount = nPr(n, r);
   const combCount = nCr(n, r);
@@ -76,7 +60,7 @@ const PermCombWorkedExample = memo(function PermCombWorkedExample({ n, r, isPerm
       </div>
       
       <div className="bg-neutral-900 p-3 rounded text-sm">
-        <p className="text-yellow-400 font-medium mb-2">💡 Real-world Example:</p>
+        <p className="text-yellow-400 font-medium mb-2">Real-world Example:</p>
         {isPermutation ? (
           <p className="text-neutral-300">
             Arranging {r} people in a line from {n} total people: {permCount} ways
@@ -91,7 +75,7 @@ const PermCombWorkedExample = memo(function PermCombWorkedExample({ n, r, isPerm
   );
 });
 
-function CountingTechniques() {
+const CountingTechniques = memo(function CountingTechniques() {
   const [size, setSize] = useState(3); // Start with 3 items
   const [number, setNumber] = useState(2); // Start with r=2
   const [combinations, setCombinations] = useState(false);
@@ -199,7 +183,10 @@ function CountingTechniques() {
     
     const svg = d3.select(svgRef.current);
     const { width: containerWidth } = svgRef.current.getBoundingClientRect();
-    svg.selectAll("*").remove();
+    
+    // Clear existing elements with proper selection
+    svg.selectAll("rect.background").remove();
+    svg.selectAll("g.main-container").remove();
     
     const margin = { top: 40, right: 40, bottom: 40, left: 40 };
     const width = containerWidth - margin.left - margin.right;
@@ -210,6 +197,7 @@ function CountingTechniques() {
     
     // Dark background
     svg.append("rect")
+      .attr("class", "background")
       .attr("width", containerWidth)
       .attr("height", 580)
       .attr("fill", "#0a0a0a");
@@ -219,6 +207,7 @@ function CountingTechniques() {
     
     // Create container
     const g = svg.append("g")
+      .attr("class", "main-container")
       .attr("transform", `translate(${margin.left},${margin.top})`);
     
     // Store container reference
@@ -254,6 +243,14 @@ function CountingTechniques() {
     
     // Initial render
     updateVisualization(0);
+    
+    // Cleanup function for D3
+    return () => {
+      if (svgRef.current) {
+        const svg = d3.select(svgRef.current);
+        svg.selectAll("*").interrupt();
+      }
+    };
   }, [size]); // Only recreate tree when size changes
   
   // Handle number (depth) changes
@@ -480,13 +477,17 @@ function CountingTechniques() {
   
   
   return (
-    <VisualizationContainer 
-      title="Counting Techniques: Permutations and Combinations" 
-      className="p-2"
-      tutorialSteps={tutorial_1_2_1}
-      tutorialKey="counting-techniques-1-2-1"
+    <MathErrorBoundary
+      fallbackMessage="The counting techniques visualization encountered an error. This may be due to complex tree calculations, D3 rendering issues, or factorial computation limits. Please try reducing the values of n or r, or refresh the page."
+      showRetry={true}
     >
-      <div className="flex flex-col lg:flex-row gap-4">
+      <VisualizationContainer 
+        title="Counting Techniques: Permutations and Combinations" 
+        className="p-2"
+        tutorialSteps={tutorial_1_2_1}
+        tutorialKey="counting-techniques-1-2-1"
+      >
+        <div className="flex flex-col lg:flex-row gap-4">
         {/* Left Panel */}
         <div className="lg:w-1/3 space-y-3 flex flex-col">
           <VisualizationSection className="p-3">
@@ -716,7 +717,7 @@ function CountingTechniques() {
                     
                     {selectedNodes.length === getCount() && (
                       <div className="text-green-400 text-xs font-semibold">
-                        ✨ Perfect! You've selected all possible {combinations ? 'combinations' : 'permutations'}!
+                        Perfect! You've selected all possible {combinations ? 'combinations' : 'permutations'}!
                       </div>
                     )}
                     
@@ -824,7 +825,8 @@ function CountingTechniques() {
         </div>
       </div>
     </VisualizationContainer>
+    </MathErrorBoundary>
   );
-}
+});
 
 export default CountingTechniques;

@@ -35,7 +35,7 @@ export function TDistributionExplorer() {
       id: 'heavy-tails',
       title: 'Heavy Tails with Small Samples',
       description: 'The t-distribution has heavier tails than the normal distribution when degrees of freedom are small',
-      formula: 'P(|T| > t_{\\alpha/2}) > P(|Z| > z_{\\alpha/2})',
+      formula: `P(|T| > t_{\\alpha/2}) > P(|Z| > z_{\\alpha/2})`,
       discovered: sampleSize <= 10,
       category: 'concept'
     },
@@ -43,7 +43,7 @@ export function TDistributionExplorer() {
       id: 'df-relationship',
       title: 'Degrees of Freedom',
       description: 'Degrees of freedom equals sample size minus one',
-      formula: 'df = n - 1',
+      formula: `df = n - 1`,
       discovered: sampleSize >= 2,
       category: 'formula'
     },
@@ -58,7 +58,7 @@ export function TDistributionExplorer() {
       id: 'convergence',
       title: 'Convergence to Normal',
       description: 'As degrees of freedom increase, the t-distribution approaches the standard normal distribution',
-      formula: '\\lim_{df \\to \\infty} t(df) = N(0,1)',
+      formula: `\\lim_{df \\to \\infty} t(df) = N(0,1)`,
       discovered: sampleSize >= 30,
       category: 'pattern'
     },
@@ -66,7 +66,7 @@ export function TDistributionExplorer() {
       id: 'critical-values',
       title: 'Critical Value Relationship',
       description: 'T-distribution critical values are always larger than normal critical values for finite samples',
-      formula: 't_{\\alpha/2}(df) > z_{\\alpha/2}',
+      formula: `t_{\\alpha/2}(df) > z_{\\alpha/2}`,
       discovered: showConfidenceInterval && sampleSize < 30,
       category: 'relationship'
     },

@@ -6,21 +6,21 @@ import { BookOpen, Target, Zap, Palette } from 'lucide-react';
 
 // Import new tabs from new folder (with tab numbers for clarity)
 const FoundationsTab = dynamic(() => 
-  import('@/components/01-introduction-to-probabilities/01-pebble-world/Tab1FoundationsTab'), { ssr: false }
+  import('@/components/01-introduction-to-probabilities/01-foundations/Tab1FoundationsTab'), { ssr: false }
 );
 const WorkedExamplesTab = dynamic(() => 
-  import('@/components/01-introduction-to-probabilities/01-pebble-world/Tab2WorkedExamplesTab'), { ssr: false }
+  import('@/components/01-introduction-to-probabilities/01-foundations/Tab2WorkedExamplesTab'), { ssr: false }
 );
 const QuickReferenceTab = dynamic(() => 
-  import('@/components/01-introduction-to-probabilities/01-pebble-world/Tab3QuickReferenceTab'), { ssr: false }
+  import('@/components/01-introduction-to-probabilities/01-foundations/Tab3QuickReferenceTab'), { ssr: false }
 );
 
 // Interactive tab
 const InteractiveTab = dynamic(() => 
-  import('@/components/01-introduction-to-probabilities/01-pebble-world/Tab4InteractiveTab'), { ssr: false }
+  import('@/components/01-introduction-to-probabilities/01-foundations/Tab4InteractiveTab'), { ssr: false }
 );
 
-export default function PebbleWorldPage() {
+export default function FoundationsPage() {
   const TABS = [
     { 
       id: 'foundations', 
@@ -45,7 +45,7 @@ export default function PebbleWorldPage() {
     },
     { 
       id: 'interactive', 
-      label: 'Interactive Pebble World', 
+      label: 'Interactive Explorer', 
       icon: Palette,
       component: InteractiveTab, 
       color: '#f59e0b' 
@@ -54,11 +54,11 @@ export default function PebbleWorldPage() {
   
   return (
     <TabbedLearningPage
-      title="Pebble World Foundation"
+      title="Foundations of Probability"
       subtitle="Build intuitive understanding of probability through physical models"
       chapter={1}
       tabs={TABS}
-      storageKey="chapter1-pebble-world-progress"
+      storageKey="chapter1-foundations-progress"
       colorScheme="teal"
     />
   );

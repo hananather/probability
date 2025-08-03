@@ -8,6 +8,11 @@ import { Button } from '../../ui/button';
 import { ProgressBar } from '../../ui/ProgressBar';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Animation timing constants
+const ANIMATION_CONSTANTS = {
+  STAGE_TRANSITION_DURATION: 0.3, // Duration for stage transitions
+};
+
 const STAGES = [
   {
     id: 'intro',
@@ -202,7 +207,7 @@ function MontyHallJourney() {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: ANIMATION_CONSTANTS.STAGE_TRANSITION_DURATION }}
         >
           <CurrentComponent 
             {...currentStageProps}

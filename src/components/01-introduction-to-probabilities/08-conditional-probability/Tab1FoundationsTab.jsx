@@ -22,7 +22,7 @@ const SECTIONS = [
       <SectionContent>
         <div className="bg-amber-900/20 p-4 rounded-lg border border-amber-600/30">
           <h4 className="font-semibold text-amber-400 mb-3">
-            📝 A Real Exam Problem:
+            A Real Exam Problem:
           </h4>
           <p className="text-neutral-300 mb-3">
             A cybersecurity system flags 85% of actual threats correctly (true positive rate) and 
@@ -100,7 +100,7 @@ const SECTIONS = [
             </WorkedExample>
             
             <InsightBox variant="info">
-              💡 Remember: P(A|B) ≠ P(B|A) in general. The probability of "rain given clouds" 
+              Remember: P(A|B) ≠ P(B|A) in general. The probability of "rain given clouds" 
               is very different from "clouds given rain"!
             </InsightBox>
         </MathJaxSection>
@@ -180,60 +180,96 @@ const SECTIONS = [
   },
   {
     id: 'why-matters',
-    title: 'Why This Matters',
+    title: 'Fundamental Applications',
     content: ({ sectionIndex, isCompleted }) => (
       <SectionContent>
         <div className="space-y-6">
-          <div className="bg-red-900/20 p-4 rounded-lg border border-red-600/30">
-            <h4 className="font-semibold text-red-400 mb-2">
-              🚀 Critical for Tech Careers:
+          <div className="bg-neutral-800 p-5 rounded-lg">
+            <h4 className="font-semibold text-white mb-4">
+              Where Conditional Probability Shapes Decisions
             </h4>
-            <ul className="list-disc list-inside space-y-2 text-neutral-300 ml-4">
-              <li><strong>Machine Learning:</strong> Naive Bayes classifiers, probabilistic graphical models</li>
-              <li><strong>A/B Testing:</strong> Understanding statistical significance and p-values</li>
-              <li><strong>Recommendation Systems:</strong> Collaborative filtering algorithms</li>
-              <li><strong>Natural Language Processing:</strong> Language models and text classification</li>
-              <li><strong>Computer Vision:</strong> Object detection and image segmentation</li>
-            </ul>
-          </div>
-          
-          <div className="bg-blue-900/20 p-4 rounded-lg border border-blue-600/30">
-            <h4 className="font-semibold text-blue-400 mb-2">
-              💼 Interview Topics:
-            </h4>
-            <p className="text-neutral-300 mb-2">
-              Top tech companies (Google, Meta, Amazon) frequently ask:
-            </p>
-            <ul className="list-disc list-inside space-y-1 text-sm text-neutral-300 ml-4">
-              <li>Bayes' theorem problems (spam filters, disease testing)</li>
-              <li>A/B test interpretation questions</li>
-              <li>Conditional probability in system design</li>
-              <li>False positive/negative trade-offs</li>
-            </ul>
-          </div>
-          
-          <div className="bg-green-900/20 p-4 rounded-lg border border-green-600/30">
-            <h4 className="font-semibold text-green-400 mb-2">
-              🎯 Master These Concepts:
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-              <div className="bg-neutral-800/50 p-3 rounded">
-                <p className="font-semibold text-neutral-200">Conditional vs Joint</p>
-                <p className="text-sm text-neutral-400">Know when to use P(A|B) vs P(A∩B)</p>
+            <div className="space-y-4">
+              <div>
+                <p className="font-medium text-blue-300 mb-2">Medical Diagnostics</p>
+                <p className="text-sm text-neutral-300 mb-2">
+                  A test with 99% accuracy sounds reliable, but conditional probability reveals the truth:
+                </p>
+                <ul className="list-disc list-inside text-xs text-neutral-400 ml-4 space-y-1">
+                  <li>For rare diseases (0.1% prevalence), a positive test often means &lt;50% chance of disease</li>
+                  <li>This counterintuitive result affects millions of medical decisions daily</li>
+                  <li>Understanding P(disease|positive) vs P(positive|disease) saves lives and resources</li>
+                </ul>
               </div>
-              <div className="bg-neutral-800/50 p-3 rounded">
-                <p className="font-semibold text-neutral-200">Independence Testing</p>
-                <p className="text-sm text-neutral-400">Check if P(A|B) = P(A)</p>
+              
+              <div>
+                <p className="font-medium text-green-300 mb-2">Risk Assessment in Complex Systems</p>
+                <p className="text-sm text-neutral-300 mb-2">
+                  Financial markets and infrastructure depend on conditional probability chains:
+                </p>
+                <ul className="list-disc list-inside text-xs text-neutral-400 ml-4 space-y-1">
+                  <li>Credit default swaps: P(default|market conditions) determines trillion-dollar positions</li>
+                  <li>Power grid failures: P(cascade|initial failure) guides infrastructure investment</li>
+                  <li>Supply chain resilience: P(shortage|disruption) affects global commerce</li>
+                </ul>
               </div>
-              <div className="bg-neutral-800/50 p-3 rounded">
-                <p className="font-semibold text-neutral-200">Bayes' Reversal</p>
-                <p className="text-sm text-neutral-400">Convert P(B|A) to P(A|B)</p>
-              </div>
-              <div className="bg-neutral-800/50 p-3 rounded">
-                <p className="font-semibold text-neutral-200">Total Probability</p>
-                <p className="text-sm text-neutral-400">Break complex events into cases</p>
+              
+              <div>
+                <p className="font-medium text-purple-300 mb-2">Information Theory and Communication</p>
+                <p className="text-sm text-neutral-300 mb-2">
+                  Every digital communication relies on conditional probability:
+                </p>
+                <ul className="list-disc list-inside text-xs text-neutral-400 ml-4 space-y-1">
+                  <li>Error correction codes: P(original message|received signal with noise)</li>
+                  <li>Data compression: P(next symbol|previous symbols) enables efficient encoding</li>
+                  <li>Cryptography: P(plaintext|ciphertext) must be negligible for security</li>
+                </ul>
               </div>
             </div>
+          </div>
+          
+          <div className="bg-purple-900/20 p-5 rounded-lg border border-purple-600/30">
+            <h4 className="font-semibold text-purple-400 mb-3">
+              The Deeper Insight
+            </h4>
+            <p className="text-sm text-neutral-300 mb-3">
+              Conditional probability isn't just a mathematical tool—it's how we update beliefs with new information. 
+              It formalizes the process of learning from evidence, making it fundamental to:
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="bg-neutral-800/50 p-3 rounded">
+                <p className="font-medium text-neutral-200 mb-1">Scientific Method</p>
+                <p className="text-xs text-neutral-400">
+                  P(hypothesis|data) drives research conclusions
+                </p>
+              </div>
+              <div className="bg-neutral-800/50 p-3 rounded">
+                <p className="font-medium text-neutral-200 mb-1">Legal Systems</p>
+                <p className="text-xs text-neutral-400">
+                  P(guilt|evidence) determines justice outcomes
+                </p>
+              </div>
+              <div className="bg-neutral-800/50 p-3 rounded">
+                <p className="font-medium text-neutral-200 mb-1">Machine Intelligence</p>
+                <p className="text-xs text-neutral-400">
+                  P(action|observation) enables autonomous systems
+                </p>
+              </div>
+              <div className="bg-neutral-800/50 p-3 rounded">
+                <p className="font-medium text-neutral-200 mb-1">Decision Theory</p>
+                <p className="text-xs text-neutral-400">
+                  P(outcome|choice) guides optimal strategies
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-amber-900/20 p-4 rounded-lg">
+            <p className="text-sm text-neutral-300">
+              <span className="font-medium text-amber-400">Historical Note:</span> Thomas Bayes developed his theorem 
+              in the 1760s to address philosophical questions about the existence of God. Today, it underpins 
+              everything from spam filters to particle physics discoveries at CERN. The mathematical framework 
+              for updating beliefs has become one of humanity's most powerful tools for understanding uncertainty.
+            </p>
           </div>
         </div>
       </SectionContent>

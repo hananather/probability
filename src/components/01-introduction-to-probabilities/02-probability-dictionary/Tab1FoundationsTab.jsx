@@ -5,6 +5,7 @@ import SectionBasedContent from '@/components/ui/SectionBasedContent';
 import { ComparisonTable } from '@/components/ui/patterns/ComparisonTable';
 import { SimpleInsightBox } from '@/components/ui/patterns/SimpleComponents';
 import { InterpretationBox } from '@/components/ui/patterns/InterpretationBox';
+import { useMathJax } from '../../../hooks/useMathJax';
 
 const SECTIONS = [
   {
@@ -68,7 +69,7 @@ const SECTIONS = [
               <strong>English:</strong> "What's the chance the test is positive given that the patient has the disease?"
             </p>
             <p className="text-neutral-300">
-              <strong>Math:</strong> <span dangerouslySetInnerHTML={{ __html: `\\(P(\\text{Test}^+ | \\text{Disease})\\)` }} />
+              <strong>Math:</strong> <span className="font-mono" dangerouslySetInnerHTML={{ __html: `\\(P(\\text{Test}^+ | \\text{Disease})\\)` }} />
             </p>
           </div>
           <p className="text-xs text-neutral-400 mt-2">
@@ -106,31 +107,31 @@ const SECTIONS = [
           {
             aspect: "Basic concepts",
             english: "sample space",
-            sets: "\\(S\\)",
-            example: "All possible coin flips: \\(\\{H, T\\}\\)"
+            sets: `\\(S\\)`,
+            example: `All possible coin flips: \\(\\{H, T\\}\\)`
           },
           {
             aspect: "",
             english: "an outcome happens",
-            sets: "\\(s \\in S\\)",
-            example: "Heads occurs: \\(H \\in \\{H, T\\}\\)"
+            sets: `\\(s \\in S\\)`,
+            example: `Heads occurs: \\(H \\in \\{H, T\\}\\)`
           },
           {
             aspect: "",
             english: "event A",
-            sets: "\\(A \\subseteq S\\)",
-            example: "Getting heads: \\(A = \\{H\\}\\)"
+            sets: `\\(A \\subseteq S\\)`,
+            example: `Getting heads: \\(A = \\{H\\}\\)`
           },
           {
             aspect: "",
             english: "event A occurred",
-            sets: "\\(s_{\\text{actual}} \\in A\\)",
-            example: "We got heads: \\(H \\in \\{H\\}\\)"
+            sets: `\\(s_{\\text{actual}} \\in A\\)`,
+            example: `We got heads: \\(H \\in \\{H\\}\\)`
           },
           {
             aspect: "",
             english: "something must happen",
-            sets: "\\(s_{\\text{actual}} \\in S\\)",
+            sets: `\\(s_{\\text{actual}} \\in S\\)`,
             example: "Coin must land somewhere"
           }
         ]
@@ -167,32 +168,32 @@ const SECTIONS = [
           {
             aspect: "Combining events",
             english: "A or B (inclusive)",
-            sets: "\\(A \\cup B\\)"
+            sets: `\\(A \\cup B\\)`
           },
           {
             aspect: "",
             english: "A and B",
-            sets: "\\(A \\cap B\\)"
+            sets: `\\(A \\cap B\\)`
           },
           {
             aspect: "",
             english: "not A",
-            sets: "\\(A^c\\) or \\(A'\\)"
+            sets: `\\(A^c\\) or \\(A'\\)`
           },
           {
             aspect: "",
             english: "A or B, but not both",
-            sets: "\\((A \\cap B^c) \\cup (A^c \\cap B)\\)"
+            sets: `\\((A \\cap B^c) \\cup (A^c \\cap B)\\)`
           },
           {
             aspect: "",
             english: "at least one of A₁, A₂, ..., Aₙ",
-            sets: "\\(A_1 \\cup A_2 \\cup \\cdots \\cup A_n\\)"
+            sets: `\\(A_1 \\cup A_2 \\cup \\cdots \\cup A_n\\)`
           },
           {
             aspect: "",
             english: "all of A₁, A₂, ..., Aₙ",
-            sets: "\\(A_1 \\cap A_2 \\cap \\cdots \\cap A_n\\)"
+            sets: `\\(A_1 \\cap A_2 \\cap \\cdots \\cap A_n\\)`
           }
         ]
       };
@@ -220,15 +221,19 @@ const SECTIONS = [
 ];
 
 export default function Tab1FoundationsTab({ onComplete }) {
+  const contentRef = useMathJax([]);
+
   return (
-    <SectionBasedContent
-      title="Foundations"
-      description="Learning the translation between English and mathematical notation"
-      sections={SECTIONS}
-      onComplete={onComplete}
-      chapter={1}
-      progressVariant="green"
-      showHeader={false}
-    />
+    <div ref={contentRef}>
+      <SectionBasedContent
+        title="Foundations"
+        description="Learning the translation between English and mathematical notation"
+        sections={SECTIONS}
+        onComplete={onComplete}
+        chapter={1}
+        progressVariant="green"
+        showHeader={false}
+      />
+    </div>
   );
 }

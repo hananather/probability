@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
+import { useMathJax } from '../../../hooks/useMathJax';
 import SectionBasedContent, { 
   SectionContent, 
   InteractiveElement 
@@ -12,36 +13,35 @@ import { CheckCircle2, XCircle } from 'lucide-react';
 
 // Create section content components outside to avoid conditional hooks
 const BasicExampleSection = ({ showSolution, setShowSolution }) => {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [showSolution]);
+  const contentRef = useMathJax([showSolution]);
       
   return (
     <SectionContent>
       <div ref={contentRef}>
-        <WorkedExample title="Restaurant Seating Problem">
-          <ExampleSection title="Problem Statement">
+        <WorkedExample title="Microservices Deployment Sequence">
+          <ExampleSection title="Real Production Scenario">
             <div className="bg-neutral-800 p-4 rounded-lg">
+              <p className="text-neutral-300 mb-3">
+                <span className="text-amber-400 font-medium">Context:</span> You're deploying a payment processing system 
+                with 8 microservices. The deployment order matters because services have dependencies.
+              </p>
+              <div className="bg-blue-900/20 p-3 rounded mb-3">
+                <p className="text-sm text-blue-300 font-medium mb-2">Services:</p>
+                <p className="text-xs text-neutral-400">
+                  Auth, Database, Cache, Payment Gateway, Fraud Detection, 
+                  Notification, Analytics, Load Balancer
+                </p>
+              </div>
               <p className="text-neutral-300">
-                A restaurant has 6 unique dishes to feature. They want to create a 3-course 
-                tasting menu (appetizer, main, dessert). How many different menus can they create if:
+                You need to deploy 3 services in the critical path first. Calculate deployment sequences if:
               </p>
               <ol className="list-decimal list-inside mt-3 space-y-2 text-neutral-300 ml-4">
-                <li>The same dish can be served in multiple courses?</li>
-                <li>Each dish can only appear once in the menu?</li>
+                <li>Services can be redeployed (rolling updates)?</li>
+                <li>Each service deploys only once (blue-green deployment)?</li>
               </ol>
+              <div className="mt-3 bg-amber-900/20 p-2 rounded text-xs text-amber-300">
+                Impact: Wrong order = 15 min downtime = $50K lost revenue
+              </div>
             </div>
           </ExampleSection>
           
@@ -55,63 +55,83 @@ const BasicExampleSection = ({ showSolution, setShowSolution }) => {
           
           {showSolution && (
             <>
-              <ExampleSection title="Part 1: With Replacement">
-                <Step number={1} description="Identify the parameters">
-                  <p className="text-neutral-300">
-                    • <span dangerouslySetInnerHTML={{ __html: `\\(n = 6\\)` }} /> (total dishes)<br/>
-                    • <span dangerouslySetInnerHTML={{ __html: `\\(r = 3\\)` }} /> (positions to fill)
+              <ExampleSection title="Part 1: Rolling Updates (With Replacement)">
+                <Step number={1} description="Understand the scenario">
+                  <p className="text-neutral-300 mb-2">
+                    Rolling updates allow redeploying the same service multiple times:
                   </p>
+                  <ul className="list-disc list-inside text-sm text-neutral-400 ml-4">
+                    <li>Deploy v1 → Test → Deploy v1.1 → Test → Deploy v1.2</li>
+                    <li>Common in iterative debugging or configuration tuning</li>
+                  </ul>
                 </Step>
                 
-                <Step number={2} description="Apply the formula">
-                  <div dangerouslySetInnerHTML={{ 
-                    __html: `\\[\\text{Number of menus} = n^r = 6^3\\]` 
+                <Step number={2} description="Identify parameters and apply formula">
+                  <p className="text-neutral-300">
+                    • <span dangerouslySetInnerHTML={{ __html: `\\(n = 8\\)` }} /> (total services)<br/>
+                    • <span dangerouslySetInnerHTML={{ __html: `\\(r = 3\\)` }} /> (deployment slots)
+                  </p>
+                  <div className="mt-2" dangerouslySetInnerHTML={{ 
+                    __html: `\\[\\text{Deployment sequences} = n^r = 8^3\\]` 
                   }} />
                 </Step>
                 
                 <Step number={3} description="Calculate">
                   <div dangerouslySetInnerHTML={{ 
-                    __html: `\\[6^3 = 6 \\times 6 \\times 6 = 216\\]` 
+                    __html: `\\[8^3 = 8 \\times 8 \\times 8 = 512\\]` 
                   }} />
                 </Step>
                 
                 <InsightBox variant="success">
-                  ✅ Answer: 216 different menus possible
+                  Answer: 512 different deployment sequences possible
                 </InsightBox>
               </ExampleSection>
               
-              <ExampleSection title="Part 2: Without Replacement">
-                <Step number={1} description="Use the permutation formula">
+              <ExampleSection title="Part 2: Blue-Green Deployment (Without Replacement)">
+                <Step number={1} description="Understand the constraint">
+                  <p className="text-neutral-300 mb-2">
+                    Blue-green deployment means each service deploys exactly once:
+                  </p>
+                  <ul className="list-disc list-inside text-sm text-neutral-400 ml-4">
+                    <li>Deploy to "green" environment while "blue" serves traffic</li>
+                    <li>Switch traffic after all validations pass</li>
+                    <li>No service can deploy twice in the sequence</li>
+                  </ul>
+                </Step>
+                
+                <Step number={2} description="Apply permutation formula">
                   <div dangerouslySetInnerHTML={{ 
-                    __html: `\\[P(6,3) = \\frac{6!}{(6-3)!} = \\frac{6!}{3!}\\]` 
+                    __html: `\\[P(8,3) = \\frac{8!}{(8-3)!} = \\frac{8!}{5!}\\]` 
                   }} />
                 </Step>
                 
-                <Step number={2} description="Expand the calculation">
+                <Step number={3} description="Calculate step by step">
                   <div dangerouslySetInnerHTML={{ 
-                    __html: `\\[P(6,3) = 6 \\times 5 \\times 4 = 120\\]` 
+                    __html: `\\[P(8,3) = 8 \\times 7 \\times 6 = 336\\]` 
                   }} />
-                </Step>
-                
-                <Step number={3} description="Verify the logic">
-                  <p className="text-neutral-300">
-                    • 1st course: 6 choices<br/>
-                    • 2nd course: 5 choices (one dish used)<br/>
-                    • 3rd course: 4 choices (two dishes used)
+                  <p className="text-neutral-300 mt-2">
+                    • 1st service: 8 choices<br/>
+                    • 2nd service: 7 choices (one deployed)<br/>
+                    • 3rd service: 6 choices (two deployed)
                   </p>
                 </Step>
                 
                 <InsightBox variant="success">
-                  ✅ Answer: 120 different menus possible
+                  Answer: 336 different deployment sequences possible
                 </InsightBox>
               </ExampleSection>
               
-              <ExampleSection title="Key Takeaway">
+              <ExampleSection title="Real-World Impact">
                 <div className="bg-purple-900/20 p-4 rounded-lg">
-                  <p className="text-neutral-300">
-                    With replacement gives <span className="font-mono text-purple-400">216/120 = 1.8×</span> more 
-                    possibilities because dishes can repeat!
+                  <p className="text-neutral-300 mb-2">
+                    <span className="font-medium text-purple-400">Why this matters:</span>
                   </p>
+                  <ul className="list-disc list-inside text-sm text-neutral-300 space-y-1">
+                    <li>Rolling updates: <span className="font-mono text-purple-400">512/336 = 1.52×</span> more flexibility</li>
+                    <li>Trade-off: More sequences to test vs. ability to iteratively fix issues</li>
+                    <li>Wrong sequence (e.g., Payment before Database) = system failure</li>
+                    <li>Automated deployment tools must validate dependency order</li>
+                  </ul>
                 </div>
               </ExampleSection>
             </>
@@ -123,21 +143,7 @@ const BasicExampleSection = ({ showSolution, setShowSolution }) => {
 };
 
 const ExamLevelSection = ({ showHints, setShowHints, showSolution, setShowSolution }) => {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [showHints, showSolution]);
+  const contentRef = useMathJax([showHints, showSolution]);
   
   return (
     <SectionContent>
@@ -180,13 +186,13 @@ const ExamLevelSection = ({ showHints, setShowHints, showSolution, setShowSoluti
             <ExampleSection title="Hints">
               <div className="space-y-2">
                 <div className="bg-blue-900/20 p-3 rounded text-sm">
-                  💡 This is a two-stage problem - break it down!
+                  This is a two-stage problem - break it down!
                 </div>
                 <div className="bg-green-900/20 p-3 rounded text-sm">
-                  💡 First 2 positions: without replacement (production constraint)
+                  First 2 positions: without replacement (production constraint)
                 </div>
                 <div className="bg-purple-900/20 p-3 rounded text-sm">
-                  💡 Positions 3-4: can these repeat earlier selections?
+                  Positions 3-4: can these repeat earlier selections?
                 </div>
               </div>
             </ExampleSection>
@@ -240,7 +246,7 @@ const ExamLevelSection = ({ showHints, setShowHints, showSolution, setShowSoluti
               </ExampleSection>
               
               <InsightBox variant="warning">
-                ⚠️ Common Mistake: Treating all 4 positions the same would give 
+                Common Mistake: Treating all 4 positions the same would give 
                 <span dangerouslySetInnerHTML={{ __html: ` \\(P(12,4) = 11,880\\)` }} /> or 
                 <span dangerouslySetInnerHTML={{ __html: ` \\(12^4 = 20,736\\)` }} />, 
                 both incorrect!
@@ -254,21 +260,7 @@ const ExamLevelSection = ({ showHints, setShowHints, showSolution, setShowSoluti
 };
 
 const VariationsSection = ({ selectedVariation, setSelectedVariation }) => {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [selectedVariation]);
+  const contentRef = useMathJax([selectedVariation]);
   
   const variations = [
     {
@@ -320,7 +312,8 @@ const VariationsSection = ({ selectedVariation, setSelectedVariation }) => {
           {selectedVariation && (
             <ExampleSection title="Solution">
               {(() => {
-                const variation = variations.find(v => v.id === selectedVariation);
+                const variation = (variations || []).find(v => v.id === selectedVariation);
+                if (!variation) return <div>Variation not found</div>;
                 return (
                   <div className="space-y-3">
                     <div className="bg-neutral-800 p-4 rounded-lg">
@@ -386,21 +379,7 @@ const PracticeSection = ({
   feedback, 
   setFeedback 
 }) => {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [currentProblem]);
+  const contentRef = useMathJax([currentProblem]);
   
   const problems = [
     {

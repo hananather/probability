@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import TabbedLearningPage from '@/components/ui/TabbedLearningPage';
-import { BookOpen, Target, Zap, Grid } from 'lucide-react';
+import { BookOpen, Target, Zap } from 'lucide-react';
 
 // Import new tabs from new folder (with tab numbers for clarity)
 const FoundationsTab = dynamic(() => 
@@ -18,11 +18,7 @@ const QuickReferenceTab = dynamic(() =>
   { ssr: false }
 );
 
-// Import original component from its ORIGINAL location (unchanged)
-const UnorderedSamples = dynamic(() => 
-  import('@/components/01-introduction-to-probabilities/06-unordered-samples'), 
-  { ssr: false }
-);
+// Removed the non-existent UnorderedSamples component import
 
 export default function UnorderedSamplesPage() {
   const TABS = [
@@ -49,14 +45,6 @@ export default function UnorderedSamplesPage() {
       component: QuickReferenceTab, 
       color: '#7c3aed',
       description: 'Everything you need for the exam'
-    },
-    { 
-      id: 'interactive', 
-      label: 'Interactive Explorer', 
-      icon: Grid,
-      component: UnorderedSamples, 
-      color: '#06b6d4', // cyan - original component used teal/cyan colors
-      description: 'Explore combinations with interactive visualizations'
     }
   ];
   

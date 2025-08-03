@@ -1,33 +1,19 @@
 "use client";
 
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import SectionBasedContent from '@/components/ui/SectionBasedContent';
 import { SimpleInsightBox, SimpleFormulaCard } from '@/components/ui/patterns/SimpleComponents';
 import { InterpretationBox } from '@/components/ui/patterns/InterpretationBox';
 import { SideBySideFormulas } from '@/components/ui/patterns/SideBySideFormulas';
 import { ComparisonTable } from '@/components/ui/patterns/ComparisonTable';
+import { useMathJax } from '@/hooks/useMathJax';
 
 const SECTIONS = [
   {
     id: 'operations-foundation',
     title: 'The Grammar of Events',
     content: ({ sectionIndex, isCompleted }) => {
-      const contentRef = useRef(null);
-      
-      useEffect(() => {
-        const processMathJax = () => {
-          if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-            if (window.MathJax.typesetClear) {
-              window.MathJax.typesetClear([contentRef.current]);
-            }
-            window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-          }
-        };
-        
-        processMathJax();
-        const timeoutId = setTimeout(processMathJax, 100);
-        return () => clearTimeout(timeoutId);
-      }, []);
+      const contentRef = useMathJax([sectionIndex, isCompleted]);
       
       return (
         <div ref={contentRef} className="space-y-6">
@@ -58,22 +44,7 @@ const SECTIONS = [
     id: 'fundamental-operations',
     title: 'The Four Fundamental Operations',
     content: ({ sectionIndex, isCompleted }) => {
-      const contentRef = useRef(null);
-      
-      useEffect(() => {
-        const processMathJax = () => {
-          if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-            if (window.MathJax.typesetClear) {
-              window.MathJax.typesetClear([contentRef.current]);
-            }
-            window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-          }
-        };
-        
-        processMathJax();
-        const timeoutId = setTimeout(processMathJax, 100);
-        return () => clearTimeout(timeoutId);
-      }, []);
+      const contentRef = useMathJax([sectionIndex, isCompleted]);
       
       const operationsData = {
         title: "Complete Set Operations Reference",
@@ -86,25 +57,25 @@ const SECTIONS = [
           {
             aspect: "Union",
             operation: "\\(A \\cup B\\)",
-            definition: "\\(\\{x : x \\in A \\text{ or } x \\in B\\}\\)",
+            definition: `\\(\\{x : x \\in A \\text{ or } x \\in B\\}\\)`,
             meaning: "Elements that belong to A, or B, or both"
           },
           {
             aspect: "Intersection",
             operation: "\\(A \\cap B\\)",
-            definition: "\\(\\{x : x \\in A \\text{ and } x \\in B\\}\\)",
+            definition: `\\(\\{x : x \\in A \\text{ and } x \\in B\\}\\)`,
             meaning: "Elements that belong to both A and B simultaneously"
           },
           {
             aspect: "Complement",
             operation: "\\(A^c\\)",
-            definition: "\\(\\{x \\in S : x \\notin A\\}\\)",
+            definition: `\\(\\{x \\in S : x \\notin A\\}\\)`,
             meaning: "All elements in the sample space that are not in A"
           },
           {
             aspect: "Difference",
             operation: "\\(A \\setminus B\\)",
-            definition: "\\(\\{x : x \\in A \\text{ and } x \\notin B\\}\\)",
+            definition: `\\(\\{x : x \\in A \\text{ and } x \\notin B\\}\\)`,
             meaning: "Elements in A but not in B (A excluding B)"
           }
         ]
@@ -126,7 +97,7 @@ const SECTIONS = [
           
           <div className="grid md:grid-cols-2 gap-6">
             <div className="bg-purple-900/20 p-5 rounded-lg border border-purple-600/30">
-              <h5 className="font-semibold text-purple-400 mb-3 text-lg">🔍 Deep Understanding: Union</h5>
+              <h5 className="font-semibold text-purple-400 mb-3 text-lg">Union</h5>
               <div className="space-y-3">
                 <p className="text-neutral-200 text-sm">
                   <strong>Key Insight:</strong> Union is <em>inclusive</em> - it includes elements that are in A, 
@@ -144,7 +115,7 @@ const SECTIONS = [
             </div>
             
             <div className="bg-blue-900/20 p-5 rounded-lg border border-blue-600/30">
-              <h5 className="font-semibold text-blue-400 mb-3 text-lg">🎯 Deep Understanding: Intersection</h5>
+              <h5 className="font-semibold text-blue-400 mb-3 text-lg">Intersection</h5>
               <div className="space-y-3">
                 <p className="text-neutral-200 text-sm">
                   <strong>Key Insight:</strong> Intersection requires <em>simultaneous membership</em> - 
@@ -164,7 +135,7 @@ const SECTIONS = [
           
           <div className="grid md:grid-cols-2 gap-6">
             <div className="bg-green-900/20 p-5 rounded-lg border border-green-600/30">
-              <h5 className="font-semibold text-green-400 mb-3 text-lg">🔄 Deep Understanding: Complement</h5>
+              <h5 className="font-semibold text-green-400 mb-3 text-lg">🔄 Complement</h5>
               <div className="space-y-3">
                 <p className="text-neutral-200 text-sm">
                   <strong>Key Insight:</strong> Complement is <em>relative to the sample space</em> - 
@@ -182,7 +153,7 @@ const SECTIONS = [
             </div>
             
             <div className="bg-orange-900/20 p-5 rounded-lg border border-orange-600/30">
-              <h5 className="font-semibold text-orange-400 mb-3 text-lg">➖ Deep Understanding: Difference</h5>
+              <h5 className="font-semibold text-orange-400 mb-3 text-lg">➖ Difference</h5>
               <div className="space-y-3">
                 <p className="text-neutral-200 text-sm">
                   <strong>Key Insight:</strong> Difference is <em>subtraction of sets</em> - 
@@ -207,28 +178,13 @@ const SECTIONS = [
     id: 'algebraic-properties',
     title: 'Algebraic Properties and Laws',
     content: ({ sectionIndex, isCompleted }) => {
-      const contentRef = useRef(null);
-      
-      useEffect(() => {
-        const processMathJax = () => {
-          if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-            if (window.MathJax.typesetClear) {
-              window.MathJax.typesetClear([contentRef.current]);
-            }
-            window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-          }
-        };
-        
-        processMathJax();
-        const timeoutId = setTimeout(processMathJax, 100);
-        return () => clearTimeout(timeoutId);
-      }, []);
+      const contentRef = useMathJax([sectionIndex, isCompleted]);
       
       return (
         <div ref={contentRef} className="space-y-6">
           <div className="bg-gradient-to-br from-indigo-900/20 to-purple-900/20 p-6 rounded-lg border border-indigo-600/30">
             <h4 className="font-semibold text-indigo-400 mb-4 text-lg">
-              ⚖️ Fundamental Laws of Set Operations
+              Fundamental Laws of Set Operations
             </h4>
             <p className="text-neutral-200 mb-4">
               Set operations follow precise algebraic laws, just like arithmetic. These laws allow us to 
@@ -260,7 +216,7 @@ const SECTIONS = [
             </div>
             
             <div className="bg-green-900/20 p-5 rounded-lg border border-green-600/30">
-              <h5 className="font-semibold text-green-400 mb-3 text-lg">🔗 Associative Laws</h5>
+              <h5 className="font-semibold text-green-400 mb-3 text-lg">Associative Laws</h5>
               <div className="space-y-3">
                 <div className="bg-neutral-800/50 p-4 rounded">
                   <div className="grid md:grid-cols-2 gap-4">
@@ -347,22 +303,7 @@ const SECTIONS = [
     id: 'demorgans-laws',
     title: "De Morgan's Laws: The Master Rules",
     content: ({ sectionIndex, isCompleted }) => {
-      const contentRef = useRef(null);
-      
-      useEffect(() => {
-        const processMathJax = () => {
-          if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-            if (window.MathJax.typesetClear) {
-              window.MathJax.typesetClear([contentRef.current]);
-            }
-            window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-          }
-        };
-        
-        processMathJax();
-        const timeoutId = setTimeout(processMathJax, 100);
-        return () => clearTimeout(timeoutId);
-      }, []);
+      const contentRef = useMathJax([sectionIndex, isCompleted]);
       
       return (
         <div ref={contentRef} className="space-y-6">
@@ -468,7 +409,7 @@ const SECTIONS = [
           </div>
           
           <div className="bg-yellow-900/20 p-6 rounded-lg border border-yellow-600/30">
-            <h5 className="font-semibold text-yellow-400 mb-4 text-lg">⚡ Why These Laws Are Revolutionary</h5>
+            <h5 className="font-semibold text-yellow-400 mb-4 text-lg">Why These Laws Are Revolutionary</h5>
             
             <div className="grid md:grid-cols-2 gap-6">
               <div>
@@ -512,7 +453,7 @@ const SECTIONS = [
   }
 ];
 
-export default function Tab1FoundationsTab({ onComplete }) {
+const Tab1FoundationsTab = React.memo(function Tab1FoundationsTab({ onComplete }) {
   return (
     <SectionBasedContent
       title="Foundations"
@@ -524,4 +465,6 @@ export default function Tab1FoundationsTab({ onComplete }) {
       showHeader={false}
     />
   );
-}
+});
+
+export default Tab1FoundationsTab;

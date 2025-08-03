@@ -395,11 +395,11 @@ const BridgeToContinuous = () => {
               <div className="grid grid-cols-2 gap-4 mt-3">
                 <div>
                   <p className="text-xs font-medium mb-1">Discrete (Sum):</p>
-                  <LaTeXFormula key="discrete-sum" formula="P = \\sum_{x \\in S} p(x)" isBlock={true} />
+                  <LaTeXFormula key="discrete-sum" formula={`P = \\sum_{x \\in S} p(x)`} isBlock={true} />
                 </div>
                 <div>
                   <p className="text-xs font-medium mb-1">Continuous (Integral):</p>
-                  <LaTeXFormula key="continuous-integral" formula="P = \\int_a^b f(x)dx" isBlock={true} />
+                  <LaTeXFormula key="continuous-integral" formula={`P = \\int_a^b f(x)dx`} isBlock={true} />
                 </div>
               </div>
             </div>

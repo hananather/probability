@@ -5,6 +5,7 @@ import SectionBasedContent from '@/components/ui/SectionBasedContent';
 import { ComparisonTable } from '@/components/ui/patterns/ComparisonTable';
 import { SimpleInsightBox, SimpleFormulaCard } from '@/components/ui/patterns/SimpleComponents';
 import { InterpretationBox } from '@/components/ui/patterns/InterpretationBox';
+import { useMathJax } from '../../../hooks/useMathJax';
 
 const SECTIONS = [
   {
@@ -22,72 +23,72 @@ const SECTIONS = [
           {
             category: "Events and occurrences",
             english: "sample space",
-            sets: "\\(S\\)"
+            sets: `\\(S\\)`
           },
           {
             category: "",
             english: "s is a possible outcome",
-            sets: "\\(s \\in S\\)"
+            sets: `\\(s \\in S\\)`
           },
           {
             category: "",
             english: "A is an event",
-            sets: "\\(A \\subseteq S\\)"
+            sets: `\\(A \\subseteq S\\)`
           },
           {
             category: "",
             english: "A occurred",
-            sets: "\\(s_{\\text{actual}} \\in A\\)"
+            sets: `\\(s_{\\text{actual}} \\in A\\)`
           },
           {
             category: "",
             english: "something must happen",
-            sets: "\\(s_{\\text{actual}} \\in S\\)"
+            sets: `\\(s_{\\text{actual}} \\in S\\)`
           },
           {
             category: "New events from old events",
             english: "A or B (inclusive)",
-            sets: "\\(A \\cup B\\)"
+            sets: `\\(A \\cup B\\)`
           },
           {
             category: "",
             english: "A and B",
-            sets: "\\(A \\cap B\\)"
+            sets: `\\(A \\cap B\\)`
           },
           {
             category: "",
             english: "not A",
-            sets: "\\(A^c\\)"
+            sets: `\\(A^c\\)`
           },
           {
             category: "",
             english: "A or B, but not both",
-            sets: "\\((A \\cap B^c) \\cup (A^c \\cap B)\\)"
+            sets: `\\((A \\cap B^c) \\cup (A^c \\cap B)\\)`
           },
           {
             category: "",
             english: "at least one of A₁, ..., Aₙ",
-            sets: "\\(A_1 \\cup \\cdots \\cup A_n\\)"
+            sets: `\\(A_1 \\cup \\cdots \\cup A_n\\)`
           },
           {
             category: "",
             english: "all of A₁, ..., Aₙ",
-            sets: "\\(A_1 \\cap \\cdots \\cap A_n\\)"
+            sets: `\\(A_1 \\cap \\cdots \\cap A_n\\)`
           },
           {
             category: "Relationships between events",
             english: "A implies B",
-            sets: "\\(A \\subseteq B\\)"
+            sets: `\\(A \\subseteq B\\)`
           },
           {
             category: "",
             english: "A and B are mutually exclusive",
-            sets: "\\(A \\cap B = \\emptyset\\)"
+            sets: `\\(A \\cap B = \\emptyset\\)`
           },
           {
             category: "",
             english: "A₁, ..., Aₙ are a partition of S",
-            sets: "\\(A_1 \\cup \\cdots \\cup A_n = S, A_i \\cap A_j = \\emptyset\\) for \\(i \\neq j\\)"
+            sets: `\\(A_1 \\cup \\cdots \\cup A_n = S, A_i \\cap A_j = \\emptyset\\) for \\(i \\neq j\\)`
           }
         ]
       };
@@ -125,49 +126,49 @@ const SECTIONS = [
             category: "Basic identification",
             question: "What's the full set of possibilities?",
             keywords: "sample space, all possible outcomes",
-            notation: "\\(S\\)"
+            notation: `\\(S\\)`
           },
           {
             category: "",
             question: "What specific outcomes am I interested in?",
             keywords: "event, happens, occurs",
-            notation: "\\(A, B, C\\) (subsets of \\(S\\))"
+            notation: `\\(A, B, C\\) (subsets of \\(S\\))`
           },
           {
             category: "Combinations",
             question: "Do I want EITHER outcome?",
             keywords: "or, at least one, any of",
-            notation: "\\(A \\cup B\\) (union)"
+            notation: `\\(A \\cup B\\) (union)`
           },
           {
             category: "",
             question: "Do I want BOTH outcomes?",
             keywords: "and, all of, both",
-            notation: "\\(A \\cap B\\) (intersection)"
+            notation: `\\(A \\cap B\\) (intersection)`
           },
           {
             category: "",
             question: "Do I want the OPPOSITE?",
             keywords: "not, doesn't happen, fails",
-            notation: "\\(A^c\\) (complement)"
+            notation: `\\(A^c\\) (complement)`
           },
           {
             category: "Conditional",
             question: "Am I given some information?",
             keywords: "given that, if, provided that, knowing",
-            notation: "\\(P(A|B)\\) (conditional)"
+            notation: `\\(P(A|B)\\) (conditional)`
           },
           {
             category: "Relationships",
             question: "Does one event guarantee another?",
             keywords: "implies, if...then, always leads to",
-            notation: "\\(A \\subseteq B\\) (subset)"
+            notation: `\\(A \\subseteq B\\) (subset)`
           },
           {
             category: "",
             question: "Can both events happen together?",
             keywords: "mutually exclusive, can't both occur",
-            notation: "\\(A \\cap B = \\emptyset\\)"
+            notation: `\\(A \\cap B = \\emptyset\\)`
           }
         ]
       };
@@ -195,7 +196,7 @@ const SECTIONS = [
     content: ({ sectionIndex, isCompleted }) => (
       <div className="space-y-6">
         <div className="bg-red-900/20 p-4 rounded-lg border border-red-600/30">
-          <h4 className="font-semibold text-red-400 mb-3">❌ Mistake #1: "Or" vs "And" Confusion</h4>
+          <h4 className="font-semibold text-red-400 mb-3">Mistake #1: "Or" vs "And" Confusion</h4>
           <div className="text-sm space-y-2">
             <p className="text-neutral-300">
               <strong>Wrong:</strong> "A or B" → A ∩ B
@@ -210,7 +211,7 @@ const SECTIONS = [
         </div>
 
         <div className="bg-red-900/20 p-4 rounded-lg border border-red-600/30">
-          <h4 className="font-semibold text-red-400 mb-3">❌ Mistake #2: Conditional Direction</h4>
+          <h4 className="font-semibold text-red-400 mb-3">Mistake #2: Conditional Direction</h4>
           <div className="text-sm space-y-2">
             <p className="text-neutral-300">
               <strong>Problem:</strong> "Probability of disease given positive test"
@@ -228,7 +229,7 @@ const SECTIONS = [
         </div>
 
         <div className="bg-red-900/20 p-4 rounded-lg border border-red-600/30">
-          <h4 className="font-semibold text-red-400 mb-3">❌ Mistake #3: "At Least One" vs "All"</h4>
+          <h4 className="font-semibold text-red-400 mb-3">Mistake #3: "At Least One" vs "All"</h4>
           <div className="text-sm space-y-2">
             <p className="text-neutral-300">
               <strong>"At least one of A, B, C":</strong> A ∪ B ∪ C
@@ -243,7 +244,7 @@ const SECTIONS = [
         </div>
 
         <div className="bg-red-900/20 p-4 rounded-lg border border-red-600/30">
-          <h4 className="font-semibold text-red-400 mb-3">❌ Mistake #4: Forgetting Complements</h4>
+          <h4 className="font-semibold text-red-400 mb-3">Mistake #4: Forgetting Complements</h4>
           <div className="text-sm space-y-2">
             <p className="text-neutral-300">
               <strong>"Not (A and B)":</strong> (A ∩ B)ᶜ = Aᶜ ∪ Bᶜ
@@ -341,15 +342,19 @@ const SECTIONS = [
 ];
 
 export default function Tab3QuickReferenceTab({ onComplete }) {
+  const contentRef = useMathJax([]);
+
   return (
-    <SectionBasedContent
-      title="Quick Reference"
-      description="Complete translation dictionary and common pitfalls"
-      sections={SECTIONS}
-      onComplete={onComplete}
-      chapter={1}
-      progressVariant="purple"
-      showHeader={false}
-    />
+    <div ref={contentRef}>
+      <SectionBasedContent
+        title="Quick Reference"
+        description="Complete translation dictionary and common pitfalls"
+        sections={SECTIONS}
+        onComplete={onComplete}
+        chapter={1}
+        progressVariant="purple"
+        showHeader={false}
+      />
+    </div>
   );
 }

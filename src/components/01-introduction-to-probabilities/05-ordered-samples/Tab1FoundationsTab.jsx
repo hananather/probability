@@ -14,7 +14,7 @@ const SECTIONS = [
       <SectionContent>
         <div className="bg-amber-900/20 p-4 rounded-lg border border-amber-600/30">
           <h4 className="text-lg font-semibold text-amber-400 mb-3">
-            📝 Real Interview Question:
+            Real Interview Question:
           </h4>
           <p className="text-neutral-300 mb-3">
             You have 10 unique ML models that need to be deployed in a specific order to 3 different 
@@ -58,30 +58,91 @@ const SECTIONS = [
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-blue-900/20 p-4 rounded-lg">
-                  <h5 className="font-semibold text-blue-400 mb-2">Real-world Examples:</h5>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-neutral-300">
-                    <li>Password combinations</li>
-                    <li>Race finishing positions</li>
-                    <li>Task scheduling order</li>
-                    <li>DNA sequences</li>
-                  </ul>
+                  <h5 className="font-semibold text-blue-400 mb-3">Deep Real-World Applications:</h5>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="font-medium text-blue-300 text-sm">Supply Chain Optimization</p>
+                      <p className="text-xs text-neutral-400 mt-1">
+                        Manufacturing sequences determine product quality. Toyota's assembly line: 50+ stations 
+                        in specific order. Wrong sequence = $100K+ in defects per batch.
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-blue-300 text-sm">Clinical Trial Phases</p>
+                      <p className="text-xs text-neutral-400 mt-1">
+                        Drug testing order is critical: Phase I (safety) → Phase II (efficacy) → Phase III (comparison).
+                        Reordering could risk lives and waste billions in R&D.
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-blue-300 text-sm">Financial Trading Sequences</p>
+                      <p className="text-xs text-neutral-400 mt-1">
+                        High-frequency trading: order execution sequence affects prices. 
+                        Microsecond differences in trade order can mean millions in profit/loss.
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-blue-300 text-sm">Emergency Response Dispatch</p>
+                      <p className="text-xs text-neutral-400 mt-1">
+                        911 dispatch order saves lives: nearest unit → specialized equipment → backup.
+                        Optimal ordering reduces response time by 40% on average.
+                      </p>
+                    </div>
+                  </div>
                 </div>
                 <div className="bg-green-900/20 p-4 rounded-lg">
-                  <h5 className="font-semibold text-green-400 mb-2">In Tech/ML:</h5>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-neutral-300">
-                    <li>Model pipeline order</li>
-                    <li>A/B test sequences</li>
-                    <li>Server deployment order</li>
-                    <li>Feature extraction steps</li>
-                  </ul>
+                  <h5 className="font-semibold text-green-400 mb-3">Production Tech/ML Systems:</h5>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="font-medium text-green-300 text-sm">ML Pipeline Architecture</p>
+                      <p className="text-xs text-neutral-400 mt-1">
+                        Netflix recommendation: Data cleaning → Feature extraction → Model inference → Post-processing.
+                        Reordering breaks dependencies, causing 70% accuracy drop.
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-green-300 text-sm">Database Query Optimization</p>
+                      <p className="text-xs text-neutral-400 mt-1">
+                        JOIN order in SQL affects performance exponentially. Poor ordering: 
+                        10s query → 10min. Query optimizers evaluate n! possible orders.
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-green-300 text-sm">Microservices Orchestration</p>
+                      <p className="text-xs text-neutral-400 mt-1">
+                        Uber's ride request: User auth → Location → Driver match → Pricing → Confirmation.
+                        Wrong order = failed requests, lost revenue ($1M+/hour during peak).
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-green-300 text-sm">A/B Test Rollout Strategy</p>
+                      <p className="text-xs text-neutral-400 mt-1">
+                        Facebook feature rollout: Internal → 0.1% users → 1% → 10% → Global.
+                        Each stage informs the next. Wrong order = potential billion-user outage.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
+            </div>
+            
+            <div className="mt-4 bg-purple-900/20 p-4 rounded-lg border border-purple-600/30">
+              <h5 className="font-semibold text-purple-400 mb-2">Why These Examples Matter</h5>
+              <p className="text-sm text-neutral-300">
+                In each case, the order isn't arbitrary—it's <span className="text-purple-300 font-medium">fundamentally tied to system behavior</span>:
+              </p>
+              <ul className="list-disc list-inside text-sm text-neutral-400 mt-2 space-y-1">
+                <li>Dependencies cascade (one step enables the next)</li>
+                <li>Order affects outcomes measurably (performance, safety, revenue)</li>
+                <li>The cost of wrong ordering is quantifiable and significant</li>
+                <li>Real systems must evaluate many possible orderings to find optimal sequences</li>
+              </ul>
             </div>
           </div>
         </div>
         
         <div className="p-3 rounded border text-sm bg-blue-900/20 border-blue-600/30">
-          💡 Key Insight: "Replacement" is about whether items go back into the pool of choices. 
+          Key Insight: "Replacement" is about whether items go back into the pool of choices. 
           With replacement = infinite copies. Without = limited supply.
         </div>
       </SectionContent>

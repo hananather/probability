@@ -23,7 +23,7 @@ export function ComponentUsageTest() {
         <SemanticGradientCard
           title="Test Property"
           description="This is a test:"
-          formula="x = y + z"
+          formula={`x = y + z`}
           note="Simple test formula"
           theme="teal"
         />
@@ -35,12 +35,12 @@ export function ComponentUsageTest() {
         <SemanticGradientGrid title="Test Properties" theme="blue">
           <SemanticGradientCard
             title="Property 1"
-            formula="a = b + c"
+            formula={`a = b + c`}
             theme="blue"
           />
           <SemanticGradientCard
             title="Property 2"
-            formula="x = y \\cdot z"
+            formula={`x = y \\cdot z`}
             theme="green"
           />
         </SemanticGradientGrid>
@@ -126,7 +126,7 @@ export function ComponentUsageTest() {
           {/* Single calculation */}
           <SimpleCalculationBox
             title="Step 1: Calculate t-statistic"
-            formula="t = \\frac{2.5 - 0}{0.8/\\sqrt{25}} = 15.625"
+            formula={`t = \\frac{2.5 - 0}{0.8/\\sqrt{25}} = 15.625`}
             explanation="Using our sample data with n=25"
           />
         </div>

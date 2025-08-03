@@ -10,55 +10,42 @@ import MathJaxSection from '@/components/ui/MathJaxSection';
 import { WorkedExample, ExampleSection, InsightBox, Formula } from '@/components/ui/WorkedExample';
 import { Button } from '@/components/ui/button';
 import { createColorScheme } from '@/lib/design-system';
-import { Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
+import { useSafeMathJax } from '@/utils/mathJaxFix';
 
 const colorScheme = createColorScheme('probability');
 
-// Speed Practice Component
-const SpeedPractice = React.memo(() => {
+// Practice Problems Component
+const PracticeProblems = React.memo(() => {
   const contentRef = useRef(null);
   const [currentProblem, setCurrentProblem] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
-  const [score, setScore] = useState({ correct: 0, total: 0 });
-  const [timeLeft, setTimeLeft] = useState(120); // 2 minutes per problem
-  const [isActive, setIsActive] = useState(false);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [currentProblem, showAnswer]);
+  // Use the safe MathJax hook
+  useSafeMathJax(contentRef, [currentProblem, showAnswer]);
+  
   
   const problems = [
     {
       question: "P(A) = 0.3, P(B) = 0.4, P(A∩B) = 0.12. Find P(A|B).",
-      questionLatex: "\\(P(A) = 0.3\\), \\(P(B) = 0.4\\), \\(P(A \\cap B) = 0.12\\). Find \\(P(A|B)\\).",
+      questionLatex: `\\(P(A) = 0.3\\), \\(P(B) = 0.4\\), \\(P(A \\cap B) = 0.12\\). Find \\(P(A|B)\\).`,
       answer: "0.3",
       solution: "P(A|B) = P(A∩B)/P(B) = 0.12/0.4 = 0.3",
-      solutionLatex: "\\(P(A|B) = \\frac{P(A \\cap B)}{P(B)} = \\frac{0.12}{0.4} = 0.3\\)"
+      solutionLatex: `\\(P(A|B) = \\frac{P(A \\cap B)}{P(B)} = \\frac{0.12}{0.4} = 0.3\\)`
     },
     {
       question: "P(A) = 0.5, P(B|A) = 0.6. Find P(A∩B).",
-      questionLatex: "\\(P(A) = 0.5\\), \\(P(B|A) = 0.6\\). Find \\(P(A \\cap B)\\).",
+      questionLatex: `\\(P(A) = 0.5\\), \\(P(B|A) = 0.6\\). Find \\(P(A \\cap B)\\).`,
       answer: "0.3",
       solution: "P(A∩B) = P(B|A)·P(A) = 0.6×0.5 = 0.3",
-      solutionLatex: "\\(P(A \\cap B) = P(B|A) \\cdot P(A) = 0.6 \\times 0.5 = 0.3\\)"
+      solutionLatex: `\\(P(A \\cap B) = P(B|A) \\cdot P(A) = 0.6 \\times 0.5 = 0.3\\)`
     },
     {
       question: "P(A) = 0.4, P(B) = 0.5, P(A|B) = 0.4. Are A and B independent?",
-      questionLatex: "\\(P(A) = 0.4\\), \\(P(B) = 0.5\\), \\(P(A|B) = 0.4\\). Are A and B independent?",
+      questionLatex: `\\(P(A) = 0.4\\), \\(P(B) = 0.5\\), \\(P(A|B) = 0.4\\). Are A and B independent?`,
       answer: "Yes",
       solution: "P(A|B) = P(A) = 0.4, so they are independent",
-      solutionLatex: "\\(P(A|B) = P(A) = 0.4\\), so they are independent"
+      solutionLatex: `\\(P(A|B) = P(A) = 0.4\\), so they are independent`
     },
     {
       question: "Disease rate: 1%, Test sensitivity: 90%, Test specificity: 95%. P(Disease|Positive) = ?",
@@ -76,41 +63,22 @@ const SpeedPractice = React.memo(() => {
     }
   ];
   
-  useEffect(() => {
-    let interval = null;
-    if (isActive && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft(time => time - 1);
-      }, 1000);
-    } else if (timeLeft === 0) {
-      setShowAnswer(true);
-      setIsActive(false);
-    }
-    return () => clearInterval(interval);
-  }, [isActive, timeLeft]);
-  
-  const startTimer = () => {
-    setIsActive(true);
-    setTimeLeft(120);
-    setShowAnswer(false);
+  const toggleAnswer = () => {
+    setShowAnswer(!showAnswer);
   };
   
   const nextProblem = () => {
     if (currentProblem < problems.length - 1) {
       setCurrentProblem(prev => prev + 1);
       setShowAnswer(false);
-      setTimeLeft(120);
-      setIsActive(true);
     }
   };
   
-  const markAnswer = (correct) => {
-    setScore(prev => ({
-      correct: prev.correct + (correct ? 1 : 0),
-      total: prev.total + 1
-    }));
-    setShowAnswer(true);
-    setIsActive(false);
+  const previousProblem = () => {
+    if (currentProblem > 0) {
+      setCurrentProblem(prev => prev - 1);
+      setShowAnswer(false);
+    }
   };
   
   return (
@@ -119,50 +87,20 @@ const SpeedPractice = React.memo(() => {
         <h4 className="text-base font-medium text-neutral-300">
           Problem {currentProblem + 1} of {problems.length}
         </h4>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-neutral-400" />
-            <span className={`font-mono ${timeLeft < 30 ? 'text-red-400' : 'text-neutral-300'}`}>
-              {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
-            </span>
-          </div>
-          <div className="text-sm text-neutral-400">
-            Score: <span className="font-mono">{score.correct}/{score.total}</span>
-          </div>
-        </div>
       </div>
       
       <div className="bg-neutral-800 p-6 rounded-lg">
-        <div className="text-lg text-neutral-200 mb-4">
+        <div key={`problem-${currentProblem}`} className="text-lg text-neutral-200 mb-4">
           <span dangerouslySetInnerHTML={{ __html: problems[currentProblem].questionLatex }} />
         </div>
         
-        {!isActive && !showAnswer && (
+        {!showAnswer && (
           <button
-            onClick={startTimer}
-            className="px-4 py-2 bg-[#3b82f6] hover:bg-[#3b82f6]/80 text-white rounded transition-all duration-1500"
+            onClick={toggleAnswer}
+            className="px-4 py-2 bg-[#3b82f6] hover:bg-[#3b82f6]/80 text-white rounded transition-all duration-200"
           >
-            Start Timer
+            Show Answer
           </button>
-        )}
-        
-        {isActive && (
-          <div className="flex gap-3">
-            <button
-              onClick={() => markAnswer(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#10b981] hover:bg-[#10b981]/80 text-white rounded transition-all duration-1500"
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              I got it right
-            </button>
-            <button
-              onClick={() => markAnswer(false)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#ef4444] hover:bg-[#ef4444]/80 text-white rounded transition-all duration-1500"
-            >
-              <XCircle className="w-4 h-4" />
-              I need help
-            </button>
-          </div>
         )}
         
         {showAnswer && (
@@ -173,24 +111,34 @@ const SpeedPractice = React.memo(() => {
             </div>
             <div className="bg-neutral-700 p-3 rounded">
               <p className="text-sm font-semibold text-neutral-300">Solution:</p>
-              <div className="text-neutral-300">
+              <div key={`solution-${currentProblem}`} className="text-neutral-300">
                 <span dangerouslySetInnerHTML={{ __html: problems[currentProblem].solutionLatex }} />
               </div>
             </div>
-            {currentProblem < problems.length - 1 ? (
+            <div className="flex gap-3">
+              {currentProblem > 0 && (
+                <button
+                  onClick={previousProblem}
+                  className="px-4 py-2 bg-neutral-600 hover:bg-neutral-600/80 text-white rounded transition-all duration-200"
+                >
+                  Previous
+                </button>
+              )}
+              {currentProblem < problems.length - 1 && (
+                <button
+                  onClick={nextProblem}
+                  className="px-4 py-2 bg-[#8b5cf6] hover:bg-[#8b5cf6]/80 text-white rounded transition-all duration-200"
+                >
+                  Next Problem
+                </button>
+              )}
               <button
-                onClick={nextProblem}
-                className="px-4 py-2 bg-[#8b5cf6] hover:bg-[#8b5cf6]/80 text-white rounded transition-all duration-1500"
+                onClick={toggleAnswer}
+                className="px-4 py-2 bg-neutral-700 hover:bg-neutral-700/80 text-white rounded transition-all duration-200"
               >
-                Next Problem
+                Hide Answer
               </button>
-            ) : (
-              <div className="bg-green-900/20 p-4 rounded border border-green-600/30">
-                <p className="text-green-400 font-semibold">
-                  Practice Complete! Score: <span className="font-mono">{score.correct}/{score.total}</span>
-                </p>
-              </div>
-            )}
+            </div>
           </div>
         )}
       </div>
@@ -379,7 +327,7 @@ const SECTIONS = [
             <div className="space-y-4">
               <div className="bg-red-900/20 p-4 rounded-lg border border-red-600/30">
                 <h5 className="font-semibold text-red-400 mb-2">
-                  ❌ Mistake 1: Confusing P(A|B) with P(B|A)
+                  Mistake 1: Confusing P(A|B) with P(B|A)
                 </h5>
                 <p className="text-neutral-300 text-sm">
                   These are completely different! P(Disease|Positive) ≠ P(Positive|Disease)
@@ -391,7 +339,7 @@ const SECTIONS = [
               
               <div className="bg-red-900/20 p-4 rounded-lg border border-red-600/30">
                 <h5 className="font-semibold text-red-400 mb-2">
-                  ❌ Mistake 2: Forgetting P(B) {`>`} 0 requirement
+                  Mistake 2: Forgetting P(B) {`>`} 0 requirement
                 </h5>
                 <p className="text-neutral-300 text-sm">
                   P(A|B) is undefined when P(B) = 0
@@ -403,7 +351,7 @@ const SECTIONS = [
               
               <div className="bg-red-900/20 p-4 rounded-lg border border-red-600/30">
                 <h5 className="font-semibold text-red-400 mb-2">
-                  ❌ Mistake 3: Assuming independence without checking
+                  Mistake 3: Assuming independence without checking
                 </h5>
                 <p className="text-neutral-300 text-sm">
                   Don't assume P(A∩B) = P(A)·P(B) unless verified!
@@ -415,7 +363,7 @@ const SECTIONS = [
               
               <div className="bg-red-900/20 p-4 rounded-lg border border-red-600/30">
                 <h5 className="font-semibold text-red-400 mb-2">
-                  ❌ Mistake 4: Wrong denominator in Bayes
+                  Mistake 4: Wrong denominator in Bayes
                 </h5>
                 <p className="text-neutral-300 text-sm">
                   Forgetting to calculate P(B) using total probability
@@ -427,7 +375,7 @@ const SECTIONS = [
               
               <div className="bg-red-900/20 p-4 rounded-lg border border-red-600/30">
                 <h5 className="font-semibold text-red-400 mb-2">
-                  ❌ Mistake 5: Mishandling "at least one" problems
+                  Mistake 5: Mishandling "at least one" problems
                 </h5>
                 <p className="text-neutral-300 text-sm">
                   P(at least one) ≠ P(exactly one)
@@ -441,35 +389,34 @@ const SECTIONS = [
         </WorkedExample>
         
         <InsightBox variant="warning">
-          🎯 Pro Tip: When stuck, draw a Venn diagram or tree diagram. 
+          Pro Tip: When stuck, draw a Venn diagram or tree diagram. 
           Visual representations often reveal the solution path!
         </InsightBox>
       </SectionContent>
     )
   },
   {
-    id: 'speed-practice',
-    title: 'Speed Practice',
+    id: 'practice-problems',
+    title: 'Practice Problems',
     content: ({ sectionIndex, isCompleted }) => (
       <SectionContent>
-        <WorkedExample title="Timed Practice Problems">
+        <WorkedExample title="Practice Problems">
           <p className="text-neutral-300 mb-4">
-            Practice these 5 problems with a 2-minute timer each. 
-            This simulates exam conditions where speed matters!
+            Practice these 5 problems. Click "Show Answer" to reveal the solution.
           </p>
           
-          <SpeedPractice />
+          <PracticeProblems />
           
           <div className="mt-6 bg-blue-900/20 p-4 rounded-lg border border-blue-600/30">
             <h5 className="font-semibold text-blue-400 mb-2">
-              Speed Tips:
+              Problem-Solving Tips:
             </h5>
             <ul className="list-disc list-inside space-y-1 text-sm text-neutral-300 ml-4">
-              <li>Identify the type of problem immediately</li>
+              <li>Identify the type of problem (conditional, independence, etc.)</li>
               <li>Write down given information clearly</li>
-              <li>Choose the right formula without hesitation</li>
-              <li>Check if events are independent early</li>
-              <li>Use fractions when possible (more accurate)</li>
+              <li>Choose the right formula based on what you have and need</li>
+              <li>Check if events are independent when relevant</li>
+              <li>Use fractions when possible for exact answers</li>
             </ul>
           </div>
         </WorkedExample>
