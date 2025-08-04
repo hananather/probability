@@ -1,10 +1,10 @@
 "use client";
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { useRouter } from 'next/navigation';
 import ChapterHub from "../shared/ChapterHub";
-import { motion } from "framer-motion";
 import { Card } from "../ui/card";
 import { createColorScheme } from "@/lib/design-system";
+import { useMathJax } from "../../hooks/useMathJax";
 import { 
   Brain, Target, Calculator, Activity, PieChart
 } from 'lucide-react';
@@ -12,60 +12,49 @@ import {
 // Get consistent color scheme for estimation
 const colors = createColorScheme('estimation');
 
-// Key Concepts Card
+/**
+ * Key Concepts Card component for displaying fundamental estimation concepts with LaTeX formulas
+ * @component
+ * @returns {React.JSX.Element} Rendered key concepts card
+ */
 const KeyConceptsCard = React.memo(() => {
-  const contentRef = useRef(null);
   const concepts = [
     { term: "Point Estimate", definition: "Best single guess from data", latex: "\\bar{X}" },
     { term: "Confidence Interval", definition: "Range of plausible values", latex: "\\bar{X} \\pm ME" },
     { term: "Standard Error", definition: "Precision of estimate", latex: "\\frac{\\sigma}{\\sqrt{n}}" },
     { term: "Sample Size", definition: "Observations needed", latex: "n = \\left(\\frac{z\\sigma}{E}\\right)^2" }
   ];
-
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax(); // Try immediately
-    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
-    return () => clearTimeout(timeoutId);
-  }, []);
+  
+  const contentRef = useMathJax([concepts]);
 
   return (
     <Card ref={contentRef} className="mb-8 p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
       <h3 className="text-xl font-bold text-white mb-4">Key Concepts You'll Master</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {concepts.map((concept, i) => (
-          <motion.div
+          <div
             key={i}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50"
+            className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50"
           >
-            <div className="flex items-start justify-between">
+            <div className="flex flex-col space-y-2">
               <div>
                 <h4 className="font-semibold text-white">{concept.term}</h4>
-                <p className="text-sm text-gray-400 mt-1">{concept.definition}</p>
+                <p className="text-sm text-gray-400">{concept.definition}</p>
               </div>
-              <div className="text-2xl font-mono text-emerald-400">
+              <div className="text-lg font-mono text-emerald-400 overflow-x-auto">
                 <span dangerouslySetInnerHTML={{ __html: `\\(${concept.latex}\\)` }} />
               </div>
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
     </Card>
   );
 });
 
-// Chapter 5 specific configuration with navigation
+KeyConceptsCard.displayName = 'KeyConceptsCard';
+
+// All Chapter 5 sections
 const CHAPTER_5_SECTIONS = [
   {
     id: 'statistical-inference',
@@ -169,6 +158,12 @@ const CHAPTER_5_SECTIONS = [
   }
 ];
 
+/**
+ * EstimationHub - Main hub component for Chapter 5: Point and Interval Estimation
+ * Provides navigation to all sections with progress tracking and interactive elements
+ * @component
+ * @returns {React.JSX.Element} Rendered estimation hub page
+ */
 export default function EstimationHub() {
   const router = useRouter();
 
@@ -182,18 +177,14 @@ export default function EstimationHub() {
     <div className="min-h-screen bg-gray-950">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
-        >
+        <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">
             Chapter 5: Point and Interval Estimation
           </h1>
           <p className="text-xl text-gray-400">
             Master the art of statistical estimation and uncertainty quantification
           </p>
-        </motion.div>
+        </div>
 
         {/* Key Concepts Card */}
         <KeyConceptsCard />

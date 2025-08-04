@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import * as d3 from "@/utils/d3-utils";
-import { motion, AnimatePresence } from "framer-motion";
 import { 
   VisualizationContainer, 
   VisualizationSection,
@@ -17,13 +16,13 @@ import {
   Play, Pause, RotateCcw
 } from 'lucide-react';
 
-// Use Chapter 7 color scheme for consistency
-const chapterColors = createColorScheme('regression');
+// Use probability color scheme for consistency with Chapter 2
+const chapterColors = createColorScheme('probability');
 
 // Introduction Component
 const StatisticalInferenceIntroduction = React.memo(function StatisticalInferenceIntroduction() {
   const contentRef = useRef(null);
-  const [selectedExample, setSelectedExample] = useState(null);
+  const [selectedExample, setSelectedExample] = useState('manufacturing');
   
   // Example details from course material
   const manufacturingDetails = {
@@ -57,45 +56,36 @@ const StatisticalInferenceIntroduction = React.memo(function StatisticalInferenc
   }, [selectedExample]);
   
   const ExampleCard = ({ icon: Icon, title, description, details, isSelected, onSelect }) => (
-    <motion.div
-      className={`p-4 rounded-lg border cursor-pointer transition-all ${
+    <div
+      className={`p-4 rounded-lg border cursor-pointer ${
         isSelected 
-          ? 'bg-teal-900/30 border-teal-500/50 shadow-lg shadow-teal-500/20' 
+          ? 'bg-blue-900/30 border-blue-500/50 shadow-lg shadow-blue-500/20' 
           : 'bg-neutral-800 border-neutral-700 hover:border-neutral-600'
       }`}
       onClick={onSelect}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.3 }}
     >
       <div className="flex items-start gap-3">
-        <Icon className={`w-5 h-5 ${isSelected ? 'text-teal-400' : 'text-neutral-400'}`} />
+        <Icon className={`w-5 h-5 ${isSelected ? 'text-blue-400' : 'text-neutral-400'}`} />
         <div className="flex-1">
-          <h4 className="font-semibold text-teal-400 mb-1">{title}</h4>
+          <h4 className="font-semibold text-blue-400 mb-1">{title}</h4>
           <p className="text-sm text-neutral-300">{description}</p>
-          {!isSelected && (
-            <p className="text-xs text-neutral-500 mt-2 italic">Click to explore →</p>
-          )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
   
   return (
     <div ref={contentRef} className="space-y-6">
       {/* Primary Definition */}
-      <motion.div 
-        className="bg-teal-900/20 rounded-xl p-6 border border-teal-500/20"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.5, ease: "easeOut" }}
+      <div 
+        className="bg-blue-900/20 rounded-xl p-6 border border-blue-500/20"
       >
-        <h3 className="text-xl font-bold text-teal-400 mb-4">
+        <h3 className="text-xl font-bold text-blue-400 mb-4">
           The Fundamental Goal
         </h3>
         <p className="text-base text-neutral-200 leading-relaxed">
           One of the goals of statistical inference is to draw conclusions about a
-          <span className="mx-1 px-2 py-1 bg-teal-500/20 text-teal-400 rounded">
+          <span className="mx-1 px-2 py-1 bg-blue-500/20 text-blue-400 rounded">
             population
           </span>
           based on a
@@ -104,7 +94,7 @@ const StatisticalInferenceIntroduction = React.memo(function StatisticalInferenc
           </span>
           from the population.
         </p>
-      </motion.div>
+      </div>
       
       {/* Course Examples Grid */}
       <div className="grid md:grid-cols-2 gap-4">
@@ -127,17 +117,13 @@ const StatisticalInferenceIntroduction = React.memo(function StatisticalInferenc
       </div>
       
       {/* Mathematical Framework */}
-      <AnimatePresence>
         {selectedExample && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+          <div
             className="bg-neutral-800/50 rounded-lg p-4 space-y-4"
           >
             <div className="flex justify-between items-center">
-              <h4 className="font-semibold text-teal-400">Mathematical Framework</h4>
-              <span className="text-xs text-teal-400">
+              <h4 className="font-semibold text-blue-400">Mathematical Framework</h4>
+              <span className="text-xs text-blue-400">
                 {selectedExample === 'manufacturing' ? 'Manufacturing Example' : 'Election Example'}
               </span>
             </div>
@@ -210,9 +196,8 @@ const StatisticalInferenceIntroduction = React.memo(function StatisticalInferenc
                 based on our sample data.
               </p>
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
     </div>
   );
 });
@@ -220,7 +205,6 @@ const StatisticalInferenceIntroduction = React.memo(function StatisticalInferenc
 // Mathematical Foundations Component
 const MathematicalFoundations = React.memo(function MathematicalFoundations() {
   const contentRef = useRef(null);
-  const [selectedTopic, setSelectedTopic] = useState('point-estimate');
   
   useEffect(() => {
     const processMathJax = () => {
@@ -234,138 +218,107 @@ const MathematicalFoundations = React.memo(function MathematicalFoundations() {
     processMathJax();
     const timeoutId = setTimeout(processMathJax, 100);
     return () => clearTimeout(timeoutId);
-  }, [selectedTopic]);
-  
-  const topics = {
-    'point-estimate': {
-      title: 'Point Estimation',
-      content: (
-        <div className="space-y-4">
-          <div className="bg-neutral-900/50 rounded-lg p-4">
-            <h5 className="font-semibold text-teal-400 mb-2">Definition</h5>
-            <p className="text-sm text-neutral-300 mb-3">
-              A point estimate <span dangerouslySetInnerHTML={{ __html: `\\(\\hat{\\theta}\\)` }} /> 
-              is a single value used to estimate an unknown population parameter 
-              <span dangerouslySetInnerHTML={{ __html: ` \\(\\theta\\)` }} />.
-            </p>
-            <div className="text-center p-3 bg-neutral-800 rounded">
-              <span dangerouslySetInnerHTML={{ 
-                __html: `\\[\\hat{\\theta} = g(X_1, X_2, ..., X_n)\\]` 
-              }} />
-            </div>
-          </div>
-          <div className="grid md:grid-cols-2 gap-3">
-            <div className="bg-blue-900/20 rounded-lg p-3 border border-blue-700/50">
-              <p className="text-sm font-semibold text-blue-400 mb-1">Population Mean</p>
-              <span dangerouslySetInnerHTML={{ __html: `\\(\\mu = E[X]\\)` }} />
-            </div>
-            <div className="bg-purple-900/20 rounded-lg p-3 border border-purple-700/50">
-              <p className="text-sm font-semibold text-purple-400 mb-1">Sample Mean</p>
-              <span dangerouslySetInnerHTML={{ __html: `\\(\\bar{X} = \\frac{1}{n}\\sum_{i=1}^{n} X_i\\)` }} />
-            </div>
-          </div>
-        </div>
-      )
-    },
-    'sampling-dist': {
-      title: 'Sampling Distribution',
-      content: (
-        <div className="space-y-4">
-          <div className="bg-neutral-900/50 rounded-lg p-4">
-            <h5 className="font-semibold text-blue-400 mb-2">Definition</h5>
-            <p className="text-sm text-neutral-300 mb-3">
-              The sampling distribution is the probability distribution of a statistic 
-              over all possible samples of size n from the population.
-            </p>
-            <div className="text-center p-3 bg-neutral-800 rounded">
-              <span dangerouslySetInnerHTML={{ 
-                __html: `\\[\\bar{X} \\sim N\\left(\\mu, \\frac{\\sigma^2}{n}\\right)\\]` 
-              }} />
-            </div>
-          </div>
-          <div className="bg-blue-900/20 rounded-lg p-4 border border-blue-700/50">
-            <p className="text-sm font-semibold text-blue-400 mb-2">Key Properties:</p>
-            <ul className="text-sm text-neutral-300 space-y-1">
-              <li>• <span dangerouslySetInnerHTML={{ __html: `\\(E[\\bar{X}] = \\mu\\)` }} /> (unbiased)</li>
-              <li>• <span dangerouslySetInnerHTML={{ __html: `\\(\\text{Var}(\\bar{X}) = \\frac{\\sigma^2}{n}\\)` }} /></li>
-              <li>• As n increases, variance decreases</li>
-            </ul>
-          </div>
-        </div>
-      )
-    },
-    'standard-error': {
-      title: 'Standard Error',
-      content: (
-        <div className="space-y-4">
-          <div className="bg-neutral-900/50 rounded-lg p-4">
-            <h5 className="font-semibold text-purple-400 mb-2">Definition</h5>
-            <p className="text-sm text-neutral-300 mb-3">
-              The standard error (SE) is the standard deviation of the sampling distribution 
-              of a statistic.
-            </p>
-            <div className="grid md:grid-cols-2 gap-3">
-              <div className="text-center p-3 bg-neutral-800 rounded">
-                <p className="text-xs text-neutral-400 mb-1">σ known</p>
-                <span dangerouslySetInnerHTML={{ 
-                  __html: `\\[SE(\\bar{X}) = \\frac{\\sigma}{\\sqrt{n}}\\]` 
-                }} />
-              </div>
-              <div className="text-center p-3 bg-neutral-800 rounded">
-                <p className="text-xs text-neutral-400 mb-1">σ unknown</p>
-                <span dangerouslySetInnerHTML={{ 
-                  __html: `\\[SE(\\bar{X}) = \\frac{S}{\\sqrt{n}}\\]` 
-                }} />
-              </div>
-            </div>
-          </div>
-          <div className="bg-purple-900/20 rounded-lg p-4 border border-purple-700/50">
-            <p className="text-sm font-semibold text-purple-400 mb-2">Interpretation:</p>
-            <p className="text-sm text-neutral-300">
-              SE measures the average distance between the sample statistic and the 
-              population parameter across all possible samples.
-            </p>
-          </div>
-        </div>
-      )
-    }
-  };
+  }, []);
   
   return (
     <VisualizationSection>
-      <h3 className="text-xl font-bold text-teal-400 mb-4 flex items-center gap-2">
+      <h3 className="text-xl font-bold text-blue-400 mb-4 flex items-center gap-2">
         <Brain className="w-5 h-5" />
         Mathematical Foundations
       </h3>
       
-      <div className="flex gap-2 mb-4">
-        {Object.entries(topics).map(([key, topic]) => (
-          <button
-            key={key}
-            onClick={() => setSelectedTopic(key)}
-            className={`px-4 py-2 rounded-lg transition-all ${
-              selectedTopic === key
-                ? 'bg-teal-600 text-white'
-                : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
-            }`}
-          >
-            {topic.title}
-          </button>
-        ))}
-      </div>
-      
-      <div ref={contentRef}>
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={selectedTopic}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 1.5, ease: "easeOut" }}
-          >
-            {topics[selectedTopic].content}
-          </motion.div>
-        </AnimatePresence>
+      <div ref={contentRef} className="space-y-6">
+        {/* Point Estimation */}
+        <div>
+          <h4 className="text-lg font-semibold text-blue-400 mb-3">Point Estimation</h4>
+          <div className="space-y-4">
+            <div className="bg-neutral-900/50 rounded-lg p-4">
+              <h5 className="font-semibold text-blue-400 mb-2">Definition</h5>
+              <p className="text-sm text-neutral-300 mb-3">
+                A point estimate <span dangerouslySetInnerHTML={{ __html: `\\(\\hat{\\theta}\\)` }} /> 
+                is a single value used to estimate an unknown population parameter 
+                <span dangerouslySetInnerHTML={{ __html: ` \\(\\theta\\)` }} />.
+              </p>
+              <div className="text-center p-3 bg-neutral-800 rounded">
+                <span dangerouslySetInnerHTML={{ 
+                  __html: `\\[\\hat{\\theta} = g(X_1, X_2, ..., X_n)\\]` 
+                }} />
+              </div>
+            </div>
+            <div className="grid md:grid-cols-2 gap-3">
+              <div className="bg-blue-900/20 rounded-lg p-3 border border-blue-700/50">
+                <p className="text-sm font-semibold text-blue-400 mb-1">Population Mean</p>
+                <span dangerouslySetInnerHTML={{ __html: `\\(\\mu = E[X]\\)` }} />
+              </div>
+              <div className="bg-purple-900/20 rounded-lg p-3 border border-purple-700/50">
+                <p className="text-sm font-semibold text-purple-400 mb-1">Sample Mean</p>
+                <span dangerouslySetInnerHTML={{ __html: `\\(\\bar{X} = \\frac{1}{n}\\sum_{i=1}^{n} X_i\\)` }} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Sampling Distribution */}
+        <div>
+          <h4 className="text-lg font-semibold text-blue-400 mb-3">Sampling Distribution</h4>
+          <div className="space-y-4">
+            <div className="bg-neutral-900/50 rounded-lg p-4">
+              <h5 className="font-semibold text-blue-400 mb-2">Definition</h5>
+              <p className="text-sm text-neutral-300 mb-3">
+                The sampling distribution is the probability distribution of a statistic 
+                over all possible samples of size n from the population.
+              </p>
+              <div className="text-center p-3 bg-neutral-800 rounded">
+                <span dangerouslySetInnerHTML={{ 
+                  __html: `\\[\\bar{X} \\sim N\\left(\\mu, \\frac{\\sigma^2}{n}\\right)\\]` 
+                }} />
+              </div>
+            </div>
+            <div className="bg-blue-900/20 rounded-lg p-4 border border-blue-700/50">
+              <p className="text-sm font-semibold text-blue-400 mb-2">Key Properties:</p>
+              <ul className="text-sm text-neutral-300 space-y-1">
+                <li>• <span dangerouslySetInnerHTML={{ __html: `\\(E[\\bar{X}] = \\mu\\)` }} /> (unbiased)</li>
+                <li>• <span dangerouslySetInnerHTML={{ __html: `\\(\\text{Var}(\\bar{X}) = \\frac{\\sigma^2}{n}\\)` }} /></li>
+                <li>• As n increases, variance decreases</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Standard Error */}
+        <div>
+          <h4 className="text-lg font-semibold text-purple-400 mb-3">Standard Error</h4>
+          <div className="space-y-4">
+            <div className="bg-neutral-900/50 rounded-lg p-4">
+              <h5 className="font-semibold text-purple-400 mb-2">Definition</h5>
+              <p className="text-sm text-neutral-300 mb-3">
+                The standard error (SE) is the standard deviation of the sampling distribution 
+                of a statistic.
+              </p>
+              <div className="grid md:grid-cols-2 gap-3">
+                <div className="text-center p-3 bg-neutral-800 rounded">
+                  <p className="text-xs text-neutral-400 mb-1">σ known</p>
+                  <span dangerouslySetInnerHTML={{ 
+                    __html: `\\[SE(\\bar{X}) = \\frac{\\sigma}{\\sqrt{n}}\\]` 
+                  }} />
+                </div>
+                <div className="text-center p-3 bg-neutral-800 rounded">
+                  <p className="text-xs text-neutral-400 mb-1">σ unknown</p>
+                  <span dangerouslySetInnerHTML={{ 
+                    __html: `\\[SE(\\bar{X}) = \\frac{S}{\\sqrt{n}}\\]` 
+                  }} />
+                </div>
+              </div>
+            </div>
+            <div className="bg-purple-900/20 rounded-lg p-4 border border-purple-700/50">
+              <p className="text-sm font-semibold text-purple-400 mb-2">Interpretation:</p>
+              <p className="text-sm text-neutral-300">
+                SE measures the average distance between the sample statistic and the 
+                population parameter across all possible samples.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </VisualizationSection>
   );
@@ -373,8 +326,6 @@ const MathematicalFoundations = React.memo(function MathematicalFoundations() {
 
 // Interactive Insights Cards
 const InteractiveInsights = React.memo(() => {
-  const [revealedInsights, setRevealedInsights] = useState(new Set());
-  
   const insights = [
     {
       id: 'population',
@@ -411,34 +362,29 @@ const InteractiveInsights = React.memo(() => {
   return (
     <div className="grid md:grid-cols-3 gap-4 my-6">
       {insights.map((insight, idx) => (
-        <motion.div
+        <div
           key={insight.id}
-          className="relative group cursor-pointer"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: idx * 0.1 }}
-          onHoverStart={() => setRevealedInsights(prev => new Set([...prev, insight.id]))}
+          className="relative group"
         >
-          <motion.div
-            className={`relative bg-neutral-800 rounded-xl p-4 border transition-all duration-300 ${
+          <div
+            className={`relative bg-neutral-800 rounded-xl p-4 border ${
               insight.color === 'teal' 
-                ? 'border-neutral-700 hover:border-teal-500/60' 
+                ? 'border-neutral-700 hover:border-blue-500/60' 
                 : insight.color === 'blue'
                   ? 'border-neutral-700 hover:border-blue-500/60'
                   : 'border-neutral-700 hover:border-purple-500/60'
             }`}
-            whileHover={{ scale: 1.02 }}
           >
             <div className={`inline-flex p-2 rounded-lg mb-3 ${
               insight.color === 'teal' 
-                ? 'bg-teal-500/20' 
+                ? 'bg-blue-500/20' 
                 : insight.color === 'blue'
                   ? 'bg-blue-500/20'
                   : 'bg-purple-500/20'
             }`}>
               <insight.icon className={`w-5 h-5 ${
                 insight.color === 'teal' 
-                  ? 'text-teal-400' 
+                  ? 'text-blue-400' 
                   : insight.color === 'blue'
                     ? 'text-blue-400'
                     : 'text-purple-400'
@@ -447,7 +393,7 @@ const InteractiveInsights = React.memo(() => {
             
             <h4 className={`font-bold mb-2 ${
               insight.color === 'teal' 
-                ? 'text-teal-400' 
+                ? 'text-blue-400' 
                 : insight.color === 'blue'
                   ? 'text-blue-400'
                   : 'text-purple-400'
@@ -455,34 +401,23 @@ const InteractiveInsights = React.memo(() => {
               {insight.title}
             </h4>
             
-            {!revealedInsights.has(insight.id) ? (
-              <div className="space-y-2">
-                <p className="text-sm text-neutral-300">{insight.shortDesc}</p>
-                <p className="text-xs text-neutral-500 italic">Hover to explore →</p>
+            <div className="space-y-2">
+              <p className="text-sm text-neutral-300">{insight.fullDesc}</p>
+              <p className="text-xs text-neutral-400 italic">Example: {insight.example}</p>
+              <div className="mt-2 p-2 bg-neutral-900/50 rounded text-center">
+                <span className={`text-xs font-mono ${
+                  insight.color === 'teal' 
+                    ? 'text-blue-400' 
+                    : insight.color === 'blue'
+                      ? 'text-blue-400'
+                      : 'text-purple-400'
+                }`}>
+                  {insight.formula}
+                </span>
               </div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="space-y-2"
-              >
-                <p className="text-sm text-neutral-300">{insight.fullDesc}</p>
-                <p className="text-xs text-neutral-400 italic">Example: {insight.example}</p>
-                <div className="mt-2 p-2 bg-neutral-900/50 rounded text-center">
-                  <span className={`text-xs font-mono ${
-                    insight.color === 'teal' 
-                      ? 'text-teal-400' 
-                      : insight.color === 'blue'
-                        ? 'text-blue-400'
-                        : 'text-purple-400'
-                  }`}>
-                    {insight.formula}
-                  </span>
-                </div>
-              </motion.div>
-            )}
-          </motion.div>
-        </motion.div>
+            </div>
+          </div>
+        </div>
       ))}
     </div>
   );
@@ -588,14 +523,14 @@ const GearWheelFactory = React.memo(() => {
         .attr("x2", xScale(TRUE_MU))
         .attr("y1", margin.top)
         .attr("y2", height - margin.bottom)
-        .attr("stroke", "#ef4444")
+        .attr("stroke", chapterColors.chart.secondary)
         .attr("stroke-width", 2)
         .attr("stroke-dasharray", "5,5");
       
       svg.append("text")
         .attr("x", xScale(TRUE_MU) + 5)
         .attr("y", margin.top + 20)
-        .attr("fill", "#ef4444")
+        .attr("fill", chapterColors.chart.secondary)
         .text("True mean = 50g");
     }
   }, [allSampleMeans]);
@@ -603,7 +538,7 @@ const GearWheelFactory = React.memo(() => {
   return (
     <VisualizationSection>
       <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-        <Package className="w-5 h-5 text-teal-400" />
+        <Package className="w-5 h-5 text-blue-400" />
         The Gear Wheel Factory
       </h3>
       <p className="text-sm text-neutral-400 mb-4">
@@ -614,7 +549,7 @@ const GearWheelFactory = React.memo(() => {
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-neutral-800/50 rounded-lg p-3">
             <p className="text-xs text-neutral-400">Samples Taken</p>
-            <p className="text-2xl font-mono text-teal-400">{allSampleMeans.length}</p>
+            <p className="text-2xl font-mono text-blue-400">{allSampleMeans.length}</p>
           </div>
           {currentMean && (
             <>
@@ -659,19 +594,17 @@ const GearWheelFactory = React.memo(() => {
           </div>
           
           <div className="flex items-center justify-center">
-            <motion.button
+            <button
               onClick={performSampling}
               disabled={isSampling}
-              className={`px-6 py-3 rounded-lg font-medium transition-all
+              className={`px-6 py-3 rounded-lg font-medium
                          ${isSampling 
                            ? 'bg-neutral-600 cursor-not-allowed' 
-                           : 'bg-teal-600 hover:bg-teal-700'
+                           : 'bg-blue-600 hover:bg-blue-700'
                          } text-white shadow-lg`}
-              whileHover={{ scale: isSampling ? 1 : 1.05 }}
-              whileTap={{ scale: isSampling ? 1 : 0.95 }}
             >
               {isSampling ? 'Sampling...' : 'Draw New Sample'}
-            </motion.button>
+            </button>
           </div>
           
           <div className="bg-neutral-800/50 rounded-lg p-3">
@@ -694,295 +627,324 @@ const GearWheelFactory = React.memo(() => {
         </div>
         
         {allSampleMeans.length >= 10 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mt-4 p-3 bg-teal-900/20 border border-teal-500/30 rounded-lg"
+          <div
+            className="mt-4 p-3 bg-blue-900/20 border border-blue-500/30 rounded-lg"
           >
-            <p className="text-sm text-teal-400">
+            <p className="text-sm text-blue-400">
               🎯 Notice how the sample means cluster around the true population mean!
             </p>
-          </motion.div>
+          </div>
         )}
       </ControlGroup>
     </VisualizationSection>
   );
 });
 
-// CLT Visualization
-const CLTVisualization = React.memo(() => {
-  const [distributionType, setDistributionType] = useState('uniform');
-  const [sampleSize, setSampleSize] = useState(30);
-  const [numSamples, setNumSamples] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
-  const [showTheory, setShowTheory] = useState(false);
-  const [sampleMeans, setSampleMeans] = useState([]);
+// Sampling Distribution & Point Estimation Visualization
+const SamplingAndEstimation = React.memo(() => {
+  const [currentSample, setCurrentSample] = useState([]);
+  const [sampleStats, setSampleStats] = useState({ mean: null, median: null, std: null });
+  const [allEstimates, setAllEstimates] = useState([]);
+  const [showExplanation, setShowExplanation] = useState(true);
   const svgRef = useRef(null);
-  const intervalRef = useRef(null);
+  const contentRef = useRef(null);
   
-  const distributions = {
-    uniform: {
-      name: 'Uniform',
-      generator: () => Math.random() * 10,
-      theoretical: { mean: 5, variance: 100/12 }
-    },
-    exponential: {
-      name: 'Exponential',
-      generator: () => -Math.log(1 - Math.random()) * 3,
-      theoretical: { mean: 3, variance: 9 }
-    },
-    bimodal: {
-      name: 'Bimodal',
-      generator: () => Math.random() < 0.5 
-        ? d3.randomNormal(2, 0.5)() 
-        : d3.randomNormal(8, 0.5)(),
-      theoretical: { mean: 5, variance: 10 }
-    }
-  };
+  // Population parameters (known)
+  const populationMean = 50;
+  const populationStd = 10;
+  const sampleSize = 25;
   
-  const runSimulation = useCallback(() => {
-    const dist = distributions[distributionType];
-    const sample = Array.from({ length: sampleSize }, dist.generator);
-    const mean = d3.mean(sample);
+  // Generate a new sample from the population
+  const drawNewSample = () => {
+    const newSample = Array.from({ length: sampleSize }, () => 
+      d3.randomNormal(populationMean, populationStd)()
+    );
     
-    setSampleMeans(prev => [...prev, mean]);
-    setNumSamples(prev => prev + 1);
-  }, [distributionType, sampleSize]);
-  
-  const startSimulation = () => {
-    setIsRunning(true);
-    intervalRef.current = setInterval(runSimulation, 50);
-  };
-  
-  const stopSimulation = () => {
-    setIsRunning(false);
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
+    const mean = d3.mean(newSample);
+    const median = d3.median(newSample);
+    const std = d3.deviation(newSample);
+    
+    setCurrentSample(newSample);
+    setSampleStats({ mean, median, std });
+    
+    // Add to history of estimates
+    if (mean !== null) {
+      setAllEstimates(prev => [...prev, { mean, median, std }]);
     }
   };
   
-  const reset = () => {
-    stopSimulation();
-    setSampleMeans([]);
-    setNumSamples(0);
-  };
-  
+  // Visualization of current sample and estimate history
   useEffect(() => {
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, []);
-  
-  // D3 Visualization
-  useEffect(() => {
+    if (!svgRef.current || allEstimates.length === 0) return;
+    
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
     
     const width = 700;
-    const height = 300;
-    const margin = { top: 20, right: 20, bottom: 40, left: 40 };
+    const height = 400;
+    const margin = { top: 20, right: 20, bottom: 40, left: 50 };
     
-    if (sampleMeans.length > 0) {
-      const dist = distributions[distributionType];
-      const theoreticalMean = dist.theoretical.mean;
-      const theoreticalSD = Math.sqrt(dist.theoretical.variance / sampleSize);
-      
+    // Create two panels - one for current sample, one for sampling distribution
+    const panelHeight = (height - margin.top - margin.bottom) / 2 - 10;
+    
+    // Panel 1: Current Sample Distribution
+    if (currentSample.length > 0) {
+      const g1 = svg.append("g")
+        .attr("transform", `translate(0, ${margin.top})`);
+        
       const xScale = d3.scaleLinear()
-        .domain([theoreticalMean - 4 * theoreticalSD, theoreticalMean + 4 * theoreticalSD])
+        .domain([populationMean - 3 * populationStd, populationMean + 3 * populationStd])
         .range([margin.left, width - margin.right]);
-      
+        
       const bins = d3.histogram()
         .domain(xScale.domain())
-        .thresholds(30)(sampleMeans);
-      
+        .thresholds(15)(currentSample);
+        
       const yScale = d3.scaleLinear()
-        .domain([0, d3.max(bins, d => d.length / sampleMeans.length / (bins[0].x1 - bins[0].x0))])
-        .range([height - margin.bottom, margin.top]);
-      
-      // Draw axes
-      svg.append("g")
-        .attr("transform", `translate(0,${height - margin.bottom})`)
-        .call(d3.axisBottom(xScale));
-      
-      svg.append("g")
-        .attr("transform", `translate(${margin.left},0)`)
-        .call(d3.axisLeft(yScale));
-      
+        .domain([0, d3.max(bins, d => d.length)])
+        .range([panelHeight, 0]);
+        
       // Draw histogram
-      svg.selectAll(".bar")
+      g1.selectAll(".bar")
         .data(bins)
         .join("rect")
         .attr("class", "bar")
         .attr("x", d => xScale(d.x0))
-        .attr("y", d => yScale(d.length / sampleMeans.length / (d.x1 - d.x0)))
-        .attr("width", d => xScale(d.x1) - xScale(d.x0) - 1)
-        .attr("height", d => height - margin.bottom - yScale(d.length / sampleMeans.length / (d.x1 - d.x0)))
+        .attr("y", d => yScale(d.length))
+        .attr("width", d => Math.max(0, xScale(d.x1) - xScale(d.x0) - 1))
+        .attr("height", d => panelHeight - yScale(d.length))
+        .attr("fill", chapterColors.primary)
+        .attr("opacity", 0.7);
+        
+      // Add sample mean line
+      g1.append("line")
+        .attr("x1", xScale(sampleStats.mean))
+        .attr("x2", xScale(sampleStats.mean))
+        .attr("y1", 0)
+        .attr("y2", panelHeight)
+        .attr("stroke", chapterColors.chart.secondary)
+        .attr("stroke-width", 2)
+        .attr("stroke-dasharray", "4,2");
+        
+      // Add population mean line for reference
+      g1.append("line")
+        .attr("x1", xScale(populationMean))
+        .attr("x2", xScale(populationMean))
+        .attr("y1", 0)
+        .attr("y2", panelHeight)
+        .attr("stroke", chapterColors.chart.primary)
+        .attr("stroke-width", 2);
+        
+      // Labels
+      g1.append("text")
+        .attr("x", xScale(sampleStats.mean))
+        .attr("y", -5)
+        .attr("text-anchor", "middle")
+        .attr("fill", chapterColors.chart.secondary)
+        .attr("font-size", "12px")
+        .text(`x̄ = ${sampleStats.mean.toFixed(2)}`);
+        
+      g1.append("text")
+        .attr("x", xScale(populationMean))
+        .attr("y", -5)
+        .attr("text-anchor", "middle")
+        .attr("fill", chapterColors.chart.primary)
+        .attr("font-size", "12px")
+        .text(`μ = ${populationMean}`);
+        
+      // X axis
+      g1.append("g")
+        .attr("transform", `translate(0,${panelHeight})`)
+        .call(d3.axisBottom(xScale));
+    }
+    
+    // Panel 2: Sampling Distribution of Sample Means
+    if (allEstimates.length > 1) {
+      const g2 = svg.append("g")
+        .attr("transform", `translate(0, ${margin.top + panelHeight + 20})`);
+        
+      const means = allEstimates.map(d => d.mean);
+      const theoreticalSE = populationStd / Math.sqrt(sampleSize);
+      
+      const xScale2 = d3.scaleLinear()
+        .domain([populationMean - 3 * theoreticalSE, populationMean + 3 * theoreticalSE])
+        .range([margin.left, width - margin.right]);
+        
+      const bins2 = d3.histogram()
+        .domain(xScale2.domain())
+        .thresholds(20)(means);
+        
+      const yScale2 = d3.scaleLinear()
+        .domain([0, d3.max(bins2, d => d.length)])
+        .range([panelHeight, 0]);
+        
+      // Draw histogram of sample means
+      g2.selectAll(".bar")
+        .data(bins2)
+        .join("rect")
+        .attr("class", "bar")
+        .attr("x", d => xScale2(d.x0))
+        .attr("y", d => yScale2(d.length))
+        .attr("width", d => Math.max(0, xScale2(d.x1) - xScale2(d.x0) - 1))
+        .attr("height", d => panelHeight - yScale2(d.length))
         .attr("fill", chapterColors.secondary)
         .attr("opacity", 0.7);
-      
-      // Draw theoretical normal curve when enough samples
-      if (sampleMeans.length >= 100) {
-        const normalPdf = (x, mean, sd) => {
-          const variance = sd * sd;
-          return (1 / Math.sqrt(2 * Math.PI * variance)) * 
-                 Math.exp(-Math.pow(x - mean, 2) / (2 * variance));
-        };
         
-        const lineData = d3.range(xScale.domain()[0], xScale.domain()[1], 0.1).map(x => ({
-          x: x,
-          y: normalPdf(x, theoreticalMean, theoreticalSD)
-        }));
+      // Add theoretical center line
+      g2.append("line")
+        .attr("x1", xScale2(populationMean))
+        .attr("x2", xScale2(populationMean))
+        .attr("y1", 0)
+        .attr("y2", panelHeight)
+        .attr("stroke", chapterColors.chart.primary)
+        .attr("stroke-width", 2);
         
-        const line = d3.line()
-          .x(d => xScale(d.x))
-          .y(d => yScale(d.y))
-          .curve(d3.curveBasis);
-        
-        svg.append("path")
-          .datum(lineData)
-          .attr("fill", "none")
-          .attr("stroke", "#ef4444")
-          .attr("stroke-width", 2)
-          .attr("d", line)
-          .attr("opacity", 0.8);
+      // Add current estimate
+      if (sampleStats.mean !== null) {
+        g2.append("circle")
+          .attr("cx", xScale2(sampleStats.mean))
+          .attr("cy", panelHeight / 2)
+          .attr("r", 4)
+          .attr("fill", chapterColors.chart.secondary);
       }
+        
+      // X axis
+      g2.append("g")
+        .attr("transform", `translate(0,${panelHeight})`)
+        .call(d3.axisBottom(xScale2));
+        
+      // Title
+      g2.append("text")
+        .attr("x", width / 2)
+        .attr("y", -5)
+        .attr("text-anchor", "middle")
+        .attr("font-size", "14px")
+        .attr("fill", "white")
+        .text(`Sampling Distribution of x̄ (n = ${allEstimates.length} samples)`);
     }
-  }, [sampleMeans, distributionType, sampleSize]);
+  }, [currentSample, sampleStats, allEstimates]);
+  
+  useEffect(() => {
+    // Generate initial sample
+    drawNewSample();
+  }, []);
   
   return (
     <VisualizationSection>
       <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-        <Activity className="w-5 h-5 text-teal-400" />
-        Central Limit Theorem in Action
+        <Target className="w-5 h-5 text-blue-400" />
+        Sampling Distribution & Point Estimation
       </h3>
       
-      {/* Theory Panel */}
-      <AnimatePresence>
-        {showTheory && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="bg-neutral-800/50 rounded-lg p-4 mb-4"
-          >
-            <p className="text-sm text-neutral-300 mb-3">
-              The Central Limit Theorem states that for large n:
-            </p>
-            <div className="text-center p-3 bg-neutral-900/50 rounded">
-              <span dangerouslySetInnerHTML={{ 
-                __html: `\\[\\bar{X} \\sim N\\left(\\mu, \\frac{\\sigma^2}{n}\\right)\\]` 
-              }} />
+      {showExplanation && (
+        <div className="bg-neutral-800/50 rounded-lg p-4 mb-4 border border-neutral-700">
+          <h4 className="font-semibold text-white mb-2">Understanding Point Estimation</h4>
+          <p className="text-sm text-neutral-300 mb-3">
+            When we take a sample from a population, we calculate statistics (like the sample mean) 
+            to estimate unknown population parameters. Each sample gives us a different estimate.
+          </p>
+          <div className="grid grid-cols-2 gap-4 mb-3">
+            <div className="bg-neutral-900/50 rounded p-3">
+              <p className="text-xs text-neutral-400 mb-1">Population (usually unknown)</p>
+              <p className="text-sm">μ = {populationMean}, σ = {populationStd}</p>
             </div>
-            <p className="text-xs text-neutral-400 mt-3">
-              Regardless of the population distribution shape!
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      
-      {/* Distribution Selector */}
-      <div className="flex gap-2 mb-4">
-        {Object.entries(distributions).map(([key, dist]) => (
-          <button
-            key={key}
-            onClick={() => setDistributionType(key)}
-            disabled={isRunning}
-            className={`px-4 py-2 rounded transition-all ${
-              distributionType === key
-                ? 'bg-teal-600 text-white'
-                : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
-            } disabled:opacity-50`}
-          >
-            {dist.name}
-          </button>
-        ))}
-      </div>
-      
-      <GraphContainer title={<>Sampling Distribution of <span dangerouslySetInnerHTML={{ __html: '\\(\\bar{X}\\)' }} /> (n={sampleSize})</>}>
-        <svg ref={svgRef} width="100%" height="300" viewBox="0 0 700 300" />
-      </GraphContainer>
-      
-      {/* Progress Indicators */}
-      <div className="bg-neutral-800/50 rounded-lg p-4 mt-4">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm">Samples Generated</span>
-          <span className="font-mono text-teal-400">{numSamples}</span>
-        </div>
-        <div className="w-full bg-neutral-700 rounded-full h-2">
-          <motion.div
-            className="bg-teal-600 h-full rounded-full"
-            initial={{ width: 0 }}
-            animate={{ width: `${Math.min(numSamples / 500 * 100, 100)}%` }}
-          />
-        </div>
-        {numSamples >= 500 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mt-3"
-          >
-            <p className="text-sm text-teal-400 text-center">
-              ✨ The normal pattern emerges! The CLT works its magic.
-            </p>
-          </motion.div>
-        )}
-      </div>
-      
-      <ControlGroup>
-        <div className="flex flex-wrap gap-4">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-300 mb-1">
-              Sample Size: {sampleSize}
-            </label>
-            <input
-              type="range"
-              min="5"
-              max="100"
-              value={sampleSize}
-              onChange={(e) => setSampleSize(Number(e.target.value))}
-              className="w-full"
-              disabled={isRunning}
-            />
+            <div className="bg-neutral-900/50 rounded p-3">
+              <p className="text-xs text-neutral-400 mb-1">What we're exploring</p>
+              <p className="text-sm">How sample estimates vary</p>
+            </div>
           </div>
-          
-          <div className="flex gap-2">
-            {!isRunning ? (
+          <button
+            onClick={() => setShowExplanation(false)}
+            className="text-xs text-neutral-400 hover:text-neutral-300"
+          >
+            Hide explanation
+          </button>
+        </div>
+      )}
+      
+      <div ref={contentRef}>
+        <GraphContainer title="Visualizing Sampling & Estimation">
+          <svg ref={svgRef} width="100%" height="400" viewBox="0 0 700 400" />
+        </GraphContainer>
+        
+        {/* Current Sample Statistics */}
+        {sampleStats.mean !== null && (
+          <div className="grid grid-cols-3 gap-4 mt-4">
+            <div className="bg-blue-900/20 rounded-lg p-3 border border-blue-700/50">
+              <p className="text-xs text-blue-400 mb-1">Sample Mean (x̄)</p>
+              <p className="text-xl font-mono">{sampleStats.mean.toFixed(3)}</p>
+              <p className="text-xs text-neutral-400 mt-1">
+                Error: {(sampleStats.mean - populationMean).toFixed(3)}
+              </p>
+            </div>
+            <div className="bg-purple-900/20 rounded-lg p-3 border border-purple-700/50">
+              <p className="text-xs text-purple-400 mb-1">Sample Median</p>
+              <p className="text-xl font-mono">{sampleStats.median.toFixed(3)}</p>
+            </div>
+            <div className="bg-blue-900/20 rounded-lg p-3 border border-blue-700/50">
+              <p className="text-xs text-blue-400 mb-1">Sample Std Dev (s)</p>
+              <p className="text-xl font-mono">{sampleStats.std.toFixed(3)}</p>
+            </div>
+          </div>
+        )}
+        
+        {/* Summary Statistics */}
+        {allEstimates.length > 1 && (
+          <div className="bg-neutral-800/50 rounded-lg p-4 mt-4">
+            <h4 className="font-semibold mb-2">Sampling Distribution Properties</h4>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-neutral-400">Mean of sample means:</p>
+                <p className="font-mono">
+                  {d3.mean(allEstimates.map(d => d.mean)).toFixed(3)}
+                  <span className="text-xs text-neutral-400 ml-2">
+                    (should approach μ = {populationMean})
+                  </span>
+                </p>
+              </div>
+              <div>
+                <p className="text-neutral-400">SE of sample means:</p>
+                <p className="font-mono">
+                  {d3.deviation(allEstimates.map(d => d.mean)).toFixed(3)}
+                  <span className="text-xs text-neutral-400 ml-2">
+                    (theoretical: {(populationStd / Math.sqrt(sampleSize)).toFixed(3)})
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <ControlGroup>
+          <div className="flex justify-between items-center">
+            <div>
               <button
-                onClick={startSimulation}
-                className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors flex items-center gap-2"
+                onClick={drawNewSample}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
               >
-                <Play size={16} />
-                Start
+                <RefreshCw size={16} />
+                Draw New Sample
               </button>
-            ) : (
+              <p className="text-xs text-neutral-400 mt-1">
+                Samples drawn: {allEstimates.length}
+              </p>
+            </div>
+            
+            {allEstimates.length > 1 && (
               <button
-                onClick={stopSimulation}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+                onClick={() => {
+                  setAllEstimates([]);
+                  setCurrentSample([]);
+                  setSampleStats({ mean: null, median: null, std: null });
+                }}
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
               >
-                <Pause size={16} />
-                Stop
+                Reset All
               </button>
             )}
-            
-            <button
-              onClick={reset}
-              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2"
-            >
-              <RotateCcw size={16} />
-              Reset
-            </button>
-            
-            <button
-              onClick={() => setShowTheory(!showTheory)}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-            >
-              {showTheory ? 'Hide' : 'Show'} Theory
-            </button>
           </div>
-        </div>
-      </ControlGroup>
+        </ControlGroup>
+      </div>
     </VisualizationSection>
   );
 });
@@ -990,7 +952,7 @@ const CLTVisualization = React.memo(() => {
 // Baseball Heights Example
 const BaseballHeights = React.memo(function BaseballHeights() {
   const contentRef = useRef(null);
-  const [showCalculation, setShowCalculation] = useState(false);
+  const [showCalculation, setShowCalculation] = useState(true);
   
   // Exact data from course
   const heights = [74,74,72,72,73,69,69,71,76,71,73,73,74,74,69,70,72,73,75,78];
@@ -1015,9 +977,9 @@ const BaseballHeights = React.memo(function BaseballHeights() {
   }, [showCalculation]);
   
   const StatCard = ({ label, value, formula, color }) => {
-    const bgClass = color === 'blue' ? 'bg-blue-900/20' : color === 'purple' ? 'bg-purple-900/20' : 'bg-teal-900/20';
-    const borderClass = color === 'blue' ? 'border-blue-700/50' : color === 'purple' ? 'border-purple-700/50' : 'border-teal-700/50';
-    const textClass = color === 'blue' ? 'text-blue-400' : color === 'purple' ? 'text-purple-400' : 'text-teal-400';
+    const bgClass = color === 'blue' ? 'bg-blue-900/20' : color === 'purple' ? 'bg-purple-900/20' : 'bg-blue-900/20';
+    const borderClass = color === 'blue' ? 'border-blue-700/50' : color === 'purple' ? 'border-purple-700/50' : 'border-blue-700/50';
+    const textClass = color === 'blue' ? 'text-blue-400' : color === 'purple' ? 'text-purple-400' : 'text-blue-400';
     
     return (
       <div className={`${bgClass} rounded-lg p-4 border ${borderClass}`}>
@@ -1034,7 +996,7 @@ const BaseballHeights = React.memo(function BaseballHeights() {
     <VisualizationSection>
       <div ref={contentRef} className="space-y-4">
         <h3 className="text-xl font-bold text-white flex items-center gap-2">
-          <BarChart className="w-5 h-5 text-teal-400" />
+          <BarChart className="w-5 h-5 text-blue-400" />
           Example: Baseball Player Heights
         </h3>
         
@@ -1072,26 +1034,21 @@ const BaseballHeights = React.memo(function BaseballHeights() {
           />
         </div>
         
-        <motion.div
-          className="bg-teal-900/20 rounded-lg p-4"
-          whileHover={{ scale: 1.02 }}
+        <div
+          className="bg-blue-900/20 rounded-lg p-4"
         >
           <button
             onClick={() => setShowCalculation(!showCalculation)}
-            className="flex items-center gap-2 text-teal-400 hover:text-teal-300"
+            className="flex items-center gap-2 text-blue-400 hover:text-blue-300"
           >
-            <ChevronRight className={`w-4 h-4 transform transition-transform ${
+            <ChevronRight className={`w-4 h-4 transform ${
               showCalculation ? 'rotate-90' : ''
             }`} />
             Show Calculation Steps
           </button>
           
-          <AnimatePresence>
             {showCalculation && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
+              <div
                 className="mt-4 space-y-2 text-sm"
               >
                 <div className="pl-6">
@@ -1105,10 +1062,9 @@ const BaseballHeights = React.memo(function BaseballHeights() {
                     __html: '\\(SE = \\frac{\\sqrt{5.6211}}{\\sqrt{20}} = 0.5301\\)' 
                   }} /></p>
                 </div>
-              </motion.div>
+              </div>
             )}
-          </AnimatePresence>
-        </motion.div>
+        </div>
       </div>
     </VisualizationSection>
   );
@@ -1156,11 +1112,11 @@ const DecisionTreeHelper = React.memo(function DecisionTreeHelper({ onSelect }) 
   return (
     <div className="bg-neutral-900/50 rounded-lg p-4 mb-4 border border-neutral-700/50">
       <div className="flex items-center justify-between mb-3">
-        <h5 className="font-medium text-teal-400">Formula Helper</h5>
+        <h5 className="font-medium text-blue-400">Formula Helper</h5>
         {currentStep !== 'start' && (
           <button
             onClick={() => setCurrentStep('start')}
-            className="text-sm text-neutral-400 hover:text-neutral-300 transition-colors"
+            className="text-sm text-neutral-400 hover:text-neutral-300"
           >
             ← Start Over
           </button>
@@ -1170,15 +1126,13 @@ const DecisionTreeHelper = React.memo(function DecisionTreeHelper({ onSelect }) 
       {steps[currentStep].options && (
         <div className="space-y-2">
           {steps[currentStep].options.map((option) => (
-            <motion.button
+            <button
               key={option.id}
               onClick={() => handleOptionClick(option)}
-              className="w-full text-left p-3 bg-neutral-800/50 hover:bg-neutral-700/50 rounded-lg transition-all duration-200 text-sm text-neutral-300 hover:text-white"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              className="w-full text-left p-3 bg-neutral-800/50 hover:bg-neutral-700/50 rounded-lg text-sm text-neutral-300 hover:text-white"
             >
               {option.label}
-            </motion.button>
+            </button>
           ))}
         </div>
       )}
@@ -1208,7 +1162,7 @@ const VisualFormulaCard = React.memo(function VisualFormulaCard({ type, values, 
     'ci-known-sigma': {
       title: 'CI when σ is known',
       color: 'blue',
-      bgGradient: 'from-blue-900/20 to-cyan-900/20',
+      bgGradient: 'from-blue-900/20 to-blue-900/20',
       borderColor: 'border-blue-700/50',
       textColor: 'text-blue-400',
       icon: '📊',
@@ -1257,25 +1211,19 @@ const VisualFormulaCard = React.memo(function VisualFormulaCard({ type, values, 
         <div className="space-y-2">
           <p className="text-sm font-medium text-neutral-300 mb-2">Step-by-Step:</p>
           {current.steps.map((step, idx) => (
-            <motion.div
+            <div
               key={idx}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: idx * 0.1, duration: 0.6 }}
               className="flex items-start gap-2 text-sm"
             >
-              <span className="text-teal-400 font-mono">{idx + 1}.</span>
+              <span className="text-blue-400 font-mono">{idx + 1}.</span>
               <div className="flex-1">
                 <span className="text-neutral-300">{step.label}:</span>
                 <span className="ml-2 font-mono text-neutral-400">{step.calc}</span>
               </div>
-            </motion.div>
+            </div>
           ))}
           
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
+          <div 
             className="mt-3 p-2 bg-gradient-to-br from-red-900/20 to-red-800/20 rounded border border-red-700/50"
           >
             <p className="text-xs font-medium text-red-400 mb-1">⚠️ Common Mistakes:</p>
@@ -1284,7 +1232,7 @@ const VisualFormulaCard = React.memo(function VisualFormulaCard({ type, values, 
                 <li key={idx}>• {mistake}</li>
               ))}
             </ul>
-          </motion.div>
+          </div>
         </div>
       )}
     </div>
@@ -1302,7 +1250,7 @@ const InteractiveCalculator = () => {
     s: 14.5,
     confidenceLevel: 0.95
   });
-  const [showSteps, setShowSteps] = useState(false);
+  const [showSteps, setShowSteps] = useState(true);
   const [showDecisionTree, setShowDecisionTree] = useState(true);
   
   useEffect(() => {
@@ -1317,188 +1265,117 @@ const InteractiveCalculator = () => {
     processMathJax();
     const timeoutId = setTimeout(processMathJax, 100);
     return () => clearTimeout(timeoutId);
-  }, [mode, showSteps]);
-  
-  const calculateSE = () => {
-    if (mode === 'ci-known-sigma') {
-      return values.sigma / Math.sqrt(values.n);
-    } else if (mode === 'ci-unknown-sigma') {
-      return values.s / Math.sqrt(values.n);
-    }
-    return 0;
-  };
+  }, [mode, values, showSteps]);
   
   return (
     <VisualizationSection>
-      <h3 className="text-xl font-bold text-teal-400 mb-4 flex items-center gap-2">
+      <h3 className="text-xl font-bold text-blue-400 mb-4 flex items-center gap-2">
         <Target className="w-5 h-5" />
-        Step-by-Step Confidence Interval Calculator
+        Interactive Formula Calculator
       </h3>
       
       <div ref={contentRef}>
-        {/* Decision Tree Toggle */}
-        <div className="flex justify-between items-center mb-4">
-          <p className="text-sm text-neutral-400">
-            Not sure which formula to use? Let me help you decide!
-          </p>
-          <button
-            onClick={() => setShowDecisionTree(!showDecisionTree)}
-            className="text-sm text-teal-400 hover:text-teal-300 transition-colors"
-          >
-            {showDecisionTree ? 'Hide' : 'Show'} Helper
-          </button>
-        </div>
-        
-        {/* Decision Tree */}
-        <AnimatePresence>
-          {showDecisionTree && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
+        {showDecisionTree && (
+            <div
+              className="bg-gradient-to-br from-blue-900/20 to-blue-900/20 rounded-lg p-4 mb-4 border border-blue-700/50"
             >
-              <DecisionTreeHelper 
-                onSelect={(formula) => {
-                  setMode(formula);
-                  setShowDecisionTree(false);
-                  setShowSteps(true);
-                }}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
-        {/* Quick Mode Selection */}
-        {!showDecisionTree && (
-          <div className="flex gap-2 mb-4">
-            <button
-              onClick={() => {
-                setMode('ci-known-sigma');
-                setShowSteps(false);
-              }}
-              className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-                mode === 'ci-known-sigma' 
-                  ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-500/50' 
-                  : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
-              }`}
-            >
-              σ Known
-            </button>
-            <button
-              onClick={() => {
-                setMode('ci-unknown-sigma');
-                setShowSteps(false);
-              }}
-              className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-                mode === 'ci-unknown-sigma' 
-                  ? 'bg-purple-600 text-white shadow-md ring-2 ring-purple-500/50' 
-                  : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
-              }`}
-            >
-              σ Unknown
-            </button>
-          </div>
+              <p className="text-sm text-blue-400 mb-2">
+                🎯 Use the decision tree below to find the right formula for your problem!
+              </p>
+              <DecisionTreeHelper onSelect={setMode} />
+            </div>
         )}
         
         {/* Input Controls */}
-        {mode && (
-          <div className="grid md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Sample Size (n): {values.n}
-              </label>
-              <input
-                type="range"
-                min="5"
-                max="200"
-                value={values.n}
-                onChange={(e) => setValues({...values, n: Number(e.target.value)})}
-                className="w-full"
-              />
-            </div>
-            
-            {mode === 'ci-known-sigma' ? (
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Population SD (σ): {values.sigma}
-                </label>
-                <input
-                  type="range"
-                  min="1"
-                  max="50"
-                  value={values.sigma}
-                  onChange={(e) => setValues({...values, sigma: Number(e.target.value)})}
-                  className="w-full"
-                />
-              </div>
-            ) : (
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Sample SD (s): {values.s}
-                </label>
-                <input
-                  type="range"
-                  min="1"
-                  max="50"
-                  value={values.s}
-                  onChange={(e) => setValues({...values, s: Number(e.target.value)})}
-                  className="w-full"
-                />
-              </div>
-            )}
-          </div>
-        )}
-        
-        {/* Visual Formula Card */}
-        {mode && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.5 }}
-          >
-            <VisualFormulaCard 
-              type={mode} 
-              values={values} 
-              showSteps={showSteps}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">Sample Size (n)</label>
+            <input
+              type="number"
+              value={values.n}
+              onChange={(e) => setValues({...values, n: Number(e.target.value)})}
+              className="w-full px-3 py-2 bg-neutral-800 rounded-lg text-white"
             />
-          </motion.div>
-        )}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">Sample Mean (x̄)</label>
+            <input
+              type="number"
+              value={values.xBar}
+              onChange={(e) => setValues({...values, xBar: Number(e.target.value)})}
+              className="w-full px-3 py-2 bg-neutral-800 rounded-lg text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">Pop. Std Dev (σ)</label>
+            <input
+              type="number"
+              value={values.sigma}
+              onChange={(e) => setValues({...values, sigma: Number(e.target.value)})}
+              className="w-full px-3 py-2 bg-neutral-800 rounded-lg text-white"
+              placeholder="If known"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">Sample Std Dev (s)</label>
+            <input
+              type="number"
+              value={values.s}
+              onChange={(e) => setValues({...values, s: Number(e.target.value)})}
+              className="w-full px-3 py-2 bg-neutral-800 rounded-lg text-white"
+              placeholder="If σ unknown"
+            />
+          </div>
+        </div>
         
-        {/* Results Display */}
-        {mode && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="bg-gradient-to-br from-teal-900/20 to-cyan-900/20 rounded-lg p-6 mt-4 border border-teal-700/50"
+        {/* Formula Selection */}
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={() => setMode('ci-known-sigma')}
+            className={`px-4 py-2 rounded-lg ${
+              mode === 'ci-known-sigma'
+                ? 'bg-blue-600 text-white'
+                : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+            }`}
           >
-            <div className="text-center">
-              <p className="text-sm text-neutral-400 mb-2">Standard Error of X̄</p>
-              <p className="text-3xl font-mono text-teal-400">
-                {calculateSE().toFixed(4)}
-              </p>
-              
-              {/* Confidence Interval Result */}
-              <div className="mt-4 p-4 bg-neutral-900/50 rounded-lg">
-                <p className="text-sm text-neutral-400 mb-2">95% Confidence Interval:</p>
-                <p className="text-xl font-mono text-blue-400">
-                  ({(values.xBar - 1.96 * calculateSE()).toFixed(2)}, {(values.xBar + 1.96 * calculateSE()).toFixed(2)})
-                </p>
-                <p className="text-xs text-neutral-500 mt-2">
-                  We are 95% confident that the true population mean lies within this interval
-                </p>
-              </div>
-              
-              {/* Show/Hide Steps Button */}
+            CI (σ known)
+          </button>
+          <button
+            onClick={() => setMode('ci-unknown-sigma')}
+            className={`px-4 py-2 rounded-lg ${
+              mode === 'ci-unknown-sigma'
+                ? 'bg-purple-600 text-white'
+                : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+            }`}
+          >
+            CI (σ unknown)
+          </button>
+        </div>
+        
+        {/* Formula Display */}
+        {mode && (
+          <div
+            className="space-y-4"
+          >
+            <VisualFormulaCard type={mode} values={values} showSteps={showSteps} />
+            
+            {/* Toggle Steps */}
+            <div 
+              className="bg-neutral-800/50 rounded-lg p-3 flex items-center justify-between"
+            >
+              <label className="text-sm text-neutral-300">Show calculation steps</label>
               <button
                 onClick={() => setShowSteps(!showSteps)}
-                className="mt-4 text-sm text-teal-400 hover:text-teal-300 transition-colors"
+                className={`w-12 h-6 rounded-full p-1 ${
+                  showSteps ? 'bg-blue-600' : 'bg-neutral-600'
+                }`}
               >
-                {showSteps ? 'Hide' : 'Show'} Calculation Steps
+                <div className={`w-4 h-4 bg-white rounded-full transform ${
+                  showSteps ? 'translate-x-6' : 'translate-x-0'
+                }`} />
               </button>
             </div>
-          </motion.div>
+          </div>
         )}
       </div>
     </VisualizationSection>
@@ -1507,228 +1384,162 @@ const InteractiveCalculator = () => {
 
 // Field-Specific Examples Component
 const FieldSpecificExamples = React.memo(function FieldSpecificExamples() {
-  const contentRef = useRef(null);
-  const [selectedField, setSelectedField] = useState('medicine');
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [selectedField]);
+  const [selectedField, setSelectedField] = useState('engineering');
   
   const fields = {
-    medicine: {
-      title: 'Medicine & Healthcare',
+    engineering: {
+      title: 'Engineering Applications',
+      icon: '⚙️',
+      examples: [
+        {
+          scenario: 'Quality Control',
+          question: 'Are manufactured parts within tolerance?',
+          approach: 'Sample measurements → CI for mean dimension'
+        },
+        {
+          scenario: 'Reliability Testing',
+          question: 'What is the failure rate?',
+          approach: 'Test sample → CI for failure proportion'
+        }
+      ]
+    },
+    medical: {
+      title: 'Medical Research',
       icon: '🏥',
-      gradient: 'from-red-900/20 to-pink-900/20',
-      borderColor: 'border-red-700/50',
-      textColor: 'text-red-400',
-      example: {
-        context: 'A new drug is tested on 64 patients to reduce blood pressure',
-        data: 'Mean reduction: 12.5 mmHg, σ = 8 mmHg',
-        question: 'Is the drug effective? Build a 95% CI.',
-        relevance: 'Determines if drug trials show significant improvement',
-        calculation: 'CI = 12.5 ± 1.96(8/√64) = 12.5 ± 1.96 = (10.54, 14.46)',
-        interpretation: 'Since the entire CI is positive, the drug shows significant reduction'
-      }
+      examples: [
+        {
+          scenario: 'Drug Efficacy',
+          question: 'Does the treatment work?',
+          approach: 'Clinical trial → CI for effect size'
+        },
+        {
+          scenario: 'Disease Prevalence',
+          question: 'What percentage have the condition?',
+          approach: 'Random screening → CI for proportion'
+        }
+      ]
     },
     business: {
-      title: 'Business & Economics',
-      icon: '💼',
-      gradient: 'from-green-900/20 to-teal-900/20',
-      borderColor: 'border-green-700/50',
-      textColor: 'text-green-400',
-      example: {
-        context: 'An e-commerce site tests a new checkout design with 100 users',
-        data: 'Conversion rate: 18%, previous rate: 15%',
-        question: 'Did the new design improve conversions?',
-        relevance: 'Helps make data-driven business decisions',
-        calculation: 'CI = 0.18 ± 1.96√(0.18×0.82/100) = 0.18 ± 0.075 = (0.105, 0.255)',
-        interpretation: 'Since 15% is within the CI, improvement is not statistically significant'
-      }
-    },
-    engineering: {
-      title: 'Engineering',
-      icon: '⚙️',
-      gradient: 'from-blue-900/20 to-cyan-900/20',
-      borderColor: 'border-blue-700/50',
-      textColor: 'text-blue-400',
-      example: {
-        context: 'Testing tensile strength of 25 steel samples',
-        data: 'Mean: 520 MPa, s = 15 MPa',
-        question: 'Does the steel meet the 515 MPa specification?',
-        relevance: 'Ensures safety and quality standards in construction',
-        calculation: 'CI = 520 ± 2.064(15/√25) = 520 ± 6.19 = (513.81, 526.19)',
-        interpretation: 'Lower bound < 515 MPa, so we cannot guarantee all steel meets spec'
-      }
-    },
-    psychology: {
-      title: 'Psychology & Social Sciences',
-      icon: '🧠',
-      gradient: 'from-purple-900/20 to-purple-800/20',
-      borderColor: 'border-purple-700/50',
-      textColor: 'text-purple-400',
-      example: {
-        context: 'Study on meditation reducing anxiety scores',
-        data: '36 participants, mean reduction: 8.2 points, σ = 6',
-        question: 'Is meditation effective for anxiety?',
-        relevance: 'Validates therapeutic interventions',
-        calculation: 'CI = 8.2 ± 1.96(6/√36) = 8.2 ± 1.96 = (6.24, 10.16)',
-        interpretation: 'Entire CI shows reduction, supporting meditation effectiveness'
-      }
+      title: 'Business Analytics',
+      icon: '📊',
+      examples: [
+        {
+          scenario: 'Customer Satisfaction',
+          question: 'How satisfied are customers?',
+          approach: 'Survey sample → CI for mean rating'
+        },
+        {
+          scenario: 'Market Share',
+          question: 'What is our market penetration?',
+          approach: 'Sales data → CI for proportion'
+        }
+      ]
     }
   };
   
-  const currentField = fields[selectedField];
-  
   return (
     <VisualizationSection>
-      <h3 className="text-xl font-bold text-teal-400 mb-4 flex items-center gap-2">
-        <Users className="w-5 h-5" />
-        See It In Your Field
-      </h3>
+      <h3 className="text-xl font-bold text-blue-400 mb-4">Real-World Applications</h3>
       
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+      <div className="flex gap-2 mb-4">
         {Object.entries(fields).map(([key, field]) => (
-          <motion.button
+          <button
             key={key}
             onClick={() => setSelectedField(key)}
-            className={`p-3 rounded-lg transition-all duration-200 ${
+            className={`p-3 rounded-lg ${
               selectedField === key
-                ? `bg-gradient-to-br ${field.gradient} text-white border ${field.borderColor}` 
-                : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+                ? 'bg-blue-600 text-white'
+                : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
             }`}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
           >
-            <div className="text-2xl mb-1">{field.icon}</div>
-            <div className="text-xs">{field.title}</div>
-          </motion.button>
+            <span className="text-2xl mr-2">{field.icon}</span>
+            {field.title}
+          </button>
         ))}
       </div>
       
-      <motion.div 
-        key={selectedField}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.5 }}
-        ref={contentRef} 
-        className={`bg-gradient-to-br ${currentField.gradient} rounded-lg p-6 border ${currentField.borderColor}`}
+      <div 
+        className="grid gap-4"
       >
-        <h4 className={`font-semibold ${currentField.textColor} mb-3`}>
-          Real-World Application: {currentField.title}
-        </h4>
-        
-        <div className="space-y-4">
-          <div className="bg-neutral-900/50 rounded-lg p-4">
-            <p className="text-sm font-medium text-neutral-300 mb-1">Scenario:</p>
-            <p className="text-sm text-neutral-400">{currentField.example.context}</p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 gap-3">
-            <div className="bg-neutral-800/50 rounded p-3">
-              <p className="text-xs text-neutral-400 mb-1">Given Data:</p>
-              <p className="text-sm font-mono">{currentField.example.data}</p>
-            </div>
-            <div className="bg-neutral-800/50 rounded p-3">
-              <p className="text-xs text-neutral-400 mb-1">Research Question:</p>
-              <p className="text-sm">{currentField.example.question}</p>
+        {fields[selectedField].examples.map((example, idx) => (
+          <div
+            key={idx}
+            className="bg-neutral-800/50 rounded-lg p-4 border border-neutral-700/50"
+          >
+            <h4 className="font-semibold text-blue-400 mb-2">{example.scenario}</h4>
+            <div className="grid md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-neutral-400">Research Question:</p>
+                <p className="text-neutral-200">{example.question}</p>
+              </div>
+              <div>
+                <p className="text-neutral-400">Statistical Approach:</p>
+                <p className="text-neutral-200">{example.approach}</p>
+              </div>
             </div>
           </div>
-          
-          <div className="bg-gradient-to-br from-yellow-900/20 to-yellow-800/20 rounded-lg p-4 border border-yellow-700/50">
-            <p className="text-sm font-medium text-yellow-400 mb-2">Why This Matters:</p>
-            <p className="text-sm text-neutral-300">{currentField.example.relevance}</p>
-          </div>
-          
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-neutral-300">Calculation:</p>
-            <div className="bg-neutral-900/50 rounded p-3 font-mono text-sm">
-              {currentField.example.calculation}
-            </div>
-          </div>
-          
-          <div className="bg-neutral-900/50 rounded-lg p-4">
-            <p className={`text-sm font-medium ${currentField.textColor} mb-1`}>Interpretation:</p>
-            <p className="text-sm text-neutral-300">{currentField.example.interpretation}</p>
-          </div>
-        </div>
-      </motion.div>
+        ))}
+      </div>
     </VisualizationSection>
   );
 });
 
 // Concept Connections Component
 const ConceptConnections = () => {
+  const connections = [
+    {
+      from: 'Sampling Distribution',
+      to: 'Standard Error',
+      relationship: 'SE is the standard deviation of the sampling distribution'
+    },
+    {
+      from: 'Standard Error',
+      to: 'Confidence Intervals',
+      relationship: 'CI width is determined by SE × critical value'
+    },
+    {
+      from: 'Sample Size',
+      to: 'Standard Error',
+      relationship: 'SE decreases as √n increases'
+    }
+  ];
+  
   return (
     <VisualizationSection>
-      <h3 className="text-xl font-bold text-purple-400 mb-4 flex items-center gap-2">
-        <Brain className="w-5 h-5" />
-        Connecting the Concepts
-      </h3>
+      <h3 className="text-xl font-bold text-blue-400 mb-4">Concept Connections</h3>
       
-      <div className="grid md:grid-cols-2 gap-4">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="bg-blue-900/20 rounded-lg p-4 border border-blue-700/50"
-        >
-          <h4 className="font-semibold text-blue-400 mb-2">Sample Statistics</h4>
-          <ul className="text-sm text-neutral-300 space-y-1">
-            <li>• Computed from observed data</li>
-            <li>• Estimates of population parameters</li>
-            <li>• Have sampling distributions</li>
-            <li>• Vary from sample to sample</li>
-          </ul>
-        </motion.div>
+      <div className="space-y-4">
+        {connections.map((conn, idx) => (
+          <div
+            key={idx}
+            className="flex items-center gap-4"
+          >
+            <div className="bg-blue-900/20 rounded-lg p-3 border border-blue-700/50 flex-1 text-center">
+              <p className="text-sm font-semibold text-blue-400">{conn.from}</p>
+            </div>
+            <div className="text-2xl text-neutral-400">→</div>
+            <div className="bg-purple-900/20 rounded-lg p-3 border border-purple-700/50 flex-1 text-center">
+              <p className="text-sm font-semibold text-purple-400">{conn.to}</p>
+            </div>
+          </div>
+        ))}
         
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="bg-purple-900/20 rounded-lg p-4 border border-purple-700/50"
-        >
-          <h4 className="font-semibold text-purple-400 mb-2">Standard Error</h4>
-          <ul className="text-sm text-neutral-300 space-y-1">
-            <li>• Measures variability of sample statistic</li>
-            <li>• Decreases with larger sample size</li>
-            <li>• Key to confidence intervals</li>
-            <li>• Foundation for hypothesis testing</li>
-          </ul>
-        </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-teal-900/20 rounded-lg p-4 border border-teal-700/50 md:col-span-2"
-        >
-          <h4 className="font-semibold text-teal-400 mb-2">Central Limit Theorem</h4>
+        <div className="bg-neutral-800/50 rounded-lg p-4 mt-4">
           <p className="text-sm text-neutral-300">
-            The bridge between sample statistics and probability theory. It guarantees that 
-            sample means follow a normal distribution for large samples, enabling us to make 
-            probabilistic statements about population parameters.
+            These connections form the foundation of statistical inference, 
+            allowing us to quantify uncertainty and make data-driven decisions.
           </p>
-        </motion.div>
+        </div>
       </div>
     </VisualizationSection>
   );
 };
 
-
 // Practice Problems Component
 const PracticeProblems = React.memo(function PracticeProblems() {
-  const contentRef = useRef(null);
   const [selectedProblem, setSelectedProblem] = useState(0);
   const [showSolution, setShowSolution] = useState(false);
-  const [userAnswer, setUserAnswer] = useState('');
-  const [feedback, setFeedback] = useState(null);
+  const contentRef = useRef(null);
   
   useEffect(() => {
     const processMathJax = () => {
@@ -1746,223 +1557,135 @@ const PracticeProblems = React.memo(function PracticeProblems() {
   
   const problems = [
     {
-      id: 1,
-      type: 'confidence-interval',
-      difficulty: 'Easy',
-      question: 'A random sample of 36 observations from a normal population with σ = 12 yields x̄ = 85. Calculate a 95% confidence interval for μ.',
-      answer: '(81.08, 88.92)',
-      solution: (
-        <div className="space-y-3">
-          <p className="text-sm">Given: n = 36, σ = 12, x̄ = 85, α = 0.05</p>
-          <p className="text-sm">For 95% CI: <span dangerouslySetInnerHTML={{ __html: '\\(z_{\\alpha/2} = z_{0.025} = 1.96\\)' }} /></p>
-          <div className="bg-neutral-800 rounded p-3 text-center">
-            <span dangerouslySetInnerHTML={{ 
-              __html: `\\[CI = \\bar{x} \\pm z_{\\alpha/2} \\cdot \\frac{\\sigma}{\\sqrt{n}}\\]` 
-            }} />
-          </div>
-          <p className="text-sm">Calculation:</p>
-          <div className="bg-neutral-800 rounded p-3">
-            <span dangerouslySetInnerHTML={{ 
-              __html: `\\[CI = 85 \\pm 1.96 \\cdot \\frac{12}{\\sqrt{36}} = 85 \\pm 1.96 \\cdot 2 = 85 \\pm 3.92\\]` 
-            }} />
-          </div>
-          <p className="text-sm font-semibold text-teal-400">Therefore: CI = (81.08, 88.92)</p>
-        </div>
-      )
+      title: "Manufacturing Quality",
+      difficulty: "Medium",
+      problem: "A factory produces bolts with a target diameter of 10mm. A sample of 25 bolts has mean diameter 10.2mm and standard deviation 0.5mm. Calculate a 95% CI for the true mean diameter.",
+      hints: [
+        "σ is unknown, so use t-distribution",
+        "df = n - 1 = 24",
+        "For 95% CI with df=24, t ≈ 2.064"
+      ],
+      solution: {
+        steps: [
+          { text: "Identify: n = 25, x̄ = 10.2, s = 0.5", math: null },
+          { text: "Calculate SE:", math: "SE = \\frac{s}{\\sqrt{n}} = \\frac{0.5}{\\sqrt{25}} = 0.1" },
+          { text: "Find t-value: df = 24, α = 0.05, t = 2.064", math: null },
+          { text: "Calculate CI:", math: "10.2 \\pm 2.064 \\times 0.1 = 10.2 \\pm 0.206" },
+          { text: "Result: [9.994, 10.406]", math: null }
+        ],
+        interpretation: "We are 95% confident the true mean diameter is between 9.994mm and 10.406mm. The bolts may be slightly oversized."
+      }
     },
     {
-      id: 2,
-      type: 'sample-size',
-      difficulty: 'Medium',
-      question: 'A population has σ = 25. What sample size is needed to estimate μ within ±3 units with 99% confidence?',
-      answer: 'n = 462',
-      solution: (
-        <div className="space-y-3">
-          <p className="text-sm">Given: σ = 25, E = 3, α = 0.01</p>
-          <p className="text-sm">For 99% CI: <span dangerouslySetInnerHTML={{ __html: '\\(z_{\\alpha/2} = z_{0.005} = 2.576\\)' }} /></p>
-          <div className="bg-neutral-800 rounded p-3 text-center">
-            <span dangerouslySetInnerHTML={{ 
-              __html: `\\[n = \\left(\\frac{z_{\\alpha/2} \\cdot \\sigma}{E}\\right)^2\\]` 
-            }} />
-          </div>
-          <p className="text-sm">Calculation:</p>
-          <div className="bg-neutral-800 rounded p-3">
-            <span dangerouslySetInnerHTML={{ 
-              __html: `\\[n = \\left(\\frac{2.576 \\times 25}{3}\\right)^2 = \\left(\\frac{64.4}{3}\\right)^2 = (21.47)^2 = 461.01\\]` 
-            }} />
-          </div>
-          <p className="text-sm font-semibold text-teal-400">Round up: n = 462</p>
-        </div>
-      )
-    },
-    {
-      id: 3,
-      type: 'proportion',
-      difficulty: 'Medium',
-      question: 'In a poll of 800 voters, 440 support candidate A. Find a 95% confidence interval for the true proportion of support.',
-      answer: '(0.517, 0.583)',
-      solution: (
-        <div className="space-y-3">
-          <p className="text-sm">Given: n = 800, X = 440, α = 0.05</p>
-          <p className="text-sm">Sample proportion: <span dangerouslySetInnerHTML={{ __html: `\\(\\hat{p} = \\frac{440}{800} = 0.55\\)` }} /></p>
-          <div className="bg-neutral-800 rounded p-3 text-center">
-            <span dangerouslySetInnerHTML={{ 
-              __html: `\\[CI = \\hat{p} \\pm z_{\\alpha/2} \\sqrt{\\frac{\\hat{p}(1-\\hat{p})}{n}}\\]` 
-            }} />
-          </div>
-          <p className="text-sm">Standard error:</p>
-          <div className="bg-neutral-800 rounded p-3">
-            <span dangerouslySetInnerHTML={{ 
-              __html: `\\[SE = \\sqrt{\\frac{0.55 \\times 0.45}{800}} = \\sqrt{\\frac{0.2475}{800}} = 0.0176\\]` 
-            }} />
-          </div>
-          <p className="text-sm">Margin of error: 1.96 × 0.0176 = 0.0345</p>
-          <p className="text-sm font-semibold text-teal-400">CI = 0.55 ± 0.0345 = (0.517, 0.583)</p>
-        </div>
-      )
-    },
-    {
-      id: 4,
-      type: 'unknown-sigma',
-      difficulty: 'Hard',
-      question: 'A sample of 16 observations yields x̄ = 23.5 and s = 4.2. Construct a 90% confidence interval for μ.',
-      answer: '(21.65, 25.35)',
-      solution: (
-        <div className="space-y-3">
-          <p className="text-sm">Given: n = 16, x̄ = 23.5, s = 4.2, α = 0.10</p>
-          <p className="text-sm">Since σ is unknown, use t-distribution with df = 15</p>
-          <p className="text-sm">t<sub>0.05,15</sub> = 1.753</p>
-          <div className="bg-neutral-800 rounded p-3 text-center">
-            <span dangerouslySetInnerHTML={{ 
-              __html: `\\[CI = \\bar{x} \\pm t_{\\alpha/2,n-1} \\cdot \\frac{s}{\\sqrt{n}}\\]` 
-            }} />
-          </div>
-          <div className="bg-neutral-800 rounded p-3">
-            <span dangerouslySetInnerHTML={{ 
-              __html: `\\[CI = 23.5 \\pm 1.753 \\cdot \\frac{4.2}{\\sqrt{16}} = 23.5 \\pm 1.753 \\cdot 1.05 = 23.5 \\pm 1.84\\]` 
-            }} />
-          </div>
-          <p className="text-sm font-semibold text-teal-400">CI = (21.66, 25.34)</p>
-        </div>
-      )
+      title: "Election Polling",
+      difficulty: "Easy",
+      problem: "A poll of 1000 voters shows 520 support candidate A. Calculate a 95% CI for the true proportion of support.",
+      hints: [
+        "This is a proportion problem",
+        "p̂ = 520/1000 = 0.52",
+        "Use z-distribution for large samples"
+      ],
+      solution: {
+        steps: [
+          { text: "Calculate sample proportion:", math: "\\hat{p} = \\frac{520}{1000} = 0.52" },
+          { text: "Calculate SE:", math: "SE = \\sqrt{\\frac{\\hat{p}(1-\\hat{p})}{n}} = \\sqrt{\\frac{0.52 \\times 0.48}{1000}} = 0.0158" },
+          { text: "For 95% CI, z = 1.96", math: null },
+          { text: "Calculate CI:", math: "0.52 \\pm 1.96 \\times 0.0158 = 0.52 \\pm 0.031" },
+          { text: "Result: [0.489, 0.551]", math: null }
+        ],
+        interpretation: "We are 95% confident that between 48.9% and 55.1% of voters support candidate A."
+      }
     }
   ];
   
-  const checkAnswer = () => {
-    const problem = problems[selectedProblem];
-    const correctAnswer = problem.answer.toLowerCase().replace(/\s/g, '');
-    const userAnswerClean = userAnswer.toLowerCase().replace(/\s/g, '');
-    
-    if (userAnswerClean === correctAnswer) {
-      setFeedback({ type: 'correct', message: 'Correct! Well done!' });
-    } else {
-      setFeedback({ type: 'incorrect', message: 'Not quite. Try again or view the solution.' });
-    }
-  };
+  const currentProblem = problems[selectedProblem];
   
   return (
     <VisualizationSection>
-      <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-        <Target className="w-5 h-5 text-blue-400" />
-        Practice Problems
-      </h3>
+      <h3 className="text-xl font-bold text-blue-400 mb-4">Practice Problems</h3>
       
-      <div className="grid md:grid-cols-4 gap-2 mb-4">
-        {problems.map((problem, idx) => (
+      <div className="flex gap-2 mb-4">
+        {problems.map((prob, idx) => (
           <button
-            key={problem.id}
+            key={idx}
             onClick={() => {
               setSelectedProblem(idx);
               setShowSolution(false);
-              setUserAnswer('');
-              setFeedback(null);
             }}
-            className={`p-3 rounded-lg transition-all ${
+            className={`px-4 py-2 rounded-lg ${
               selectedProblem === idx
                 ? 'bg-blue-600 text-white'
                 : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
             }`}
           >
-            <div className="text-sm font-semibold">Problem {problem.id}</div>
-            <div className="text-xs opacity-75">{problem.difficulty}</div>
+            Problem {idx + 1}
           </button>
         ))}
       </div>
       
-      <div ref={contentRef} className="bg-neutral-800 rounded-lg p-6">
-        <div className="space-y-4">
-          <div>
-            <span className={`text-xs px-2 py-1 rounded ${
-              problems[selectedProblem].difficulty === 'Easy' ? 'bg-green-600' :
-              problems[selectedProblem].difficulty === 'Medium' ? 'bg-yellow-600' :
-              'bg-red-600'
+      <div ref={contentRef} className="space-y-4">
+        {/* Problem Statement */}
+        <div className="bg-neutral-800 rounded-lg p-4">
+          <div className="flex justify-between items-start mb-2">
+            <h4 className="font-semibold text-blue-400">{currentProblem.title}</h4>
+            <span className={`px-2 py-1 rounded text-xs ${
+              currentProblem.difficulty === 'Easy' 
+                ? 'bg-green-900/50 text-green-400'
+                : 'bg-yellow-900/50 text-yellow-400'
             }`}>
-              {problems[selectedProblem].difficulty}
-            </span>
-            <p className="mt-3 text-neutral-200">
-              {problems[selectedProblem].question}
-            </p>
-          </div>
-          
-          <div className="space-y-3">
-            <div className="flex gap-3">
-              <input
-                type="text"
-                value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
-                placeholder="Enter your answer..."
-                className="flex-1 px-4 py-2 bg-neutral-700 rounded-lg text-white placeholder-neutral-400"
-                onKeyPress={(e) => e.key === 'Enter' && checkAnswer()}
-              />
-              <button
-                onClick={checkAnswer}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Check
-              </button>
-            </div>
-            
-            {feedback && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`p-3 rounded-lg ${
-                  feedback.type === 'correct'
-                    ? 'bg-green-900/50 border border-green-500/50 text-green-400'
-                    : 'bg-red-900/50 border border-red-500/50 text-red-400'
-                }`}
-              >
-                {feedback.message}
-              </motion.div>
-            )}
-          </div>
-          
-          <div className="flex justify-between items-center pt-4 border-t border-neutral-700">
-            <button
-              onClick={() => setShowSolution(!showSolution)}
-              className="text-teal-400 hover:text-teal-300 transition-colors"
-            >
-              {showSolution ? 'Hide Solution' : 'Show Solution'}
-            </button>
-            <span className="text-sm text-neutral-400">
-              Expected format: {problems[selectedProblem].answer}
+              {currentProblem.difficulty}
             </span>
           </div>
-          
-          <AnimatePresence>
-            {showSolution && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="bg-neutral-900/50 rounded-lg p-4 mt-4"
-              >
-                <h5 className="font-semibold text-teal-400 mb-3">Solution:</h5>
-                {problems[selectedProblem].solution}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <p className="text-neutral-300">{currentProblem.problem}</p>
         </div>
+        
+        {/* Hints */}
+        <div className="bg-blue-900/20 rounded-lg p-4 border border-blue-700/50">
+          <h5 className="font-semibold text-blue-400 mb-2">Hints:</h5>
+          <ul className="text-sm text-neutral-300 space-y-1">
+            {currentProblem.hints.map((hint, idx) => (
+              <li key={idx}>• {hint}</li>
+            ))}
+          </ul>
+        </div>
+        
+        {/* Solution Toggle */}
+        <button
+          onClick={() => setShowSolution(!showSolution)}
+          className="w-full p-3 bg-neutral-700 hover:bg-neutral-600 rounded-lg text-white"
+        >
+          {showSolution ? 'Hide Solution' : 'Show Solution'}
+        </button>
+        
+        {/* Solution */}
+          {showSolution && (
+            <div
+              className="bg-blue-900/20 rounded-lg p-4 border border-blue-700/50 space-y-3"
+            >
+              <h5 className="font-semibold text-blue-400">Step-by-Step Solution:</h5>
+              {currentProblem.solution.steps.map((step, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-start gap-2"
+                >
+                  <span className="text-blue-400 font-mono">{idx + 1}.</span>
+                  <div>
+                    <p className="text-sm text-neutral-300">{step.text}</p>
+                    {step.math && (
+                      <div className="mt-1 p-2 bg-neutral-800 rounded">
+                        <span dangerouslySetInnerHTML={{ __html: `\\[${step.math}\\]` }} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              
+              <div className="mt-4 p-3 bg-neutral-800/50 rounded">
+                <p className="text-sm font-semibold text-blue-400 mb-1">Interpretation:</p>
+                <p className="text-sm text-neutral-300">{currentProblem.solution.interpretation}</p>
+              </div>
+            </div>
+          )}
       </div>
     </VisualizationSection>
   );
@@ -1970,166 +1693,100 @@ const PracticeProblems = React.memo(function PracticeProblems() {
 
 // Exam Preparation Component
 const ExamPreparation = React.memo(function ExamPreparation() {
-  const contentRef = useRef(null);
-  const [showFormulas, setShowFormulas] = useState(false);
+  const [expandedSection, setExpandedSection] = useState(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [showFormulas]);
+  const examTopics = [
+    {
+      id: 'concepts',
+      title: 'Key Concepts to Master',
+      items: [
+        'Difference between population parameter and sample statistic',
+        'Sampling distribution and its properties',
+        'Standard error calculation and interpretation',
+        'Central Limit Theorem applications'
+      ]
+    },
+    {
+      id: 'formulas',
+      title: 'Essential Formulas',
+      items: [
+        'Standard Error: SE = σ/√n or s/√n',
+        'CI (σ known): x̄ ± z·σ/√n',
+        'CI (σ unknown): x̄ ± t·s/√n',
+        'Sample size: n = (z·σ/E)²'
+      ]
+    },
+    {
+      id: 'mistakes',
+      title: 'Common Mistakes to Avoid',
+      items: [
+        'Using z when σ is unknown (use t instead)',
+        'Forgetting to divide by √n for SE',
+        'Wrong degrees of freedom for t-distribution',
+        'Misinterpreting confidence level'
+      ]
+    }
+  ];
   
   return (
     <VisualizationSection>
-      <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-        <BarChart className="w-5 h-5 text-purple-400" />
-        Exam Preparation Guide
-      </h3>
+      <h3 className="text-xl font-bold text-blue-400 mb-4">Exam Preparation Guide</h3>
       
-      <div ref={contentRef} className="space-y-6">
-        {/* Common Exam Questions */}
-        <div className="bg-neutral-800 rounded-lg p-6">
-          <h4 className="font-semibold text-teal-400 mb-4">Common Exam Question Types</h4>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="bg-neutral-900/50 rounded-lg p-4">
-              <h5 className="font-medium text-blue-400 mb-2">Type 1: CI with Known σ</h5>
-              <ul className="text-sm text-neutral-300 space-y-1">
-                <li>• Given: n, x̄, σ, confidence level</li>
-                <li>• Find: Confidence interval for μ</li>
-                <li>• Key: Use z-distribution</li>
-              </ul>
-            </div>
-            <div className="bg-neutral-900/50 rounded-lg p-4">
-              <h5 className="font-medium text-purple-400 mb-2">Type 2: CI with Unknown σ</h5>
-              <ul className="text-sm text-neutral-300 space-y-1">
-                <li>• Given: n, x̄, s, confidence level</li>
-                <li>• Find: Confidence interval for μ</li>
-                <li>• Key: Use t-distribution</li>
-              </ul>
-            </div>
-            <div className="bg-neutral-900/50 rounded-lg p-4">
-              <h5 className="font-medium text-green-400 mb-2">Type 3: Sample Size</h5>
-              <ul className="text-sm text-neutral-300 space-y-1">
-                <li>• Given: σ, E, confidence level</li>
-                <li>• Find: Required sample size n</li>
-                <li>• Key: Round up always</li>
-              </ul>
-            </div>
-            <div className="bg-neutral-900/50 rounded-lg p-4">
-              <h5 className="font-medium text-yellow-400 mb-2">Type 4: Proportions</h5>
-              <ul className="text-sm text-neutral-300 space-y-1">
-                <li>• Given: n, x (or p̂), confidence level</li>
-                <li>• Find: CI for population proportion</li>
-                <li>• Key: Check np ≥ 5 and n(1-p) ≥ 5</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        
-        {/* Formula Sheet */}
-        <div className="bg-teal-900/20 rounded-lg p-6 border border-teal-700/50">
-          <div className="flex justify-between items-center mb-4">
-            <h4 className="font-semibold text-teal-400">Quick Formula Reference</h4>
+      <div className="space-y-3">
+        {examTopics.map((topic) => (
+          <div
+            key={topic.id}
+            className="bg-neutral-800 rounded-lg overflow-hidden"
+          >
             <button
-              onClick={() => setShowFormulas(!showFormulas)}
-              className="text-sm text-teal-400 hover:text-teal-300"
+              onClick={() => setExpandedSection(
+                expandedSection === topic.id ? null : topic.id
+              )}
+              className="w-full p-4 text-left flex justify-between items-center hover:bg-neutral-700"
             >
-              {showFormulas ? 'Hide' : 'Show'} All
+              <h4 className="font-semibold text-blue-400">{topic.title}</h4>
+              <ChevronRight className={`w-5 h-5 text-neutral-400 transform ${
+                expandedSection === topic.id ? 'rotate-90' : ''
+              }`} />
             </button>
-          </div>
-          
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-3">
-              <div className="bg-neutral-800 rounded p-3">
-                <p className="text-xs text-neutral-400 mb-1">CI for μ (σ known)</p>
-                <span dangerouslySetInnerHTML={{ 
-                  __html: `\\[\\bar{X} \\pm z_{\\alpha/2} \\cdot \\frac{\\sigma}{\\sqrt{n}}\\]` 
-                }} />
-              </div>
-              <div className="bg-neutral-800 rounded p-3">
-                <p className="text-xs text-neutral-400 mb-1">CI for μ (σ unknown)</p>
-                <span dangerouslySetInnerHTML={{ 
-                  __html: `\\[\\bar{X} \\pm t_{\\alpha/2,n-1} \\cdot \\frac{S}{\\sqrt{n}}\\]` 
-                }} />
-              </div>
-            </div>
-            <div className="space-y-3">
-              <div className="bg-neutral-800 rounded p-3">
-                <p className="text-xs text-neutral-400 mb-1">Sample Size</p>
-                <span dangerouslySetInnerHTML={{ 
-                  __html: `\\[n = \\left(\\frac{z_{\\alpha/2} \\cdot \\sigma}{E}\\right)^2\\]` 
-                }} />
-              </div>
-              <div className="bg-neutral-800 rounded p-3">
-                <p className="text-xs text-neutral-400 mb-1">CI for Proportion</p>
-                <span dangerouslySetInnerHTML={{ 
-                  __html: `\\[\\hat{p} \\pm z_{\\alpha/2} \\sqrt{\\frac{\\hat{p}(1-\\hat{p})}{n}}\\]` 
-                }} />
-              </div>
-            </div>
-          </div>
-          
-          <AnimatePresence>
-            {showFormulas && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mt-4 pt-4 border-t border-neutral-700"
-              >
-                <div className="grid md:grid-cols-3 gap-3 text-sm">
-                  <div className="bg-neutral-800 rounded p-3">
-                    <p className="font-medium text-blue-400 mb-1">Common z-values</p>
-                    <p>90%: z = 1.645</p>
-                    <p>95%: z = 1.96</p>
-                    <p>99%: z = 2.576</p>
-                  </div>
-                  <div className="bg-neutral-800 rounded p-3">
-                    <p className="font-medium text-purple-400 mb-1">t-distribution</p>
-                    <p>df = n - 1</p>
-                    <p>As df → ∞, t → z</p>
-                    <p>Always t {'>'} z for same α</p>
-                  </div>
-                  <div className="bg-neutral-800 rounded p-3">
-                    <p className="font-medium text-green-400 mb-1">Remember</p>
-                    <p className="text-neutral-300">• <span dangerouslySetInnerHTML={{ __html: `SE \\propto \\frac{1}{\\sqrt{n}}` }} /></p>
-                    <p className="text-neutral-300">• Wider CI <span className="text-green-300">→</span> More confidence</p>
-                    <p className="text-neutral-300">• Round <span className="font-mono text-green-300">n</span> up always</p>
-                  </div>
+            
+              {expandedSection === topic.id && (
+                <div
+                  className="px-4 pb-4"
+                >
+                  <ul className="space-y-2">
+                    {topic.items.map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <span className="text-blue-400 mt-1">•</span>
+                        <span className="text-sm text-neutral-300">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-        
-        {/* Study Tips */}
-        <div className="bg-purple-900/20 rounded-lg p-6 border border-purple-700/50">
-          <h4 className="font-semibold text-purple-400 mb-3">Exam Success Tips</h4>
-          <div className="grid md:grid-cols-2 gap-4 text-sm text-neutral-300">
-            <div>
-              <p className="font-medium text-purple-300 mb-1">Before Starting:</p>
-              <ul className="space-y-1">
-                <li>• Identify what type of problem it is</li>
-                <li>• Check if σ is known or unknown</li>
-                <li>• Verify assumptions (normality, sample size)</li>
-              </ul>
-            </div>
-            <div>
-              <p className="font-medium text-purple-300 mb-1">Common Mistakes:</p>
-              <ul className="space-y-1">
-                <li>• Using z when should use t</li>
-                <li>• Forgetting to divide σ by √n</li>
-                <li>• Not rounding sample size up</li>
-              </ul>
-            </div>
+              )}
+          </div>
+        ))}
+      </div>
+      
+      {/* Quick Reference Card */}
+      <div className="mt-6 bg-gradient-to-br from-blue-900/20 to-blue-900/20 rounded-lg p-4 border border-blue-700/50">
+        <h5 className="font-semibold text-blue-400 mb-3">Quick Decision Guide</h5>
+        <div className="grid md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <p className="text-neutral-400 mb-1">If σ is known:</p>
+            <p className="text-neutral-200">→ Use z-distribution</p>
+          </div>
+          <div>
+            <p className="text-neutral-400 mb-1">If σ is unknown:</p>
+            <p className="text-neutral-200">→ Use t-distribution with df = n-1</p>
+          </div>
+          <div>
+            <p className="text-neutral-400 mb-1">For proportions:</p>
+            <p className="text-neutral-200">→ SE = √[p̂(1-p̂)/n]</p>
+          </div>
+          <div>
+            <p className="text-neutral-400 mb-1">For means:</p>
+            <p className="text-neutral-200">→ SE = σ/√n or s/√n</p>
           </div>
         </div>
       </div>
@@ -2139,60 +1796,56 @@ const ExamPreparation = React.memo(function ExamPreparation() {
 
 // Key Takeaways Component
 const KeyTakeaways = () => {
+  const takeaways = [
+    {
+      icon: '🎯',
+      title: 'Core Principle',
+      content: 'Statistical inference allows us to make probabilistic statements about populations based on sample data.'
+    },
+    {
+      icon: '📊',
+      title: 'Sampling Distribution',
+      content: 'The distribution of sample statistics follows predictable patterns, enabling confidence intervals and hypothesis tests.'
+    },
+    {
+      icon: '📏',
+      title: 'Standard Error',
+      content: 'SE quantifies the variability of sample statistics and decreases with larger sample sizes (√n relationship).'
+    },
+    {
+      icon: '🔄',
+      title: 'Central Limit Theorem',
+      content: 'Sample means approach normality for large n, regardless of the population distribution shape.'
+    }
+  ];
+  
   return (
     <VisualizationSection>
-      <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-        <Brain className="w-5 h-5 text-yellow-400" />
-        Key Takeaways
-      </h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-teal-900/20 rounded-lg p-4 border border-teal-700/50"
-        >
-          <h4 className="font-semibold text-teal-400 mb-2">Sample Statistics</h4>
-          <p className="text-sm text-gray-300">
-            Sample statistics estimate population parameters. Their accuracy improves with larger sample sizes.
-          </p>
-        </motion.div>
-        
-        <motion.div 
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-blue-900/20 rounded-lg p-4 border border-blue-700/50"
-        >
-          <h4 className="font-semibold text-blue-400 mb-2">Central Limit Theorem</h4>
-          <p className="text-sm text-gray-300">
-            Sample means follow a normal distribution for large samples, regardless of the population distribution.
-          </p>
-        </motion.div>
-        
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-purple-900/20 rounded-lg p-4 border border-purple-700/50"
-        >
-          <h4 className="font-semibold text-purple-400 mb-2">Standard Error</h4>
-          <p className="text-sm text-gray-300">
-            The standard error measures the variability of a sample statistic and decreases as √n.
-          </p>
-        </motion.div>
-        
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-pink-900/20 rounded-lg p-4 border border-pink-700/50"
-        >
-          <h4 className="font-semibold text-pink-400 mb-2">Practical Applications</h4>
-          <p className="text-sm text-gray-300">
-            From quality control to election polling, statistical inference powers data-driven decisions.
-          </p>
-        </motion.div>
+      <h3 className="text-xl font-bold text-blue-400 mb-4">Key Takeaways</h3>
+      
+      <div className="grid md:grid-cols-2 gap-4">
+        {takeaways.map((takeaway, idx) => (
+          <div
+            key={idx}
+            className="bg-gradient-to-br from-neutral-800/50 to-neutral-700/50 rounded-lg p-4 border border-neutral-600/50"
+          >
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">{takeaway.icon}</span>
+              <div>
+                <h4 className="font-semibold text-blue-400 mb-1">{takeaway.title}</h4>
+                <p className="text-sm text-neutral-300">{takeaway.content}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      <div 
+        className="mt-6 bg-blue-900/20 rounded-lg p-4 border border-blue-500/30"
+      >
+        <p className="text-sm text-blue-400 text-center">
+          🎓 Remember: The goal is not just to calculate, but to understand what the results mean for decision-making!
+        </p>
       </div>
     </VisualizationSection>
   );
@@ -2210,80 +1863,48 @@ export default function StatisticalInference() {
       {/* All content in single scrollable view */}
       <div className="space-y-8">
         {/* Introduction */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
-        >
+        <div>
           <StatisticalInferenceIntroduction />
           <InteractiveInsights />
-        </motion.div>
+        </div>
         
         {/* Mathematical Foundations */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.5, delay: 0.1, ease: "easeOut" }}
-        >
+        <div>
           <MathematicalFoundations />
-        </motion.div>
+        </div>
         
         {/* Exploration */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.5, delay: 0.15, ease: "easeOut" }}
-        >
+        <div>
           <GearWheelFactory />
-        </motion.div>
+        </div>
         
         {/* Discovery */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.5, delay: 0.2, ease: "easeOut" }}
-        >
-          <CLTVisualization />
+        <div>
+          <SamplingAndEstimation />
           <BaseballHeights />
-        </motion.div>
+        </div>
         
         {/* Practice Problems */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.5, delay: 0.25, ease: "easeOut" }}
-        >
+        <div>
           <PracticeProblems />
-        </motion.div>
+        </div>
         
         {/* Application */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.5, delay: 0.3, ease: "easeOut" }}
-        >
+        <div>
           <InteractiveCalculator />
           <FieldSpecificExamples />
           <ConceptConnections />
-        </motion.div>
+        </div>
         
         {/* Exam Preparation */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.5, delay: 0.35, ease: "easeOut" }}
-        >
+        <div>
           <ExamPreparation />
-        </motion.div>
+        </div>
         
         {/* Key Takeaways */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.5, delay: 0.4, ease: "easeOut" }}
-        >
+        <div>
           <KeyTakeaways />
-        </motion.div>
+        </div>
         
         {/* Section Complete - Standardized Component */}
         <SectionComplete chapter={5} />

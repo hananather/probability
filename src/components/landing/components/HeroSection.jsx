@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 const HeroSection = React.memo(() => {
@@ -34,6 +34,12 @@ const HeroSection = React.memo(() => {
           <Link href="#chapters">
             <Button size="lg" className="bg-neutral-700 hover:bg-neutral-600">
               Explore Curriculum
+            </Button>
+          </Link>
+          <Link href="/learn/gold-standard-animations">
+            <Button size="lg" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white group">
+              <Sparkles className="mr-2 h-5 w-5" />
+              Gold Standard Animations
             </Button>
           </Link>
         </div>

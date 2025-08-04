@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import * as d3 from "d3";
 import { 
   BarChart3, Vote, BookOpen, Wrench, Calculator, 
@@ -236,7 +235,7 @@ const MathematicalFoundations = React.memo(function MathematicalFoundations() {
         </div>
         
         {/* Current step content */}
-        <motion.div
+        <div
           key={currentStep}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -247,7 +246,7 @@ const MathematicalFoundations = React.memo(function MathematicalFoundations() {
             Step {currentStep + 1}: {steps[currentStep].title}
           </h4>
           {steps[currentStep].content}
-        </motion.div>
+        </div>
         
         {/* Navigation buttons */}
         <div className="flex justify-between">
@@ -384,7 +383,7 @@ const ConfidenceIntervalDisplay = React.memo(function ConfidenceIntervalDisplay(
   }, [se_A, se_B, moe_A, moe_B, ci_A, ci_B]);
   
   return (
-    <motion.div
+    <div
       ref={contentRef}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -442,7 +441,7 @@ const ConfidenceIntervalDisplay = React.memo(function ConfidenceIntervalDisplay(
       >
         Continue to Theory
       </button>
-    </motion.div>
+    </div>
   );
 });
 
@@ -494,7 +493,7 @@ const ElectionStory = React.memo(function ElectionStory({ onComplete }) {
       <h3 className="font-bold text-white" style={{ fontSize: typography.h2 }}>The Election Story</h3>
       
       {stage === 'intro' && (
-        <motion.div
+        <div
           style={{
           background: `linear-gradient(to bottom right, ${colorScheme.primary}40, #262626)`,
           borderColor: `${colorScheme.primary}50`
@@ -523,11 +522,11 @@ const ElectionStory = React.memo(function ElectionStory({ onComplete }) {
           >
             Conduct the Poll
           </button>
-        </motion.div>
+        </div>
       )}
       
       {stage === 'poll' && (
-        <motion.div
+        <div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="space-y-6"
@@ -561,7 +560,7 @@ const ElectionStory = React.memo(function ElectionStory({ onComplete }) {
           >
             Calculate Confidence Intervals
           </button>
-        </motion.div>
+        </div>
       )}
       
       {stage === 'confidence' && (
@@ -753,7 +752,7 @@ const NormalApproximationValidator = React.memo(function NormalApproximationVali
             </div>
           </ControlGroup>
           
-          <motion.div
+          <div
             className={`p-4 rounded-lg border-2 ${
               conditionsMet
                 ? 'bg-green-900/20 border-green-500/50'
@@ -790,7 +789,7 @@ const NormalApproximationValidator = React.memo(function NormalApproximationVali
                 When conditions fail, use exact binomial methods instead.
               </p>
             )}
-          </motion.div>
+          </div>
         </div>
         
         <div>
@@ -955,7 +954,7 @@ const ProportionCIBuilder = React.memo(function ProportionCIBuilder() {
       </div>
       
       {/* Results */}
-      <motion.div
+      <div
         style={{
           background: `linear-gradient(to bottom right, ${colorScheme.primary}40, #262626)`
         }}
@@ -983,9 +982,9 @@ const ProportionCIBuilder = React.memo(function ProportionCIBuilder() {
           {showSteps ? 'Hide' : 'Show'} Calculation Steps
         </button>
         
-        <AnimatePresence>
+        <div>
           {showSteps && (
-            <motion.div
+            <div
               ref={contentRef}
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
@@ -999,10 +998,10 @@ const ProportionCIBuilder = React.memo(function ProportionCIBuilder() {
               <p>4. <span dangerouslySetInnerHTML={{ __html: `\\(\\text{Margin} = z \\times SE = ${z.toFixed(3)} \\times ${se.toFixed(4)} = ${margin.toFixed(4)}\\)` }} /></p>
               <p>5. <span dangerouslySetInnerHTML={{ __html: `\\(\\text{CI} = \\hat{p} \\pm \\text{margin} = ${pHat.toFixed(4)} \\pm ${margin.toFixed(4)}\\)` }} /></p>
               <p>6. <span dangerouslySetInnerHTML={{ __html: `\\(\\text{CI} = [${waldLower.toFixed(4)}, ${waldUpper.toFixed(4)}]\\)` }} /></p>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
-      </motion.div>
+        </div>
+      </div>
     </VisualizationSection>
   );
 });
@@ -1014,7 +1013,7 @@ const ConditionCheckPanel = ({ n, pHat }) => {
   const conditionsMet = np >= 10 && nq >= 10;
   
   return (
-    <motion.div
+    <div
       className={`p-4 rounded-lg border-2 ${
         conditionsMet
           ? 'bg-green-900/20 border-green-500/50'
@@ -1039,7 +1038,7 @@ const ConditionCheckPanel = ({ n, pHat }) => {
           n(1-p̂) = {n} × {(1-pHat).toFixed(3)} = {nq.toFixed(1)} {nq >= 10 ? '≥' : '<'} 10
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
@@ -1327,7 +1326,7 @@ const ScenarioExplorer = React.memo(function ScenarioExplorer() {
         {Object.entries(scenarios).map(([key, scen]) => {
           const Icon = scen.icon;
           return (
-            <motion.button
+            <button
               key={key}
               onClick={() => setSelectedScenario(key)}
               className={`p-4 rounded-lg border-2 transition-all ${
@@ -1348,12 +1347,12 @@ const ScenarioExplorer = React.memo(function ScenarioExplorer() {
                 color: selectedScenario === key ? scen.color : '#e5e5e5'
               }} />
               <p className="text-xs font-medium">{scen.title}</p>
-            </motion.button>
+            </button>
           );
         })}
       </div>
       
-      <motion.div
+      <div
         key={selectedScenario}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -1391,7 +1390,7 @@ const ScenarioExplorer = React.memo(function ScenarioExplorer() {
           </h5>
           <ul className="space-y-2">
             {scenario.insights.map((insight, idx) => (
-              <motion.li
+              <li
                 key={idx}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -1401,11 +1400,11 @@ const ScenarioExplorer = React.memo(function ScenarioExplorer() {
                 <div className="w-1.5 h-1.5 rounded-full mt-1.5"
                      style={{ backgroundColor: scenario.color }} />
                 <span>{insight}</span>
-              </motion.li>
+              </li>
             ))}
           </ul>
         </div>
-      </motion.div>
+      </div>
     </VisualizationSection>
   );
 });
@@ -1555,7 +1554,7 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems() {
         </div>
       </div>
       
-      <motion.div
+      <div
         key={problem.id}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -1680,7 +1679,7 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems() {
         
         {/* Solution */}
         {showSolution && (
-          <motion.div
+          <div
             ref={contentRef}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
@@ -1692,7 +1691,7 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems() {
             
             <div className="space-y-3">
               {problem.solution.steps.map((step, idx) => (
-                <motion.div
+                <div
                   key={idx}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -1705,7 +1704,7 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems() {
                   <span className="text-neutral-200">
                     {step}
                   </span>
-                </motion.div>
+                </div>
               ))}
             </div>
             
@@ -1728,9 +1727,9 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems() {
                 mention it in your answer for partial credit.
               </p>
             </div>
-          </motion.div>
+          </div>
         )}
-      </motion.div>
+      </div>
     </VisualizationSection>
   );
 });
@@ -2003,8 +2002,8 @@ export default function ProportionConfidenceInterval() {
       </div>
       
       {/* Content Sections */}
-      <AnimatePresence mode="wait">
-        <motion.div
+      <div>
+        <div
           key={currentSection}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -2160,8 +2159,8 @@ export default function ProportionConfidenceInterval() {
               <SectionComplete chapter={5} />
             </div>
           )}
-        </motion.div>
-      </AnimatePresence>
+        </div>
+      </div>
     </VisualizationContainer>
   );
 }

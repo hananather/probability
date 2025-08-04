@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import * as d3 from '@/utils/d3-utils';
-import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Compass, 
   Calculator, 
@@ -76,7 +75,7 @@ const JourneyProgress = React.memo(function JourneyProgress({
           const isCompleted = completedActivities.has(key);
           
           return (
-            <motion.div
+            <div
               key={key}
               className="flex-1 mx-2"
               whileHover={{ scale: 1.05 }}
@@ -112,14 +111,14 @@ const JourneyProgress = React.memo(function JourneyProgress({
                   <ArrowLeft className="w-4 h-4 text-neutral-600 rotate-180" />
                 </div>
               )}
-            </motion.div>
+            </div>
           );
         })}
       </div>
       
       {/* Progress bar */}
       <div className="h-2 bg-neutral-700 rounded-full overflow-hidden">
-        <motion.div
+        <div
           className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
           initial={{ width: '0%' }}
           animate={{ 
@@ -224,9 +223,9 @@ const MathematicalFoundation = React.memo(function MathematicalFoundation() {
             {showDerivation ? 'Hide' : 'Show'} Step-by-Step Derivation
           </button>
           
-          <AnimatePresence>
+          <div>
             {showDerivation && (
-              <motion.div
+              <div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
@@ -256,7 +255,7 @@ const MathematicalFoundation = React.memo(function MathematicalFoundation() {
                     </div>
                   </div>
                   
-                  <motion.div
+                  <div
                     key={currentStep}
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -273,11 +272,11 @@ const MathematicalFoundation = React.memo(function MathematicalFoundation() {
                     <p className="text-sm text-neutral-400">
                       {derivationSteps[currentStep].explanation}
                     </p>
-                  </motion.div>
+                  </div>
                 </div>
-              </motion.div>
+              </div>
             )}
-          </AnimatePresence>
+          </div>
         </div>
       </div>
     </VisualizationSection>
@@ -582,7 +581,7 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
       {/* Relationship Selector */}
       <div className="flex gap-3 justify-center">
         {Object.entries(relationships).map(([key, rel]) => (
-          <motion.button
+          <button
             key={key}
             onClick={() => setActiveRelationship(key)}
             className={`px-6 py-3 rounded-lg font-medium transition-all ${
@@ -598,7 +597,7 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
             disabled={animating}
           >
             {rel.title.split(' vs. ')[1]}
-          </motion.button>
+          </button>
         ))}
       </div>
       
@@ -628,7 +627,7 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
         </GraphContainer>
         
         {/* Key Insights */}
-        <motion.div 
+        <div 
           className="mt-4 p-4 bg-neutral-900/50 rounded-lg"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -682,11 +681,11 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
               </p>
             </div>
           )}
-        </motion.div>
+        </div>
         
         {/* Current hover information */}
         {hoveredPoint && (
-          <motion.div
+          <div
             className="mt-4 p-3 bg-neutral-900 rounded-lg text-sm"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -697,7 +696,7 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
               {activeRelationship === 'n-sigma' && ` for σ = ${hoveredPoint.x.toFixed(1)}`}
               {activeRelationship === 'n-confidence' && ` for ${Math.round(hoveredPoint.x)}% confidence`}
             </p>
-          </motion.div>
+          </div>
         )}
       </div>
     </div>
@@ -952,7 +951,7 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
             <span className="text-neutral-500">n =</span>
             
             {/* Opening parenthesis */}
-            <motion.span
+            <span
               className={`cursor-pointer transition-all ${
                 selectedParts.squared ? 'text-purple-400' : 'text-neutral-500'
               }`}
@@ -961,12 +960,12 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
               whileTap={{ scale: 0.9 }}
             >
               (
-            </motion.span>
+            </span>
             
             {/* Fraction */}
             <div className="inline-flex flex-col items-center">
               {/* Numerator */}
-              <motion.div
+              <div
                 className={`cursor-pointer transition-all flex items-center gap-1 ${
                   selectedParts.numerator ? 'text-blue-400' : 'text-neutral-400'
                 }`}
@@ -994,13 +993,13 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
                 >
                   σ
                 </span>
-              </motion.div>
+              </div>
               
               {/* Fraction bar */}
               <div className="w-full h-0.5 bg-neutral-500 my-1"></div>
               
               {/* Denominator */}
-              <motion.div
+              <div
                 className={`cursor-pointer transition-all ${
                   selectedParts.denominator ? 'text-yellow-400' : 'text-neutral-400'
                 }`}
@@ -1012,11 +1011,11 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
                 whileTap={{ scale: 0.9 }}
               >
                 <span className={understanding.E ? 'text-green-400' : ''}>E</span>
-              </motion.div>
+              </div>
             </div>
             
             {/* Closing parenthesis and square */}
-            <motion.span
+            <span
               className={`cursor-pointer transition-all ${
                 selectedParts.squared ? 'text-purple-400' : 'text-neutral-500'
               }`}
@@ -1028,14 +1027,14 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
               whileTap={{ scale: 0.9 }}
             >
               )²
-            </motion.span>
+            </span>
           </div>
         </div>
         
         {/* Explanations */}
-        <AnimatePresence mode="wait">
+        <div>
           {selectedParts.numerator && (
-            <motion.div
+            <div
               key="numerator"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1053,11 +1052,11 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
                   __html: `\\[\\text{Margin} = z_{\\alpha/2} \\times \\text{Standard Error}\\]` 
                 }} />
               </div>
-            </motion.div>
+            </div>
           )}
           
           {selectedParts.denominator && (
-            <motion.div
+            <div
               key="denominator"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1073,11 +1072,11 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
               <p className="text-xs text-neutral-500 mt-2">
                 If E = 1, we're okay being ±1 unit off. If E = 0.1, we want to be ±0.1 units off (10× more precise!).
               </p>
-            </motion.div>
+            </div>
           )}
           
           {selectedParts.squared && (
-            <motion.div
+            <div
               key="squared"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1095,9 +1094,9 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
                   __html: `\\[E = \\frac{z \\times \\sigma}{\\sqrt{n}} \\Rightarrow \\sqrt{n} = \\frac{z \\times \\sigma}{E} \\Rightarrow n = \\left(\\frac{z \\times \\sigma}{E}\\right)^2\\]` 
                 }} />
               </div>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
+        </div>
         
         {/* Understanding Progress */}
         <div className="mt-6 bg-neutral-800/50 rounded-lg p-4">
@@ -1124,13 +1123,13 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
           </div>
           
           {allUnderstood && (
-            <motion.p
+            <p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="text-center text-green-400 mt-4 font-medium"
             >
               Great! You understand all parts of the formula! 🎉
-            </motion.p>
+            </p>
           )}
         </div>
         
@@ -1305,7 +1304,7 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems({ onComple
           
           {/* Feedback */}
           {feedback && (
-            <motion.div
+            <div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               className={`mt-4 p-3 rounded-lg ${
@@ -1315,14 +1314,14 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems({ onComple
               }`}
             >
               {feedback.message}
-            </motion.div>
+            </div>
           )}
         </div>
         
         {/* Solution */}
-        <AnimatePresence>
+        <div>
           {showSolution && (
-            <motion.div
+            <div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
@@ -1333,7 +1332,7 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems({ onComple
               </h5>
               <div className="space-y-2">
                 {currentProblem.solution.steps.map((step, idx) => (
-                  <motion.div
+                  <div
                     key={idx}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -1342,7 +1341,7 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems({ onComple
                   >
                     <span className="text-purple-400 font-mono">{idx + 1}.</span>
                     <span className="text-neutral-300 font-mono text-sm">{step}</span>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
               <div className="mt-4 p-3 bg-yellow-900/20 rounded border border-yellow-600/30">
@@ -1350,9 +1349,9 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems({ onComple
                   <strong>Common Trap:</strong> {currentProblem.solution.trap}
                 </p>
               </div>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
+        </div>
       </div>
     </VisualizationSection>
   );
@@ -1498,7 +1497,7 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
           </div>
           
           {/* Results */}
-          <motion.div
+          <div
             className="bg-gradient-to-br from-purple-900/20 to-neutral-800 
                        rounded-xl p-6 text-center"
             initial={{ opacity: 0, scale: 0.95 }}
@@ -1523,9 +1522,9 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
               </button>
             </div>
             
-            <AnimatePresence>
+            <div>
               {showDerivation && (
-                <motion.div
+                <div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
@@ -1566,10 +1565,10 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
                       <span className="text-purple-400">{`n = ${n} (rounded up)`}</span>
                     </p>
                   </div>
-                </motion.div>
+                </div>
               )}
-            </AnimatePresence>
-          </motion.div>
+            </div>
+          </div>
           
           {/* Compare with Course Examples */}
           <div>
@@ -1580,16 +1579,16 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
               {compareExamples ? 'Hide' : 'Compare with'} Course Examples
             </button>
             
-            <AnimatePresence>
+            <div>
               {compareExamples && (
-                <motion.div
+                <div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   className="grid md:grid-cols-2 gap-4"
                 >
                   {courseExamples.map((ex, index) => (
-                    <motion.div
+                    <div
                       key={ex.id}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -1613,11 +1612,11 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
                           n = {ex.n}
                         </p>
                       </div>
-                    </motion.div>
+                    </div>
                   ))}
-                </motion.div>
+                </div>
               )}
-            </AnimatePresence>
+            </div>
           </div>
           
           {/* Saved Results */}
@@ -1626,7 +1625,7 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
               <h4 className="text-sm font-semibold text-neutral-400 mb-3">Saved Calculations</h4>
               <div className="space-y-2">
                 {savedResults.map((result, index) => (
-                  <motion.div
+                  <div
                     key={result.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -1638,7 +1637,7 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
                     <span className="text-xs text-neutral-500">
                       {new Date(result.timestamp).toLocaleTimeString()}
                     </span>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -2127,7 +2126,7 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
         <div className="grid md:grid-cols-2 gap-4">
           {/* Optimal Solution */}
           {optimalPoint && (
-            <motion.div
+            <div
               className="bg-emerald-900/20 rounded-lg p-4 border border-emerald-500/30"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -2153,7 +2152,7 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
                   <span className="font-mono text-white ml-2">{((optimalPoint.cost / scenario.budgetLimit) * 100).toFixed(0)}%</span>
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
           
           {/* Key Insights */}
@@ -2276,7 +2275,7 @@ const RealWorldScenarios = React.memo(function RealWorldScenarios({ onComplete }
         {Object.entries(scenarios).map(([key, scen]) => {
           const Icon = scen.icon;
           return (
-            <motion.button
+            <button
               key={key}
               onClick={() => setSelectedScenario(key)}
               className={`p-4 rounded-lg border-2 transition-all ${
@@ -2298,13 +2297,13 @@ const RealWorldScenarios = React.memo(function RealWorldScenarios({ onComplete }
               }} />
               <p className="font-semibold">{scen.title}</p>
               <p className="text-xs text-neutral-400 mt-1">{scen.description}</p>
-            </motion.button>
+            </button>
           );
         })}
       </div>
       
       {/* Scenario Details */}
-      <motion.div
+      <div
         key={selectedScenario}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -2350,7 +2349,7 @@ const RealWorldScenarios = React.memo(function RealWorldScenarios({ onComplete }
             
             <div className="space-y-3">
               {scenario.considerations.map((consideration, idx) => (
-                <motion.div
+                <div
                   key={idx}
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -2362,11 +2361,11 @@ const RealWorldScenarios = React.memo(function RealWorldScenarios({ onComplete }
                     <Check className="w-4 h-4" style={{ color: scenario.color }} />
                   </div>
                   <p className="text-sm">{consideration}</p>
-                </motion.div>
+                </div>
               ))}
             </div>
             
-            <motion.div
+            <div
               className="mt-6 p-4 rounded-lg"
               style={{ backgroundColor: `${scenario.color}10` }}
               whileHover={{ scale: 1.02 }}
@@ -2382,10 +2381,10 @@ const RealWorldScenarios = React.memo(function RealWorldScenarios({ onComplete }
                   Estimated cost: ${Math.ceil(n * 1.15 * 500).toLocaleString()} + fixed costs
                 </p>
               )}
-            </motion.div>
+            </div>
           </div>
         </div>
-      </motion.div>
+      </div>
     </VisualizationSection>
   );
 });
@@ -2424,7 +2423,7 @@ const StageContent = React.memo(function StageContent({
           <MathematicalFoundation />
           <VisualExploration onComplete={onActivityComplete} />
           
-          <motion.div
+          <div
             className="bg-blue-900/20 rounded-lg p-6 border border-blue-500/30"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -2439,7 +2438,7 @@ const StageContent = React.memo(function StageContent({
               <p>• Higher confidence levels require larger samples, but the effect is less dramatic</p>
               <p>• Population variability (σ) has a direct square relationship with sample size</p>
             </div>
-          </motion.div>
+          </div>
         </>
       )}
       
@@ -2461,7 +2460,7 @@ const StageContent = React.memo(function StageContent({
           <RealWorldScenarios onComplete={onActivityComplete} />
           
           {savedCalculations.length > 0 && (
-            <motion.div
+            <div
               className="bg-emerald-900/20 rounded-lg p-6 border border-emerald-500/30"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -2481,7 +2480,7 @@ const StageContent = React.memo(function StageContent({
                   </div>
                 ))}
               </div>
-            </motion.div>
+            </div>
           )}
         </>
       )}
@@ -2519,8 +2518,8 @@ export default function SampleSizeCalculation() {
       />
       
       {/* Dynamic Content */}
-      <AnimatePresence mode="wait">
-        <motion.div
+      <div>
+        <div
           key={currentStage}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -2533,8 +2532,8 @@ export default function SampleSizeCalculation() {
             savedCalculations={savedCalculations}
             onSaveCalculation={handleSaveCalculation}
           />
-        </motion.div>
-      </AnimatePresence>
+        </div>
+      </div>
       
       {/* Section Complete - Standardized Component */}
       <SectionComplete chapter={5} />

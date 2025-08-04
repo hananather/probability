@@ -1,5 +1,8 @@
 Ultrathink. Use parallel tasks/agents to gather context for each of the bug we are attempting to resolve. 
 
+Use `/Users/hananather/Desktop/Javascript/prob-lab/src/components/learn/GoldStandardShowcase.jsx` gold standard componet.
+
+
 We are fixing bugs only. No new features.
 
 ## When you receive a bug

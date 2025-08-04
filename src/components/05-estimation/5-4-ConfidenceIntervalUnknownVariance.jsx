@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import * as d3 from "@/utils/d3-utils";
 import { jStat } from "jstat";
-import { motion, AnimatePresence } from "framer-motion";
 import { 
   VisualizationContainer, 
   VisualizationSection,
@@ -40,12 +39,9 @@ const PlainEnglishCard = ({ title, explanation, example }) => {
   }, []);
   
   return (
-    <motion.div 
+    <div 
       ref={contentRef}
       className="bg-neutral-900/50 rounded-lg p-4 mb-4 border border-neutral-700"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 1.5 }}
     >
       <div className="flex items-start gap-3">
         <BookOpen className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
@@ -59,18 +55,15 @@ const PlainEnglishCard = ({ title, explanation, example }) => {
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
 // Exam Tip Component
 const ExamTip = ({ tip, points, warning }) => {
   return (
-    <motion.div 
+    <div 
       className="bg-gradient-to-r from-yellow-900/20 to-orange-900/20 rounded-lg p-4 mb-4 border border-yellow-700/50"
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 1.5 }}
     >
       <div className="flex items-start gap-3">
         <GraduationCap className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" />
@@ -90,7 +83,7 @@ const ExamTip = ({ tip, points, warning }) => {
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
@@ -116,33 +109,24 @@ const FloatingFormulaCard = () => {
   }, [isOpen]);
   
   return (
-    <motion.div
+    <div
       className="fixed z-50 right-6 bottom-24"
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      transition={{ type: "spring", stiffness: 260, damping: 20 }}
     >
       {/* Toggle Button */}
-      <motion.button
+      <button
         onClick={() => setIsOpen(!isOpen)}
         className={`absolute bottom-0 right-0 w-12 h-12 rounded-full shadow-lg flex items-center justify-center cursor-pointer ${
           isOpen ? 'bg-purple-600' : 'bg-purple-500'
         } hover:bg-purple-600 transition-colors`}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
       >
         <StickyNote className="w-6 h-6 text-white" />
-      </motion.button>
+      </button>
       
       {/* Formula Card */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            ref={contentRef}
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute bottom-16 right-0 w-80 bg-neutral-900 rounded-lg shadow-2xl border border-purple-500/50 overflow-hidden"
+      {isOpen && (
+        <div
+          ref={contentRef}
+          className="absolute bottom-16 right-0 w-80 bg-neutral-900 rounded-lg shadow-2xl border border-purple-500/50 overflow-hidden"
           >
             <div 
               className="bg-purple-900/30 p-3 flex items-center justify-between"
@@ -203,10 +187,9 @@ const FloatingFormulaCard = () => {
                 </div>
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -249,33 +232,24 @@ const JourneyNavigator = ({ journey, currentSection, userInsights, onNavigate })
           const isCompleted = userInsights[`${section.id}Completed`];
           
           return (
-            <motion.button
+            <button
               key={section.id}
               onClick={() => onNavigate(section.id)}
               className={`flex-1 p-4 rounded-lg border-2 transition-all duration-300 ${
                 getColorClasses(section, isActive, isCompleted)
               }`}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1, duration: 1.5 }}
             >
               <div className="flex items-center justify-between mb-2">
                 <Icon size={20} className={getIconColor(section.color)} />
                 {isCompleted && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 15 }}
-                  >
+                  <div>
                     <Check size={16} className="text-emerald-400" />
-                  </motion.div>
+                  </div>
                 )}
               </div>
               <h4 className="font-semibold text-white text-sm">{section.title}</h4>
               <p className="text-xs text-neutral-400 mt-1">{section.subtitle}</p>
-            </motion.button>
+            </button>
           );
         })}
       </div>
@@ -301,11 +275,9 @@ const ProblemStatement = ({ onInsight }) => {
         warning="Most students lose points by using z when they should use t"
       />
       
-      <motion.div
+      <div
         className="bg-gradient-to-br from-yellow-900/20 to-neutral-800 
                    rounded-xl p-6 border border-yellow-500/30"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
       >
         <h3 className="text-xl font-bold text-yellow-400 mb-6">
           The Reality of Data Analysis
@@ -341,24 +313,21 @@ const ProblemStatement = ({ onInsight }) => {
             </p>
           </div>
         </div>
-      </motion.div>
+      </div>
       
-      <motion.button
+      <button
         onClick={() => {
           setShowNaiveApproach(!showNaiveApproach);
           if (!showNaiveApproach) onInsight('understoodProblem');
         }}
         className="w-full py-3 bg-neutral-700 hover:bg-neutral-600 rounded-lg
                    text-white font-medium transition-colors"
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
       >
         {showNaiveApproach ? 'Hide' : 'Explore'} the Naive Approach
-      </motion.button>
+      </button>
       
-      <AnimatePresence>
-        {showNaiveApproach && (
-          <motion.div
+      {showNaiveApproach && (
+        <div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -382,20 +351,16 @@ const ProblemStatement = ({ onInsight }) => {
                 See why this fails →
               </button>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
       
-      <AnimatePresence>
-        {showWhyItFails && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            className="bg-red-900/20 rounded-xl p-6 border border-red-500/30"
-          >
-            <h4 className="font-semibold text-red-400 mb-3">
-              Why the Naive Approach Fails
-            </h4>
+      {showWhyItFails && (
+        <div
+          className="bg-red-900/20 rounded-xl p-6 border border-red-500/30"
+        >
+          <h4 className="font-semibold text-red-400 mb-3">
+            Why the Naive Approach Fails
+          </h4>
             <div className="space-y-3 text-sm">
               <p>Using s instead of <span dangerouslySetInnerHTML={{ __html: `\\(\\sigma\\)` }} /> introduces additional uncertainty:</p>
               <ul className="space-y-2 ml-4">
@@ -404,17 +369,14 @@ const ProblemStatement = ({ onInsight }) => {
                 <li>• Small samples → s is less reliable</li>
                 <li>• Result: Coverage probability &lt; claimed confidence level!</li>
               </ul>
-              <motion.p
+              <p
                 className="mt-4 text-red-400 font-semibold text-center"
-                animate={{ scale: [1, 1.05, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
               >
                 We need a distribution that accounts for this extra uncertainty!
-              </motion.p>
+              </p>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 };
@@ -532,11 +494,9 @@ const OzoneExample = React.memo(function OzoneExample({ onInsight }) {
   
   return (
     <div ref={contentRef} className="space-y-6">
-      <motion.div
+      <div
         className="bg-gradient-to-br from-emerald-900/20 to-neutral-800 
                    rounded-xl p-6 border border-emerald-500/30"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
       >
         <h3 className="text-xl font-bold text-emerald-400 mb-4">
           Real Example: Ozone Concentrations
@@ -570,8 +530,7 @@ const OzoneExample = React.memo(function OzoneExample({ onInsight }) {
         </div>
         
         {/* Current Step Content */}
-        <AnimatePresence mode="wait">
-          <motion.div
+        <div
             key={currentStep}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -640,8 +599,7 @@ const OzoneExample = React.memo(function OzoneExample({ onInsight }) {
             )}
             
             <p className="text-sm text-neutral-400">{steps[currentStep].detail}</p>
-          </motion.div>
-        </AnimatePresence>
+        </div>
         
         {/* Detailed Calculation */}
         <button
@@ -652,14 +610,10 @@ const OzoneExample = React.memo(function OzoneExample({ onInsight }) {
           {showCalculation ? 'Hide' : 'Show'} Detailed Calculation
         </button>
         
-        <AnimatePresence>
-          {showCalculation && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mt-4 space-y-2 text-sm font-mono bg-neutral-800/50 rounded p-3"
-            >
+        {showCalculation && (
+          <div
+            className="mt-4 space-y-2 text-sm font-mono bg-neutral-800/50 rounded p-3"
+          >
               <p>Data: {data.join(', ')}</p>
               <p>n = {n}, df = {df}</p>
               <p>x̄ = {xBar.toFixed(3)}</p>
@@ -669,10 +623,9 @@ const OzoneExample = React.memo(function OzoneExample({ onInsight }) {
               <p>Margin = {tCrit} × {se.toFixed(3)} = {margin.toFixed(3)}</p>
               <p>CI = {xBar.toFixed(3)} ± {margin.toFixed(3)}</p>
               <p>CI = [{ciLower.toFixed(3)}, {ciUpper.toFixed(3)}]</p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
+          </div>
+        )}
+      </div>
     </div>
   );
 });
@@ -857,11 +810,9 @@ const InteractiveCIBuilder = () => {
       {/* Results Comparison */}
       <div className={`grid ${showBoth ? 'md:grid-cols-2' : 'md:grid-cols-1'} gap-6`}>
         {/* t-based CI */}
-        <motion.div
+        <div
           className="bg-gradient-to-br from-emerald-900/20 to-neutral-800 
                      rounded-xl p-6 border border-emerald-500/30"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
         >
           <h5 className="font-semibold text-emerald-400 mb-4">
             σ Unknown (t-distribution)
@@ -886,15 +837,13 @@ const InteractiveCIBuilder = () => {
               <p>Margin of error: {tCI.margin.toFixed(3)}</p>
             </div>
           </div>
-        </motion.div>
+        </div>
         
         {/* z-based CI for comparison */}
         {showBoth && (
-          <motion.div
+          <div
             className="bg-gradient-to-br from-blue-900/20 to-neutral-800 
                        rounded-xl p-6 border border-blue-500/30"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
           >
             <h5 className="font-semibold text-blue-400 mb-4">
               σ Known (z-distribution)
@@ -919,16 +868,13 @@ const InteractiveCIBuilder = () => {
                 <p>Margin of error: {zCI.margin.toFixed(3)}</p>
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
       </div>
       
       {/* Key Insight */}
-      <motion.div
+      <div
         className="mt-6 p-4 bg-yellow-900/20 rounded-lg border border-yellow-500/30"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
       >
         <p className="text-sm text-yellow-400">
           <strong>Key Insight:</strong> The t-based interval is always wider than 
@@ -936,7 +882,7 @@ const InteractiveCIBuilder = () => {
           of estimating σ with s. This difference is most pronounced for small samples 
           (n &lt; 30).
         </p>
-      </motion.div>
+      </div>
     </VisualizationSection>
   );
 };
@@ -1561,17 +1507,14 @@ const MathematicalFoundation = React.memo(function MathematicalFoundation({ onIn
               <span dangerouslySetInnerHTML={{ __html: `\\[T = \\frac{\\bar{X} - \\mu}{S/\\sqrt{n}} \\sim t(n-1)\\]` }} />
             </div>
             
-            <motion.div
+            <div
               className="mt-4 p-3 bg-purple-900/30 rounded-lg border border-purple-500/50"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
             >
               <p className="text-purple-300">
                 <strong>Key Insight:</strong> The extra uncertainty from estimating σ with s 
                 changes the distribution from normal to t with n-1 degrees of freedom.
               </p>
-            </motion.div>
+            </div>
           </div>
         </div>
         
@@ -1585,14 +1528,10 @@ const MathematicalFoundation = React.memo(function MathematicalFoundation({ onIn
           {showDerivation ? 'Hide' : 'Show'} Mathematical Derivation →
         </button>
         
-        <AnimatePresence>
-          {showDerivation && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="bg-neutral-800/50 rounded-lg p-4 space-y-3"
-            >
+        {showDerivation && (
+          <div
+            className="bg-neutral-800/50 rounded-lg p-4 space-y-3"
+          >
               <h5 className="font-semibold text-neutral-300">The Student's t-Distribution Derivation</h5>
               
               <div className="space-y-2 text-sm">
@@ -1616,9 +1555,8 @@ const MathematicalFoundation = React.memo(function MathematicalFoundation({ onIn
                   defines the t-distribution!
                 </p>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+          </div>
+        )}
       </div>
     </VisualizationSection>
   );
@@ -1767,10 +1705,8 @@ const StepByStepGuide = React.memo(function StepByStepGuide({ onInsight }) {
         </div>
         
         {/* Current Step */}
-        <motion.div
+        <div
           key={currentStep}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
           className="bg-neutral-800 rounded-lg p-6"
         >
           <h4 className="font-semibold text-white mb-3">{steps[currentStep].title}</h4>
@@ -1800,9 +1736,7 @@ const StepByStepGuide = React.memo(function StepByStepGuide({ onInsight }) {
             </div>
             
             {showFeedback && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+              <div
                 className={`p-3 rounded ${
                   userAnswer === steps[currentStep].answer
                     ? 'bg-emerald-900/30 border border-emerald-500/50'
@@ -1814,15 +1748,13 @@ const StepByStepGuide = React.memo(function StepByStepGuide({ onInsight }) {
                 ) : (
                   <p className="text-red-400">✗ Not quite. Try again!</p>
                 )}
-              </motion.div>
+              </div>
             )}
           </div>
-        </motion.div>
+        </div>
         
         {currentStep === steps.length - 1 && userAnswer === steps[currentStep].answer && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+          <div
             className="bg-emerald-900/20 rounded-lg p-4 border border-emerald-500/50"
           >
             <p className="text-emerald-400 font-semibold">
@@ -1832,7 +1764,7 @@ const StepByStepGuide = React.memo(function StepByStepGuide({ onInsight }) {
               We are 95% confident that the true mean diameter is between {ciLower.toFixed(3)} mm 
               and {ciUpper.toFixed(3)} mm.
             </p>
-          </motion.div>
+          </div>
         )}
       </div>
     </VisualizationSection>
@@ -1943,10 +1875,8 @@ const PracticeProblems = React.memo(function PracticeProblems({ onInsight }) {
         </div>
         
         {/* Current Problem */}
-        <motion.div
+        <div
           key={currentProblem}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
           className="bg-gradient-to-br from-blue-900/20 to-neutral-800 rounded-xl p-6 border border-blue-500/30"
         >
           <h4 className="font-semibold text-blue-400 mb-3">{problems[currentProblem].title}</h4>
@@ -1965,17 +1895,13 @@ const PracticeProblems = React.memo(function PracticeProblems({ onInsight }) {
           >
             {showSolution ? 'Hide' : 'Show'} Solution
           </button>
-        </motion.div>
+        </div>
         
         {/* Solution */}
-        <AnimatePresence>
-          {showSolution && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="bg-neutral-800/50 rounded-lg p-6 space-y-3"
-            >
+        {showSolution && (
+          <div
+            className="bg-neutral-800/50 rounded-lg p-6 space-y-3"
+          >
               <h5 className="font-semibold text-emerald-400">Solution:</h5>
               
               <div className="grid grid-cols-2 gap-4 text-sm">
@@ -2010,9 +1936,8 @@ const PracticeProblems = React.memo(function PracticeProblems({ onInsight }) {
                   <strong>Interpretation:</strong> {problems[currentProblem].solution.interpretation}
                 </p>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+          </div>
+        )}
       </div>
     </VisualizationSection>
   );
@@ -2070,12 +1995,9 @@ const CommonMistakes = () => {
       
       <div ref={contentRef} className="space-y-3">
         {mistakes.map((mistake, idx) => (
-          <motion.div
+          <div
             key={idx}
             className="bg-neutral-800 rounded-lg overflow-hidden"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.1 }}
           >
             <button
               onClick={() => setExpandedMistake(expandedMistake === idx ? null : idx)}
@@ -2094,15 +2016,11 @@ const CommonMistakes = () => {
               />
             </button>
             
-            <AnimatePresence>
-              {expandedMistake === idx && (
-                <motion.div
-                  initial={{ height: 0 }}
-                  animate={{ height: 'auto' }}
-                  exit={{ height: 0 }}
-                  className="overflow-hidden"
-                >
-                  <div className="p-4 pt-0 space-y-2 text-sm">
+            {expandedMistake === idx && (
+              <div
+                className="overflow-hidden"
+              >
+                <div className="p-4 pt-0 space-y-2 text-sm">
                     <div className="flex items-start gap-2">
                       <AlertTriangle className="w-4 h-4 text-yellow-400 mt-0.5" />
                       <div>
@@ -2122,11 +2040,10 @@ const CommonMistakes = () => {
                     <div className="bg-neutral-900 rounded p-3 font-mono text-xs">
                       {mistake.example}
                     </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
+                </div>
+              </div>
+            )}
+          </div>
         ))}
       </div>
     </VisualizationSection>
@@ -2321,19 +2238,14 @@ export default function ConfidenceIntervalUnknownVariance() {
         onNavigate={setCurrentSection}
       />
       
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentSection}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-        >
-          <SectionContent
-            section={TDistributionJourney[currentSection]}
-            onInsight={handleInsight}
-          />
-        </motion.div>
-      </AnimatePresence>
+      <div
+        key={currentSection}
+      >
+        <SectionContent
+          section={TDistributionJourney[currentSection]}
+          onInsight={handleInsight}
+        />
+      </div>
       
       <SummaryComparison />
       <CommonMistakes />

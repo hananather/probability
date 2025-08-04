@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import * as d3 from "@/utils/d3-utils";
-import { motion } from "framer-motion";
 import { 
   VisualizationContainer, 
   VisualizationSection,
@@ -94,7 +93,7 @@ const FormulaSection = React.memo(function FormulaSection() {
   }, []);
   
   return (
-    <motion.div 
+    <div 
       className="bg-gradient-to-r from-gray-900/20 to-gray-800/20 rounded-lg p-4 my-4 border border-gray-700/30"
       whileHover={{ scale: 1.01 }}
     >
@@ -118,7 +117,7 @@ const FormulaSection = React.memo(function FormulaSection() {
           <span dangerouslySetInnerHTML={{ __html: `\\(\\sigma/\\sqrt{n}\\)` }} /> = standard error
         </p>
       </div>
-    </motion.div>
+    </div>
   );
 });
 
@@ -142,7 +141,7 @@ const CIIntroduction = React.memo(function CIIntroduction({ mode, onModeChange, 
   }, [mode, unlockedModes]); // Add dependencies that affect rendering
   
   return (
-    <motion.div 
+    <div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 1.5 }}
@@ -158,7 +157,7 @@ const CIIntroduction = React.memo(function CIIntroduction({ mode, onModeChange, 
             const color = MODE_COLORS[value];
             
             return (
-              <motion.button
+              <button
                 key={key}
                 onClick={() => isUnlocked && onModeChange(value)}
                 disabled={!isUnlocked}
@@ -189,13 +188,13 @@ const CIIntroduction = React.memo(function CIIntroduction({ mode, onModeChange, 
                   {value === LEARNING_MODES.EXPLORATION && "Explore parameter effects"}
                   {value === LEARNING_MODES.PRACTICE && "Practice exam-style problems"}
                 </p>
-              </motion.button>
+              </button>
             );
           })}
         </div>
       </VisualizationSection>
       
-      <motion.div 
+      <div 
         ref={contentRef} 
         className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 mt-4"
         initial={{ opacity: 0 }}
@@ -217,8 +216,8 @@ const CIIntroduction = React.memo(function CIIntroduction({ mode, onModeChange, 
             Progress through the learning modes to master confidence interval construction.
           </p>
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 });
 
@@ -430,7 +429,7 @@ const EmpiricalRuleExplorer = React.memo(({ isActive, onComplete }) => {
   if (!isActive) return null;
   
   return (
-    <motion.div
+    <div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
@@ -444,7 +443,7 @@ const EmpiricalRuleExplorer = React.memo(({ isActive, onComplete }) => {
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
           {stages.map((s, i) => (
-            <motion.div
+            <div
               key={i}
               className={`rounded-lg p-4 border-2 transition-all ${
                 i === stage 
@@ -465,16 +464,16 @@ const EmpiricalRuleExplorer = React.memo(({ isActive, onComplete }) => {
               </h4>
               <p className="text-sm text-gray-400">z = ±{s.z}</p>
               {i <= stage && (
-                <motion.p 
+                <p 
                   className="text-xs mt-2"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.5 }}
                 >
                   ME = {(s.z * standardError).toFixed(2)}
-                </motion.p>
+                </p>
               )}
-            </motion.div>
+            </div>
           ))}
         </div>
         
@@ -482,7 +481,7 @@ const EmpiricalRuleExplorer = React.memo(({ isActive, onComplete }) => {
           <svg ref={svgRef} width="100%" height="350" viewBox="0 0 600 350" />
         </GraphContainer>
         
-        <motion.div 
+        <div 
           className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-4 mb-4 border border-gray-700/50"
           whileHover={{ scale: 1.01 }}
         >
@@ -501,7 +500,7 @@ const EmpiricalRuleExplorer = React.memo(({ isActive, onComplete }) => {
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
         
         <ControlGroup>
           <div className="flex items-center gap-4">
@@ -520,7 +519,7 @@ const EmpiricalRuleExplorer = React.memo(({ isActive, onComplete }) => {
             </div>
             
             {stage < 2 && (
-              <motion.button
+              <button
                 onClick={unlockNextStage}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -528,7 +527,7 @@ const EmpiricalRuleExplorer = React.memo(({ isActive, onComplete }) => {
               >
                 <ChevronRight size={16} />
                 Unlock {stages[stage + 1].level}% Level
-              </motion.button>
+              </button>
             )}
           </div>
         </ControlGroup>
@@ -537,7 +536,7 @@ const EmpiricalRuleExplorer = React.memo(({ isActive, onComplete }) => {
           <div className="mt-4 space-y-2">
             <h4 className="font-semibold text-gray-300">Discoveries</h4>
             {discoveries.map((discovery, i) => (
-              <motion.div
+              <div
                 key={i}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -545,12 +544,12 @@ const EmpiricalRuleExplorer = React.memo(({ isActive, onComplete }) => {
               >
                 <Sparkles className="w-4 h-4 text-emerald-400" />
                 {discovery}
-              </motion.div>
+              </div>
             ))}
           </div>
         )}
       </VisualizationSection>
-    </motion.div>
+    </div>
   );
 }, (prevProps, nextProps) => {
   // Only re-render if isActive changes
@@ -752,7 +751,7 @@ const CriticalValuesExplorer = React.memo(({ isActive, onComplete }) => {
   if (!isActive) return null;
   
   return (
-    <motion.div
+    <div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
@@ -769,7 +768,7 @@ const CriticalValuesExplorer = React.memo(({ isActive, onComplete }) => {
         </GraphContainer>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
-          <motion.div 
+          <div 
             className="bg-gradient-to-br from-purple-900/20 to-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-purple-700/30"
             whileHover={{ scale: 1.02 }}
           >
@@ -782,26 +781,26 @@ const CriticalValuesExplorer = React.memo(({ isActive, onComplete }) => {
                 P(-{criticalValue.toFixed(3)} &lt; Z &lt; {criticalValue.toFixed(3)}) = {confidence}%
               </p>
             </div>
-          </motion.div>
+          </div>
           
-          <motion.div 
+          <div 
             className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50"
             whileHover={{ scale: 1.02 }}
           >
             <h4 className="font-semibold text-gray-300 mb-2">Common Critical Values</h4>
             <div className="space-y-1 text-sm">
               {commonLevels.map(({ level, z }) => (
-                <motion.div 
+                <div 
                   key={level} 
                   className="flex justify-between items-center p-1 rounded"
                   whileHover={{ backgroundColor: 'rgba(139, 92, 246, 0.1)' }}
                 >
                   <span>{level}%:</span>
                   <span className="font-mono text-purple-400">±{z}</span>
-                </motion.div>
+                </div>
               ))}
             </div>
-          </motion.div>
+          </div>
         </div>
         
         <ControlGroup>
@@ -826,7 +825,7 @@ const CriticalValuesExplorer = React.memo(({ isActive, onComplete }) => {
             
             <div className="flex gap-2">
               {[90, 95, 99].map(level => (
-                <motion.button
+                <button
                   key={level}
                   onClick={() => {
                     setConfidence(level);
@@ -841,7 +840,7 @@ const CriticalValuesExplorer = React.memo(({ isActive, onComplete }) => {
                   }`}
                 >
                   {level}%
-                </motion.button>
+                </button>
               ))}
             </div>
             
@@ -857,7 +856,7 @@ const CriticalValuesExplorer = React.memo(({ isActive, onComplete }) => {
           </div>
         </ControlGroup>
       </VisualizationSection>
-    </motion.div>
+    </div>
   );
 }, (prevProps, nextProps) => {
   // Only re-render if isActive changes
@@ -957,7 +956,7 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
   if (!isActive) return null;
   
   return (
-    <motion.div
+    <div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
@@ -971,7 +970,7 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
         
         <div ref={contentRef} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="space-y-4">
-            <motion.div 
+            <div 
               className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50"
               whileHover={{ scale: 1.01 }}
             >
@@ -1035,9 +1034,9 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
                   />
                 </div>
               </div>
-            </motion.div>
+            </div>
             
-            <motion.div 
+            <div 
               className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-xl p-4 border border-blue-700/30"
               whileHover={{ scale: 1.01 }}
             >
@@ -1062,11 +1061,11 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
                   Example 3: n=25, σ=5, x̄=19.93
                 </button>
               </div>
-            </motion.div>
+            </div>
           </div>
           
           <div className="space-y-4">
-            <motion.div 
+            <div 
               className="bg-gradient-to-br from-emerald-900/20 to-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-emerald-700/30"
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
@@ -1083,9 +1082,9 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
                 marginOfError={marginOfError}
                 alpha={alpha}
               />
-            </motion.div>
+            </div>
             
-            <motion.div 
+            <div 
               className="bg-gradient-to-br from-purple-900/30 to-pink-900/20 rounded-xl p-4 border border-purple-700/50"
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -1098,11 +1097,11 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
               <p className="text-sm text-gray-400 text-center mt-2">
                 We are {confidence}% confident that μ lies in this interval
               </p>
-            </motion.div>
+            </div>
           </div>
         </div>
       </VisualizationSection>
-    </motion.div>
+    </div>
   );
 }, (prevProps, nextProps) => {
   // Only re-render if isActive changes
@@ -1275,7 +1274,7 @@ const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActi
   if (!isActive) return null;
   
   return (
-    <motion.div
+    <div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
@@ -1289,7 +1288,7 @@ const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActi
         
         <div className="flex gap-2 mb-4 flex-wrap">
           {problems.map((p, i) => (
-            <motion.button
+            <button
               key={p.id}
               onClick={() => {
                 setCurrentProblem(i);
@@ -1307,12 +1306,12 @@ const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActi
               }`}
             >
               Problem {p.id} ({p.difficulty})
-            </motion.button>
+            </button>
           ))}
         </div>
         
         <div ref={contentRef} className="space-y-4">
-          <motion.div 
+          <div 
             className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50"
             key={currentProblem}
             initial={{ opacity: 0, x: 20 }}
@@ -1352,14 +1351,14 @@ const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActi
                   onChange={(e) => setUserAnswer({ ...userAnswer, upper: e.target.value })}
                   className="px-3 py-1 bg-gray-800 rounded border border-gray-600 text-white w-32"
                 />
-                <motion.button
+                <button
                   onClick={checkAnswer}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="px-4 py-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg"
                 >
                   Check
-                </motion.button>
+                </button>
               </div>
             )}
             
@@ -1373,19 +1372,19 @@ const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActi
                   onChange={(e) => setUserAnswer({ ...userAnswer, lower: e.target.value })}
                   className="px-3 py-1 bg-gray-800 rounded border border-gray-600 text-white w-32"
                 />
-                <motion.button
+                <button
                   onClick={checkAnswer}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="px-4 py-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg"
                 >
                   Check
-                </motion.button>
+                </button>
               </div>
             )}
             
             {feedback && (
-              <motion.p
+              <p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className={`mt-3 text-sm ${
@@ -1393,33 +1392,33 @@ const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActi
                 }`}
               >
                 {feedback}
-              </motion.p>
+              </p>
             )}
-          </motion.div>
+          </div>
           
           <div className="flex gap-3">
-            <motion.button
+            <button
               onClick={() => setShowHint(!showHint)}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg"
             >
               {showHint ? 'Hide Hints' : 'Show Hints'}
-            </motion.button>
+            </button>
             
-            <motion.button
+            <button
               onClick={() => setShowSolution(!showSolution)}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg"
             >
               {showSolution ? 'Hide Solution' : 'Show Solution'}
-            </motion.button>
+            </button>
           </div>
           
-          <AnimatePresence>
+          <div>
             {showHint && (
-              <motion.div
+              <div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
@@ -1431,13 +1430,13 @@ const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActi
                     <li key={i}>• {hint}</li>
                   ))}
                 </ul>
-              </motion.div>
+              </div>
             )}
-          </AnimatePresence>
+          </div>
           
-          <AnimatePresence>
+          <div>
             {showSolution && (
-              <motion.div
+              <div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
@@ -1457,12 +1456,12 @@ const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActi
                     Answer: {problem.solution.answer}
                   </p>
                 )}
-              </motion.div>
+              </div>
             )}
-          </AnimatePresence>
+          </div>
         </div>
       </VisualizationSection>
-    </motion.div>
+    </div>
   );
 });
 
@@ -1599,7 +1598,7 @@ const TheoreticalFoundationsModule = React.memo(function TheoreticalFoundationsM
   if (!isActive) return null;
   
   return (
-    <motion.div
+    <div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
@@ -1615,7 +1614,7 @@ const TheoreticalFoundationsModule = React.memo(function TheoreticalFoundationsM
           <p className="text-sm text-gray-400 mb-3">Select a topic:</p>
           <div className="flex flex-wrap gap-2">
             {Object.entries(majorExamples).map(([key, value]) => (
-              <motion.button
+              <button
                 key={key}
                 onClick={() => setSelectedTopic(key)}
                 whileHover={{ scale: 1.05 }}
@@ -1628,14 +1627,14 @@ const TheoreticalFoundationsModule = React.memo(function TheoreticalFoundationsM
               >
                 <span className="text-lg">{value.icon}</span>
                 <span className="text-sm font-medium">{value.title}</span>
-              </motion.button>
+              </button>
             ))}
           </div>
         </div>
         
         <div ref={contentRef} className="space-y-4">
-          <AnimatePresence mode="wait">
-            <motion.div
+          <div>
+            <div
               key={animationKey}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -1643,7 +1642,7 @@ const TheoreticalFoundationsModule = React.memo(function TheoreticalFoundationsM
               transition={{ duration: 1.5 }}
             >
               {currentExamples.examples.map((example, i) => (
-                <motion.div
+                <div
                   key={i}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -1675,12 +1674,12 @@ const TheoreticalFoundationsModule = React.memo(function TheoreticalFoundationsM
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ))}
-            </motion.div>
-          </AnimatePresence>
+            </div>
+          </div>
           
-          <motion.div 
+          <div 
             className="bg-gradient-to-r from-amber-900/20 to-orange-900/20 rounded-xl p-4 border border-amber-700/50"
             whileHover={{ scale: 1.01 }}
           >
@@ -1689,10 +1688,10 @@ const TheoreticalFoundationsModule = React.memo(function TheoreticalFoundationsM
               Confidence intervals provide a rigorous mathematical framework for quantifying uncertainty,
               forming the foundation of modern statistical inference and scientific reasoning.
             </p>
-          </motion.div>
+          </div>
         </div>
       </VisualizationSection>
-    </motion.div>
+    </div>
   );
 });
 
@@ -1758,7 +1757,7 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
   if (!isActive) return null;
   
   return (
-    <motion.div
+    <div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
@@ -1771,7 +1770,7 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
         </h3>
         
         <div className="flex flex-wrap gap-2 mb-4">
-          <motion.button
+          <button
             onClick={() => setMode('mistakes')}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -1782,9 +1781,9 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
             }`}
           >
             🚨 Common Mistakes
-          </motion.button>
+          </button>
           
-          <motion.button
+          <button
             onClick={() => setMode('speed')}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -1795,9 +1794,9 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
             }`}
           >
             ⚡ 10-Min Summary
-          </motion.button>
+          </button>
           
-          <motion.button
+          <button
             onClick={() => setMode('formula')}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -1808,9 +1807,9 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
             }`}
           >
             📝 Formula Card
-          </motion.button>
+          </button>
           
-          <motion.button
+          <button
             onClick={() => {
               setMode('ready');
               checkReadiness();
@@ -1824,12 +1823,12 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
             }`}
           >
             ✅ Am I Ready?
-          </motion.button>
+          </button>
         </div>
         
         <div ref={contentRef}>
           {mode === 'mistakes' && (
-            <motion.div
+            <div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="space-y-4"
@@ -1867,7 +1866,7 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
                     </div>
                     
                     {showAnswer && (
-                      <motion.div
+                      <div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         className="space-y-2"
@@ -1886,27 +1885,27 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
                           <p className="text-sm text-amber-400">🎯 Remember:</p>
                           <p className="text-white font-semibold">{commonMistakes[currentMistake].tip}</p>
                         </div>
-                      </motion.div>
+                      </div>
                     )}
                   </div>
                   
                   {!showAnswer && (
-                    <motion.button
+                    <button
                       onClick={() => setShowAnswer(true)}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       className="w-full py-2 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-lg"
                     >
                       Show Correct Answer
-                    </motion.button>
+                    </button>
                   )}
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
           
           {mode === 'speed' && (
-            <motion.div
+            <div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="bg-gradient-to-br from-blue-900/20 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-blue-700/30"
@@ -1974,11 +1973,11 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
                   ⏱️ Total: 10 minutes to understand 90% of what you need!
                 </p>
               </div>
-            </motion.div>
+            </div>
           )}
           
           {mode === 'formula' && (
-            <motion.div
+            <div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="bg-gradient-to-br from-purple-900/20 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-700/30"
@@ -2045,11 +2044,11 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
           
           {mode === 'ready' && readinessScore && (
-            <motion.div
+            <div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="bg-gradient-to-br from-emerald-900/20 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-emerald-700/30"
@@ -2069,7 +2068,7 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
                     <div key={category} className="flex items-center gap-3">
                       <span className="w-32 text-sm capitalize">{category}:</span>
                       <div className="flex-1 bg-gray-700 rounded-full h-4 overflow-hidden">
-                        <motion.div
+                        <div
                           initial={{ width: 0 }}
                           animate={{ width: `${score * 100}%` }}
                           transition={{ delay: 0.5, duration: 1.5 }}
@@ -2108,11 +2107,11 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
                   )}
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
         </div>
       </VisualizationSection>
-    </motion.div>
+    </div>
   );
 });
 
@@ -2241,7 +2240,7 @@ const RealWorldInterpretationModule = React.memo(function RealWorldInterpretatio
   if (!isActive) return null;
   
   return (
-    <motion.div
+    <div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
@@ -2255,7 +2254,7 @@ const RealWorldInterpretationModule = React.memo(function RealWorldInterpretatio
         
         <div className="flex gap-2 mb-4">
           {scenarios.map((s, i) => (
-            <motion.button
+            <button
               key={s.id}
               onClick={() => {
                 setScenario(i);
@@ -2271,12 +2270,12 @@ const RealWorldInterpretationModule = React.memo(function RealWorldInterpretatio
               }`}
             >
               {s.title}
-            </motion.button>
+            </button>
           ))}
         </div>
         
         <div ref={contentRef} className="space-y-4">
-          <motion.div 
+          <div 
             className="bg-gradient-to-br from-emerald-900/20 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-emerald-700/30"
             key={scenario}
             initial={{ opacity: 0, x: -20 }}
@@ -2293,7 +2292,7 @@ const RealWorldInterpretationModule = React.memo(function RealWorldInterpretatio
             
             <div className="space-y-2">
               {currentScenario.options.map((option, i) => (
-                <motion.button
+                <button
                   key={i}
                   onClick={() => handleSelection(i)}
                   whileHover={{ scale: 1.01 }}
@@ -2310,14 +2309,14 @@ const RealWorldInterpretationModule = React.memo(function RealWorldInterpretatio
                     <span className="text-gray-400">{String.fromCharCode(65 + i)}.</span>
                     <span className="text-gray-300">{option.text}</span>
                   </div>
-                </motion.button>
+                </button>
               ))}
             </div>
-          </motion.div>
+          </div>
           
-          <AnimatePresence>
+          <div>
             {showFeedback && selectedInterpretation !== null && (
-              <motion.div
+              <div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
@@ -2341,11 +2340,11 @@ const RealWorldInterpretationModule = React.memo(function RealWorldInterpretatio
                   <p className="text-sm text-blue-400 font-semibold mb-1">Key Insight:</p>
                   <p className="text-sm text-gray-300">{currentScenario.insight}</p>
                 </div>
-              </motion.div>
+              </div>
             )}
-          </AnimatePresence>
+          </div>
           
-          <motion.div 
+          <div 
             className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50"
             whileHover={{ scale: 1.01 }}
           >
@@ -2356,10 +2355,10 @@ const RealWorldInterpretationModule = React.memo(function RealWorldInterpretatio
               <li>• Wider intervals give more confidence but less precision</li>
               <li>• Context matters - consider practical significance, not just statistical</li>
             </ul>
-          </motion.div>
+          </div>
         </div>
       </VisualizationSection>
-    </motion.div>
+    </div>
   );
 });
 
@@ -2413,7 +2412,7 @@ const ParameterEffectsExplorer = React.memo(({ isActive }) => {
   if (!isActive) return null;
   
   return (
-    <motion.div
+    <div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
@@ -2427,7 +2426,7 @@ const ParameterEffectsExplorer = React.memo(({ isActive }) => {
         
         <div className="flex gap-2 mb-4">
           {['n', 'sigma', 'confidence'].map(param => (
-            <motion.button
+            <button
               key={param}
               onClick={() => setComparison(param)}
               whileHover={{ scale: 1.05 }}
@@ -2439,7 +2438,7 @@ const ParameterEffectsExplorer = React.memo(({ isActive }) => {
               }`}
             >
               Compare {param === 'n' ? 'Sample Size' : param === 'sigma' ? 'Std Dev' : 'Confidence'}
-            </motion.button>
+            </button>
           ))}
         </div>
         
@@ -2459,7 +2458,7 @@ const ParameterEffectsExplorer = React.memo(({ isActive }) => {
                 const color = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b'][i];
                 
                 return (
-                  <motion.g 
+                  <g 
                     key={i}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -2484,7 +2483,7 @@ const ParameterEffectsExplorer = React.memo(({ isActive }) => {
                     <text x="360" y={y + 5} textAnchor="start" fill="#999" fontSize="10">
                       ±{comp.value.me.toFixed(2)}
                     </text>
-                  </motion.g>
+                  </g>
                 );
               })}
               
@@ -2505,7 +2504,7 @@ const ParameterEffectsExplorer = React.memo(({ isActive }) => {
           </GraphContainer>
           
           <div className="space-y-4">
-            <motion.div 
+            <div 
               className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50"
               whileHover={{ scale: 1.01 }}
             >
@@ -2533,9 +2532,9 @@ const ParameterEffectsExplorer = React.memo(({ isActive }) => {
                   </>
                 )}
               </div>
-            </motion.div>
+            </div>
             
-            <motion.div 
+            <div 
               className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-xl p-4 border border-blue-700/30"
               whileHover={{ scale: 1.01 }}
             >
@@ -2546,7 +2545,7 @@ const ParameterEffectsExplorer = React.memo(({ isActive }) => {
                     <span className="text-sm">{comp.label}:</span>
                     <div className="flex items-center gap-2">
                       <div className="w-32 bg-gray-700 rounded-full h-2">
-                        <motion.div 
+                        <div 
                           className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
                           initial={{ width: 0 }}
                           animate={{ width: `${(comp.value.width / 20) * 100}%` }}
@@ -2560,11 +2559,11 @@ const ParameterEffectsExplorer = React.memo(({ isActive }) => {
                   </div>
                 ))}
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </VisualizationSection>
-    </motion.div>
+    </div>
   );
 }, (prevProps, nextProps) => {
   // Only re-render if isActive changes
@@ -2643,7 +2642,7 @@ export default function ConfidenceIntervalKnownVariance() {
         <RealWorldInterpretationModule isActive={mode === LEARNING_MODES.PRACTICE} />
       </div>
       
-      <motion.div
+      <div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
@@ -2651,7 +2650,7 @@ export default function ConfidenceIntervalKnownVariance() {
         <VisualizationSection>
           <h3 className="text-xl font-bold text-white mb-4">Key Takeaways</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <motion.div 
+            <div 
               className="bg-gradient-to-br from-emerald-900/20 to-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-emerald-700/30"
               whileHover={{ scale: 1.02 }}
             >
@@ -2662,9 +2661,9 @@ export default function ConfidenceIntervalKnownVariance() {
                 <li>• 68-95-99.7 rule for quick estimates</li>
                 <li>• Critical values determine interval width</li>
               </ul>
-            </motion.div>
+            </div>
             
-            <motion.div 
+            <div 
               className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-xl p-4 border border-blue-700/30"
               whileHover={{ scale: 1.02 }}
             >
@@ -2675,11 +2674,11 @@ export default function ConfidenceIntervalKnownVariance() {
                 <li>• Wider intervals = more confidence</li>
                 <li>• True parameter is fixed, not random</li>
               </ul>
-            </motion.div>
+            </div>
           </div>
           
           {completedSections.length === 4 && (
-            <motion.div 
+            <div 
               className="mt-4 bg-gradient-to-r from-emerald-900/30 to-blue-900/30 rounded-xl p-4 border border-emerald-700/50"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -2691,13 +2690,13 @@ export default function ConfidenceIntervalKnownVariance() {
               <p className="text-sm text-gray-300 mt-1">
                 You've mastered confidence interval construction with known variance.
               </p>
-            </motion.div>
+            </div>
           )}
         </VisualizationSection>
         
         {/* Section Complete - Standardized Component */}
         <SectionComplete chapter={5} />
-      </motion.div>
+      </div>
     </VisualizationContainer>
   );
 }

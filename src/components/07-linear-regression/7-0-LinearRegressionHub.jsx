@@ -1,10 +1,11 @@
 "use client";
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { useRouter } from 'next/navigation';
 import ChapterHub from "../shared/ChapterHub";
 import { motion } from "framer-motion";
 import { Card } from "../ui/card";
 import { createColorScheme } from "@/lib/design-system";
+import { useMathJax } from "../../hooks/useMathJax";
 import { 
   TrendingUp, Calculator, Target, BarChart3, 
   Sigma, Activity, ChartLine, GitBranch
@@ -13,30 +14,19 @@ import {
 // Get consistent color scheme for regression
 const colors = createColorScheme('regression');
 
-// Key Concepts Card
+/**
+ * Key Concepts Card component for Chapter 7
+ * Displays fundamental linear regression concepts with LaTeX notation
+ */
 const KeyConceptsCard = React.memo(() => {
-  const contentRef = useRef(null);
   const concepts = [
-    { term: "Correlation", definition: "Strength of linear relationship", latex: "\\rho" },
-    { term: "Regression Line", definition: "Best prediction equation", latex: "\\hat{y} = b_0 + b_1x" },
-    { term: "R-squared", definition: "Variation explained by model", latex: "R^2" },
-    { term: "Standard Error", definition: "Typical prediction error", latex: "s_e" },
+    { term: "Correlation", definition: "Strength of linear relationship", latex: `\\rho` },
+    { term: "Regression Line", definition: "Best prediction equation", latex: `\\hat{y} = b_0 + b_1x` },
+    { term: "R-squared", definition: "Variation explained by model", latex: `R^2` },
+    { term: "Standard Error", definition: "Typical prediction error", latex: `s_e` },
   ];
-
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax(); // Try immediately
-    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
-    return () => clearTimeout(timeoutId);
-  }, []);
+  
+  const contentRef = useMathJax([concepts]);
 
   return (
     <Card ref={contentRef} className="mb-8 p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
@@ -48,14 +38,14 @@ const KeyConceptsCard = React.memo(() => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.1 }}
-            className="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50"
+            className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50"
           >
-            <div className="flex items-start justify-between">
+            <div className="flex flex-col space-y-2">
               <div>
                 <h4 className="font-semibold text-white">{concept.term}</h4>
-                <p className="text-sm text-gray-400 mt-1">{concept.definition}</p>
+                <p className="text-sm text-gray-400">{concept.definition}</p>
               </div>
-              <div className="text-2xl font-mono text-cyan-400">
+              <div className="text-lg font-mono text-cyan-400 overflow-x-auto">
                 <span dangerouslySetInnerHTML={{ __html: `\\(${concept.latex}\\)` }} />
               </div>
             </div>
@@ -190,6 +180,20 @@ const CHAPTER_7_SECTIONS = [
   }
 ];
 
+/**
+ * Linear Regression Hub Component
+ * 
+ * Main hub page for Chapter 7: Linear Regression and Correlation.
+ * Displays chapter overview, key concepts, and navigation to all sections.
+ * 
+ * Features:
+ * - Interactive key concepts with LaTeX formulas
+ * - Comprehensive section navigation
+ * - Progress tracking
+ * - Consistent styling with chapter theme
+ * 
+ * @returns {JSX.Element} The complete Chapter 7 hub interface
+ */
 export default function LinearRegressionHub() {
   const router = useRouter();
 

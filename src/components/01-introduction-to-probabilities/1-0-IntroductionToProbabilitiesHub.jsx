@@ -14,7 +14,11 @@ import {
 // Get consistent color scheme for probability/introduction
 const colors = createColorScheme('probability');
 
-// Key Concepts Card
+/**
+ * Key Concepts Card component for displaying fundamental probability concepts with LaTeX formulas
+ * @component
+ * @returns {React.JSX.Element} Rendered key concepts card
+ */
 const KeyConceptsCard = React.memo(() => {
   const concepts = [
     { term: "Sample Space", definition: "All possible outcomes", latex: `S = \\{\\omega_1, \\omega_2, ..., \\omega_n\\}` },
@@ -52,6 +56,8 @@ const KeyConceptsCard = React.memo(() => {
     </Card>
   );
 });
+
+KeyConceptsCard.displayName = 'KeyConceptsCard';
 
 // All Chapter 1 sections
 const CHAPTER_1_SECTIONS = [
@@ -278,6 +284,12 @@ const CHAPTER_1_SECTIONS = [
   }
 ];
 
+/**
+ * IntroductionToProbabilitiesHub - Main hub component for Chapter 1: Introduction to Probabilities
+ * Provides navigation to all sections with progress tracking and interactive elements
+ * @component
+ * @returns {React.JSX.Element} Rendered introduction to probabilities hub page
+ */
 export default function IntroductionToProbabilitiesHub() {
   const router = useRouter();
 

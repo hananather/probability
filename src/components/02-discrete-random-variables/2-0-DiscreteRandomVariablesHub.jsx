@@ -1,42 +1,32 @@
 "use client";
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { useRouter } from 'next/navigation';
 import ChapterHub from "../shared/ChapterHub";
 import { motion } from "framer-motion";
 import { Card } from "../ui/card";
 import { createColorScheme } from "@/lib/design-system";
+import { useMathJax } from "../../hooks/useMathJax";
 import { 
   Shuffle, Calculator, Binary, Dices, 
   TrendingDown, Layers, Zap, BookOpen 
 } from 'lucide-react';
 
-// Get consistent color scheme for probability
+// Get consistent color scheme for discrete random variables
 const colors = createColorScheme('probability');
 
-// Key Concepts Card
+/**
+ * Key Concepts Card component for Chapter 2
+ * Displays fundamental concepts of discrete random variables with LaTeX formulas
+ */
 const KeyConceptsCard = React.memo(() => {
-  const contentRef = useRef(null);
   const concepts = [
     { term: "Random Variable", definition: "Maps outcomes to numbers", latex: "X: \\Omega \\to \\mathbb{R}" },
     { term: "PMF", definition: "Probability of each value", latex: "P(X = x)" },
     { term: "Expected Value", definition: "Long-run average", latex: "E[X] = \\sum x \\cdot P(X = x)" },
     { term: "Variance", definition: "Spread of distribution", latex: "\\text{Var}(X) = E[(X - \\mu)^2]" },
   ];
-
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax(); // Try immediately
-    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
-    return () => clearTimeout(timeoutId);
-  }, []);
+  
+  const contentRef = useMathJax([concepts]);
 
   return (
     <Card ref={contentRef} className="mb-8 p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
@@ -66,7 +56,7 @@ const KeyConceptsCard = React.memo(() => {
   );
 });
 
-// Chapter 2 specific configuration with navigation
+// All Chapter 2 sections
 const CHAPTER_2_SECTIONS = [
   {
     id: 'random-variables',
@@ -230,6 +220,11 @@ const CHAPTER_2_SECTIONS = [
   }
 ];
 
+/**
+ * Chapter 2 Hub Component - Discrete Random Variables
+ * Provides navigation and overview for all Chapter 2 sections
+ * @returns {JSX.Element} The complete chapter hub interface
+ */
 export default function DiscreteRandomVariablesHub() {
   const router = useRouter();
 

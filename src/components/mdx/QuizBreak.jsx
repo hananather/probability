@@ -91,8 +91,8 @@ function QuizQuestion({ question, options, correctIndex, explanation, onAnswer, 
                     {isSelected && !showFeedback && (
                       <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
                     )}
-                    {showAsCorrect && <CheckCircle className="w-3 h-3 text-white animate-bounce" />}
-                    {showAsIncorrect && <XCircle className="w-3 h-3 text-white animate-bounce" />}
+                    {showAsCorrect && <CheckCircle className="w-3 h-3 text-white" />}
+                    {showAsIncorrect && <XCircle className="w-3 h-3 text-white" />}
                   </div>
                   <span
                     className={`
@@ -135,13 +135,13 @@ function QuizQuestion({ question, options, correctIndex, explanation, onAnswer, 
             <>
               {isCorrect ? (
                 <div className="flex items-center gap-2 text-green-400 animate-pulse">
-                  <CheckCircle className="w-5 h-5 animate-bounce" />
+                  <CheckCircle className="w-5 h-5 " />
                   <span className="font-medium">Correct!</span>
                 </div>
               ) : (
                 <>
                   <div className="flex items-center gap-2 text-red-400 animate-pulse">
-                    <XCircle className="w-5 h-5 animate-bounce" />
+                    <XCircle className="w-5 h-5 " />
                     <span className="font-medium">Not quite right</span>
                   </div>
                   <Button
@@ -323,7 +323,7 @@ export function QuizBreak({
           {isMultipleMode && answeredCorrectly.has(currentQuestion) && !allQuestionsAnswered && (
             <div className="mt-4 flex items-center justify-between p-3 rounded-lg bg-green-500/10 border border-green-500/30 transition-all duration-500 ease-out animate-in slide-in-from-top-2">
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 animate-bounce" />
+                <CheckCircle className="w-4 h-4 " />
                 <span className="text-sm text-green-300">Great! You got this one right.</span>
               </div>
               {currentQuestion < allQuestions.length - 1 && (
@@ -348,7 +348,7 @@ export function QuizBreak({
           {!isMultipleMode && answeredCorrectly.has(0) && (
             <div className="mt-4 p-3 rounded-lg text-sm bg-green-500/10 border border-green-500/30 text-green-300 transition-all duration-500 ease-out animate-in slide-in-from-top-2">
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 animate-bounce" />
+                <CheckCircle className="w-4 h-4 " />
                 <span>Great job! You got it right. Let's continue to the next section.</span>
               </div>
             </div>
@@ -358,7 +358,7 @@ export function QuizBreak({
           {isMultipleMode && allQuestionsAnswered && (
             <div className="mt-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg transition-all duration-500 ease-out animate-in slide-in-from-top-2">
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 animate-bounce" />
+                <CheckCircle className="w-5 h-5 " />
                 <p className="text-sm text-green-400">
                   Excellent! You've completed all questions. Continue to the next section.
                 </p>

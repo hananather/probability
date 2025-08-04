@@ -1,15 +1,217 @@
-import React, { useEffect, useRef, useState } from 'react';
+"use client";
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion } from "framer-motion";
 import { Card } from "../ui/card";
 import * as d3 from "@/utils/d3-utils";
 import { hexbin as d3Hexbin } from 'd3-hexbin';
-import { VisualizationContainer } from '../ui/VisualizationContainer';
-import { MathematicalDiscoveries, useDiscoveries } from '../ui/MathematicalDiscoveries';
-import { tutorial_2_1_1 } from '@/tutorials/chapter2.jsx';
+import { 
+  VisualizationContainer, 
+  VisualizationSection,
+  ControlGroup
+} from '../ui/VisualizationContainer';
+import { Button } from '../ui/button';
+import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
+import { useMathJax } from '../../hooks/useMathJax';
+import { AnimatePresence } from 'framer-motion';
 
+// Import Gold Standard components
+import { SemanticGradientCard } from '../ui/patterns/SemanticGradientCard';
+import { InterpretationBox } from '../ui/patterns/InterpretationBox';
+import { StepByStepCalculation, CalculationStep, FormulaDisplay } from '../ui/patterns/StepByStepCalculation';
+
+// Use probability color scheme for random variables
+const colorScheme = createColorScheme('probability');
+
+// Constants - Original dimensions
+const WIDTH_GRID = 720;
+const HEIGHT_GRID = 560;
+const RADIUS = 22;
+const WIDTH_DIST = 320;
+const HEIGHT_DIST = 300;
+const PAD_DIST = 15;
+
+// Educational content focused on Random Variable definition
+const RandomVariableEducation = React.memo(() => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const contentRef = useRef(null);
+  
+  // Handle MathJax processing when content expands
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [isExpanded]); // Re-process when expanded state changes
+  
+  return (
+    <div ref={contentRef}>
+      <VisualizationSection title="What is a Random Variable?" divider>
+        <div className="space-y-4">
+          {/* Key Concept Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <SemanticGradientCard
+              title="The Definition"
+              description="A function that assigns numbers to outcomes"
+              formula={`\\[X: \\Omega \\to \\mathbb{R}\\]`}
+              note="Maps outcomes to real numbers"
+              theme="teal"
+            />
+            <SemanticGradientCard
+              title="Not Actually Random!"
+              description="Despite its name, it's a deterministic function"
+              formula={`\\[X(\\text{outcome}) = \\text{fixed number}\\]`}
+              note="The randomness comes from which outcome occurs, not from X"
+              theme="blue"
+            />
+          </div>
+          
+          {/* Common Misconception Alert */}
+          <InterpretationBox title="Common Misconception" theme="yellow">
+            <p className="font-semibold text-yellow-400">The name "random variable" is misleading!</p>
+            <p className="mt-2">A random variable is NOT:</p>
+            <ul className="mt-1 space-y-1 text-sm">
+              <li>• A variable that changes randomly</li>
+              <li>• A number that fluctuates</li>
+            </ul>
+            <p className="mt-2">It IS:</p>
+            <ul className="mt-1 space-y-1 text-sm text-green-400">
+              <li>• A fixed function that never changes</li>
+              <li>• A rule for assigning numbers to outcomes</li>
+            </ul>
+          </InterpretationBox>
+          
+          <button 
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="text-sm text-teal-400 hover:text-teal-300 transition-colors flex items-center gap-2"
+          >
+            {isExpanded ? "Show less ▲" : "Learn more about why we need numbers ▼"}
+          </button>
+          
+          {isExpanded && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              className="space-y-4 mt-4"
+            >
+              {/* Why Numbers? */}
+              <InterpretationBox title="Why Do We Need Numbers?" theme="purple">
+                <p className="font-semibold">To do mathematics with random outcomes!</p>
+                <div className="mt-3 space-y-3">
+                  <div>
+                    <p className="text-sm font-semibold text-purple-400">Without numbers:</p>
+                    <p className="text-sm mt-1">"What's the average of {heads, tails, heads}?" ❌</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-green-400">With numbers (X = # of heads):</p>
+                    <p className="text-sm mt-1">"What's the average of {1, 0, 1}?" → <span dangerouslySetInnerHTML={{ __html: `\\(\\frac{2}{3}\\)` }} /> ✅</p>
+                  </div>
+                </div>
+              </InterpretationBox>
+              
+              {/* Real-World Examples */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <InterpretationBox title="Example: Weather" theme="green">
+                  <p className="font-semibold">X = "Temperature tomorrow"</p>
+                  <ul className="mt-2 space-y-1 text-sm">
+                    <li>• X(sunny day) = 25°C</li>
+                    <li>• X(cloudy day) = 20°C</li>
+                    <li>• X(rainy day) = 15°C</li>
+                  </ul>
+                  <p className="mt-2 text-sm text-neutral-400">Now we can calculate expected temperature!</p>
+                </InterpretationBox>
+                
+                <InterpretationBox title="Example: Stock Market" theme="blue">
+                  <p className="font-semibold">X = "Daily return"</p>
+                  <ul className="mt-2 space-y-1 text-sm">
+                    <li>• X(good news) = +5%</li>
+                    <li>• X(no news) = 0%</li>
+                    <li>• X(bad news) = -3%</li>
+                  </ul>
+                  <p className="mt-2 text-sm text-neutral-400">Now we can analyze risk and return!</p>
+                </InterpretationBox>
+              </div>
+              
+              {/* Common Pitfalls */}
+              <InterpretationBox title="Common Pitfalls to Avoid" theme="red">
+                <div className="space-y-3">
+                  <div>
+                    <p className="font-semibold text-red-400">Pitfall 1: Confusing the function with its output</p>
+                    <p className="text-sm mt-1">X is the function, X(outcome) is a number</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-red-400">Pitfall 2: Thinking X changes</p>
+                    <p className="text-sm mt-1">X is fixed; only which outcome occurs is random</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-red-400">Pitfall 3: Forgetting X must be numerical</p>
+                    <p className="text-sm mt-1">Can't do math with "red" or "blue" - need numbers!</p>
+                  </div>
+                </div>
+              </InterpretationBox>
+            </motion.div>
+          )}
+        </div>
+      </VisualizationSection>
+
+      <VisualizationSection title="How to Build Your Random Variable" className="mt-6">
+        <StepByStepCalculation title="Three Simple Steps" theme="green">
+          <CalculationStep title="Step 1: Create Your Sample Space">
+            <p className="font-semibold">Click and drag to create regions (outcomes)</p>
+            <div className="mt-2 space-y-2">
+              <p className="text-sm">• Each colored region = one possible outcome</p>
+              <p className="text-sm">• Region size = probability (larger = more likely)</p>
+            </div>
+            <div className="mt-3 p-3 bg-green-900/30 border border-green-600/30 rounded">
+              <p className="text-sm font-semibold text-green-400">Think of it like:</p>
+              <p className="text-xs mt-1">Dividing a dartboard into colored sections</p>
+            </div>
+          </CalculationStep>
+          
+          <CalculationStep title="Step 2: Define Your Function X">
+            <p className="font-semibold">Assign a number to each region</p>
+            <FormulaDisplay formula={`X(\\text{region}) = \\text{your chosen value}`} />
+            <div className="mt-3 space-y-2">
+              <div className="p-2 bg-neutral-800 rounded">
+                <p className="text-sm font-semibold text-blue-400">Example assignments:</p>
+                <ul className="text-xs mt-1 space-y-0.5">
+                  <li>• Loss scenario: X(red) = -10</li>
+                  <li>• Break even: X(yellow) = 0</li>
+                  <li>• Profit scenario: X(green) = 20</li>
+                </ul>
+              </div>
+            </div>
+          </CalculationStep>
+          
+          <CalculationStep title="Step 3: Observe X in Action">
+            <p className="font-semibold">Click "Start Sampling" to see your function work</p>
+            <div className="mt-2 space-y-2">
+              <p className="text-sm">• Random points land in regions (random outcome)</p>
+              <p className="text-sm">• X converts each outcome to its assigned number</p>
+              <p className="text-sm">• Bar chart shows the distribution of values</p>
+            </div>
+            <div className="mt-3 p-3 bg-purple-900/30 border border-purple-600/30 rounded">
+              <p className="text-sm font-semibold text-purple-400">Key insight:</p>
+              <p className="text-xs mt-1">X doesn't change - it always maps the same region to the same number!</p>
+            </div>
+          </CalculationStep>
+        </StepByStepCalculation>
+      </VisualizationSection>
+    </div>
+  );
+});
+
+RandomVariableEducation.displayName = 'RandomVariableEducation';
+
+// Main component using original design with educational improvements
 const SpatialRandomVariable = () => {
-  const statsRef = useRef(null);
-  const distPanelRef = useRef(null);
   // Refs for D3 elements
   const svgGridRef = useRef(null);
   const svgDistRef = useRef(null);
@@ -17,17 +219,7 @@ const SpatialRandomVariable = () => {
   const samplingIntervalRef = useRef(null);
   const animationsRef = useRef(new Set());
   
-  // Add error boundary for debugging
-  useEffect(() => {
-    const handleError = (event) => {
-      console.error('D3 Error caught:', event.error);
-      console.error('Stack:', event.error?.stack);
-    };
-    window.addEventListener('error', handleError);
-    return () => window.removeEventListener('error', handleError);
-  }, []);
-  
-  // State
+  // State - using original color scheme
   const [availableColors] = useState([
     '#14b8a6', '#eab308', '#3b82f6', '#ef4444', '#8b5cf6', 
     '#10b981', '#f97316', '#ec4899', '#06b6d4', '#84cc16'
@@ -38,241 +230,119 @@ const SpatialRandomVariable = () => {
   const [legendItems, setLegendItems] = useState([]);
   const [isSampling, setIsSampling] = useState(false);
   
-  // Track values and total - Initialize with proper default values
+  // Track values and total
   const valuesRef = useRef({ 0: 0 });
   const totalRef = useRef(0);
   const [updateTrigger, setUpdateTrigger] = useState(0);
   const [drawnHexCount, setDrawnHexCount] = useState(0);
-  
-  // Mathematical discoveries tracking
-  const discoveryDefinitions = [
-    {
-      id: 'spatial-probability',
-      title: 'Spatial-Probability Bridge',
-      description: 'Larger regions have higher probability. Each hexagon contributes equally to the total probability.',
-      formula: 'P(X = x) = \\frac{\\text{Area}(x)}{\\text{Total Area}}',
-      category: 'concept'
-    },
-    {
-      id: 'expected-value',
-      title: 'Expected Value Discovery',
-      description: 'The expected value is the weighted average of outcomes, like finding the "center of mass" of probabilities.',
-      formula: 'E[X] = \\sum_{x} x \\times P(X = x)',
-      category: 'formula'
-    },
-    {
-      id: 'variance',
-      title: 'Variance as Spread',
-      description: 'Variance measures how spread out the values are from the expected value.',
-      formula: '\\text{Var}(X) = E[X^2] - (E[X])^2',
-      category: 'formula'
-    },
-    {
-      id: 'convergence',
-      title: 'Law of Large Numbers',
-      description: 'As sampling continues, the empirical distribution converges to the theoretical PMF.',
-      category: 'pattern'
-    }
-  ];
-  
-  const { discoveries, markDiscovered } = useDiscoveries(discoveryDefinitions);
-  const [hasCreatedRegions, setHasCreatedRegions] = useState(false);
-  const [samplingCount, setSamplingCount] = useState(0);
 
-  // Key Concepts Card with LaTeX (using LinearRegressionHub scaffolding)
-  const SpatialRandomVariableConceptsCard = React.memo(() => {
-    const contentRef = useRef(null);
-    const concepts = [
-      { term: "Random Variable", definition: "A function mapping outcomes to numbers", latex: "X: \\Omega \\to \\mathbb{R}" },
-      { term: "Probability Mass Function", definition: "Probability for each value", latex: "P(X = x) = \\frac{\\text{Area}(x)}{\\text{Total Area}}" },
-      { term: "Expected Value", definition: "Weighted average of outcomes", latex: "E[X] = \\sum_{x} x \\cdot P(X = x)" },
-      { term: "Variance", definition: "Measure of spread around mean", latex: "\\text{Var}(X) = E[X^2] - (E[X])^2" },
-    ];
-
-    useEffect(() => {
-      const processMathJax = () => {
-        if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-          if (window.MathJax.typesetClear) {
-            window.MathJax.typesetClear([contentRef.current]);
-          }
-          window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-        }
-      };
-      
-      processMathJax(); // Try immediately
-      const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
-      return () => clearTimeout(timeoutId);
-    }, []);
-
-    return (
-      <Card ref={contentRef} className="mb-8 p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
-        <h3 className="text-xl font-bold text-white mb-4">Spatial Random Variable Concepts</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {concepts.map((concept, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <h4 className="font-semibold text-white">{concept.term}</h4>
-                  <p className="text-sm text-gray-400 mt-1">{concept.definition}</p>
-                </div>
-                <div className="text-lg font-mono text-teal-400">
-                  <span dangerouslySetInnerHTML={{ __html: `\\(${concept.latex}\\)` }} />
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </Card>
-    );
-  });
-  
-  // Constants - Responsive layout
-  const WIDTH_GRID = 720;
-  const HEIGHT_GRID = 560;
-  const RADIUS = 22;
-  const BORDER = 1;
-  const WIDTH_DIST = 320;
-  const HEIGHT_DIST = 300;
-  const PAD_DIST = 15;
-  
-  // Initialize hexagon grid
-  useEffect(() => {
-    if (!svgGridRef.current) return;
-    
-    try {
-      const svg = d3.select(svgGridRef.current);
-      svg.selectAll("*").remove();
+  // Initialize hexagonal grid
+  const initializeHexGrid = useCallback(() => {
+    const svg = d3.select(svgGridRef.current);
+    svg.selectAll("*").remove();
     
     // Create hexbin generator
     const hexbin = d3Hexbin()
       .size([WIDTH_GRID, HEIGHT_GRID])
       .radius(RADIUS);
     
-    svgGridRef.current.hexbin = hexbin;
+    // Generate hexagon centers
+    const hexCenters = [];
+    const cols = Math.floor(WIDTH_GRID / (RADIUS * Math.sqrt(3)));
+    const rows = Math.floor(HEIGHT_GRID / (RADIUS * 1.5));
     
-    // Draw mesh
-    svg.append("path")
-      .attr("class", "mesh")
-      .attr("d", hexbin.mesh())
-      .style("fill", "none")
-      .style("stroke", "#4B5563")
-      .style("stroke-opacity", 0.4)
-      .style("pointer-events", "none");
-    
-    // Create hexagon data
-    const centers = hexbin.centers();
-    const hexData = centers.map(center => ({
-      x: center[0],
-      y: center[1],
-      i: center.i,
-      j: center.j,
-      fixed: 0,
-      value: 0,
-      fill: 0
-    }));
-    
-    // Store references
-    svgGridRef.current.hexData = hexData;
-    
-    // Draw hexagons
-    const hexagons = svg.append("g")
-      .attr("class", "hexagon")
-      .selectAll("path")
-      .data(hexData)
-      .enter().append("path")
-      .attr("d", hexbin.hexagon(RADIUS - BORDER/2))
-      .attr("transform", d => `translate(${d.x},${d.y})`)
-      .attr("id", (d, i) => `hex-${i}`)
-      .style("fill", "#1F2937")
-      .style("stroke", "#4B5563")
-      .style("stroke-width", BORDER)
-      .style("cursor", "pointer")
-      .style("opacity", 0.95)
-      .style("transition", "all 0.15s ease");
-    
-    // Mouse event handlers
-    const mousedown = function(event, d) {
-      if (!d || d.fixed) return;
-      mousePaintingRef.current = d.fill ? -1 : 1;
-      mousemove.call(this, event, d);
-    };
-    
-    const mousemove = function(event, d) {
-      if (!d || !mousePaintingRef.current || d.fixed) return;
-      
-      const wasFilled = d.fill;
-      d.fill = mousePaintingRef.current > 0;
-      
-      if (wasFilled !== d.fill) {
-        setDrawnHexCount(prev => d.fill ? prev + 1 : prev - 1);
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const x = col * RADIUS * Math.sqrt(3) + (row % 2 === 1 ? RADIUS * Math.sqrt(3) / 2 : 0) + RADIUS;
+        const y = row * RADIUS * 1.5 + RADIUS;
+        if (x <= WIDTH_GRID - RADIUS && y <= HEIGHT_GRID - RADIUS) {
+          hexCenters.push([x, y]);
+        }
       }
-      
-      d3.select(this)
-        .style("fill", d.fill ? "#374151" : "#1F2937")
-        .style("stroke", d.fill ? "#14b8a6" : "#4B5563")
-        .style("stroke-width", d.fill ? 2 : BORDER)
-        .style("opacity", d.fill ? 1 : 0.95);
-    };
+    }
     
-    const mouseup = function(event, d) {
-      if (!d) return;
-      mousemove.call(this, event, d);
-      mousePaintingRef.current = 0;
-    };
+    // Create hexagons
+    const hexagons = svg.selectAll(".hexagon")
+      .data(hexbin(hexCenters))
+      .enter().append("path")
+      .attr("class", "hexagon")
+      .attr("d", hexbin.hexagon())
+      .attr("transform", d => `translate(${d.x},${d.y})`)
+      .style("fill", colorMap[0])
+      .style("stroke", "#374151")
+      .style("stroke-width", "1px")
+      .style("cursor", "pointer")
+      .each(function(d) {
+        d.value = 0;
+        d.drawn = false;
+      });
     
-    // Attach events
+    // Setup interactions
+    setupHexagonInteractions(hexagons);
+  }, [colorMap]);
+
+  // Setup hexagon interactions
+  const setupHexagonInteractions = (hexagons) => {
     hexagons
-      .on("mousedown", mousedown)
-      .on("mousemove", mousemove)
-      .on("mouseup", mouseup)
-      .on("mouseenter", function(event, d) {
-        if (!d.fixed && !mousePaintingRef.current) {
+      .on("mouseenter", function() {
+        if (mousePaintingRef.current === 0) {
           d3.select(this)
-            .style("stroke", "#14b8a6")
-            .style("stroke-width", 2)
-            .style("opacity", 1);
+            .style("stroke", "#14B8A6")
+            .style("stroke-width", "2px");
         }
       })
-      .on("mouseleave", function(event, d) {
-        if (!d.fixed && !mousePaintingRef.current && !d.fill) {
+      .on("mouseleave", function() {
+        const d = d3.select(this).datum();
+        if (!d.drawn) {
           d3.select(this)
-            .style("stroke", "#4B5563")
-            .style("stroke-width", BORDER)
-            .style("opacity", 0.95);
+            .style("stroke", "#374151")
+            .style("stroke-width", "1px");
+        }
+      })
+      .on("mousedown", function() {
+        const d = d3.select(this).datum();
+        mousePaintingRef.current = d.drawn ? -1 : 1;
+        updateHexagon.call(this, d);
+      })
+      .on("mousemove", function() {
+        if (mousePaintingRef.current !== 0) {
+          const d = d3.select(this).datum();
+          updateHexagon.call(this, d);
         }
       });
     
-    // Global mouseup
-    d3.select(window).on("mouseup.spatial", () => {
+    d3.select(svgGridRef.current).on("mouseup", () => {
       mousePaintingRef.current = 0;
     });
     
-    return () => {
-      d3.select(window).on("mouseup.spatial", null);
-    };
-    } catch (error) {
-      console.error('Error initializing hexagon grid:', error);
-    }
-  }, []);
-  
+    window.addEventListener("mouseup", () => {
+      mousePaintingRef.current = 0;
+    });
+  };
+
+  // Update hexagon state
+  const updateHexagon = function(d) {
+    const shouldDraw = mousePaintingRef.current === 1;
+    if (d.drawn === shouldDraw) return;
+    
+    d.drawn = shouldDraw;
+    d3.select(this)
+      .style("fill", shouldDraw ? "#374151" : colorMap[0])
+      .style("stroke", shouldDraw ? "#14B8A6" : "#374151")
+      .style("stroke-width", shouldDraw ? "2px" : "1px");
+    
+    const drawnCount = d3.select(svgGridRef.current)
+      .selectAll(".hexagon")
+      .nodes()
+      .filter(node => d3.select(node).datum().drawn).length;
+    
+    setDrawnHexCount(drawnCount);
+  };
+
   // Initialize distribution chart
-  useEffect(() => {
-    if (!svgDistRef.current) return;
-    
-    try {
-      const svg = d3.select(svgDistRef.current);
-      svg.selectAll("*").remove();
-    
-    // Container
-    const container = svg.append("g")
-      .attr("transform", `translate(${PAD_DIST},${PAD_DIST})`);
-    svgDistRef.current.container = container;
+  const initializeDistributionChart = useCallback(() => {
+    const svg = d3.select(svgDistRef.current);
+    svg.selectAll("*").remove();
     
     // Scales
     const xScale = d3.scaleBand()
@@ -286,23 +356,28 @@ const SpatialRandomVariable = () => {
     svgDistRef.current.xScale = xScale;
     svgDistRef.current.yScale = yScale;
     
-    // Y-axis only (we'll handle X-axis labels manually)
-    const yAxis = d3.axisLeft(yScale)
-      .ticks(5)
-      .tickFormat(d => `${(d * 100).toFixed(0)}%`);
+    // Create groups
+    const mainGroup = svg.append("g")
+      .attr("transform", `translate(${PAD_DIST},${PAD_DIST})`);
     
-    const axisYRVD = svg.append("g")
-      .attr("class", "y axis")
-      .attr("transform", `translate(${PAD_DIST},${PAD_DIST})`)
-      .style("font-size", "11px")
-      .call(yAxis);
+    // Add grid lines
+    const yAxisGrid = mainGroup.append("g")
+      .attr("class", "y-axis-grid")
+      .call(d3.axisLeft(yScale)
+        .ticks(5)
+        .tickSize(-(WIDTH_DIST - 2*PAD_DIST))
+        .tickFormat("")
+      );
     
-    // X-axis group (empty, we'll populate it manually)
+    yAxisGrid.selectAll("line")
+      .style("stroke", "#374151")
+      .style("stroke-opacity", 0.3);
+    
+    // Add axes
     const xAxisGroup = svg.append("g")
       .attr("class", "x-axis-group")
       .attr("transform", `translate(${PAD_DIST},${HEIGHT_DIST - PAD_DIST})`);
     
-    // Add x-axis line
     xAxisGroup.append("line")
       .attr("class", "x-axis-line")
       .attr("x1", 0)
@@ -310,381 +385,247 @@ const SpatialRandomVariable = () => {
       .attr("y1", 0)
       .attr("y2", 0)
       .style("stroke", "#6B7280")
-      .style("stroke-width", 0.5);
+      .style("stroke-width", "1px");
     
-    svgDistRef.current.xAxisGroup = xAxisGroup;
+    const yAxisGroup = svg.append("g")
+      .attr("class", "y-axis-group")
+      .attr("transform", `translate(${PAD_DIST},${PAD_DIST})`);
     
-    // Style axes
-    svg.selectAll(".axis line, .axis path")
-      .style("stroke", "#6B7280")
-      .style("stroke-width", 0.5)
-      .style("shape-rendering", "crispEdges");
+    // Add labels
+    svg.append("text")
+      .attr("class", "x-label")
+      .attr("text-anchor", "middle")
+      .attr("x", WIDTH_DIST / 2)
+      .attr("y", HEIGHT_DIST - 2)
+      .style("fill", "#9CA3AF")
+      .style("font-size", "11px")
+      .text("Value");
     
-    svg.selectAll(".axis text")
-      .style("fill", "#D1D5DB")
-      .style("font-size", "10px");
+    svg.append("text")
+      .attr("class", "y-label")
+      .attr("text-anchor", "middle")
+      .attr("transform", `rotate(-90)`)
+      .attr("y", 2)
+      .attr("x", -HEIGHT_DIST / 2)
+      .style("fill", "#9CA3AF")
+      .style("font-size", "11px")
+      .text("Frequency");
     
-    // Add gridlines
-    const gridlines = svg.append("g")
-      .attr("class", "grid")
-      .attr("transform", `translate(${PAD_DIST},${PAD_DIST})`)
-      .call(d3.axisLeft(yScale)
-        .ticks(5)
-        .tickSize(-(WIDTH_DIST - 2*PAD_DIST))
-        .tickFormat("")
-      );
-    
-    // Style the gridlines properly
-    gridlines.selectAll("line")
-      .style("stroke", "#374151")
-      .style("stroke-dasharray", "2,2")
-      .style("opacity", 0.15);
-    
-    // Remove the domain line
-    gridlines.select(".domain").remove();
-    
-    // Initialize with value 0 bar
-    setTimeout(() => {
-      if (svgDistRef.current && svgDistRef.current.container) {
-        try {
-          valuesRef.current = { 0: 0 };
-          addRect('#6B7280', 0);
-        } catch (e) {
-          console.error('Error initializing distribution chart:', e);
-        }
-      }
-    }, 100);
-    } catch (error) {
-      console.error('Error initializing distribution chart:', error);
-    }
+    // Create bars group
+    mainGroup.append("g")
+      .attr("class", "bars-group");
   }, []);
-  
-  // Add rectangle to distribution
-  const addRect = (color, value) => {
-    if (!svgDistRef.current || !svgDistRef.current.container) return;
+
+  // Update distribution chart
+  const updateDistributionChart = useCallback(() => {
+    if (!svgDistRef.current) return;
     
-    const containerRVD = svgDistRef.current.container;
-    const xScaleRVD = svgDistRef.current.xScale;
-    const xAxisGroup = svgDistRef.current.xAxisGroup;
+    const svg = d3.select(svgDistRef.current);
+    const xScale = svgDistRef.current.xScale;
+    const yScale = svgDistRef.current.yScale;
     
-    // Defensive programming: ensure valuesRef.current exists
-    if (!valuesRef.current) {
-      valuesRef.current = {};
-    }
+    // Prepare data
+    const data = Object.entries(valuesRef.current)
+      .filter(([value, count]) => count > 0)
+      .map(([value, count]) => ({
+        value: parseFloat(value),
+        count: count,
+        frequency: totalRef.current > 0 ? count / totalRef.current : 0
+      }))
+      .sort((a, b) => a.value - b.value);
     
-    // Get keys and create a sorted copy (avoid mutating the original array)
-    const keys = Object.keys(valuesRef.current);
-    const range = [...keys].sort((a, b) => parseFloat(a) - parseFloat(b));
+    // Update scales
+    xScale.domain(data.map(d => d.value));
+    yScale.domain([0, Math.max(1, d3.max(data, d => d.count))]);
     
-    // Update scale domain
-    xScaleRVD.domain(range);
+    // Update x-axis
+    const xAxisGroup = svg.select(".x-axis-group");
+    xAxisGroup.selectAll(".tick").remove();
     
-    // Update x-axis labels manually
-    if (xAxisGroup) {
-      // Remove only text labels, keep the axis line
-      xAxisGroup.selectAll("text").remove();
+    data.forEach(d => {
+      const tick = xAxisGroup.append("g")
+        .attr("class", "tick")
+        .attr("transform", `translate(${xScale(d.value) + xScale.bandwidth() / 2},0)`);
       
-      // Add new labels
-      range.forEach(val => {
-        xAxisGroup.append("text")
-          .attr("x", xScaleRVD(val) + xScaleRVD.bandwidth() / 2)
-          .attr("y", 15)
-          .attr("text-anchor", "middle")
-          .style("fill", "#D1D5DB")
-          .style("font-size", "10px")
-          .text(val);
-      });
-    }
-    
-    // Remove all existing rectangles and redraw
-    containerRVD.selectAll("rect").remove();
-    
-    // Add rectangles for each value
-    range.forEach(d => {
-      containerRVD.append("rect")
-        .attr("id", `bar${d}`)
-        .attr("fill", colorMap[d] || color)
-        .attr("opacity", 0.8)
-        .attr("x", xScaleRVD(d))
-        .attr("y", HEIGHT_DIST - 2*PAD_DIST)
-        .attr("width", xScaleRVD.bandwidth())
-        .attr("height", 0);
+      tick.append("line")
+        .attr("y2", 6)
+        .style("stroke", "#6B7280");
+      
+      tick.append("text")
+        .attr("y", 16)
+        .attr("text-anchor", "middle")
+        .style("fill", "#9CA3AF")
+        .style("font-size", "10px")
+        .text(d.value);
     });
     
-    // Update heights after a small delay
-    setTimeout(() => updateRect(), 50);
-  };
-  
-  // Update bar heights
-  const updateRect = () => {
-    if (!svgDistRef.current || !svgDistRef.current.container) return;
+    // Update y-axis
+    const yAxisGroup = svg.select(".y-axis-group");
+    yAxisGroup.selectAll(".tick").remove();
     
-    const containerRVD = svgDistRef.current.container;
-    const xScaleRVD = svgDistRef.current.xScale;
-    const yScaleRVD = svgDistRef.current.yScale;
-    
-    // Defensive check for valuesRef
-    if (!valuesRef.current) {
-      valuesRef.current = {};
-    }
-    
-    // Update each rect by ID to avoid data binding issues
-    Object.keys(valuesRef.current).forEach(value => {
-      const rect = containerRVD.select(`#bar${value}`);
-      if (!rect.empty()) {
-        const yPos = yScaleRVD(valuesRef.current[value] / Math.max(totalRef.current, 1));
-        const height = yScaleRVD(1 - valuesRef.current[value] / Math.max(totalRef.current, 1));
-        
-        // Use try-catch to handle potential transition issues
-        try {
-          rect.transition()
-            .duration(300)
-            .attr("y", yPos)
-            .attr("height", height);
-        } catch (e) {
-          // If transition fails, set attributes directly
-          rect.attr("y", yPos).attr("height", height);
-        }
-      }
+    const yTicks = yScale.ticks(5);
+    yTicks.forEach(tick => {
+      const tickGroup = yAxisGroup.append("g")
+        .attr("class", "tick")
+        .attr("transform", `translate(0,${yScale(tick)})`);
+      
+      tickGroup.append("line")
+        .attr("x2", -6)
+        .style("stroke", "#6B7280");
+      
+      tickGroup.append("text")
+        .attr("x", -10)
+        .attr("text-anchor", "end")
+        .attr("dy", "0.32em")
+        .style("fill", "#9CA3AF")
+        .style("font-size", "10px")
+        .text(tick);
     });
-  };
-  
+    
+    // Update bars
+    const barsGroup = svg.select(".bars-group");
+    const bars = barsGroup.selectAll(".bar").data(data, d => d.value);
+    
+    bars.enter()
+      .append("rect")
+      .attr("class", "bar")
+      .attr("x", d => xScale(d.value))
+      .attr("y", HEIGHT_DIST - 2*PAD_DIST)
+      .attr("width", xScale.bandwidth())
+      .attr("height", 0)
+      .style("fill", d => colorMap[d.value] || "#6B7280")
+      .merge(bars)
+      .transition()
+      .duration(300)
+      .attr("x", d => xScale(d.value))
+      .attr("y", d => yScale(d.count))
+      .attr("width", xScale.bandwidth())
+      .attr("height", d => HEIGHT_DIST - 2*PAD_DIST - yScale(d.count))
+      .style("fill", d => colorMap[d.value] || "#6B7280");
+    
+    bars.exit().remove();
+  }, [colorMap]);
+
   // Handle value submission
-  const handleValueSubmit = (e) => {
-    e?.preventDefault();
-    if (remainingColors.length === 0 || drawnHexCount === 0) return;
-    
+  const handleValueSubmit = () => {
     const value = parseFloat(valueInput);
     if (isNaN(value)) return;
     
-    let color;
-    if (colorMap[value] === undefined) {
-      const index = Math.floor(Math.random() * remainingColors.length);
-      color = remainingColors[index];
-      const newRemainingColors = [...remainingColors];
-      newRemainingColors.splice(index, 1);
-      setRemainingColors(newRemainingColors);
-      
+    const hexagons = d3.select(svgGridRef.current).selectAll(".hexagon");
+    let color = colorMap[value];
+    
+    if (!color) {
+      if (remainingColors.length > 0) {
+        color = remainingColors[Math.floor(Math.random() * remainingColors.length)];
+        setRemainingColors(prev => prev.filter(c => c !== color));
+      } else {
+        color = availableColors[Math.floor(Math.random() * availableColors.length)];
+      }
       setColorMap(prev => ({ ...prev, [value]: color }));
-      setLegendItems(prev => [...prev, { color, value, hexCount: drawnHexCount }]);
-    } else {
-      color = colorMap[value];
-      // Update hex count for existing color
-      setLegendItems(prev => prev.map(item => 
-        item.value === value ? { ...item, hexCount: item.hexCount + drawnHexCount } : item
-      ));
     }
     
-    // Fix color on hexagons - avoid .each() to prevent DOM errors
-    const hexData = svgGridRef.current?.hexData;
-    if (!hexData || !Array.isArray(hexData)) return;
-    
-    // Update data first
-    let assignedCount = 0;
-    hexData.forEach((hexagon) => {
-      if (hexagon && hexagon.fill) {
-        hexagon.fill = 0;
-        hexagon.value = value;
-        hexagon.fixed = 1;
-        assignedCount++;
+    hexagons.each(function(d) {
+      if (d.drawn) {
+        d.value = value;
+        d.drawn = false;
+        d3.select(this)
+          .style("fill", color)
+          .style("stroke", "#374151")
+          .style("stroke-width", "1px");
       }
     });
     
-    // Then update visuals using simple selectors
-    const svg = d3.select(svgGridRef.current);
-    for (let i = 0; i < hexData.length; i++) {
-      if (hexData[i].fixed && hexData[i].value === value) {
-        const hexPath = svg.select(`#hex-${i}`);
-        if (!hexPath.empty()) {
-          hexPath
-            .style("fill", color)
-            .style("stroke", color)
-            .style("stroke-width", BORDER)
-            .style("opacity", 0.95);
-        }
-      }
+    if (!legendItems.find(item => item.value === value)) {
+      setLegendItems(prev => [...prev, { value, color }].sort((a, b) => a.value - b.value));
     }
     
-    resetSamples();
     setValueInput('');
     setDrawnHexCount(0);
-    
-    // Mark spatial-probability discovery when first region is created
-    if (!hasCreatedRegions) {
-      setHasCreatedRegions(true);
-      markDiscovered('spatial-probability');
-    }
-    
-    // Mark expected value discovery when 3+ different values assigned
-    if (legendItems.length >= 2) {
-      markDiscovered('expected-value');
-    }
-    
-    // Mark variance discovery when 4+ different values assigned
-    if (legendItems.length >= 3) {
-      markDiscovered('variance');
-    }
+    resetSampling();
   };
-  
-  // Add point animation with improved visual feedback
-  const addPoint = (pos, color, value, hexIndex) => {
-    // Defensive initialization
-    if (!valuesRef.current) {
-      valuesRef.current = {};
-    }
+
+  // Add sample point
+  const addPoint = (pos, hexData) => {
+    const value = hexData.value;
+    const color = colorMap[value] || "#6B7280";
     
-    if (valuesRef.current[value] === undefined) {
-      valuesRef.current[value] = 1;
-      addRect(color, value);
-    } else {
-      valuesRef.current[value] += 1;
-      updateRect();
-    }
+    valuesRef.current[value] = (valuesRef.current[value] || 0) + 1;
     totalRef.current += 1;
     setUpdateTrigger(prev => prev + 1);
     
-    // Animate point with better visual feedback
+    // Create animated sample dot
     const svg = d3.select(svgGridRef.current);
-    
-    // Pulse the hexagon that was hit
-    if (hexIndex >= 0) {
-      const hexagon = svg.select(`#hex-${hexIndex}`);
-      if (!hexagon.empty()) {
-        const originalFill = hexagon.style("fill");
-        const originalOpacity = hexagon.style("opacity");
-        
-        // Quick pulse effect
-        hexagon
-          .transition()
-          .duration(100)
-          .style("fill", d3.color(color).brighter(1))
-          .style("opacity", 1)
-          .style("filter", `drop-shadow(0 0 8px ${color})`)
-          .transition()
-          .duration(300)
-          .style("fill", originalFill)
-          .style("opacity", originalOpacity)
-          .style("filter", "none");
-      }
-    }
-    
-    // Create the sample dot with immediate color
     const circle = svg.append("circle")
       .attr("cx", pos[0])
       .attr("cy", pos[1])
-      .attr("r", 6)
-      .style("fill", color)  // Start with target color
-      .style("stroke", "#ffffff")  // White border for contrast
+      .attr("r", 5)
+      .style("fill", color)
+      .style("stroke", "white")
       .style("stroke-width", "2px")
-      .style("filter", `drop-shadow(0 0 6px ${color})`)  // Colored glow
-      .attr("opacity", 1);
+      .style("opacity", 0.8)
+      .style("pointer-events", "none");
     
-    const circleNode = circle.node();
-    if (circleNode) {
-      animationsRef.current.add(circleNode);
-    }
+    animationsRef.current.add(circle.node());
     
-    // Expand and fade animation
+    // Animate expansion and fade
     circle.transition()
       .duration(200)
-      .attr("r", 12)  // Expand
-      .style("stroke-width", "3px")
-      .attr("opacity", 0.8)
+      .attr("r", 12)
+      .style("opacity", 0.6)
       .transition()
       .duration(300)
-      .attr("r", 16)  // Continue expanding
-      .attr("opacity", 0)  // Fade out
-      .on("end", function() {
-        // Use try-catch to handle potential DOM issues
-        try {
-          const node = this;
-          if (node && node.parentNode) {
-            node.parentNode.removeChild(node);
-          }
-          if (animationsRef.current) {
-            animationsRef.current.delete(node);
-          }
-        } catch (e) {
-          // Ignore errors from already removed nodes
+      .attr("r", 18)
+      .style("opacity", 0)
+      .remove()
+      .on("end", () => {
+        if (circle.node()) {
+          animationsRef.current.delete(circle.node());
         }
       });
     
-    // Add a subtle trail ring effect
-    const trail = svg.insert("circle", ":first-child")
-      .attr("cx", pos[0])
-      .attr("cy", pos[1])
-      .attr("r", 6)
-      .style("fill", "none")
-      .style("stroke", color)
-      .style("stroke-width", "1px")
-      .attr("opacity", 0.5);
+    // Highlight the hexagon
+    const hexagon = svg.selectAll(".hexagon")
+      .filter(d => d === hexData);
     
-    trail.transition()
-      .duration(500)
-      .attr("r", 25)
-      .attr("opacity", 0)
-      .on("end", function() {
-        d3.select(this).remove();
-      });
+    hexagon
+      .transition()
+      .duration(100)
+      .style("transform", "scale(1.05)")
+      .style("filter", `brightness(1.3)`)
+      .transition()
+      .duration(200)
+      .style("transform", "scale(1)")
+      .style("filter", "brightness(1)");
   };
-  
+
   // Start sampling
   const startSampling = () => {
-    if (samplingIntervalRef.current) {
-      clearInterval(samplingIntervalRef.current);
-    }
-    
     setIsSampling(true);
-    const hexbin = svgGridRef.current?.hexbin;
-    const hexData = svgGridRef.current?.hexData;
-    if (!hexbin || !hexData) return;
-    
-    // Ensure valuesRef is initialized
-    if (!valuesRef.current) {
-      valuesRef.current = { 0: 0 };
-    }
     
     samplingIntervalRef.current = setInterval(() => {
       const randomX = Math.random() * WIDTH_GRID;
       const randomY = Math.random() * HEIGHT_GRID;
       const pos = [randomX, randomY];
       
-      let minDist = Infinity;
-      let closestData = null;
-      let closestIndex = -1;
+      // Find nearest hexagon
+      const hexagons = d3.select(svgGridRef.current).selectAll(".hexagon");
+      let closestHex = null;
+      let minDistance = Infinity;
       
-      hexData.forEach((d, i) => {
-        const dx = pos[0] - d.x;
-        const dy = pos[1] - d.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        
-        if (dist < minDist) {
-          minDist = dist;
-          closestData = d;
-          closestIndex = i;
+      hexagons.each(function(d) {
+        const dist = Math.sqrt(Math.pow(d.x - randomX, 2) + Math.pow(d.y - randomY, 2));
+        if (dist < minDistance && dist < RADIUS) {
+          minDistance = dist;
+          closestHex = d;
         }
       });
       
-      if (closestData && closestIndex >= 0) {
-        const hexElement = d3.select(`#hex-${closestIndex}`);
-        if (!hexElement.empty()) {
-          const color = hexElement.style("fill");
-          
-          // Track sampling count for convergence discovery
-          setSamplingCount(prev => {
-            const newCount = prev + 1;
-            if (newCount >= 100) {
-              markDiscovered('convergence');
-            }
-            return newCount;
-          });
-          const value = closestData.value;
-          addPoint(pos, color, value, closestIndex);
-        }
+      if (closestHex) {
+        addPoint(pos, closestHex);
       }
     }, 100);
   };
-  
+
   // Stop sampling
   const stopSampling = () => {
     if (samplingIntervalRef.current) {
@@ -693,396 +634,211 @@ const SpatialRandomVariable = () => {
     }
     setIsSampling(false);
   };
-  
-  // Reset samples only
-  const resetSamples = () => {
-    // Safe initialization
-    valuesRef.current = { 0: 0 };
+
+  // Reset sampling
+  const resetSampling = () => {
+    stopSampling();
+    valuesRef.current = Object.keys(colorMap).reduce((acc, key) => ({ ...acc, [key]: 0 }), {});
     totalRef.current = 0;
     setUpdateTrigger(prev => prev + 1);
-    
-    // Only reset the bar chart if SVG is ready
-    if (svgDistRef.current && svgDistRef.current.container) {
-      const containerRVD = svgDistRef.current.container;
-      // Remove existing rectangles
-      containerRVD.selectAll("rect").remove();
-      
-      // Ensure colorMap has value 0
-      if (!colorMap[0]) {
-        setColorMap(prev => ({ ...prev, 0: "#6B7280" }));
-      }
-      
-      // Add the initial bar after a delay
-      setTimeout(() => {
-        if (svgDistRef.current && svgDistRef.current.container) {
-          addRect(colorMap[0] || '#6B7280', 0);
-        }
-      }, 100);
-    }
-    
-    stopSampling();
-    
-    // Clean up animations with defensive check
-    if (animationsRef.current && animationsRef.current.forEach) {
-      animationsRef.current.forEach(node => {
-        try {
-          if (node && node.parentNode) {
-            d3.select(node).remove();
-          }
-        } catch (e) {
-          // Ignore errors from already removed nodes
-        }
-      });
-      animationsRef.current.clear();
-    }
   };
-  
+
   // Full reset
   const handleFullReset = () => {
-    resetSamples();
-    setLegendItems([]);
-    setRemainingColors([...availableColors]);
+    resetSampling();
     setColorMap({ 0: "#6B7280" });
+    setRemainingColors([...availableColors]);
+    setLegendItems([]);
     setDrawnHexCount(0);
-    
-    const hexData = svgGridRef.current?.hexData;
-    if (!hexData) return;
-    
-    // Reset data first
-    for (let i = 0; i < hexData.length; i++) {
-      hexData[i].fill = 0;
-      hexData[i].value = 0;
-      hexData[i].fixed = 0;
-    }
-    
-    // Then reset visuals
-    const svg = d3.select(svgGridRef.current);
-    for (let i = 0; i < hexData.length; i++) {
-      const hexPath = svg.select(`#hex-${i}`);
-      if (!hexPath.empty()) {
-        hexPath
-          .style("fill", "#1F2937")
-          .style("stroke", "#4B5563")
-          .style("stroke-width", BORDER)
-          .style("opacity", 0.95);
-      }
-    }
+    initializeHexGrid();
   };
-  
-  // Calculate stats
-  const calculateStats = () => {
-    if (!totalRef.current || totalRef.current === 0) return { mean: 0, variance: 0 };
-    
-    // Defensive check for valuesRef
-    if (!valuesRef.current) {
-      return { mean: 0, variance: 0 };
-    }
-    
-    let mean = 0;
-    Object.entries(valuesRef.current).forEach(([value, count]) => {
-      mean += parseFloat(value) * count;
-    });
-    mean /= totalRef.current;
-    
-    let variance = 0;
-    Object.entries(valuesRef.current).forEach(([value, count]) => {
-      variance += Math.pow(parseFloat(value) - mean, 2) * count;
-    });
-    variance /= totalRef.current;
-    
-    return { mean, variance };
-  };
-  
+
+  // Effects
   useEffect(() => {
-    // Initial setup - ensure value 0 is in the values
-    if (!valuesRef.current) {
-      valuesRef.current = {};
-    }
-    valuesRef.current[0] = 0;
-    totalRef.current = 0;
-    
-    // Initial MathJax processing
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise) {
-        const elements = [];
-        if (distPanelRef.current) elements.push(distPanelRef.current);
-        
-        if (elements.length > 0) {
-          window.MathJax.typesetPromise(elements).catch(console.error);
-        }
-      }
-    };
-    
-    // Process immediately and after a delay
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 200);
-    
-    // Initialize the chart after a delay
-    const chartTimeout = setTimeout(() => {
-      if (svgDistRef.current && svgDistRef.current.container && colorMap) {
-        addRect(colorMap[0] || '#6B7280', 0);
-      }
-    }, 300);
-    
-    return () => {
-      clearTimeout(timeoutId);
-      clearTimeout(chartTimeout);
-    };
-  }, [colorMap]);
-  
+    initializeHexGrid();
+    initializeDistributionChart();
+  }, []);
+
+  useEffect(() => {
+    updateDistributionChart();
+  }, [updateTrigger, updateDistributionChart]);
+
   useEffect(() => {
     return () => {
       stopSampling();
-      // Defensive cleanup
-      if (animationsRef.current && animationsRef.current.forEach) {
-        animationsRef.current.forEach(node => {
-          try {
-            if (node && node.parentNode) {
-              d3.select(node).remove();
-            }
-          } catch (e) {
-            // Ignore errors
-          }
-        });
-      }
+      animationsRef.current.forEach(node => {
+        d3.select(node).interrupt().remove();
+      });
     };
   }, []);
-  
-  
-  const stats = calculateStats();
-  
-  // Calculate total hexagons for probability
-  const totalHexagons = legendItems.reduce((sum, item) => sum + item.hexCount, 0);
-  
-  // Get contextual instruction
-  const getInstruction = () => {
-    if (legendItems.length === 0 && drawnHexCount === 0) {
-      return "Click and drag to select hexagons, then assign them a value";
-    } else if (drawnHexCount > 0) {
-      return `${drawnHexCount} hexagons selected - assign them a value`;
-    } else if (legendItems.length > 0) {
-      return "Draw more regions or start sampling to see probabilities";
-    }
-    return "";
-  };
-  
+
   return (
-    <div className="min-h-screen bg-gray-950">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
-        >
-          <h1 className="text-4xl font-bold text-white mb-2">
-            Spatial Random Variable Explorer
-          </h1>
-          <p className="text-xl text-gray-400">
-            Discover how random variables map spatial outcomes to numerical values
+    <VisualizationContainer
+      title="Random Variable Builder"
+      description={
+        <>
+          <p className={typography.description}>
+            <strong>See it in action!</strong> A random variable is simply a 
+            <span className="text-teal-400 mx-1">function that assigns numbers to outcomes</span>.
+            Build your own by creating regions and assigning them values.
           </p>
-        </motion.div>
-
-        {/* Key Concepts Card */}
-        <SpatialRandomVariableConceptsCard />
-
-        {/* Introduction Text */}
-        <Card className="mb-8 p-6 bg-gradient-to-br from-teal-900/20 to-cyan-900/20 border-teal-700/50">
-          <h2 className="text-2xl font-bold text-white mb-3">What is a Spatial Random Variable?</h2>
-          <p className="text-gray-300">
-            A spatial random variable assigns numerical values to different regions of space. 
-            By drawing regions and assigning values, you can explore how probability mass functions 
-            emerge from spatial distributions and understand the fundamental concepts of expectation and variance.
+          <p className={cn(typography.description, "mt-2")}>
+            <span className="text-yellow-400">Remember:</span> Despite its confusing name, a random variable 
+            is NOT random—it's a fixed mathematical function!
           </p>
-        </Card>
+        </>
+      }
+    >
+      {/* Educational Content */}
+      <RandomVariableEducation />
 
-        {/* Interactive Component */}
-        <Card className="p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
-      <div className="bg-neutral-800 rounded-lg shadow-xl overflow-hidden w-full">
-      {/* Top: Header with Instructions */}
-      <div className="bg-neutral-900 border-b border-neutral-700 px-4 py-2">
-        <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-white">Spatial Random Variable</h3>
-          <p className="text-xs text-amber-400 italic">{getInstruction()}</p>
-        </div>
-      </div>
-      
-      {/* Controls Bar */}
-      <div className="bg-neutral-800 border-b border-neutral-700 px-4 py-3">
-        <div className="flex items-center justify-between gap-4">
-          {/* Left: Value Assignment */}
-          <div className="flex items-center gap-3">
-            {drawnHexCount > 0 && (
-              <>
-                <span className="text-sm text-neutral-400">{drawnHexCount} hexagons selected:</span>
-                <input
-                  type="number"
-                  step="any"
-                  value={valueInput}
-                  onChange={(e) => setValueInput(e.target.value)}
-                  placeholder="Value"
-                  className="w-24 px-2.5 py-1.5 bg-neutral-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 font-mono text-sm border border-neutral-600"
-                  autoFocus
+      {/* Interactive Component */}
+      <VisualizationSection title="Build Your Random Variable" className="mt-6">
+        <div className="grid grid-cols-12 gap-4">
+          {/* Left: Hexagonal Grid */}
+          <div className="col-span-8">
+            <Card className="p-0 bg-neutral-900 border-neutral-700">
+              {/* Controls */}
+              <div className="bg-neutral-800 border-b border-neutral-700 px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {drawnHexCount > 0 ? (
+                      <>
+                        <span className="text-sm text-neutral-400">{drawnHexCount} regions selected:</span>
+                        <input
+                          type="number"
+                          step="any"
+                          value={valueInput}
+                          onChange={(e) => setValueInput(e.target.value)}
+                          placeholder="Value"
+                          className="px-2 py-1 w-20 text-sm bg-neutral-700 border border-neutral-600 rounded text-white placeholder-neutral-500"
+                          autoFocus
+                        />
+                        <Button
+                          onClick={handleValueSubmit}
+                          disabled={!valueInput}
+                          size="sm"
+                          className="bg-teal-600 hover:bg-teal-700"
+                        >
+                          Assign
+                        </Button>
+                      </>
+                    ) : (
+                      <span className="text-sm text-neutral-500 italic">
+                        {legendItems.length === 0 
+                          ? "Click and drag to create regions" 
+                          : "Create more regions or start sampling"}
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={isSampling ? stopSampling : startSampling}
+                      disabled={legendItems.length === 0}
+                      size="sm"
+                      className={isSampling ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"}
+                    >
+                      {isSampling ? 'Stop' : 'Start Sampling'}
+                    </Button>
+                    <Button
+                      onClick={handleFullReset}
+                      size="sm"
+                      variant="ghost"
+                      className="hover:bg-neutral-700"
+                    >
+                      Reset
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Grid */}
+              <div className="p-4">
+                <svg
+                  ref={svgGridRef}
+                  width={WIDTH_GRID}
+                  height={HEIGHT_GRID}
+                  style={{ display: 'block', maxWidth: '100%', height: 'auto' }}
+                  viewBox={`0 0 ${WIDTH_GRID} ${HEIGHT_GRID}`}
+                  preserveAspectRatio="xMidYMid meet"
+                  className="bg-neutral-950 rounded"
                 />
-                <button
-                  onClick={handleValueSubmit}
-                  disabled={!valueInput}
-                  className="px-3 py-1.5 bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:bg-neutral-600 disabled:cursor-not-allowed transition-all duration-200 text-sm font-medium"
-                >
-                  Assign Value
-                </button>
-              </>
-            )}
-            {drawnHexCount === 0 && legendItems.length === 0 && (
-              <span className="text-sm text-neutral-500">Click and drag to select hexagons</span>
-            )}
+              </div>
+            </Card>
           </div>
           
-          {/* Right: Sampling Controls */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={startSampling}
-              disabled={legendItems.length === 0}
-              className="px-4 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-neutral-600 disabled:cursor-not-allowed transition-all duration-200 text-sm font-medium"
-            >
-              {isSampling ? 'Sampling...' : 'Start Sampling'}
-            </button>
-            <button
-              onClick={stopSampling}
-              disabled={!isSampling}
-              className="px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-neutral-600 disabled:cursor-not-allowed transition-all duration-200 text-sm font-medium"
-            >
-              Stop
-            </button>
-            <div className="w-px h-5 bg-neutral-600" />
-            <button
-              onClick={handleFullReset}
-              className="px-3 py-1.5 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-all duration-200 text-sm font-medium"
-            >
-              Reset All
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      {/* Main Content Area */}
-      <div className="flex h-[600px]">
-        
-        {/* Left: Hexagonal Canvas - 65% */}
-        <div className="bg-neutral-900 border-r border-neutral-700 flex items-center justify-center" style={{ width: '65%' }}>
-          <svg
-            ref={svgGridRef}
-            width={WIDTH_GRID}
-            height={HEIGHT_GRID}
-            style={{ display: 'block', maxWidth: '100%', height: 'auto' }}
-            viewBox={`0 0 ${WIDTH_GRID} ${HEIGHT_GRID}`}
-            preserveAspectRatio="xMidYMid meet"
-          />
-        </div>
-        
-        {/* Right: Distribution Panel - 35% */}
-        <div className="bg-neutral-800/70 p-3 flex flex-col overflow-y-auto" style={{ width: '35%' }} ref={distPanelRef}>
-          {/* Region Summary Cards */}
-          {legendItems.length > 0 && (
-            <div className="mb-3 space-y-1.5">
-              <h4 className="text-xs font-medium text-neutral-400 uppercase tracking-wider">Active Regions</h4>
-              {legendItems.map((item, index) => {
-                const probability = totalHexagons > 0 ? item.hexCount / totalHexagons : 0;
-                return (
-                  <div key={index} className="bg-neutral-700/50 p-2 rounded-md flex items-center justify-between border border-neutral-600">
-                    <div className="flex items-center gap-2">
+          {/* Right: Stats and Distribution */}
+          <div className="col-span-4 space-y-4">
+            {/* Legend */}
+            <Card className="p-4 bg-neutral-900 border-neutral-700">
+              <h4 className="text-sm font-semibold text-neutral-300 mb-3">Your Function X</h4>
+              {legendItems.length === 0 ? (
+                <p className="text-xs text-neutral-500">No mapping defined yet</p>
+              ) : (
+                <div className="space-y-2">
+                  {legendItems.map(item => (
+                    <div key={item.value} className="flex items-center gap-2">
                       <div 
-                        className="w-8 h-8 rounded shadow-sm" 
+                        className="w-4 h-4 rounded" 
                         style={{ backgroundColor: item.color }}
                       />
-                      <div>
-                        <div className="font-mono text-sm text-white">X = {item.value}</div>
-                        <div className="text-xs text-neutral-400">
-                          {item.hexCount} cells
-                        </div>
-                      </div>
+                      <span className="text-sm font-mono text-neutral-300">
+                        X(<span style={{ color: item.color }}>■</span>) = {item.value}
+                      </span>
                     </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium text-teal-400">
-                        {(probability * 100).toFixed(1)}%
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-          
-          {/* Distribution Header */}
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-semibold text-teal-400">
-              P(X = x)
-            </h3>
-            <div className="text-sm">
-              <span className="text-neutral-400">n = </span>
-              <span className="font-mono text-teal-400">{totalRef.current || 0}</span>
-            </div>
-          </div>
-          
-          {/* Distribution Chart */}
-          <div className="bg-neutral-900 rounded-md p-2 shadow-inner" style={{ height: `${HEIGHT_DIST + 20}px` }}>
-            <svg
-              ref={svgDistRef}
-              width={WIDTH_DIST}
-              height={HEIGHT_DIST}
-              style={{ display: 'block', width: '100%', height: 'auto' }}
-              viewBox={`0 0 ${WIDTH_DIST} ${HEIGHT_DIST}`}
-              preserveAspectRatio="xMidYMid meet"
-            />
-          </div>
-          
-          {/* Stats */}
-          <div className="mt-3 pt-3 border-t border-neutral-700 space-y-1" ref={statsRef}>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-neutral-400">E[X]</span>
-              <span className="font-mono text-teal-400 font-medium">
-                {stats.mean.toFixed(3)}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-neutral-400">Var(X)</span>
-              <span className="font-mono text-teal-400 font-medium">
-                {stats.variance.toFixed(3)}
-              </span>
-            </div>
-          </div>
-          
-          {/* Mathematical Discoveries */}
-          <div className="mt-3 pt-3 border-t border-neutral-700">
-            <MathematicalDiscoveries 
-              discoveries={discoveries}
-              title="Random Variable Discoveries"
-              className="text-xs"
-            />
+                  ))}
+                </div>
+              )}
+            </Card>
+            
+            {/* Distribution Chart */}
+            <Card className="p-4 bg-neutral-900 border-neutral-700">
+              <h4 className="text-sm font-semibold text-neutral-300 mb-3">Sampling Results</h4>
+              <div className="bg-neutral-950 rounded p-2">
+                <svg
+                  ref={svgDistRef}
+                  width={WIDTH_DIST}
+                  height={HEIGHT_DIST}
+                  style={{ display: 'block', width: '100%', height: 'auto' }}
+                  viewBox={`0 0 ${WIDTH_DIST} ${HEIGHT_DIST}`}
+                  preserveAspectRatio="xMidYMid meet"
+                />
+              </div>
+              <p className="text-xs text-neutral-500 mt-2">
+                Bars show how often each value appears
+              </p>
+            </Card>
+            
+            {/* Sample Counter */}
+            <Card className="p-4 bg-neutral-900 border-neutral-700">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-neutral-400">Total samples</span>
+                <span className="text-lg font-mono text-white font-semibold">
+                  {totalRef.current}
+                </span>
+              </div>
+            </Card>
           </div>
         </div>
-      </div>
-    </div>
-        </Card>
-      </div>
-    </div>
+      </VisualizationSection>
+    </VisualizationContainer>
   );
 };
 
-// Error boundary wrapper for the component
+// Error boundary wrapper
 class SpatialRandomVariableErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false };
   }
   
   static getDerivedStateFromError(error) {
-    return { hasError: true, error };
+    return { hasError: true };
   }
   
   componentDidCatch(error, errorInfo) {
     console.error('SpatialRandomVariable Error:', error);
-    console.error('Error Info:', errorInfo);
   }
   
   render() {
@@ -1090,13 +846,7 @@ class SpatialRandomVariableErrorBoundary extends React.Component {
       return (
         <div className="bg-neutral-800 rounded-lg shadow-xl p-6 text-center">
           <h3 className="text-lg font-semibold text-red-400 mb-2">Visualization Error</h3>
-          <p className="text-sm text-neutral-300 mb-4">The visualization encountered an error. Please refresh the page.</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700"
-          >
-            Refresh Page
-          </button>
+          <p className="text-sm text-neutral-300">Please refresh the page.</p>
         </div>
       );
     }

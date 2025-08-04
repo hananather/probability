@@ -1,10 +1,11 @@
 "use client";
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { useRouter } from 'next/navigation';
 import ChapterHub from "../shared/ChapterHub";
 import { motion } from "framer-motion";
 import { Card } from "../ui/card";
 import { createColorScheme } from "@/lib/design-system";
+import { useMathJax } from "../../hooks/useMathJax";
 import { 
   GitBranch, AreaChart, Calculator, Bell, 
   Timer, Flame, Grid3x3, TrendingUp 
@@ -13,30 +14,19 @@ import {
 // Get consistent color scheme for continuous distributions
 const colors = createColorScheme('continuous');
 
-// Key Concepts Card
+/**
+ * Key Concepts Card component for Chapter 3
+ * Displays essential continuous probability concepts with LaTeX rendering
+ */
 const KeyConceptsCard = React.memo(() => {
-  const contentRef = useRef(null);
   const concepts = [
     { term: "Probability Density", definition: "Probability per unit interval", latex: "f(x)" },
     { term: "Integration", definition: "Finding area under curves", latex: "\\int_{a}^{b} f(x)dx" },
     { term: "Normal Distribution", definition: "The bell curve", latex: "\\mathcal{N}(\\mu, \\sigma^2)" },
     { term: "Exponential", definition: "Waiting time distribution", latex: "\\lambda e^{-\\lambda x}" },
   ];
-
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax(); // Try immediately
-    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
-    return () => clearTimeout(timeoutId);
-  }, []);
+  
+  const contentRef = useMathJax([concepts]);
 
   return (
     <Card ref={contentRef} className="mb-8 p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
@@ -48,14 +38,14 @@ const KeyConceptsCard = React.memo(() => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.1 }}
-            className="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50"
+            className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50"
           >
-            <div className="flex items-start justify-between">
+            <div className="flex flex-col space-y-2">
               <div>
                 <h4 className="font-semibold text-white">{concept.term}</h4>
-                <p className="text-sm text-gray-400 mt-1">{concept.definition}</p>
+                <p className="text-sm text-gray-400">{concept.definition}</p>
               </div>
-              <div className="text-2xl font-mono text-emerald-400">
+              <div className="text-lg font-mono text-emerald-400 overflow-x-auto">
                 <span dangerouslySetInnerHTML={{ __html: `\\(${concept.latex}\\)` }} />
               </div>
             </div>
@@ -66,7 +56,7 @@ const KeyConceptsCard = React.memo(() => {
   );
 });
 
-// Chapter 3 specific configuration with navigation
+// All Chapter 3 sections
 const CHAPTER_3_SECTIONS = [
   {
     id: 'introduction',
@@ -232,6 +222,16 @@ const CHAPTER_3_SECTIONS = [
   }
 ];
 
+/**
+ * Chapter 3 Hub Component - Continuous Random Variables
+ * 
+ * Standardized implementation matching Chapter 1's clean patterns:
+ * - Uses useMathJax hook for LaTeX rendering
+ * - Single container pattern with consistent styling
+ * - Proper component structure and documentation
+ * 
+ * @returns {JSX.Element} The Chapter 3 hub page
+ */
 export default function ContinuousDistributionsHub() {
   const router = useRouter();
 

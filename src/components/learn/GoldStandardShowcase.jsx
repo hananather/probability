@@ -8,7 +8,8 @@ import { StatisticalTestCard, HypothesisSetup, TestStatistic, SignificanceResult
 import { MultiFormulaDisplay, createCorrelationFormulas, SimpleFormulaSelector } from '../ui/patterns/MultiFormulaDisplay';
 import { ComparisonTable, createCIPIComparison, SimpleComparisonTable } from '../ui/patterns/ComparisonTable';
 import { SideBySideFormulas, createCorrelationSideBySide, createRegressionSideBySide, StaticFormulaGrid } from '../ui/patterns/SideBySideFormulas';
-import { ChevronDown, ChevronUp, Star, Palette, Calculator, TestTube, BarChart3, Table, Grid3X3 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Star, Palette, Calculator, TestTube, BarChart3, Table, Grid3X3, HelpCircle } from 'lucide-react';
+import { QuizBreak } from '../mdx/QuizBreak';
 
 // Component showcases
 const componentShowcases = {
@@ -270,6 +271,96 @@ const componentShowcases = {
         </div>
       );
     })
+  },
+
+  quizComponent: {
+    name: 'Interactive Quiz Component',
+    icon: HelpCircle,
+    color: 'text-pink-400',
+    description: 'Interactive quizzes with single/multiple questions, progress tracking, and explanations',
+    component: React.memo(() => {
+      const [singleQuizComplete, setSingleQuizComplete] = useState(false);
+      const [multiQuizComplete, setMultiQuizComplete] = useState(false);
+      
+      return (
+        <div className="space-y-8">
+          {/* Single Question Example */}
+          <div className="space-y-4">
+            <h4 className="text-lg font-semibold text-pink-400">Single Question Quiz</h4>
+            <QuizBreak
+              question="What is the correlation coefficient when there's a perfect positive linear relationship?"
+              options={["0", "0.5", "1", "-1"]}
+              correct={2}
+              onComplete={() => setSingleQuizComplete(true)}
+            />
+            {singleQuizComplete && (
+              <p className="text-green-400 text-sm">✓ Great job! You completed the single question quiz.</p>
+            )}
+          </div>
+
+          {/* Multiple Questions Example */}
+          <div className="space-y-4">
+            <h4 className="text-lg font-semibold text-pink-400">Multiple Question Quiz with Explanations</h4>
+            <QuizBreak
+              questions={[
+                {
+                  question: "What does \\(r = 0\\) indicate?",
+                  options: [
+                    "Perfect positive correlation",
+                    "Perfect negative correlation", 
+                    "No linear correlation",
+                    "Strong correlation"
+                  ],
+                  correctIndex: 2,
+                  explanation: "When r = 0, there is no linear relationship between the variables. Note that this doesn't mean there's no relationship at all - there could still be a non-linear relationship."
+                },
+                {
+                  question: "If \\(r^2 = 0.64\\), what is the correlation coefficient?",
+                  options: ["0.64", "0.8", "±0.8", "0.32"],
+                  correctIndex: 2,
+                  explanation: "Since \\(r^2 = 0.64\\), we have \\(r = ±\\sqrt{0.64} = ±0.8\\). The sign depends on the direction of the relationship."
+                },
+                {
+                  question: "Which correlation value indicates the strongest relationship?",
+                  options: ["0.3", "-0.9", "0.7", "-0.5"],
+                  correctIndex: 1,
+                  explanation: "The strength of correlation is determined by the absolute value. |-0.9| = 0.9 is the largest, indicating the strongest relationship (negative in this case)."
+                }
+              ]}
+              onComplete={() => setMultiQuizComplete(true)}
+            />
+            {multiQuizComplete && (
+              <p className="text-green-400 text-sm">✓ Excellent! You've mastered correlation concepts.</p>
+            )}
+          </div>
+
+          {/* Usage Example */}
+          <div className="mt-8 p-4 bg-neutral-800 rounded-lg">
+            <h5 className="text-sm font-semibold text-neutral-400 mb-2">Basic Usage:</h5>
+            <pre className="text-xs text-green-400 overflow-x-auto">
+{`// Single question
+<QuizBreak
+  question="Your question here"
+  options={["A", "B", "C", "D"]}
+  correct={1}  // 0-indexed
+/>
+
+// Multiple questions with explanations
+<QuizBreak
+  questions={[
+    {
+      question: "Question 1",
+      options: ["A", "B", "C"],
+      correctIndex: 0,
+      explanation: "Why A is correct..."
+    }
+  ]}
+/>`}
+            </pre>
+          </div>
+        </div>
+      );
+    })
   }
 };
 
@@ -281,7 +372,8 @@ export function GoldStandardShowcase() {
     statisticalTests: false,
     multiFormula: false,
     sideBySideFormulas: false,
-    comparisonTables: false
+    comparisonTables: false,
+    quizComponent: false
   });
 
   const toggleComponent = (component) => {

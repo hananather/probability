@@ -1,20 +1,27 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import ChapterHub from "../shared/ChapterHub";
 import { motion } from "framer-motion";
 import { Card } from "../ui/card";
 import { createColorScheme } from "@/lib/design-system";
+import { useMathJax } from "../../hooks/useMathJax";
 import { 
   BarChart, TrendingUp, Activity, PieChart,
   Calculator, Sigma, LineChart, GitBranch
 } from 'lucide-react';
 
-// Get consistent color scheme
+// Get consistent color scheme for descriptive statistics
 const colors = createColorScheme('probability');
 
-// Population to Distribution Animation (from existing SamplingDistributionsHub)
-const SamplingAnimation = () => {
+/**
+ * Interactive animation showing the relationship between population sampling and sampling distributions.
+ * Demonstrates how individual samples from a population contribute to the Central Limit Theorem.
+ * 
+ * @component
+ * @returns {JSX.Element} SVG animation showing population -> samples -> distribution
+ */
+const SamplingAnimation = React.memo(() => {
   const [sampleIndex, setSampleIndex] = useState(0);
   const [histogramData, setHistogramData] = useState(Array(11).fill(2));
   
@@ -289,32 +296,26 @@ const SamplingAnimation = () => {
       </motion.g>
     </svg>
   );
-};
+});
 
-// Key Concepts Card
+SamplingAnimation.displayName = 'SamplingAnimation';
+
+/**
+ * Key concepts card displaying the fundamental statistical concepts covered in Chapter 4.
+ * Uses MathJax for LaTeX rendering of mathematical notation.
+ * 
+ * @component
+ * @returns {JSX.Element} Card component with animated concept items
+ */
 const KeyConceptsCard = React.memo(() => {
-  const contentRef = useRef(null);
   const concepts = [
     { term: "Central Tendency", definition: "Mean, median, and mode", latex: "\\bar{x}, \\tilde{x}" },
     { term: "Variability", definition: "Spread and dispersion", latex: "s^2, s" },
     { term: "Distributions", definition: "Shape of your data", latex: "f(x)" },
     { term: "CLT", definition: "The magic of sampling", latex: "\\bar{X} \\sim N" },
   ];
-
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  
+  const contentRef = useMathJax([concepts]);
 
   return (
     <Card ref={contentRef} className="mb-8 p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
@@ -326,14 +327,14 @@ const KeyConceptsCard = React.memo(() => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.1 }}
-            className="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50"
+            className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50"
           >
-            <div className="flex items-start justify-between">
+            <div className="flex flex-col space-y-2">
               <div>
                 <h4 className="font-semibold text-white">{concept.term}</h4>
-                <p className="text-sm text-gray-400 mt-1">{concept.definition}</p>
+                <p className="text-sm text-gray-400">{concept.definition}</p>
               </div>
-              <div className="text-2xl font-mono text-purple-400">
+              <div className="text-lg font-mono text-purple-400 overflow-x-auto">
                 <span dangerouslySetInnerHTML={{ __html: `\\(${concept.latex}\\)` }} />
               </div>
             </div>
@@ -343,6 +344,8 @@ const KeyConceptsCard = React.memo(() => {
     </Card>
   );
 });
+
+KeyConceptsCard.displayName = 'KeyConceptsCard';
 
 // Chapter 4 section configuration
 const CHAPTER_4_SECTIONS = [
@@ -448,9 +451,26 @@ const CHAPTER_4_SECTIONS = [
   }
 ];
 
+/**
+ * Main hub component for Chapter 4: Descriptive Statistics & Sampling Distributions.
+ * Provides navigation to all sections with progress tracking and interactive visualizations.
+ * 
+ * Features:
+ * - Interactive sampling animation demonstrating CLT
+ * - Key concepts overview with LaTeX rendering
+ * - Section navigation with progress tracking
+ * - Responsive design with smooth animations
+ * 
+ * @component
+ * @returns {JSX.Element} Complete chapter hub interface
+ */
 export default function DescriptiveStatisticsHub() {
   const router = useRouter();
 
+  /**
+   * Navigate to the selected section
+   * @param {Object} section - Section configuration object
+   */
   const handleSectionClick = (section) => {
     if (section?.route) {
       router.push(section.route);
