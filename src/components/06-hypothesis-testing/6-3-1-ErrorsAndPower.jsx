@@ -13,28 +13,14 @@ import { colors, createColorScheme } from '../../lib/design-system';
 import { Button } from '../ui/button';
 import BackToHub from '../ui/BackToHub';
 import { AlertTriangle, Shield, Target } from 'lucide-react';
+import { useMathJax } from '../../hooks/useMathJax';
 
 // Get vibrant Chapter 6 color scheme
 const chapterColors = createColorScheme('hypothesis');
 
 // Worked Example Component
 const WorkedExample = React.memo(function WorkedExample() {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  const contentRef = useMathJax();
   
   return (
     <VisualizationSection className="bg-gradient-to-br from-neutral-800/50 to-neutral-900/50 rounded-lg p-6 border border-neutral-700/50">
@@ -651,20 +637,79 @@ export default function ErrorsAndPower() {
         {/* Back to Hub Button */}
         <BackToHub chapter={6} />
 
-        {/* Introduction */}
+        {/* Enhanced Introduction with Analogies */}
         <VisualizationSection>
-          <div className="text-center space-y-4">
-            <h3 className="text-2xl font-bold text-white">The Cement Quality Testing Scenario</h3>
-            <p className="text-neutral-300 max-w-3xl mx-auto">
-              A cement manufacturer claims their process produces cement with mean strength μ = 5000 kg/cm². 
-              We test batches to verify this claim. What errors can we make, and how do we balance them?
-            </p>
-            <div className="bg-neutral-800 rounded-lg p-4 max-w-2xl mx-auto">
-              <p className="text-sm text-neutral-300">
-                <strong>H₀:</strong> μ = 5000 (process meets specifications)<br/>
-                <strong>H₁:</strong> μ &lt; 5000 (process produces weaker cement)<br/>
-                <strong>Given:</strong> σ = 120, initial n = 49, critical region: X̄ &lt; 4970
+          <div className="space-y-6">
+            {/* Intuitive Analogies */}
+            <div className="bg-gradient-to-br from-purple-900/20 to-purple-800/20 rounded-xl p-6 border border-purple-700/30">
+              <h3 className="text-lg font-bold text-purple-300 mb-4">Understanding Type I & II Errors Through Analogies</h3>
+              
+              <div className="grid md:grid-cols-2 gap-4 mb-6">
+                <div className="bg-gray-800/50 rounded-lg p-4">
+                  <h4 className="text-sm font-semibold text-blue-400 mb-3">🎯 Medical Testing Analogy</h4>
+                  <ul className="space-y-2 text-xs text-neutral-300">
+                    <li>• <span className="text-blue-300">Type I Error:</span> False positive - telling a healthy person they're sick</li>
+                    <li>• <span className="text-red-300">Type II Error:</span> False negative - telling a sick person they're healthy</li>
+                    <li>• <span className="text-green-300">Power:</span> Test's ability to detect illness when present</li>
+                  </ul>
+                </div>
+                
+                <div className="bg-gray-800/50 rounded-lg p-4">
+                  <h4 className="text-sm font-semibold text-yellow-400 mb-3">⚖️ Legal System Analogy</h4>
+                  <ul className="space-y-2 text-xs text-neutral-300">
+                    <li>• <span className="text-blue-300">Type I Error:</span> Convicting an innocent person</li>
+                    <li>• <span className="text-red-300">Type II Error:</span> Acquitting a guilty person</li>
+                    <li>• <span className="text-green-300">Power:</span> System's ability to convict the guilty</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div className="bg-blue-900/20 rounded-lg p-3 border border-blue-700/30">
+                <p className="text-xs text-neutral-300">
+                  <span className="font-semibold text-blue-400">Key Insight:</span> In both cases, we start by assuming 
+                  "innocence" (null hypothesis) and require strong evidence to reject it. Different contexts have different 
+                  consequences for each type of error!
+                </p>
+              </div>
+            </div>
+            
+            {/* The Scenario */}
+            <div className="text-center space-y-4">
+              <h3 className="text-2xl font-bold text-white">The Cement Quality Testing Scenario</h3>
+              <p className="text-neutral-300 max-w-3xl mx-auto">
+                A cement manufacturer claims their process produces cement with mean strength μ = 5000 kg/cm². 
+                We test batches to verify this claim. What errors can we make, and how do we balance them?
               </p>
+              <div className="bg-neutral-800 rounded-lg p-4 max-w-2xl mx-auto">
+                <p className="text-sm text-neutral-300">
+                  <strong>H₀:</strong> μ = 5000 (process meets specifications)<br/>
+                  <strong>H₁:</strong> μ &lt; 5000 (process produces weaker cement)<br/>
+                  <strong>Given:</strong> σ = 120, initial n = 49, critical region: X̄ &lt; 4970
+                </p>
+              </div>
+            </div>
+            
+            {/* Why This Matters */}
+            <div className="bg-gradient-to-br from-yellow-900/20 to-yellow-800/20 rounded-xl p-4 border border-yellow-700/30">
+              <h4 className="text-sm font-bold text-yellow-300 mb-2">Real-World Consequences</h4>
+              <div className="grid md:grid-cols-2 gap-3 text-xs text-neutral-300">
+                <div>
+                  <p className="font-semibold text-blue-300 mb-1">🚨 Type I Error (False Alarm):</p>
+                  <ul className="space-y-1 ml-4">
+                    <li>• Reject good batches of cement</li>
+                    <li>• Economic loss, production delays</li>
+                    <li>• Damaged supplier relationships</li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-semibold text-red-300 mb-1">⚠️ Type II Error (Missed Defect):</p>
+                  <ul className="space-y-1 ml-4">
+                    <li>• Accept weak cement</li>
+                    <li>• Building safety compromised</li>
+                    <li>• Potential structural failures</li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         </VisualizationSection>
@@ -830,41 +875,122 @@ export default function ErrorsAndPower() {
         {/* Worked Example Section */}
         <WorkedExample />
 
-        {/* Key Insights */}
+        {/* Enhanced Key Insights */}
         <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">
-          <h3 className="text-xl font-bold text-teal-400 mb-4">Key Insights</h3>
+          <h3 className="text-xl font-bold text-teal-400 mb-6">Key Insights & Understanding</h3>
           
-          <div className="grid md:grid-cols-2 gap-4 text-sm">
-            <div className="bg-neutral-800/50 rounded p-4">
-              <h4 className="font-bold text-white mb-2">The Fundamental Trade-off</h4>
-              <p className="text-neutral-300">
-                For fixed sample size, reducing Type I error (α) increases Type II error (β). 
-                You can't minimize both simultaneously without increasing n.
+          <div className="space-y-6">
+            {/* The Fundamental Trade-off */}
+            <div className="bg-gradient-to-br from-blue-900/20 to-red-900/20 rounded-lg p-5 border border-purple-700/30">
+              <h4 className="font-bold text-white mb-3 text-lg">The Fundamental Trade-off: You Can't Have It All</h4>
+              <div className="grid md:grid-cols-3 gap-4 mb-4">
+                <div className="bg-gray-800/50 rounded p-3 text-center">
+                  <p className="text-xs font-semibold text-blue-400 mb-2">Decrease α</p>
+                  <p className="text-xs text-neutral-300">Stricter evidence required</p>
+                  <p className="text-lg font-bold text-red-400 mt-1">↑ β increases</p>
+                </div>
+                <div className="bg-gray-800/50 rounded p-3 text-center">
+                  <p className="text-xs font-semibold text-red-400 mb-2">Decrease β</p>
+                  <p className="text-xs text-neutral-300">More sensitive test</p>
+                  <p className="text-lg font-bold text-blue-400 mt-1">↑ α increases</p>
+                </div>
+                <div className="bg-gray-800/50 rounded p-3 text-center">
+                  <p className="text-xs font-semibold text-green-400 mb-2">Decrease both?</p>
+                  <p className="text-xs text-neutral-300">Only one way:</p>
+                  <p className="text-lg font-bold text-green-400 mt-1">↑ n (sample size)</p>
+                </div>
+              </div>
+              <p className="text-xs text-neutral-400">
+                <span className="font-semibold">Think of it like a seesaw:</span> When one error goes down, the other goes up — unless you change the fulcrum (sample size)!
               </p>
             </div>
             
-            <div className="bg-neutral-800/50 rounded p-4">
-              <h4 className="font-bold text-white mb-2">Power Factors</h4>
-              <p className="text-neutral-300">
-                Power increases with: larger effect size |μ₁ - μ₀|, larger sample size n, 
-                higher α level, and lower population variance σ².
-              </p>
+            {/* Power Factors */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="bg-neutral-800/50 rounded p-4">
+                <h4 className="font-bold text-white mb-3">What Makes a Test Powerful?</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-start gap-2">
+                    <span className="text-green-400 text-lg mt-0.5">↑</span>
+                    <div>
+                      <p className="font-semibold text-green-400">Effect Size (δ)</p>
+                      <p className="text-xs text-neutral-400">Bigger differences are easier to detect</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-green-400 text-lg mt-0.5">↑</span>
+                    <div>
+                      <p className="font-semibold text-green-400">Sample Size (n)</p>
+                      <p className="text-xs text-neutral-400">More data = clearer picture</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-green-400 text-lg mt-0.5">↑</span>
+                    <div>
+                      <p className="font-semibold text-green-400">Significance Level (α)</p>
+                      <p className="text-xs text-neutral-400">Easier to reject when less strict</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-red-400 text-lg mt-0.5">↓</span>
+                    <div>
+                      <p className="font-semibold text-red-400">Variance (σ²)</p>
+                      <p className="text-xs text-neutral-400">Less noise = clearer signal</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-neutral-800/50 rounded p-4">
+                <h4 className="font-bold text-white mb-3">Sample Size Planning</h4>
+                <div className="bg-gray-900/50 rounded p-3 mb-3">
+                  <p className="text-xs font-mono text-neutral-300 mb-2">
+                    n ≈ ((z_α + z_β)σ / δ)²
+                  </p>
+                  <p className="text-xs text-neutral-400">
+                    where δ = |μ₀ - μ₁| is the effect you want to detect
+                  </p>
+                </div>
+                <div className="text-xs space-y-1 text-neutral-300">
+                  <p>• Want 80% power? Use z_β = 0.84</p>
+                  <p>• Want 90% power? Use z_β = 1.28</p>
+                  <p>• Smaller effects need larger samples!</p>
+                </div>
+              </div>
             </div>
             
-            <div className="bg-neutral-800/50 rounded p-4">
-              <h4 className="font-bold text-white mb-2">Sample Size Formula</h4>
-              <p className="text-neutral-300">
-                To achieve desired α and Power: n ≈ ((z_α + z_β)σ / δ)²
-                where δ = |μ₀ - μ₁| is the effect size.
-              </p>
-            </div>
-            
-            <div className="bg-neutral-800/50 rounded p-4">
-              <h4 className="font-bold text-white mb-2">Practical Implications</h4>
-              <p className="text-neutral-300">
-                Consider consequences: rejecting good cement (economic cost) vs. 
-                accepting weak cement (safety risk). Context determines which error is worse.
-              </p>
+            {/* Context Matters */}
+            <div className="bg-gradient-to-br from-yellow-900/20 to-orange-900/20 rounded-lg p-5 border border-yellow-700/30">
+              <h4 className="font-bold text-yellow-400 mb-3">Context Determines Error Priority</h4>
+              <div className="grid md:grid-cols-3 gap-3 text-xs">
+                <div className="bg-gray-800/50 rounded p-3">
+                  <p className="font-semibold text-blue-300 mb-2">Minimize Type I (α)</p>
+                  <p className="text-neutral-300 mb-2">When false positives are costly:</p>
+                  <ul className="space-y-1 text-neutral-400">
+                    <li>• Criminal trials</li>
+                    <li>• Scientific publications</li>
+                    <li>• FDA drug approval</li>
+                  </ul>
+                </div>
+                <div className="bg-gray-800/50 rounded p-3">
+                  <p className="font-semibold text-red-300 mb-2">Minimize Type II (β)</p>
+                  <p className="text-neutral-300 mb-2">When false negatives are dangerous:</p>
+                  <ul className="space-y-1 text-neutral-400">
+                    <li>• Cancer screening</li>
+                    <li>• Airport security</li>
+                    <li>• Quality control</li>
+                  </ul>
+                </div>
+                <div className="bg-gray-800/50 rounded p-3">
+                  <p className="font-semibold text-green-300 mb-2">Balance Both</p>
+                  <p className="text-neutral-300 mb-2">When both errors matter:</p>
+                  <ul className="space-y-1 text-neutral-400">
+                    <li>• A/B testing</li>
+                    <li>• Medical diagnosis</li>
+                    <li>• Manufacturing QC</li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         </VisualizationSection>

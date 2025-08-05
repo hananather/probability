@@ -10,12 +10,13 @@ import {
 import { Button } from '../ui/button';
 import { RangeSlider } from '../ui/RangeSlider';
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
+import { useMathJax } from '../../hooks/useMathJax';
 
 const colorScheme = createColorScheme('hypothesis');
 
 export default function HypothesisTestingFundamentals() {
-  // Ref for MathJax processing
-  const contentRef = useRef(null);
+  // Use MathJax hook for proper LaTeX rendering
+  const contentRef = useMathJax();
   
   // Part A: Small Sample State
   const [smallSampleFlips, setSmallSampleFlips] = useState([]);
@@ -31,21 +32,6 @@ export default function HypothesisTestingFundamentals() {
   const [explorerHeads, setExplorerHeads] = useState(50);
   const [showPValueExplorer, setShowPValueExplorer] = useState(false);
   
-  // MathJax processing
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [smallSampleFlips, largeSampleFlips, explorerHeads]);
   
   // Learning progression
   const [revealedSections, setRevealedSections] = useState({
@@ -655,25 +641,181 @@ export default function HypothesisTestingFundamentals() {
       description="Explore how sample size affects evidence strength in hypothesis testing"
     >
       <div ref={contentRef} className="space-y-8">
-        {/* Introduction */}
+        {/* Introduction with enhanced educational content */}
         <VisualizationSection>
-          <div className="text-center space-y-4">
-            <h3 className="text-xl font-bold text-white">The Coin Fairness Test</h3>
-            <p className="text-gray-300 max-w-3xl mx-auto text-sm">
-              Person A claims they have a fair coin (50% heads), but Person B is suspicious that 
-              it's biased against heads. How can we use data to evaluate this claim scientifically?
-            </p>
-            <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 rounded-xl p-6 max-w-2xl mx-auto border border-gray-700">
-              <div className="space-y-3">
-                <p className="text-sm font-bold text-blue-400">Hypotheses:</p>
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-300">
-                    <span className="font-mono text-white bg-gray-700 px-2 py-1 rounded" dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />
-                    <span className="ml-2">The coin is fair (<span dangerouslySetInnerHTML={{ __html: `\\(p = 0.5\\)` }} />)</span>
+          <div className="space-y-6">
+            {/* What is Hypothesis Testing? */}
+            <div className="bg-gradient-to-br from-purple-900/20 to-purple-800/20 rounded-xl p-6 border border-purple-700/30">
+              <h3 className="text-lg font-bold text-purple-300 mb-4">What is Hypothesis Testing?</h3>
+              <p className="text-sm text-gray-300 mb-4">
+                Hypothesis testing is a systematic method for making decisions based on data when facing uncertainty. It's a formal 
+                framework that helps us determine whether observed patterns in data are due to chance or represent real effects.
+              </p>
+              
+              <div className="bg-purple-900/30 rounded-lg p-4 mb-4">
+                <h4 className="text-sm font-semibold text-purple-200 mb-2">The Core Principle: Proof by Contradiction</h4>
+                <p className="text-xs text-gray-300 leading-relaxed">
+                  Hypothesis testing works like a mathematical proof by contradiction. We start by assuming the opposite of what 
+                  we want to prove (the null hypothesis), then see if our data would be extremely surprising under that assumption. 
+                  If the data would be very unlikely (p-value &lt; 0.05), we reject our initial assumption.
+                </p>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="bg-gray-800/50 rounded-lg p-4">
+                  <h4 className="text-sm font-semibold text-blue-400 mb-2">In Science:</h4>
+                  <ol className="text-xs text-gray-300 space-y-1">
+                    <li>1. Form a hypothesis</li>
+                    <li>2. Design an experiment</li>
+                    <li>3. Collect data</li>
+                    <li>4. Analyze results</li>
+                    <li>5. Draw conclusions</li>
+                  </ol>
+                </div>
+                <div className="bg-gray-800/50 rounded-lg p-4">
+                  <h4 className="text-sm font-semibold text-green-400 mb-2">In Statistics:</h4>
+                  <ol className="text-xs text-gray-300 space-y-1">
+                    <li>1. State <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /> and <span dangerouslySetInnerHTML={{ __html: `\\(H_1\\)` }} /></li>
+                    <li>2. Choose significance level</li>
+                    <li>3. Collect sample data</li>
+                    <li>4. Calculate test statistic</li>
+                    <li>5. Make decision</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+
+            {/* Understanding the Null Hypothesis Framework */}
+            <div className="bg-gradient-to-br from-teal-900/20 to-teal-800/20 rounded-xl p-6 border border-teal-700/30">
+              <h3 className="text-lg font-bold text-teal-300 mb-3">The Null Hypothesis Framework</h3>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-sm font-semibold text-teal-200 mb-2">Why Start with the Null?</h4>
+                  <p className="text-xs text-gray-300 leading-relaxed">
+                    We always start by assuming "nothing special is happening" (the null hypothesis). This gives us a baseline 
+                    to calculate probabilities. We can compute exactly how surprising our data would be if the null were true, 
+                    but we can't easily compute the probability under "something is happening" without being more specific.
                   </p>
-                  <p className="text-sm text-gray-300">
-                    <span className="font-mono text-white bg-gray-700 px-2 py-1 rounded" dangerouslySetInnerHTML={{ __html: `\\(H_1\\)` }} />
-                    <span className="ml-2">The coin is biased against heads (<span dangerouslySetInnerHTML={{ __html: `\\(p < 0.5\\)` }} />)</span>
+                </div>
+                
+                <div>
+                  <h4 className="text-sm font-semibold text-teal-200 mb-2">What Does "Evidence" Mean?</h4>
+                  <p className="text-xs text-gray-300 leading-relaxed">
+                    Evidence against the null hypothesis means observing data that would be unlikely if the null were true. 
+                    The p-value quantifies this: it's the probability of seeing data at least as extreme as what we observed, 
+                    assuming the null hypothesis is correct. <span className="font-semibold text-teal-300">Lower p-value = stronger evidence.</span>
+                  </p>
+                </div>
+                
+                <div className="bg-teal-900/30 rounded-lg p-3">
+                  <p className="text-xs text-teal-300">
+                    <span className="font-semibold">Key Insight:</span> We never "prove" the null hypothesis is true. We either:
+                  </p>
+                  <ul className="text-xs text-gray-300 mt-2 ml-4 space-y-1">
+                    <li>• Find sufficient evidence to reject it (p &lt; 0.05), OR</li>
+                    <li>• Fail to find sufficient evidence (p ≥ 0.05) - but this doesn't mean it's true!</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Why This Matters */}
+            <div className="bg-gradient-to-br from-yellow-900/20 to-yellow-800/20 rounded-xl p-6 border border-yellow-700/30">
+              <h3 className="text-lg font-bold text-yellow-300 mb-3">Why This Matters</h3>
+              <p className="text-sm text-gray-300 mb-3">
+                Hypothesis testing helps us distinguish between:
+              </p>
+              <div className="grid md:grid-cols-2 gap-3">
+                <div className="flex items-start gap-2">
+                  <span className="text-yellow-400 mt-1">•</span>
+                  <div>
+                    <p className="text-sm font-semibold text-yellow-200">Random variation</p>
+                    <p className="text-xs text-gray-400">"This happened by chance"</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-yellow-400 mt-1">•</span>
+                  <div>
+                    <p className="text-sm font-semibold text-yellow-200">Real effects</p>
+                    <p className="text-xs text-gray-400">"Something systematic is happening"</p>
+                  </div>
+                </div>
+              </div>
+              <p className="text-xs text-gray-400 mt-3">
+                Used in: Medical trials, quality control, A/B testing, scientific research, engineering specifications
+              </p>
+            </div>
+
+            {/* The Scenario */}
+            <div className="text-center space-y-4">
+              <h3 className="text-xl font-bold text-white">Our Example: The Coin Fairness Test</h3>
+              <p className="text-gray-300 max-w-3xl mx-auto text-sm">
+                Person A claims they have a fair coin (50% heads), but Person B is suspicious that 
+                it's biased against heads. Let's use hypothesis testing to evaluate this claim scientifically.
+              </p>
+              <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 rounded-xl p-6 max-w-2xl mx-auto border border-gray-700">
+                <div className="space-y-4">
+                  <p className="text-sm font-bold text-blue-400">Step 1: State the Hypotheses</p>
+                  <div className="space-y-3">
+                    <div className="bg-gray-900/50 rounded-lg p-3">
+                      <p className="text-sm text-gray-300">
+                        <span className="font-mono text-white bg-blue-700/30 px-2 py-1 rounded" dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />
+                        <span className="ml-2 font-semibold">Null Hypothesis:</span>
+                        <span className="ml-2">The coin is fair (<span dangerouslySetInnerHTML={{ __html: `\\(p = 0.5\\)` }} />)</span>
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1 ml-12">This is what we assume until proven otherwise</p>
+                    </div>
+                    <div className="bg-gray-900/50 rounded-lg p-3">
+                      <p className="text-sm text-gray-300">
+                        <span className="font-mono text-white bg-green-700/30 px-2 py-1 rounded" dangerouslySetInnerHTML={{ __html: `\\(H_1\\)` }} />
+                        <span className="ml-2 font-semibold">Alternative Hypothesis:</span>
+                        <span className="ml-2">The coin is biased against heads (<span dangerouslySetInnerHTML={{ __html: `\\(p < 0.5\\)` }} />)</span>
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1 ml-12">This is what we're trying to find evidence for</p>
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-400 bg-blue-900/20 rounded-lg p-3 mt-4">
+                    <span className="font-semibold text-blue-400">Key Insight:</span> We never "prove" <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /> is true. 
+                    We either find enough evidence to reject it, or we don't.
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Why Sample Size Matters - The Core Lesson */}
+            <div className="bg-gradient-to-br from-indigo-900/20 to-indigo-800/20 rounded-xl p-6 border border-indigo-700/30">
+              <h3 className="text-lg font-bold text-indigo-300 mb-3">The Power of Sample Size</h3>
+              <div className="space-y-4">
+                <p className="text-sm text-gray-300 leading-relaxed">
+                  One of the most important concepts in hypothesis testing is that <span className="font-semibold text-indigo-300">
+                  the same observed proportion can give very different p-values depending on sample size</span>. This is because:
+                </p>
+                
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="bg-indigo-900/30 rounded-lg p-4">
+                    <h4 className="text-sm font-semibold text-indigo-200 mb-2">Small Samples (n = 10)</h4>
+                    <ul className="text-xs text-gray-300 space-y-1">
+                      <li>• More variability expected by chance</li>
+                      <li>• Need extreme results for significance</li>
+                      <li>• Example: 3/10 heads (30%) → p ≈ 0.17 (not significant)</li>
+                      <li>• Hard to detect real effects</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="bg-indigo-900/30 rounded-lg p-4">
+                    <h4 className="text-sm font-semibold text-indigo-200 mb-2">Large Samples (n = 100)</h4>
+                    <ul className="text-xs text-gray-300 space-y-1">
+                      <li>• Less variability expected by chance</li>
+                      <li>• Small deviations can be significant</li>
+                      <li>• Example: 30/100 heads (30%) → p &lt; 0.001 (highly significant!)</li>
+                      <li>• Can detect subtle effects</li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <div className="bg-indigo-900/40 rounded-lg p-3">
+                  <p className="text-xs text-indigo-300">
+                    <span className="font-semibold">Interactive Demo Below:</span> You'll see this principle in action by testing 
+                    the same coin with different sample sizes. Watch how the evidence strength changes dramatically!
                   </p>
                 </div>
               </div>
@@ -992,12 +1134,26 @@ export default function HypothesisTestingFundamentals() {
                     <svg ref={largeDistRef} className="w-full h-full" />
                   </GraphContainer>
                   
-                  {/* Key Insight */}
+                  {/* Key Insight with enhanced explanation */}
                   <div className="bg-gradient-to-br from-blue-900/20 to-blue-800/20 border border-blue-700/30 rounded-xl p-6">
-                    <p className="text-sm text-blue-300">
-                      <span className="font-bold text-blue-400">Key Insight:</span> The same proportion of heads 
-                      ({(largeStats.proportion * 100).toFixed(0)}%) gives very different p-values depending on sample size! 
-                      With more data, we have stronger evidence to detect deviations from the null hypothesis.
+                    <h4 className="text-base font-bold text-blue-300 mb-3">Key Insight: The Power of Sample Size</h4>
+                    <p className="text-sm text-gray-300 mb-3">
+                      The same proportion of heads ({(largeStats.proportion * 100).toFixed(0)}%) gives very different p-values:
+                    </p>
+                    <div className="grid md:grid-cols-2 gap-4 mb-4">
+                      <div className="bg-gray-800/50 rounded-lg p-3">
+                        <p className="text-xs text-gray-400">Small sample (n=10)</p>
+                        <p className="text-lg font-mono font-bold text-white">p = {(smallStats.pValue * 100).toFixed(1)}%</p>
+                      </div>
+                      <div className="bg-gray-800/50 rounded-lg p-3">
+                        <p className="text-xs text-gray-400">Large sample (n=100)</p>
+                        <p className="text-lg font-mono font-bold text-green-400">p = {(largeStats.pValue * 100).toFixed(1)}%</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-blue-200">
+                      <span className="font-semibold">Why?</span> With more data, we're more confident that observed patterns 
+                      aren't just random noise. Think of it like this: seeing 3 heads in 10 flips could easily be chance, 
+                      but seeing 30 heads in 100 flips is much less likely if the coin is truly fair.
                     </p>
                   </div>
                 </>
@@ -1038,73 +1194,134 @@ export default function HypothesisTestingFundamentals() {
                 <svg ref={pValueRef} className="w-full h-full" />
               </GraphContainer>
               
-              {/* p-value interpretation */}
+              {/* Enhanced p-value interpretation */}
               <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-xl p-6 border border-gray-700">
-                <h4 className="text-base font-bold text-gray-200 mb-4">Interpretation</h4>
-                <div className="space-y-3">
-                  <p className="text-sm text-gray-300">
-                    With {explorerHeads} heads in 100 flips:
-                  </p>
-                  <p className="text-sm">
-                    <span className="text-gray-400">p-value = </span>
-                    <span className="font-mono text-lg text-white font-bold">
-                      {(calculatePValue(100, explorerHeads) * 100).toFixed(2)}%
-                    </span>
-                  </p>
-                  <p className="text-sm font-semibold">
-                    <span className={cn(
-                      calculatePValue(100, explorerHeads) < 0.001 ? "text-red-400" :
-                      calculatePValue(100, explorerHeads) < 0.01 ? "text-orange-400" :
-                      calculatePValue(100, explorerHeads) < 0.05 ? "text-yellow-400" :
-                      calculatePValue(100, explorerHeads) < 0.10 ? "text-blue-400" :
-                      "text-gray-400"
-                    )}>
-                      {calculatePValue(100, explorerHeads) < 0.001 ? "Extremely strong" :
-                       calculatePValue(100, explorerHeads) < 0.01 ? "Very strong" :
-                       calculatePValue(100, explorerHeads) < 0.05 ? "Strong" :
-                       calculatePValue(100, explorerHeads) < 0.10 ? "Moderate" :
-                       "Weak"} evidence against the null hypothesis
-                    </span>
-                  </p>
+                <h4 className="text-base font-bold text-gray-200 mb-4">Understanding the p-value</h4>
+                <div className="space-y-4">
+                  <div className="bg-blue-900/20 rounded-lg p-4 border border-blue-700/30">
+                    <p className="text-sm text-blue-300 font-semibold mb-2">What the p-value means:</p>
+                    <p className="text-xs text-gray-300">
+                      "If the coin were truly fair, what's the probability of seeing {explorerHeads} or fewer heads in 100 flips?"
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <p className="text-sm text-gray-300">
+                      With {explorerHeads} heads in 100 flips:
+                    </p>
+                    <p className="text-sm">
+                      <span className="text-gray-400">p-value = </span>
+                      <span className="font-mono text-lg text-white font-bold">
+                        {(calculatePValue(100, explorerHeads) * 100).toFixed(2)}%
+                      </span>
+                    </p>
+                    <p className="text-sm font-semibold">
+                      <span className={cn(
+                        calculatePValue(100, explorerHeads) < 0.001 ? "text-red-400" :
+                        calculatePValue(100, explorerHeads) < 0.01 ? "text-orange-400" :
+                        calculatePValue(100, explorerHeads) < 0.05 ? "text-yellow-400" :
+                        calculatePValue(100, explorerHeads) < 0.10 ? "text-blue-400" :
+                        "text-gray-400"
+                      )}>
+                        {calculatePValue(100, explorerHeads) < 0.001 ? "Extremely strong" :
+                         calculatePValue(100, explorerHeads) < 0.01 ? "Very strong" :
+                         calculatePValue(100, explorerHeads) < 0.05 ? "Strong" :
+                         calculatePValue(100, explorerHeads) < 0.10 ? "Moderate" :
+                         "Weak"} evidence against the null hypothesis
+                      </span>
+                    </p>
+                  </div>
+                  
+                  {/* Common thresholds */}
+                  <div className="bg-gray-900/50 rounded-lg p-3">
+                    <p className="text-xs font-semibold text-gray-400 mb-2">Common significance levels:</p>
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-400">α = 0.05 (5%)</span>
+                        <span className="text-gray-300">Standard in most fields</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-400">α = 0.01 (1%)</span>
+                        <span className="text-gray-300">More stringent</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-400">α = 0.001 (0.1%)</span>
+                        <span className="text-gray-300">Very stringent</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </VisualizationSection>
         )}
         
-        {/* Summary */}
+        {/* Enhanced Summary with Common Misconceptions */}
         {revealedSections.partC && (
-          <VisualizationSection className="bg-gradient-to-br from-purple-900/20 to-purple-800/20 border border-purple-700/30">
-            <div className="space-y-4">
-              <h3 className="text-base font-bold text-purple-300">Key Takeaways</h3>
+          <>
+            <VisualizationSection className="bg-gradient-to-br from-purple-900/20 to-purple-800/20 border border-purple-700/30">
               <div className="space-y-4">
-                <div className="flex gap-4">
-                  <span className="text-purple-400 text-lg">1.</span>
-                  <p className="text-sm text-gray-300">
-                    The p-value measures how likely we'd see our data (or more extreme) if <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /> were true
-                  </p>
-                </div>
-                <div className="flex gap-4">
-                  <span className="text-purple-400 text-lg">2.</span>
-                  <p className="text-sm text-gray-300">
-                    Sample size dramatically affects our ability to detect deviations from <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />
-                  </p>
-                </div>
-                <div className="flex gap-4">
-                  <span className="text-purple-400 text-lg">3.</span>
-                  <p className="text-sm text-gray-300">
-                    Small p-values provide evidence against <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />, but don't prove <span dangerouslySetInnerHTML={{ __html: `\\(H_1\\)` }} /> is true
-                  </p>
-                </div>
-                <div className="flex gap-4">
-                  <span className="text-purple-400 text-lg">4.</span>
-                  <p className="text-sm text-gray-300">
-                    Failing to reject <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /> doesn't mean <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /> is true - we might just lack sufficient data
-                  </p>
+                <h3 className="text-base font-bold text-purple-300">Key Takeaways</h3>
+                <div className="space-y-4">
+                  <div className="flex gap-4">
+                    <span className="text-purple-400 text-lg">1.</span>
+                    <p className="text-sm text-gray-300">
+                      The p-value measures how likely we'd see our data (or more extreme) if <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /> were true
+                    </p>
+                  </div>
+                  <div className="flex gap-4">
+                    <span className="text-purple-400 text-lg">2.</span>
+                    <p className="text-sm text-gray-300">
+                      Sample size dramatically affects our ability to detect deviations from <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />
+                    </p>
+                  </div>
+                  <div className="flex gap-4">
+                    <span className="text-purple-400 text-lg">3.</span>
+                    <p className="text-sm text-gray-300">
+                      Small p-values provide evidence against <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />, but don't prove <span dangerouslySetInnerHTML={{ __html: `\\(H_1\\)` }} /> is true
+                    </p>
+                  </div>
+                  <div className="flex gap-4">
+                    <span className="text-purple-400 text-lg">4.</span>
+                    <p className="text-sm text-gray-300">
+                      Failing to reject <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /> doesn't mean <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /> is true - we might just lack sufficient data
+                    </p>
+                  </div>
+                  <div className="flex gap-4">
+                    <span className="text-purple-400 text-lg">5.</span>
+                    <p className="text-sm text-gray-300">
+                      The significance level (α) is chosen <em>before</em> collecting data - it's our tolerance for Type I error
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </VisualizationSection>
+            </VisualizationSection>
+            
+            {/* Common Misconceptions */}
+            <VisualizationSection className="bg-gradient-to-br from-red-900/20 to-red-800/20 border border-red-700/30">
+              <div className="space-y-4">
+                <h3 className="text-base font-bold text-red-300">Common Misconceptions About p-values</h3>
+                <div className="space-y-3">
+                  <div className="bg-gray-900/50 rounded-lg p-4">
+                    <p className="text-sm font-semibold text-red-400 mb-1">❌ Wrong: "The p-value is the probability that <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /> is true"</p>
+                    <p className="text-xs text-gray-300">✓ Right: The p-value assumes <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /> is true and tells us how likely our data would be</p>
+                  </div>
+                  <div className="bg-gray-900/50 rounded-lg p-4">
+                    <p className="text-sm font-semibold text-red-400 mb-1">❌ Wrong: "A p-value of 0.04 means there's a 4% chance our results are due to chance"</p>
+                    <p className="text-xs text-gray-300">✓ Right: It means if <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /> were true, we'd see results this extreme 4% of the time</p>
+                  </div>
+                  <div className="bg-gray-900/50 rounded-lg p-4">
+                    <p className="text-sm font-semibold text-red-400 mb-1">❌ Wrong: "p {'>'} 0.05 means there's no effect"</p>
+                    <p className="text-xs text-gray-300">✓ Right: It means we don't have enough evidence to reject <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /> at the 5% level</p>
+                  </div>
+                  <div className="bg-gray-900/50 rounded-lg p-4">
+                    <p className="text-sm font-semibold text-red-400 mb-1">❌ Wrong: "Smaller p-values mean larger effects"</p>
+                    <p className="text-xs text-gray-300">✓ Right: p-values measure evidence strength, not effect size. A tiny effect with huge n can give a tiny p-value</p>
+                  </div>
+                </div>
+              </div>
+            </VisualizationSection>
+          </>
         )}
         
         {/* Reset button */}

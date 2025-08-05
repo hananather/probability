@@ -186,7 +186,6 @@ export default function PairedTwoSampleTest() {
 
   // Combined scatter plot initialization and data rendering
   useEffect(() => {
-    console.log('[Scatter] Effect triggered - currentStep:', currentStep, 'scatterAnimationPhase:', scatterAnimationPhase);
     
     // Clear any existing timeout
     if (animationTimeoutRef.current) {
@@ -201,7 +200,6 @@ export default function PairedTwoSampleTest() {
     
     // Check if ref is available
     if (!scatterRef.current) {
-      console.log('[Scatter] Ref not ready');
       return;
     }
     
@@ -211,7 +209,6 @@ export default function PairedTwoSampleTest() {
     // Initialize and render scatter plot
     animationTimeoutRef.current = setTimeout(() => {
       try {
-        console.log('[Scatter] Starting initialization and render...');
         const svg = d3.select(scatterRef.current);
         
         // Check if SVG element exists and has dimensions
@@ -222,7 +219,6 @@ export default function PairedTwoSampleTest() {
         }
         
         const rect = svgNode.getBoundingClientRect();
-        console.log('[Scatter] SVG dimensions:', rect.width, 'x', rect.height);
         
         // Clear any existing content
         svg.selectAll("*").remove();
@@ -347,8 +343,7 @@ export default function PairedTwoSampleTest() {
        .attr("height", "100%");
         
         // Now add the data and animations
-        console.log('[Scatter] Adding data visualizations...');
-
+        // Add data visualizations
     // Show diagonal line
     g.select(".diagonal-line")
       .transition()
@@ -515,7 +510,6 @@ export default function PairedTwoSampleTest() {
     
     // Mark as complete
         setScatterLoading(false);
-        console.log('[Scatter] Initialization and rendering complete');
         
       } catch (error) {
         console.error('[Scatter] Error in visualization:', error);

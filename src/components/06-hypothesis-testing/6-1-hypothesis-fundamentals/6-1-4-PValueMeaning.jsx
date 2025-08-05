@@ -14,6 +14,7 @@ import { Button } from '../../ui/button';
 export default function PValueMeaning() {
   // State
   const [currentPValue, setCurrentPValue] = useState(null);
+  const [showConceptualIntro, setShowConceptualIntro] = useState(true);
   const [pValues, setPValues] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
   const [highlightRejected, setHighlightRejected] = useState(false);
@@ -510,15 +511,100 @@ export default function PValueMeaning() {
       title="P-Values: What They Really Mean"
       description="Test a perfectly good random number generator and see how often it looks 'broken'"
     >
+      {/* Conceptual Foundation Section */}
+      {showConceptualIntro && (
+        <div className="mb-6 bg-gradient-to-r from-teal-500/10 to-cyan-500/10 rounded-lg p-6 border border-teal-500/20">
+          <div className="flex justify-between items-start mb-4">
+            <h3 className="text-lg font-semibold text-teal-400">Understanding P-Values: The Foundation</h3>
+            <Button
+              onClick={() => setShowConceptualIntro(false)}
+              variant="ghost"
+              size="sm"
+              className="text-neutral-400 hover:text-neutral-200"
+            >
+              ✕
+            </Button>
+          </div>
+          
+          <div className="space-y-4 text-sm">
+            <div>
+              <h4 className="font-semibold text-neutral-200 mb-2">What is a P-Value?</h4>
+              <p className="text-neutral-300 leading-relaxed">
+                A p-value answers one specific question: <span className="font-semibold text-teal-300">"If the null hypothesis were true, 
+                how surprising would our observed data be?"</span> It's the probability of getting results at least as extreme as what we observed, 
+                assuming the null hypothesis is correct.
+              </p>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-neutral-200 mb-2">The Logic: Proof by Contradiction</h4>
+              <p className="text-neutral-300 leading-relaxed mb-2">
+                Hypothesis testing uses the same logic as proof by contradiction in mathematics:
+              </p>
+              <ol className="list-decimal list-inside space-y-1 text-neutral-300 ml-2">
+                <li>Assume the null hypothesis is true (e.g., "this coin is fair")</li>
+                <li>Calculate how surprising our data would be under this assumption</li>
+                <li>If the data would be very surprising (p &lt; 0.05), we reject our assumption</li>
+                <li>Conclude the alternative hypothesis is more plausible</li>
+              </ol>
+            </div>
+            
+            <div className="bg-red-500/10 border border-red-500/30 rounded p-3">
+              <h4 className="font-semibold text-red-400 mb-2">⚠️ Common Misconceptions</h4>
+              <ul className="text-xs text-neutral-300 space-y-1">
+                <li>• <span className="text-red-300">Wrong:</span> "P = 0.03 means 3% chance the null hypothesis is true"</li>
+                <li>• <span className="text-green-300">Right:</span> "P = 0.03 means if the null were true, we'd see data this extreme only 3% of the time"</li>
+                <li className="mt-2">• <span className="text-red-300">Wrong:</span> "P = 0.03 means 97% chance our alternative hypothesis is correct"</li>
+                <li>• <span className="text-green-300">Right:</span> "P = 0.03 means our data is surprising under the null hypothesis"</li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-neutral-200 mb-2">Why 0.05?</h4>
+              <p className="text-neutral-300 leading-relaxed">
+                The 0.05 threshold is a convention, not a law of nature. It means we're willing to falsely reject a true null hypothesis 
+                5% of the time. This 5% false positive rate (Type I error) was chosen as a reasonable balance, but different fields and 
+                situations may require different thresholds.
+              </p>
+            </div>
+            
+            <div className="bg-teal-500/10 border border-teal-500/30 rounded p-3">
+              <p className="text-sm text-teal-300 font-semibold mb-1">🎯 Interactive Demo Below</p>
+              <p className="text-xs text-neutral-300">
+                We'll test a perfectly good random number generator repeatedly. Even though it's truly random, 
+                about 5% of tests will show p &lt; 0.05 - these are false positives!
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Controls Section */}
         <div className="lg:col-span-1 space-y-4">
           <ControlGroup title="Random Number Test">
             <div className="space-y-3">
-              <p className="text-sm text-neutral-300">
-                Testing if Math.random() produces uniform distributions. 
-                We divide [0,1] into 10 bins and check if each gets ~10% of values.
+              <p className="text-sm text-neutral-300 leading-relaxed">
+                We're testing if Math.random() produces truly uniform random numbers using a 
+                <span className="font-semibold text-cyan-300"> chi-square goodness-of-fit test</span>.
               </p>
+              
+              <div className="bg-neutral-700/50 rounded p-3 text-xs space-y-2">
+                <p className="text-neutral-300">
+                  <span className="font-semibold">How it works:</span>
+                </p>
+                <ol className="list-decimal list-inside space-y-1 text-neutral-400 ml-1">
+                  <li>Generate 100 random numbers between 0 and 1</li>
+                  <li>Count how many fall into each of 10 equal bins</li>
+                  <li>Compare observed counts to expected (10 per bin)</li>
+                  <li>Calculate chi-square statistic: measures total deviation</li>
+                  <li>Convert to p-value: probability of this deviation by chance</li>
+                </ol>
+                <p className="text-neutral-300 mt-2">
+                  <span className="font-semibold">The twist:</span> Math.random() IS truly random, 
+                  so any "significant" results are false positives!
+                </p>
+              </div>
               
               <Button
                 onClick={runSingleTest}
@@ -674,12 +760,34 @@ export default function PValueMeaning() {
           <div className="bg-neutral-800/50 rounded-lg p-4">
             <h4 className="font-semibold text-sm mb-2 text-teal-400">Key Takeaways</h4>
             <ul className="text-xs text-neutral-300 space-y-1">
-              <li>• P-values measure surprise under the null hypothesis</li>
+              <li>• P-values measure surprise under the null hypothesis, not truth</li>
               <li>• Even perfectly fair systems produce "significant" results ~5% of the time</li>
-              <li>• A single p &lt; 0.05 doesn't prove anything is wrong</li>
+              <li>• A single p &lt; 0.05 doesn't prove anything is wrong - it's just evidence</li>
               <li>• The p-value is NOT the probability that the null hypothesis is true</li>
-              <li>• Multiple testing increases false positive rates</li>
+              <li>• Multiple testing increases false positive rates dramatically</li>
+              <li>• Statistical significance ≠ practical importance</li>
+              <li>• P-values don't measure effect size - a tiny effect can have p < 0.001</li>
             </ul>
+          </div>
+          
+          {/* Why This Matters */}
+          <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-lg p-4 border border-purple-500/20">
+            <h4 className="font-semibold text-sm mb-2 text-purple-400">Why This Matters</h4>
+            <div className="text-xs text-neutral-300 space-y-2">
+              <p className="leading-relaxed">
+                Understanding p-values correctly is crucial for making sound decisions based on data. Misinterpreting them can lead to:
+              </p>
+              <ul className="space-y-1 ml-2">
+                <li>• <span className="text-purple-300">False alarms:</span> Thinking something is wrong when it isn't</li>
+                <li>• <span className="text-purple-300">Publication bias:</span> Only publishing "significant" results</li>
+                <li>• <span className="text-purple-300">P-hacking:</span> Testing until you find p &lt; 0.05</li>
+                <li>• <span className="text-purple-300">Poor decisions:</span> Acting on statistical noise rather than real effects</li>
+              </ul>
+              <p className="mt-2 leading-relaxed">
+                Remember: Statistical significance ≠ practical importance. A very small effect can be statistically significant 
+                with large samples, while a large effect might not reach significance with small samples.
+              </p>
+            </div>
           </div>
         </div>
       </div>

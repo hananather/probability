@@ -98,6 +98,32 @@ const MathematicalFramework = React.memo(function MathematicalFramework() {
     <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">
       <h3 className="text-xl font-bold text-teal-400 mb-6">Mathematical Framework</h3>
       
+      {/* Why We Standardize - Conceptual Foundation */}
+      <div className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-lg p-5 mb-6 border border-indigo-500/20">
+        <h4 className="font-bold text-indigo-300 mb-3">Why Do We Standardize? The Key Insight</h4>
+        <div className="text-sm text-neutral-300 space-y-3">
+          <p className="leading-relaxed">
+            <span className="font-semibold text-indigo-300">The Problem:</span> Sample means vary from sample to sample, 
+            even when the null hypothesis is true. But how much variation is "normal" vs "surprising"? This depends on 
+            both the population variance (σ) and sample size (n).
+          </p>
+          
+          <p className="leading-relaxed">
+            <span className="font-semibold text-indigo-300">The Solution:</span> Standardization converts our sample mean 
+            to a Z-score - measuring <em>"how many standard errors away from the hypothesized mean"</em>. This transforms 
+            our problem from any scale (kg, cm, $) to a universal scale where we know the probabilities.
+          </p>
+          
+          <div className="bg-indigo-900/30 rounded p-3">
+            <p className="text-xs leading-relaxed">
+              <span className="font-semibold">Analogy:</span> It's like converting temperatures from Celsius to a 
+              "standard deviation scale" - instead of asking "is 25°C hot?", we ask "is this temperature 2 standard 
+              deviations above normal?" The second question has the same answer everywhere!
+            </p>
+          </div>
+        </div>
+      </div>
+      
       <div ref={contentRef} className="grid md:grid-cols-2 gap-6">
         <div className="bg-neutral-900/50 rounded-lg p-4">
           <h4 className="font-bold text-white mb-3">Test Statistic</h4>
@@ -106,7 +132,15 @@ const MathematicalFramework = React.memo(function MathematicalFramework() {
             <div className="text-center text-teal-400 my-3">
               <span dangerouslySetInnerHTML={{ __html: `\\[Z = \\frac{\\bar{X} - \\mu_0}{\\sigma/\\sqrt{n}} \\sim N(0, 1)\\]` }} />
             </div>
-            <p className="mt-2">Under <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />, Z follows standard normal</p>
+            
+            <div className="mt-3 text-xs space-y-1">
+              <p><span className="text-teal-300">• Numerator:</span> How far our sample mean is from the hypothesized value</p>
+              <p><span className="text-teal-300">• Denominator:</span> Standard error = <span dangerouslySetInnerHTML={{ __html: `\\(\\sigma/\\sqrt{n}\\)` }} /></p>
+              <p className="pl-4 text-neutral-400">→ Measures typical variation in sample means</p>
+              <p className="pl-4 text-neutral-400">→ Gets smaller as n increases (more precision)</p>
+            </div>
+            
+            <p className="mt-3">Under <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />, Z follows standard normal</p>
           </div>
         </div>
 
@@ -895,6 +929,64 @@ export default function TestForMeanKnownVariance() {
             </div>
             
             <HypothesisDisplay hypothesisType={hypothesisType} />
+          </div>
+        </VisualizationSection>
+
+        {/* When is Variance Known? */}
+        <VisualizationSection className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 rounded-lg p-6 border border-amber-500/20">
+          <h3 className="text-xl font-bold text-amber-400 mb-4">When is Variance Actually Known?</h3>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="font-semibold text-neutral-200 mb-3">Real Scenarios with Known σ</h4>
+              <ul className="text-sm text-neutral-300 space-y-2">
+                <li className="flex items-start">
+                  <span className="text-amber-400 mr-2">•</span>
+                  <span><strong>Manufacturing:</strong> Years of historical data from stable processes</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-amber-400 mr-2">•</span>
+                  <span><strong>Measurement instruments:</strong> Calibrated devices with known precision</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-amber-400 mr-2">•</span>
+                  <span><strong>Quality control:</strong> Long-term process monitoring data</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-amber-400 mr-2">•</span>
+                  <span><strong>Simulations:</strong> When we control the data generation process</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-neutral-200 mb-3">Z-test vs T-test: When to Use Which?</h4>
+              <div className="text-sm text-neutral-300 space-y-3">
+                <div className="bg-amber-900/20 rounded p-3">
+                  <p className="font-semibold text-amber-300">Use Z-test when:</p>
+                  <ul className="text-xs mt-1 space-y-1">
+                    <li>• Population variance is truly known</li>
+                    <li>• Sample size is large (n {'>'} 30) - CLT applies</li>
+                    <li>• Historical data provides reliable σ estimate</li>
+                  </ul>
+                </div>
+                
+                <div className="bg-orange-900/20 rounded p-3">
+                  <p className="font-semibold text-orange-300">Use T-test when:</p>
+                  <ul className="text-xs mt-1 space-y-1">
+                    <li>• Population variance is unknown (most common)</li>
+                    <li>• Small sample size (n {'<'} 30)</li>
+                    <li>• Estimating σ from the sample itself</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-4 p-3 bg-amber-900/30 rounded">
+            <p className="text-sm text-amber-300">
+              <span className="font-semibold">Note:</span> In practice, σ is rarely truly known. The z-test is often taught first 
+              because it's simpler mathematically, but the t-test is more commonly used in real applications.
+            </p>
           </div>
         </VisualizationSection>
 

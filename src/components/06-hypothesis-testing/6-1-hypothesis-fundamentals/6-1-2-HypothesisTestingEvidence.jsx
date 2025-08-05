@@ -461,6 +461,79 @@ export default function HypothesisTestingEvidence() {
       title="Evidence Accumulation: Testing a Die"
       description="Roll the die to gather evidence. Is it fair or loaded?"
     >
+      {/* Conceptual Foundation: Chi-Square Test */}
+      <div className="mb-6 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-lg p-6 border border-indigo-500/20">
+        <h3 className="text-lg font-semibold text-indigo-400 mb-4">Understanding the Chi-Square Test</h3>
+        
+        <div className="space-y-4">
+          <div>
+            <h4 className="font-semibold text-neutral-200 mb-2">What is the Chi-Square Test?</h4>
+            <p className="text-sm text-neutral-300 leading-relaxed">
+              The chi-square (χ²) goodness-of-fit test helps us determine if observed data matches what we'd expect 
+              under a specific hypothesis. It measures <span className="font-semibold text-indigo-300">the total 
+              squared deviation between what we observed and what we expected</span>.
+            </p>
+          </div>
+          
+          <div className="bg-indigo-500/10 rounded p-4">
+            <h4 className="font-semibold text-neutral-200 mb-2">The Chi-Square Formula</h4>
+            <div className="text-center my-3">
+              <span className="text-lg font-mono text-indigo-300">
+                χ² = Σ [(Observed - Expected)² / Expected]
+              </span>
+            </div>
+            <p className="text-xs text-neutral-300 leading-relaxed">
+              For each category (die face), we calculate how far the observed count is from the expected count, 
+              square it (to make all deviations positive), and divide by the expected count (to normalize). 
+              Then we sum across all categories.
+            </p>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold text-neutral-200 mb-2">Why Use Chi-Square for a Die?</h4>
+            <ul className="text-sm text-neutral-300 space-y-2">
+              <li className="flex items-start">
+                <span className="text-indigo-400 mr-2">•</span>
+                <span><strong>Multiple categories:</strong> A die has 6 faces, not just 2 outcomes like a coin</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-indigo-400 mr-2">•</span>
+                <span><strong>Overall pattern:</strong> It captures deviations across ALL faces simultaneously</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-indigo-400 mr-2">•</span>
+                <span><strong>Single test statistic:</strong> Converts 6 observations into one number for easy interpretation</span>
+              </li>
+            </ul>
+          </div>
+          
+          <div className="bg-purple-500/10 rounded p-4">
+            <h4 className="font-semibold text-purple-300 mb-2">Interpreting Chi-Square Values</h4>
+            <div className="grid md:grid-cols-2 gap-3 text-sm">
+              <div>
+                <p className="font-semibold text-purple-200">Small χ² (near 0)</p>
+                <p className="text-xs text-neutral-300">Observed ≈ Expected → Consistent with fair die</p>
+              </div>
+              <div>
+                <p className="font-semibold text-purple-200">Large χ² (> 11.07)</p>
+                <p className="text-xs text-neutral-300">Big deviations → Evidence of unfairness (p < 0.05)</p>
+              </div>
+            </div>
+            <p className="text-xs text-neutral-400 mt-3">
+              With 5 degrees of freedom (6 faces - 1), the critical value at α = 0.05 is 11.07
+            </p>
+          </div>
+          
+          <div className="bg-teal-500/10 rounded p-3">
+            <p className="text-sm text-teal-300 font-semibold mb-1">🎲 Interactive Demo Below</p>
+            <p className="text-xs text-neutral-300">
+              Roll the die repeatedly and watch how the chi-square statistic evolves. Notice how random 
+              variation in early rolls can look like bias, but true patterns emerge with more data!
+            </p>
+          </div>
+        </div>
+      </div>
+      
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Controls Section */}
         <div className="lg:col-span-1 space-y-4">
@@ -528,6 +601,39 @@ export default function HypothesisTestingEvidence() {
                 )}>
                   {pValue.toFixed(4)}
                 </span>
+              </div>
+            </div>
+            
+            {/* Degrees of Freedom Explanation */}
+            <div className="mt-3 p-3 bg-neutral-700/50 rounded text-xs">
+              <p className="text-neutral-300 mb-1">
+                <span className="font-semibold text-neutral-200">Degrees of Freedom = 5</span>
+              </p>
+              <p className="text-neutral-400 leading-relaxed">
+                With 6 die faces and the constraint that counts must sum to total rolls, 
+                only 5 values can vary freely. The 6th is determined by the others.
+              </p>
+            </div>
+          </ControlGroup>
+          
+          {/* Real-World Applications */}
+          <ControlGroup title="When to Use Chi-Square">
+            <div className="text-xs text-neutral-300 space-y-2">
+              <div>
+                <p className="font-semibold text-teal-300">Quality Control</p>
+                <p className="text-neutral-400">Testing if manufacturing defects occur at expected rates</p>
+              </div>
+              <div>
+                <p className="font-semibold text-teal-300">A/B Testing</p>
+                <p className="text-neutral-400">Comparing user behavior across multiple options</p>
+              </div>
+              <div>
+                <p className="font-semibold text-teal-300">Genetics</p>
+                <p className="text-neutral-400">Testing if offspring ratios match Mendelian predictions</p>
+              </div>
+              <div>
+                <p className="font-semibold text-teal-300">Survey Analysis</p>
+                <p className="text-neutral-400">Checking if response distributions differ from expectations</p>
               </div>
             </div>
           </ControlGroup>

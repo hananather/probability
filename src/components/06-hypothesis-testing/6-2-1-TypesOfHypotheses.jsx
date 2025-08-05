@@ -794,29 +794,125 @@ export default function TypesOfHypotheses({ onSwitchToInteractive }) {
       subtitle="Understanding one-tailed and two-tailed tests"
     >
       <div className="space-y-10">
-        {/* Introduction Section - MOVED TO TOP */}
-        <section className="space-y-4">
-          <h2 className="text-xl font-bold text-white">Understanding Hypothesis Tests</h2>
+        {/* Enhanced Introduction Section */}
+        <section className="space-y-6">
+          {/* Conceptual Foundation */}
+          <div className="bg-gradient-to-br from-purple-900/20 to-purple-800/20 rounded-xl p-6 border border-purple-700/30">
+            <h2 className="text-xl font-bold text-purple-300 mb-4">Why Different Types of Tests?</h2>
+            <p className="text-sm text-gray-300 mb-4">
+              In hypothesis testing, the alternative hypothesis (H₁) defines what we're looking for. The type of test we choose 
+              depends on our research question: Are we looking for any difference? Only increases? Only decreases?
+            </p>
+            <div className="bg-purple-900/30 rounded-lg p-4">
+              <p className="text-xs text-purple-200 font-semibold mb-2">The Golden Rule:</p>
+              <p className="text-sm text-gray-300">
+                <span className="font-semibold text-purple-300">Choose your test type BEFORE collecting data!</span> Looking at 
+                the data first and then choosing a test that gives significance is p-hacking and leads to false discoveries.
+              </p>
+            </div>
+          </div>
+          
+          {/* Quick Overview */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <ConceptCard title="The Logic" icon={BookOpen}>
-              <ol className="list-decimal list-inside space-y-1 text-sm">
-                <li>Assume the null hypothesis (H₀) is true</li>
-                <li>Calculate how likely our sample data would be if H₀ were true</li>
-                <li>If the data is very unlikely under H₀, we reject it</li>
-              </ol>
+            <ConceptCard title="Two-Tailed Test" icon={BookOpen} variant="primary">
+              <div className="space-y-2">
+                <p className="text-xl font-bold text-center text-purple-300">μ ≠ μ₀</p>
+                <p className="text-xs">"Is there ANY difference?"</p>
+                <ul className="text-xs space-y-1 mt-2">
+                  <li>• Most conservative option</li>
+                  <li>• Splits α between both tails</li>
+                  <li>• Default for exploratory research</li>
+                </ul>
+              </div>
             </ConceptCard>
             
-            <ConceptCard title="Choosing Your Test" icon={AlertCircle}>
-              <ul className="list-disc list-inside space-y-1 text-sm">
-                <li><strong>Two-tailed:</strong> When direction doesn't matter (≠)</li>
-                <li><strong>Left-tailed:</strong> When testing for decrease ({'<'})</li>
-                <li><strong>Right-tailed:</strong> When testing for increase ({'>'})</li>
-              </ul>
+            <ConceptCard title="Left-Tailed Test" icon={AlertCircle} variant="primary">
+              <div className="space-y-2">
+                <p className="text-xl font-bold text-center text-blue-300">μ {'<'} μ₀</p>
+                <p className="text-xs">"Is it LESS than expected?"</p>
+                <ul className="text-xs space-y-1 mt-2">
+                  <li>• All α in left tail</li>
+                  <li>• More power to detect decreases</li>
+                  <li>• Ignores increases entirely</li>
+                </ul>
+              </div>
             </ConceptCard>
             
-            <ConceptCard title="Key Principle" icon={Lightbulb} variant="warning">
-              <p className="text-sm">Your research question should determine the test type, not the data. Choose your test before looking at results!</p>
+            <ConceptCard title="Right-Tailed Test" icon={Lightbulb} variant="primary">
+              <div className="space-y-2">
+                <p className="text-xl font-bold text-center text-green-300">μ {'>'} μ₀</p>
+                <p className="text-xs">"Is it MORE than expected?"</p>
+                <ul className="text-xs space-y-1 mt-2">
+                  <li>• All α in right tail</li>
+                  <li>• More power to detect increases</li>
+                  <li>• Ignores decreases entirely</li>
+                </ul>
+              </div>
             </ConceptCard>
+          </div>
+        </section>
+        
+        {/* Decision Framework */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-bold text-white">How to Choose Your Test Type</h2>
+          <div className="bg-gradient-to-br from-teal-900/20 to-teal-800/20 rounded-xl p-6 border border-teal-700/30">
+            <h3 className="text-lg font-bold text-teal-300 mb-4">Decision Framework</h3>
+            
+            <div className="space-y-4">
+              <div className="bg-gray-800/50 rounded-lg p-4">
+                <h4 className="font-semibold text-white mb-2">Ask yourself: What would be practically important?</h4>
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-start gap-3">
+                    <span className="text-purple-400 font-bold mt-0.5">≠</span>
+                    <div>
+                      <p className="font-semibold text-purple-300">Use Two-Tailed When:</p>
+                      <ul className="text-xs text-gray-300 mt-1 space-y-1">
+                        <li>• Both increases AND decreases would be important to detect</li>
+                        <li>• You're doing exploratory research</li>
+                        <li>• The direction of effect is genuinely unknown</li>
+                        <li>• Example: "Does this drug affect blood pressure?" (could raise or lower)</li>
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <span className="text-blue-400 font-bold mt-0.5">{'<'}</span>
+                    <div>
+                      <p className="font-semibold text-blue-300">Use Left-Tailed When:</p>
+                      <ul className="text-xs text-gray-300 mt-1 space-y-1">
+                        <li>• Only decreases would be meaningful or concerning</li>
+                        <li>• Increases would be irrelevant or impossible</li>
+                        <li>• You have a specific directional hypothesis</li>
+                        <li>• Example: "Does this safety feature reduce accidents?" (can't increase them)</li>
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <span className="text-green-400 font-bold mt-0.5">{'>'}</span>
+                    <div>
+                      <p className="font-semibold text-green-300">Use Right-Tailed When:</p>
+                      <ul className="text-xs text-gray-300 mt-1 space-y-1">
+                        <li>• Only increases would be meaningful or concerning</li>
+                        <li>• Decreases would be irrelevant or impossible</li>
+                        <li>• You have a specific directional hypothesis</li>
+                        <li>• Example: "Does this training improve performance?" (can't worsen it)</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-yellow-900/20 rounded-lg p-4 border border-yellow-700/30">
+                <h4 className="font-semibold text-yellow-300 mb-2">⚠️ Common Pitfalls to Avoid</h4>
+                <ul className="text-xs text-gray-300 space-y-1">
+                  <li>• <span className="text-red-300">Never choose based on your data!</span> This inflates Type I error</li>
+                  <li>• Don't use one-tailed just because "it's easier to get significance"</li>
+                  <li>• Don't ignore the practical implications of your choice</li>
+                  <li>• Document and justify your choice in advance</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </section>
         
@@ -877,28 +973,86 @@ export default function TypesOfHypotheses({ onSwitchToInteractive }) {
           )}
         </section>
         
-        {/* Key Insights Section */}
-        <section>
-          <ConceptCard title="Key Insights" icon={Lightbulb} variant="success">
+        {/* Enhanced Key Insights Section */}
+        <section className="space-y-6">
+          <ConceptCard title="Key Mathematical Insights" icon={Lightbulb} variant="success">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h4 className="font-semibold text-white mb-2">Important Points</h4>
-                <ul className="space-y-2">
-                  <li>• The choice of test affects your critical values and rejection regions</li>
-                  <li>• Two-tailed tests are more conservative (harder to reject H₀)</li>
-                  <li>• One-tailed tests have more power in the specified direction</li>
-                </ul>
+                <h4 className="font-semibold text-white mb-3">Critical Values & Power</h4>
+                <div className="space-y-3">
+                  <div className="bg-gray-800/50 rounded p-3">
+                    <p className="text-xs font-semibold text-purple-300 mb-1">Two-Tailed (α = 0.05)</p>
+                    <p className="text-xs text-gray-300">Critical values: ±1.96</p>
+                    <p className="text-xs text-gray-400">Each tail gets α/2 = 0.025</p>
+                  </div>
+                  <div className="bg-gray-800/50 rounded p-3">
+                    <p className="text-xs font-semibold text-blue-300 mb-1">One-Tailed (α = 0.05)</p>
+                    <p className="text-xs text-gray-300">Critical value: ±1.645</p>
+                    <p className="text-xs text-gray-400">All α in one tail = more power</p>
+                  </div>
+                  <p className="text-xs text-yellow-300 mt-2">
+                    <span className="font-semibold">Key:</span> One-tailed tests are easier to reject in the 
+                    specified direction but completely blind to the opposite direction!
+                  </p>
+                </div>
               </div>
               <div>
-                <h4 className="font-semibold text-white mb-2">Common Mistakes</h4>
-                <ul className="space-y-2">
-                  <li>• Choosing test type after seeing the data</li>
-                  <li>• Using one-tailed test just to get significance</li>
-                  <li>• Forgetting to split α in two-tailed tests</li>
+                <h4 className="font-semibold text-white mb-3">Real-World Implications</h4>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400">✓</span>
+                    <span className="text-xs">Two-tailed tests are the "safe default" in science</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400">✓</span>
+                    <span className="text-xs">One-tailed tests require strong theoretical justification</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400">✓</span>
+                    <span className="text-xs">Your choice affects reproducibility and interpretation</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-400">✗</span>
+                    <span className="text-xs">Never switch test types after seeing results!</span>
+                  </li>
                 </ul>
               </div>
             </div>
           </ConceptCard>
+          
+          {/* Practical Examples */}
+          <div className="bg-gradient-to-br from-indigo-900/20 to-indigo-800/20 rounded-xl p-6 border border-indigo-700/30">
+            <h3 className="text-lg font-bold text-indigo-300 mb-4">When Each Test Type Makes Sense</h3>
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="bg-gray-800/50 rounded-lg p-4">
+                <h4 className="font-semibold text-purple-300 mb-2">Two-Tailed Examples</h4>
+                <ul className="text-xs text-gray-300 space-y-2">
+                  <li>• <span className="font-semibold">Medicine:</span> Does this drug affect heart rate?</li>
+                  <li>• <span className="font-semibold">Psychology:</span> Does meditation change stress levels?</li>
+                  <li>• <span className="font-semibold">Manufacturing:</span> Is the machine calibrated correctly?</li>
+                  <li>• <span className="font-semibold">A/B Testing:</span> Does the new design perform differently?</li>
+                </ul>
+              </div>
+              <div className="bg-gray-800/50 rounded-lg p-4">
+                <h4 className="font-semibold text-blue-300 mb-2">Left-Tailed Examples</h4>
+                <ul className="text-xs text-gray-300 space-y-2">
+                  <li>• <span className="font-semibold">Safety:</span> Do airbags reduce injury severity?</li>
+                  <li>• <span className="font-semibold">Efficiency:</span> Does the new process reduce waste?</li>
+                  <li>• <span className="font-semibold">Cost:</span> Does bulk buying reduce unit cost?</li>
+                  <li>• <span className="font-semibold">Environment:</span> Does the filter reduce emissions?</li>
+                </ul>
+              </div>
+              <div className="bg-gray-800/50 rounded-lg p-4">
+                <h4 className="font-semibold text-green-300 mb-2">Right-Tailed Examples</h4>
+                <ul className="text-xs text-gray-300 space-y-2">
+                  <li>• <span className="font-semibold">Performance:</span> Does training improve productivity?</li>
+                  <li>• <span className="font-semibold">Sales:</span> Does the ad campaign increase revenue?</li>
+                  <li>• <span className="font-semibold">Agriculture:</span> Does fertilizer increase yield?</li>
+                  <li>• <span className="font-semibold">Education:</span> Does tutoring improve test scores?</li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </section>
         
         {/* Navigation Button */}
