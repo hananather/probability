@@ -13,7 +13,7 @@ import {
 import { RangeSlider } from '../ui/RangeSlider';
 import { Button } from '../ui/button';
 import { createColorScheme, typography, formatNumber } from '../../lib/design-system';
-import IntegralWorkedExample from "./3-1-2-IntegralWorkedExample";
+import { IntegralWorkedExample } from "./3-1-2-IntegralWorkedExample";
 import { Info, Sparkles, ArrowRight, CheckCircle, BarChart3, TrendingUp } from "lucide-react";
 import { ProgressBar, ProgressNavigation } from '@/components/ui/ProgressBar';
 import { useSafeMathJax } from '../../utils/mathJaxFix';

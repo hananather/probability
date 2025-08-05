@@ -1,13 +1,13 @@
-import ConceptSection from '../components/shared/ConceptSection.jsx';
-import CoinFlipSimulation from '../components/shared/CoinFlipSimulation.jsx';
-import ExpectationVariance from '../components/02-discrete-random-variables/2-2-1-ExpectationVariance.jsx';
-import CLTSimulation from '../components/shared/CLTSimulation.jsx';
-// These components were removed during the Chapter 5 reorganization
-// import PointEstimation from '../components/05-estimation/5-1-statistical-inference/5-1-4-PointEstimation.jsx'
-// import ConfidenceInterval from '../components/05-estimation/5-0-1-GeneralConfidenceInterval.jsx'
-// import Bootstrapping from '../components/05-estimation/5-4-ci-unknown-variance/5-4-3-Bootstrapping.jsx'
-import ContinuousDistributionsPDF from '../components/03-continuous-random-variables/3-1-1-ContinuousDistributionsPDF.jsx';
-import OptimizedImage from '../components/shared/OptimizedImage.jsx';
+import ConceptSection from '../components/overview-components/ConceptSection.jsx';
+import CoinFlipSimulation from '../components/overview-components/CoinFlipSimulation.jsx';
+import ExpectationVariance from '../components/overview-components/ExpectationVariance.jsx';
+import CLTSimulation from '../components/overview-components/CLTSimulation.jsx';
+// Restored components from overview
+import PointEstimation from '../components/overview-components/PointEstimation.jsx'
+import ConfidenceInterval from '../components/overview-components/GeneralConfidenceInterval.jsx'
+import Bootstrapping from '../components/overview-components/Bootstrapping.jsx'
+import ContinuousDistributionsPDF from '../components/overview-components/ContinuousDistributionsPDF.jsx';
+import OptimizedImage from '../components/overview-components/OptimizedImage.jsx';
 
 <div style={{ textAlign: 'center', marginTop: '2rem' }}>
   <OptimizedImage src="/uo.png" alt="University of Ottawa logo" width={75} height={75} />
@@ -104,19 +104,19 @@ Below, you’ll see this in action: as you increase your sample size, the histog
 <h2 id="point-estimation">Point Estimation</h2>
 
 <ConceptSection title="Point Estimation">
-  {/* <PointEstimation /> - Component removed during Chapter 5 reorganization */}
+  <PointEstimation />
 </ConceptSection>
 
 <h2 id="confidence-interval">Confidence Interval</h2>
 
 <ConceptSection title="Confidence Interval">
-  {/* <ConfidenceInterval /> - Component removed during Chapter 5 reorganization */}
+  <ConfidenceInterval />
 </ConceptSection>
 
 <h2 id="bootstrapping">Bootstrapping</h2>
 
 <ConceptSection title="Bootstrapping">
-  {/* <Bootstrapping /> - Component removed during Chapter 5 reorganization */}
+  <Bootstrapping />
 </ConceptSection>
 
 <h2 id="bayesian-inference">Bayesian Inference</h2>
