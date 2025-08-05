@@ -423,7 +423,7 @@ const InteractiveInsights = React.memo(() => {
   );
 });
 
-// Gear Wheel Factory Visualization
+// Gear Wheel Factory Visualization - Updated with Gold Standard styling
 const GearWheelFactory = React.memo(() => {
   const svgRef = useRef(null);
   const [sampleSize, setSampleSize] = useState(30);
@@ -455,127 +455,226 @@ const GearWheelFactory = React.memo(() => {
     setIsSampling(false);
   };
   
+  
   useEffect(() => {
+    if (!svgRef.current) return;
+    
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
     
-    const width = 700;
+    const width = svgRef.current.clientWidth;
     const height = 400;
     const margin = { top: 40, right: 40, bottom: 60, left: 60 };
     
-    svg.append("rect")
+    const g = svg
       .attr("width", width)
       .attr("height", height)
-      .attr("fill", "transparent");
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
     
-    svg.append("text")
-      .attr("x", width / 2)
-      .attr("y", 20)
-      .attr("text-anchor", "middle")
-      .attr("class", "text-lg font-bold fill-white")
-      .text("Gear Wheel Manufacturing Process");
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
     
-    if (allSampleMeans.length > 0) {
-      const xScale = d3.scaleLinear()
-        .domain([45, 55])
-        .range([margin.left, width - margin.right]);
+    // Always show axes and grid
+    const xScale = d3.scaleLinear()
+      .domain([45, 55])
+      .range([0, innerWidth]);
+    
+    const yScale = d3.scaleLinear()
+      .domain([0, allSampleMeans.length > 0 ? d3.max(d3.histogram()
+        .domain(xScale.domain())
+        .thresholds(20)(allSampleMeans), d => d.length) : 10])
+      .range([innerHeight, 0]);
+    
+    // Add gradient
+    const defs = svg.append("defs");
+    const gradient = defs.append("linearGradient")
+      .attr("id", "bar-gradient")
+      .attr("gradientUnits", "userSpaceOnUse")
+      .attr("x1", 0).attr("y1", innerHeight)
+      .attr("x2", 0).attr("y2", 0);
+    
+    gradient.append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", "#10b981")
+      .attr("stop-opacity", 0.6);
+    
+    gradient.append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", "#10b981")
+      .attr("stop-opacity", 1);
+    
+    // Draw axes with gold standard styling
+    g.append("g")
+      .attr("transform", `translate(0,${innerHeight})`)
+      .call(d3.axisBottom(xScale))
+      .style("font-size", "12px")
+      .style("color", "#9ca3af")
+      .append("text")
+      .attr("x", innerWidth / 2)
+      .attr("y", 45)
+      .attr("fill", "#e5e7eb")
+      .style("text-anchor", "middle")
+      .style("font-size", "14px")
+      .text("Sample Mean Weight (grams)");
+    
+    g.append("g")
+      .call(d3.axisLeft(yScale))
+      .style("font-size", "12px")
+      .style("color", "#9ca3af")
+      .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", -40)
+      .attr("x", -innerHeight / 2)
+      .attr("fill", "#e5e7eb")
+      .style("text-anchor", "middle")
+      .style("font-size", "14px")
+      .text("Frequency");
+    
+    // Add grid lines
+    g.append("g")
+      .attr("class", "grid")
+      .attr("transform", `translate(0,${innerHeight})`)
+      .call(d3.axisBottom(xScale)
+        .tickSize(-innerHeight)
+        .tickFormat("")
+      )
+      .style("stroke", "#374151")
+      .style("stroke-dasharray", "3,3")
+      .style("opacity", 0.5);
+    
+    g.append("g")
+      .attr("class", "grid")
+      .call(d3.axisLeft(yScale)
+        .tickSize(-innerWidth)
+        .tickFormat("")
+      )
+      .style("stroke", "#374151")
+      .style("stroke-dasharray", "3,3")
+      .style("opacity", 0.5);
+    
+    // True mean line with emphasis - always show
+    g.append("line")
+      .attr("x1", xScale(TRUE_MU))
+      .attr("x2", xScale(TRUE_MU))
+      .attr("y1", 0)
+      .attr("y2", innerHeight)
+      .attr("stroke", "#14b8a6")
+      .attr("stroke-width", 3)
+      .attr("stroke-dasharray", "5,5")
+      .style("filter", "drop-shadow(0 0 4px rgba(20, 184, 166, 0.5))");
+    
+    g.append("text")
+      .attr("x", xScale(TRUE_MU) + 5)
+      .attr("y", 15)
+      .attr("fill", "#14b8a6")
+      .style("font-size", "14px")
+      .style("font-weight", "bold")
+      .text("μ = 50g");
+    
+    // If no data yet, show a placeholder message and hint
+    if (allSampleMeans.length === 0) {
+      // Add a subtle background rect to indicate the active area
+      g.append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", innerWidth)
+        .attr("height", innerHeight)
+        .attr("fill", "url(#diagonal-stripes)")
+        .attr("opacity", 0.05);
       
-      const yScale = d3.scaleLinear()
-        .domain([0, d3.max(d3.histogram()
-          .domain(xScale.domain())
-          .thresholds(20)(allSampleMeans), d => d.length) || 1])
-        .range([height - margin.bottom, margin.top]);
+      // Add diagonal stripes pattern
+      const pattern = defs.append("pattern")
+        .attr("id", "diagonal-stripes")
+        .attr("patternUnits", "userSpaceOnUse")
+        .attr("width", 10)
+        .attr("height", 10);
       
-      // Draw axes
-      svg.append("g")
-        .attr("transform", `translate(0,${height - margin.bottom})`)
-        .call(d3.axisBottom(xScale))
-        .append("text")
-        .attr("x", width / 2)
-        .attr("y", 40)
-        .attr("fill", "white")
-        .style("text-anchor", "middle")
-        .text("Sample Mean Weight (grams)");
+      pattern.append("path")
+        .attr("d", "M0,10 L10,0")
+        .attr("stroke", "#10b981")
+        .attr("stroke-width", 0.5);
       
-      svg.append("g")
-        .attr("transform", `translate(${margin.left},0)`)
-        .call(d3.axisLeft(yScale));
+      g.append("text")
+        .attr("x", innerWidth / 2)
+        .attr("y", innerHeight / 2)
+        .attr("text-anchor", "middle")
+        .attr("fill", "#6b7280")
+        .style("font-size", "16px")
+        .text("Histogram will appear here");
       
+      // Add arrow pointing to button
+      g.append("text")
+        .attr("x", innerWidth / 2)
+        .attr("y", innerHeight / 2 + 25)
+        .attr("text-anchor", "middle")
+        .attr("fill", "#6b7280")
+        .style("font-size", "14px")
+        .text("↓ Start sampling below");
+    } else {
       // Histogram of sample means
       const bins = d3.histogram()
         .domain(xScale.domain())
         .thresholds(20)(allSampleMeans);
       
-      svg.selectAll(".bar")
+      g.selectAll(".bar")
         .data(bins)
         .join("rect")
         .attr("class", "bar")
         .attr("x", d => xScale(d.x0))
         .attr("y", d => yScale(d.length))
         .attr("width", d => xScale(d.x1) - xScale(d.x0) - 1)
-        .attr("height", d => height - margin.bottom - yScale(d.length))
-        .attr("fill", chapterColors.primary)
-        .attr("opacity", 0.7);
-      
-      // True mean line
-      svg.append("line")
-        .attr("x1", xScale(TRUE_MU))
-        .attr("x2", xScale(TRUE_MU))
-        .attr("y1", margin.top)
-        .attr("y2", height - margin.bottom)
-        .attr("stroke", chapterColors.chart.secondary)
-        .attr("stroke-width", 2)
-        .attr("stroke-dasharray", "5,5");
-      
-      svg.append("text")
-        .attr("x", xScale(TRUE_MU) + 5)
-        .attr("y", margin.top + 20)
-        .attr("fill", chapterColors.chart.secondary)
-        .text("True mean = 50g");
+        .attr("height", d => innerHeight - yScale(d.length))
+        .attr("fill", "url(#bar-gradient)")
+        .attr("stroke", "#10b981")
+        .attr("stroke-width", 0.5)
+        .style("filter", "drop-shadow(0 0 2px rgba(16, 185, 129, 0.3))")
+        .style("opacity", 0)
+        .transition()
+        .duration(800)
+        .style("opacity", 1);
     }
   }, [allSampleMeans]);
   
   return (
-    <VisualizationSection>
-      <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-        <Package className="w-5 h-5 text-blue-400" />
+    <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">
+      <h3 className="text-xl font-bold text-teal-400 mb-6 flex items-center gap-2">
+        <Package className="w-5 h-5" />
         The Gear Wheel Factory
       </h3>
-      <p className="text-sm text-neutral-400 mb-4">
+      <p className="text-sm text-neutral-300 mb-6">
         Explore how sample statistics estimate population parameters
       </p>
       
-      <div className="flex justify-between items-start mb-4">
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-neutral-800/50 rounded-lg p-3">
-            <p className="text-xs text-neutral-400">Samples Taken</p>
-            <p className="text-2xl font-mono text-blue-400">{allSampleMeans.length}</p>
-          </div>
-          {currentMean && (
-            <>
-              <div className="bg-neutral-800/50 rounded-lg p-3">
-                <p className="text-xs text-neutral-400">Last Sample Mean</p>
-                <p className="text-xl font-mono text-blue-400">{currentMean.toFixed(3)}g</p>
-              </div>
-              <div className="bg-neutral-800/50 rounded-lg p-3">
-                <p className="text-xs text-neutral-400">Error from True <span dangerouslySetInnerHTML={{ __html: '\\(\\mu\\)' }} /></p>
-                <p className="text-xl font-mono text-yellow-400">
-                  {Math.abs(currentMean - TRUE_MU).toFixed(3)}g
-                </p>
-              </div>
-            </>
-          )}
+      <div className="grid md:grid-cols-3 gap-4 mb-6">
+        <div className="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700/50">
+          <p className="text-xs text-neutral-400 mb-1">Samples Taken</p>
+          <p className="text-2xl font-mono text-teal-400">{allSampleMeans.length}</p>
         </div>
+        {currentMean && (
+          <>
+            <div className="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700/50">
+              <p className="text-xs text-neutral-400 mb-1">Last Sample Mean</p>
+              <p className="text-xl font-mono text-blue-400">{currentMean.toFixed(3)}g</p>
+            </div>
+            <div className="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700/50">
+              <p className="text-xs text-neutral-400 mb-1">Error from True μ</p>
+              <p className="text-xl font-mono text-purple-400">
+                {Math.abs(currentMean - TRUE_MU).toFixed(3)}g
+              </p>
+            </div>
+          </>
+        )}
       </div>
       
-      <GraphContainer height="400px">
-        <svg ref={svgRef} width="100%" height="100%" viewBox="0 0 700 400" />
+      <GraphContainer title="Sampling Distribution of Sample Means" className="!bg-transparent">
+        <svg ref={svgRef} className="w-full" />
       </GraphContainer>
       
       <ControlGroup>
         <div className="grid md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">
+            <label className="text-sm font-medium text-neutral-300">
               Sample Size (n): {sampleSize}
             </label>
             <input
@@ -588,7 +687,7 @@ const GearWheelFactory = React.memo(() => {
               className="w-full"
               disabled={isSampling}
             />
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-neutral-400">
               SE ∝ 1/√n (larger samples → smaller error)
             </p>
           </div>
@@ -597,22 +696,23 @@ const GearWheelFactory = React.memo(() => {
             <button
               onClick={performSampling}
               disabled={isSampling}
-              className={`px-6 py-3 rounded-lg font-medium
+              className={`px-6 py-3 rounded-md font-medium transition-all duration-200 flex items-center gap-2
                          ${isSampling 
-                           ? 'bg-neutral-600 cursor-not-allowed' 
-                           : 'bg-blue-600 hover:bg-blue-700'
-                         } text-white shadow-lg`}
+                           ? 'bg-neutral-700 text-neutral-300 cursor-not-allowed' 
+                           : 'bg-teal-600 text-white shadow-md ring-2 ring-teal-500/50 hover:bg-teal-700'
+                         }`}
             >
+              <RefreshCw className={`w-4 h-4 ${isSampling ? 'animate-spin' : ''}`} />
               {isSampling ? 'Sampling...' : 'Draw New Sample'}
             </button>
           </div>
           
-          <div className="bg-neutral-800/50 rounded-lg p-3">
-            <p className="text-xs text-neutral-400 mb-1">Sampling Distribution</p>
+          <div className="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700/50">
+            <p className="text-xs text-neutral-400 mb-2">Sampling Distribution</p>
             {allSampleMeans.length > 1 && (
               <>
                 <p className="text-sm">
-                  Mean of means: <span className="font-mono text-blue-400">
+                  Mean of means: <span className="font-mono text-teal-400">
                     {d3.mean(allSampleMeans).toFixed(3)}
                   </span>
                 </p>
@@ -626,12 +726,24 @@ const GearWheelFactory = React.memo(() => {
           </div>
         </div>
         
-        {allSampleMeans.length >= 10 && (
-          <div
-            className="mt-4 p-3 bg-blue-900/20 border border-blue-500/30 rounded-lg"
-          >
+        {allSampleMeans.length === 0 && (
+          <div className="mt-4 p-4 bg-gradient-to-br from-blue-900/20 to-blue-800/20 border border-blue-500/30 rounded-lg">
             <p className="text-sm text-blue-400">
-              🎯 Notice how the sample means cluster around the true population mean!
+              Ready to explore! Click "Draw New Sample" to see how sample means distribute around the true population mean.
+            </p>
+          </div>
+        )}
+        {allSampleMeans.length > 0 && allSampleMeans.length < 10 && (
+          <div className="mt-4 p-4 bg-gradient-to-br from-amber-900/20 to-amber-800/20 border border-amber-500/30 rounded-lg">
+            <p className="text-sm text-amber-400">
+              Keep drawing samples to see the pattern emerge! ({allSampleMeans.length} samples so far)
+            </p>
+          </div>
+        )}
+        {allSampleMeans.length >= 10 && (
+          <div className="mt-4 p-4 bg-gradient-to-br from-teal-900/20 to-teal-800/20 border border-teal-500/30 rounded-lg">
+            <p className="text-sm text-teal-400">
+              Notice how the sample means cluster around the true population mean!
             </p>
           </div>
         )}
@@ -640,310 +752,306 @@ const GearWheelFactory = React.memo(() => {
   );
 });
 
-// Sampling Distribution & Point Estimation Visualization
-const SamplingAndEstimation = React.memo(() => {
-  const [currentSample, setCurrentSample] = useState([]);
-  const [sampleStats, setSampleStats] = useState({ mean: null, median: null, std: null });
-  const [allEstimates, setAllEstimates] = useState([]);
-  const [showExplanation, setShowExplanation] = useState(true);
+// Central Limit Theorem Demonstration - Replacing confusing visualization
+const CentralLimitTheoremDemo = React.memo(() => {
   const svgRef = useRef(null);
+  const [activeDistribution, setActiveDistribution] = useState('uniform');
+  const [sampleSize, setSampleSize] = useState(5);
   const contentRef = useRef(null);
   
-  // Population parameters (known)
-  const populationMean = 50;
-  const populationStd = 10;
-  const sampleSize = 25;
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, []);
   
-  // Generate a new sample from the population
-  const drawNewSample = () => {
-    const newSample = Array.from({ length: sampleSize }, () => 
-      d3.randomNormal(populationMean, populationStd)()
-    );
-    
-    const mean = d3.mean(newSample);
-    const median = d3.median(newSample);
-    const std = d3.deviation(newSample);
-    
-    setCurrentSample(newSample);
-    setSampleStats({ mean, median, std });
-    
-    // Add to history of estimates
-    if (mean !== null) {
-      setAllEstimates(prev => [...prev, { mean, median, std }]);
+  const distributions = {
+    uniform: {
+      name: 'Uniform Distribution',
+      color: '#3b82f6',
+      generate: () => Math.random() * 10,
+      description: 'Flat distribution: all values equally likely'
+    },
+    exponential: {
+      name: 'Exponential Distribution',
+      color: '#8b5cf6',
+      generate: () => -Math.log(1 - Math.random()) * 3,
+      description: 'Skewed distribution: many small values, few large'
+    },
+    bimodal: {
+      name: 'Bimodal Distribution',
+      color: '#ec4899',
+      generate: () => Math.random() < 0.5 ? d3.randomNormal(2, 0.5)() : d3.randomNormal(7, 0.5)(),
+      description: 'Two peaks: values cluster around two centers'
     }
   };
   
-  // Visualization of current sample and estimate history
   useEffect(() => {
-    if (!svgRef.current || allEstimates.length === 0) return;
+    if (!svgRef.current) return;
     
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
     
-    const width = 700;
-    const height = 400;
-    const margin = { top: 20, right: 20, bottom: 40, left: 50 };
+    const width = svgRef.current.clientWidth;
+    const height = 550;
+    const margin = { top: 40, right: 40, bottom: 50, left: 60 };
     
-    // Create two panels - one for current sample, one for sampling distribution
-    const panelHeight = (height - margin.top - margin.bottom) / 2 - 10;
+    // Create two panels with proper spacing using percentage-based layout
+    const innerHeight = height - margin.top - margin.bottom;
+    const innerWidth = width - margin.left - margin.right;
+    const panelHeight = innerHeight * 0.40; // 40% for each panel
+    const gapHeight = innerHeight * 0.20; // 20% gap between panels
     
-    // Panel 1: Current Sample Distribution
-    if (currentSample.length > 0) {
-      const g1 = svg.append("g")
-        .attr("transform", `translate(0, ${margin.top})`);
-        
-      const xScale = d3.scaleLinear()
-        .domain([populationMean - 3 * populationStd, populationMean + 3 * populationStd])
-        .range([margin.left, width - margin.right]);
-        
-      const bins = d3.histogram()
-        .domain(xScale.domain())
-        .thresholds(15)(currentSample);
-        
-      const yScale = d3.scaleLinear()
-        .domain([0, d3.max(bins, d => d.length)])
-        .range([panelHeight, 0]);
-        
-      // Draw histogram
-      g1.selectAll(".bar")
-        .data(bins)
-        .join("rect")
-        .attr("class", "bar")
-        .attr("x", d => xScale(d.x0))
-        .attr("y", d => yScale(d.length))
-        .attr("width", d => Math.max(0, xScale(d.x1) - xScale(d.x0) - 1))
-        .attr("height", d => panelHeight - yScale(d.length))
-        .attr("fill", chapterColors.primary)
-        .attr("opacity", 0.7);
-        
-      // Add sample mean line
-      g1.append("line")
-        .attr("x1", xScale(sampleStats.mean))
-        .attr("x2", xScale(sampleStats.mean))
-        .attr("y1", 0)
-        .attr("y2", panelHeight)
-        .attr("stroke", chapterColors.chart.secondary)
-        .attr("stroke-width", 2)
-        .attr("stroke-dasharray", "4,2");
-        
-      // Add population mean line for reference
-      g1.append("line")
-        .attr("x1", xScale(populationMean))
-        .attr("x2", xScale(populationMean))
-        .attr("y1", 0)
-        .attr("y2", panelHeight)
-        .attr("stroke", chapterColors.chart.primary)
-        .attr("stroke-width", 2);
-        
-      // Labels
-      g1.append("text")
-        .attr("x", xScale(sampleStats.mean))
-        .attr("y", -5)
-        .attr("text-anchor", "middle")
-        .attr("fill", chapterColors.chart.secondary)
-        .attr("font-size", "12px")
-        .text(`x̄ = ${sampleStats.mean.toFixed(2)}`);
-        
-      g1.append("text")
-        .attr("x", xScale(populationMean))
-        .attr("y", -5)
-        .attr("text-anchor", "middle")
-        .attr("fill", chapterColors.chart.primary)
-        .attr("font-size", "12px")
-        .text(`μ = ${populationMean}`);
-        
-      // X axis
-      g1.append("g")
-        .attr("transform", `translate(0,${panelHeight})`)
-        .call(d3.axisBottom(xScale));
-    }
+    // Panel 1: Original Distribution
+    const g1 = svg.append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
     
-    // Panel 2: Sampling Distribution of Sample Means
-    if (allEstimates.length > 1) {
-      const g2 = svg.append("g")
-        .attr("transform", `translate(0, ${margin.top + panelHeight + 20})`);
-        
-      const means = allEstimates.map(d => d.mean);
-      const theoreticalSE = populationStd / Math.sqrt(sampleSize);
-      
-      const xScale2 = d3.scaleLinear()
-        .domain([populationMean - 3 * theoreticalSE, populationMean + 3 * theoreticalSE])
-        .range([margin.left, width - margin.right]);
-        
-      const bins2 = d3.histogram()
-        .domain(xScale2.domain())
-        .thresholds(20)(means);
-        
-      const yScale2 = d3.scaleLinear()
-        .domain([0, d3.max(bins2, d => d.length)])
-        .range([panelHeight, 0]);
-        
-      // Draw histogram of sample means
-      g2.selectAll(".bar")
-        .data(bins2)
-        .join("rect")
-        .attr("class", "bar")
-        .attr("x", d => xScale2(d.x0))
-        .attr("y", d => yScale2(d.length))
-        .attr("width", d => Math.max(0, xScale2(d.x1) - xScale2(d.x0) - 1))
-        .attr("height", d => panelHeight - yScale2(d.length))
-        .attr("fill", chapterColors.secondary)
-        .attr("opacity", 0.7);
-        
-      // Add theoretical center line
-      g2.append("line")
-        .attr("x1", xScale2(populationMean))
-        .attr("x2", xScale2(populationMean))
-        .attr("y1", 0)
-        .attr("y2", panelHeight)
-        .attr("stroke", chapterColors.chart.primary)
-        .attr("stroke-width", 2);
-        
-      // Add current estimate
-      if (sampleStats.mean !== null) {
-        g2.append("circle")
-          .attr("cx", xScale2(sampleStats.mean))
-          .attr("cy", panelHeight / 2)
-          .attr("r", 4)
-          .attr("fill", chapterColors.chart.secondary);
-      }
-        
-      // X axis
-      g2.append("g")
-        .attr("transform", `translate(0,${panelHeight})`)
-        .call(d3.axisBottom(xScale2));
-        
-      // Title
-      g2.append("text")
-        .attr("x", width / 2)
-        .attr("y", -5)
-        .attr("text-anchor", "middle")
-        .attr("font-size", "14px")
-        .attr("fill", "white")
-        .text(`Sampling Distribution of x̄ (n = ${allEstimates.length} samples)`);
-    }
-  }, [currentSample, sampleStats, allEstimates]);
-  
-  useEffect(() => {
-    // Generate initial sample
-    drawNewSample();
-  }, []);
+    // Generate data for original distribution
+    const originalData = Array.from({ length: 1000 }, () => distributions[activeDistribution].generate());
+    
+    const xScale = d3.scaleLinear()
+      .domain([0, 10])
+      .range([0, innerWidth]);
+    
+    const bins1 = d3.histogram()
+      .domain(xScale.domain())
+      .thresholds(30)(originalData);
+    
+    const yScale1 = d3.scaleLinear()
+      .domain([0, d3.max(bins1, d => d.length)])
+      .range([panelHeight, 0]);
+    
+    // Add title
+    g1.append("text")
+      .attr("x", innerWidth / 2)
+      .attr("y", -10)
+      .attr("text-anchor", "middle")
+      .attr("fill", "#e5e7eb")
+      .style("font-size", "14px")
+      .style("font-weight", "bold")
+      .text("Original Distribution");
+    
+    // Draw histogram
+    g1.selectAll(".bar")
+      .data(bins1)
+      .join("rect")
+      .attr("x", d => xScale(d.x0))
+      .attr("y", d => yScale1(d.length))
+      .attr("width", d => xScale(d.x1) - xScale(d.x0) - 1)
+      .attr("height", d => panelHeight - yScale1(d.length))
+      .attr("fill", distributions[activeDistribution].color)
+      .attr("opacity", 0.8);
+    
+    // Add axes
+    g1.append("g")
+      .attr("transform", `translate(0,${panelHeight})`)
+      .call(d3.axisBottom(xScale).ticks(5))
+      .style("font-size", "10px")
+      .style("color", "#9ca3af");
+    
+    // Panel 2: Sampling Distribution (removed middle panel showing single sample)
+    const g2 = svg.append("g")
+      .attr("transform", `translate(${margin.left},${margin.top + panelHeight + gapHeight})`);
+    
+    g2.append("text")
+      .attr("x", innerWidth / 2)
+      .attr("y", -10)
+      .attr("text-anchor", "middle")
+      .attr("fill", "#e5e7eb")
+      .style("font-size", "14px")
+      .style("font-weight", "bold")
+      .text("Sampling Distribution of Sample Means");
+    
+    // Generate many sample means
+    const sampleMeans = Array.from({ length: 500 }, () => {
+      const sample = Array.from({ length: sampleSize }, () => distributions[activeDistribution].generate());
+      return d3.mean(sample);
+    });
+    
+    const bins2 = d3.histogram()
+      .domain([0, 10])
+      .thresholds(30)(sampleMeans);
+    
+    const yScale2 = d3.scaleLinear()
+      .domain([0, d3.max(bins2, d => d.length)])
+      .range([panelHeight, 0]);
+    
+    // Draw histogram with gradient
+    const gradient = svg.append("defs")
+      .append("linearGradient")
+      .attr("id", "mean-gradient")
+      .attr("gradientUnits", "userSpaceOnUse")
+      .attr("x1", 0).attr("y1", panelHeight)
+      .attr("x2", 0).attr("y2", 0);
+    
+    gradient.append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", "#10b981")
+      .attr("stop-opacity", 0.6);
+    
+    gradient.append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", "#10b981")
+      .attr("stop-opacity", 1);
+    
+    g2.selectAll(".bar")
+      .data(bins2)
+      .join("rect")
+      .attr("x", d => xScale(d.x0))
+      .attr("y", d => yScale2(d.length))
+      .attr("width", d => xScale(d.x1) - xScale(d.x0) - 1)
+      .attr("height", d => panelHeight - yScale2(d.length))
+      .attr("fill", "url(#mean-gradient)")
+      .attr("stroke", "#10b981")
+      .attr("stroke-width", 0.5);
+    
+    // Add normal curve overlay
+    const meanOfMeans = d3.mean(sampleMeans);
+    const stdOfMeans = d3.deviation(sampleMeans);
+    
+    const normalCurve = d3.range(0, 10, 0.1).map(x => ({
+      x,
+      y: (1 / (stdOfMeans * Math.sqrt(2 * Math.PI))) * 
+         Math.exp(-0.5 * Math.pow((x - meanOfMeans) / stdOfMeans, 2))
+    }));
+    
+    const lineScale = d3.scaleLinear()
+      .domain([0, d3.max(normalCurve, d => d.y)])
+      .range([panelHeight, 0]);
+    
+    const line = d3.line()
+      .x(d => xScale(d.x))
+      .y(d => lineScale(d.y))
+      .curve(d3.curveBasis);
+    
+    g2.append("path")
+      .datum(normalCurve)
+      .attr("fill", "none")
+      .attr("stroke", "#14b8a6")
+      .attr("stroke-width", 2)
+      .attr("stroke-dasharray", "5,5")
+      .attr("d", line);
+    
+    g2.append("g")
+      .attr("transform", `translate(0,${panelHeight})`)
+      .call(d3.axisBottom(xScale).ticks(5))
+      .style("font-size", "10px")
+      .style("color", "#9ca3af");
+    
+    // Add grid lines
+    [g1, g2].forEach(g => {
+      g.append("g")
+        .attr("class", "grid")
+        .call(d3.axisLeft(d3.scaleLinear().domain([0, 1]).range([panelHeight, 0]))
+          .tickSize(-innerWidth)
+          .tickFormat("")
+          .ticks(3)
+        )
+        .style("stroke", "#374151")
+        .style("stroke-dasharray", "2,2")
+        .style("opacity", 0.3);
+    });
+    
+  }, [activeDistribution, sampleSize]);
   
   return (
-    <VisualizationSection>
-      <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-        <Target className="w-5 h-5 text-blue-400" />
-        Sampling Distribution & Point Estimation
+    <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">
+      <h3 className="text-xl font-bold text-teal-400 mb-6 flex items-center gap-2">
+        <Activity className="w-5 h-5" />
+        Central Limit Theorem Demonstration
       </h3>
       
-      {showExplanation && (
-        <div className="bg-neutral-800/50 rounded-lg p-4 mb-4 border border-neutral-700">
-          <h4 className="font-semibold text-white mb-2">Understanding Point Estimation</h4>
-          <p className="text-sm text-neutral-300 mb-3">
-            When we take a sample from a population, we calculate statistics (like the sample mean) 
-            to estimate unknown population parameters. Each sample gives us a different estimate.
-          </p>
-          <div className="grid grid-cols-2 gap-4 mb-3">
-            <div className="bg-neutral-900/50 rounded p-3">
-              <p className="text-xs text-neutral-400 mb-1">Population (usually unknown)</p>
-              <p className="text-sm">μ = {populationMean}, σ = {populationStd}</p>
-            </div>
-            <div className="bg-neutral-900/50 rounded p-3">
-              <p className="text-xs text-neutral-400 mb-1">What we're exploring</p>
-              <p className="text-sm">How sample estimates vary</p>
-            </div>
-          </div>
-          <button
-            onClick={() => setShowExplanation(false)}
-            className="text-xs text-neutral-400 hover:text-neutral-300"
-          >
-            Hide explanation
-          </button>
+      <div ref={contentRef} className="mb-6 p-4 bg-gradient-to-br from-teal-900/20 to-teal-800/20 border border-teal-500/30 rounded-lg">
+        <h4 className="font-semibold text-teal-400 mb-2">The Magic of the Central Limit Theorem</h4>
+        <p className="text-sm text-neutral-300 mb-3">
+          No matter what shape the original distribution has, the distribution of sample means 
+          approaches a normal distribution as sample size increases!
+        </p>
+        <div className="text-center text-teal-400">
+          <span dangerouslySetInnerHTML={{ __html: `\\[\\bar{X} \\sim N\\left(\\mu, \\frac{\\sigma^2}{n}\\right)\\]` }} />
         </div>
-      )}
+      </div>
       
-      <div ref={contentRef}>
-        <GraphContainer title="Visualizing Sampling & Estimation">
-          <svg ref={svgRef} width="100%" height="400" viewBox="0 0 700 400" />
-        </GraphContainer>
-        
-        {/* Current Sample Statistics */}
-        {sampleStats.mean !== null && (
-          <div className="grid grid-cols-3 gap-4 mt-4">
-            <div className="bg-blue-900/20 rounded-lg p-3 border border-blue-700/50">
-              <p className="text-xs text-blue-400 mb-1">Sample Mean (x̄)</p>
-              <p className="text-xl font-mono">{sampleStats.mean.toFixed(3)}</p>
-              <p className="text-xs text-neutral-400 mt-1">
-                Error: {(sampleStats.mean - populationMean).toFixed(3)}
-              </p>
-            </div>
-            <div className="bg-purple-900/20 rounded-lg p-3 border border-purple-700/50">
-              <p className="text-xs text-purple-400 mb-1">Sample Median</p>
-              <p className="text-xl font-mono">{sampleStats.median.toFixed(3)}</p>
-            </div>
-            <div className="bg-blue-900/20 rounded-lg p-3 border border-blue-700/50">
-              <p className="text-xs text-blue-400 mb-1">Sample Std Dev (s)</p>
-              <p className="text-xl font-mono">{sampleStats.std.toFixed(3)}</p>
-            </div>
-          </div>
-        )}
-        
-        {/* Summary Statistics */}
-        {allEstimates.length > 1 && (
-          <div className="bg-neutral-800/50 rounded-lg p-4 mt-4">
-            <h4 className="font-semibold mb-2">Sampling Distribution Properties</h4>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-neutral-400">Mean of sample means:</p>
-                <p className="font-mono">
-                  {d3.mean(allEstimates.map(d => d.mean)).toFixed(3)}
-                  <span className="text-xs text-neutral-400 ml-2">
-                    (should approach μ = {populationMean})
-                  </span>
-                </p>
-              </div>
-              <div>
-                <p className="text-neutral-400">SE of sample means:</p>
-                <p className="font-mono">
-                  {d3.deviation(allEstimates.map(d => d.mean)).toFixed(3)}
-                  <span className="text-xs text-neutral-400 ml-2">
-                    (theoretical: {(populationStd / Math.sqrt(sampleSize)).toFixed(3)})
-                  </span>
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        <ControlGroup>
-          <div className="flex justify-between items-center">
-            <div>
+      <div className="flex gap-4 mb-6">
+        <div className="flex-1">
+          <label className="block text-sm font-medium text-neutral-300 mb-3">
+            Choose Original Distribution
+          </label>
+          <div className="grid grid-cols-3 gap-2">
+            {Object.entries(distributions).map(([key, dist]) => (
               <button
-                onClick={drawNewSample}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                key={key}
+                onClick={() => setActiveDistribution(key)}
+                className={`px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 ${
+                  activeDistribution === key
+                    ? `bg-${key === 'uniform' ? 'blue' : key === 'exponential' ? 'purple' : 'pink'}-600 text-white shadow-md ring-2 ring-${key === 'uniform' ? 'blue' : key === 'exponential' ? 'purple' : 'pink'}-500/50`
+                    : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+                }`}
+                style={activeDistribution === key ? {
+                  backgroundColor: dist.color,
+                  boxShadow: `0 4px 6px ${dist.color}33, 0 0 0 2px ${dist.color}88`
+                } : {}}
               >
-                <RefreshCw size={16} />
-                Draw New Sample
+                {dist.name}
               </button>
-              <p className="text-xs text-neutral-400 mt-1">
-                Samples drawn: {allEstimates.length}
-              </p>
-            </div>
-            
-            {allEstimates.length > 1 && (
-              <button
-                onClick={() => {
-                  setAllEstimates([]);
-                  setCurrentSample([]);
-                  setSampleStats({ mean: null, median: null, std: null });
-                }}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-              >
-                Reset All
-              </button>
-            )}
+            ))}
           </div>
-        </ControlGroup>
+          <p className="text-xs text-neutral-400 mt-2">
+            {distributions[activeDistribution].description}
+          </p>
+        </div>
+        
+        <div className="w-px bg-neutral-700"></div>
+        
+        <div>
+          <label className="block text-sm font-medium text-neutral-300 mb-3">
+            Sample Size: {sampleSize}
+          </label>
+          <input
+            type="range"
+            min="2"
+            max="50"
+            value={sampleSize}
+            onChange={(e) => setSampleSize(Number(e.target.value))}
+            className="w-48"
+          />
+          <p className="text-xs text-neutral-400 mt-2">
+            Larger n → More normal shape
+          </p>
+        </div>
+      </div>
+      
+      <GraphContainer title="CLT in Action" className="!bg-transparent">
+        <svg ref={svgRef} className="w-full" style={{ height: '550px' }} />
+      </GraphContainer>
+      
+      <div className="grid md:grid-cols-3 gap-4" style={{ marginTop: '200px' }}>
+        <div className="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700/50">
+          <h5 className="font-semibold text-blue-400 mb-2">Key Insight 1</h5>
+          <p className="text-sm text-neutral-300">
+            The original distribution can be any shape - uniform, skewed, even multimodal!
+          </p>
+        </div>
+        <div className="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700/50">
+          <h5 className="font-semibold text-teal-400 mb-2">Key Insight 2</h5>
+          <p className="text-sm text-neutral-300">
+            Sample means always cluster around the population mean with reduced variability.
+          </p>
+        </div>
+        <div className="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700/50">
+          <h5 className="font-semibold text-purple-400 mb-2">Key Insight 3</h5>
+          <p className="text-sm text-neutral-300">
+            As n increases, the sampling distribution becomes more normal and narrower.
+          </p>
+        </div>
       </div>
     </VisualizationSection>
   );
@@ -1880,7 +1988,7 @@ export default function StatisticalInference() {
         
         {/* Discovery */}
         <div>
-          <SamplingAndEstimation />
+          <CentralLimitTheoremDemo />
           <BaseballHeights />
         </div>
         

@@ -5,13 +5,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   VisualizationContainer, 
   VisualizationSection,
-  GraphContainer,
-  ControlGroup
+  GraphContainer
 } from '../ui/VisualizationContainer';
 import { colors, createColorScheme } from '../../lib/design-system';
-import { Button } from '../ui/button';
 import BackToHub from '../ui/BackToHub';
-import { ChartLine, TrendingUp, Activity, Target } from 'lucide-react';
+import { ChartLine, TrendingUp, Activity, Target, Eye, EyeOff, TrendingDown, Minus } from 'lucide-react';
 
 // Get Chapter 7 color scheme
 const chapterColors = createColorScheme('regression');
@@ -394,19 +392,7 @@ const LineComparisonDemo = ({ lineType, showResiduals }) => {
       .ease(d3.easeCubicOut)
       .style("opacity", 1);
     
-    // Add centroid label
-    g.append("text")
-      .attr("x", xScale(optimalRegression.xMean) + 10)
-      .attr("y", yScale(optimalRegression.yMean) - 10)
-      .attr("fill", chapterColors.accent)
-      .style("font-size", "12px")
-      .text("(x̄, ȳ)")
-      .style("opacity", 0)
-      .transition()
-      .duration(1200)
-      .delay(1200)
-      .ease(d3.easeCubicOut)
-      .style("opacity", 1);
+    // Centroid label removed per user request
     
     // SSE display
     const sseText = g.append("text")
@@ -438,7 +424,6 @@ const LineComparisonDemo = ({ lineType, showResiduals }) => {
 // Why Squared Errors Visualization
 const WhySquaredErrors = React.memo(function WhySquaredErrors() {
   const contentRef = useRef(null);
-  const vizRef = useRef(null);
   
   useEffect(() => {
     const processMathJax = () => {
@@ -454,15 +439,6 @@ const WhySquaredErrors = React.memo(function WhySquaredErrors() {
     const timeoutId = setTimeout(processMathJax, 100);
     return () => clearTimeout(timeoutId);
   }, []);
-  
-  // Sample data for demonstration
-  const demoData = [
-    { x: 1, y: 3, predicted: 2.5 },
-    { x: 2, y: 4, predicted: 3.5 },
-    { x: 3, y: 3.5, predicted: 4.5 },
-    { x: 4, y: 5.5, predicted: 5.5 },
-    { x: 5, y: 6, predicted: 6.5 }
-  ];
   
   return (
     <div ref={contentRef} className="grid md:grid-cols-3 gap-4 mt-4">
@@ -585,19 +561,18 @@ const WorkedExample = React.memo(function WorkedExample() {
 // Centroid Property Demo
 const CentroidProperty = React.memo(function CentroidProperty() {
   const vizRef = useRef(null);
-  const lineRef = useRef(null);
-  const [rotation, setRotation] = useState(0);
-  const [isInitialized, setIsInitialized] = useState(false);
   
-  // Initialize the visualization once
   useEffect(() => {
-    if (!vizRef.current || isInitialized) return;
+    if (!vizRef.current) return;
     
     const width = 300;
     const height = 200;
     const margin = { top: 20, right: 20, bottom: 40, left: 50 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
+    
+    // Clear previous
+    d3.select(vizRef.current).selectAll("*").remove();
     
     const svg = d3.select(vizRef.current)
       .attr("width", width)
@@ -625,41 +600,6 @@ const CentroidProperty = React.memo(function CentroidProperty() {
       .call(d3.axisLeft(yScale).ticks(5))
       .style("color", "#666");
     
-    // Centroid
-    const cx = xScale(optimalRegression.xMean);
-    const cy = yScale(optimalRegression.yMean);
-    
-    // Draw centroid
-    g.append("circle")
-      .attr("cx", cx)
-      .attr("cy", cy)
-      .attr("r", 6)
-      .attr("fill", chapterColors.accent)
-      .attr("stroke", "#fff")
-      .attr("stroke-width", 2);
-    
-    // Create rotating line
-    const lineLength = 100;
-    lineRef.current = g.append("line")
-      .attr("class", "rotating-line")
-      .attr("stroke", chapterColors.primary)
-      .attr("stroke-width", 3)
-      .attr("stroke-linecap", "round")
-      .style("filter", "drop-shadow(0 0 6px rgba(16, 185, 129, 0.5))");
-    
-    // Store centroid position for later use
-    lineRef.current.cx = cx;
-    lineRef.current.cy = cy;
-    lineRef.current.lineLength = lineLength;
-    
-    // Label
-    g.append("text")
-      .attr("x", cx + 10)
-      .attr("y", cy - 10)
-      .attr("fill", chapterColors.accent)
-      .style("font-size", "12px")
-      .text("(x̄, ȳ)");
-    
     // Add some sample points for context
     const samplePoints = fuelData.slice(0, 8);
     g.selectAll(".sample-point")
@@ -672,25 +612,40 @@ const CentroidProperty = React.memo(function CentroidProperty() {
       .attr("fill", chapterColors.primary)
       .attr("opacity", 0.3);
     
-    setIsInitialized(true);
-  }, [isInitialized]);
-  
-  // Update rotation
-  useEffect(() => {
-    if (!lineRef.current) return;
+    // Draw the optimal regression line
+    const lineData = [
+      { x: 0.95, y: optimalRegression.b0 + optimalRegression.b1 * 0.95 },
+      { x: 1.25, y: optimalRegression.b0 + optimalRegression.b1 * 1.25 }
+    ];
     
-    const angle = (rotation * Math.PI) / 180;
-    const { cx, cy, lineLength } = lineRef.current;
+    const line = d3.line()
+      .x(d => xScale(d.x))
+      .y(d => yScale(d.y));
     
-    lineRef.current
-      .transition()
-      .duration(800)
-      .ease(d3.easeCubicInOut)
-      .attr("x1", cx - lineLength * Math.cos(angle))
-      .attr("y1", cy + lineLength * Math.sin(angle))
-      .attr("x2", cx + lineLength * Math.cos(angle))
-      .attr("y2", cy - lineLength * Math.sin(angle));
-  }, [rotation]);
+    g.append("path")
+      .datum(lineData)
+      .attr("fill", "none")
+      .attr("stroke", chapterColors.primary)
+      .attr("stroke-width", 3)
+      .attr("stroke-linecap", "round")
+      .style("filter", "drop-shadow(0 0 6px rgba(16, 185, 129, 0.5))")
+      .attr("d", line);
+    
+    // Centroid
+    const cx = xScale(optimalRegression.xMean);
+    const cy = yScale(optimalRegression.yMean);
+    
+    // Draw centroid with emphasis
+    g.append("circle")
+      .attr("cx", cx)
+      .attr("cy", cy)
+      .attr("r", 6)
+      .attr("fill", chapterColors.accent)
+      .attr("stroke", "#fff")
+      .attr("stroke-width", 2);
+    
+    // Label - removed per user request to match main visualization
+  }, []);
   
   return (
     <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">
@@ -699,17 +654,6 @@ const CentroidProperty = React.memo(function CentroidProperty() {
         The regression line always passes through the centroid (x̄, ȳ) of the data!
       </p>
       <svg ref={vizRef} className="w-full" />
-      <div className="mt-4 flex items-center gap-4">
-        <Button
-          onClick={() => setRotation((r) => (r + 30) % 360)}
-          variant="secondary"
-          size="sm"
-          className="transition-all duration-200 hover:scale-105 hover:brightness-110"
-        >
-          Rotate Line
-        </Button>
-        <span className="text-sm text-gray-400">Angle: {rotation}°</span>
-      </div>
     </VisualizationSection>
   );
 });
@@ -783,7 +727,7 @@ const ResidualAnalysis = React.memo(function ResidualAnalysis({ data, regression
       .style("opacity", 0)
       .transition()
       .duration(800)
-      .delay((d, i) => i * 30)
+      .delay((_d, i) => i * 30)
       .style("opacity", 0.8);
     
   }, [data, regression]);
@@ -828,58 +772,66 @@ export default function SimpleLinearRegression() {
           <LineComparisonDemo lineType={lineType} showResiduals={showResiduals} />
           
           {/* Controls */}
-          <div className="mt-6 space-y-4">
-            <ControlGroup label="Choose a regression line">
-              <div className="flex flex-wrap gap-3">
-                <Button
+          <div className="mt-6 space-y-6">
+            {/* Regression Line Selection - Using pattern from CorrelationCoefficient */}
+            <div>
+              <label className="block text-sm font-medium text-neutral-300 mb-3">
+                Choose a regression line
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <button
                   onClick={() => setLineType('too-flat')}
-                  variant={lineType === 'too-flat' ? 'default' : 'secondary'}
-                  className={`min-w-[120px] transition-all duration-200 ${
-                    lineType === 'too-flat' 
-                      ? 'bg-orange-600 hover:bg-orange-500 border-2 border-orange-400 shadow-lg scale-105' 
-                      : 'hover:scale-105 hover:brightness-110'
+                  className={`px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+                    lineType === 'too-flat'
+                      ? 'bg-orange-600 text-white shadow-md ring-2 ring-orange-500/50'
+                      : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
                   }`}
                 >
+                  <TrendingDown className="w-4 h-4" />
                   Too Flat
-                </Button>
-                <Button
+                </button>
+                <button
                   onClick={() => setLineType('optimal')}
-                  variant={lineType === 'optimal' ? 'default' : 'secondary'}
-                  className={`min-w-[120px] transition-all duration-200 ${
-                    lineType === 'optimal' 
-                      ? 'bg-emerald-600 hover:bg-emerald-500 border-2 border-emerald-400 shadow-lg scale-105' 
-                      : 'hover:scale-105 hover:brightness-110'
+                  className={`px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+                    lineType === 'optimal'
+                      ? 'bg-teal-600 text-white shadow-md ring-2 ring-teal-500/50'
+                      : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
                   }`}
                 >
+                  <ChartLine className="w-4 h-4" />
                   Optimal (Least Squares)
-                </Button>
-                <Button
+                </button>
+                <button
                   onClick={() => setLineType('too-steep')}
-                  variant={lineType === 'too-steep' ? 'default' : 'secondary'}
-                  className={`min-w-[120px] transition-all duration-200 ${
-                    lineType === 'too-steep' 
-                      ? 'bg-purple-600 hover:bg-purple-500 border-2 border-purple-400 shadow-lg scale-105' 
-                      : 'hover:scale-105 hover:brightness-110'
+                  className={`px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+                    lineType === 'too-steep'
+                      ? 'bg-purple-600 text-white shadow-md ring-2 ring-purple-500/50'
+                      : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
                   }`}
                 >
+                  <TrendingUp className="w-4 h-4" />
                   Too Steep
-                </Button>
+                </button>
               </div>
-            </ControlGroup>
+            </div>
             
-            <ControlGroup label="Display options">
-              <Button
+            {/* Display Options */}
+            <div>
+              <label className="block text-sm font-medium text-neutral-300 mb-3">
+                Display options
+              </label>
+              <button
                 onClick={() => setShowResiduals(!showResiduals)}
-                variant={showResiduals ? 'default' : 'secondary'}
-                className={`transition-all duration-200 ${
-                  showResiduals 
-                    ? 'border-2 border-blue-400 shadow-md' 
-                    : 'hover:scale-105 hover:brightness-110'
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 flex items-center gap-2 ${
+                  showResiduals
+                    ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-500/50'
+                    : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
                 }`}
               >
+                {showResiduals ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 {showResiduals ? 'Hide' : 'Show'} Residuals
-              </Button>
-            </ControlGroup>
+              </button>
+            </div>
           </div>
           
           {/* Line comparison info */}
@@ -897,13 +849,17 @@ export default function SimpleLinearRegression() {
           <h3 className="text-xl font-bold text-purple-400 mb-4">
             Why Use Squared Errors?
           </h3>
-          <Button
+          <button
             onClick={() => setShowWhySquared(!showWhySquared)}
-            variant="secondary"
-            className="mb-4"
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 flex items-center gap-2 mb-4 ${
+              showWhySquared
+                ? 'bg-purple-600 text-white shadow-md ring-2 ring-purple-500/50'
+                : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+            }`}
           >
+            {showWhySquared ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
             {showWhySquared ? 'Hide' : 'Show'} Comparison
-          </Button>
+          </button>
           
           <AnimatePresence>
             {showWhySquared && (
@@ -923,13 +879,17 @@ export default function SimpleLinearRegression() {
           <h3 className="text-xl font-bold text-purple-400 mb-4">
             Worked Example: Fuel Efficiency Data
           </h3>
-          <Button
+          <button
             onClick={() => setShowWorkedExample(!showWorkedExample)}
-            variant="secondary"
-            className="mb-4"
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 flex items-center gap-2 mb-4 ${
+              showWorkedExample
+                ? 'bg-purple-600 text-white shadow-md ring-2 ring-purple-500/50'
+                : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+            }`}
           >
+            {showWorkedExample ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
             {showWorkedExample ? 'Hide' : 'Show'} Calculations
-          </Button>
+          </button>
           
           <AnimatePresence>
             {showWorkedExample && (

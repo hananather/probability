@@ -10,9 +10,8 @@ import {
   ControlGroup
 } from '../ui/VisualizationContainer';
 import { colors, createColorScheme } from '../../lib/design-system';
-import { Button } from '../ui/button';
 import BackToHub from '../ui/BackToHub';
-import { GitBranch, BarChart3, Calculator, Target, Activity } from 'lucide-react';
+import { GitBranch, BarChart3, Calculator, Target, Activity, Eye, EyeOff, Layers, TrendingUp, AlertTriangle } from 'lucide-react';
 
 // Get vibrant Chapter 7 color scheme
 const chapterColors = createColorScheme('regression');
@@ -423,53 +422,53 @@ const VarianceDecomposition = React.memo(({ data, regression }) => {
   return (
     <div className="space-y-4">
       <div className="flex gap-4 flex-wrap">
-        <Button
+        <button
           onClick={() => setShowDecomposition(!showDecomposition)}
-          variant={showDecomposition ? "default" : "outline"}
-          className="gap-2"
+          className={`px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+            showDecomposition
+              ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-500/50'
+              : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+          }`}
         >
-          <GitBranch className="w-4 h-4" />
+          {showDecomposition ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           {showDecomposition ? "Hide" : "Show"} Decomposition
-        </Button>
+        </button>
         
         {showDecomposition && (
           <div className="flex gap-2">
-            <Button
+            <button
               onClick={() => setSelectedComponents(prev => ({ ...prev, total: !prev.total }))}
-              variant={selectedComponents.total ? "default" : "outline"}
-              size="sm"
-              style={{ 
-                backgroundColor: selectedComponents.total ? anovaColors.total : 'transparent',
-                borderColor: anovaColors.total,
-                color: selectedComponents.total ? 'white' : anovaColors.total
-              }}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+                selectedComponents.total
+                  ? 'bg-gray-500 text-white shadow-md ring-2 ring-gray-500/50'
+                  : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+              }`}
             >
+              <Layers className="w-4 h-4" />
               Total (SST)
-            </Button>
-            <Button
+            </button>
+            <button
               onClick={() => setSelectedComponents(prev => ({ ...prev, regression: !prev.regression }))}
-              variant={selectedComponents.regression ? "default" : "outline"}
-              size="sm"
-              style={{ 
-                backgroundColor: selectedComponents.regression ? anovaColors.regression : 'transparent',
-                borderColor: anovaColors.regression,
-                color: selectedComponents.regression ? 'white' : anovaColors.regression
-              }}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+                selectedComponents.regression
+                  ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-500/50'
+                  : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+              }`}
             >
+              <TrendingUp className="w-4 h-4" />
               Regression (SSR)
-            </Button>
-            <Button
+            </button>
+            <button
               onClick={() => setSelectedComponents(prev => ({ ...prev, error: !prev.error }))}
-              variant={selectedComponents.error ? "default" : "outline"}
-              size="sm"
-              style={{ 
-                backgroundColor: selectedComponents.error ? anovaColors.error : 'transparent',
-                borderColor: anovaColors.error,
-                color: selectedComponents.error ? 'white' : anovaColors.error
-              }}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+                selectedComponents.error
+                  ? 'bg-red-600 text-white shadow-md ring-2 ring-red-500/50'
+                  : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+              }`}
             >
+              <AlertTriangle className="w-4 h-4" />
               Error (SSE)
-            </Button>
+            </button>
           </div>
         )}
       </div>

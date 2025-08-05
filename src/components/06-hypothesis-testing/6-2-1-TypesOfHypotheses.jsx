@@ -60,7 +60,7 @@ const AnnotatedDistribution = ({ testType, alpha = 0.05, showValues = true, test
     const svg = d3.select(svgRef.current);
     const width = svgRef.current.clientWidth;
     const height = 500; // Fixed height to match SVG
-    const margin = { top: 100, right: 120, bottom: 140, left: 120 };
+    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
@@ -95,14 +95,55 @@ const AnnotatedDistribution = ({ testType, alpha = 0.05, showValues = true, test
       .y1(d => yScale(d.y))
       .curve(d3.curveBasis);
     
-    // Draw the distribution
+    // Background gradient section
+    const backgroundGradient = g.append("defs")
+      .append("linearGradient")
+      .attr("id", "bgGradient")
+      .attr("gradientUnits", "userSpaceOnUse")
+      .attr("x1", 0).attr("y1", 0)
+      .attr("x2", 0).attr("y2", innerHeight);
+    
+    backgroundGradient.append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", "#14b8a6")
+      .attr("stop-opacity", 0.2);
+    
+    backgroundGradient.append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", "#0d9488")
+      .attr("stop-opacity", 0.2);
+    
+    // Draw background rectangle
+    g.append("rect")
+      .attr("width", innerWidth)
+      .attr("height", innerHeight)
+      .attr("fill", "url(#bgGradient)");
+    
+    // Draw the distribution with gradient fill
+    const distGradient = g.select("defs")
+      .append("linearGradient")
+      .attr("id", "distGradient")
+      .attr("gradientUnits", "userSpaceOnUse")
+      .attr("x1", 0).attr("y1", 0)
+      .attr("x2", 0).attr("y2", innerHeight);
+    
+    distGradient.append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", "#14b8a6")
+      .attr("stop-opacity", 0.3);
+    
+    distGradient.append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", "#374151")
+      .attr("stop-opacity", 0.2);
+    
     g.append("path")
       .datum(data)
-      .attr("fill", "#374151")
-      .attr("opacity", 0.3)
-      .attr("d", area);
+      .attr("fill", "url(#distGradient)")
+      .attr("d", area)
+      .style("filter", "drop-shadow(0 0 4px rgba(0, 0, 0, 0.3))");
     
-    // Draw the curve
+    // Draw the curve with gradient stroke
     const line = d3.line()
       .x(d => xScale(d.x))
       .y(d => yScale(d.y))
@@ -111,9 +152,15 @@ const AnnotatedDistribution = ({ testType, alpha = 0.05, showValues = true, test
     g.append("path")
       .datum(data)
       .attr("fill", "none")
-      .attr("stroke", "#9333ea")
-      .attr("stroke-width", 2)
-      .attr("d", line);
+      .attr("stroke", "#14b8a6")
+      .attr("stroke-width", 3)
+      .attr("d", line)
+      .style("filter", "drop-shadow(0 0 4px rgba(0, 0, 0, 0.3))")
+      .attr("opacity", 0)
+      .transition()
+      .duration(1200)
+      .ease(d3.easeCubicOut)
+      .attr("opacity", 0.9);
     
     // Critical values based on test type
     let criticalValues = [];
@@ -126,7 +173,7 @@ const AnnotatedDistribution = ({ testType, alpha = 0.05, showValues = true, test
       criticalValues = [jStat.normal.inv(1 - alpha, 0, 1)];
     }
     
-    // Shade rejection regions
+    // Shade rejection regions with gradients
     criticalValues.forEach((cv, i) => {
       let rejectionData;
       if (testType === 'two-tailed') {
@@ -137,23 +184,53 @@ const AnnotatedDistribution = ({ testType, alpha = 0.05, showValues = true, test
         rejectionData = data.filter(d => d.x >= cv);
       }
       
+      // Create rejection region gradient
+      const rejectionGradient = g.select("defs")
+        .append("linearGradient")
+        .attr("id", `rejectionGradient${i}`)
+        .attr("gradientUnits", "userSpaceOnUse")
+        .attr("x1", 0).attr("y1", 0)
+        .attr("x2", 0).attr("y2", innerHeight);
+      
+      rejectionGradient.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", "#ef4444")
+        .attr("stop-opacity", 0.4);
+      
+      rejectionGradient.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "#dc2626")
+        .attr("stop-opacity", 0.2);
+      
       g.append("path")
         .datum(rejectionData)
-        .attr("fill", "#ef4444")
-        .attr("opacity", 0.3)
-        .attr("d", area);
+        .attr("fill", `url(#rejectionGradient${i})`)
+        .attr("d", area)
+        .style("filter", "drop-shadow(0 0 4px rgba(0, 0, 0, 0.3))")
+        .attr("opacity", 0)
+        .transition()
+        .duration(1200)
+        .delay(400)
+        .ease(d3.easeCubicOut)
+        .attr("opacity", 1);
     });
     
-    // Draw critical value lines
-    criticalValues.forEach(cv => {
+    // Draw critical value lines with animation
+    criticalValues.forEach((cv, i) => {
       g.append("line")
         .attr("x1", xScale(cv))
         .attr("x2", xScale(cv))
-        .attr("y1", 0)
+        .attr("y1", innerHeight)
         .attr("y2", innerHeight)
         .attr("stroke", "#ef4444")
-        .attr("stroke-width", 2)
-        .attr("stroke-dasharray", "5,5");
+        .attr("stroke-width", 3)
+        .attr("stroke-dasharray", "3,3")
+        .style("filter", "drop-shadow(0 0 4px rgba(0, 0, 0, 0.3))")
+        .transition()
+        .duration(1200)
+        .delay(600 + i * 100)
+        .ease(d3.easeCubicOut)
+        .attr("y1", 0);
       
       if (showValues) {
         g.append("text")
@@ -163,9 +240,38 @@ const AnnotatedDistribution = ({ testType, alpha = 0.05, showValues = true, test
           .style("fill", "#ef4444")
           .style("font-size", "12px")
           .style("font-weight", "bold")
-          .text(cv.toFixed(2));
+          .style("filter", "drop-shadow(0 0 4px rgba(0, 0, 0, 0.3))")
+          .attr("opacity", 0)
+          .text(cv.toFixed(2))
+          .transition()
+          .duration(1200)
+          .delay(800 + i * 100)
+          .ease(d3.easeCubicOut)
+          .attr("opacity", 0.9);
       }
     });
+    
+    // Add grid lines
+    g.append("g")
+      .attr("class", "grid")
+      .attr("transform", `translate(0,${innerHeight})`)
+      .call(d3.axisBottom(xScale)
+        .tickSize(-innerHeight)
+        .tickFormat("")
+      )
+      .style("stroke", "#374151")
+      .style("stroke-dasharray", "3,3")
+      .style("opacity", 0.5);
+    
+    g.append("g")
+      .attr("class", "grid")
+      .call(d3.axisLeft(yScale)
+        .tickSize(-innerWidth)
+        .tickFormat("")
+      )
+      .style("stroke", "#374151")
+      .style("stroke-dasharray", "3,3")
+      .style("opacity", 0.5);
     
     // X-axis
     g.append("g")
@@ -190,7 +296,7 @@ const AnnotatedDistribution = ({ testType, alpha = 0.05, showValues = true, test
       .style("font-weight", "bold")
       .text("z-score");
     
-    // Add annotations
+    // Add annotations with enhanced styling and animation
     if (testType === 'two-tailed') {
       // Left rejection region
       g.append("text")
@@ -200,7 +306,14 @@ const AnnotatedDistribution = ({ testType, alpha = 0.05, showValues = true, test
         .style("fill", "#ef4444")
         .style("font-size", "14px")
         .style("font-weight", "bold")
-        .text(`α/2 = ${(alpha/2).toFixed(3)}`);
+        .style("filter", "drop-shadow(0 0 4px rgba(0, 0, 0, 0.3))")
+        .attr("opacity", 0)
+        .text(`α/2 = ${(alpha/2).toFixed(3)}`)
+        .transition()
+        .duration(1200)
+        .delay(1000)
+        .ease(d3.easeCubicOut)
+        .attr("opacity", 0.9);
       
       // Right rejection region
       g.append("text")
@@ -210,7 +323,14 @@ const AnnotatedDistribution = ({ testType, alpha = 0.05, showValues = true, test
         .style("fill", "#ef4444")
         .style("font-size", "14px")
         .style("font-weight", "bold")
-        .text(`α/2 = ${(alpha/2).toFixed(3)}`);
+        .style("filter", "drop-shadow(0 0 4px rgba(0, 0, 0, 0.3))")
+        .attr("opacity", 0)
+        .text(`α/2 = ${(alpha/2).toFixed(3)}`)
+        .transition()
+        .duration(1200)
+        .delay(1100)
+        .ease(d3.easeCubicOut)
+        .attr("opacity", 0.9);
       
       // Non-rejection region
       g.append("text")
@@ -220,7 +340,14 @@ const AnnotatedDistribution = ({ testType, alpha = 0.05, showValues = true, test
         .style("fill", "#10b981")
         .style("font-size", "14px")
         .style("font-weight", "bold")
-        .text(`1 - α = ${(1 - alpha).toFixed(2)}`);
+        .style("filter", "drop-shadow(0 0 4px rgba(0, 0, 0, 0.3))")
+        .attr("opacity", 0)
+        .text(`1 - α = ${(1 - alpha).toFixed(2)}`)
+        .transition()
+        .duration(1200)
+        .delay(1200)
+        .ease(d3.easeCubicOut)
+        .attr("opacity", 0.9);
     } else if (testType === 'left-tailed') {
       g.append("text")
         .attr("x", xScale(-2.5))
@@ -229,7 +356,31 @@ const AnnotatedDistribution = ({ testType, alpha = 0.05, showValues = true, test
         .style("fill", "#ef4444")
         .style("font-size", "14px")
         .style("font-weight", "bold")
-        .text(`α = ${alpha.toFixed(3)}`);
+        .style("filter", "drop-shadow(0 0 4px rgba(0, 0, 0, 0.3))")
+        .attr("opacity", 0)
+        .text(`α = ${alpha.toFixed(3)}`)
+        .transition()
+        .duration(1200)
+        .delay(1000)
+        .ease(d3.easeCubicOut)
+        .attr("opacity", 0.9);
+        
+      // Non-rejection region for left-tailed
+      g.append("text")
+        .attr("x", xScale(1))
+        .attr("y", innerHeight / 2)
+        .attr("text-anchor", "middle")
+        .style("fill", "#10b981")
+        .style("font-size", "14px")
+        .style("font-weight", "bold")
+        .style("filter", "drop-shadow(0 0 4px rgba(0, 0, 0, 0.3))")
+        .attr("opacity", 0)
+        .text(`1 - α = ${(1 - alpha).toFixed(2)}`)
+        .transition()
+        .duration(1200)
+        .delay(1100)
+        .ease(d3.easeCubicOut)
+        .attr("opacity", 0.9);
     } else {
       g.append("text")
         .attr("x", xScale(2.5))
@@ -238,40 +389,84 @@ const AnnotatedDistribution = ({ testType, alpha = 0.05, showValues = true, test
         .style("fill", "#ef4444")
         .style("font-size", "14px")
         .style("font-weight", "bold")
-        .text(`α = ${alpha.toFixed(3)}`);
+        .style("filter", "drop-shadow(0 0 4px rgba(0, 0, 0, 0.3))")
+        .attr("opacity", 0)
+        .text(`α = ${alpha.toFixed(3)}`)
+        .transition()
+        .duration(1200)
+        .delay(1000)
+        .ease(d3.easeCubicOut)
+        .attr("opacity", 0.9);
+        
+      // Non-rejection region for right-tailed
+      g.append("text")
+        .attr("x", xScale(-1))
+        .attr("y", innerHeight / 2)
+        .attr("text-anchor", "middle")
+        .style("fill", "#10b981")
+        .style("font-size", "14px")
+        .style("font-weight", "bold")
+        .style("filter", "drop-shadow(0 0 4px rgba(0, 0, 0, 0.3))")
+        .attr("opacity", 0)
+        .text(`1 - α = ${(1 - alpha).toFixed(2)}`)
+        .transition()
+        .duration(1200)
+        .delay(1100)
+        .ease(d3.easeCubicOut)
+        .attr("opacity", 0.9);
     }
     
-    // Draw test statistic if provided
+    // Draw test statistic if provided with animation
     if (testStatistic !== null && !isNaN(testStatistic)) {
       const testX = xScale(testStatistic);
       const testY = yScale((1 / Math.sqrt(2 * Math.PI)) * Math.exp(-0.5 * testStatistic * testStatistic));
       
-      // Drop line
+      // Drop line with animation
       g.append("line")
         .attr("x1", testX)
         .attr("x2", testX)
-        .attr("y1", testY)
+        .attr("y1", innerHeight)
         .attr("y2", innerHeight)
-        .attr("stroke", "#fbbf24")
-        .attr("stroke-width", 2);
+        .attr("stroke", "#a855f7")
+        .attr("stroke-width", 3)
+        .style("filter", "drop-shadow(0 0 4px rgba(0, 0, 0, 0.3))")
+        .transition()
+        .duration(1200)
+        .delay(1000)
+        .ease(d3.easeCubicOut)
+        .attr("y1", testY);
       
-      // Point
+      // Point with animation
       g.append("circle")
         .attr("cx", testX)
         .attr("cy", testY)
+        .attr("r", 0)
+        .attr("fill", "#a855f7")
+        .attr("stroke", "#ffffff")
+        .attr("stroke-width", 1.5)
+        .style("filter", "drop-shadow(0 0 4px rgba(0, 0, 0, 0.3))")
+        .transition()
+        .duration(1200)
+        .delay(1200)
+        .ease(d3.easeCubicOut)
         .attr("r", 6)
-        .attr("fill", "#fbbf24")
-        .attr("stroke", "#171717")
-        .attr("stroke-width", 2);
+        .attr("opacity", 0.9);
       
       g.append("text")
         .attr("x", xScale(testStatistic))
         .attr("y", testY - 15)
         .attr("text-anchor", "middle")
-        .style("fill", "#fbbf24")
+        .style("fill", "#a855f7")
         .style("font-size", "16px")
         .style("font-weight", "bold")
-        .text(`z = ${testStatistic.toFixed(2)}`);
+        .style("filter", "drop-shadow(0 0 4px rgba(0, 0, 0, 0.3))")
+        .attr("opacity", 0)
+        .text(`z = ${testStatistic.toFixed(2)}`)
+        .transition()
+        .duration(1200)
+        .delay(1400)
+        .ease(d3.easeCubicOut)
+        .attr("opacity", 0.9);
     }
     
   }, [testType, alpha, showValues, testStatistic]);
@@ -434,24 +629,29 @@ const ExampleCalculation = ({ testType, example }) => {
       </div>
       
       <div className="flex justify-between items-center pt-4">
-        <Button
+        <button
           onClick={() => setStep(Math.max(0, step - 1))}
           disabled={step === 0}
-          size="sm"
-          variant="outline"
+          className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+            step === 0 ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed'
+                      : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+          }`}
         >
           Previous Step
-        </Button>
+        </button>
         <span className="text-sm text-neutral-400">
           Step {Math.min(step + 1, maxSteps + 1)} of {maxSteps + 1}
         </span>
-        <Button
+        <button
           onClick={() => setStep(Math.min(maxSteps, step + 1))}
           disabled={step === maxSteps}
-          size="sm"
+          className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+            step === maxSteps ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed'
+                             : 'bg-teal-600 text-white shadow-md ring-2 ring-teal-500/50 hover:bg-teal-700'
+          }`}
         >
           Next Step
-        </Button>
+        </button>
       </div>
     </div>
   );
@@ -626,14 +826,16 @@ export default function TypesOfHypotheses({ onSwitchToInteractive }) {
             <h2 className="text-2xl font-bold text-white">Distribution Visualization</h2>
             <div className="flex gap-2">
               {Object.entries(testTypes).map(([key, test]) => (
-                <Button
+                <button
                   key={key}
                   onClick={() => setActiveTest(key)}
-                  variant={activeTest === key ? 'default' : 'outline'}
-                  size="sm"
+                  className={`px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+                    activeTest === key ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-500/50'
+                                       : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+                  }`}
                 >
                   {test.name}
-                </Button>
+                </button>
               ))}
             </div>
           </div>
@@ -656,13 +858,15 @@ export default function TypesOfHypotheses({ onSwitchToInteractive }) {
         <section className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold text-white">Worked Example</h2>
-            <Button
+            <button
               onClick={() => setShowExample(!showExample)}
-              size="sm"
-              variant={showExample ? 'default' : 'outline'}
+              className={`px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+                showExample ? 'bg-green-600 text-white shadow-md ring-2 ring-green-500/50'
+                           : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+              }`}
             >
               {showExample ? 'Hide' : 'Show'} Example
-            </Button>
+            </button>
           </div>
           
           {showExample && (
@@ -706,14 +910,13 @@ export default function TypesOfHypotheses({ onSwitchToInteractive }) {
                 Explore an interactive visualization where you can manipulate test statistics in real-time 
                 and see how different hypothesis types lead to different conclusions.
               </p>
-              <Button
+              <button
                 onClick={onSwitchToInteractive}
-                size="lg"
-                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                className="px-6 py-4 text-base font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md ring-2 ring-purple-500/50"
               >
-                <ChevronRight className="w-5 h-5 mr-2" />
+                <ChevronRight className="w-5 h-5" />
                 Try Interactive Version
-              </Button>
+              </button>
             </div>
           </section>
         )}

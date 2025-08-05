@@ -808,6 +808,12 @@ const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGaller
   const [selectedPattern, setSelectedPattern] = useState('perfect-positive');
   const svgRef = useRef(null);
   
+  // Deterministic pseudo-random number generator
+  const seededRandom = (seed) => {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  };
+  
   const patterns = {
     'perfect-positive': {
       name: 'Perfect Positive (r = 1.0)',
@@ -819,7 +825,7 @@ const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGaller
       name: 'Strong Positive (r ≈ 0.9)',
       data: Array.from({ length: 20 }, (_, i) => ({ 
         x: i, 
-        y: 2 * i + 5 + (Math.random() - 0.5) * 4 
+        y: 2 * i + 5 + (seededRandom(i * 11) - 0.5) * 4 
       })),
       description: 'Points cluster tightly around an upward trend',
       color: '#3b82f6'
@@ -828,16 +834,16 @@ const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGaller
       name: 'Moderate Positive (r ≈ 0.5)',
       data: Array.from({ length: 20 }, (_, i) => ({ 
         x: i, 
-        y: i + 15 + (Math.random() - 0.5) * 15 
+        y: i + 15 + (seededRandom(i * 13) - 0.5) * 15 
       })),
       description: 'General upward trend with more scatter',
       color: '#06b6d4'
     },
     'no-correlation': {
       name: 'No Correlation (r ≈ 0.0)',
-      data: Array.from({ length: 20 }, () => ({ 
-        x: Math.random() * 20, 
-        y: Math.random() * 40 + 10 
+      data: Array.from({ length: 20 }, (_, i) => ({ 
+        x: seededRandom(i * 17) * 20, 
+        y: seededRandom(i * 19) * 40 + 10 
       })),
       description: 'No linear relationship between variables',
       color: '#9ca3af'
@@ -846,7 +852,7 @@ const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGaller
       name: 'Strong Negative (r ≈ -0.9)',
       data: Array.from({ length: 20 }, (_, i) => ({ 
         x: i, 
-        y: -2 * i + 45 + (Math.random() - 0.5) * 4 
+        y: -2 * i + 45 + (seededRandom(i * 23) - 0.5) * 4 
       })),
       description: 'Points cluster tightly around a downward trend',
       color: '#ef4444'
@@ -855,7 +861,7 @@ const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGaller
       name: 'Non-linear (r ≈ 0.0)',
       data: Array.from({ length: 20 }, (_, i) => ({ 
         x: i - 10, 
-        y: Math.pow(i - 10, 2) / 10 + 10 + (Math.random() - 0.5) * 2 
+        y: Math.pow(i - 10, 2) / 10 + 10 + (seededRandom(i * 29) - 0.5) * 2 
       })),
       description: 'Strong pattern but not linear (parabola)',
       color: '#a855f7'
@@ -1184,7 +1190,13 @@ const KeyInsights = () => {
 
 // Main Component
 export default function CorrelationCoefficient() {
-  // Pre-defined scenarios
+  // Deterministic pseudo-random number generator
+  const seededRandom = (seed) => {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  };
+  
+  // Pre-defined scenarios with deterministic data
   const scenarios = {
     'perfect-positive': {
       name: 'Perfect Positive',
@@ -1197,32 +1209,32 @@ export default function CorrelationCoefficient() {
     'strong-positive': {
       name: 'Strong Positive',
       data: Array.from({ length: 20 }, (_, i) => ({ 
-        x: i + (Math.random() - 0.5) * 2, 
-        y: 2 * i + 10 + (Math.random() - 0.5) * 4 
+        x: i + (seededRandom(i * 2) - 0.5) * 2, 
+        y: 2 * i + 10 + (seededRandom(i * 3) - 0.5) * 4 
       })),
       rho: 0.85
     },
     'moderate': {
       name: 'Moderate Positive',
       data: Array.from({ length: 20 }, (_, i) => ({ 
-        x: i + (Math.random() - 0.5) * 4, 
-        y: 1.5 * i + 10 + (Math.random() - 0.5) * 8 
+        x: i + (seededRandom(i * 4) - 0.5) * 4, 
+        y: 1.5 * i + 10 + (seededRandom(i * 5) - 0.5) * 8 
       })),
       rho: 0.50
     },
     'none': {
       name: 'No Correlation',
-      data: Array.from({ length: 20 }, () => ({ 
-        x: Math.random() * 20, 
-        y: Math.random() * 30 + 10 
+      data: Array.from({ length: 20 }, (_, i) => ({ 
+        x: seededRandom(i * 6) * 20, 
+        y: seededRandom(i * 7) * 30 + 10 
       })),
       rho: 0.0
     },
     'strong-negative': {
       name: 'Strong Negative',
       data: Array.from({ length: 20 }, (_, i) => ({ 
-        x: i + (Math.random() - 0.5) * 2, 
-        y: -2 * i + 40 + (Math.random() - 0.5) * 4 
+        x: i + (seededRandom(i * 8) - 0.5) * 2, 
+        y: -2 * i + 40 + (seededRandom(i * 9) - 0.5) * 4 
       })),
       rho: -0.85
     }
@@ -1481,9 +1493,9 @@ export default function CorrelationCoefficient() {
         <MathematicalProperties />
 
         {/* Main Visualization with Controls */}
-        <GraphContainer title="Interactive Correlation Explorer" className="!bg-transparent">
-          {/* Interactive Controls - Moved above the chart */}
-          <div className="mb-6 space-y-6">
+        <VisualizationSection>
+          <div className="space-y-6">
+            {/* Interactive Controls */}
             <div>
               <h4 className="text-lg font-bold text-white mb-4">Explore Different Scenarios</h4>
               <ControlGroup label="Correlation Pattern">
@@ -1522,11 +1534,13 @@ export default function CorrelationCoefficient() {
                 </p>
               </ControlGroup>
             </div>
-          </div>
 
-          {/* Chart */}
-          <svg ref={svgRef} className="w-full"></svg>
-        </GraphContainer>
+            {/* Chart */}
+            <GraphContainer title="Interactive Correlation Explorer" className="!bg-transparent">
+              <svg ref={svgRef} className="w-full"></svg>
+            </GraphContainer>
+          </div>
+        </VisualizationSection>
 
         {/* Correlation Strength Indicator */}
         <VisualizationSection className="bg-neutral-800/50 rounded-lg p-6">

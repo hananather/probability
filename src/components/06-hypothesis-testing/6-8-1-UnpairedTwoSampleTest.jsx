@@ -10,7 +10,6 @@ import {
   ControlGroup
 } from '../ui/VisualizationContainer';
 import { colors, createColorScheme } from '@/lib/design-system';
-import { Button } from '../ui/button';
 import BackToHub from '../ui/BackToHub';
 import { Calculator, Info, BarChart3 } from 'lucide-react';
 
@@ -38,7 +37,7 @@ const ConceptOverview = React.memo(function ConceptOverview() {
   
   return (
     <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">
-      <h3 className="text-xl font-bold text-purple-400 mb-6">
+      <h3 className="text-xl font-bold text-teal-400 mb-6">
         Comparing Two Independent Samples
       </h3>
       
@@ -97,8 +96,8 @@ const TestSelectionFramework = React.memo(function TestSelectionFramework() {
       <div ref={contentRef}>
         <div className="grid md:grid-cols-3 gap-4">
           {/* Z-test */}
-          <div className="bg-gradient-to-br from-purple-900/20 to-purple-800/20 rounded-lg p-4 border border-purple-700/30">
-            <h4 className="font-bold text-purple-400 mb-3">Z-Test</h4>
+          <div className="bg-gradient-to-br from-blue-900/20 to-blue-800/20 rounded-lg p-4 border border-blue-700/30">
+            <h4 className="font-bold text-blue-400 mb-3">Z-Test</h4>
             <div className="text-sm text-neutral-300 space-y-2">
               <p className="font-semibold">When to use:</p>
               <ul className="space-y-1">
@@ -231,14 +230,14 @@ const WorkedExample = React.memo(function WorkedExample({ example }) {
   
   return (
     <VisualizationSection className="bg-gradient-to-br from-neutral-800/50 to-neutral-900/50 rounded-lg p-6 border border-neutral-700/50">
-      <h3 className="text-xl font-bold text-purple-400 mb-6">
+      <h3 className="text-xl font-bold text-teal-400 mb-6">
         Worked Example: {example.title}
       </h3>
       
       <div ref={contentRef} className="space-y-6">
         {/* Data Summary */}
         <div className="grid md:grid-cols-2 gap-4">
-          <div className="bg-neutral-900/50 rounded-lg p-4">
+          <div className="bg-neutral-900/50 rounded-lg p-4 border border-blue-500/30">
             <h4 className="font-bold text-blue-400 mb-3">{example.group1.label}</h4>
             <ul className="space-y-2 text-sm text-neutral-300">
               <li>• Sample size: <span className="font-mono">n₁ = {group1Stats.n}</span></li>
@@ -248,7 +247,7 @@ const WorkedExample = React.memo(function WorkedExample({ example }) {
             </ul>
           </div>
           
-          <div className="bg-neutral-900/50 rounded-lg p-4">
+          <div className="bg-neutral-900/50 rounded-lg p-4 border border-green-500/30">
             <h4 className="font-bold text-green-400 mb-3">{example.group2.label}</h4>
             <ul className="space-y-2 text-sm text-neutral-300">
               <li>• Sample size: <span className="font-mono">n₂ = {group2Stats.n}</span></li>
@@ -365,7 +364,7 @@ const DataComparisonTable = React.memo(function DataComparisonTable({ group1Data
               <th className="text-left py-3 px-4 text-neutral-400 font-semibold">Statistic</th>
               <th className="text-center py-3 px-4 text-blue-400 font-semibold">{group1Label}</th>
               <th className="text-center py-3 px-4 text-green-400 font-semibold">{group2Label}</th>
-              <th className="text-center py-3 px-4 text-purple-400 font-semibold">Difference</th>
+              <th className="text-center py-3 px-4 text-teal-400 font-semibold">Difference</th>
             </tr>
           </thead>
           <tbody>
@@ -382,7 +381,7 @@ const DataComparisonTable = React.memo(function DataComparisonTable({ group1Data
               <td className="py-3 px-4 text-neutral-300">Mean (<span dangerouslySetInnerHTML={{ __html: `\\(\\bar{x}\\)` }} />)</td>
               <td className="text-center py-3 px-4 font-mono text-white">{stats1.mean.toFixed(2)}</td>
               <td className="text-center py-3 px-4 font-mono text-white">{stats2.mean.toFixed(2)}</td>
-              <td className="text-center py-3 px-4 font-mono text-purple-300">{(stats1.mean - stats2.mean).toFixed(2)}</td>
+              <td className="text-center py-3 px-4 font-mono text-teal-300">{(stats1.mean - stats2.mean).toFixed(2)}</td>
             </tr>
             
             {/* Standard Deviation */}
@@ -398,7 +397,7 @@ const DataComparisonTable = React.memo(function DataComparisonTable({ group1Data
               <td className="py-3 px-4 text-neutral-300">Variance (<span dangerouslySetInnerHTML={{ __html: `\\(s^2\\)` }} />)</td>
               <td className="text-center py-3 px-4 font-mono text-white">{stats1.variance.toFixed(2)}</td>
               <td className="text-center py-3 px-4 font-mono text-white">{stats2.variance.toFixed(2)}</td>
-              <td className="text-center py-3 px-4 font-mono text-purple-300">
+              <td className="text-center py-3 px-4 font-mono text-teal-300">
                 Ratio: {Math.max(stats1.variance/stats2.variance, stats2.variance/stats1.variance).toFixed(2)}
               </td>
             </tr>
@@ -490,145 +489,6 @@ const DataComparisonTable = React.memo(function DataComparisonTable({ group1Data
   );
 });
 
-// Simple Distribution Visualization
-const DistributionVisualization = React.memo(function DistributionVisualization({ group1Data, group2Data, group1Label, group2Label }) {
-  const svgRef = useRef(null);
-  
-  useEffect(() => {
-    if (!svgRef.current) return;
-    
-    const svg = d3.select(svgRef.current);
-    svg.selectAll("*").remove();
-    
-    const width = 600;
-    const height = 300;
-    const margin = { top: 20, right: 30, bottom: 40, left: 50 };
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
-    
-    const g = svg
-      .attr("width", width)
-      .attr("height", height)
-      .append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
-    
-    // Combine data to find overall range
-    const allData = [...group1Data, ...group2Data];
-    const xExtent = d3.extent(allData);
-    const xPadding = (xExtent[1] - xExtent[0]) * 0.1;
-    
-    const xScale = d3.scaleLinear()
-      .domain([xExtent[0] - xPadding, xExtent[1] + xPadding])
-      .range([0, innerWidth]);
-    
-    // Create histograms
-    const bins1 = d3.histogram()
-      .domain(xScale.domain())
-      .thresholds(xScale.ticks(15))(group1Data);
-    
-    const bins2 = d3.histogram()
-      .domain(xScale.domain())
-      .thresholds(xScale.ticks(15))(group2Data);
-    
-    const yScale = d3.scaleLinear()
-      .domain([0, d3.max([...bins1, ...bins2], d => d.length)])
-      .range([innerHeight, 0]);
-    
-    // Draw axes
-    g.append("g")
-      .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(xScale))
-      .style("color", "#9CA3AF");
-    
-    g.append("g")
-      .call(d3.axisLeft(yScale))
-      .style("color", "#9CA3AF");
-    
-    // Draw histograms
-    g.selectAll(".bar1")
-      .data(bins1)
-      .enter()
-      .append("rect")
-      .attr("x", d => xScale(d.x0))
-      .attr("width", d => xScale(d.x1) - xScale(d.x0) - 1)
-      .attr("y", d => yScale(d.length))
-      .attr("height", d => innerHeight - yScale(d.length))
-      .attr("fill", "#9333ea")
-      .attr("opacity", 0.6);
-    
-    g.selectAll(".bar2")
-      .data(bins2)
-      .enter()
-      .append("rect")
-      .attr("x", d => xScale(d.x0))
-      .attr("width", d => xScale(d.x1) - xScale(d.x0) - 1)
-      .attr("y", d => yScale(d.length))
-      .attr("height", d => innerHeight - yScale(d.length))
-      .attr("fill", "#10b981")
-      .attr("opacity", 0.6);
-    
-    // Add means
-    const mean1 = d3.mean(group1Data);
-    const mean2 = d3.mean(group2Data);
-    
-    g.append("line")
-      .attr("x1", xScale(mean1))
-      .attr("x2", xScale(mean1))
-      .attr("y1", 0)
-      .attr("y2", innerHeight)
-      .attr("stroke", "#9333ea")
-      .attr("stroke-width", 2)
-      .attr("stroke-dasharray", "4,2");
-    
-    g.append("line")
-      .attr("x1", xScale(mean2))
-      .attr("x2", xScale(mean2))
-      .attr("y1", 0)
-      .attr("y2", innerHeight)
-      .attr("stroke", "#10b981")
-      .attr("stroke-width", 2)
-      .attr("stroke-dasharray", "4,2");
-    
-    // Legend
-    const legend = g.append("g")
-      .attr("transform", `translate(${innerWidth - 120}, 10)`);
-    
-    legend.append("rect")
-      .attr("width", 15)
-      .attr("height", 15)
-      .attr("fill", "#9333ea")
-      .attr("opacity", 0.6);
-    
-    legend.append("text")
-      .attr("x", 20)
-      .attr("y", 12)
-      .text(group1Label)
-      .style("font-size", "12px")
-      .style("fill", "#9CA3AF");
-    
-    legend.append("rect")
-      .attr("y", 20)
-      .attr("width", 15)
-      .attr("height", 15)
-      .attr("fill", "#10b981")
-      .attr("opacity", 0.6);
-    
-    legend.append("text")
-      .attr("x", 20)
-      .attr("y", 32)
-      .text(group2Label)
-      .style("font-size", "12px")
-      .style("fill", "#9CA3AF");
-    
-  }, [group1Data, group2Data, group1Label, group2Label]);
-  
-  return (
-    <GraphContainer className="p-4">
-      <h4 className="text-lg font-bold text-white mb-4">Distribution Comparison</h4>
-      <svg ref={svgRef} />
-    </GraphContainer>
-  );
-});
 
 // Interactive Calculator Component
 const InteractiveCalculator = React.memo(function InteractiveCalculator() {
@@ -691,8 +551,8 @@ const InteractiveCalculator = React.memo(function InteractiveCalculator() {
       <div className="grid md:grid-cols-2 gap-6">
         {/* Input Controls */}
         <div className="space-y-4">
-          <div className="bg-neutral-900/50 rounded-lg p-4">
-            <h4 className="font-bold text-white mb-3">Group 1</h4>
+          <div className="bg-neutral-900/50 rounded-lg p-4 border border-blue-500/30">
+            <h4 className="font-bold text-blue-400 mb-3">Group 1</h4>
             <ControlGroup>
               <label className="text-sm text-neutral-300">
                 Sample Size (n₁): <span className="font-mono">{n1}</span>
@@ -703,7 +563,7 @@ const InteractiveCalculator = React.memo(function InteractiveCalculator() {
                 max="100"
                 value={n1}
                 onChange={(e) => setN1(Number(e.target.value))}
-                className="w-full"
+                className="w-full h-2 bg-neutral-600 rounded-lg appearance-none cursor-pointer slider-thumb"
               />
             </ControlGroup>
             <ControlGroup>
@@ -716,7 +576,7 @@ const InteractiveCalculator = React.memo(function InteractiveCalculator() {
                 max="150"
                 value={mean1}
                 onChange={(e) => setMean1(Number(e.target.value))}
-                className="w-full"
+                className="w-full h-2 bg-neutral-600 rounded-lg appearance-none cursor-pointer slider-thumb"
               />
             </ControlGroup>
             <ControlGroup>
@@ -729,13 +589,13 @@ const InteractiveCalculator = React.memo(function InteractiveCalculator() {
                 max="30"
                 value={sd1}
                 onChange={(e) => setSd1(Number(e.target.value))}
-                className="w-full"
+                className="w-full h-2 bg-neutral-600 rounded-lg appearance-none cursor-pointer slider-thumb"
               />
             </ControlGroup>
           </div>
           
-          <div className="bg-neutral-900/50 rounded-lg p-4">
-            <h4 className="font-bold text-white mb-3">Group 2</h4>
+          <div className="bg-neutral-900/50 rounded-lg p-4 border border-green-500/30">
+            <h4 className="font-bold text-green-400 mb-3">Group 2</h4>
             <ControlGroup>
               <label className="text-sm text-neutral-300">
                 Sample Size (n₂): <span className="font-mono">{n2}</span>
@@ -746,7 +606,7 @@ const InteractiveCalculator = React.memo(function InteractiveCalculator() {
                 max="100"
                 value={n2}
                 onChange={(e) => setN2(Number(e.target.value))}
-                className="w-full"
+                className="w-full h-2 bg-neutral-600 rounded-lg appearance-none cursor-pointer slider-thumb"
               />
             </ControlGroup>
             <ControlGroup>
@@ -759,7 +619,7 @@ const InteractiveCalculator = React.memo(function InteractiveCalculator() {
                 max="150"
                 value={mean2}
                 onChange={(e) => setMean2(Number(e.target.value))}
-                className="w-full"
+                className="w-full h-2 bg-neutral-600 rounded-lg appearance-none cursor-pointer slider-thumb"
               />
             </ControlGroup>
             <ControlGroup>
@@ -772,19 +632,19 @@ const InteractiveCalculator = React.memo(function InteractiveCalculator() {
                 max="30"
                 value={sd2}
                 onChange={(e) => setSd2(Number(e.target.value))}
-                className="w-full"
+                className="w-full h-2 bg-neutral-600 rounded-lg appearance-none cursor-pointer slider-thumb"
               />
             </ControlGroup>
           </div>
           
-          <div className="bg-neutral-900/50 rounded-lg p-4">
-            <h4 className="font-bold text-white mb-3">Test Options</h4>
+          <div className="bg-neutral-900/50 rounded-lg p-4 border border-teal-500/30">
+            <h4 className="font-bold text-teal-400 mb-3">Test Options</h4>
             <ControlGroup>
               <label className="text-sm text-neutral-300">Test Type</label>
               <select
                 value={testType}
                 onChange={(e) => setTestType(e.target.value)}
-                className="w-full bg-neutral-800 text-white rounded px-3 py-2"
+                className="w-full bg-neutral-800 border border-neutral-600 text-white rounded-md px-3 py-2 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
               >
                 <option value="auto">Auto-select (recommended)</option>
                 <option value="pooled">Pooled t-test</option>
@@ -798,7 +658,7 @@ const InteractiveCalculator = React.memo(function InteractiveCalculator() {
               <select
                 value={alpha}
                 onChange={(e) => setAlpha(Number(e.target.value))}
-                className="w-full bg-neutral-800 text-white rounded px-3 py-2"
+                className="w-full bg-neutral-800 border border-neutral-600 text-white rounded-md px-3 py-2 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
               >
                 <option value={0.01}>0.01</option>
                 <option value={0.05}>0.05</option>
@@ -965,18 +825,24 @@ export default function UnpairedTwoSampleTest() {
     >
       <BackToHub chapter={6} />
       
-      {/* Example Selection */}
-      <div className="mb-6 flex gap-2">
-        {Object.entries(examples).map(([key, ex]) => (
-          <Button
-            key={key}
-            variant={selectedExample === key ? "default" : "outline"}
-            onClick={() => setSelectedExample(key)}
-            className="text-sm"
-          >
-            {ex.title}
-          </Button>
-        ))}
+      {/* Example Selection with 7-1 button styling */}
+      <div className="mb-6">
+        <h4 className="text-lg font-bold text-white mb-4">Select Dataset Example</h4>
+        <div className="flex gap-3">
+          {Object.entries(examples).map(([key, ex]) => (
+            <button
+              key={key}
+              onClick={() => setSelectedExample(key)}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+                selectedExample === key
+                  ? 'bg-teal-600 text-white shadow-md ring-2 ring-teal-500/50'
+                  : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+              }`}
+            >
+              {ex.title}
+            </button>
+          ))}
+        </div>
       </div>
       
       {/* Core Educational Content */}
@@ -991,12 +857,6 @@ export default function UnpairedTwoSampleTest() {
           example={currentExample}
         />
         <WorkedExample example={currentExample} />
-        <DistributionVisualization 
-          group1Data={currentExample.group1.data}
-          group2Data={currentExample.group2.data}
-          group1Label={currentExample.group1.label}
-          group2Label={currentExample.group2.label}
-        />
         <InteractiveCalculator />
         <KeyInsights />
       </div>

@@ -1,11 +1,7 @@
 // Chapter 1 Tutorial Content
 // Academic tone, concise explanations focused on mathematical concepts
 
-// Export the unordered samples tutorial
-export { tutorial_1_4_unordered } from './chapter1/tutorial_1_4_unordered';
-// Export the Monty Hall tutorial
-export { tutorial_1_7_monty_hall } from './chapter1/tutorial_1_7_monty_hall';
-// Export individual Monty Hall component tutorials
+// Export individual Monty Hall component tutorials (actively used)
 export { tutorial_1_7_1, tutorial_1_7_2, tutorial_1_7_3 } from './monty-hall-tutorials';
 
 export const tutorial_1_6_1 = [
@@ -170,8 +166,8 @@ export const tutorial_1_6_1 = [
   }
 ];
 
-// Tutorial for Section 1.1.1 - Sample Spaces and Events
-export const tutorial_1_1_1 = [
+// Tutorial for Section 1.1.1 - Sample Spaces and Events (UNUSED - kept for reference)
+const tutorial_1_1_1 = [
   {
     title: "Sample Spaces and Events",
     content: (
@@ -209,8 +205,8 @@ export const tutorial_1_1_1 = [
   }
 ];
 
-// Tutorial for Section 1.4.1 - Combination Builder
-export const tutorial_1_4_1 = [
+// Tutorial for Section 1.4.1 - Combination Builder (UNUSED - kept for reference)
+const tutorial_1_4_1 = [
   {
     title: "Combinations",
     content: (

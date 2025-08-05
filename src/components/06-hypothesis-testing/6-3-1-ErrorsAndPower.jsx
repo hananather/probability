@@ -207,7 +207,7 @@ export default function ErrorsAndPower() {
     
     const width = distributionRef.current.clientWidth;
     const height = 400;
-    const margin = { top: 40, right: 80, bottom: 60, left: 80 };
+    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
     
     const g = svg
       .attr("width", width)
@@ -236,14 +236,40 @@ export default function ErrorsAndPower() {
       .domain([0, maxPDF])
       .range([innerHeight, 0]);
     
+    // Add grid lines
+    g.append("g")
+      .attr("class", "grid")
+      .attr("transform", `translate(0,${innerHeight})`)
+      .call(d3.axisBottom(x)
+        .tickSize(-innerHeight)
+        .tickFormat("")
+      )
+      .selectAll("line")
+      .style("stroke", "#374151")
+      .style("stroke-dasharray", "3,3")
+      .style("opacity", 0.5);
+
+    g.append("g")
+      .attr("class", "grid")
+      .call(d3.axisLeft(y)
+        .tickSize(-innerWidth)
+        .tickFormat("")
+      )
+      .selectAll("line")
+      .style("stroke", "#374151")
+      .style("stroke-dasharray", "3,3")
+      .style("opacity", 0.5);
+
     // Add axes
     g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(x).tickFormat(d => d.toFixed(0)))
+      .style("color", "#9ca3af")
       .style("font-size", "12px");
     
     g.append("g")
       .call(d3.axisLeft(y).tickFormat(d => d.toFixed(3)))
+      .style("color", "#9ca3af")
       .style("font-size", "12px");
     
     // Add axis labels
@@ -297,8 +323,8 @@ export default function ErrorsAndPower() {
     
     alphaGradient.selectAll("stop")
       .data([
-        {offset: "0%", color: "#3b82f6", opacity: 0.6},
-        {offset: "100%", color: "#3b82f6", opacity: 0.2}
+        {offset: "0%", color: "#3b82f6", opacity: 0.7},
+        {offset: "100%", color: "#3b82f6", opacity: 0.3}
       ])
       .enter().append("stop")
       .attr("offset", d => d.offset)
@@ -312,20 +338,24 @@ export default function ErrorsAndPower() {
     
     betaGradient.selectAll("stop")
       .data([
-        {offset: "0%", color: "#ef4444", opacity: 0.6},
-        {offset: "100%", color: "#ef4444", opacity: 0.2}
+        {offset: "0%", color: "#ef4444", opacity: 0.7},
+        {offset: "100%", color: "#ef4444", opacity: 0.3}
       ])
       .enter().append("stop")
       .attr("offset", d => d.offset)
       .attr("stop-color", d => d.color)
       .attr("stop-opacity", d => d.opacity);
     
-    // Draw error areas
+    // Draw error areas with animation
     const typeIData = h0Data.filter(d => d.x <= criticalValue);
     g.append("path")
       .datum(typeIData)
       .attr("d", area)
       .attr("fill", "url(#alpha-gradient)")
+      .attr("opacity", 0)
+      .transition()
+      .duration(1200)
+      .ease(d3.easeCubicOut)
       .attr("opacity", 0.8);
     
     const typeIIData = h1Data.filter(d => d.x >= criticalValue);
@@ -333,32 +363,57 @@ export default function ErrorsAndPower() {
       .datum(typeIIData)
       .attr("d", area)
       .attr("fill", "url(#beta-gradient)")
+      .attr("opacity", 0)
+      .transition()
+      .duration(1200)
+      .delay(200)
+      .ease(d3.easeCubicOut)
       .attr("opacity", 0.8);
     
-    // Draw curves
+    // Draw curves with animation and shadows
     g.append("path")
       .datum(h0Data)
       .attr("d", line)
       .attr("fill", "none")
       .attr("stroke", "#3b82f6")
-      .attr("stroke-width", 3);
+      .attr("stroke-width", 3)
+      .style("filter", "drop-shadow(0 0 4px rgba(59, 130, 246, 0.3))")
+      .attr("opacity", 0)
+      .transition()
+      .duration(1200)
+      .ease(d3.easeCubicOut)
+      .attr("opacity", 1);
     
     g.append("path")
       .datum(h1Data)
       .attr("d", line)
       .attr("fill", "none")
       .attr("stroke", "#ef4444")
-      .attr("stroke-width", 3);
+      .attr("stroke-width", 3)
+      .style("filter", "drop-shadow(0 0 4px rgba(239, 68, 68, 0.3))")
+      .attr("opacity", 0)
+      .transition()
+      .duration(1200)
+      .delay(400)
+      .ease(d3.easeCubicOut)
+      .attr("opacity", 1);
     
-    // Add critical value line
+    // Add critical value line with animation
     g.append("line")
       .attr("x1", x(criticalValue))
       .attr("x2", x(criticalValue))
       .attr("y1", 0)
       .attr("y2", innerHeight)
       .attr("stroke", "#fbbf24")
-      .attr("stroke-width", 2)
-      .attr("stroke-dasharray", "5,5");
+      .attr("stroke-width", 3)
+      .attr("stroke-dasharray", "5,5")
+      .style("filter", "drop-shadow(0 0 4px rgba(251, 191, 36, 0.4))")
+      .attr("opacity", 0)
+      .transition()
+      .duration(1200)
+      .delay(600)
+      .ease(d3.easeCubicOut)
+      .attr("opacity", 1);
     
     // Add labels
     g.append("text")
@@ -419,7 +474,7 @@ export default function ErrorsAndPower() {
     
     const width = powerCurveRef.current.clientWidth;
     const height = 400;
-    const margin = { top: 40, right: 100, bottom: 60, left: 80 };
+    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
     
     const g = svg
       .attr("width", width)
@@ -459,14 +514,40 @@ export default function ErrorsAndPower() {
       .domain(sampleSizes)
       .range(['#ef4444', '#f59e0b', '#10b981']);
     
+    // Add grid lines
+    g.append("g")
+      .attr("class", "grid")
+      .attr("transform", `translate(0,${innerHeight})`)
+      .call(d3.axisBottom(x)
+        .tickSize(-innerHeight)
+        .tickFormat("")
+      )
+      .selectAll("line")
+      .style("stroke", "#374151")
+      .style("stroke-dasharray", "3,3")
+      .style("opacity", 0.5);
+
+    g.append("g")
+      .attr("class", "grid")
+      .call(d3.axisLeft(y)
+        .tickSize(-innerWidth)
+        .tickFormat("")
+      )
+      .selectAll("line")
+      .style("stroke", "#374151")
+      .style("stroke-dasharray", "3,3")
+      .style("opacity", 0.5);
+
     // Add axes
     g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(x))
+      .style("color", "#9ca3af")
       .style("font-size", "12px");
     
     g.append("g")
       .call(d3.axisLeft(y).tickFormat(d => (d * 100).toFixed(0) + "%"))
+      .style("color", "#9ca3af")
       .style("font-size", "12px");
     
     // Add axis labels
@@ -510,16 +591,23 @@ export default function ErrorsAndPower() {
       .y(d => y(d.power))
       .curve(d3.curveBasis);
     
-    // Draw power curves
-    powerData.forEach((series) => {
+    // Draw power curves with animation
+    powerData.forEach((series, index) => {
       g.append("path")
         .datum(series.data)
         .attr("d", line)
         .attr("fill", "none")
         .attr("stroke", colorScale(series.n))
-        .attr("stroke-width", 2.5);
+        .attr("stroke-width", 3)
+        .style("filter", `drop-shadow(0 0 4px ${colorScale(series.n)}30)`)
+        .attr("opacity", 0)
+        .transition()
+        .duration(1200)
+        .delay(index * 200)
+        .ease(d3.easeCubicOut)
+        .attr("opacity", 1);
       
-      // Add label
+      // Add label with animation
       const lastPoint = series.data[series.data.length - 1];
       g.append("text")
         .attr("x", x(lastPoint.mean) + 10)
@@ -527,18 +615,30 @@ export default function ErrorsAndPower() {
         .attr("fill", colorScale(series.n))
         .style("font-size", "12px")
         .style("font-weight", "bold")
+        .attr("opacity", 0)
+        .transition()
+        .duration(800)
+        .delay(800 + index * 200)
+        .ease(d3.easeCubicOut)
+        .attr("opacity", 1)
         .text(`n = ${series.n}`);
     });
     
-    // Add current point
+    // Add current point with animation
     const currentPower = errors.power;
     g.append("circle")
       .attr("cx", x(trueMean))
       .attr("cy", y(currentPower))
-      .attr("r", 6)
+      .attr("r", 0)
       .attr("fill", colorScale(sampleSize))
       .attr("stroke", "#ffffff")
-      .attr("stroke-width", 2);
+      .attr("stroke-width", 2)
+      .style("filter", `drop-shadow(0 0 6px ${colorScale(sampleSize)}50)`)
+      .transition()
+      .duration(800)
+      .delay(1600)
+      .ease(d3.easeBounceOut)
+      .attr("r", 8);
     
   }, [criticalValue, trueMean, sampleSize, showPowerCurve, errors]);
   
@@ -578,7 +678,7 @@ export default function ErrorsAndPower() {
         <div className="grid md:grid-cols-2 gap-6">
           <motion.div
             whileHover={{ scale: 1.02 }}
-            className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/30 rounded-lg p-6"
+            className="bg-gradient-to-br from-blue-900/20 to-blue-800/20 border border-blue-500/30 rounded-lg p-6"
           >
             <div className="flex items-start gap-4">
               <Shield className="w-8 h-8 text-blue-400 mt-1" />
@@ -599,7 +699,7 @@ export default function ErrorsAndPower() {
 
           <motion.div
             whileHover={{ scale: 1.02 }}
-            className="bg-gradient-to-br from-red-500/10 to-red-600/10 border border-red-500/30 rounded-lg p-6"
+            className="bg-gradient-to-br from-red-900/20 to-red-800/20 border border-red-500/30 rounded-lg p-6"
           >
             <div className="flex items-start gap-4">
               <AlertTriangle className="w-8 h-8 text-red-400 mt-1" />
@@ -622,7 +722,7 @@ export default function ErrorsAndPower() {
         {/* Power Display */}
         <motion.div
           whileHover={{ scale: 1.01 }}
-          className="bg-gradient-to-br from-green-500/10 to-green-600/10 border border-green-500/30 rounded-lg p-6"
+          className="bg-gradient-to-br from-green-900/20 to-green-800/20 border border-green-500/30 rounded-lg p-6"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -641,7 +741,7 @@ export default function ErrorsAndPower() {
         </motion.div>
 
         {/* Interactive Controls */}
-        <VisualizationSection className="bg-neutral-800/50 rounded-lg p-6">
+        <VisualizationSection className="bg-gradient-to-br from-neutral-800/50 to-neutral-900/50 rounded-lg p-6 border border-neutral-700/50">
           <h4 className="text-lg font-bold text-white mb-6">Experiment with the Trade-offs</h4>
           
           <div className="grid md:grid-cols-3 gap-6">
@@ -709,13 +809,16 @@ export default function ErrorsAndPower() {
 
         {/* Power Curves */}
         <div className="space-y-4">
-          <Button
+          <button
             onClick={() => setShowPowerCurve(!showPowerCurve)}
-            variant="secondary"
-            className="w-full"
+            className={`w-full px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+              showPowerCurve
+                ? 'bg-teal-600 text-white shadow-md ring-2 ring-teal-500/50'
+                : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+            }`}
           >
             {showPowerCurve ? "Hide" : "Show"} Power Curves
-          </Button>
+          </button>
           
           {showPowerCurve && (
             <GraphContainer title="Power Curves for Different Sample Sizes">

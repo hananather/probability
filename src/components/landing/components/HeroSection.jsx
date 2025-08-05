@@ -36,12 +36,6 @@ const HeroSection = React.memo(() => {
               Explore Curriculum
             </Button>
           </Link>
-          <Link href="/learn/gold-standard-animations">
-            <Button size="lg" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white group">
-              <Sparkles className="mr-2 h-5 w-5" />
-              Gold Standard Animations
-            </Button>
-          </Link>
         </div>
       </div>
     </section>

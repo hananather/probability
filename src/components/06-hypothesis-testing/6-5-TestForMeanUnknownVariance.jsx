@@ -99,28 +99,28 @@ const LaTeXDisplay = React.memo(({ formula, className = "" }) => {
 
 LaTeXDisplay.displayName = 'LaTeXDisplay';
 
-// Enhanced button with landing page styling
+// Enhanced button following 7-1/7-2 patterns
 const ActionButton = ({ children, onClick, variant = "primary", disabled = false, className = "", icon: Icon }) => {
   const variants = {
     primary: {
-      base: "from-blue-600 to-purple-600 text-white",
-      hover: "hover:from-blue-500 hover:to-purple-500 hover:shadow-2xl hover:shadow-purple-500/25",
-      glow: "shadow-lg shadow-purple-600/25"
+      base: "bg-neutral-700 text-neutral-300",
+      hover: "hover:bg-neutral-600 hover:text-white",
+      active: "bg-purple-600 text-white shadow-md ring-2 ring-purple-500/50"
     },
     secondary: {
-      base: "from-gray-700 to-gray-800 text-white",
-      hover: "hover:from-gray-600 hover:to-gray-700 hover:shadow-xl",
-      glow: ""
+      base: "bg-neutral-800 text-neutral-400",
+      hover: "hover:bg-neutral-700 hover:text-neutral-300",
+      active: "bg-neutral-700 text-white"
     },
     success: {
-      base: "from-emerald-600 to-teal-600 text-white",
-      hover: "hover:from-emerald-500 hover:to-teal-500 hover:shadow-2xl hover:shadow-teal-500/25",
-      glow: "shadow-lg shadow-teal-600/25"
+      base: "bg-emerald-700 text-emerald-300",
+      hover: "hover:bg-emerald-600 hover:text-white",
+      active: "bg-emerald-600 text-white"
     },
     danger: {
-      base: "from-red-600 to-pink-600 text-white",
-      hover: "hover:from-red-500 hover:to-pink-500 hover:shadow-2xl hover:shadow-pink-500/25",
-      glow: "shadow-lg shadow-pink-600/25"
+      base: "bg-red-700 text-red-300",
+      hover: "hover:bg-red-600 hover:text-white",
+      active: "bg-red-600 text-white"
     }
   };
 
@@ -128,22 +128,20 @@ const ActionButton = ({ children, onClick, variant = "primary", disabled = false
 
   return (
     <motion.button
-      whileHover={{ scale: disabled ? 1 : 1.02, y: disabled ? 0 : -1 }}
+      whileHover={{ scale: disabled ? 1 : 1.02 }}
       whileTap={{ scale: disabled ? 1 : 0.98 }}
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "relative px-6 py-3 rounded-xl font-semibold bg-gradient-to-r transition-all duration-300",
-        "transform-gpu will-change-transform",
+        "px-4 py-2 text-sm font-medium rounded-md transition-all duration-200",
         v.base,
         v.hover,
-        v.glow,
         disabled && "opacity-50 cursor-not-allowed",
         className
       )}
     >
       <div className="flex items-center gap-2">
-        {Icon && <Icon className="w-5 h-5" />}
+        {Icon && <Icon className="w-4 h-4" />}
         {children}
       </div>
     </motion.button>
@@ -459,8 +457,8 @@ export function TestForMeanUnknownVariance() {
       const container = comparisonRef.current;
       const { width: containerWidth } = container.getBoundingClientRect();
       
-      // Responsive dimensions
-      const margin = { top: 40, right: 20, bottom: 60, left: 20 };
+      // Apply 7-1/7-2 standards - consistent margins
+      const margin = { top: 40, right: 40, bottom: 60, left: 60 };
       const width = Math.min(containerWidth, 800);
       const height = Math.min(width * 0.5, 400);
       const innerWidth = width - margin.left - margin.right;
@@ -756,7 +754,8 @@ export function TestForMeanUnknownVariance() {
       const container = distributionRef.current;
       const { width: containerWidth } = container.getBoundingClientRect();
       
-      const margin = { top: 40, right: 60, bottom: 80, left: 60 };
+      // Apply 7-1/7-2 standards - consistent margins
+      const margin = { top: 40, right: 40, bottom: 60, left: 60 };
       const width = Math.min(containerWidth, 700);
       const height = Math.min(width * 0.6, 400);
       const innerWidth = width - margin.left - margin.right;
@@ -776,16 +775,16 @@ export function TestForMeanUnknownVariance() {
       if (defs.empty()) {
         defs = svg.append('defs');
         
-        // Gradient definitions
+        // Gradient definitions - updated for 7-1/7-2 color scheme
         const tGradient = defs.append("linearGradient")
           .attr("id", "t-dist-gradient")
           .attr("x1", "0%").attr("y1", "0%")
           .attr("x2", "100%").attr("y2", "0%");
         
         tGradient.selectAll("stop").data([
-          { offset: "0%", color: vibrantColors.primary },
-          { offset: "50%", color: vibrantColors.secondary },
-          { offset: "100%", color: vibrantColors.pink }
+          { offset: "0%", color: "#3b82f6" }, // Blue
+          { offset: "50%", color: "#6366f1" }, // Indigo
+          { offset: "100%", color: "#8b5cf6" } // Violet
         ]).enter().append("stop")
           .attr("offset", d => d.offset)
           .attr("stop-color", d => d.color)
@@ -843,10 +842,11 @@ export function TestForMeanUnknownVariance() {
           .text("Standard Deviations from Mean");
       }
       
-      xAxisG.transition().duration(300)
+      xAxisG.transition().duration(1200).ease(d3.easeCubicOut)
         .call(d3.axisBottom(xScale).ticks(9))
         .selectAll("text")
-        .attr("fill", "#9ca3af");
+        .style("color", "#9ca3af")
+        .style("font-size", "12px");
 
       let yAxisG = g.select('.y-axis');
       if (yAxisG.empty()) {
@@ -863,10 +863,45 @@ export function TestForMeanUnknownVariance() {
           .text("Probability Density");
       }
       
-      yAxisG.transition().duration(300)
+      yAxisG.transition().duration(1200).ease(d3.easeCubicOut)
         .call(d3.axisLeft(yScale).ticks(6))
         .selectAll("text")
-        .attr("fill", "#9ca3af");
+        .style("color", "#9ca3af")
+        .style("font-size", "12px");
+
+      // Add grid lines following 7-1/7-2 standards
+      let xGrid = g.select('.x-grid');
+      if (xGrid.empty()) {
+        xGrid = g.append("g")
+          .attr("class", "x-grid")
+          .attr("transform", `translate(0,${innerHeight})`);
+      }
+      
+      xGrid.transition().duration(1200).ease(d3.easeCubicOut)
+        .call(d3.axisBottom(xScale)
+          .tickSize(-innerHeight)
+          .tickFormat("")
+        )
+        .selectAll("line")
+        .style("stroke", "#374151")
+        .style("stroke-dasharray", "3,3")
+        .style("opacity", 0.5);
+
+      let yGrid = g.select('.y-grid');
+      if (yGrid.empty()) {
+        yGrid = g.append("g")
+          .attr("class", "y-grid");
+      }
+      
+      yGrid.transition().duration(1200).ease(d3.easeCubicOut)
+        .call(d3.axisLeft(yScale)
+          .tickSize(-innerWidth)
+          .tickFormat("")
+        )
+        .selectAll("line")
+        .style("stroke", "#374151")
+        .style("stroke-dasharray", "3,3")
+        .style("opacity", 0.5);
 
       // Line generator
       const line = d3.line()
@@ -893,13 +928,13 @@ export function TestForMeanUnknownVariance() {
           if (region.empty()) {
             region = g.append("path")
               .attr("class", `critical-${side}`)
-              .attr("fill", vibrantColors.danger)
+              .attr("fill", "#ef4444") // Red for critical regions
               .attr("fill-opacity", 0.3)
               .style("filter", "url(#dist-glow)");
           }
           
           region.datum(criticalData[side])
-            .transition().duration(300)
+            .transition().duration(1200).ease(d3.easeCubicOut)
             .attr("d", area);
         });
 
@@ -909,13 +944,13 @@ export function TestForMeanUnknownVariance() {
           if (line.empty()) {
             line = g.append("line")
               .attr("class", `critical-line-${i}`)
-              .attr("stroke", vibrantColors.danger)
+              .attr("stroke", "#ef4444") // Red for critical lines
               .attr("stroke-width", 2)
               .attr("stroke-dasharray", "5,3")
               .style("filter", "url(#dist-glow)");
           }
           
-          line.transition().duration(300)
+          line.transition().duration(1200).ease(d3.easeCubicOut)
             .attr("x1", xScale(cv))
             .attr("x2", xScale(cv))
             .attr("y1", 0)
@@ -926,12 +961,12 @@ export function TestForMeanUnknownVariance() {
             label = g.append("text")
               .attr("class", `critical-label-${i}`)
               .attr("text-anchor", "middle")
-              .attr("fill", vibrantColors.danger)
+              .attr("fill", "#ef4444") // Red for critical labels
               .style("font-size", "12px")
               .style("font-weight", "bold");
           }
           
-          label.transition().duration(300)
+          label.transition().duration(1200).ease(d3.easeCubicOut)
             .attr("x", xScale(cv))
             .attr("y", innerHeight + 20)
             .text(cv.toFixed(3));
@@ -943,36 +978,36 @@ export function TestForMeanUnknownVariance() {
 
       // Update distributions
       if (animateDistribution) {
-        // T-distribution
+        // T-distribution with 7-1/7-2 animation standards
         let tPath = g.select('.t-distribution');
         if (tPath.empty()) {
           tPath = g.append("path")
             .attr("class", "t-distribution")
             .attr("fill", "none")
-            .attr("stroke", "url(#t-dist-gradient)")
+            .attr("stroke", "#3b82f6") // Blue for t-distribution
             .attr("stroke-width", 3)
             .style("filter", "url(#dist-glow)");
         }
         
         tPath.datum(distributionData.t)
-          .transition().duration(500)
+          .transition().duration(1200).ease(d3.easeCubicOut) // Smooth transitions
           .attr("d", line);
 
-        // Normal distribution
+        // Normal distribution - lighter shade for comparison
         if (showNormal) {
           let normalPath = g.select('.normal-distribution');
           if (normalPath.empty()) {
             normalPath = g.append("path")
               .attr("class", "normal-distribution")
               .attr("fill", "none")
-              .attr("stroke", vibrantColors.teal)
+              .attr("stroke", "#60a5fa") // Lighter blue for normal
               .attr("stroke-width", 2)
               .attr("stroke-dasharray", "5,3");
           }
           
           normalPath.datum(distributionData.normal)
             .style("opacity", 0)
-            .transition().duration(500)
+            .transition().duration(1200).ease(d3.easeCubicOut) // Coordinated animation
             .style("opacity", 0.7)
             .attr("d", line);
         } else {
@@ -995,7 +1030,7 @@ export function TestForMeanUnknownVariance() {
 
           hoverGroup.append("line")
             .attr("class", "hover-line")
-            .attr("stroke", vibrantColors.warning)
+            .attr("stroke", "#a855f7") // Purple for calculations/interactions
             .attr("stroke-width", 1)
             .attr("stroke-dasharray", "3,3");
 
@@ -1005,7 +1040,7 @@ export function TestForMeanUnknownVariance() {
           hoverInfo.append("rect")
             .attr("class", "hover-bg")
             .attr("fill", "#1f2937")
-            .attr("stroke", vibrantColors.warning)
+            .attr("stroke", "#a855f7") // Purple for hover elements
             .attr("stroke-width", 1)
             .attr("rx", 4);
 

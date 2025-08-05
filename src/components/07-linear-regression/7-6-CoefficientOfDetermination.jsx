@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { VisualizationContainer, VisualizationSection, GraphContainer, ControlGroup } from '../ui/VisualizationContainer';
 import BackToHub from '../ui/BackToHub';
 import { colors as designColors, createColorScheme } from '../../lib/design-system';
+import { PieChart, BarChart3, TrendingUp, Calculator, Activity } from 'lucide-react';
 
 // Get Chapter 7 color scheme - using hypothesis testing colors for regression
 const chapterColors = createColorScheme('hypothesis');
@@ -498,32 +499,35 @@ const RSquaredVisualization = ({ stats }) => {
         <div className="flex gap-2 flex-wrap">
           <button
             onClick={() => setDisplayType('pie')}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              displayType === 'pie' 
-                ? 'bg-teal-600 hover:bg-teal-700 text-white' 
-                : 'bg-neutral-700 hover:bg-neutral-600 text-white'
+            className={`px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+              displayType === 'pie'
+                ? 'bg-teal-600 text-white shadow-md ring-2 ring-teal-500/50'
+                : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
             }`}
           >
+            <PieChart className="w-4 h-4" />
             Pie Chart
           </button>
           <button
             onClick={() => setDisplayType('bar')}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              displayType === 'bar' 
-                ? 'bg-teal-600 hover:bg-teal-700 text-white' 
-                : 'bg-neutral-700 hover:bg-neutral-600 text-white'
+            className={`px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+              displayType === 'bar'
+                ? 'bg-teal-600 text-white shadow-md ring-2 ring-teal-500/50'
+                : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
             }`}
           >
+            <BarChart3 className="w-4 h-4" />
             Bar Chart
           </button>
           <button
             onClick={() => setDisplayType('area')}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              displayType === 'area' 
-                ? 'bg-teal-600 hover:bg-teal-700 text-white' 
-                : 'bg-neutral-700 hover:bg-neutral-600 text-white'
+            className={`px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+              displayType === 'area'
+                ? 'bg-teal-600 text-white shadow-md ring-2 ring-teal-500/50'
+                : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
             }`}
           >
+            <TrendingUp className="w-4 h-4" />
             Area Chart
           </button>
         </div>
@@ -586,32 +590,35 @@ const WorkedExample = React.memo(function WorkedExample({ stats }) {
         <div className="flex gap-2 flex-wrap">
           <button
             onClick={() => setShowMethod(1)}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              showMethod === 1 
-                ? 'bg-teal-600 hover:bg-teal-700 text-white' 
-                : 'bg-neutral-700 hover:bg-neutral-600 text-white'
+            className={`px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+              showMethod === 1
+                ? 'bg-purple-600 text-white shadow-md ring-2 ring-purple-500/50'
+                : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
             }`}
           >
+            <Calculator className="w-4 h-4" />
             Method 1: SSR/SST
           </button>
           <button
             onClick={() => setShowMethod(2)}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              showMethod === 2 
-                ? 'bg-teal-600 hover:bg-teal-700 text-white' 
-                : 'bg-neutral-700 hover:bg-neutral-600 text-white'
+            className={`px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+              showMethod === 2
+                ? 'bg-purple-600 text-white shadow-md ring-2 ring-purple-500/50'
+                : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
             }`}
           >
+            <Calculator className="w-4 h-4" />
             Method 2: 1 - SSE/SST
           </button>
           <button
             onClick={() => setShowMethod(3)}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              showMethod === 3 
-                ? 'bg-teal-600 hover:bg-teal-700 text-white' 
-                : 'bg-neutral-700 hover:bg-neutral-600 text-white'
+            className={`px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+              showMethod === 3
+                ? 'bg-purple-600 text-white shadow-md ring-2 ring-purple-500/50'
+                : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
             }`}
           >
+            <Activity className="w-4 h-4" />
             Method 3: r²
           </button>
         </div>

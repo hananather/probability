@@ -449,7 +449,7 @@ export default function HypothesisTestingGame() {
     }
     
     setCurrentInsight({
-      title: correct ? "🎉 Correct!" : "❌ Wrong!",
+      title: correct ? "Correct!" : "Incorrect!",
       content: `The coin was actually ${actuallyFair ? 'fair' : `biased (${(actualBias * 100).toFixed(0)}% heads)`}.`,
       visual: correct ? null : `You made a ${errorType}.`,
       teaching: errorType === 'Type I Error' 
@@ -599,87 +599,153 @@ export default function HypothesisTestingGame() {
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
         
         {/* Right Panel - Visualizations */}
-        <div className="lg:w-2/3 space-y-3">
-          <div className="grid grid-cols-2 gap-3">
+        <motion.div 
+          className="lg:w-2/3 space-y-4"
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 1.2, ease: "easeOut", delay: 0.6 }}
+        >
+          <div className="grid grid-cols-2 gap-4">
             {/* Coin Animation Area */}
-            <div className="bg-gradient-to-br from-purple-900/20 to-purple-800/20 border border-purple-700/30 rounded-lg p-3">
-              <div className="text-sm font-semibold text-purple-300 mb-2">Coin Flip</div>
-              <div className="h-20 flex items-center justify-center">
-                <div className={cn(
-                  "w-16 h-16 rounded-full flex items-center justify-center",
-                  "text-2xl font-bold transition-all duration-300 shadow-lg",
-                  currentFlip === 'flipping' && "animate-spin",
-                  currentFlip === 1 ? "bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-cyan-500/50" : 
-                  currentFlip === 0 ? "bg-gradient-to-br from-pink-500 to-red-600 text-white shadow-pink-500/50" : 
-                  "bg-gray-700 text-gray-400"
-                )}>
+            <motion.div 
+              className="bg-gradient-to-br from-purple-900/30 to-purple-800/30 border border-purple-500/40 rounded-xl p-4 shadow-lg"
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="text-base font-bold text-purple-300 mb-3 flex items-center gap-2">
+                <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                Coin Flip
+              </div>
+              <div className="h-24 flex items-center justify-center">
+                <motion.div 
+                  className={cn(
+                    "w-20 h-20 rounded-full flex items-center justify-center",
+                    "text-3xl font-bold shadow-2xl border-2 border-white/20",
+                    currentFlip === 1 ? "bg-gradient-to-br from-blue-500 to-blue-700 text-white" : 
+                    currentFlip === 0 ? "bg-gradient-to-br from-purple-500 to-purple-700 text-white" : 
+                    "bg-gradient-to-br from-gray-600 to-gray-700 text-gray-300"
+                  )}
+                  animate={{
+                    rotateY: currentFlip === 'flipping' ? [0, 180, 360] : 0,
+                    scale: currentFlip === 'flipping' ? [1, 1.1, 1] : 1
+                  }}
+                  transition={{
+                    duration: currentFlip === 'flipping' ? 0.6 : 0.3,
+                    ease: "easeInOut"
+                  }}
+                >
                   {currentFlip === 'flipping' ? '?' : 
                    currentFlip === 1 ? 'H' : 
                    currentFlip === 0 ? 'T' : '?'}
-                </div>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
             
             {/* Flip History */}
-            <div className="bg-gradient-to-br from-indigo-900/20 to-indigo-800/20 border border-indigo-700/30 rounded-lg p-3">
-              <div className="text-sm font-semibold text-indigo-300 mb-1">Flip History</div>
+            <motion.div 
+              className="bg-gradient-to-br from-indigo-900/30 to-indigo-800/30 border border-indigo-500/40 rounded-xl p-4 shadow-lg"
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="text-base font-bold text-indigo-300 mb-2 flex items-center gap-2">
+                <div className="w-2 h-2 bg-indigo-400 rounded-full"></div>
+                Flip History
+              </div>
               <svg ref={historyRef} className="w-full" style={{ height: '70px' }} />
-              <div className="text-xs text-center text-indigo-400 mt-1">
+              <div className="text-sm text-center text-indigo-400 mt-2 font-medium">
                 Last {Math.min(flips.length, 20)} flips
               </div>
-            </div>
+            </motion.div>
           </div>
           
           {/* Evidence Meter */}
-          <div className="bg-gradient-to-br from-emerald-900/20 to-teal-800/20 border border-emerald-700/30 rounded-lg p-3">
-            <div className="text-sm font-semibold text-emerald-300 mb-1">Evidence Meter</div>
+          <motion.div 
+            className="bg-gradient-to-br from-emerald-900/30 to-teal-800/30 border border-emerald-500/40 rounded-xl p-4 shadow-lg"
+            whileHover={{ scale: 1.02 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="text-base font-bold text-emerald-300 mb-2 flex items-center gap-2">
+              <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+              Evidence Meter
+            </div>
             <svg ref={meterRef} className="w-full" style={{ height: '60px' }} />
             {stats.n >= 5 && (
-              <div className="text-center text-xs text-emerald-400">
-                p-value: <span className="font-mono text-white font-bold">
+              <motion.div 
+                className="text-center text-sm text-emerald-400 font-medium"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+              >
+                p-value: <span className="font-mono text-white font-bold text-base">
                   {(stats.pValue * 100).toFixed(1)}%
                 </span>
-              </div>
+              </motion.div>
             )}
-          </div>
-        </div>
-      </div>
+          </motion.div>
+        </motion.div>
+      </motion.div>
       
       {/* Full Width Insight Section */}
-      <div className={cn(
-        "bg-gradient-to-br rounded-lg p-4 mt-3 transition-all duration-300",
-        gamePhase === 'revealed' && !isDecisionCorrect() ? "from-red-900/20 to-red-800/20 border border-red-700/30" :
-        gamePhase === 'revealed' && isDecisionCorrect() ? "from-green-900/20 to-green-800/20 border border-green-700/30" :
-        stats.pValue < 0.05 ? "from-orange-900/20 to-amber-800/20 border border-orange-700/30" :
-        "from-yellow-900/20 to-amber-800/20 border border-yellow-700/30"
-      )}>
+      <motion.div 
+        className={cn(
+          "bg-gradient-to-br rounded-xl p-6 mt-6 transition-all duration-500 shadow-lg",
+          gamePhase === 'revealed' && !isDecisionCorrect() ? "from-red-900/30 to-red-800/30 border border-red-500/40" :
+          gamePhase === 'revealed' && isDecisionCorrect() ? "from-green-900/30 to-green-800/30 border border-green-500/40" :
+          stats.pValue < 0.05 ? "from-orange-900/30 to-amber-800/30 border border-orange-500/40" :
+          "from-yellow-900/30 to-amber-800/30 border border-yellow-500/40"
+        )}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.8 }}
+      >
         <div className="flex items-start gap-4">
           <div className="flex-1">
-            <h3 className={cn(
-              "text-lg font-bold mb-2",
-              gamePhase === 'revealed' && !isDecisionCorrect() ? "text-red-400" :
-              gamePhase === 'revealed' && isDecisionCorrect() ? "text-green-400" :
-              stats.pValue < 0.05 ? "text-orange-400" :
-              "text-yellow-400"
-            )}>
+            <motion.h3 
+              className={cn(
+                "text-xl font-bold mb-3",
+                gamePhase === 'revealed' && !isDecisionCorrect() ? "text-red-400" :
+                gamePhase === 'revealed' && isDecisionCorrect() ? "text-green-400" :
+                stats.pValue < 0.05 ? "text-orange-400" :
+                "text-yellow-400"
+              )}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 1 }}
+            >
               {currentInsight.title}
-            </h3>
-            <p className="text-sm text-gray-300 mb-3">
+            </motion.h3>
+            <motion.p 
+              className="text-base text-gray-200 mb-4 leading-relaxed"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 1.2 }}
+            >
               {currentInsight.content}
-            </p>
+            </motion.p>
             {currentInsight.visual && (
-              <p className="text-xs text-gray-400 italic mb-3">
-                👁️ {currentInsight.visual}
-              </p>
+              <motion.p 
+                className="text-sm text-gray-400 italic mb-3 flex items-center gap-2"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 1.4 }}
+              >
+                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+                {currentInsight.visual}
+              </motion.p>
             )}
           </div>
           
           {/* Visual Statistics Display */}
           {stats.n > 0 && gamePhase === 'playing' && (
-            <div className="bg-black/30 rounded-lg p-3 min-w-[200px]">
+            <motion.div 
+              className="bg-black/40 rounded-xl p-4 min-w-[220px] shadow-lg border border-gray-600/30"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 1.4 }}
+            >
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-gray-400">Evidence Strength:</span>
@@ -710,21 +776,30 @@ export default function HypothesisTestingGame() {
                   </span>
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
         </div>
         
-        {currentInsight.teaching && (
-          <div className={cn(
-            "mt-3 p-3 rounded border",
-            "bg-gradient-to-r from-blue-900/30 to-indigo-900/30 border-blue-700/50"
-          )}>
-            <p className="text-sm text-blue-300">
-              💡 <span className="font-semibold">Key concept:</span> {currentInsight.teaching}
-            </p>
-          </div>
-        )}
-      </div>
+        <AnimatePresence>
+          {currentInsight.teaching && (
+            <motion.div 
+              className={cn(
+                "mt-4 p-4 rounded-xl border shadow-lg",
+                "bg-gradient-to-r from-blue-900/40 to-indigo-900/40 border-blue-500/50"
+              )}
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <p className="text-base text-blue-300 leading-relaxed flex items-start gap-3">
+                <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
+                <span><span className="font-bold">Key concept:</span> {currentInsight.teaching}</span>
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 }

@@ -15,7 +15,7 @@ export default function TypeErrorVisualizer() {
   // Fixed scenario parameters for medical test
   const SCENARIO = {
     healthy: { mean: 60, std: 10, label: "Healthy", color: "#3b82f6" },
-    diseased: { mean: 85, std: 12, label: "Diseased", color: "#f59e0b" },
+    diseased: { mean: 85, std: 12, label: "Diseased", color: "#10b981" },
     prevalence: 0.01, // 1% have disease
     thresholdMin: 40,
     thresholdMax: 110
@@ -78,21 +78,21 @@ export default function TypeErrorVisualizer() {
       return {
         title: "High Sensitivity",
         content: "Catches most disease cases, but many false positives cause unnecessary worry.",
-        color: "#f59e0b"
+        color: "#fbbf24"
       };
     }
     if (threshold < 80) {
       return {
         title: "Balanced Approach",
         content: "Reasonable trade-off between catching disease and avoiding false alarms.",
-        color: "#14b8a6"
+        color: "#10b981"
       };
     }
     if (threshold < 95) {
       return {
         title: "Conservative Testing",
         content: "Few false alarms, but missing some disease cases.",
-        color: "#f59e0b"
+        color: "#fbbf24"
       };
     }
     return {
@@ -113,7 +113,7 @@ export default function TypeErrorVisualizer() {
     
     const width = svgRef.current.clientWidth;
     const height = 350;
-    const margin = { top: 30, right: 30, bottom: 50, left: 50 };
+    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
     
     const g = svg
       .attr("width", width)
@@ -175,7 +175,7 @@ export default function TypeErrorVisualizer() {
       .attr("stop-color", "#ef4444")
       .attr("stop-opacity", 0.1);
     
-    // Type II error gradient (orange)
+    // Type II error gradient (yellow)
     const typeIIGradient = defs.append("linearGradient")
       .attr("id", "typeII-gradient")
       .attr("x1", "0%").attr("y1", "0%")
@@ -183,35 +183,63 @@ export default function TypeErrorVisualizer() {
     
     typeIIGradient.append("stop")
       .attr("offset", "0%")
-      .attr("stop-color", "#f59e0b")
+      .attr("stop-color", "#fbbf24")
       .attr("stop-opacity", 0.5);
     
     typeIIGradient.append("stop")
       .attr("offset", "100%")
-      .attr("stop-color", "#f59e0b")
+      .attr("stop-color", "#fbbf24")
       .attr("stop-opacity", 0.1);
     
     // X axis
     g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(x))
+      .style("font-size", "12px")
+      .style("color", "#9ca3af")
       .append("text")
       .attr("x", innerWidth / 2)
-      .attr("y", 40)
-      .attr("fill", "#ffffff")
+      .attr("y", 45)
+      .attr("fill", "#e5e7eb")
       .style("text-anchor", "middle")
+      .style("font-size", "14px")
       .text("Test Result Value");
     
     // Y axis
     g.append("g")
       .call(d3.axisLeft(y).tickFormat(d => d.toFixed(3)))
+      .style("font-size", "12px")
+      .style("color", "#9ca3af")
       .append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", -40)
+      .attr("y", -45)
       .attr("x", -innerHeight / 2)
-      .attr("fill", "#ffffff")
+      .attr("fill", "#e5e7eb")
       .style("text-anchor", "middle")
+      .style("font-size", "14px")
       .text("Probability Density");
+    
+    // Add grid lines
+    g.append("g")
+      .attr("class", "grid")
+      .attr("transform", `translate(0,${innerHeight})`)
+      .call(d3.axisBottom(x)
+        .tickSize(-innerHeight)
+        .tickFormat("")
+      )
+      .style("stroke", "#374151")
+      .style("stroke-dasharray", "3,3")
+      .style("opacity", 0.5);
+
+    g.append("g")
+      .attr("class", "grid")
+      .call(d3.axisLeft(y)
+        .tickSize(-innerWidth)
+        .tickFormat("")
+      )
+      .style("stroke", "#374151")
+      .style("stroke-dasharray", "3,3")
+      .style("opacity", 0.5);
     
     // Create error area groups
     const typeIAreaGroup = g.append("g").attr("class", "type-i-area-group");
@@ -466,7 +494,8 @@ export default function TypeErrorVisualizer() {
           .attr("fill", "url(#typeI-gradient)")
           .style("opacity", animateIn ? 0 : 1)
           .transition()
-          .duration(300)
+          .duration(500)
+          .ease(d3.easeCubicInOut)
           .style("opacity", 1);
       }
       
@@ -479,7 +508,8 @@ export default function TypeErrorVisualizer() {
           .attr("fill", "url(#typeII-gradient)")
           .style("opacity", animateIn ? 0 : 1)
           .transition()
-          .duration(300)
+          .duration(500)
+          .ease(d3.easeCubicInOut)
           .style("opacity", 1);
       }
     } else if (errorAreasRef.current.typeI) {
@@ -514,13 +544,13 @@ export default function TypeErrorVisualizer() {
             <div className={cn(
               "px-3 py-1 rounded-full text-xs font-medium transition-all duration-500",
               insight.color === "#ef4444" && "bg-red-500/20 text-red-400",
-              insight.color === "#f59e0b" && "bg-orange-500/20 text-orange-400",
-              insight.color === "#14b8a6" && "bg-teal-500/20 text-teal-400"
+              insight.color === "#fbbf24" && "bg-yellow-500/20 text-yellow-400",
+              insight.color === "#10b981" && "bg-green-500/20 text-green-400"
             )}>
               {insight.title}
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+              <div className="w-3 h-3 rounded-full bg-green-500"></div>
               <span className="text-xs text-neutral-300">Diseased Population</span>
             </div>
           </div>
@@ -546,12 +576,12 @@ export default function TypeErrorVisualizer() {
           </div>
           
           {/* Type II Error Card */}
-          <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-4">
+          <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="font-semibold text-orange-400">Type II Error</h4>
-              <span className="text-xs text-orange-400">(False Negative)</span>
+              <h4 className="font-semibold text-yellow-400">Type II Error</h4>
+              <span className="text-xs text-yellow-400">(False Negative)</span>
             </div>
-            <div className="text-3xl font-mono font-bold text-orange-400 mb-1">
+            <div className="text-3xl font-mono font-bold text-yellow-400 mb-1">
               {errors.per10000.falseNegatives}
             </div>
             <p className="text-xs text-neutral-300">
@@ -583,20 +613,22 @@ export default function TypeErrorVisualizer() {
             </div>
             
             <div className="mt-3 pt-3 border-t border-neutral-700 flex items-center justify-between">
-              <Button
+              <button
                 onClick={() => setShowAreas(!showAreas)}
-                size="sm"
-                variant={showAreas ? "default" : "secondary"}
+                className={`px-3 py-2 text-xs font-medium rounded-md transition-all duration-200 ${
+                  showAreas
+                    ? 'bg-teal-600 text-white shadow-md ring-2 ring-teal-500/50'
+                    : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+                }`}
               >
                 {showAreas ? "Hide" : "Show"} Errors
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={reset}
-                size="sm"
-                variant="outline"
+                className="px-3 py-2 text-xs font-medium rounded-md transition-all duration-200 bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white border border-neutral-600"
               >
                 Reset
-              </Button>
+              </button>
             </div>
           </div>
         </div>

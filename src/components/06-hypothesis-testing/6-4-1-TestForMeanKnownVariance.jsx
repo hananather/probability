@@ -12,7 +12,7 @@ import {
 import { colors, createColorScheme } from '@/lib/design-system';
 import { Button } from '../ui/button';
 import BackToHub from '../ui/BackToHub';
-import { Calculator, Shield, Target, BarChart3, Info, TrendingUp, AlertCircle } from 'lucide-react';
+import { Calculator, Shield, Target, BarChart3, Info, TrendingUp, AlertCircle, Play, Pause, RotateCcw, Eye, EyeOff, Settings } from 'lucide-react';
 
 // Get vibrant Chapter 6 color scheme
 const chapterColors = createColorScheme('hypothesis');
@@ -439,7 +439,7 @@ export default function TestForMeanKnownVariance() {
     
     const width = mainVizRef.current.clientWidth || 800;
     const height = 400;
-    const margin = { top: 40, right: 80, bottom: 60, left: 80 };
+    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
     
     const g = svg
       .attr("width", width)
@@ -453,7 +453,7 @@ export default function TestForMeanKnownVariance() {
     // Create gradients
     const defs = svg.append("defs");
     
-    // Blue gradient for null distribution
+    // Blue gradient for normal distribution
     const blueGradient = defs.append("linearGradient")
       .attr("id", "blue-gradient")
       .attr("x1", "0%")
@@ -462,10 +462,10 @@ export default function TestForMeanKnownVariance() {
       .attr("y2", "100%");
     blueGradient.append("stop")
       .attr("offset", "0%")
-      .attr("style", "stop-color:#3b82f6;stop-opacity:0.8");
+      .attr("style", "stop-color:#3b82f6;stop-opacity:0.6");
     blueGradient.append("stop")
       .attr("offset", "100%")
-      .attr("style", "stop-color:#1e40af;stop-opacity:0.3");
+      .attr("style", "stop-color:#1e40af;stop-opacity:0.1");
     
     // Red gradient for rejection region
     const redGradient = defs.append("linearGradient")
@@ -476,10 +476,24 @@ export default function TestForMeanKnownVariance() {
       .attr("y2", "100%");
     redGradient.append("stop")
       .attr("offset", "0%")
-      .attr("style", "stop-color:#ef4444;stop-opacity:0.8");
+      .attr("style", "stop-color:#ef4444;stop-opacity:0.7");
     redGradient.append("stop")
       .attr("offset", "100%")
-      .attr("style", "stop-color:#dc2626;stop-opacity:0.3");
+      .attr("style", "stop-color:#dc2626;stop-opacity:0.2");
+    
+    // Green gradient for acceptance region
+    const greenGradient = defs.append("linearGradient")
+      .attr("id", "green-gradient")
+      .attr("x1", "0%")
+      .attr("y1", "0%")
+      .attr("x2", "0%")
+      .attr("y2", "100%");
+    greenGradient.append("stop")
+      .attr("offset", "0%")
+      .attr("style", "stop-color:#10b981;stop-opacity:0.5");
+    greenGradient.append("stop")
+      .attr("offset", "100%")
+      .attr("style", "stop-color:#059669;stop-opacity:0.1");
     
     // Purple gradient for p-value area
     const purpleGradient = defs.append("linearGradient")
@@ -490,7 +504,7 @@ export default function TestForMeanKnownVariance() {
       .attr("y2", "100%");
     purpleGradient.append("stop")
       .attr("offset", "0%")
-      .attr("style", "stop-color:#8b5cf6;stop-opacity:0.8");
+      .attr("style", "stop-color:#a855f7;stop-opacity:0.8");
     purpleGradient.append("stop")
       .attr("offset", "100%")
       .attr("style", "stop-color:#7c3aed;stop-opacity:0.3");
@@ -527,11 +541,13 @@ export default function TestForMeanKnownVariance() {
     g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(xScale).ticks(9))
-      .style("font-size", "12px");
+      .style("font-size", "12px")
+      .style("color", "#9ca3af");
     
     g.append("g")
       .call(d3.axisLeft(yScale).tickFormat(d => d.toFixed(2)))
-      .style("font-size", "12px");
+      .style("font-size", "12px")
+      .style("color", "#9ca3af");
     
     // Axis labels
     g.append("text")
@@ -551,72 +567,157 @@ export default function TestForMeanKnownVariance() {
       .style("fill", "white")
       .text("Probability Density");
     
-    // Draw normal curve
-    g.append("path")
+    // Add grid lines
+    g.append("g")
+      .attr("class", "grid")
+      .attr("transform", `translate(0,${innerHeight})`)
+      .call(d3.axisBottom(xScale)
+        .tickSize(-innerHeight)
+        .tickFormat("")
+      )
+      .style("stroke", "#374151")
+      .style("stroke-dasharray", "3,3")
+      .style("opacity", 0.5);
+    
+    g.append("g")
+      .attr("class", "grid")
+      .call(d3.axisLeft(yScale)
+        .tickSize(-innerWidth)
+        .tickFormat("")
+      )
+      .style("stroke", "#374151")
+      .style("stroke-dasharray", "3,3")
+      .style("opacity", 0.5);
+
+    // Fill area under normal curve with gradient
+    const normalArea = g.append("path")
+      .datum(normalCurve)
+      .attr("fill", "url(#blue-gradient)")
+      .attr("d", area)
+      .style("opacity", 0);
+    
+    normalArea.transition()
+      .duration(1200)
+      .ease(d3.easeCubicOut)
+      .style("opacity", 1);
+    
+    // Draw normal curve with animation
+    const normalPath = g.append("path")
       .datum(normalCurve)
       .attr("fill", "none")
       .attr("stroke", "#3b82f6")
-      .attr("stroke-width", 2)
-      .attr("d", line);
+      .attr("stroke-width", 3)
+      .attr("d", line)
+      .style("opacity", 0)
+      .style("filter", "drop-shadow(0 0 6px rgba(59, 130, 246, 0.4))");
     
-    // Draw rejection regions based on hypothesis type
+    normalPath.transition()
+      .duration(1200)
+      .ease(d3.easeCubicOut)
+      .style("opacity", 1);
+    
+    // Draw rejection regions based on hypothesis type with animation
     if (showCriticalValue && criticalValues.upper !== null) {
       const upperReject = normalCurve.filter(d => d.x >= criticalValues.upper);
-      g.append("path")
+      const upperRejectArea = g.append("path")
         .datum(upperReject)
         .attr("fill", "url(#red-gradient)")
-        .attr("d", area);
+        .attr("d", area)
+        .style("opacity", 0);
+      
+      upperRejectArea.transition()
+        .duration(800)
+        .delay(400)
+        .ease(d3.easeCubicOut)
+        .style("opacity", 1);
       
       // Critical value line
-      g.append("line")
+      const upperLine = g.append("line")
         .attr("x1", xScale(criticalValues.upper))
         .attr("x2", xScale(criticalValues.upper))
         .attr("y1", 0)
         .attr("y2", innerHeight)
         .attr("stroke", "#ef4444")
-        .attr("stroke-width", 2)
-        .attr("stroke-dasharray", "5,5");
+        .attr("stroke-width", 3)
+        .attr("stroke-dasharray", "5,5")
+        .style("opacity", 0)
+        .style("filter", "drop-shadow(0 0 4px rgba(239, 68, 68, 0.4))");
+      
+      upperLine.transition()
+        .duration(600)
+        .delay(600)
+        .ease(d3.easeCubicOut)
+        .style("opacity", 1);
       
       // Label
-      g.append("text")
+      const upperLabel = g.append("text")
         .attr("x", xScale(criticalValues.upper))
         .attr("y", -10)
         .attr("text-anchor", "middle")
         .attr("fill", "#ef4444")
         .style("font-size", "12px")
         .style("font-weight", "bold")
-        .text(`z = ${criticalValues.upper.toFixed(3)}`);
+        .text(`z = ${criticalValues.upper.toFixed(3)}`)
+        .style("opacity", 0);
+      
+      upperLabel.transition()
+        .duration(400)
+        .delay(800)
+        .ease(d3.easeCubicOut)
+        .style("opacity", 1);
     }
     
     if (showCriticalValue && criticalValues.lower !== null) {
       const lowerReject = normalCurve.filter(d => d.x <= criticalValues.lower);
-      g.append("path")
+      const lowerRejectArea = g.append("path")
         .datum(lowerReject)
         .attr("fill", "url(#red-gradient)")
-        .attr("d", area);
+        .attr("d", area)
+        .style("opacity", 0);
+      
+      lowerRejectArea.transition()
+        .duration(800)
+        .delay(400)
+        .ease(d3.easeCubicOut)
+        .style("opacity", 1);
       
       // Critical value line
-      g.append("line")
+      const lowerLine = g.append("line")
         .attr("x1", xScale(criticalValues.lower))
         .attr("x2", xScale(criticalValues.lower))
         .attr("y1", 0)
         .attr("y2", innerHeight)
         .attr("stroke", "#ef4444")
-        .attr("stroke-width", 2)
-        .attr("stroke-dasharray", "5,5");
+        .attr("stroke-width", 3)
+        .attr("stroke-dasharray", "5,5")
+        .style("opacity", 0)
+        .style("filter", "drop-shadow(0 0 4px rgba(239, 68, 68, 0.4))");
+      
+      lowerLine.transition()
+        .duration(600)
+        .delay(600)
+        .ease(d3.easeCubicOut)
+        .style("opacity", 1);
       
       // Label
-      g.append("text")
+      const lowerLabel = g.append("text")
         .attr("x", xScale(criticalValues.lower))
         .attr("y", -10)
         .attr("text-anchor", "middle")
         .attr("fill", "#ef4444")
         .style("font-size", "12px")
         .style("font-weight", "bold")
-        .text(`z = ${criticalValues.lower.toFixed(3)}`);
+        .text(`z = ${criticalValues.lower.toFixed(3)}`)
+        .style("opacity", 0);
+      
+      lowerLabel.transition()
+        .duration(400)
+        .delay(800)
+        .ease(d3.easeCubicOut)
+        .style("opacity", 1);
     }
     
-    // Draw p-value area if enabled
+    // Draw p-value area if enabled with animation
     if (showPValue) {
       let pValueData;
       if (hypothesisType === 'right') {
@@ -628,55 +729,126 @@ export default function TestForMeanKnownVariance() {
         pValueData = normalCurve.filter(d => Math.abs(d.x) >= Math.abs(testStatistic));
       }
       
-      g.append("path")
+      const pValueArea = g.append("path")
         .datum(pValueData)
         .attr("fill", "url(#purple-gradient)")
         .attr("d", area)
+        .style("opacity", 0);
+      
+      pValueArea.transition()
+        .duration(800)
+        .delay(1000)
+        .ease(d3.easeCubicOut)
         .style("opacity", 0.7);
     }
     
-    // Draw test statistic line
-    g.append("line")
+    // Draw test statistic line with animation
+    const testStatLine = g.append("line")
       .attr("x1", xScale(testStatistic))
       .attr("x2", xScale(testStatistic))
       .attr("y1", 0)
       .attr("y2", innerHeight)
-      .attr("stroke", "#10b981")
-      .attr("stroke-width", 3)
-      .style("filter", "drop-shadow(0 0 6px #10b981)");
+      .attr("stroke", "#3b82f6")
+      .attr("stroke-width", 4)
+      .style("filter", "drop-shadow(0 0 8px rgba(59, 130, 246, 0.6))")
+      .style("opacity", 0);
+    
+    testStatLine.transition()
+      .duration(800)
+      .delay(1200)
+      .ease(d3.easeCubicOut)
+      .style("opacity", 1);
+    
+    // Animated test statistic marker
+    const testStatMarker = g.append("circle")
+      .attr("cx", xScale(testStatistic))
+      .attr("cy", yScale(jStat.normal.pdf(testStatistic, 0, 1)))
+      .attr("r", 0)
+      .attr("fill", "#3b82f6")
+      .attr("stroke", "#ffffff")
+      .attr("stroke-width", 2)
+      .style("filter", "drop-shadow(0 0 8px rgba(59, 130, 246, 0.8))");
+    
+    testStatMarker.transition()
+      .duration(600)
+      .delay(1400)
+      .ease(d3.easeCubicOut)
+      .attr("r", 8);
     
     // Test statistic label
-    g.append("text")
+    const testStatLabel = g.append("text")
       .attr("x", xScale(testStatistic))
       .attr("y", yScale(0.4))
       .attr("text-anchor", "middle")
-      .attr("fill", "#10b981")
-      .style("font-size", "14px")
+      .attr("fill", "#3b82f6")
+      .style("font-size", "16px")
       .style("font-weight", "bold")
-      .style("text-shadow", "0 0 6px rgba(16, 185, 129, 0.8)")
-      .text(`Z = ${testStatistic.toFixed(3)}`);
+      .style("text-shadow", "0 0 8px rgba(59, 130, 246, 0.8)")
+      .text(`Z = ${testStatistic.toFixed(3)}`)
+      .style("opacity", 0);
     
-    // Add significance level label
+    testStatLabel.transition()
+      .duration(400)
+      .delay(1600)
+      .ease(d3.easeCubicOut)
+      .style("opacity", 1);
+    
+    // Add professional labels panel
+    const labelsGroup = g.append("g")
+      .attr("class", "labels-panel")
+      .style("opacity", 0);
+    
+    let labelY = 20;
+    
     if (showCriticalValue) {
-      g.append("text")
-        .attr("x", innerWidth - 10)
-        .attr("y", 20)
-        .attr("text-anchor", "end")
+      labelsGroup.append("rect")
+        .attr("x", innerWidth - 120)
+        .attr("y", labelY - 15)
+        .attr("width", 110)
+        .attr("height", 20)
+        .attr("fill", "rgba(239, 68, 68, 0.1)")
+        .attr("stroke", "#ef4444")
+        .attr("stroke-width", 1)
+        .attr("rx", 4);
+      
+      labelsGroup.append("text")
+        .attr("x", innerWidth - 65)
+        .attr("y", labelY)
+        .attr("text-anchor", "middle")
         .attr("fill", "#ef4444")
         .style("font-size", "12px")
+        .style("font-weight", "bold")
         .text(`α = ${significanceLevel}`);
+      
+      labelY += 30;
     }
     
-    // Add p-value label
     if (showPValue) {
-      g.append("text")
-        .attr("x", innerWidth - 10)
-        .attr("y", 40)
-        .attr("text-anchor", "end")
-        .attr("fill", "#8b5cf6")
+      labelsGroup.append("rect")
+        .attr("x", innerWidth - 140)
+        .attr("y", labelY - 15)
+        .attr("width", 130)
+        .attr("height", 20)
+        .attr("fill", "rgba(168, 85, 247, 0.1)")
+        .attr("stroke", "#a855f7")
+        .attr("stroke-width", 1)
+        .attr("rx", 4);
+      
+      labelsGroup.append("text")
+        .attr("x", innerWidth - 75)
+        .attr("y", labelY)
+        .attr("text-anchor", "middle")
+        .attr("fill", "#a855f7")
         .style("font-size", "12px")
-        .text(`p-value = ${pValue.toFixed(4)}`);
+        .style("font-weight", "bold")
+        .text(`p = ${pValue.toFixed(4)}`);
     }
+    
+    labelsGroup.transition()
+      .duration(600)
+      .delay(1800)
+      .ease(d3.easeCubicOut)
+      .style("opacity", 1);
     
   }, [testStatistic, criticalValues, significanceLevel, hypothesisType, showCriticalValue, showPValue]);
   
@@ -702,13 +874,26 @@ export default function TestForMeanKnownVariance() {
 
         {/* Introduction */}
         <VisualizationSection>
-          <div className="text-center space-y-4">
-            <h3 className="text-2xl font-bold text-white">The Manufacturing Quality Control Scenario</h3>
-            <p className="text-neutral-300 max-w-3xl mx-auto">
-              A cement manufacturer has modified their production process. Components are supposed to have 
-              a mean strength of μ = 40 kg/cm² with known standard deviation σ = 1.2 kg/cm². 
-              We test a sample of 12 components to determine if the process mean has changed.
-            </p>
+          <div className="text-center space-y-6">
+            <div className="flex items-center justify-center gap-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                <Target className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h3 className="text-3xl font-bold text-white mb-2">Manufacturing Quality Control</h3>
+                <p className="text-teal-400 font-medium">Z-Test for Known Variance</p>
+              </div>
+            </div>
+            
+            <div className="max-w-4xl mx-auto">
+              <p className="text-neutral-300 text-lg leading-relaxed">
+                A cement manufacturer has modified their production process. Components are supposed to have 
+                a mean strength of <span className="text-blue-400 font-semibold">μ = 40 kg/cm²</span> with known standard deviation 
+                <span className="text-teal-400 font-semibold">σ = 1.2 kg/cm²</span>. 
+                We test a sample of <span className="text-purple-400 font-semibold">12 components</span> to determine if the process mean has changed.
+              </p>
+            </div>
+            
             <HypothesisDisplay hypothesisType={hypothesisType} />
           </div>
         </VisualizationSection>
@@ -718,59 +903,82 @@ export default function TestForMeanKnownVariance() {
 
         {/* Interactive Controls */}
         <VisualizationSection className="bg-neutral-800/50 rounded-lg p-6">
-          <h4 className="text-lg font-bold text-white mb-6">Test Configuration</h4>
+          <div className="flex items-center gap-3 mb-6">
+            <Settings className="w-6 h-6 text-teal-400" />
+            <h4 className="text-lg font-bold text-white">Test Configuration</h4>
+          </div>
           
           <div className="grid md:grid-cols-3 gap-6">
             <ControlGroup label="Alternative Hypothesis">
-              <select
-                value={hypothesisType}
-                onChange={(e) => setHypothesisType(e.target.value)}
-                className="w-full bg-neutral-700 text-white rounded-md px-3 py-2 text-sm"
-              >
-                <option value="two">μ ≠ 40 (Two-sided)</option>
-                <option value="right">μ &gt; 40 (Right-sided)</option>
-                <option value="left">μ &lt; 40 (Left-sided)</option>
-              </select>
+              <div className="space-y-2">
+                {[
+                  { value: 'two', label: 'μ ≠ 40', desc: 'Two-sided', icon: TrendingUp },
+                  { value: 'right', label: 'μ > 40', desc: 'Right-sided', icon: TrendingUp },
+                  { value: 'left', label: 'μ < 40', desc: 'Left-sided', icon: TrendingUp }
+                ].map(({ value, label, desc, icon: Icon }) => (
+                  <button
+                    key={value}
+                    onClick={() => setHypothesisType(value)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-md text-sm font-medium transition-all duration-200 ${
+                      hypothesisType === value
+                        ? 'bg-teal-600 text-white shadow-md ring-2 ring-teal-500/50'
+                        : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <div className="text-left">
+                      <div className="font-semibold">{label}</div>
+                      <div className="text-xs opacity-75">{desc}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </ControlGroup>
 
             <ControlGroup label="Significance Level (α)">
-              <div className="flex gap-2">
+              <div className="space-y-2">
                 {[0.01, 0.05, 0.10].map(alpha => (
                   <button
                     key={alpha}
                     onClick={() => setSignificanceLevel(alpha)}
-                    className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all ${
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-md text-sm font-medium transition-all duration-200 ${
                       significanceLevel === alpha
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+                        ? 'bg-purple-600 text-white shadow-md ring-2 ring-purple-500/50'
+                        : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
                     }`}
                   >
-                    {(alpha * 100)}%
+                    <span>α = {alpha}</span>
+                    <span className="text-xs opacity-75">{(alpha * 100)}%</span>
                   </button>
                 ))}
               </div>
             </ControlGroup>
 
             <ControlGroup label="Display Options">
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={showCriticalValue}
-                    onChange={(e) => setShowCriticalValue(e.target.checked)}
-                    className="rounded"
-                  />
-                  <span className="text-neutral-300">Show Critical Values</span>
-                </label>
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={showPValue}
-                    onChange={(e) => setShowPValue(e.target.checked)}
-                    className="rounded"
-                  />
-                  <span className="text-neutral-300">Show P-Value Area</span>
-                </label>
+              <div className="space-y-3">
+                <button
+                  onClick={() => setShowCriticalValue(!showCriticalValue)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-md text-sm font-medium transition-all duration-200 ${
+                    showCriticalValue
+                      ? 'bg-red-600 text-white shadow-md'
+                      : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+                  }`}
+                >
+                  {showCriticalValue ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                  <span>Critical Values</span>
+                </button>
+                
+                <button
+                  onClick={() => setShowPValue(!showPValue)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-md text-sm font-medium transition-all duration-200 ${
+                    showPValue
+                      ? 'bg-purple-600 text-white shadow-md'
+                      : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+                  }`}
+                >
+                  {showPValue ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                  <span>P-Value Area</span>
+                </button>
               </div>
             </ControlGroup>
           </div>
@@ -785,13 +993,16 @@ export default function TestForMeanKnownVariance() {
         <div className="grid md:grid-cols-4 gap-6">
           <motion.div
             whileHover={{ scale: 1.02 }}
-            className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/30 rounded-lg p-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="bg-gradient-to-br from-teal-500/10 to-teal-600/10 border border-teal-500/30 rounded-lg p-6"
           >
             <div className="flex items-center gap-3 mb-3">
-              <Calculator className="w-6 h-6 text-blue-400" />
-              <h4 className="text-lg font-bold text-blue-400">Sample Mean</h4>
+              <Calculator className="w-6 h-6 text-teal-400" />
+              <h4 className="text-lg font-bold text-teal-400">Sample Mean</h4>
             </div>
-            <div className="text-3xl font-mono font-bold text-blue-400">
+            <div className="text-3xl font-mono font-bold text-teal-400">
               {sampleMean.toFixed(3)}
             </div>
             <p className="text-xs text-neutral-400 mt-2">
@@ -801,13 +1012,16 @@ export default function TestForMeanKnownVariance() {
 
           <motion.div
             whileHover={{ scale: 1.02 }}
-            className="bg-gradient-to-br from-green-500/10 to-green-600/10 border border-green-500/30 rounded-lg p-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/30 rounded-lg p-6"
           >
             <div className="flex items-center gap-3 mb-3">
-              <Target className="w-6 h-6 text-green-400" />
-              <h4 className="text-lg font-bold text-green-400">Test Statistic</h4>
+              <Target className="w-6 h-6 text-blue-400" />
+              <h4 className="text-lg font-bold text-blue-400">Test Statistic</h4>
             </div>
-            <div className="text-3xl font-mono font-bold text-green-400">
+            <div className="text-3xl font-mono font-bold text-blue-400">
               Z = {testStatistic.toFixed(3)}
             </div>
             <p className="text-xs text-neutral-400 mt-2">
@@ -817,24 +1031,27 @@ export default function TestForMeanKnownVariance() {
 
           <motion.div
             whileHover={{ scale: 1.02 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
             className={`bg-gradient-to-br rounded-lg p-6 border ${
               pValue < significanceLevel
                 ? 'from-red-500/10 to-red-600/10 border-red-500/30'
-                : 'from-gray-500/10 to-gray-600/10 border-gray-500/30'
+                : 'from-green-500/10 to-green-600/10 border-green-500/30'
             }`}
           >
             <div className="flex items-center gap-3 mb-3">
               {pValue < significanceLevel ? (
                 <AlertCircle className="w-6 h-6 text-red-400" />
               ) : (
-                <Shield className="w-6 h-6 text-gray-400" />
+                <Shield className="w-6 h-6 text-green-400" />
               )}
               <h4 className={`text-lg font-bold ${
-                pValue < significanceLevel ? 'text-red-400' : 'text-gray-400'
+                pValue < significanceLevel ? 'text-red-400' : 'text-green-400'
               }`}>P-value</h4>
             </div>
             <div className={`text-3xl font-mono font-bold ${
-              pValue < significanceLevel ? 'text-red-400' : 'text-gray-400'
+              pValue < significanceLevel ? 'text-red-400' : 'text-green-400'
             }`}>
               {pValue < 0.001 ? '< 0.001' : pValue.toFixed(4)}
             </div>
@@ -845,6 +1062,9 @@ export default function TestForMeanKnownVariance() {
 
           <motion.div
             whileHover={{ scale: 1.02 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
             className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 border border-purple-500/30 rounded-lg p-6"
           >
             <div className="flex items-center gap-3 mb-3">
@@ -862,22 +1082,31 @@ export default function TestForMeanKnownVariance() {
 
         {/* Three Methods Comparison */}
         <VisualizationSection className="bg-gradient-to-br from-teal-900/20 to-teal-800/20 border border-teal-500/30 rounded-lg p-6">
-          <h3 className="text-xl font-bold text-teal-400 mb-4">Three Equivalent Approaches</h3>
+          <div className="flex items-center gap-3 mb-6">
+            <TrendingUp className="w-6 h-6 text-teal-400" />
+            <h3 className="text-xl font-bold text-teal-400">Three Equivalent Approaches</h3>
+          </div>
           
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-neutral-900/50 rounded-lg p-4">
+            <motion.div 
+              className="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700/50"
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.2 }}
+            >
               <h4 className="font-bold text-white mb-3 flex items-center gap-2">
-                <Shield className="w-5 h-5 text-blue-400" />
+                <Shield className="w-5 h-5 text-red-400" />
                 Critical Value Method
               </h4>
-              <div className="text-sm text-neutral-300 space-y-2">
+              <div className="text-sm text-neutral-300 space-y-3">
                 <p>Compare test statistic to critical value:</p>
-                <p className="font-mono text-center mt-2">
-                  {hypothesisType === 'two' && `|${testStatistic.toFixed(3)}| ${Math.abs(testStatistic) > criticalValues.upper ? '>' : '<'} ${criticalValues.upper?.toFixed(3)}`}
-                  {hypothesisType === 'right' && `${testStatistic.toFixed(3)} ${testStatistic > criticalValues.upper ? '>' : '<'} ${criticalValues.upper?.toFixed(3)}`}
-                  {hypothesisType === 'left' && `${testStatistic.toFixed(3)} ${testStatistic < criticalValues.lower ? '<' : '>'} ${criticalValues.lower?.toFixed(3)}`}
-                </p>
-                <p className={`text-center font-bold ${
+                <div className="bg-neutral-800/50 rounded p-3">
+                  <p className="font-mono text-center text-blue-400">
+                    {hypothesisType === 'two' && `|${testStatistic.toFixed(3)}| ${Math.abs(testStatistic) > criticalValues.upper ? '>' : '<'} ${criticalValues.upper?.toFixed(3)}`}
+                    {hypothesisType === 'right' && `${testStatistic.toFixed(3)} ${testStatistic > criticalValues.upper ? '>' : '<'} ${criticalValues.upper?.toFixed(3)}`}
+                    {hypothesisType === 'left' && `${testStatistic.toFixed(3)} ${testStatistic < criticalValues.lower ? '<' : '>'} ${criticalValues.lower?.toFixed(3)}`}
+                  </p>
+                </div>
+                <p className={`text-center font-bold text-lg ${
                   (hypothesisType === 'two' && Math.abs(testStatistic) > criticalValues.upper) ||
                   (hypothesisType === 'right' && testStatistic > criticalValues.upper) ||
                   (hypothesisType === 'left' && testStatistic < criticalValues.lower)
@@ -889,48 +1118,68 @@ export default function TestForMeanKnownVariance() {
                     ? 'Reject H₀' : 'Fail to reject H₀'}
                 </p>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="bg-neutral-900/50 rounded-lg p-4">
+            <motion.div 
+              className="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700/50"
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.2 }}
+            >
               <h4 className="font-bold text-white mb-3 flex items-center gap-2">
                 <Target className="w-5 h-5 text-purple-400" />
                 P-Value Method
               </h4>
-              <div className="text-sm text-neutral-300 space-y-2">
+              <div className="text-sm text-neutral-300 space-y-3">
                 <p>Compare p-value to significance level:</p>
-                <p className="font-mono text-center mt-2">
-                  {pValue.toFixed(4)} {pValue < significanceLevel ? '<' : '>'} {significanceLevel}
-                </p>
-                <p className={`text-center font-bold ${
+                <div className="bg-neutral-800/50 rounded p-3">
+                  <p className="font-mono text-center text-purple-400">
+                    {pValue.toFixed(4)} {pValue < significanceLevel ? '<' : '>'} {significanceLevel}
+                  </p>
+                </div>
+                <p className={`text-center font-bold text-lg ${
                   pValue < significanceLevel ? 'text-red-400' : 'text-green-400'
                 }`}>
                   {pValue < significanceLevel ? 'Reject H₀' : 'Fail to reject H₀'}
                 </p>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="bg-neutral-900/50 rounded-lg p-4">
+            <motion.div 
+              className="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700/50"
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.2 }}
+            >
               <h4 className="font-bold text-white mb-3 flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-green-400" />
+                <BarChart3 className="w-5 h-5 text-teal-400" />
                 Confidence Interval
               </h4>
-              <div className="text-sm text-neutral-300 space-y-2">
+              <div className="text-sm text-neutral-300 space-y-3">
                 <p>Check if μ₀ is in the CI:</p>
-                <p className="font-mono text-center mt-2 text-xs">
-                  {mu0} {confidenceInterval.contains ? '∈' : '∉'} ({confidenceInterval.lower.toFixed(2)}, {confidenceInterval.upper.toFixed(2)})
-                </p>
-                <p className={`text-center font-bold ${
+                <div className="bg-neutral-800/50 rounded p-3">
+                  <p className="font-mono text-center text-teal-400 text-xs">
+                    {mu0} {confidenceInterval.contains ? '∈' : '∉'} ({confidenceInterval.lower.toFixed(2)}, {confidenceInterval.upper.toFixed(2)})
+                  </p>
+                </div>
+                <p className={`text-center font-bold text-lg ${
                   !confidenceInterval.contains ? 'text-red-400' : 'text-green-400'
                 }`}>
                   {!confidenceInterval.contains ? 'Reject H₀' : 'Fail to reject H₀'}
                 </p>
               </div>
-            </div>
+            </motion.div>
           </div>
 
-          <p className="text-sm text-neutral-400 mt-4 text-center">
-            <strong className="text-yellow-400">Key Insight:</strong> All three methods always give the same conclusion!
-          </p>
+          <motion.div 
+            className="mt-6 bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1, duration: 0.6 }}
+          >
+            <p className="text-sm text-neutral-300 text-center">
+              <Info className="w-4 h-4 inline mr-2 text-yellow-400" />
+              <strong className="text-yellow-400">Key Insight:</strong> All three methods always give the same conclusion!
+            </p>
+          </motion.div>
         </VisualizationSection>
 
         {/* Worked Example */}

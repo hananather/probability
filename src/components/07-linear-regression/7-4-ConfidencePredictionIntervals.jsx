@@ -10,9 +10,8 @@ import {
   ControlGroup
 } from '../ui/VisualizationContainer';
 import { colors, createColorScheme, cn } from '../../lib/design-system';
-import { Button } from '../ui/button';
 import BackToHub from '../ui/BackToHub';
-import { TrendingUp, AlertCircle, Target, BarChart3 } from 'lucide-react';
+import { TrendingUp, AlertCircle, Target, BarChart3, Settings, Eye, EyeOff } from 'lucide-react';
 
 // Get Chapter 7 color scheme
 const chapterColors = createColorScheme('inference');
@@ -784,15 +783,14 @@ export default function ConfidencePredictionIntervals() {
                   {[0.90, 0.95, 0.99].map(level => (
                     <button
                       key={level}
-                      className={cn(
-                        "px-4 py-2 rounded-md font-medium transition-all duration-200",
-                        confidenceLevel === level
-                          ? "bg-blue-600 text-white shadow-lg shadow-blue-500/25 border border-blue-400"
-                          : "text-neutral-400 hover:text-white hover:bg-neutral-600/50",
-                        "hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-neutral-800"
-                      )}
                       onClick={() => setConfidenceLevel(level)}
+                      className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+                        confidenceLevel === level
+                          ? 'bg-purple-600 text-white shadow-md ring-2 ring-purple-500/50'
+                          : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+                      }`}
                     >
+                      <Settings className="w-4 h-4" />
                       {(level * 100).toFixed(0)}%
                     </button>
                   ))}
@@ -802,34 +800,40 @@ export default function ConfidencePredictionIntervals() {
 
             <div className="space-y-4">
               <ControlGroup label="Display Options">
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={showCI}
-                      onChange={(e) => setShowCI(e.target.checked)}
-                      className="rounded"
-                    />
-                    <span className="text-sm text-neutral-300">Show Confidence Interval</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={showPI}
-                      onChange={(e) => setShowPI(e.target.checked)}
-                      className="rounded"
-                    />
-                    <span className="text-sm text-neutral-300">Show Prediction Interval</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={showExtrapolation}
-                      onChange={(e) => setShowExtrapolation(e.target.checked)}
-                      className="rounded"
-                    />
-                    <span className="text-sm text-neutral-300">Show Extrapolation Warning</span>
-                  </label>
+                <div className="space-y-3">
+                  <button
+                    onClick={() => setShowCI(!showCI)}
+                    className={`px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+                      showCI
+                        ? 'bg-teal-600 text-white shadow-md ring-2 ring-teal-500/50'
+                        : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+                    }`}
+                  >
+                    {showCI ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    Show Confidence Interval
+                  </button>
+                  <button
+                    onClick={() => setShowPI(!showPI)}
+                    className={`px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+                      showPI
+                        ? 'bg-teal-600 text-white shadow-md ring-2 ring-teal-500/50'
+                        : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+                    }`}
+                  >
+                    {showPI ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    Show Prediction Interval
+                  </button>
+                  <button
+                    onClick={() => setShowExtrapolation(!showExtrapolation)}
+                    className={`px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+                      showExtrapolation
+                        ? 'bg-teal-600 text-white shadow-md ring-2 ring-teal-500/50'
+                        : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+                    }`}
+                  >
+                    {showExtrapolation ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    Show Extrapolation Warning
+                  </button>
                 </div>
               </ControlGroup>
             </div>

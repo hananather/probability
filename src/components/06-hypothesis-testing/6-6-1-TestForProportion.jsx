@@ -5,8 +5,9 @@ import * as d3 from 'd3'
 import { Button } from '../ui/button'
 import BackToHub from '../ui/BackToHub'
 import ProgressBar from '../ui/ProgressBar'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { createColorScheme } from '../../lib/design-system'
+import { BarChart3, Target, TrendingUp, TrendingDown, Activity } from 'lucide-react'
 
 // Create hypothesis testing color scheme
 const colorScheme = createColorScheme('hypothesis')
@@ -581,8 +582,262 @@ export default function TestForProportion() {
     }
     return probs
   }, [sampleSize, nullProportion])
+
+  // Visualization refs
+  const proportionVizRef = useRef(null)
+  const distributionVizRef = useRef(null)
   
   // Removed discovery tracking logic
+  
+  // Proportion Visualization
+  useEffect(() => {
+    if (!proportionVizRef.current) return;
+    
+    d3.select(proportionVizRef.current).selectAll("*").remove();
+    
+    const svg = d3.select(proportionVizRef.current)
+      .append("svg");
+    
+    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
+    const width = proportionVizRef.current.clientWidth - margin.left - margin.right;
+    const height = 200 - margin.top - margin.bottom;
+    
+    const g = svg
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+    
+    // Create data for proportion bars
+    const data = [
+      { label: 'Observed', value: observedProportion, color: '#3b82f6' },
+      { label: 'Null Hypothesis', value: nullProportion, color: '#14b8a6' }
+    ];
+    
+    const x = d3.scaleBand()
+      .domain(data.map(d => d.label))
+      .range([0, width])
+      .padding(0.3);
+    
+    const y = d3.scaleLinear()
+      .domain([0, 1])
+      .range([height, 0]);
+    
+    // Add bars with animation
+    const bars = g.selectAll('.bar')
+      .data(data)
+      .enter()
+      .append('rect')
+      .attr('class', 'bar')
+      .attr('x', d => x(d.label))
+      .attr('width', x.bandwidth())
+      .attr('y', height)
+      .attr('height', 0)
+      .attr('fill', d => d.color)
+      .attr('opacity', 0.8);
+    
+    bars.transition()
+      .duration(1200)
+      .delay((d, i) => i * 200)
+      .ease(d3.easeCubicOut)
+      .attr('y', d => y(d.value))
+      .attr('height', d => height - y(d.value));
+    
+    // Add value labels
+    g.selectAll('.value-label')
+      .data(data)
+      .enter()
+      .append('text')
+      .attr('class', 'value-label')
+      .attr('x', d => x(d.label) + x.bandwidth() / 2)
+      .attr('y', d => y(d.value) - 5)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '12px')
+      .style('fill', '#e5e7eb')
+      .style('opacity', 0)
+      .text(d => d.value.toFixed(3))
+      .transition()
+      .duration(1200)
+      .delay((d, i) => i * 200 + 800)
+      .style('opacity', 1);
+    
+    // Add axes
+    g.append('g')
+      .attr('transform', `translate(0,${height})`)
+      .call(d3.axisBottom(x))
+      .style('font-size', '12px')
+      .style('color', '#9ca3af');
+    
+    g.append('g')
+      .call(d3.axisLeft(y).tickFormat(d3.format('.1%')))
+      .style('font-size', '12px')
+      .style('color', '#9ca3af');
+    
+    // Add axis label
+    g.append('text')
+      .attr('transform', 'rotate(-90)')
+      .attr('y', 0 - margin.left)
+      .attr('x', 0 - (height / 2))
+      .attr('dy', '1em')
+      .style('text-anchor', 'middle')
+      .style('fill', '#e5e7eb')
+      .style('font-size', '12px')
+      .text('Proportion');
+    
+  }, [observedProportion, nullProportion]);
+  
+  // Distribution Visualization
+  useEffect(() => {
+    if (!distributionVizRef.current) return;
+    
+    d3.select(distributionVizRef.current).selectAll("*").remove();
+    
+    const svg = d3.select(distributionVizRef.current)
+      .append("svg");
+    
+    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
+    const width = distributionVizRef.current.clientWidth - margin.left - margin.right;
+    const height = 200 - margin.top - margin.bottom;
+    
+    const g = svg
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+    
+    // Generate normal distribution curve
+    const xMin = -4;
+    const xMax = 4;
+    const xValues = d3.range(xMin, xMax, 0.1);
+    const normalData = xValues.map(x => ({
+      x: x,
+      y: (1 / Math.sqrt(2 * Math.PI)) * Math.exp(-0.5 * x * x)
+    }));
+    
+    const x = d3.scaleLinear()
+      .domain([xMin, xMax])
+      .range([0, width]);
+    
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(normalData, d => d.y)])
+      .range([height, 0]);
+    
+    // Add normal curve
+    const line = d3.line()
+      .x(d => x(d.x))
+      .y(d => y(d.y))
+      .curve(d3.curveBasis);
+    
+    g.append('path')
+      .datum(normalData)
+      .attr('fill', 'none')
+      .attr('stroke', '#6b7280')
+      .attr('stroke-width', 2)
+      .attr('d', line)
+      .style('opacity', 0)
+      .transition()
+      .duration(1200)
+      .ease(d3.easeCubicOut)
+      .style('opacity', 1);
+    
+    // Add critical regions
+    const alpha = 0.05;
+    const criticalValue = 1.96; // For two-sided test
+    
+    if (testType === 'two-sided') {
+      // Left tail
+      const leftTailData = normalData.filter(d => d.x <= -criticalValue);
+      if (leftTailData.length > 0) {
+        g.append('path')
+          .datum(leftTailData.concat([{x: -criticalValue, y: 0}, {x: leftTailData[0].x, y: 0}]))
+          .attr('fill', '#ef4444')
+          .attr('fill-opacity', 0.3)
+          .attr('d', line)
+          .style('opacity', 0)
+          .transition()
+          .duration(1200)
+          .delay(400)
+          .style('opacity', 1);
+      }
+      
+      // Right tail
+      const rightTailData = normalData.filter(d => d.x >= criticalValue);
+      if (rightTailData.length > 0) {
+        g.append('path')
+          .datum(rightTailData.concat([{x: criticalValue, y: 0}, {x: rightTailData[rightTailData.length-1].x, y: 0}]))
+          .attr('fill', '#ef4444')
+          .attr('fill-opacity', 0.3)
+          .attr('d', line)
+          .style('opacity', 0)
+          .transition()
+          .duration(1200)
+          .delay(400)
+          .style('opacity', 1);
+      }
+    }
+    
+    // Add test statistic line
+    g.append('line')
+      .attr('x1', x(zStatistic))
+      .attr('x2', x(zStatistic))
+      .attr('y1', 0)
+      .attr('y2', height)
+      .attr('stroke', pValue < 0.05 ? '#ef4444' : '#22c55e')
+      .attr('stroke-width', 3)
+      .attr('stroke-dasharray', '5,5')
+      .style('opacity', 0)
+      .transition()
+      .duration(1200)
+      .delay(800)
+      .style('opacity', 1);
+    
+    // Add test statistic label
+    g.append('text')
+      .attr('x', x(zStatistic))
+      .attr('y', -10)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '12px')
+      .style('fill', pValue < 0.05 ? '#ef4444' : '#22c55e')
+      .style('font-weight', 'bold')
+      .text(`z = ${zStatistic.toFixed(2)}`)
+      .style('opacity', 0)
+      .transition()
+      .duration(1200)
+      .delay(800)
+      .style('opacity', 1);
+    
+    // Add axes
+    g.append('g')
+      .attr('transform', `translate(0,${height})`)
+      .call(d3.axisBottom(x))
+      .style('font-size', '12px')
+      .style('color', '#9ca3af');
+    
+    g.append('g')
+      .call(d3.axisLeft(y).tickFormat(d3.format('.2f')))
+      .style('font-size', '12px')
+      .style('color', '#9ca3af');
+    
+    // Add axis labels
+    g.append('text')
+      .attr('x', width / 2)
+      .attr('y', height + margin.bottom - 10)
+      .attr('text-anchor', 'middle')
+      .style('fill', '#e5e7eb')
+      .style('font-size', '12px')
+      .text('z-score');
+    
+    g.append('text')
+      .attr('transform', 'rotate(-90)')
+      .attr('y', 0 - margin.left)
+      .attr('x', 0 - (height / 2))
+      .attr('dy', '1em')
+      .style('text-anchor', 'middle')
+      .style('fill', '#e5e7eb')
+      .style('font-size', '12px')
+      .text('Density');
+      
+  }, [zStatistic, pValue, testType]);
   
   // Clean up animations on unmount
   useEffect(() => {
@@ -597,13 +852,18 @@ export default function TestForProportion() {
       <style jsx>{`
         svg .axis text {
           fill: #e5e7eb;
+          font-size: 12px;
         }
         svg .axis line,
         svg .axis path {
-          stroke: #374151;
+          stroke: #6b7280;
         }
         svg .tick text {
           fill: #9ca3af;
+          font-size: 12px;
+        }
+        svg .domain {
+          stroke: #6b7280;
         }
       `}</style>
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-8 rounded-xl mb-8 shadow-2xl">
@@ -818,16 +1078,17 @@ export default function TestForProportion() {
               <div className="bg-blue-900/20 border border-blue-700/30 p-6 rounded-lg">
                 <h3 className="font-semibold mb-4 text-blue-300 text-lg">Test Statistic Comparison</h3>
                 <div className="mb-4">
-                  <Button
+                  <button
                     onClick={() => setShowContinuityCorrection(!showContinuityCorrection)}
-                    className={`w-full transition-all duration-300 ${
+                    className={`w-full px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
                       showContinuityCorrection 
-                        ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700' 
-                        : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700'
+                        ? 'bg-teal-600 text-white shadow-md ring-2 ring-teal-500/50' 
+                        : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
                     }`}
                   >
+                    <Activity className="w-4 h-4" />
                     {showContinuityCorrection ? 'Hide' : 'Show'} Continuity Correction
-                  </Button>
+                  </button>
                 </div>
                 <TestStatisticFormulas 
                   zStatistic={zStatistic}
@@ -1039,6 +1300,12 @@ export default function TestForProportion() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
               <div className="space-y-4">
+                {/* Proportion Visualization */}
+                <div className="bg-gray-800/50 border border-gray-700/50 p-4 rounded-lg">
+                  <h3 className="font-semibold mb-3 text-gray-200">Proportion Comparison</h3>
+                  <div ref={proportionVizRef} className="w-full h-64 mb-4"></div>
+                </div>
+              
               <div className="bg-gray-800/50 border border-gray-700/50 p-4 rounded-lg">
                 <h3 className="font-semibold mb-3 text-gray-200">Current Test</h3>
                 <div className="space-y-2 text-sm">
@@ -1093,26 +1360,35 @@ export default function TestForProportion() {
               <div className="bg-yellow-900/20 border border-yellow-700/30 p-4 rounded-lg">
                 <h3 className="font-semibold mb-3 text-yellow-300">Test Type</h3>
                 <div className="space-y-2">
-                  {['two-sided', 'greater', 'less'].map(type => (
-                    <label key={type} className="flex items-center cursor-pointer">
-                      <input
-                        type="radio"
-                        value={type}
-                        checked={testType === type}
-                        onChange={(e) => setTestType(e.target.value)}
-                        className="mr-2 accent-purple-600"
-                      />
-                      <span className="text-sm capitalize text-gray-300">{type}</span>
-                    </label>
+                  {[
+                    { value: 'two-sided', label: 'Two-sided', icon: TrendingUp },
+                    { value: 'greater', label: 'Greater than', icon: TrendingUp },
+                    { value: 'less', label: 'Less than', icon: TrendingDown }
+                  ].map(({ value, label, icon: Icon }) => (
+                    <button
+                      key={value}
+                      onClick={() => setTestType(value)}
+                      className={`px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 flex items-center gap-2 ${
+                        testType === value
+                          ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-500/50'
+                          : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {label}
+                    </button>
                   ))}
                 </div>
               </div>
             </div>
             </div>
             
-            {/* Second column - placeholder or visualization */}
+            {/* Second column - Distribution Visualization */}
             <div>
-              {/* Visualization or additional content can go here */}
+              <div className="bg-gray-800/50 border border-gray-700/50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3 text-gray-200">Test Statistic Distribution</h3>
+                <div ref={distributionVizRef} className="w-full h-64"></div>
+              </div>
             </div>
           </div>
           

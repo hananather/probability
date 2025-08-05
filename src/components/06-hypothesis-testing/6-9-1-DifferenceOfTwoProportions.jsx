@@ -77,29 +77,29 @@ const MathematicalFramework = React.memo(function MathematicalFramework() {
       <h3 className="text-xl font-bold text-teal-400 mb-6">Mathematical Framework</h3>
       
       <div ref={contentRef} className="grid md:grid-cols-2 gap-6">
-        <div className="bg-neutral-900/50 rounded-lg p-4">
+        <div className="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700/30 hover:border-blue-500/30 transition-colors duration-200">
           <h4 className="font-bold text-white mb-3">Test Statistic</h4>
           <div className="text-sm text-neutral-300">
             <p className="mb-2">Under <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />, the test statistic follows:</p>
-            <div className="text-center text-teal-400 my-3">
+            <div className="text-center text-blue-400 my-3">
               <span dangerouslySetInnerHTML={{ __html: `\\[z = \\frac{\\hat{p}_1 - \\hat{p}_2}{SE} \\sim N(0, 1)\\]` }} />
             </div>
             <p className="mt-2">where SE uses the pooled proportion <span dangerouslySetInnerHTML={{ __html: `\\(\\hat{p}\\)` }} /></p>
           </div>
         </div>
 
-        <div className="bg-neutral-900/50 rounded-lg p-4">
+        <div className="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700/30 hover:border-green-500/30 transition-colors duration-200">
           <h4 className="font-bold text-white mb-3">Pooled Proportion</h4>
           <div className="text-sm text-neutral-300">
             <p className="mb-2">Best estimate under <span dangerouslySetInnerHTML={{ __html: `\\(H_0: p_1 = p_2 = p\\)` }} /></p>
-            <div className="text-center text-blue-400 my-3">
+            <div className="text-center text-green-400 my-3">
               <span dangerouslySetInnerHTML={{ __html: `\\[\\hat{p} = \\frac{y_1 + y_2}{n_1 + n_2}\\]` }} />
             </div>
             <p className="mt-2">Combines data from both groups</p>
           </div>
         </div>
 
-        <div className="bg-neutral-900/50 rounded-lg p-4">
+        <div className="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700/30 hover:border-purple-500/30 transition-colors duration-200">
           <h4 className="font-bold text-white mb-3">Standard Error (Test)</h4>
           <div className="text-sm text-neutral-300">
             <p className="mb-2">For hypothesis testing:</p>
@@ -110,11 +110,11 @@ const MathematicalFramework = React.memo(function MathematicalFramework() {
           </div>
         </div>
 
-        <div className="bg-neutral-900/50 rounded-lg p-4">
+        <div className="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700/30 hover:border-teal-500/30 transition-colors duration-200">
           <h4 className="font-bold text-white mb-3">Confidence Interval</h4>
           <div className="text-sm text-neutral-300">
             <p className="mb-2">For CI, use unpooled SE:</p>
-            <div className="text-center text-green-400 my-3">
+            <div className="text-center text-teal-400 my-3">
               <span dangerouslySetInnerHTML={{ __html: `\\[SE = \\sqrt{\\frac{\\hat{p}_1(1-\\hat{p}_1)}{n_1} + \\frac{\\hat{p}_2(1-\\hat{p}_2)}{n_2}}\\]` }} />
             </div>
             <p className="mt-2">Don't assume <span dangerouslySetInnerHTML={{ __html: `\\(p_1 = p_2\\)` }} /> for CI</p>
@@ -300,11 +300,16 @@ const WorkedExample = React.memo(function WorkedExample({ sampleSize, significan
       
       <div ref={contentRef} className="space-y-6">
         {/* Step 1: Data Setup */}
-        <div className="bg-neutral-900/50 rounded-lg p-4">
+        <motion.div 
+          className="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700/30 hover:border-blue-500/30 transition-colors duration-200"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
           <h4 className="font-bold text-white mb-3">Step 1: Observed Data</h4>
           <div className="grid md:grid-cols-2 gap-4 text-sm text-neutral-300">
             <div>
-              <p className="font-semibold text-amber-400">Light Moths:</p>
+              <p className="font-semibold text-blue-400">Light Moths (Group 1):</p>
               <ul className="mt-2 space-y-1">
                 <li>• Released: <span className="font-mono text-white">{n1}</span></li>
                 <li>• Recaptured: <span className="font-mono text-white">{y1}</span></li>
@@ -312,7 +317,7 @@ const WorkedExample = React.memo(function WorkedExample({ sampleSize, significan
               </ul>
             </div>
             <div>
-              <p className="font-semibold text-gray-400">Dark Moths:</p>
+              <p className="font-semibold text-green-400">Dark Moths (Group 2):</p>
               <ul className="mt-2 space-y-1">
                 <li>• Released: <span className="font-mono text-white">{n2}</span></li>
                 <li>• Recaptured: <span className="font-mono text-white">{y2}</span></li>
@@ -323,10 +328,15 @@ const WorkedExample = React.memo(function WorkedExample({ sampleSize, significan
           <p className="mt-3 text-center text-neutral-400">
             Observed difference: <span dangerouslySetInnerHTML={{ __html: `\\(\\hat{p}_1 - \\hat{p}_2 = ${difference.toFixed(4)}\\)` }} />
           </p>
-        </div>
+        </motion.div>
 
         {/* Step 2: Pooled Proportion */}
-        <div className="bg-neutral-900/50 rounded-lg p-4">
+        <motion.div 
+          className="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700/30 hover:border-green-500/30 transition-colors duration-200"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
           <h4 className="font-bold text-white mb-3">Step 2: Calculate Pooled Proportion</h4>
           <div className="text-sm text-neutral-300 space-y-2">
             <p>Under <span dangerouslySetInnerHTML={{ __html: `\\(H_0: p_1 = p_2\\)` }} />, we estimate the common proportion:</p>
@@ -337,7 +347,7 @@ const WorkedExample = React.memo(function WorkedExample({ sampleSize, significan
               This represents our best estimate of the common recapture rate if <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /> is true.
             </p>
           </div>
-        </div>
+        </motion.div>
 
         {/* Step 3: Standard Error */}
         <div className="bg-neutral-900/50 rounded-lg p-4">
@@ -377,7 +387,7 @@ const WorkedExample = React.memo(function WorkedExample({ sampleSize, significan
             <p>For the normal approximation to be valid, all counts must be ≥ 10:</p>
             <div className="grid md:grid-cols-2 gap-4 mt-3">
               <div>
-                <p className="font-semibold text-amber-400">Light Moths:</p>
+                <p className="font-semibold text-blue-400">Light Moths:</p>
                 <ul className="mt-2 space-y-1">
                   <li><span dangerouslySetInnerHTML={{ __html: `\\(n_1\\hat{p} = ${n1} \\times ${pooledP.toFixed(3)} = ${(n1 * pooledP).toFixed(1)}\\)` }} /> 
                     <span className={n1 * pooledP >= 10 ? "text-green-400" : "text-red-400"}> {n1 * pooledP >= 10 ? "✓" : "✗"}</span>
@@ -388,7 +398,7 @@ const WorkedExample = React.memo(function WorkedExample({ sampleSize, significan
                 </ul>
               </div>
               <div>
-                <p className="font-semibold text-gray-400">Dark Moths:</p>
+                <p className="font-semibold text-green-400">Dark Moths:</p>
                 <ul className="mt-2 space-y-1">
                   <li><span dangerouslySetInnerHTML={{ __html: `\\(n_2\\hat{p} = ${n2} \\times ${pooledP.toFixed(3)} = ${(n2 * pooledP).toFixed(1)}\\)` }} />
                     <span className={n2 * pooledP >= 10 ? "text-green-400" : "text-red-400"}> {n2 * pooledP >= 10 ? "✓" : "✗"}</span>
@@ -403,19 +413,24 @@ const WorkedExample = React.memo(function WorkedExample({ sampleSize, significan
         </div>
 
         {/* Conclusion */}
-        <div className={`rounded-lg p-4 ${pValue < significanceLevel ? 'bg-red-900/20 border border-red-500/30' : 'bg-green-900/20 border border-green-500/30'}`}>
+        <div className={`rounded-lg p-4 shadow-lg transition-all duration-200 ${pValue < significanceLevel ? 'bg-red-900/20 border border-red-500/30 hover:shadow-red-500/10' : 'bg-green-900/20 border border-green-500/30 hover:shadow-green-500/10'}`}>
           <h4 className="font-bold text-white mb-3">Conclusion</h4>
           <div className="text-sm text-neutral-300 space-y-2">
             <p>
               With p-value = {pValue < 0.001 ? '< 0.001' : pValue.toFixed(4)} {pValue < significanceLevel ? '<' : '>'} <span dangerouslySetInnerHTML={{ __html: `\\(\\alpha = ${significanceLevel}\\)` }} />:
             </p>
-            <p className={`font-bold ${pValue < significanceLevel ? 'text-red-400' : 'text-green-400'}`}>
+            <motion.p 
+              className={`font-bold ${pValue < significanceLevel ? 'text-red-400' : 'text-green-400'}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
               {pValue < significanceLevel ? (
                 <>Reject <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />: There is significant evidence of a difference in recapture rates.</>
               ) : (
                 <>Fail to reject <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />: Insufficient evidence of a difference in recapture rates.</>
               )}
-            </p>
+            </motion.p>
           </div>
         </div>
       </div>
@@ -559,7 +574,7 @@ export default function DifferenceOfTwoProportions() {
     
     const svg = d3.select(barChartRef.current);
     const { width, height } = dimensions;
-    const margin = { top: 40, right: 60, bottom: 60, left: 60 };
+    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
@@ -595,43 +610,43 @@ export default function DifferenceOfTwoProportions() {
     feMerge.append("feMergeNode")
       .attr("in", "SourceGraphic");
     
-    // Light moth gradient
-    const lightGradient = defs.append("linearGradient")
-      .attr("id", "light-moth-gradient")
+    // Group 1 (Light moths) gradient - Blue
+    const group1Gradient = defs.append("linearGradient")
+      .attr("id", "group1-gradient")
       .attr("x1", "0%")
       .attr("y1", "0%")
       .attr("x2", "0%")
       .attr("y2", "100%");
-    lightGradient.append("stop")
+    group1Gradient.append("stop")
       .attr("offset", "0%")
-      .attr("stop-color", "#fde047")
+      .attr("stop-color", "#60a5fa")
       .attr("stop-opacity", 1);
-    lightGradient.append("stop")
+    group1Gradient.append("stop")
       .attr("offset", "100%")
-      .attr("stop-color", "#f59e0b")
+      .attr("stop-color", "#3b82f6")
       .attr("stop-opacity", 1);
     
-    // Dark moth gradient
-    const darkGradient = defs.append("linearGradient")
-      .attr("id", "dark-moth-gradient")
+    // Group 2 (Dark moths) gradient - Green
+    const group2Gradient = defs.append("linearGradient")
+      .attr("id", "group2-gradient")
       .attr("x1", "0%")
       .attr("y1", "0%")
       .attr("x2", "0%")
       .attr("y2", "100%");
-    darkGradient.append("stop")
+    group2Gradient.append("stop")
       .attr("offset", "0%")
-      .attr("stop-color", "#9ca3af")
+      .attr("stop-color", "#34d399")
       .attr("stop-opacity", 1);
-    darkGradient.append("stop")
+    group2Gradient.append("stop")
       .attr("offset", "100%")
-      .attr("stop-color", "#4b5563")
+      .attr("stop-color", "#10b981")
       .attr("stop-opacity", 1);
     }
     
     // Data
     const data = [
-      { group: 'Light moths', proportion: calculations.p1, color: 'url(#light-moth-gradient)' },
-      { group: 'Dark moths', proportion: calculations.p2, color: 'url(#dark-moth-gradient)' }
+      { group: 'Light moths', proportion: calculations.p1, color: 'url(#group1-gradient)' },
+      { group: 'Dark moths', proportion: calculations.p2, color: 'url(#group2-gradient)' }
     ];
     
     // Scales
@@ -656,10 +671,10 @@ export default function DifferenceOfTwoProportions() {
     
     xAxis.style("font-size", "12px")
       .selectAll("text")
-      .style("fill", "#a78bfa");
+      .style("fill", "#9ca3af");
     
     xAxis.selectAll("path, line")
-      .style("stroke", "#a78bfa");
+      .style("stroke", "#9ca3af");
     
     let yAxis = g.select(".y-axis");
     if (yAxis.empty()) {
@@ -671,10 +686,10 @@ export default function DifferenceOfTwoProportions() {
     
     yAxis.style("font-size", "12px")
       .selectAll("text")
-      .style("fill", "#60a5fa");
+      .style("fill", "#9ca3af");
     
     yAxis.selectAll("path, line")
-      .style("stroke", "#60a5fa");
+      .style("stroke", "#9ca3af");
     
     // Labels - create only once
     if (g.select(".x-label").empty()) {
@@ -721,7 +736,9 @@ export default function DifferenceOfTwoProportions() {
     // Update all bars (enter + update)
     bars.merge(barsEnter)
       .transition()
-      .duration(800)
+      .duration(1200)
+      .delay((d, i) => i * 200)
+      .ease(d3.easeCubicOut)
       .attr("x", d => x(d.group))
       .attr("width", x.bandwidth())
       .attr("y", d => y(d.proportion))
@@ -748,11 +765,12 @@ export default function DifferenceOfTwoProportions() {
     labels.merge(labelsEnter)
       .attr("x", d => x(d.group) + x.bandwidth() / 2)
       .attr("y", d => y(d.proportion) - 10)
-      .style("fill", d => d.group.includes('Light') ? "#fde047" : "#e5e7eb")
+      .style("fill", d => d.group.includes('Light') ? "#60a5fa" : "#10b981")
       .text(d => `${(d.proportion * 100).toFixed(1)}%`)
       .transition()
-      .duration(800)
-      .delay(400)
+      .duration(1200)
+      .delay(600)
+      .ease(d3.easeCubicOut)
       .style("opacity", 1);
     
     // Remove old labels
@@ -763,10 +781,10 @@ export default function DifferenceOfTwoProportions() {
     if (diffLine.empty()) {
       diffLine = g.append("line")
         .attr("class", "diff-line")
-        .style("stroke", "#f43f5e")
+        .style("stroke", "#a855f7")
         .style("stroke-width", 3)
         .style("stroke-dasharray", "5,5")
-        .style("filter", "drop-shadow(0 0 4px #f43f5e)")
+        .style("filter", "drop-shadow(0 0 4px #a855f7)")
         .style("opacity", 0);
     }
     
@@ -776,8 +794,9 @@ export default function DifferenceOfTwoProportions() {
       .attr("y1", y(calculations.p1))
       .attr("y2", y(calculations.p2))
       .transition()
-      .duration(800)
+      .duration(1200)
       .delay(800)
+      .ease(d3.easeCubicOut)
       .style("opacity", 1);
     
     // Difference text - create or update
@@ -788,8 +807,8 @@ export default function DifferenceOfTwoProportions() {
         .attr("text-anchor", "middle")
         .style("font-size", "18px")
         .style("font-weight", "bold")
-        .style("fill", "#f43f5e")
-        .style("text-shadow", "0 0 10px rgba(244, 63, 94, 0.6)")
+        .style("fill", "#a855f7")
+        .style("text-shadow", "0 0 10px rgba(168, 85, 247, 0.6)")
         .style("opacity", 0);
     }
     
@@ -798,8 +817,9 @@ export default function DifferenceOfTwoProportions() {
       .attr("y", (y(calculations.p1) + y(calculations.p2)) / 2)
       .text(`Δ = ${(calculations.difference * 100).toFixed(1)}%`)
       .transition()
-      .duration(800)
+      .duration(1200)
       .delay(1000)
+      .ease(d3.easeCubicOut)
       .style("opacity", 1);
     
   }, [calculations, dimensions]);
@@ -813,7 +833,7 @@ export default function DifferenceOfTwoProportions() {
     
     const width = distributionRef.current.clientWidth || 600;
     const height = Math.min(400, width * 0.67); // Maintain aspect ratio
-    const margin = { top: 40, right: 80, bottom: 60, left: 80 };
+    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
     
     const g = svg
       .attr("width", width)
@@ -865,20 +885,20 @@ export default function DifferenceOfTwoProportions() {
     
     xAxis2.style("font-size", "12px")
       .selectAll("text")
-      .style("fill", "#34d399");
+      .style("fill", "#9ca3af");
     
     xAxis2.selectAll("path, line")
-      .style("stroke", "#34d399");
+      .style("stroke", "#9ca3af");
     
     const yAxis2 = g.append("g")
       .call(d3.axisLeft(y).tickFormat(d => d.toFixed(3)));
     
     yAxis2.style("font-size", "12px")
       .selectAll("text")
-      .style("fill", "#f472b6");
+      .style("fill", "#9ca3af");
     
     yAxis2.selectAll("path, line")
-      .style("stroke", "#f472b6");
+      .style("stroke", "#9ca3af");
     
     // Labels
     g.append("text")
@@ -887,7 +907,7 @@ export default function DifferenceOfTwoProportions() {
       .attr("text-anchor", "middle")
       .style("font-size", "14px")
       .style("font-weight", "bold")
-      .style("fill", "#10b981")
+      .style("fill", "#a855f7")
       .text("Difference in Proportions");
     
     g.append("text")
@@ -897,7 +917,7 @@ export default function DifferenceOfTwoProportions() {
       .attr("text-anchor", "middle")
       .style("font-size", "14px")
       .style("font-weight", "bold")
-      .style("fill", "#f472b6")
+      .style("fill", "#3b82f6")
       .text("Probability Density");
     
     // Generate curve data
@@ -929,13 +949,23 @@ export default function DifferenceOfTwoProportions() {
       .attr("offset", "100%")
       .attr("stop-color", "#06b6d4");
     
-    g.append("path")
+    const curvePath = g.append("path")
       .datum(curveData)
       .attr("fill", "none")
       .attr("stroke", "url(#curve-gradient)")
       .attr("stroke-width", 3)
       .style("filter", "drop-shadow(0 0 4px rgba(59, 130, 246, 0.6))")
       .attr("d", line);
+    
+    // Animate curve drawing
+    const totalLength = curvePath.node().getTotalLength();
+    curvePath
+      .attr("stroke-dasharray", totalLength + " " + totalLength)
+      .attr("stroke-dashoffset", totalLength)
+      .transition()
+      .duration(1500)
+      .ease(d3.easeCubicOut)
+      .attr("stroke-dashoffset", 0);
     
     // Critical regions
     let criticalValues;
@@ -963,16 +993,26 @@ export default function DifferenceOfTwoProportions() {
       g.append("path")
         .datum(leftData)
         .attr("fill", "url(#critical-gradient)")
-        .attr("opacity", 0.4)
-        .attr("d", area);
+        .attr("opacity", 0)
+        .attr("d", area)
+        .transition()
+        .duration(1200)
+        .delay(600)
+        .ease(d3.easeCubicOut)
+        .attr("opacity", 0.4);
       
       // Right tail
       const rightData = curveData.filter(d => d.x >= criticalValues[1]);
       g.append("path")
         .datum(rightData)
         .attr("fill", "url(#critical-gradient)")
-        .attr("opacity", 0.4)
-        .attr("d", area);
+        .attr("opacity", 0)
+        .attr("d", area)
+        .transition()
+        .duration(1200)
+        .delay(600)
+        .ease(d3.easeCubicOut)
+        .attr("opacity", 0.4);
     } else {
       const criticalData = curveData.filter(d => 
         hypothesisType === 'left' ? d.x <= criticalValues[1] : d.x >= criticalValues[0]
@@ -980,8 +1020,13 @@ export default function DifferenceOfTwoProportions() {
       g.append("path")
         .datum(criticalData)
         .attr("fill", "url(#critical-gradient)")
-        .attr("opacity", 0.4)
-        .attr("d", area);
+        .attr("opacity", 0)
+        .attr("d", area)
+        .transition()
+        .duration(1200)
+        .delay(600)
+        .ease(d3.easeCubicOut)
+        .attr("opacity", 0.4);
     }
     
     // Observed difference line
@@ -991,20 +1036,32 @@ export default function DifferenceOfTwoProportions() {
       .attr("x2", observedX)
       .attr("y1", 0)
       .attr("y2", innerHeight)
-      .attr("stroke", "#10b981")
+      .attr("stroke", "#a855f7")
       .attr("stroke-width", 4)
       .attr("stroke-dasharray", "8,4")
-      .style("filter", "drop-shadow(0 0 6px #10b981)");
+      .style("filter", "drop-shadow(0 0 6px #a855f7)")
+      .style("opacity", 0)
+      .transition()
+      .duration(1200)
+      .delay(800)
+      .ease(d3.easeCubicOut)
+      .style("opacity", 1);
     
     g.append("text")
       .attr("x", observedX)
       .attr("y", -10)
       .attr("text-anchor", "middle")
-      .attr("fill", "#10b981")
+      .attr("fill", "#a855f7")
       .style("font-size", "14px")
       .style("font-weight", "bold")
-      .style("text-shadow", "0 0 8px rgba(16, 185, 129, 0.8)")
-      .text("Observed");
+      .style("text-shadow", "0 0 8px rgba(168, 85, 247, 0.8)")
+      .style("opacity", 0)
+      .text("Observed")
+      .transition()
+      .duration(1200)
+      .delay(1000)
+      .ease(d3.easeCubicOut)
+      .style("opacity", 1);
     
   }, [calculations, showDistributions, hypothesisType, significanceLevel]);
   
@@ -1036,11 +1093,11 @@ export default function DifferenceOfTwoProportions() {
           <div className="grid md:grid-cols-2 gap-6 mb-6">
             <motion.div
               whileHover={{ scale: 1.02 }}
-              className="bg-gradient-to-br from-amber-500/10 to-amber-600/10 border border-amber-500/30 rounded-lg p-6"
+              className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/30 rounded-lg p-6"
             >
               <div className="flex items-center gap-3 mb-4">
-                <Bug className="w-6 h-6 text-amber-400" />
-                <h4 className="text-lg font-bold text-amber-400">Light-colored Moths</h4>
+                <Bug className="w-6 h-6 text-blue-400" />
+                <h4 className="text-lg font-bold text-blue-400">Light-colored Moths (Group 1)</h4>
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
@@ -1053,18 +1110,18 @@ export default function DifferenceOfTwoProportions() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-neutral-300">Proportion:</span>
-                  <span className="font-mono text-amber-400">{(calculations.p1 * 100).toFixed(1)}%</span>
+                  <span className="font-mono text-blue-400">{(calculations.p1 * 100).toFixed(1)}%</span>
                 </div>
               </div>
             </motion.div>
 
             <motion.div
               whileHover={{ scale: 1.02 }}
-              className="bg-gradient-to-br from-gray-500/10 to-gray-600/10 border border-gray-500/30 rounded-lg p-6"
+              className="bg-gradient-to-br from-green-500/10 to-green-600/10 border border-green-500/30 rounded-lg p-6"
             >
               <div className="flex items-center gap-3 mb-4">
-                <Bug className="w-6 h-6 text-gray-400" />
-                <h4 className="text-lg font-bold text-gray-400">Dark-colored Moths</h4>
+                <Bug className="w-6 h-6 text-green-400" />
+                <h4 className="text-lg font-bold text-green-400">Dark-colored Moths (Group 2)</h4>
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
@@ -1077,7 +1134,7 @@ export default function DifferenceOfTwoProportions() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-neutral-300">Proportion:</span>
-                  <span className="font-mono text-gray-400">{(calculations.p2 * 100).toFixed(1)}%</span>
+                  <span className="font-mono text-green-400">{(calculations.p2 * 100).toFixed(1)}%</span>
                 </div>
               </div>
             </motion.div>
@@ -1101,7 +1158,7 @@ export default function DifferenceOfTwoProportions() {
         <MathematicalFramework />
 
         {/* Interactive Controls */}
-        <VisualizationSection className="bg-neutral-800/50 rounded-lg p-6">
+        <VisualizationSection className="bg-gradient-to-br from-neutral-800/50 to-neutral-900/50 rounded-lg p-6 border border-neutral-700/50">
           <h4 className="text-lg font-bold text-white mb-6">Explore the Impact of Sample Size and Significance</h4>
           
           <div className="grid md:grid-cols-3 gap-6">
@@ -1136,19 +1193,21 @@ export default function DifferenceOfTwoProportions() {
               <div className="space-y-3">
                 <div className="flex gap-2">
                   {[0.01, 0.05, 0.10].map(alpha => (
-                    <button
+                    <motion.button
                       key={alpha}
                       onClick={() => handleSignificanceLevelChange(alpha)}
-                      className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all ${
+                      className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all duration-200 ${
                         significanceLevel === alpha
-                          ? 'bg-purple-600 text-white'
-                          : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+                          ? 'bg-purple-600 text-white shadow-md ring-2 ring-purple-500/50'
+                          : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
                       }`}
                       aria-label={`Set significance level to ${(alpha * 100)} percent`}
                       aria-pressed={significanceLevel === alpha}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                     >
                       {(alpha * 100)}%
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
               </div>
@@ -1159,7 +1218,7 @@ export default function DifferenceOfTwoProportions() {
                 <select
                   value={hypothesisType}
                   onChange={handleHypothesisTypeChange}
-                  className="w-full bg-neutral-700 text-white rounded-md px-3 py-2 text-sm"
+                  className="w-full bg-neutral-700 text-white rounded-md px-3 py-2 text-sm border border-neutral-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
                   aria-label="Select alternative hypothesis type"
                 >
                   <option value="two">p1 ≠ p2 (Two-sided)</option>
@@ -1175,7 +1234,7 @@ export default function DifferenceOfTwoProportions() {
         <div className="grid md:grid-cols-3 gap-6">
           <motion.div
             whileHover={{ scale: 1.02 }}
-            className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/30 rounded-lg p-6"
+            className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/30 rounded-lg p-6 shadow-lg hover:shadow-blue-500/20 transition-all duration-200"
           >
             <div className="flex items-center gap-3 mb-3">
               <Calculator className="w-6 h-6 text-blue-400" />
@@ -1191,10 +1250,10 @@ export default function DifferenceOfTwoProportions() {
 
           <motion.div
             whileHover={{ scale: 1.02 }}
-            className={`bg-gradient-to-br rounded-lg p-6 border ${
+            className={`bg-gradient-to-br rounded-lg p-6 border shadow-lg transition-all duration-200 ${
               calculations.pValue < significanceLevel
-                ? 'from-red-500/10 to-red-600/10 border-red-500/30'
-                : 'from-green-500/10 to-green-600/10 border-green-500/30'
+                ? 'from-red-500/10 to-red-600/10 border-red-500/30 hover:shadow-red-500/20'
+                : 'from-green-500/10 to-green-600/10 border-green-500/30 hover:shadow-green-500/20'
             }`}
           >
             <div className="flex items-center gap-3 mb-3">
@@ -1223,7 +1282,7 @@ export default function DifferenceOfTwoProportions() {
 
           <motion.div
             whileHover={{ scale: 1.02 }}
-            className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 border border-purple-500/30 rounded-lg p-6"
+            className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 border border-purple-500/30 rounded-lg p-6 shadow-lg hover:shadow-purple-500/20 transition-all duration-200"
           >
             <div className="flex items-center gap-3 mb-3">
               <BarChart3 className="w-6 h-6 text-purple-400" />
@@ -1240,13 +1299,14 @@ export default function DifferenceOfTwoProportions() {
 
         {/* Distribution Visualization */}
         <div className="space-y-4">
-          <Button
+          <motion.button
             onClick={toggleDistributions}
-            variant="secondary"
-            className="w-full"
+            className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium transition-all duration-200 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
             {showDistributions ? "Hide" : "Show"} Sampling Distribution
-          </Button>
+          </motion.button>
           
           {showDistributions && (
             <GraphContainer title="Sampling Distribution Under Null Hypothesis">

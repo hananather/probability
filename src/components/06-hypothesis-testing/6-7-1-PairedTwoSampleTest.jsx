@@ -227,7 +227,7 @@ export default function PairedTwoSampleTest() {
         // Clear any existing content
         svg.selectAll("*").remove();
     
-    const margin = { top: 40, right: 60, bottom: 60, left: 60 };
+    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
     const width = 500 - margin.left - margin.right;
     const height = 400 - margin.top - margin.bottom;
 
@@ -263,7 +263,7 @@ export default function PairedTwoSampleTest() {
       .domain([30, 90])
       .range([height, 0]);
 
-    // Grid with subtle styling
+    // Grid with proper dash patterns
     const gridGroup = g.append("g").attr("class", "grid");
     
     gridGroup.selectAll(".grid-line-x")
@@ -275,9 +275,10 @@ export default function PairedTwoSampleTest() {
       .attr("x2", d => xScale(d))
       .attr("y1", 0)
       .attr("y2", height)
-      .attr("stroke", colors.chart.grid)
+      .attr("stroke", "#9ca3af")
       .attr("stroke-width", 0.5)
-      .attr("opacity", 0.3);
+      .attr("stroke-dasharray", "2,2")
+      .attr("opacity", 0.4);
 
     gridGroup.selectAll(".grid-line-y")
       .data(yScale.ticks(8))
@@ -288,19 +289,22 @@ export default function PairedTwoSampleTest() {
       .attr("x2", width)
       .attr("y1", d => yScale(d))
       .attr("y2", d => yScale(d))
-      .attr("stroke", colors.chart.grid)
+      .attr("stroke", "#9ca3af")
       .attr("stroke-width", 0.5)
-      .attr("opacity", 0.3);
+      .attr("stroke-dasharray", "2,2")
+      .attr("opacity", 0.4);
 
-    // Axes
+    // Axes with consistent styling
     g.append("g")
       .attr("class", "x-axis")
       .attr("transform", `translate(0,${height})`)
       .call(d3.axisBottom(xScale).ticks(8))
+      .style("font-size", "12px")
+      .style("color", "#9ca3af")
       .append("text")
       .attr("x", width / 2)
       .attr("y", 45)
-      .attr("fill", colors.chart.text)
+      .attr("fill", "#9ca3af")
       .attr("text-anchor", "middle")
       .style("font-size", "14px")
       .text("Before Training Score");
@@ -308,25 +312,27 @@ export default function PairedTwoSampleTest() {
     g.append("g")
       .attr("class", "y-axis")
       .call(d3.axisLeft(yScale).ticks(8))
+      .style("font-size", "12px")
+      .style("color", "#9ca3af")
       .append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", -45)
       .attr("x", -height / 2)
-      .attr("fill", colors.chart.text)
+      .attr("fill", "#9ca3af")
       .attr("text-anchor", "middle")
       .style("font-size", "14px")
       .text("After Training Score");
 
-    // Diagonal reference line
+    // Diagonal reference line with proper styling
     g.append("line")
       .attr("class", "diagonal-line")
       .attr("x1", xScale(30))
       .attr("y1", yScale(30))
       .attr("x2", xScale(90))
       .attr("y2", yScale(90))
-      .attr("stroke", colors.chart.grid)
+      .attr("stroke", "#9ca3af")
       .attr("stroke-width", 2)
-      .attr("stroke-dasharray", "5,5")
+      .attr("stroke-dasharray", "8,4")
       .attr("opacity", 0);
 
     // Groups for data elements
@@ -349,7 +355,7 @@ export default function PairedTwoSampleTest() {
       .duration(1000)
       .attr("opacity", 0.5);
 
-    // Connection lines
+    // Connection lines with improved animation
     const connections = g.select(".connections")
       .selectAll(".connection")
       .data(dataWithDifferences);
@@ -361,20 +367,21 @@ export default function PairedTwoSampleTest() {
       .attr("y1", d => yScale(d.before))
       .attr("x2", d => xScale(d.before))
       .attr("y2", d => yScale(d.before))
-      .attr("stroke", d => d.improved ? "#10b981" : "#ef4444")
-      .attr("stroke-width", 2)
+      .attr("stroke", d => d.improved ? "#10b981" : "#a855f7")
+      .attr("stroke-width", 1.5)
+      .attr("stroke-dasharray", "3,2")
       .attr("opacity", 0)
       .transition()
-      .duration(1000)
-      .delay((d, i) => i * 100)
+      .duration(800)
+      .delay((d, i) => i * 80)
       .attr("x2", d => xScale(d.after))
       .attr("y2", d => yScale(d.after))
-      .attr("opacity", 0.6);
+      .attr("opacity", 0.7);
 
     // Points with gradient fill
     const pointsGroup = g.select(".points");
     
-    // Before points
+    // Before points with updated color scheme
     const beforePoints = pointsGroup.selectAll(".before-point")
       .data(dataWithDifferences);
 
@@ -384,7 +391,7 @@ export default function PairedTwoSampleTest() {
       .attr("cx", d => xScale(d.before))
       .attr("cy", d => yScale(d.before))
       .attr("r", 0)
-      .attr("fill", "#fbbf24")
+      .attr("fill", "#3b82f6")
       .attr("stroke", "white")
       .attr("stroke-width", 2)
       .style("cursor", "pointer")
@@ -437,7 +444,7 @@ export default function PairedTwoSampleTest() {
       .attr("cx", d => xScale(d.after))
       .attr("cy", d => yScale(d.after))
       .attr("r", 0)
-      .attr("fill", "url(#scatter-gradient)")
+      .attr("fill", "#10b981")
       .attr("stroke", "white")
       .attr("stroke-width", 2)
       .style("cursor", "pointer")
@@ -453,7 +460,7 @@ export default function PairedTwoSampleTest() {
         .attr("x", width / 2)
         .attr("y", -10)
         .attr("text-anchor", "middle")
-        .attr("fill", colors.chart.text)
+        .attr("fill", "#9ca3af")
         .style("font-size", "16px")
         .style("font-weight", "bold")
         .text(`Strong Correlation: r = ${stats.correlation.toFixed(3)}`)
@@ -496,7 +503,7 @@ export default function PairedTwoSampleTest() {
         .attr("x", 100)
         .attr("y", 33)
         .attr("text-anchor", "middle")
-        .attr("fill", "white")
+        .attr("fill", "#9ca3af")
         .style("font-size", "10px")
         .text("High correlation enables paired analysis")
         .attr("opacity", 0)
@@ -541,7 +548,7 @@ export default function PairedTwoSampleTest() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentStep, handleNextStep]);
 
-  // Transformation animation - simplified version
+  // Transformation animation with updated margins
   useEffect(() => {
     if (!transformRef.current || currentStep < 3) return;
     if (animationPhase !== 'transform') return;
@@ -549,7 +556,7 @@ export default function PairedTwoSampleTest() {
     const svg = d3.select(transformRef.current);
     svg.selectAll("*").remove();
 
-    const margin = { top: 60, right: 40, bottom: 40, left: 40 };
+    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
     const width = 600 - margin.left - margin.right;
     const height = 350 - margin.top - margin.bottom;
 
@@ -580,11 +587,11 @@ export default function PairedTwoSampleTest() {
     // Sample values
     const sampleValues = dataWithDifferences.slice(0, 5);
 
-    // Create three columns: Before, After, and Differences
+    // Create three columns with updated color scheme
     const columns = [
-      { label: "Before", x: centerX - columnWidth - spacing, color: "#fbbf24", data: sampleValues.map(d => d.before) },
-      { label: "After", x: centerX, color: "#3b82f6", data: sampleValues.map(d => d.after) },
-      { label: "Differences", x: centerX + columnWidth + spacing, color: "#10b981", data: sampleValues.map(d => d.difference) }
+      { label: "Before", x: centerX - columnWidth - spacing, color: "#3b82f6", data: sampleValues.map(d => d.before) },
+      { label: "After", x: centerX, color: "#10b981", data: sampleValues.map(d => d.after) },
+      { label: "Differences", x: centerX + columnWidth + spacing, color: "#a855f7", data: sampleValues.map(d => d.difference) }
     ];
 
     // Draw all columns at once
@@ -628,7 +635,7 @@ export default function PairedTwoSampleTest() {
           .attr("x", columnWidth / 2)
           .attr("y", 25 + i * 30)
           .attr("text-anchor", "middle")
-          .attr("fill", colIndex === 2 ? (value < 0 ? "#10b981" : "#ef4444") : "white")
+          .attr("fill", colIndex === 2 ? (value < 0 ? "#10b981" : "#a855f7") : "white")
           .style("font-size", "14px")
           .style("font-family", "monospace")
           .style("font-weight", colIndex === 2 ? "bold" : "normal")
@@ -682,12 +689,12 @@ export default function PairedTwoSampleTest() {
       .attr("d", "M0,-5L10,0L0,5")
       .attr("fill", "#6b7280");
 
-    // Add explanation text
+    // Add explanation text with consistent styling
     g.append("text")
       .attr("x", width / 2)
       .attr("y", columnHeight + 100)
       .attr("text-anchor", "middle")
-      .attr("fill", colors.chart.text)
+      .attr("fill", "#9ca3af")
       .style("font-size", "16px")
       .text("By taking differences, we convert a two-sample test into a one-sample test!")
       .attr("opacity", 0)
@@ -1119,9 +1126,9 @@ function ExploreSection({ data, revealedEngineers, setRevealedEngineers, showDif
                   className="mt-2 space-y-1"
                 >
                   <div className="text-xs text-neutral-400">Before</div>
-                  <div className="font-mono text-yellow-400">{engineer.before}</div>
+                  <div className="font-mono text-blue-400">{engineer.before}</div>
                   <div className="text-xs text-neutral-400">After</div>
-                  <div className="font-mono text-blue-400">{engineer.after}</div>
+                  <div className="font-mono text-green-400">{engineer.after}</div>
                   
                   {showDifferences && (
                     <motion.div
@@ -1191,11 +1198,11 @@ function ExploreSection({ data, revealedEngineers, setRevealedEngineers, showDif
                     className="border-b border-neutral-800"
                   >
                     <td className="py-2 px-4">{eng.name}</td>
-                    <td className="py-2 px-4 text-center font-mono text-yellow-400">{eng.before}</td>
-                    <td className="py-2 px-4 text-center font-mono text-blue-400">{eng.after}</td>
+                    <td className="py-2 px-4 text-center font-mono text-blue-400">{eng.before}</td>
+                    <td className="py-2 px-4 text-center font-mono text-green-400">{eng.after}</td>
                     <td className={cn(
                       "py-2 px-4 text-center font-mono font-bold",
-                      eng.difference < 0 ? "text-green-400" : "text-red-400"
+                      eng.difference < 0 ? "text-green-400" : "text-purple-400"
                     )}>
                       {eng.difference < 0 ? eng.difference : `+${eng.difference}`}
                     </td>
@@ -1212,7 +1219,7 @@ function ExploreSection({ data, revealedEngineers, setRevealedEngineers, showDif
             className="p-4 bg-neutral-800/50 rounded-lg"
           >
             <p className="text-sm">
-              <span className="text-yellow-400">Key Formula:</span> Dᵢ = X₁ᵢ - X₂ᵢ (Before - After)
+              <span className="text-blue-400">Key Formula:</span> Dᵢ = X₁ᵢ - X₂ᵢ (Before - After)
             </p>
             <p className="text-sm text-green-400 mt-2">
               Negative differences indicate improvement!
@@ -1228,7 +1235,7 @@ function ExploreSection({ data, revealedEngineers, setRevealedEngineers, showDif
               </div>
               <div>
                 <p className="text-neutral-400">Average Change</p>
-                <p className="text-2xl font-bold text-blue-400">
+                <p className="text-2xl font-bold text-purple-400">
                   {Math.abs(stats.diffMean).toFixed(1)} points
                 </p>
               </div>
@@ -1303,11 +1310,11 @@ function DiscoverSection({ scatterRef, showScatterInsight, setShowScatterInsight
                   {dataWithDifferences.slice(0, 5).map((eng, i) => (
                     <tr key={eng.id} className="border-b border-neutral-800">
                       <td className="py-1 px-3 text-xs">{eng.name}</td>
-                      <td className="py-1 px-3 text-center font-mono text-yellow-400">{eng.before}</td>
-                      <td className="py-1 px-3 text-center font-mono text-blue-400">{eng.after}</td>
+                      <td className="py-1 px-3 text-center font-mono text-blue-400">{eng.before}</td>
+                      <td className="py-1 px-3 text-center font-mono text-green-400">{eng.after}</td>
                       <td className={cn(
                         "py-1 px-3 text-center font-mono text-xs",
-                        eng.difference < 0 ? "text-green-400" : "text-red-400"
+                        eng.difference < 0 ? "text-green-400" : "text-purple-400"
                       )}>
                         {eng.difference}
                       </td>

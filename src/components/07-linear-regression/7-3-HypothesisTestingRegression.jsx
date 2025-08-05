@@ -10,9 +10,8 @@ import {
   ControlGroup
 } from '../ui/VisualizationContainer';
 import { colors, createColorScheme } from '../../lib/design-system';
-import { Button } from '../ui/button';
 import BackToHub from '../ui/BackToHub';
-import { Target, Calculator, ChartLine, TrendingUp } from 'lucide-react';
+import { Target, Calculator, ChartLine, TrendingUp, Database, BarChart3, Eye, EyeOff, TestTube } from 'lucide-react';
 
 // Get vibrant Chapter 7 color scheme - use probability for regression topics
 const chapterColors = createColorScheme('probability');
@@ -613,24 +612,31 @@ const RegressionTestVisualization = ({ onDataChange, onResultsChange }) => {
       {/* Controls */}
       <ControlGroup>
         <div className="flex flex-wrap gap-3">
-          <Button
+          <button
             onClick={() => generateData(true)}
-            className="bg-teal-600 hover:bg-teal-700"
+            className="px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 bg-blue-600 text-white shadow-md ring-2 ring-blue-500/50 hover:bg-blue-700"
           >
+            <Database className="w-4 h-4" />
             Generate Data (With Relationship)
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={() => generateData(false)}
-            className="bg-neutral-600 hover:bg-neutral-700"
+            className="px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white"
           >
+            <BarChart3 className="w-4 h-4" />
             Generate Data (No Relationship)
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={() => setShowTestStatistic(!showTestStatistic)}
-            className={showTestStatistic ? "bg-amber-600 hover:bg-amber-700" : "bg-neutral-700 hover:bg-neutral-600"}
+            className={`px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+              showTestStatistic
+                ? 'bg-purple-600 text-white shadow-md ring-2 ring-purple-500/50'
+                : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+            }`}
           >
+            {showTestStatistic ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             {showTestStatistic ? 'Hide' : 'Show'} Regression Line
-          </Button>
+          </button>
         </div>
       </ControlGroup>
       
@@ -805,12 +811,17 @@ export default function HypothesisTestingRegression() {
         
         {/* Worked Example Toggle */}
         <VisualizationSection>
-          <Button
+          <button
             onClick={() => setShowWorkedExample(!showWorkedExample)}
-            className="w-full bg-purple-600 hover:bg-purple-700"
+            className={`w-full px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+              showWorkedExample
+                ? 'bg-purple-600 text-white shadow-md ring-2 ring-purple-500/50'
+                : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
+            }`}
           >
+            {showWorkedExample ? <EyeOff className="w-4 h-4" /> : <TestTube className="w-4 h-4" />}
             {showWorkedExample ? 'Hide' : 'Show'} Worked Example
-          </Button>
+          </button>
         </VisualizationSection>
         
         {/* Worked Example */}
