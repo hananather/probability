@@ -144,7 +144,8 @@ const ComponentCard = React.memo(({
     <div
       className={cn(
         styles.componentCard,
-        isNext && styles.componentCardNext
+        isNext && styles.componentCardNext,
+        component.type === 'bonus' && styles.componentCardBonus
       )}
       onClick={handleClick}
     >
@@ -152,13 +153,19 @@ const ComponentCard = React.memo(({
       <div className={styles.cardGradient} style={gradientStyle} />
       
       {/* Badges */}
+      {component.badge && (
+        <div className={cn(styles.badge, styles.badgeBonus)} style={{ backgroundColor: `${component.color}20`, color: component.color }}>
+          {component.badge}
+        </div>
+      )}
+      
       {hasPrerequisites && !isCompleted && (
         <div className={cn(styles.badge, styles.badgePrerequisite)}>
           Complete prerequisites first
         </div>
       )}
       
-      {isNext && (
+      {isNext && !component.type && (
         <div className={cn(styles.badge, styles.badgeNext)}>
           <span>Start Here</span>
           <ChevronRight size={14} />

@@ -29,6 +29,17 @@
   box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.5);
 }
 
+/* Bonus Card Styling */
+.componentCardBonus {
+  background: linear-gradient(135deg, rgb(38 38 38) 0%, rgb(50 45 38) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.componentCardBonus:hover {
+  background: linear-gradient(135deg, rgb(50 45 38) 0%, rgb(64 58 48) 100%);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
 /* Background Gradient Overlay */
 .cardGradient {
   position: absolute;
@@ -71,6 +82,13 @@
   color: white;
   padding: 0.5rem;
   border-radius: 50%;
+}
+
+.badgeBonus {
+  right: 0;
+  border-top-right-radius: 0.75rem;
+  border-bottom-left-radius: 0.25rem;
+  font-weight: 600;
 }
 
 /* Card Content */
