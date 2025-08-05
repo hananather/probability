@@ -2,7 +2,7 @@
 import dynamic from 'next/dynamic';
 
 const ZScorePracticeProblems = dynamic(
-  () => import('./3-3-5-ZScorePracticeProblems'),
+  () => import('./3-3-5-ZScorePracticeProblems').then(mod => mod.default),
   { 
     ssr: false,
     loading: () => (

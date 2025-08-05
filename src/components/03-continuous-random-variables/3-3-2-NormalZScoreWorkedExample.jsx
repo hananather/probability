@@ -97,4 +97,4 @@ const NormalZScoreWorkedExample = React.memo(function NormalZScoreWorkedExample(
   );
 });
 
-export { NormalZScoreWorkedExample };
+export default NormalZScoreWorkedExample;

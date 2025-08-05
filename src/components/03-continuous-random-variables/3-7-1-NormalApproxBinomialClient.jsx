@@ -2,7 +2,7 @@
 import dynamic from 'next/dynamic';
 
 const NormalApproxBinomial = dynamic(
-  () => import('./3-7-1-NormalApproxBinomial'),
+  () => import('./3-7-1-NormalApproxBinomial').then(mod => mod.default),
   { 
     ssr: false,
     loading: () => (

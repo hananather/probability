@@ -2,7 +2,7 @@
 import dynamic from 'next/dynamic';
 
 const ExponentialDistribution = dynamic(
-  () => import('./3-4-1-ExponentialDistribution'),
+  () => import('./3-4-1-ExponentialDistribution').then(mod => mod.default),
   { 
     ssr: false,
     loading: () => (

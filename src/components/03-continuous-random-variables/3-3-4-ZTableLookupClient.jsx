@@ -2,7 +2,7 @@
 import dynamic from 'next/dynamic';
 
 const ZTableLookupRedesigned = dynamic(
-  () => import('./3-3-4-ZTableLookup'),
+  () => import('./3-3-4-ZTableLookup').then(mod => mod.default),
   { 
     ssr: false,
     loading: () => (

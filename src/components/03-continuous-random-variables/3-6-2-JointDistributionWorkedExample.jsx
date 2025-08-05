@@ -228,3 +228,5 @@ export const JointDistributionWorkedExample = () => {
     </VisualizationContainer>
   );
 };
+
+export default JointDistributionWorkedExample;

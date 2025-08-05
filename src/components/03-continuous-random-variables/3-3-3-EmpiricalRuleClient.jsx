@@ -2,7 +2,7 @@
 import dynamic from 'next/dynamic';
 
 const EmpiricalRule = dynamic(
-  () => import('./3-3-3-EmpiricalRule'),
+  () => import('./3-3-3-EmpiricalRule').then(mod => mod.default),
   { 
     ssr: false,
     loading: () => (

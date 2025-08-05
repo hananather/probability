@@ -2,7 +2,7 @@
 import dynamic from 'next/dynamic';
 
 const NormalZScoreExplorer = dynamic(
-  () => import('./3-3-1-NormalZScoreExplorer'),
+  () => import('./3-3-1-NormalZScoreExplorer').then(mod => mod.default),
   { 
     ssr: false,
     loading: () => (

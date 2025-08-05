@@ -9,7 +9,7 @@ import {
 } from '../ui/VisualizationContainer';
 import { colors, typography, formatNumber, cn, createColorScheme } from '../../lib/design-system';
 import { RangeSlider } from '../ui/RangeSlider';
-import { NormalZScoreWorkedExample } from "./3-3-2-NormalZScoreWorkedExample";
+import NormalZScoreWorkedExample from "./3-3-2-NormalZScoreWorkedExample";
 import { RotateCcw } from "lucide-react";
 import * as jStat from "jstat";
 import { useSafeMathJax } from '../../utils/mathJaxFix';
@@ -48,6 +48,7 @@ const NormalVisualization = memo(({
   useEffect(() => {
     if (!svgRef.current || isInitialized.current) return;
     
+    const colorScheme = createColorScheme('probability');
     const svg = d3.select(svgRef.current);
     const { width } = svgRef.current.getBoundingClientRect();
     const height = 800; // Increased height for better spacing
