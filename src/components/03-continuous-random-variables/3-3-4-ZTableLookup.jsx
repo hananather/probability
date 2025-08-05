@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useSafeMathJax } from '../../utils/mathJaxFix';
 import { createColorScheme, typography } from "../../lib/design-system";
 import { 
@@ -26,6 +26,22 @@ const ZTableLookup = () => {
   // Learning flow state
   const [learningStage, setLearningStage] = useState(1);
   const totalStages = 4;
+  
+  // Handle keyboard navigation
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'ArrowLeft' && learningStage > 1) {
+      e.preventDefault();
+      setLearningStage(Math.max(1, learningStage - 1));
+    } else if (e.key === 'ArrowRight' && learningStage < totalStages) {
+      e.preventDefault();
+      setLearningStage(Math.min(totalStages, learningStage + 1));
+    }
+  }, [learningStage, totalStages]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
   
   // UI state
   const [showTutorial, setShowTutorial] = useState(false);
@@ -561,6 +577,14 @@ const ZTableLookup = () => {
           nextLabel={learningStage === totalStages ? "Complete" : "Next"}
           completeLabel="Complete"
         />
+        
+        {/* Keyboard Hint */}
+        <div className="mt-2 text-center">
+          <p className="text-xs text-neutral-500">
+            Tip: Use <kbd className="px-2 py-1 bg-neutral-800 rounded text-neutral-300">←</kbd> and{' '}
+            <kbd className="px-2 py-1 bg-neutral-800 rounded text-neutral-300">→</kbd> arrow keys to navigate
+          </p>
+        </div>
         
         {/* Learning Content Section */}
         {learningStage <= totalStages && (

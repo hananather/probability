@@ -13,7 +13,7 @@ import {
 import { RangeSlider } from '../ui/RangeSlider';
 import { Button } from '../ui/button';
 import { createColorScheme, typography, formatNumber } from '../../lib/design-system';
-import { IntegralWorkedExample } from "./3-1-2-IntegralWorkedExample";
+import IntegralWorkedExample from "./3-1-2-IntegralWorkedExample";
 import { Info, Sparkles, ArrowRight, CheckCircle, BarChart3, TrendingUp } from "lucide-react";
 import { ProgressBar, ProgressNavigation } from '@/components/ui/ProgressBar';
 import { useSafeMathJax } from '../../utils/mathJaxFix';
@@ -617,6 +617,22 @@ const ContinuousDistributionsPDF = () => {
   const [currentStage, setCurrentStage] = useState(0);
   const stage = learningStages[currentStage];
   
+  // Handle keyboard navigation
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'ArrowLeft' && currentStage > 0) {
+      e.preventDefault();
+      setCurrentStage(Math.max(0, currentStage - 1));
+    } else if (e.key === 'ArrowRight' && currentStage < learningStages.length - 1) {
+      e.preventDefault();
+      setCurrentStage(Math.min(learningStages.length - 1, currentStage + 1));
+    }
+  }, [currentStage]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
+  
   // Distribution state
   const [params, setParams] = useState([]);
   const [intervalA, setIntervalA] = useState(-1);
@@ -761,6 +777,14 @@ const ContinuousDistributionsPDF = () => {
           onNext={() => setCurrentStage(Math.min(learningStages.length - 1, currentStage + 1))}
           variant="emerald"
         />
+        
+        {/* Keyboard Hint */}
+        <div className="mt-2 text-center">
+          <p className="text-xs text-neutral-500">
+            Tip: Use <kbd className="px-2 py-1 bg-neutral-800 rounded text-neutral-300">←</kbd> and{' '}
+            <kbd className="px-2 py-1 bg-neutral-800 rounded text-neutral-300">→</kbd> arrow keys to navigate
+          </p>
+        </div>
         
         {/* Stage Content */}
         <VisualizationSection className="mb-6">

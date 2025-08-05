@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import * as d3 from "@/utils/d3-utils";
 import { VisualizationContainer } from "../ui/VisualizationContainer";
 import { RangeSlider } from "../ui/RangeSlider";
@@ -234,6 +234,22 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
   // Chart ref
   const pdfChartRef = useRef(null);
   
+  // Handle keyboard navigation
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'ArrowLeft' && stage > 1) {
+      e.preventDefault();
+      setStage(Math.max(1, stage - 1));
+    } else if (e.key === 'ArrowRight' && stage < learningStages.length) {
+      e.preventDefault();
+      setStage(Math.min(learningStages.length, stage + 1));
+    }
+  }, [stage]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
+  
   // Create color scheme - using 'probability' scheme for Chapter 3
   const colors = createColorScheme('probability');
   
@@ -455,6 +471,14 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
           onNext={() => setStage(Math.min(learningStages.length, stage + 1))}
           variant="purple"
         />
+        
+        {/* Keyboard Hint */}
+        <div className="mt-2 text-center">
+          <p className="text-xs text-neutral-500">
+            Tip: Use <kbd className="px-2 py-1 bg-neutral-800 rounded text-neutral-300">←</kbd> and{' '}
+            <kbd className="px-2 py-1 bg-neutral-800 rounded text-neutral-300">→</kbd> arrow keys to navigate
+          </p>
+        </div>
         
         {/* Full Width Visualization */}
         <div className="w-full mb-8">
