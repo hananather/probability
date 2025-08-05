@@ -73,11 +73,12 @@ export const chapters = [
     title: 'Chapter 5: Estimation',
     path: '/chapter5',
     sections: [
-      { title: '5.1 Statistical Inference', component: 'StatisticalInferenceHub' },
-      { title: '5.2 Confidence Intervals (σ Known)', component: 'CIKnownVarianceHub' },
-      { title: '5.3 Sample Size Determination', component: 'SampleSizeHub' },
-      { title: '5.4 Confidence Intervals (σ Unknown)', component: 'CIUnknownVarianceHub' },
-      { title: '5.5 Proportion Confidence Intervals', component: 'ProportionsHub' },
+      { title: '5.1 Statistical Inference', url: '/chapter5/statistical-inference' },
+      { title: '5.2 Confidence Intervals (σ Known)', url: '/chapter5/confidence-intervals-known' },
+      { title: '5.2 Practice: CI Problems', url: '/chapter5/confidence-intervals-practice' },
+      { title: '5.3 Sample Size Determination', url: '/chapter5/sample-size' },
+      { title: '5.4 Confidence Intervals (σ Unknown)', url: '/chapter5/confidence-intervals-unknown' },
+      { title: '5.5 Proportion Confidence Intervals', url: '/chapter5/proportions' },
     ]
   },
   {
