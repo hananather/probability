@@ -25,8 +25,19 @@ import {
 } from '../ui/VisualizationContainer';
 import { colors, typography, createColorScheme } from '@/lib/design-system';
 
-// Get consistent color scheme
-const chapterColors = createColorScheme('default');
+// Chapter 7 Design Patterns - Consistent Colors
+const chapterColors = {
+  primary: '#3b82f6',    // Blue
+  secondary: '#14b8a6',  // Teal  
+  tertiary: '#10b981',   // Emerald
+  warning: '#fbbf24',    // Yellow
+  error: '#ef4444',      // Red
+  chart: {
+    primary: '#14b8a6',    // Teal
+    secondary: '#fbbf24',  // Yellow
+    tertiary: '#3b82f6'    // Blue
+  }
+};
 
 // Stage configuration
 const SampleSizeJourney = {
@@ -35,7 +46,7 @@ const SampleSizeJourney = {
     title: 'Discover the Relationships',
     subtitle: <>How do n, E, <span dangerouslySetInnerHTML={{ __html: '\\(\\sigma\\)' }} />, and confidence interact?</>,
     icon: Compass,
-    color: chapterColors.chart.primary,  // Teal
+    color: '#14b8a6',  // Teal
     gradient: 'from-teal-600 to-teal-700',
     sections: ['VisualExploration', 'InteractiveRelationships', 'FirstInsights']
   },
@@ -44,7 +55,7 @@ const SampleSizeJourney = {
     title: 'Master the Calculations',
     subtitle: 'Apply the formula with confidence',
     icon: Calculator,
-    color: chapterColors.chart.secondary,  // Yellow
+    color: '#fbbf24',  // Yellow
     gradient: 'from-yellow-600 to-yellow-700',
     sections: ['FormulaDerivation', 'GuidedExamples', 'PracticeMode']
   },
@@ -53,7 +64,7 @@ const SampleSizeJourney = {
     title: 'Real-World Applications',
     subtitle: 'Balance precision, confidence, and cost',
     icon: Briefcase,
-    color: chapterColors.chart.tertiary,  // Blue
+    color: '#3b82f6',  // Blue
     gradient: 'from-blue-600 to-blue-700',
     sections: ['CostAnalysis', 'ScenarioPlanning', 'OptimizationTool']
   }
@@ -305,7 +316,7 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
       title: 'Sample Size vs. Population Variability',
       description: 'More variable populations need larger samples',
       formula: 'n ∝ σ²',
-      color: '#a855f7',
+      color: '#14b8a6',  // Chapter 7 teal
       xLabel: 'Standard Deviation (σ)',
       yLabel: 'Sample Size (n)'
     },
@@ -336,7 +347,7 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
     const svg = d3.select(svgRef.current);
     const width = svgRef.current.clientWidth || 700;
     const height = 450;
-    const margin = { top: 50, right: 100, bottom: 70, left: 90 };
+    const margin = { top: 60, right: 120, bottom: 90, left: 100 }; // Improved spacing for readability
     
     // Clear previous
     svg.selectAll("*").remove();
@@ -1695,7 +1706,7 @@ const ExplorationMode = React.memo(function ExplorationMode({ inputs, setInputs,
     const svg = d3.select(svgRef.current);
     const width = svgRef.current.clientWidth || 600;
     const height = 300;
-    const margin = { top: 20, right: 40, bottom: 40, left: 60 };
+    const margin = { top: 40, right: 60, bottom: 60, left: 80 }; // Better margins for chart visibility
     
     svg.selectAll("*").remove();
     
@@ -1772,7 +1783,7 @@ const ExplorationMode = React.memo(function ExplorationMode({ inputs, setInputs,
     svg.append("path")
       .datum(data)
       .attr("fill", "none")
-      .attr("stroke", "#a855f7")
+      .attr("stroke", "#14b8a6")
       .attr("stroke-width", 2)
       .attr("d", line);
     
@@ -1998,7 +2009,7 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
     const svg = d3.select(svgRef.current);
     const width = svgRef.current.clientWidth || 800;
     const height = 500;
-    const margin = { top: 50, right: 120, bottom: 80, left: 100 };
+    const margin = { top: 60, right: 140, bottom: 100, left: 120 }; // Enhanced spacing for cost analysis
     
     svg.selectAll("*").remove();
     

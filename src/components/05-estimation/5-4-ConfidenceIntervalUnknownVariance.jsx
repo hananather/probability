@@ -14,11 +14,18 @@ import SectionComplete from '@/components/ui/SectionComplete';
 import { 
   FlaskConical, TrendingUp, AlertTriangle, Lightbulb, 
   ChevronRight, RefreshCw, Activity, HelpCircle, BarChart,
-  Check, X, Calculator, BookOpen, GraduationCap, StickyNote
+  Check, X, Calculator, BookOpen, GraduationCap, StickyNote, AlertCircle
 } from 'lucide-react';
+import { ConfidenceIntervalReference } from '../ui/patterns/QuickReferenceCard';
 
-// Get Chapter 5 color scheme
-const chapterColors = createColorScheme('estimation');
+// Chapter 7 Design Patterns - Consistent Colors
+const chapterColors = {
+  primary: '#3b82f6',    // Blue
+  secondary: '#14b8a6',  // Teal  
+  tertiary: '#10b981',   // Emerald
+  warning: '#fbbf24',    // Yellow
+  error: '#ef4444'       // Red
+};
 
 // Plain English Explanation Component
 const PlainEnglishCard = ({ title, explanation, example }) => {
@@ -87,124 +94,19 @@ const ExamTip = ({ tip, points, warning }) => {
   );
 };
 
-// Floating Formula Card Component
-const FloatingFormulaCard = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    if (isOpen) {
-      processMathJax();
-      const timeoutId = setTimeout(processMathJax, 100);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [isOpen]);
-  
-  return (
-    <div
-      className="fixed z-50 right-6 bottom-24"
-    >
-      {/* Toggle Button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`absolute bottom-0 right-0 w-12 h-12 rounded-full shadow-lg flex items-center justify-center cursor-pointer ${
-          isOpen ? 'bg-purple-600' : 'bg-purple-500'
-        } hover:bg-purple-600 transition-colors`}
-      >
-        <StickyNote className="w-6 h-6 text-white" />
-      </button>
-      
-      {/* Formula Card */}
-      {isOpen && (
-        <div
-          ref={contentRef}
-          className="absolute bottom-16 right-0 w-80 bg-neutral-900 rounded-lg shadow-2xl border border-purple-500/50 overflow-hidden"
-          >
-            <div 
-              className="bg-purple-900/30 p-3 flex items-center justify-between"
-            >
-              <h3 className="font-semibold text-purple-400 text-sm">Quick Formula Reference</h3>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="text-neutral-400 hover:text-white"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            
-            <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
-              {/* Known σ */}
-              <div className="bg-neutral-800/50 rounded p-3">
-                <h4 className="text-blue-400 text-sm font-semibold mb-1">Known σ (Z-interval)</h4>
-                <div className="text-center">
-                  <span dangerouslySetInnerHTML={{ 
-                    __html: `\\[\\bar{x} \\pm z_{\\alpha/2} \\cdot \\frac{\\sigma}{\\sqrt{n}}\\]` 
-                  }} />
-                </div>
-                <p className="text-xs text-neutral-400 mt-1">Use when σ is given</p>
-              </div>
-              
-              {/* Unknown σ */}
-              <div className="bg-neutral-800/50 rounded p-3">
-                <h4 className="text-purple-400 text-sm font-semibold mb-1">Unknown σ (t-interval)</h4>
-                <div className="text-center">
-                  <span dangerouslySetInnerHTML={{ 
-                    __html: `\\[\\bar{x} \\pm t_{\\alpha/2,df} \\cdot \\frac{s}{\\sqrt{n}}\\]` 
-                  }} />
-                </div>
-                <p className="text-xs text-neutral-400 mt-1">df = n - 1</p>
-              </div>
-              
-              {/* Quick Reference */}
-              <div className="bg-neutral-800/50 rounded p-3 text-sm">
-                <h4 className="text-emerald-400 font-semibold mb-2">Quick Steps:</h4>
-                <ol className="text-xs text-neutral-300 space-y-1">
-                  <li>1. Calculate <span dangerouslySetInnerHTML={{ __html: `\\(\\bar{x}\\)` }} /> and s</li>
-                  <li>2. Find df = n - 1</li>
-                  <li>3. Look up t-critical value</li>
-                  <li>4. Calculate SE = s/√n</li>
-                  <li>5. Find margin = t × SE</li>
-                  <li>6. CI = <span dangerouslySetInnerHTML={{ __html: `\\(\\bar{x}\\)` }} /> ± margin</li>
-                </ol>
-              </div>
-              
-              {/* Common Values */}
-              <div className="bg-neutral-800/50 rounded p-3 text-xs">
-                <h4 className="text-yellow-400 font-semibold mb-1">Common Critical Values:</h4>
-                <div className="grid grid-cols-2 gap-2 text-neutral-300">
-                  <div>95% CI: z = 1.96</div>
-                  <div>99% CI: z = 2.576</div>
-                  <div>90% CI: z = 1.645</div>
-                  <div>t varies with df</div>
-                </div>
-              </div>
-            </div>
-        </div>
-      )}
-    </div>
-  );
-};
 
-// Journey Navigator Component
+// Journey Navigator Component with Clear Sequential Numbering
 const JourneyNavigator = ({ journey, currentSection, userInsights, onNavigate }) => {
   const sections = Object.values(journey);
   
   const getColorClasses = (section, isActive, isCompleted) => {
     if (isActive) {
       switch(section.color) {
-        case 'yellow': return 'bg-yellow-900/30 border-yellow-500';
-        case 'blue': return 'bg-blue-900/30 border-blue-500';
-        case 'purple': return 'bg-purple-900/30 border-purple-500';
-        case 'emerald': return 'bg-emerald-900/30 border-emerald-500';
-        case 'pink': return 'bg-pink-900/30 border-pink-500';
+        case 'yellow': return 'bg-yellow-900/30 border-yellow-500 shadow-lg shadow-yellow-500/20';
+        case 'blue': return 'bg-blue-900/30 border-blue-500 shadow-lg shadow-blue-500/20';
+        case 'purple': return 'bg-purple-900/30 border-purple-500 shadow-lg shadow-purple-500/20';
+        case 'emerald': return 'bg-emerald-900/30 border-emerald-500 shadow-lg shadow-emerald-500/20';
+        case 'pink': return 'bg-pink-900/30 border-pink-500 shadow-lg shadow-pink-500/20';
         default: return 'bg-neutral-800 border-neutral-600';
       }
     }
@@ -222,36 +124,135 @@ const JourneyNavigator = ({ journey, currentSection, userInsights, onNavigate })
       default: return 'text-neutral-400';
     }
   };
+
+  const getStepNumberBg = (section, isActive, isCompleted) => {
+    if (isCompleted) return 'bg-emerald-500 text-white';
+    if (isActive) {
+      switch(section.color) {
+        case 'yellow': return 'bg-yellow-500 text-black';
+        case 'blue': return 'bg-blue-500 text-white';
+        case 'purple': return 'bg-purple-500 text-white';
+        case 'emerald': return 'bg-emerald-500 text-white';
+        case 'pink': return 'bg-pink-500 text-white';
+        default: return 'bg-neutral-600 text-white';
+      }
+    }
+    return 'bg-neutral-700 text-neutral-300';
+  };
   
   return (
     <div className="mb-8">
-      <div className="flex items-center justify-between gap-4">
+      {/* Section Header */}
+      <div className="mb-4">
+        <h3 className="text-lg font-semibold text-white">Learning Journey</h3>
+        <p className="text-sm text-neutral-400 mt-1">
+          Follow these steps sequentially for the best learning experience
+        </p>
+      </div>
+
+      {/* Progress Indicator */}
+      <div className="mb-4">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-neutral-400">Progress:</span>
+          <div className="flex-1 h-2 bg-neutral-800 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-500"
+              style={{ 
+                width: `${(Object.values(userInsights).filter(v => v === true).length / 
+                         Object.values(userInsights).length) * 100}%` 
+              }}
+            />
+          </div>
+          <span className="text-xs text-neutral-400">
+            {Object.values(userInsights).filter(v => v === true).length}/{Object.values(userInsights).length}
+          </span>
+        </div>
+      </div>
+
+      {/* Navigation Cards */}
+      <div className="flex items-stretch gap-3 overflow-x-auto pb-2">
         {sections.map((section, idx) => {
           const Icon = section.icon;
           const isActive = currentSection === section.id;
           const isCompleted = userInsights[`${section.id}Completed`];
+          const stepNumber = idx + 1;
           
           return (
-            <button
-              key={section.id}
-              onClick={() => onNavigate(section.id)}
-              className={`flex-1 p-4 rounded-lg border-2 transition-all duration-300 ${
-                getColorClasses(section, isActive, isCompleted)
-              }`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <Icon size={20} className={getIconColor(section.color)} />
-                {isCompleted && (
-                  <div>
-                    <Check size={16} className="text-emerald-400" />
+            <div key={section.id} className="relative flex-1 min-w-[200px]">
+              {/* Connection Line */}
+              {idx < sections.length - 1 && (
+                <div 
+                  className={`absolute top-8 -right-[13px] w-[26px] h-0.5 z-10 ${
+                    isCompleted ? 'bg-emerald-500' : 'bg-neutral-700'
+                  }`}
+                />
+              )}
+              
+              <button
+                onClick={() => onNavigate(section.id)}
+                className={`relative w-full p-4 rounded-lg border-2 transition-all duration-300 ${
+                  getColorClasses(section, isActive, isCompleted)
+                } ${isActive ? 'scale-[1.02]' : 'hover:scale-[1.01]'}`}
+              >
+                {/* Step Number Badge */}
+                <div className="absolute -top-3 -left-3 z-20">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                    getStepNumberBg(section, isActive, isCompleted)
+                  } shadow-lg`}>
+                    {isCompleted ? (
+                      <Check size={16} className="text-white" />
+                    ) : (
+                      stepNumber
+                    )}
                   </div>
-                )}
-              </div>
-              <h4 className="font-semibold text-white text-sm">{section.title}</h4>
-              <p className="text-xs text-neutral-400 mt-1">{section.subtitle}</p>
-            </button>
+                </div>
+
+                {/* Content */}
+                <div className="flex items-start justify-between mb-2">
+                  <Icon size={20} className={`${getIconColor(section.color)} mt-1`} />
+                  {isActive && (
+                    <span className="text-xs px-2 py-1 bg-neutral-700 rounded text-white">
+                      Current
+                    </span>
+                  )}
+                </div>
+                
+                <h4 className="font-semibold text-white text-sm text-left mb-1">
+                  Step {stepNumber}: {section.title}
+                </h4>
+                <p className="text-xs text-neutral-400 text-left">{section.subtitle}</p>
+                
+                {/* Action Indicator */}
+                <div className="mt-3 pt-3 border-t border-neutral-700">
+                  <p className="text-xs text-left">
+                    {isCompleted ? (
+                      <span className="text-emerald-400">Completed</span>
+                    ) : isActive ? (
+                      <span className="text-blue-400">In Progress...</span>
+                    ) : (
+                      <span className="text-neutral-500">Click to begin</span>
+                    )}
+                  </p>
+                </div>
+              </button>
+            </div>
           );
         })}
+      </div>
+
+      {/* Instructions */}
+      <div className="mt-4 p-3 bg-neutral-800/50 rounded-lg border border-neutral-700">
+        <div className="flex items-start gap-2">
+          <AlertCircle size={16} className="text-blue-400 mt-0.5" />
+          <div className="text-xs text-neutral-300">
+            <p className="font-semibold text-blue-400 mb-1">Navigation Tips:</p>
+            <ul className="space-y-1">
+              <li>• Complete each step in order for the best learning experience</li>
+              <li>• Click any completed step to review the material</li>
+              <li>• Green checkmarks indicate completed sections</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -459,7 +460,7 @@ const OzoneExample = React.memo(function OzoneExample({ onInsight }) {
         .attr("cx", d => xScale(d))
         .attr("cy", height / 2)
         .attr("r", 6)
-        .attr("fill", chapterColors.primary)
+        .attr("fill", "#3b82f6")
         .attr("opacity", 0)
         .transition()
         .delay((d, i) => i * 100)
@@ -472,7 +473,7 @@ const OzoneExample = React.memo(function OzoneExample({ onInsight }) {
         .attr("x2", xScale(xBar))
         .attr("y1", 10)
         .attr("y2", height - 10)
-        .attr("stroke", chapterColors.secondary)
+        .attr("stroke", "#14b8a6")
         .attr("stroke-width", 2)
         .attr("stroke-dasharray", "3,3")
         .attr("opacity", 0);
@@ -902,7 +903,7 @@ const TDistributionExplorer = ({ onInsight }) => {
     
     const width = 600;
     const height = 350;
-    const margin = { top: 20, right: 120, bottom: 50, left: 60 };
+    const margin = { top: 30, right: 140, bottom: 70, left: 80 }; // Improved spacing
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
@@ -947,7 +948,7 @@ const TDistributionExplorer = ({ onInsight }) => {
       .style("opacity", 0.3);
     
     gridLines.selectAll("line")
-      .style("stroke", "#6b7280"); // Lighter gray for visibility
+      .style("stroke", "#374151"); // Chapter 7 grid color
     
     gridLines.select(".domain").remove();
     
@@ -959,7 +960,7 @@ const TDistributionExplorer = ({ onInsight }) => {
       .style("opacity", 0.3);
     
     yGridLines.selectAll("line")
-      .style("stroke", "#6b7280");
+      .style("stroke", "#374151");
     
     yGridLines.select(".domain").remove();
     
@@ -968,15 +969,15 @@ const TDistributionExplorer = ({ onInsight }) => {
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(x));
     
-    xAxis.selectAll("line").style("stroke", "#9ca3af");
-    xAxis.selectAll("path").style("stroke", "#9ca3af");
+    xAxis.selectAll("line").style("stroke", "#374151");
+    xAxis.selectAll("path").style("stroke", "#374151");
     xAxis.selectAll("text").style("fill", "#e5e7eb").style("font-size", "12px");
     
     const yAxis = g.append("g")
       .call(d3.axisLeft(y).ticks(5));
     
-    yAxis.selectAll("line").style("stroke", "#9ca3af");
-    yAxis.selectAll("path").style("stroke", "#9ca3af");
+    yAxis.selectAll("line").style("stroke", "#374151");
+    yAxis.selectAll("path").style("stroke", "#374151");
     yAxis.selectAll("text").style("fill", "#e5e7eb").style("font-size", "12px");
     
     // Axis labels
@@ -993,7 +994,7 @@ const TDistributionExplorer = ({ onInsight }) => {
     g.append("path")
       .datum(normalData)
       .attr("fill", "none")
-      .attr("stroke", chapterColors.secondary)
+      .attr("stroke", "#14b8a6")
       .attr("stroke-width", 2)
       .attr("d", line)
       .style("opacity", 0.8);
@@ -1002,7 +1003,7 @@ const TDistributionExplorer = ({ onInsight }) => {
     g.append("path")
       .datum(tData)
       .attr("fill", "none")
-      .attr("stroke", chapterColors.primary)
+      .attr("stroke", "#3b82f6")
       .attr("stroke-width", 2.5)
       .attr("d", line);
     
@@ -1014,7 +1015,7 @@ const TDistributionExplorer = ({ onInsight }) => {
     legend.append("line")
       .attr("x1", 0).attr("x2", 20)
       .attr("y1", 0).attr("y2", 0)
-      .attr("stroke", chapterColors.secondary)
+      .attr("stroke", "#14b8a6")
       .attr("stroke-width", 2);
     legend.append("text")
       .attr("x", 25).attr("y", 4)
@@ -1027,7 +1028,7 @@ const TDistributionExplorer = ({ onInsight }) => {
     legend.append("line")
       .attr("x1", 0).attr("x2", 20)
       .attr("y1", 20).attr("y2", 20)
-      .attr("stroke", chapterColors.primary)
+      .attr("stroke", "#3b82f6")
       .attr("stroke-width", 2);
     legend.append("text")
       .attr("x", 25).attr("y", 24)
@@ -1043,7 +1044,7 @@ const TDistributionExplorer = ({ onInsight }) => {
       
       annotation.append("path")
         .attr("d", "M0,0 L-30,-30")
-        .attr("stroke", chapterColors.warning)
+        .attr("stroke", "#fbbf24")
         .attr("stroke-width", 1)
         .attr("marker-end", "url(#arrow)");
       
@@ -1067,7 +1068,7 @@ const TDistributionExplorer = ({ onInsight }) => {
       
       marker.append("path")
         .attr("d", "M0,0 L8,4 L0,8")
-        .attr("fill", chapterColors.warning);
+        .attr("fill", "#fbbf24");
     }
     
   }, [df, showAnimation, animationDf]);
@@ -1232,7 +1233,7 @@ const TvsZComparison = () => {
     
     const width = 600;
     const height = 300;
-    const margin = { top: 40, right: 40, bottom: 60, left: 40 };
+    const margin = { top: 50, right: 60, bottom: 80, left: 60 }; // Better margins for readability
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
@@ -1261,7 +1262,7 @@ const TvsZComparison = () => {
       .attr("x2", xScale(xbar))
       .attr("y1", 20)
       .attr("y2", innerHeight - 20)
-      .attr("stroke", chapterColors.secondary)
+      .attr("stroke", "#14b8a6")
       .attr("stroke-width", 2)
       .attr("stroke-dasharray", "3,3");
     
@@ -1289,7 +1290,7 @@ const TvsZComparison = () => {
       .attr("y", tY - barHeight/2)
       .attr("width", xScale(calculations.tInterval.upper) - xScale(calculations.tInterval.lower))
       .attr("height", barHeight)
-      .attr("fill", chapterColors.primary)
+      .attr("fill", "#3b82f6")
       .attr("rx", 2)
       .attr("opacity", 0)
       .transition()
@@ -1303,7 +1304,7 @@ const TvsZComparison = () => {
         .attr("x2", xScale(x))
         .attr("y1", tY - bracketHeight/2)
         .attr("y2", tY + bracketHeight/2)
-        .attr("stroke", chapterColors.primary)
+        .attr("stroke", "#3b82f6")
         .attr("stroke-width", 3);
     });
     
@@ -1326,7 +1327,7 @@ const TvsZComparison = () => {
       .attr("y", zY - barHeight/2)
       .attr("width", xScale(calculations.zInterval.upper) - xScale(calculations.zInterval.lower))
       .attr("height", barHeight)
-      .attr("fill", chapterColors.secondary)
+      .attr("fill", "#14b8a6")
       .attr("rx", 2)
       .attr("opacity", 0)
       .transition()
@@ -1341,7 +1342,7 @@ const TvsZComparison = () => {
         .attr("x2", xScale(x))
         .attr("y1", zY - bracketHeight/2)
         .attr("y2", zY + bracketHeight/2)
-        .attr("stroke", chapterColors.secondary)
+        .attr("stroke", "#14b8a6")
         .attr("stroke-width", 3);
     });
     
@@ -1363,7 +1364,7 @@ const TvsZComparison = () => {
         .attr("x", xScale(xbar))
         .attr("y", diffY)
         .attr("text-anchor", "middle")
-        .attr("fill", chapterColors.warning)
+        .attr("fill", "#fbbf24")
         .style("font-size", "12px")
         .style("font-weight", "600")
         .text(`t-interval is ${calculations.percentWider}% wider`);
@@ -1377,7 +1378,7 @@ const TvsZComparison = () => {
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.3);
     
-    xGrid.selectAll("line").style("stroke", "#6b7280");
+    xGrid.selectAll("line").style("stroke", "#374151");
     xGrid.select(".domain").remove();
     
     // X-axis
@@ -1385,7 +1386,7 @@ const TvsZComparison = () => {
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(xScale).ticks(7));
     
-    xAxis.selectAll("path, line").attr("stroke", "#9ca3af");
+    xAxis.selectAll("path, line").attr("stroke", "#374151");
     xAxis.selectAll("text")
       .style("font-size", "12px")
       .attr("fill", "#e5e7eb");
@@ -2242,7 +2243,7 @@ export default function ConfidenceIntervalUnknownVariance() {
     >
       <BackToHub chapter={5} />
       
-      <FloatingFormulaCard />
+      <ConfidenceIntervalReference mode="floating" />
       
       <JourneyNavigator
         journey={TDistributionJourney}

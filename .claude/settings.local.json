@@ -2,6 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": [
+      "*",
       "WebFetch(domain:docs.anthropic.com)",
       "Bash(find:*)",
       "Bash(ls:*)",
@@ -156,7 +157,24 @@
       "mcp__puppeteer__puppeteer_screenshot",
       "mcp__puppeteer__puppeteer_click",
       "mcp__puppeteer__puppeteer_evaluate",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "WebFetch(domain:stats.libretexts.org)",
+      "WebFetch(domain:bookdown.org)",
+      "WebFetch(domain:seeing-theory.brown.edu)",
+      "WebFetch(domain:imai.fas.harvard.edu)",
+      "WebFetch(domain:ocw.mit.edu)",
+      "WebFetch(domain:web.stanford.edu)",
+      "Bash(-e 's/<motion\\.button/<button/g' )",
+      "Bash(-e 's/<\\/motion\\.button>/<\\/button>/g' )",
+      "Bash(-e 's/<motion\\.div/<div/g' )",
+      "Bash(-e 's/<\\/motion\\.div>/<\\/div>/g' )",
+      "Bash(-e '/whileHover={.*}/d' )",
+      "Bash(-e '/whileTap={.*}/d' )",
+      "Bash(-e '/initial={{.*}}/d' )",
+      "Bash(-e '/animate={{.*}}/d' )",
+      "Bash(-e '/exit={{.*}}/d' )",
+      "Bash(-e '/transition={{.*}}/d' )",
+      "Bash(/Users/hananather/Desktop/Javascript/prob-lab/src/components/05-estimation/5-2-ConfidenceIntervalKnownVariance.jsx)"
     ],
     "deny": []
   },

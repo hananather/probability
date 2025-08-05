@@ -8,8 +8,9 @@ import { StatisticalTestCard, HypothesisSetup, TestStatistic, SignificanceResult
 import { MultiFormulaDisplay, createCorrelationFormulas, SimpleFormulaSelector } from '../ui/patterns/MultiFormulaDisplay';
 import { ComparisonTable, createCIPIComparison, SimpleComparisonTable } from '../ui/patterns/ComparisonTable';
 import { SideBySideFormulas, createCorrelationSideBySide, createRegressionSideBySide, StaticFormulaGrid } from '../ui/patterns/SideBySideFormulas';
-import { ChevronDown, ChevronUp, Star, Palette, Calculator, TestTube, BarChart3, Table, Grid3X3, HelpCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Star, Palette, Calculator, TestTube, BarChart3, Table, Grid3X3, HelpCircle, StickyNote } from 'lucide-react';
 import { QuizBreak } from '../mdx/QuizBreak';
+import { QuickReferenceCard, ConfidenceIntervalReference, HypothesisTestingReference, DistributionsReference } from '../ui/patterns/QuickReferenceCard';
 
 // Component showcases
 const componentShowcases = {
@@ -361,6 +362,157 @@ const componentShowcases = {
         </div>
       );
     })
+  },
+
+  quickReference: {
+    name: 'Quick Reference Cards',
+    icon: StickyNote,
+    color: 'text-purple-400',
+    description: 'Beautiful floating or inline formula reference cards',
+    component: React.memo(() => {
+      const [floatingOpen, setFloatingOpen] = useState(false);
+      
+      return (
+        <div className="space-y-6">
+          {/* Showcase header */}
+          <div className="text-center mb-6">
+            <h4 className="text-lg font-semibold text-purple-400 mb-2">
+              Quick Reference Formula Sheets
+            </h4>
+            <p className="text-sm text-neutral-400">
+              Three display modes: Floating, Inline (collapsible), and Embedded (always visible)
+            </p>
+          </div>
+
+          {/* Mode 1: Embedded (Always Visible) */}
+          <div>
+            <h5 className="text-sm font-semibold text-neutral-400 mb-3">Embedded Mode (Always Visible):</h5>
+            <QuickReferenceCard
+              sections={[
+                {
+                  title: "Known σ (Z-interval)",
+                  color: "blue",
+                  formula: `\\[\\bar{x} \\pm z_{\\alpha/2} \\cdot \\frac{\\sigma}{\\sqrt{n}}\\]`,
+                  description: "Use when σ is given"
+                },
+                {
+                  title: "Unknown σ (t-interval)",
+                  color: "purple",
+                  formula: `\\[\\bar{x} \\pm t_{\\alpha/2,df} \\cdot \\frac{s}{\\sqrt{n}}\\]`,
+                  description: "df = n - 1"
+                },
+                {
+                  title: "Quick Steps",
+                  color: "emerald",
+                  steps: [
+                    `Calculate \\(\\bar{x}\\) and s`,
+                    "Find df = n - 1",
+                    "Look up t-critical value",
+                    "Calculate SE = s/√n",
+                    "Find margin = t × SE",
+                    `CI = \\(\\bar{x}\\) ± margin`
+                  ]
+                },
+                {
+                  title: "Common Critical Values",
+                  color: "yellow",
+                  values: [
+                    { label: "95% CI", value: "z = 1.96" },
+                    { label: "99% CI", value: "z = 2.576" },
+                    { label: "90% CI", value: "z = 1.645" },
+                    { label: "t-value", value: "varies with df" }
+                  ]
+                }
+              ]}
+              title="Confidence Intervals Reference"
+              mode="embedded"
+              colorScheme={{
+                primary: 'purple',
+                secondary: 'emerald',
+                accent: 'blue',
+                warning: 'yellow'
+              }}
+            />
+          </div>
+
+          {/* Mode 2: Inline (Collapsible) */}
+          <div>
+            <h5 className="text-sm font-semibold text-neutral-400 mb-3">Inline Mode (Collapsible):</h5>
+            <HypothesisTestingReference mode="inline" />
+          </div>
+
+          {/* Mode 3: Pre-configured Examples */}
+          <div>
+            <h5 className="text-sm font-semibold text-neutral-400 mb-3">Pre-configured Examples:</h5>
+            <div className="grid md:grid-cols-2 gap-4">
+              <ConfidenceIntervalReference mode="inline" />
+              <DistributionsReference mode="inline" />
+            </div>
+          </div>
+
+          {/* Usage Example */}
+          <div className="mt-8 p-4 bg-neutral-800 rounded-lg">
+            <h5 className="text-sm font-semibold text-neutral-400 mb-2">Usage Example:</h5>
+            <pre className="text-xs text-green-400 overflow-x-auto">
+{`// Import the component
+import { QuickReferenceCard } from '@/components/ui/patterns/QuickReferenceCard';
+
+// Define your sections
+const sections = [
+  {
+    title: "Formula Name",
+    color: "blue",
+    formula: \`\\[your \\LaTeX\\]\`,
+    description: "When to use"
+  },
+  {
+    title: "Steps",
+    color: "emerald",
+    steps: ["Step 1", "Step 2", "Step 3"]
+  }
+];
+
+// Use in three modes
+<QuickReferenceCard
+  sections={sections}
+  title="My Reference"
+  mode="floating"  // or "inline" or "embedded"
+/>`}
+            </pre>
+          </div>
+
+          {/* Features */}
+          <div className="grid md:grid-cols-2 gap-4 text-sm">
+            <div className="bg-purple-900/20 rounded-lg p-4 border border-purple-500/30">
+              <h5 className="font-semibold text-purple-400 mb-2">✨ Key Features</h5>
+              <ul className="space-y-1 text-neutral-300">
+                <li>• Three display modes</li>
+                <li>• MathJax auto-processing</li>
+                <li>• Semantic color coding</li>
+                <li>• Responsive design</li>
+              </ul>
+            </div>
+            <div className="bg-emerald-900/20 rounded-lg p-4 border border-emerald-500/30">
+              <h5 className="font-semibold text-emerald-400 mb-2">🎯 Perfect For</h5>
+              <ul className="space-y-1 text-neutral-300">
+                <li>• Formula sheets</li>
+                <li>• Quick references</li>
+                <li>• Step-by-step guides</li>
+                <li>• Key values lookup</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Note about floating mode */}
+          <div className="p-4 bg-yellow-900/20 rounded-lg border border-yellow-500/30">
+            <p className="text-sm text-yellow-400">
+              <strong>Note:</strong> Floating mode creates a fixed button in the bottom-right corner. 
+              It's best used as a page-level component, not inside other containers.
+            </p>
+          </div>
+        </div>
+      );
+    })
   }
 };
 
@@ -373,7 +525,8 @@ export function GoldStandardShowcase() {
     multiFormula: false,
     sideBySideFormulas: false,
     comparisonTables: false,
-    quizComponent: false
+    quizComponent: false,
+    quickReference: false
   });
 
   const toggleComponent = (component) => {
