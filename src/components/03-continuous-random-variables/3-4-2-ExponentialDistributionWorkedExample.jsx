@@ -124,5 +124,4 @@ const ExponentialDistributionWorkedExample = React.memo(function ExponentialDist
   );
 });
 
-export { ExponentialDistributionWorkedExample };
 export default ExponentialDistributionWorkedExample;

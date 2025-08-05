@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { VisualizationContainer } from '../ui/VisualizationContainer';
@@ -47,6 +47,22 @@ const JointDistributions = () => {
   
   // Use safe MathJax processing
   useSafeMathJax(contentRef, [currentStep, distribution]);
+
+  // Handle keyboard navigation
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'ArrowLeft' && currentStep > 0) {
+      e.preventDefault();
+      setCurrentStep(Math.max(0, currentStep - 1));
+    } else if (e.key === 'ArrowRight' && currentStep < 3) {  // 4 steps total (0-3)
+      e.preventDefault();
+      setCurrentStep(Math.min(3, currentStep + 1));
+    }
+  }, [currentStep]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
   // Generate bivariate normal data
   const generateBivariateNormal = (n, rho) => {
@@ -564,6 +580,14 @@ const JointDistributions = () => {
         onNext={() => setCurrentStep(Math.min(currentStep + 1, steps.length - 1))}
         onPrevious={() => setCurrentStep(Math.max(currentStep - 1, 0))}
       />
+      
+      {/* Keyboard Hint */}
+      <div className="mt-2 text-center">
+        <p className="text-xs text-neutral-500">
+          Tip: Use <kbd className="px-2 py-1 bg-neutral-800 rounded text-neutral-300">←</kbd> and{' '}
+          <kbd className="px-2 py-1 bg-neutral-800 rounded text-neutral-300">→</kbd> arrow keys to navigate
+        </p>
+      </div>
     </div>
   );
 };

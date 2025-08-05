@@ -588,5 +588,4 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
   );
 });
 
-export { GammaDistributionWorkedExample };
 export default GammaDistributionWorkedExample;

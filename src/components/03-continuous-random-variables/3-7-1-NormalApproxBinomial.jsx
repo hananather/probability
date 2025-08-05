@@ -4,7 +4,7 @@ import * as d3 from "@/utils/d3-utils";
 import { createColorScheme, typography, cn } from "../../lib/design-system";
 import { useSafeMathJax } from '../../utils/mathJaxFix';
 import { jStat } from "jstat";
-import { NormalApproxBinomialWorkedExample } from "./3-7-2-NormalApproxBinomialWorkedExample";
+import NormalApproxBinomialWorkedExample from "./3-7-2-NormalApproxBinomialWorkedExample";
 import { Tutorial } from "../ui/Tutorial";
 import { ProgressBar, ProgressNavigation } from "../ui/ProgressBar";
 import { Button } from "../ui/button";
