@@ -10,7 +10,9 @@ import {
 import { colors, createColorScheme } from '../../lib/design-system';
 import BackToHub from '@/components/ui/BackToHub';
 import SectionComplete from '@/components/ui/SectionComplete';
-import { Target, Activity, BarChart, Sparkles, RefreshCw, ChevronRight, AlertCircle, Lock, CheckCircle } from 'lucide-react';
+import { Target, Activity, BarChart, RefreshCw, ChevronRight, AlertCircle, CheckCircle } from 'lucide-react';
+import { CIHypothesisTestingBridge } from './5-6-CIHypothesisTestingBridge';
+import { CIInterpretationTrainer } from './5-7-CIInterpretationTrainer';
 
 // Helper function for inverse normal CDF (quantileNormal approximation)
 const quantileNormal = (p) => {
@@ -61,16 +63,14 @@ const chapterColors = createColorScheme('estimation');
 const LEARNING_MODES = {
   INTUITIVE: 'intuitive',
   FORMAL: 'formal',
-  EXPLORATION: 'exploration',
-  PRACTICE: 'practice'
+  EXPLORATION: 'exploration'
 };
 
 // Mode colors
 const MODE_COLORS = {
   [LEARNING_MODES.INTUITIVE]: '#3b82f6', // blue
   [LEARNING_MODES.FORMAL]: '#8b5cf6', // purple
-  [LEARNING_MODES.EXPLORATION]: '#10b981', // emerald
-  [LEARNING_MODES.PRACTICE]: '#f59e0b' // amber
+  [LEARNING_MODES.EXPLORATION]: '#10b981' // emerald
 };
 
 // Isolated LaTeX Formula Component (Following LaTeX Guide Pattern)
@@ -95,7 +95,6 @@ const FormulaSection = React.memo(function FormulaSection() {
   return (
     <div 
       className="bg-gradient-to-r from-gray-900/20 to-gray-800/20 rounded-lg p-4 my-4 border border-gray-700/30"
-      whileHover={{ scale: 1.01 }}
     >
       <h4 className="font-semibold text-emerald-400 mb-2">The Formula</h4>
       <div ref={formulaRef} className="text-center">
@@ -122,7 +121,7 @@ const FormulaSection = React.memo(function FormulaSection() {
 });
 
 // Introduction Component with Visual Flow
-const CIIntroduction = React.memo(function CIIntroduction({ mode, onModeChange, unlockedModes }) {
+const CIIntroduction = React.memo(function CIIntroduction({ mode, onModeChange }) {
   const contentRef = useRef(null);
   
   useEffect(() => {
@@ -138,13 +137,10 @@ const CIIntroduction = React.memo(function CIIntroduction({ mode, onModeChange, 
     processMathJax();
     const timeoutId = setTimeout(processMathJax, 100);
     return () => clearTimeout(timeoutId);
-  }, [mode, unlockedModes]); // Add dependencies that affect rendering
+  }, [mode]); // Add dependencies that affect rendering
   
   return (
     <div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 1.5 }}
       className="mb-8"
     >
       <VisualizationSection className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
@@ -152,30 +148,21 @@ const CIIntroduction = React.memo(function CIIntroduction({ mode, onModeChange, 
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           {Object.entries(LEARNING_MODES).map(([key, value]) => {
-            const isUnlocked = unlockedModes.includes(value);
             const isActive = mode === value;
             const color = MODE_COLORS[value];
             
             return (
               <button
                 key={key}
-                onClick={() => isUnlocked && onModeChange(value)}
-                disabled={!isUnlocked}
-                whileHover={isUnlocked ? { scale: 1.02 } : {}}
-                whileTap={isUnlocked ? { scale: 0.98 } : {}}
+                onClick={() => onModeChange(value)}
                 className={`relative p-4 rounded-lg border-2 transition-all ${
                   isActive 
                     ? `bg-gradient-to-br from-${color}/20 to-${color}/10 border-${color}` 
-                    : isUnlocked
-                    ? 'bg-gray-800/50 border-gray-600 hover:border-gray-500'
-                    : 'bg-gray-900/50 border-gray-700 opacity-50 cursor-not-allowed'
+                    : 'bg-gray-800/50 border-gray-600 hover:border-gray-500'
                 }`}
                 style={isActive ? { borderColor: color, background: `linear-gradient(to bottom right, ${color}20, ${color}10)` } : {}}
               >
-                {!isUnlocked && (
-                  <Lock className="absolute top-2 right-2 w-4 h-4 text-gray-500" />
-                )}
-                {isUnlocked && isActive && (
+                {isActive && (
                   <CheckCircle className="absolute top-2 right-2 w-4 h-4" style={{ color }} />
                 )}
                 
@@ -183,10 +170,9 @@ const CIIntroduction = React.memo(function CIIntroduction({ mode, onModeChange, 
                   {key.charAt(0) + key.slice(1).toLowerCase()}
                 </h3>
                 <p className="text-sm text-gray-400">
-                  {value === LEARNING_MODES.INTUITIVE && "Start with the 68-95-99.7 rule"}
+                  {value === LEARNING_MODES.INTUITIVE && "Intuitive understanding"}
                   {value === LEARNING_MODES.FORMAL && "Dive into critical values"}
                   {value === LEARNING_MODES.EXPLORATION && "Explore parameter effects"}
-                  {value === LEARNING_MODES.PRACTICE && "Practice exam-style problems"}
                 </p>
               </button>
             );
@@ -197,9 +183,6 @@ const CIIntroduction = React.memo(function CIIntroduction({ mode, onModeChange, 
       <div 
         ref={contentRef} 
         className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 mt-4"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
       >
         <div className="text-sm text-neutral-300 space-y-3">
           <p className="text-lg font-semibold text-white mb-3">
@@ -219,341 +202,6 @@ const CIIntroduction = React.memo(function CIIntroduction({ mode, onModeChange, 
       </div>
     </div>
   );
-});
-
-// Enhanced 68-95-99.7 Rule Explorer with animations
-const EmpiricalRuleExplorer = React.memo(({ isActive, onComplete }) => {
-  const [stage, setStage] = useState(0); // 0: 68%, 1: 95%, 2: 99.7%
-  const [sampleSize, setSampleSize] = useState(30);
-  const [discoveries, setDiscoveries] = useState([]);
-  const svgRef = useRef(null);
-  
-  const stages = [
-    { level: 68, z: 1, color: '#3b82f6' },
-    { level: 95, z: 1.96, color: '#8b5cf6' },
-    { level: 99.7, z: 3, color: '#10b981' }
-  ];
-  
-  const currentStage = stages[stage];
-  const sampleMean = 100;
-  const populationSD = 15;
-  const standardError = populationSD / Math.sqrt(sampleSize);
-  const marginOfError = currentStage.z * standardError;
-  
-  useEffect(() => {
-    if (!isActive) return;
-    
-    const svg = d3.select(svgRef.current);
-    svg.selectAll("*").remove();
-    
-    const width = 600;
-    const height = 350;
-    const margin = { top: 20, right: 20, bottom: 60, left: 40 };
-    
-    const xScale = d3.scaleLinear()
-      .domain([sampleMean - 4 * populationSD, sampleMean + 4 * populationSD])
-      .range([margin.left, width - margin.right]);
-    
-    const yScale = d3.scaleLinear()
-      .domain([0, 0.03])
-      .range([height - margin.bottom, margin.top]);
-    
-    // Draw axes
-    svg.append("g")
-      .attr("transform", `translate(0,${height - margin.bottom})`)
-      .call(d3.axisBottom(xScale))
-      .style("color", "#999");
-    
-    // Normal distribution
-    const normalPdf = (x, mean, sd) => {
-      const variance = sd * sd;
-      return (1 / Math.sqrt(2 * Math.PI * variance)) * 
-             Math.exp(-Math.pow(x - mean, 2) / (2 * variance));
-    };
-    
-    // Draw normal curve
-    const lineData = d3.range(xScale.domain()[0], xScale.domain()[1], 0.5).map(x => ({
-      x: x,
-      y: normalPdf(x, sampleMean, populationSD)
-    }));
-    
-    const line = d3.line()
-      .x(d => xScale(d.x))
-      .y(d => yScale(d.y))
-      .curve(d3.curveBasis);
-    
-    svg.append("path")
-      .datum(lineData)
-      .attr("fill", "none")
-      .attr("stroke", "#666")
-      .attr("stroke-width", 2)
-      .attr("d", line)
-      .style("opacity", 0)
-      .transition()
-      .duration(1500)
-      .style("opacity", 1);
-    
-    // Draw confidence regions with staggered animations
-    stages.forEach((s, i) => {
-      if (i > stage) return;
-      
-      const lower = sampleMean - s.z * populationSD;
-      const upper = sampleMean + s.z * populationSD;
-      
-      const areaData = lineData.filter(d => d.x >= lower && d.x <= upper);
-      
-      const area = d3.area()
-        .x(d => xScale(d.x))
-        .y0(height - margin.bottom)
-        .y1(d => yScale(d.y))
-        .curve(d3.curveBasis);
-      
-      svg.append("path")
-        .datum(areaData)
-        .attr("fill", s.color)
-        .attr("opacity", 0.3 - i * 0.05)
-        .attr("d", area)
-        .attr("class", "confidence-area")
-        .style("opacity", 0)
-        .transition()
-        .delay(500 + i * 300)
-        .duration(800)
-        .style("opacity", 0.3 - i * 0.05);
-      
-      // Add labels with bounce animation
-      svg.append("text")
-        .attr("x", xScale(sampleMean))
-        .attr("y", yScale(normalPdf(sampleMean - s.z * populationSD / 2, sampleMean, populationSD)))
-        .attr("text-anchor", "middle")
-        .attr("fill", s.color)
-        .attr("font-weight", "bold")
-        .attr("font-size", "14px")
-        .text(`${s.level}%`)
-        .style("opacity", 0)
-        .attr("transform", `translate(0, -20)`)
-        .transition()
-        .delay(800 + i * 300)
-        .duration(600)
-        .style("opacity", 1)
-        .attr("transform", `translate(0, 0)`)
-        .ease(d3.easeBackOut);
-      
-      // Add z-score labels
-      [-s.z, s.z].forEach(z => {
-        svg.append("text")
-          .attr("x", xScale(sampleMean + z * populationSD))
-          .attr("y", height - margin.bottom + 20)
-          .attr("text-anchor", "middle")
-          .attr("fill", s.color)
-          .attr("font-size", "12px")
-          .text(`${z > 0 ? '+' : ''}${z}σ`)
-          .style("opacity", 0)
-          .transition()
-          .delay(1000 + i * 300)
-          .duration(400)
-          .style("opacity", 1);
-      });
-    });
-    
-    // Add mean line
-    svg.append("line")
-      .attr("x1", xScale(sampleMean))
-      .attr("x2", xScale(sampleMean))
-      .attr("y1", margin.top)
-      .attr("y2", height - margin.bottom)
-      .attr("stroke", "white")
-      .attr("stroke-width", 2)
-      .attr("stroke-dasharray", "5,5")
-      .style("opacity", 0)
-      .transition()
-      .delay(200)
-      .duration(500)
-      .style("opacity", 0.8);
-    
-    // Add CI for sample mean with animation
-    const ciLower = sampleMean - marginOfError;
-    const ciUpper = sampleMean + marginOfError;
-    
-    const ciGroup = svg.append("g")
-      .attr("transform", `translate(0, ${height - margin.bottom + 40})`)
-      .style("opacity", 0);
-    
-    ciGroup.append("line")
-      .attr("x1", xScale(sampleMean))
-      .attr("x2", xScale(sampleMean))
-      .attr("y1", 0)
-      .attr("y2", 0)
-      .attr("stroke", currentStage.color)
-      .attr("stroke-width", 3)
-      .attr("stroke-linecap", "round")
-      .transition()
-      .delay(1200)
-      .duration(800)
-      .attr("x1", xScale(ciLower))
-      .attr("x2", xScale(ciUpper));
-    
-    // CI endpoints
-    [ciLower, ciUpper].forEach((x, i) => {
-      ciGroup.append("circle")
-        .attr("cx", xScale(sampleMean))
-        .attr("cy", 0)
-        .attr("r", 0)
-        .attr("fill", currentStage.color)
-        .transition()
-        .delay(1400 + i * 100)
-        .duration(400)
-        .attr("cx", xScale(x))
-        .attr("r", 4);
-    });
-    
-    ciGroup.transition()
-      .delay(1200)
-      .duration(400)
-      .style("opacity", 1);
-    
-  }, [stage, sampleSize, isActive]);
-  
-  const unlockNextStage = () => {
-    if (stage < 2) {
-      setStage(stage + 1);
-      const nextStage = stages[stage + 1];
-      setDiscoveries(prev => [...prev, `Unlocked ${nextStage.level}% confidence level!`]);
-      
-      if (stage === 1) {
-        // Complete this mode when reaching 99.7%
-        setTimeout(() => onComplete(), 1000);
-      }
-    }
-  };
-  
-  if (!isActive) return null;
-  
-  return (
-    <div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 1.5 }}
-    >
-      <VisualizationSection>
-        <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-          <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
-          The 68-95-99.7 Rule
-        </h3>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-          {stages.map((s, i) => (
-            <div
-              key={i}
-              className={`rounded-lg p-4 border-2 transition-all ${
-                i === stage 
-                  ? 'bg-gradient-to-br from-gray-800/50 to-gray-700/30 shadow-lg' 
-                  : i < stage
-                  ? 'bg-gray-800/50 border-gray-700'
-                  : 'bg-gray-900/50 border-gray-800 opacity-50'
-              }`}
-              style={{
-                borderColor: i <= stage ? s.color : '#374151',
-                boxShadow: i === stage ? `0 0 20px ${s.color}40` : 'none'
-              }}
-              animate={{ scale: i === stage ? 1.02 : 1 }}
-              whileHover={i <= stage ? { scale: 1.05 } : {}}
-            >
-              <h4 className="font-semibold mb-1" style={{ color: i <= stage ? s.color : '#666' }}>
-                {s.level}% Confidence
-              </h4>
-              <p className="text-sm text-gray-400">z = ±{s.z}</p>
-              {i <= stage && (
-                <p 
-                  className="text-xs mt-2"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                >
-                  ME = {(s.z * standardError).toFixed(2)}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
-        
-        <GraphContainer>
-          <svg ref={svgRef} width="100%" height="350" viewBox="0 0 600 350" />
-        </GraphContainer>
-        
-        <div 
-          className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-4 mb-4 border border-gray-700/50"
-          whileHover={{ scale: 1.01 }}
-        >
-          <h4 className="font-semibold text-gray-300 mb-2">Current Confidence Interval</h4>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p>Sample Mean: {sampleMean}</p>
-              <p>Population SD: {populationSD}</p>
-              <p>Sample Size: {sampleSize}</p>
-            </div>
-            <div>
-              <p>Standard Error: {standardError.toFixed(2)}</p>
-              <p>Critical Value: ±{currentStage.z}</p>
-              <p className="font-semibold" style={{ color: currentStage.color }}>
-                CI: [{(sampleMean - marginOfError).toFixed(2)}, {(sampleMean + marginOfError).toFixed(2)}]
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <ControlGroup>
-          <div className="flex items-center gap-4">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Sample Size: {sampleSize}
-              </label>
-              <input
-                type="range"
-                min="5"
-                max="100"
-                value={sampleSize}
-                onChange={(e) => setSampleSize(Number(e.target.value))}
-                className="w-full"
-              />
-            </div>
-            
-            {stage < 2 && (
-              <button
-                onClick={unlockNextStage}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2"
-              >
-                <ChevronRight size={16} />
-                Unlock {stages[stage + 1].level}% Level
-              </button>
-            )}
-          </div>
-        </ControlGroup>
-        
-        {discoveries.length > 0 && (
-          <div className="mt-4 space-y-2">
-            <h4 className="font-semibold text-gray-300">Discoveries</h4>
-            {discoveries.map((discovery, i) => (
-              <div
-                key={i}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="bg-gradient-to-r from-emerald-900/20 to-blue-900/20 rounded p-2 text-sm border border-emerald-700/50 flex items-center gap-2"
-              >
-                <Sparkles className="w-4 h-4 text-emerald-400" />
-                {discovery}
-              </div>
-            ))}
-          </div>
-        )}
-      </VisualizationSection>
-    </div>
-  );
-}, (prevProps, nextProps) => {
-  // Only re-render if isActive changes
-  return prevProps.isActive === nextProps.isActive;
 });
 
 // Enhanced Critical Values Explorer
@@ -752,10 +400,6 @@ const CriticalValuesExplorer = React.memo(({ isActive, onComplete }) => {
   
   return (
     <div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 1.5 }}
     >
       <VisualizationSection>
         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
@@ -770,7 +414,6 @@ const CriticalValuesExplorer = React.memo(({ isActive, onComplete }) => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
           <div 
             className="bg-gradient-to-br from-purple-900/20 to-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-purple-700/30"
-            whileHover={{ scale: 1.02 }}
           >
             <h4 className="font-semibold text-purple-400 mb-2">Understanding Critical Values</h4>
             <div className="space-y-2 text-sm">
@@ -785,7 +428,6 @@ const CriticalValuesExplorer = React.memo(({ isActive, onComplete }) => {
           
           <div 
             className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50"
-            whileHover={{ scale: 1.02 }}
           >
             <h4 className="font-semibold text-gray-300 mb-2">Common Critical Values</h4>
             <div className="space-y-1 text-sm">
@@ -793,7 +435,6 @@ const CriticalValuesExplorer = React.memo(({ isActive, onComplete }) => {
                 <div 
                   key={level} 
                   className="flex justify-between items-center p-1 rounded"
-                  whileHover={{ backgroundColor: 'rgba(139, 92, 246, 0.1)' }}
                 >
                   <span>{level}%:</span>
                   <span className="font-mono text-purple-400">±{z}</span>
@@ -831,8 +472,6 @@ const CriticalValuesExplorer = React.memo(({ isActive, onComplete }) => {
                     setConfidence(level);
                     setHasInteracted(true);
                   }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
                   className={`px-3 py-1 rounded transition-all ${
                     confidence === level 
                       ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg' 
@@ -957,10 +596,6 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
   
   return (
     <div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 1.5 }}
     >
       <VisualizationSection>
         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
@@ -972,7 +607,6 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
           <div className="space-y-4">
             <div 
               className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50"
-              whileHover={{ scale: 1.01 }}
             >
               <h4 className="font-semibold text-emerald-400 mb-3">Parameters</h4>
               
@@ -1038,7 +672,6 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
             
             <div 
               className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-xl p-4 border border-blue-700/30"
-              whileHover={{ scale: 1.01 }}
             >
               <h4 className="font-semibold text-blue-400 mb-2">Quick Examples</h4>
               <div className="space-y-2">
@@ -1067,9 +700,6 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
           <div className="space-y-4">
             <div 
               className="bg-gradient-to-br from-emerald-900/20 to-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-emerald-700/30"
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.5 }}
             >
               <h4 className="font-semibold text-emerald-400 mb-3">Calculation Steps</h4>
               
@@ -1086,9 +716,6 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
             
             <div 
               className="bg-gradient-to-br from-purple-900/30 to-pink-900/20 rounded-xl p-4 border border-purple-700/50"
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.5 }}
             >
               <h4 className="font-semibold text-purple-400 mb-2">Final Result</h4>
               <p className="text-2xl font-bold text-center text-white">
@@ -1108,8 +735,8 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
   return prevProps.isActive === nextProps.isActive;
 });
 
-// Practice Problems Module with Guided Solutions
-const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActive }) {
+// REMOVED: Practice Problems Module - Moved to 5-2-2-ConfidenceIntervalPractice.jsx
+/* const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActive }) {
   const contentRef = useRef(null);
   const [currentProblem, setCurrentProblem] = useState(0);
   const [showHint, setShowHint] = useState(false);
@@ -1275,10 +902,6 @@ const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActi
   
   return (
     <div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 1.5 }}
     >
       <VisualizationSection>
         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
@@ -1297,8 +920,6 @@ const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActi
                 setUserAnswer({ lower: '', upper: '' });
                 setFeedback('');
               }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
               className={`px-3 py-1 rounded-lg text-sm ${
                 i === currentProblem 
                   ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' 
@@ -1314,8 +935,6 @@ const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActi
           <div 
             className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50"
             key={currentProblem}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
           >
             <div className="flex items-center gap-2 mb-3">
               <span className={`px-2 py-1 rounded text-xs font-semibold ${
@@ -1353,8 +972,6 @@ const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActi
                 />
                 <button
                   onClick={checkAnswer}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
                   className="px-4 py-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg"
                 >
                   Check
@@ -1374,8 +991,6 @@ const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActi
                 />
                 <button
                   onClick={checkAnswer}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
                   className="px-4 py-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg"
                 >
                   Check
@@ -1385,8 +1000,6 @@ const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActi
             
             {feedback && (
               <p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
                 className={`mt-3 text-sm ${
                   feedback.includes('Correct') ? 'text-green-400' : 'text-yellow-400'
                 }`}
@@ -1399,8 +1012,6 @@ const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActi
           <div className="flex gap-3">
             <button
               onClick={() => setShowHint(!showHint)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
               className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg"
             >
               {showHint ? 'Hide Hints' : 'Show Hints'}
@@ -1408,8 +1019,6 @@ const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActi
             
             <button
               onClick={() => setShowSolution(!showSolution)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
               className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg"
             >
               {showSolution ? 'Hide Solution' : 'Show Solution'}
@@ -1419,9 +1028,6 @@ const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActi
           <div>
             {showHint && (
               <div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
                 className="bg-blue-900/20 rounded-lg p-4 border border-blue-700/50"
               >
                 <h5 className="font-semibold text-blue-400 mb-2">Hints:</h5>
@@ -1437,9 +1043,6 @@ const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActi
           <div>
             {showSolution && (
               <div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
                 className="bg-purple-900/20 rounded-lg p-4 border border-purple-700/50"
               >
                 <h5 className="font-semibold text-purple-400 mb-2">Solution:</h5>
@@ -1463,12 +1066,12 @@ const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActi
       </VisualizationSection>
     </div>
   );
-});
+}); */
 
-// Theoretical Foundations Module
-const TheoreticalFoundationsModule = React.memo(function TheoreticalFoundationsModule({ isActive }) {
+// REMOVED: Theoretical Foundations Module - Moved to 5-2-2-ConfidenceIntervalPractice.jsx
+/* const TheoreticalFoundationsModule = React.memo(function TheoreticalFoundationsModule({ isActive }) {
   const contentRef = useRef(null);
-  const [selectedTopic, setSelectedTopic] = useState('foundations');
+  const [selectedTopic, setSelectedTopic] = useState('business');
   const [animationKey, setAnimationKey] = useState(0);
   
   const majorExamples = {
@@ -1599,10 +1202,6 @@ const TheoreticalFoundationsModule = React.memo(function TheoreticalFoundationsM
   
   return (
     <div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 1.5 }}
     >
       <VisualizationSection>
         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
@@ -1617,8 +1216,6 @@ const TheoreticalFoundationsModule = React.memo(function TheoreticalFoundationsM
               <button
                 key={key}
                 onClick={() => setSelectedTopic(key)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
                 className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${
                   selectedTopic === key 
                     ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-lg' 
@@ -1636,19 +1233,11 @@ const TheoreticalFoundationsModule = React.memo(function TheoreticalFoundationsM
           <div>
             <div
               key={animationKey}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 1.5 }}
             >
-              {currentExamples.examples.map((example, i) => (
+              {currentExamples?.examples?.map((example, i) => (
                 <div
                   key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.2 }}
                   className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-5 border border-gray-700/50 mb-4"
-                  whileHover={{ scale: 1.01 }}
                 >
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center flex-shrink-0">
@@ -1681,7 +1270,6 @@ const TheoreticalFoundationsModule = React.memo(function TheoreticalFoundationsM
           
           <div 
             className="bg-gradient-to-r from-amber-900/20 to-orange-900/20 rounded-xl p-4 border border-amber-700/50"
-            whileHover={{ scale: 1.01 }}
           >
             <h5 className="font-semibold text-amber-400 mb-2">Key Insight</h5>
             <p className="text-sm text-gray-300">
@@ -1693,10 +1281,10 @@ const TheoreticalFoundationsModule = React.memo(function TheoreticalFoundationsM
       </VisualizationSection>
     </div>
   );
-});
+}); */
 
-// Exam Success Accelerator Module
-const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
+// REMOVED: Exam Success Module - Moved to 5-2-2-ConfidenceIntervalPractice.jsx  
+/* const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
   const contentRef = useRef(null);
   const [mode, setMode] = useState('mistakes'); // 'mistakes', 'speed', 'formula', 'ready'
   const [currentMistake, setCurrentMistake] = useState(0);
@@ -1758,10 +1346,6 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
   
   return (
     <div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 1.5 }}
     >
       <VisualizationSection>
         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
@@ -1772,8 +1356,6 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
         <div className="flex flex-wrap gap-2 mb-4">
           <button
             onClick={() => setMode('mistakes')}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
             className={`px-4 py-2 rounded-lg transition-all ${
               mode === 'mistakes' 
                 ? 'bg-gradient-to-r from-red-600 to-pink-600 text-white' 
@@ -1785,8 +1367,6 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
           
           <button
             onClick={() => setMode('speed')}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
             className={`px-4 py-2 rounded-lg transition-all ${
               mode === 'speed' 
                 ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white' 
@@ -1798,8 +1378,6 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
           
           <button
             onClick={() => setMode('formula')}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
             className={`px-4 py-2 rounded-lg transition-all ${
               mode === 'formula' 
                 ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white' 
@@ -1814,8 +1392,6 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
               setMode('ready');
               checkReadiness();
             }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
             className={`px-4 py-2 rounded-lg transition-all ${
               mode === 'ready' 
                 ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white' 
@@ -1829,8 +1405,6 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
         <div ref={contentRef}>
           {mode === 'mistakes' && (
             <div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
               className="space-y-4"
             >
               <div className="bg-gradient-to-br from-red-900/20 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-red-700/30">
@@ -1867,8 +1441,6 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
                     
                     {showAnswer && (
                       <div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
                         className="space-y-2"
                       >
                         <div className="p-3 bg-green-900/30 rounded-lg border border-green-600/50">
@@ -1892,8 +1464,6 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
                   {!showAnswer && (
                     <button
                       onClick={() => setShowAnswer(true)}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
                       className="w-full py-2 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-lg"
                     >
                       Show Correct Answer
@@ -1906,8 +1476,6 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
           
           {mode === 'speed' && (
             <div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
               className="bg-gradient-to-br from-blue-900/20 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-blue-700/30"
             >
               <h4 className="font-bold text-blue-400 mb-4">⚡ 10-Minute Crash Course</h4>
@@ -1978,8 +1546,6 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
           
           {mode === 'formula' && (
             <div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
               className="bg-gradient-to-br from-purple-900/20 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-700/30"
             >
               <div className="flex justify-between items-center mb-4">
@@ -2049,8 +1615,6 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
           
           {mode === 'ready' && readinessScore && (
             <div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
               className="bg-gradient-to-br from-emerald-900/20 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-emerald-700/30"
             >
               <h4 className="font-bold text-emerald-400 mb-4">Exam Readiness Assessment</h4>
@@ -2069,9 +1633,6 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
                       <span className="w-32 text-sm capitalize">{category}:</span>
                       <div className="flex-1 bg-gray-700 rounded-full h-4 overflow-hidden">
                         <div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${score * 100}%` }}
-                          transition={{ delay: 0.5, duration: 1.5 }}
                           className={`h-full ${
                             score === 1 ? 'bg-green-500' : 'bg-red-500'
                           }`}
@@ -2113,7 +1674,7 @@ const ExamSuccessModule = React.memo(function ExamSuccessModule({ isActive }) {
       </VisualizationSection>
     </div>
   );
-});
+}); */
 
 // Real-World Interpretation Module
 const RealWorldInterpretationModule = React.memo(function RealWorldInterpretationModule({ isActive }) {
@@ -2241,10 +1802,6 @@ const RealWorldInterpretationModule = React.memo(function RealWorldInterpretatio
   
   return (
     <div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 1.5 }}
     >
       <VisualizationSection>
         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
@@ -2261,8 +1818,6 @@ const RealWorldInterpretationModule = React.memo(function RealWorldInterpretatio
                 setSelectedInterpretation(null);
                 setShowFeedback(false);
               }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
               className={`px-3 py-1 rounded-lg text-sm ${
                 i === scenario 
                   ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white' 
@@ -2278,8 +1833,6 @@ const RealWorldInterpretationModule = React.memo(function RealWorldInterpretatio
           <div 
             className="bg-gradient-to-br from-emerald-900/20 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-emerald-700/30"
             key={scenario}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
           >
             <h4 className="font-bold text-white mb-2">{currentScenario.title}</h4>
             <p className="text-gray-300 mb-3">{currentScenario.context}</p>
@@ -2295,8 +1848,6 @@ const RealWorldInterpretationModule = React.memo(function RealWorldInterpretatio
                 <button
                   key={i}
                   onClick={() => handleSelection(i)}
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
                   className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
                     selectedInterpretation === i
                       ? option.correct
@@ -2317,9 +1868,6 @@ const RealWorldInterpretationModule = React.memo(function RealWorldInterpretatio
           <div>
             {showFeedback && selectedInterpretation !== null && (
               <div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
                 className={`rounded-lg p-4 ${
                   currentScenario.options[selectedInterpretation].correct
                     ? 'bg-green-900/20 border border-green-700/50'
@@ -2346,7 +1894,6 @@ const RealWorldInterpretationModule = React.memo(function RealWorldInterpretatio
           
           <div 
             className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50"
-            whileHover={{ scale: 1.01 }}
           >
             <h5 className="font-semibold text-purple-400 mb-2">Remember:</h5>
             <ul className="text-sm text-gray-300 space-y-1">
@@ -2413,10 +1960,6 @@ const ParameterEffectsExplorer = React.memo(({ isActive }) => {
   
   return (
     <div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 1.5 }}
     >
       <VisualizationSection>
         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
@@ -2429,8 +1972,6 @@ const ParameterEffectsExplorer = React.memo(({ isActive }) => {
             <button
               key={param}
               onClick={() => setComparison(param)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
               className={`px-4 py-2 rounded-lg transition-all ${
                 comparison === param 
                   ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg' 
@@ -2460,9 +2001,6 @@ const ParameterEffectsExplorer = React.memo(({ isActive }) => {
                 return (
                   <g 
                     key={i}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.1 }}
                   >
                     <text x="40" y={y + 5} textAnchor="end" fill="#999" fontSize="12">
                       {comp.label}
@@ -2506,7 +2044,6 @@ const ParameterEffectsExplorer = React.memo(({ isActive }) => {
           <div className="space-y-4">
             <div 
               className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50"
-              whileHover={{ scale: 1.01 }}
             >
               <h4 className="font-semibold text-emerald-400 mb-2">Key Insights</h4>
               <div className="space-y-2 text-sm">
@@ -2536,7 +2073,6 @@ const ParameterEffectsExplorer = React.memo(({ isActive }) => {
             
             <div 
               className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-xl p-4 border border-blue-700/30"
-              whileHover={{ scale: 1.01 }}
             >
               <h4 className="font-semibold text-blue-400 mb-2">Width Comparison</h4>
               <div className="space-y-2">
@@ -2547,9 +2083,6 @@ const ParameterEffectsExplorer = React.memo(({ isActive }) => {
                       <div className="w-32 bg-gray-700 rounded-full h-2">
                         <div 
                           className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${(comp.value.width / 20) * 100}%` }}
-                          transition={{ delay: i * 0.1, duration: 0.5 }}
                         />
                       </div>
                       <span className="text-sm font-mono text-gray-400 w-12 text-right">
@@ -2573,29 +2106,6 @@ const ParameterEffectsExplorer = React.memo(({ isActive }) => {
 // Main Component with Progressive Learning
 export default function ConfidenceIntervalKnownVariance() {
   const [mode, setMode] = useState(LEARNING_MODES.INTUITIVE);
-  const [unlockedModes, setUnlockedModes] = useState([LEARNING_MODES.INTUITIVE]);
-  const [completedSections, setCompletedSections] = useState([]);
-  
-  const unlockMode = (newMode) => {
-    if (!unlockedModes.includes(newMode)) {
-      setUnlockedModes(prev => [...prev, newMode]);
-    }
-  };
-  
-  const handleSectionComplete = (section) => {
-    if (!completedSections.includes(section)) {
-      setCompletedSections(prev => [...prev, section]);
-      
-      // Unlock next mode based on completion
-      if (section === LEARNING_MODES.INTUITIVE) {
-        unlockMode(LEARNING_MODES.FORMAL);
-      } else if (section === LEARNING_MODES.FORMAL) {
-        unlockMode(LEARNING_MODES.EXPLORATION);
-      } else if (section === LEARNING_MODES.EXPLORATION) {
-        unlockMode(LEARNING_MODES.PRACTICE);
-      }
-    }
-  };
   
   return (
     <VisualizationContainer
@@ -2607,15 +2117,11 @@ export default function ConfidenceIntervalKnownVariance() {
       <CIIntroduction 
         mode={mode} 
         onModeChange={setMode}
-        unlockedModes={unlockedModes}
       />
       
       {/* INTUITIVE Mode */}
       <div style={{ display: mode === LEARNING_MODES.INTUITIVE ? 'block' : 'none' }}>
-        <EmpiricalRuleExplorer 
-          isActive={mode === LEARNING_MODES.INTUITIVE}
-          onComplete={() => handleSectionComplete(LEARNING_MODES.INTUITIVE)}
-        />
+        {/* Intuitive mode content removed per request */}
         <InteractiveCIBuilder isActive={mode === LEARNING_MODES.INTUITIVE} />
       </div>
       
@@ -2623,7 +2129,6 @@ export default function ConfidenceIntervalKnownVariance() {
       <div style={{ display: mode === LEARNING_MODES.FORMAL ? 'block' : 'none' }}>
         <CriticalValuesExplorer 
           isActive={mode === LEARNING_MODES.FORMAL}
-          onComplete={() => handleSectionComplete(LEARNING_MODES.FORMAL)}
         />
         <InteractiveCIBuilder isActive={mode === LEARNING_MODES.FORMAL} />
       </div>
@@ -2631,41 +2136,51 @@ export default function ConfidenceIntervalKnownVariance() {
       {/* EXPLORATION Mode */}
       <div style={{ display: mode === LEARNING_MODES.EXPLORATION ? 'block' : 'none' }}>
         <ParameterEffectsExplorer isActive={mode === LEARNING_MODES.EXPLORATION} />
+        <CIHypothesisTestingBridge 
+          xBar={100} 
+          sigma={15} 
+          n={30} 
+          confidenceLevel={0.95} 
+        />
         <InteractiveCIBuilder isActive={mode === LEARNING_MODES.EXPLORATION} />
       </div>
       
-      {/* PRACTICE Mode */}
-      <div style={{ display: mode === LEARNING_MODES.PRACTICE ? 'block' : 'none' }}>
-        <TheoreticalFoundationsModule isActive={mode === LEARNING_MODES.PRACTICE} />
-        <ExamSuccessModule isActive={mode === LEARNING_MODES.PRACTICE} />
-        <PracticeProblemModule isActive={mode === LEARNING_MODES.PRACTICE} />
-        <RealWorldInterpretationModule isActive={mode === LEARNING_MODES.PRACTICE} />
-      </div>
+      {/* Practice Component Navigation */}
+      <VisualizationSection className="bg-gradient-to-r from-amber-900/20 to-orange-900/20 border border-amber-600/30 rounded-lg p-6 mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-xl font-bold text-amber-400 mb-2">📝 Practice Before Moving On</h3>
+            <p className="text-neutral-300 text-sm">
+              Solidify your understanding with practice problems, quizzes, and interactive exercises.
+            </p>
+          </div>
+          <a 
+            href="/chapter5/confidence-intervals-practice"
+            className="px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors font-semibold"
+          >
+            Start Practice Session →
+          </a>
+        </div>
+      </VisualizationSection>
       
       <div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
       >
         <VisualizationSection>
           <h3 className="text-xl font-bold text-white mb-4">Key Takeaways</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div 
               className="bg-gradient-to-br from-emerald-900/20 to-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-emerald-700/30"
-              whileHover={{ scale: 1.02 }}
             >
               <h4 className="font-semibold text-emerald-400 mb-2">Essential Concepts</h4>
               <ul className="text-sm space-y-1 text-gray-300">
                 <li>• CI = x̄ ± z(σ/√n)</li>
                 <li>• Width depends on confidence level, σ, and n</li>
-                <li>• 68-95-99.7 rule for quick estimates</li>
                 <li>• Critical values determine interval width</li>
               </ul>
             </div>
             
             <div 
               className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-xl p-4 border border-blue-700/30"
-              whileHover={{ scale: 1.02 }}
             >
               <h4 className="font-semibold text-blue-400 mb-2">Common Misconceptions</h4>
               <ul className="text-sm space-y-1 text-gray-300">
@@ -2676,22 +2191,6 @@ export default function ConfidenceIntervalKnownVariance() {
               </ul>
             </div>
           </div>
-          
-          {completedSections.length === 4 && (
-            <div 
-              className="mt-4 bg-gradient-to-r from-emerald-900/30 to-blue-900/30 rounded-xl p-4 border border-emerald-700/50"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <div className="flex items-center gap-2 text-emerald-400">
-                <CheckCircle className="w-5 h-5" />
-                <span className="font-semibold">All Learning Modes Completed!</span>
-              </div>
-              <p className="text-sm text-gray-300 mt-1">
-                You've mastered confidence interval construction with known variance.
-              </p>
-            </div>
-          )}
         </VisualizationSection>
         
         {/* Section Complete - Standardized Component */}
