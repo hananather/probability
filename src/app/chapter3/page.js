@@ -1,4 +1,4 @@
-import ContinuousDistributionsHub from '@/components/03-continuous-distributions-migrated/3-0-ContinuousDistributionsHub';
+import ContinuousDistributionsHub from '@/components/03-continuous-random-variables/3-0-ContinuousDistributionsHub';
 
 /**
  * Chapter 3 Page - Continuous Random Variables
