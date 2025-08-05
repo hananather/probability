@@ -265,8 +265,8 @@ const ProblemStatement = ({ onInsight }) => {
   return (
     <div className="space-y-6">
       <PlainEnglishCard
-        explanation="In real life, we almost never know the true spread (σ) of our population. We only have our sample's spread (s). This creates extra uncertainty that we need to account for."
-        example="Think of it like estimating a city's average income using only 10 households - you're guessing the spread based on limited data."
+        explanation="In real life, we almost never know the true spread (σ) of our population. We only have our sample's spread (s). This creates extra uncertainty that we need to account for. Using s instead of σ introduces additional variability - we're estimating the mean AND the spread from the same limited data."
+        example="Think of it like estimating a city's average income using only 10 households - you're guessing both the average AND the spread based on the same limited data. This double uncertainty needs special handling."
       />
       
       <ExamTip
@@ -342,7 +342,7 @@ const ProblemStatement = ({ onInsight }) => {
                 CI = <span dangerouslySetInnerHTML={{ __html: `\\(\\bar{x} \\pm z_{0.025} \\times \\frac{s}{\\sqrt{n}}\\)` }} />
               </div>
               <p className="text-neutral-400">
-                This seems reasonable, but there's a hidden problem...
+                This seems reasonable, but there's a hidden problem: s is itself a random variable that varies from sample to sample!
               </p>
               <button
                 onClick={() => setShowWhyItFails(true)}
@@ -1512,7 +1512,20 @@ const MathematicalFoundation = React.memo(function MathematicalFoundation({ onIn
             >
               <p className="text-purple-300">
                 <strong>Key Insight:</strong> The extra uncertainty from estimating σ with s 
-                changes the distribution from normal to t with n-1 degrees of freedom.
+                changes the distribution from normal to t with n-1 degrees of freedom. The t-distribution 
+                has heavier tails (more extreme values) to account for this additional uncertainty.
+              </p>
+            </div>
+            
+            <div className="mt-4 p-3 bg-blue-900/30 rounded-lg border border-blue-500/50">
+              <h5 className="font-semibold text-blue-400 mb-2">Understanding Degrees of Freedom</h5>
+              <p className="text-neutral-300 mb-2">
+                Why n-1? When calculating s, we use x̄ in the formula. Once we know x̄ and n-1 data points, 
+                the last point is determined. We "lose" one degree of freedom to estimate the mean.
+              </p>
+              <p className="text-xs text-neutral-400 italic">
+                Think of it as: "How many values are free to vary?" With n data points and one constraint (they must average to x̄), 
+                only n-1 can vary freely.
               </p>
             </div>
           </div>
@@ -1597,7 +1610,7 @@ const StepByStepGuide = React.memo(function StepByStepGuide({ onInsight }) {
     },
     {
       title: "Step 2: Determine Degrees of Freedom",
-      content: "df = n - 1 where n is the sample size",
+      content: "df = n - 1 where n is the sample size. We lose one degree of freedom because we used the sample to estimate the mean.",
       calculation: `df = ${n} - 1 = ${df}`,
       question: "What are the degrees of freedom?",
       answer: df.toString()

@@ -14,6 +14,8 @@ import {
 import BackToHub from "../ui/BackToHub";
 import SectionComplete from '@/components/ui/SectionComplete';
 import { createColorScheme, typography } from "@/lib/design-system";
+import { SemanticGradientCard, SemanticGradientGrid } from '../ui/patterns/SemanticGradientCard';
+import { InterpretationBox } from '../ui/patterns/InterpretationBox';
 
 // Use Chapter 7 color scheme for consistency
 const colorScheme = createColorScheme('regression');
@@ -137,8 +139,12 @@ const MathematicalFoundations = React.memo(function MathematicalFoundations() {
             backgroundColor: `${colorScheme.secondary}20`,
             borderColor: `${colorScheme.secondary}50`
           }}>
-            <p className="text-sm">
+            <p className="text-sm mb-2">
               <strong className="text-yellow-400">When is this valid?</strong> Both np ≥ 10 AND n(1-p) ≥ 10
+            </p>
+            <p className="text-xs text-neutral-400">
+              <strong>Intuition:</strong> We need at least 10 expected successes AND 10 expected failures. 
+              This ensures our binomial distribution is "bell-shaped enough" for the normal approximation to work well.
             </p>
           </div>
         </div>
@@ -248,51 +254,27 @@ const MathematicalFoundations = React.memo(function MathematicalFoundations() {
           {steps[currentStep].content}
         </div>
         
-        {/* Navigation buttons */}
+        {/* Navigation buttons - Chapter 7 style */}
         <div className="flex justify-between">
           <button
             onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
             disabled={currentStep === 0}
-            className="px-4 py-2 rounded-lg transition-all duration-300"
-            style={{
-              backgroundColor: currentStep === 0 ? '#374151' : colorScheme.primary,
-              color: currentStep === 0 ? '#6b7280' : 'white',
-              cursor: currentStep === 0 ? 'not-allowed' : 'pointer',
-              opacity: currentStep === 0 ? 0.5 : 1
-            }}
-            onMouseEnter={(e) => {
-              if (currentStep !== 0) {
-                e.target.style.transform = 'scale(1.05)';
-                e.target.style.boxShadow = `0 0 20px ${colorScheme.primary}80`;
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = 'scale(1)';
-              e.target.style.boxShadow = 'none';
-            }}
+            className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+              currentStep === 0 
+                ? 'bg-neutral-700 text-neutral-400 cursor-not-allowed' 
+                : 'bg-purple-600 hover:bg-purple-700 text-white'
+            }`}
           >
             Previous
           </button>
           <button
             onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}
             disabled={currentStep === steps.length - 1}
-            className="px-4 py-2 rounded-lg transition-all duration-300"
-            style={{
-              backgroundColor: currentStep === steps.length - 1 ? '#374151' : colorScheme.primary,
-              color: currentStep === steps.length - 1 ? '#6b7280' : 'white',
-              cursor: currentStep === steps.length - 1 ? 'not-allowed' : 'pointer',
-              opacity: currentStep === steps.length - 1 ? 0.5 : 1
-            }}
-            onMouseEnter={(e) => {
-              if (currentStep !== steps.length - 1) {
-                e.target.style.transform = 'scale(1.05)';
-                e.target.style.boxShadow = `0 0 20px ${colorScheme.primary}80`;
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = 'scale(1)';
-              e.target.style.boxShadow = 'none';
-            }}
+            className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+              currentStep === steps.length - 1 
+                ? 'bg-neutral-700 text-neutral-400 cursor-not-allowed' 
+                : 'bg-purple-600 hover:bg-purple-700 text-white'
+            }`}
           >
             Next
           </button>
@@ -362,94 +344,10 @@ const ProportionIntroduction = React.memo(function ProportionIntroduction() {
   );
 });
 
-// Confidence Interval Display Component
-const ConfidenceIntervalDisplay = React.memo(function ConfidenceIntervalDisplay({ 
-  se_A, se_B, moe_A, moe_B, ci_A, ci_B, onComplete 
-}) {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [se_A, se_B, moe_A, moe_B, ci_A, ci_B]);
-  
-  return (
-    <div
-      ref={contentRef}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-6"
-    >
-      <div className="bg-neutral-800 rounded-xl p-6">
-        <h4 className="font-semibold text-white mb-4">
-          95% Confidence Intervals
-        </h4>
-        
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-purple-900/20 rounded-lg p-4 border border-purple-500/30">
-            <p className="font-semibold mb-3" style={{ color: colorScheme.primary }}>Candidate A</p>
-            <div className="space-y-2 text-sm">
-              <p><span dangerouslySetInnerHTML={{ __html: `\\(\\hat{p}_A = 0.52\\)` }} /></p>
-              <p><span dangerouslySetInnerHTML={{ __html: `\\(SE_A = \\sqrt{\\frac{0.52 \\times 0.48}{1000}} = ${se_A.toFixed(4)}\\)` }} /></p>
-              <p><span dangerouslySetInnerHTML={{ __html: `\\(\\text{Margin} = 1.96 \\times ${se_A.toFixed(4)} = ${moe_A.toFixed(4)}\\)` }} /></p>
-              <p className="font-semibold mt-2" style={{ color: colorScheme.primary }}>
-                CI: [{(ci_A.lower * 100).toFixed(1)}%, {(ci_A.upper * 100).toFixed(1)}%]
-              </p>
-            </div>
-          </div>
-          
-          <div className="rounded-lg p-4 border" style={{
-            backgroundColor: `${colorScheme.primary}20`,
-            borderColor: `${colorScheme.primary}50`
-          }}>
-            <p className="font-semibold mb-3" style={{ color: colorScheme.secondary }}>Candidate B</p>
-            <div className="space-y-2 text-sm">
-              <p><span dangerouslySetInnerHTML={{ __html: `\\(\\hat{p}_B = 0.48\\)` }} /></p>
-              <p><span dangerouslySetInnerHTML={{ __html: `\\(SE_B = \\sqrt{\\frac{0.48 \\times 0.52}{1000}} = ${se_B.toFixed(4)}\\)` }} /></p>
-              <p><span dangerouslySetInnerHTML={{ __html: `\\(\\text{Margin} = 1.96 \\times ${se_B.toFixed(4)} = ${moe_B.toFixed(4)}\\)` }} /></p>
-              <p className="font-semibold mt-2" style={{ color: colorScheme.secondary }}>
-                CI: [{(ci_B.lower * 100).toFixed(1)}%, {(ci_B.upper * 100).toFixed(1)}%]
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="mt-6 p-4 rounded-lg border" style={{
-          backgroundColor: `${colorScheme.secondary}30`,
-          borderColor: `${colorScheme.secondary}50`
-        }}>
-          <p className="text-sm">
-            <strong style={{ color: colorScheme.secondary }}>Statistical Dead Heat!</strong> The confidence intervals overlap
-            ([{(ci_A.lower * 100).toFixed(1)}%, {(ci_A.upper * 100).toFixed(1)}%] vs [{(ci_B.lower * 100).toFixed(1)}%, {(ci_B.upper * 100).toFixed(1)}%]),
-            meaning we cannot confidently predict a winner.
-          </p>
-        </div>
-      </div>
-      
-      <button
-        onClick={onComplete}
-        className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
-      >
-        Continue to Theory
-      </button>
-    </div>
-  );
-});
 
-// Election Story Section
+// Election Story Section - with step-by-step navigation
 const ElectionStory = React.memo(function ElectionStory({ onComplete }) {
-  const [stage, setStage] = useState('intro');
-  const [pollData, setPollData] = useState(null);
-  const [showCalculation, setShowCalculation] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
   const contentRef = useRef(null);
   
   // Fixed values from course
@@ -486,103 +384,355 @@ const ElectionStory = React.memo(function ElectionStory({ onComplete }) {
     processMathJax();
     const timeoutId = setTimeout(processMathJax, 100);
     return () => clearTimeout(timeoutId);
-  }, [stage]);
+  }, [currentStep]);
+  
+  const steps = [
+    {
+      title: "The Election Dilemma",
+      content: (
+        <div>
+          <p className="text-neutral-300">
+            It's one week before a major election. A news organization wants to know:
+            <span className="font-semibold" style={{ color: colorScheme.primary }}> Will Candidate A win?</span>
+          </p>
+          <p className="text-neutral-300 mt-3">
+            They can't ask all 10 million voters, so they poll a random sample of 1,000 voters...
+          </p>
+          <div className="mt-6 p-4 bg-purple-900/20 rounded-lg border border-purple-500/30">
+            <p className="text-sm font-semibold text-purple-400 mb-2">The Challenge:</p>
+            <ul className="text-sm text-neutral-300 space-y-1">
+              <li>• Population: 10 million voters</li>
+              <li>• Sample: 1,000 voters (0.01% of population)</li>
+              <li>• Question: Can such a small sample predict the outcome?</li>
+            </ul>
+          </div>
+        </div>
+      )
+    },
+    {
+      title: "Poll Results",
+      content: (
+        <div>
+          <p className="text-neutral-300 mb-4">
+            After polling 1,000 randomly selected voters, here are the results:
+          </p>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-purple-900/20 rounded-lg p-6 border border-purple-500/30 text-center">
+              <p className="text-sm text-neutral-400 mb-2">Candidate A</p>
+              <div className="text-4xl font-mono text-purple-400 font-bold">52%</div>
+              <p className="text-sm text-neutral-500 mt-2">(520 out of 1,000 votes)</p>
+            </div>
+            <div className="bg-blue-900/20 rounded-lg p-6 border border-blue-500/30 text-center">
+              <p className="text-sm text-neutral-400 mb-2">Candidate B</p>
+              <div className="text-4xl font-mono text-blue-400 font-bold">48%</div>
+              <p className="text-sm text-neutral-500 mt-2">(480 out of 1,000 votes)</p>
+            </div>
+          </div>
+          <div className="mt-6 p-4 bg-neutral-900/50 rounded-lg">
+            <p className="text-sm text-yellow-400">
+              <strong>Question:</strong> Candidate A has a 4-point lead in our sample. 
+              But is this enough to confidently predict they'll win the actual election?
+            </p>
+          </div>
+        </div>
+      )
+    },
+    {
+      title: "Confidence Intervals Reveal the Truth",
+      content: (
+        <div ref={contentRef}>
+          <p className="text-neutral-300 mb-4">
+            Let's calculate 95% confidence intervals to quantify our uncertainty:
+          </p>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-purple-900/20 rounded-lg p-4 border border-purple-500/30">
+              <p className="font-semibold mb-3" style={{ color: colorScheme.primary }}>Candidate A</p>
+              <div className="space-y-2 text-sm">
+                <p><span dangerouslySetInnerHTML={{ __html: `\\(\\hat{p}_A = 0.52\\)` }} /></p>
+                <p><span dangerouslySetInnerHTML={{ __html: `\\(SE_A = \\sqrt{\\frac{0.52 \\times 0.48}{1000}} = ${se_A.toFixed(4)}\\)` }} /></p>
+                <p><span dangerouslySetInnerHTML={{ __html: `\\(\\text{Margin} = 1.96 \\times ${se_A.toFixed(4)} = ${moe_A.toFixed(4)}\\)` }} /></p>
+                <p className="font-semibold mt-2 text-purple-400">
+                  CI: [{(ci_A.lower * 100).toFixed(1)}%, {(ci_A.upper * 100).toFixed(1)}%]
+                </p>
+              </div>
+            </div>
+            
+            <div className="bg-blue-900/20 rounded-lg p-4 border border-blue-500/30">
+              <p className="font-semibold mb-3" style={{ color: colorScheme.secondary }}>Candidate B</p>
+              <div className="space-y-2 text-sm">
+                <p><span dangerouslySetInnerHTML={{ __html: `\\(\\hat{p}_B = 0.48\\)` }} /></p>
+                <p><span dangerouslySetInnerHTML={{ __html: `\\(SE_B = \\sqrt{\\frac{0.48 \\times 0.52}{1000}} = ${se_B.toFixed(4)}\\)` }} /></p>
+                <p><span dangerouslySetInnerHTML={{ __html: `\\(\\text{Margin} = 1.96 \\times ${se_B.toFixed(4)} = ${moe_B.toFixed(4)}\\)` }} /></p>
+                <p className="font-semibold mt-2 text-blue-400">
+                  CI: [{(ci_B.lower * 100).toFixed(1)}%, {(ci_B.upper * 100).toFixed(1)}%]
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-6 p-4 rounded-lg border" style={{
+            backgroundColor: `${colorScheme.secondary}20`,
+            borderColor: `${colorScheme.secondary}50`
+          }}>
+            <p className="text-sm">
+              <strong className="text-yellow-400">Statistical Dead Heat!</strong> The confidence intervals overlap
+              ([{(ci_A.lower * 100).toFixed(1)}%, {(ci_A.upper * 100).toFixed(1)}%] vs [{(ci_B.lower * 100).toFixed(1)}%, {(ci_B.upper * 100).toFixed(1)}%]),
+              meaning we cannot confidently predict a winner. The race is too close to call!
+            </p>
+          </div>
+        </div>
+      )
+    }
+  ];
   
   return (
-    <VisualizationSection className="space-y-6">
-      <h3 className="font-bold text-white" style={{ fontSize: typography.h2 }}>The Election Story</h3>
+    <VisualizationSection>
+      <h3 className="font-bold text-white mb-6" style={{ fontSize: typography.h2 }}>
+        The Election Story: A Real-World Application
+      </h3>
       
-      {stage === 'intro' && (
+      <div className="space-y-6">
+        {/* Progress indicator */}
+        <div className="flex items-center justify-between mb-6">
+          {steps.map((_, idx) => (
+            <div
+              key={idx}
+              className={`flex-1 h-2 mx-1 rounded-full transition-all duration-300 ${
+                idx <= currentStep
+                  ? 'bg-gradient-to-r from-purple-600 to-purple-500'
+                  : 'bg-neutral-700'
+              }`}
+            />
+          ))}
+        </div>
+        
+        {/* Current step content */}
         <div
-          style={{
-          background: `linear-gradient(to bottom right, ${colorScheme.primary}40, #262626)`,
-          borderColor: `${colorScheme.primary}50`
-        }}
-        className="rounded-xl p-6 border"
+          key={currentStep}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="bg-neutral-800 rounded-xl p-6"
         >
-          <h4 className="font-bold mb-4" style={{ fontSize: typography.h3, color: colorScheme.primary }}>
-            The Election Dilemma
+          <h4 className="font-semibold text-white mb-4" style={{ fontSize: typography.h3 }}>
+            Step {currentStep + 1}: {steps[currentStep].title}
           </h4>
-          
-          <div className="prose prose-invert max-w-none">
-            <p className="text-neutral-300">
-              It's one week before a major election. A news organization wants to know:
-              <span className="font-semibold" style={{ color: colorScheme.primary }}> Will Candidate A win?</span>
-            </p>
-            <p className="text-neutral-300 mt-3">
-              They can't ask all 10 million voters, so they poll a random sample of 1,000 voters...
-            </p>
-          </div>
-          
+          {steps[currentStep].content}
+        </div>
+        
+        {/* Navigation buttons - Chapter 7 style */}
+        <div className="flex justify-between">
           <button
-            onClick={() => setStage('poll')}
-            className="mt-4 px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+            onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
+            disabled={currentStep === 0}
+            className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+              currentStep === 0 
+                ? 'bg-neutral-700 text-neutral-400 cursor-not-allowed' 
+                : 'bg-purple-600 hover:bg-purple-700 text-white'
+            }`}
           >
-            Conduct the Poll
+            Previous
+          </button>
+          <button
+            onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}
+            disabled={currentStep === steps.length - 1}
+            className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+              currentStep === steps.length - 1 
+                ? 'bg-neutral-700 text-neutral-400 cursor-not-allowed' 
+                : 'bg-purple-600 hover:bg-purple-700 text-white'
+            }`}
+          >
+            Next
           </button>
         </div>
-      )}
-      
-      {stage === 'poll' && (
-        <div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="space-y-6"
-        >
-          <div className="bg-neutral-800 rounded-xl p-6">
-            <h4 className="font-semibold text-white mb-4">Poll Results</h4>
-            
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="text-center">
-                <p className="text-sm text-neutral-400 mb-2">Candidate A</p>
-                <div className="text-3xl font-mono text-purple-400">52%</div>
-                <p className="text-sm text-neutral-500">(520 votes)</p>
-              </div>
-              <div className="text-center">
-                <p className="text-sm text-neutral-400 mb-2">Candidate B</p>
-                <div className="text-3xl font-mono text-blue-400">48%</div>
-                <p className="text-sm text-neutral-500">(480 votes)</p>
-              </div>
-            </div>
-            
-            <div className="mt-6 p-4 bg-neutral-900/50 rounded-lg">
-              <p className="text-sm text-neutral-400">
-                With n = 1,000 voters polled, can we confidently say Candidate A will win?
-              </p>
-            </div>
-          </div>
-          
-          <button
-            onClick={() => setStage('confidence')}
-            className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
-          >
-            Calculate Confidence Intervals
-          </button>
-        </div>
-      )}
-      
-      {stage === 'confidence' && (
-        <ConfidenceIntervalDisplay 
-          se_A={se_A}
-          se_B={se_B}
-          moe_A={moe_A}
-          moe_B={moe_B}
-          ci_A={ci_A}
-          ci_B={ci_B}
-          onComplete={onComplete}
-        />
-      )}
+      </div>
     </VisualizationSection>
+  );
+});
+
+// Understanding Normal Approximation Theory
+const NormalApproximationTheory = React.memo(function NormalApproximationTheory() {
+  const contentRef = useRef(null);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, []);
+  
+  // Visual intuition data - no longer needed with direct table
+  const conditionsTable = null;
+  
+  return (
+    <div ref={contentRef} className="space-y-6">
+      {/* Core Question */}
+      <InterpretationBox title="The Fundamental Question" theme="blue">
+        <p className="text-lg mb-3">
+          <strong>When can we approximate a discrete binomial with a continuous normal distribution?</strong>
+        </p>
+        <p className="mb-2">
+          The binomial distribution is <span className="text-blue-400">discrete</span> (you can have 0, 1, 2... successes, but not 1.5).
+          The normal distribution is <span className="text-green-400">continuous</span> (any real value).
+        </p>
+        <p>
+          We're essentially asking: When does the discrete "staircase" of binomial probabilities look enough like a smooth bell curve?
+        </p>
+      </InterpretationBox>
+      
+      {/* Mathematical Foundation */}
+      <SemanticGradientGrid title="Mathematical Foundation" theme="purple">
+        <SemanticGradientCard
+          title="1. The Binomial Distribution"
+          description="For X ~ B(n, p), we have:"
+          formula={`\\[E[X] = np \\quad \\text{and} \\quad Var(X) = np(1-p)\\]`}
+          note="These are the exact mean and variance of the binomial."
+          theme="purple"
+        />
+        <SemanticGradientCard
+          title="2. Sample Proportion"
+          description="The sample proportion is:"
+          formula={`\\[\\hat{P} = \\frac{X}{n} \\quad \\text{where} \\quad E[\\hat{P}] = p\\]`}
+          note={`Standard error: \\(SE = \\sqrt{\\frac{p(1-p)}{n}}\\)`}
+          theme="blue"
+        />
+        <SemanticGradientCard
+          title="3. Central Limit Theorem"
+          description="As n increases:"
+          formula={`\\[\\hat{P} \\xrightarrow{d} N\\left(p, \\frac{p(1-p)}{n}\\right)\\]`}
+          note="The distribution approaches normal, but how fast depends on p."
+          theme="teal"
+        />
+        <SemanticGradientCard
+          title="4. The Magic Conditions"
+          description="Normal approximation is valid when:"
+          formula={`\\[np \\geq 10 \\quad \\text{AND} \\quad n(1-p) \\geq 10\\]`}
+          note="Both expected successes AND failures must be at least 10."
+          theme="green"
+        />
+      </SemanticGradientGrid>
+      
+      {/* Why These Conditions? */}
+      <InterpretationBox title="Why np ≥ 10 and n(1-p) ≥ 10?" theme="teal">
+        <p className="mb-3">
+          <strong>These conditions ensure sufficient data in both categories to form a bell shape:</strong>
+        </p>
+        <ul className="space-y-2 ml-4">
+          <li>• <span className="text-teal-400">np ≥ 10</span>: We need at least 10 expected successes</li>
+          <li>• <span className="text-teal-400">n(1-p) ≥ 10</span>: We need at least 10 expected failures</li>
+        </ul>
+        <p className="mt-3 text-yellow-400">
+          <strong>Why 10?</strong> This is empirical - statisticians found that with at least 10 in each category, 
+          the approximation error is typically less than 5%. It's a practical threshold, not a mathematical certainty.
+        </p>
+      </InterpretationBox>
+      
+      {/* Visual Intuition Table */}
+      <div className="bg-neutral-800 rounded-xl p-6">
+        <h4 className="font-semibold text-white mb-4" style={{ fontSize: typography.h3 }}>
+          Visual Intuition: When Does the Approximation Work?
+        </h4>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-neutral-700">
+                <th className="text-left py-2 px-3 text-neutral-400">Scenario</th>
+                <th className="text-center py-2 px-3 text-neutral-400">n</th>
+                <th className="text-center py-2 px-3 text-neutral-400">p</th>
+                <th className="text-center py-2 px-3 text-neutral-400">np</th>
+                <th className="text-center py-2 px-3 text-neutral-400">n(1-p)</th>
+                <th className="text-center py-2 px-3 text-neutral-400">Meets Conditions?</th>
+                <th className="text-center py-2 px-3 text-neutral-400">Distribution Shape</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-neutral-700/50">
+                <td className="py-2 px-3 text-neutral-300">Rare event</td>
+                <td className="text-center py-2 px-3">100</td>
+                <td className="text-center py-2 px-3">0.01</td>
+                <td className="text-center py-2 px-3 text-red-400">1</td>
+                <td className="text-center py-2 px-3 text-green-400">99</td>
+                <td className="text-center py-2 px-3 text-red-400">❌ No</td>
+                <td className="text-center py-2 px-3 text-neutral-400">Extremely skewed right</td>
+              </tr>
+              <tr className="border-b border-neutral-700/50">
+                <td className="py-2 px-3 text-neutral-300">Uncommon</td>
+                <td className="text-center py-2 px-3">100</td>
+                <td className="text-center py-2 px-3">0.10</td>
+                <td className="text-center py-2 px-3 text-yellow-400">10</td>
+                <td className="text-center py-2 px-3 text-green-400">90</td>
+                <td className="text-center py-2 px-3 text-yellow-400">✓ Borderline</td>
+                <td className="text-center py-2 px-3 text-neutral-400">Slightly skewed</td>
+              </tr>
+              <tr className="border-b border-neutral-700/50">
+                <td className="py-2 px-3 text-neutral-300">Moderate</td>
+                <td className="text-center py-2 px-3">110</td>
+                <td className="text-center py-2 px-3">0.40</td>
+                <td className="text-center py-2 px-3 text-green-400">44</td>
+                <td className="text-center py-2 px-3 text-green-400">66</td>
+                <td className="text-center py-2 px-3 text-green-400">✓ Yes</td>
+                <td className="text-center py-2 px-3 text-neutral-400">Bell-shaped</td>
+              </tr>
+              <tr className="border-b border-neutral-700/50">
+                <td className="py-2 px-3 text-neutral-300">Balanced</td>
+                <td className="text-center py-2 px-3">50</td>
+                <td className="text-center py-2 px-3">0.50</td>
+                <td className="text-center py-2 px-3 text-green-400">25</td>
+                <td className="text-center py-2 px-3 text-green-400">25</td>
+                <td className="text-center py-2 px-3 text-green-400">✓ Yes</td>
+                <td className="text-center py-2 px-3 text-neutral-400">Perfect symmetry</td>
+              </tr>
+              <tr>
+                <td className="py-2 px-3 text-neutral-300">Common</td>
+                <td className="text-center py-2 px-3">100</td>
+                <td className="text-center py-2 px-3">0.95</td>
+                <td className="text-center py-2 px-3 text-green-400">95</td>
+                <td className="text-center py-2 px-3 text-red-400">5</td>
+                <td className="text-center py-2 px-3 text-red-400">❌ No</td>
+                <td className="text-center py-2 px-3 text-neutral-400">Extremely skewed left</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-4 p-3 bg-neutral-700/50 rounded-lg">
+          <p className="text-sm text-neutral-300">
+            <strong>Key Insight:</strong> The distribution shape depends on both n and p. When p is near 0.5, 
+            we get symmetry with smaller n. When p is extreme (near 0 or 1), we need much larger n to achieve normality.
+          </p>
+        </div>
+      </div>
+      
+      {/* What Happens When Conditions Fail */}
+      <InterpretationBox title="What Happens When Conditions Aren't Met?" theme="red">
+        <p className="mb-3">
+          When np &lt; 10 or n(1-p) &lt; 10, the normal approximation becomes unreliable:
+        </p>
+        <ul className="space-y-2 ml-4">
+          <li>• <span className="text-red-400">Confidence intervals become inaccurate</span> (may not achieve stated coverage)</li>
+          <li>• <span className="text-red-400">Hypothesis tests have wrong Type I error rates</span></li>
+          <li>• <span className="text-red-400">The distribution is too skewed</span> for the symmetric normal curve</li>
+        </ul>
+        <p className="mt-3 text-yellow-400">
+          <strong>Solution:</strong> Use exact binomial methods or other alternatives like the Wilson score interval.
+        </p>
+      </InterpretationBox>
+    </div>
   );
 });
 
 // Normal Approximation Validator
 const NormalApproximationValidator = React.memo(function NormalApproximationValidator() {
-  const [n, setN] = useState(100);
-  const [p, setP] = useState(0.5);
+  const [n, setN] = useState(110);
+  const [p, setP] = useState(0.40);
   const svgRef = useRef(null);
+  const containerRef = useRef(null);
   
   // Check conditions
   const np = n * p;
@@ -590,32 +740,41 @@ const NormalApproximationValidator = React.memo(function NormalApproximationVali
   const conditionsMet = np >= 10 && nq >= 10;
   
   useEffect(() => {
-    if (!svgRef.current) return;
+    if (!svgRef.current || !containerRef.current) return;
     
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
     
-    const width = 600;
-    const height = 300;
-    const margin = { top: 20, right: 30, bottom: 40, left: 50 };
+    // Get actual container dimensions
+    const containerWidth = containerRef.current.clientWidth;
+    const width = Math.min(containerWidth, 500);
+    const height = 220;
+    const margin = { top: 35, right: 20, bottom: 30, left: 40 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
+    // Set SVG dimensions and viewBox for proper scaling
+    svg.attr("viewBox", `0 0 ${width} ${height}`)
+       .attr("preserveAspectRatio", "xMidYMid meet");
+    
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
+    
+    // Normal approximation parameters
+    const mean = p;
+    const stdDev = Math.sqrt(p * (1 - p) / n);
     
     // Scales
     const x = d3.scaleLinear()
       .domain([0, 1])
       .range([0, innerWidth]);
     
-    const y = d3.scaleLinear()
-      .domain([0, 0.15])
-      .range([innerHeight, 0]);
+    // Calculate max density for better scaling
+    const maxDensity = (1 / (stdDev * Math.sqrt(2 * Math.PI))) * 1.1; // Add 10% padding
     
-    // Normal approximation parameters
-    const mean = p;
-    const stdDev = Math.sqrt(p * (1 - p) / n);
+    const y = d3.scaleLinear()
+      .domain([0, maxDensity])
+      .range([innerHeight, 0]);
     
     // Generate normal curve data
     const normalData = d3.range(0, 1.01, 0.01).map(x => {
@@ -673,16 +832,16 @@ const NormalApproximationValidator = React.memo(function NormalApproximationVali
       .call(d3.axisBottom(x))
       .append("text")
       .attr("x", innerWidth / 2)
-      .attr("y", 35)
+      .attr("y", 25)
       .attr("fill", "#e5e5e5")
       .style("text-anchor", "middle")
       .text("Proportion");
     
     g.append("g")
-      .call(d3.axisLeft(y).ticks(5))
+      .call(d3.axisLeft(y).ticks(4))
       .append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", -35)
+      .attr("y", -28)
       .attr("x", -innerHeight / 2)
       .attr("fill", "#e5e5e5")
       .style("text-anchor", "middle")
@@ -701,7 +860,7 @@ const NormalApproximationValidator = React.memo(function NormalApproximationVali
     // Mean label
     g.append("text")
       .attr("x", x(mean))
-      .attr("y", -5)
+      .attr("y", -15)
       .attr("text-anchor", "middle")
       .attr("fill", "#fbbf24")
       .text(`p = ${p.toFixed(2)}`);
@@ -710,15 +869,15 @@ const NormalApproximationValidator = React.memo(function NormalApproximationVali
   
   return (
     <VisualizationSection>
-      <h3 className="font-bold text-white mb-4" style={{ fontSize: typography.h2 }}>
-        When Can We Use Normal Approximation?
+      <h3 className="font-bold text-white mb-2" style={{ fontSize: typography.h3 }}>
+        Interactive Visualization: See How n and p Affect the Distribution
       </h3>
       
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="space-y-4">
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="space-y-3">
           <ControlGroup>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-xs font-medium text-gray-300 mb-1">
                 Sample Size (n): {n}
               </label>
               <input
@@ -732,7 +891,7 @@ const NormalApproximationValidator = React.memo(function NormalApproximationVali
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-xs font-medium text-gray-300 mb-1">
                 True Proportion (p): {p.toFixed(2)}
               </label>
               <input
@@ -744,16 +903,16 @@ const NormalApproximationValidator = React.memo(function NormalApproximationVali
                 onChange={(e) => setP(Number(e.target.value))}
                 className="w-full"
               />
-              <div className="flex justify-between text-xs text-neutral-500 mt-1">
-                <span>Rare event</span>
+              <div className="flex justify-between text-xs text-neutral-500 mt-0.5">
+                <span>Rare</span>
                 <span>p = {p.toFixed(2)}</span>
-                <span>Common event</span>
+                <span>Common</span>
               </div>
             </div>
           </ControlGroup>
           
           <div
-            className={`p-4 rounded-lg border-2 ${
+            className={`p-3 rounded-lg border ${
               conditionsMet
                 ? 'bg-green-900/20 border-green-500/50'
                 : 'bg-red-900/20 border-red-500/50'
@@ -762,44 +921,44 @@ const NormalApproximationValidator = React.memo(function NormalApproximationVali
               borderColor: conditionsMet ? '#22c55e50' : '#ef444450'
             }}
           >
-            <h4 className={`font-semibold mb-3 flex items-center gap-2 ${
+            <h4 className={`font-medium mb-1.5 flex items-center gap-1.5 text-sm ${
               conditionsMet ? 'text-green-400' : 'text-red-400'
             }`}>
-              {conditionsMet ? <CheckCircle className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
+              {conditionsMet ? <CheckCircle className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
               {conditionsMet ? 'Conditions Met' : 'Conditions Not Met'}
             </h4>
             
-            <div className="space-y-2 text-sm">
+            <div className="space-y-0.5 text-xs">
               <div className={`flex justify-between ${
                 np >= 10 ? 'text-green-400' : 'text-red-400'
               }`}>
-                <span>np = {n} × {p.toFixed(2)} = {np.toFixed(1)}</span>
+                <span>np = {np.toFixed(1)}</span>
                 <span>{np >= 10 ? '≥' : '<'} 10 {np >= 10 ? '✓' : '✗'}</span>
               </div>
               <div className={`flex justify-between ${
                 nq >= 10 ? 'text-green-400' : 'text-red-400'
               }`}>
-                <span>n(1-p) = {n} × {(1-p).toFixed(2)} = {nq.toFixed(1)}</span>
+                <span>n(1-p) = {nq.toFixed(1)}</span>
                 <span>{nq >= 10 ? '≥' : '<'} 10 {nq >= 10 ? '✓' : '✗'}</span>
               </div>
             </div>
             
             {!conditionsMet && (
-              <p className="text-xs text-neutral-400 mt-3">
-                When conditions fail, use exact binomial methods instead.
+              <p className="text-xs text-neutral-400 mt-2">
+                Use exact binomial methods instead.
               </p>
             )}
           </div>
         </div>
         
-        <div>
-          <GraphContainer height="300px">
-            <svg ref={svgRef} className="w-full h-full" />
+        <div ref={containerRef}>
+          <GraphContainer height="220px">
+            <svg ref={svgRef} className="w-full" style={{ height: '220px' }} />
           </GraphContainer>
           
-          <div className="mt-4 p-4 bg-neutral-800/50 rounded-lg">
-            <p className="text-sm text-neutral-400 mb-2">Key Insights:</p>
-            <ul className="space-y-1 text-sm text-neutral-300">
+          <div className="mt-2 p-3 bg-neutral-800/50 rounded-lg">
+            <p className="text-xs text-neutral-400 mb-1">Key Insights:</p>
+            <ul className="space-y-0.5 text-xs text-neutral-300">
               <li>• Extreme p values (near 0 or 1) need larger n</li>
               <li>• p = 0.5 needs smallest sample size</li>
               <li>• SE = √(p(1-p)/n) is largest when p = 0.5</li>
@@ -1878,19 +2037,14 @@ const KeyTakeaways = React.memo(function KeyTakeaways() {
 
 // Main Component
 export default function ProportionConfidenceInterval() {
-  const [currentSection, setCurrentSection] = useState('intro');
-  const [userProgress, setUserProgress] = useState({
-    introCompleted: false,
-    foundationsCompleted: false,
-    electionCompleted: false,
-    theoryCompleted: false,
-    practiceCompleted: false,
-    advancedCompleted: false
-  });
+  const [activeTab, setActiveTab] = useState('intro');
   
-  // Calculate total sections dynamically
-  const totalSections = Object.keys(userProgress).length;
-  const completedSections = Object.values(userProgress).filter(Boolean).length;
+  // Tab configuration with numbers
+  const tabs = [
+    { id: 'intro', label: 'Introduction', number: '1' },
+    { id: 'foundations', label: 'Mathematical Foundations', number: '2' },
+    { id: 'election', label: 'Election Story', number: '3' }
+  ];
   
   return (
     <VisualizationContainer
@@ -1899,268 +2053,117 @@ export default function ProportionConfidenceInterval() {
     >
       <BackToHub chapter={5} />
       
-      {/* Exam Alert Banner */}
-      <div className="mb-6 rounded-lg p-4 border" style={{
-        background: `linear-gradient(to right, ${colorScheme.secondary}30, ${colorScheme.secondary}20)`,
-        borderColor: `${colorScheme.secondary}50`
-      }}>
-        <div className="flex items-center gap-3">
-          <AlertCircle className="w-6 h-6" style={{ color: colorScheme.secondary }} />
-          <div>
-            <p className="font-semibold" style={{ color: colorScheme.secondary }}>⚠️ EXAM ALERT</p>
-            <p className="text-sm text-neutral-300">
-              This topic appears on <span className="font-bold" style={{ color: colorScheme.secondary }}>15% of all exams</span> • 
-              Estimated study time: <span className="font-bold">45 minutes</span>
-            </p>
+      {/* Conceptual Introduction */}
+      <div className="mb-6 p-6 bg-gradient-to-br from-purple-900/20 to-blue-900/20 rounded-lg border border-purple-700/50">
+        <h2 className="text-2xl font-bold text-purple-400 mb-4">Why Proportions Are Different</h2>
+        <div className="space-y-4 text-neutral-300">
+          <p>
+            So far, we've built confidence intervals for means. But what about proportions – percentages, rates, and probabilities? 
+            <span className="text-purple-400 font-semibold"> These require special treatment because they're bounded between 0 and 1.</span>
+          </p>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="bg-neutral-800/50 rounded-lg p-4">
+              <h3 className="font-semibold text-blue-400 mb-2">Examples of Proportions</h3>
+              <ul className="text-sm space-y-1">
+                <li>• Percentage voting for a candidate</li>
+                <li>• Product defect rate</li>
+                <li>• Drug effectiveness rate</li>
+                <li>• Customer satisfaction percentage</li>
+                <li>• Pass rate on an exam</li>
+              </ul>
+            </div>
+            <div className="bg-neutral-800/50 rounded-lg p-4">
+              <h3 className="font-semibold text-yellow-400 mb-2">Why They're Special</h3>
+              <ul className="text-sm space-y-1">
+                <li>• Can't go below 0% or above 100%</li>
+                <li>• Variance depends on the proportion itself</li>
+                <li>• Extreme values (near 0 or 1) behave oddly</li>
+                <li>• Standard methods fail at boundaries</li>
+              </ul>
+            </div>
+          </div>
+          <p className="text-sm italic text-neutral-400">
+            This section teaches you to handle these unique challenges properly.
+          </p>
+        </div>
+      </div>
+      
+      {/* TABBED SECTION - First 3 sections with numbered tabs */}
+      <div className="mb-12 bg-neutral-800/30 rounded-lg">
+        {/* Tab Navigation */}
+        <div className="border-b border-neutral-700">
+          <div className="flex space-x-1 px-6">
+            {tabs.map(({ id, label, number }) => (
+              <button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
+                  activeTab === id
+                    ? 'bg-neutral-700 text-white'
+                    : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
+                }`}
+              >
+                <span className="font-bold text-base">{number}.</span>
+                <span>{label}</span>
+              </button>
+            ))}
           </div>
         </div>
-      </div>
       
-      {/* Progress Indicator */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm text-neutral-400">Your Progress</span>
-          <span className="text-sm text-neutral-400">
-            {completedSections} / {totalSections} sections
-          </span>
-        </div>
-        <div className="w-full bg-neutral-700 rounded-full h-2">
-          <div 
-            className="bg-gradient-to-r from-purple-600 to-emerald-600 h-2 rounded-full transition-all duration-300"
-            style={{ 
-              width: `${(completedSections / totalSections) * 100}%` 
-            }}
-          />
-        </div>
-      </div>
-      
-      {/* Navigation Tabs */}
-      <div className="flex flex-wrap gap-2 mb-8">
-        <button
-          onClick={() => setCurrentSection('intro')}
-          className={`px-4 py-2 rounded-lg transition-all ${
-            currentSection === 'intro' 
-              ? 'bg-purple-600 text-white' 
-              : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
-          }`}
-        >
-          Introduction
-        </button>
-        <button
-          onClick={() => setCurrentSection('foundations')}
-          className={`px-4 py-2 rounded-lg transition-all ${
-            currentSection === 'foundations' 
-              ? 'bg-purple-600 text-white' 
-              : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
-          }`}
-        >
-          Mathematical Foundations
-        </button>
-        <button
-          onClick={() => setCurrentSection('election')}
-          className={`px-4 py-2 rounded-lg transition-all ${
-            currentSection === 'election' 
-              ? 'bg-purple-600 text-white' 
-              : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
-          }`}
-        >
-          Election Story
-        </button>
-        <button
-          onClick={() => setCurrentSection('theory')}
-          className={`px-4 py-2 rounded-lg transition-all ${
-            currentSection === 'theory' 
-              ? 'bg-blue-600 text-white' 
-              : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
-          }`}
-          disabled={!userProgress.electionCompleted}
-        >
-          Theory & Validation
-        </button>
-        <button
-          onClick={() => setCurrentSection('practice')}
-          className={`px-4 py-2 rounded-lg transition-all ${
-            currentSection === 'practice' 
-              ? 'bg-emerald-600 text-white' 
-              : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
-          }`}
-          disabled={!userProgress.theoryCompleted}
-        >
-          Practice & Apply
-        </button>
-        <button
-          onClick={() => setCurrentSection('advanced')}
-          className={`px-4 py-2 rounded-lg transition-all ${
-            currentSection === 'advanced' 
-              ? 'bg-indigo-600 text-white' 
-              : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
-          }`}
-          disabled={!userProgress.practiceCompleted}
-        >
-          Advanced Topics
-        </button>
-      </div>
-      
-      {/* Content Sections */}
-      <div>
-        <div
-          key={currentSection}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
-        >
-          {currentSection === 'intro' && (
+        {/* Tab Content */}
+        <div className="p-6">
+          {activeTab === 'intro' && (
             <div className="space-y-8">
               <ProportionIntroduction />
-              <div className="text-center">
-                <button
-                  onClick={() => {
-                    setUserProgress({...userProgress, introCompleted: true});
-                    setCurrentSection('foundations');
-                  }}
-                  className="px-6 py-3 text-white rounded-lg transition-all duration-300"
-                  style={{
-                    backgroundColor: colorScheme.primary
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.transform = 'scale(1.05)';
-                    e.target.style.boxShadow = `0 0 30px ${colorScheme.primary}80`;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.transform = 'scale(1)';
-                    e.target.style.boxShadow = 'none';
-                  }}
-                >
-                  Continue to Mathematical Foundations
-                </button>
-              </div>
             </div>
           )}
           
-          {currentSection === 'foundations' && (
+          {activeTab === 'foundations' && (
             <div className="space-y-8">
               <MathematicalFoundations />
-              <div className="text-center">
-                <button
-                  onClick={() => {
-                    setUserProgress({...userProgress, foundationsCompleted: true});
-                    setCurrentSection('election');
-                  }}
-                  className="px-6 py-3 text-white rounded-lg transition-all duration-300"
-                  style={{
-                    backgroundColor: colorScheme.primary
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.transform = 'scale(1.05)';
-                    e.target.style.boxShadow = `0 0 30px ${colorScheme.primary}80`;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.transform = 'scale(1)';
-                    e.target.style.boxShadow = 'none';
-                  }}
-                >
-                  Continue to Election Story
-                </button>
-              </div>
             </div>
           )}
           
-          {currentSection === 'election' && (
+          {activeTab === 'election' && (
             <ElectionStory 
               onComplete={() => {
-                setUserProgress({...userProgress, electionCompleted: true});
-                setCurrentSection('theory');
+                // No longer needed - removed navigation
               }}
             />
           )}
-          
-          {currentSection === 'theory' && (
-            <div className="space-y-8">
-              <NormalApproximationValidator />
-              <div className="text-center">
-                <button
-                  onClick={() => {
-                    setUserProgress({...userProgress, theoryCompleted: true});
-                    setCurrentSection('practice');
-                  }}
-                  className="px-6 py-3 text-white rounded-lg transition-all duration-300"
-                  style={{
-                    backgroundColor: colorScheme.secondary
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.transform = 'scale(1.05)';
-                    e.target.style.boxShadow = `0 0 30px ${colorScheme.secondary}80`;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.transform = 'scale(1)';
-                    e.target.style.boxShadow = 'none';
-                  }}
-                >
-                  Continue to Practice
-                </button>
-              </div>
-            </div>
-          )}
-          
-          {currentSection === 'practice' && (
-            <div className="space-y-8">
-              <ProportionCIBuilder />
-              <ExamPracticeProblems />
-              <SampleSizeCalculator />
-              <ScenarioExplorer />
-              <CommonMistakes />
-              <KeyTakeaways />
-              
-              <div className="text-center">
-                <button
-                  onClick={() => {
-                    setUserProgress({...userProgress, practiceCompleted: true});
-                    setCurrentSection('advanced');
-                  }}
-                  className="px-6 py-3 text-white rounded-lg transition-all duration-300"
-                  style={{
-                    backgroundColor: colorScheme.chart.success
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.transform = 'scale(1.05)';
-                    e.target.style.boxShadow = `0 0 30px ${colorScheme.chart.success}80`;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.transform = 'scale(1)';
-                    e.target.style.boxShadow = 'none';
-                  }}
-                >
-                  Continue to Advanced Topics
-                </button>
-              </div>
-            </div>
-          )}
-          
-          {currentSection === 'advanced' && (
-            <div className="space-y-8">
-              {/* Placeholder for advanced topics like Wilson interval */}
-              <div className="bg-gradient-to-br from-indigo-900/20 to-purple-900/20 rounded-lg p-6 border border-indigo-500/30">
-                <h3 className="font-bold mb-4" style={{ fontSize: typography.h2, color: colorScheme.tertiary }}>
-                  Advanced Topics (Coming Soon)
-                </h3>
-                <p className="text-neutral-300 mb-4">
-                  In future updates, this section will cover:
-                </p>
-                <ul className="space-y-2 text-sm text-neutral-400">
-                  <li>• Wilson/Score confidence intervals</li>
-                  <li>• Agresti-Coull adjusted intervals</li>
-                  <li>• Bayesian credible intervals</li>
-                  <li>• Finite population corrections</li>
-                </ul>
-              </div>
-              
-              {/* Section Complete - Standardized Component */}
-              <SectionComplete chapter={5} />
-            </div>
-          )}
         </div>
       </div>
+      
+      {/* THEORY & VALIDATION SECTION - Always visible below tabs */}
+      <div className="mb-12">
+        <h2 className="text-2xl font-bold text-teal-400 mb-6 flex items-center gap-2">
+          <span className="font-bold">4.</span>
+          Theory & Validation
+        </h2>
+        <div className="space-y-8">
+          <NormalApproximationTheory />
+          <NormalApproximationValidator />
+        </div>
+      </div>
+      
+      {/* PRACTICE & APPLY SECTION - Always visible below tabs */}
+      <div className="mb-12">
+        <h2 className="text-2xl font-bold text-emerald-400 mb-6 flex items-center gap-2">
+          <span className="font-bold">5.</span>
+          Practice & Apply
+        </h2>
+        <div className="space-y-8">
+          <ProportionCIBuilder />
+          <ExamPracticeProblems />
+          <SampleSizeCalculator />
+          <ScenarioExplorer />
+          <CommonMistakes />
+          <KeyTakeaways />
+        </div>
+      </div>
+      
+      {/* Section Complete - Standardized Component */}
+      <SectionComplete chapter={5} />
     </VisualizationContainer>
   );
 }

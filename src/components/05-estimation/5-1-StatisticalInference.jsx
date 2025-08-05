@@ -10,6 +10,7 @@ import {
 import { colors, createColorScheme } from '../../lib/design-system';
 import BackToHub from '@/components/ui/BackToHub';
 import SectionComplete from '@/components/ui/SectionComplete';
+import { QuizBreak } from '../mdx/QuizBreak';
 import { 
   Brain, Target, Activity, BarChart, RefreshCw, 
   TrendingUp, Users, Dice6, Package, Vote, ChevronRight,
@@ -18,6 +19,159 @@ import {
 
 // Use probability color scheme for consistency with Chapter 2
 const chapterColors = createColorScheme('probability');
+
+// Add Bayesian Inference Introduction Component
+const BayesianInferenceIntro = React.memo(function BayesianInferenceIntro() {
+  const contentRef = useRef(null);
+  const [priorBelief, setPriorBelief] = useState(0.5);
+  const [evidence, setEvidence] = useState({ heads: 0, tails: 0 });
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [priorBelief, evidence]);
+  
+  // Calculate posterior using Beta-Binomial model
+  const alpha = priorBelief * 10 + evidence.heads + 1;
+  const beta = (1 - priorBelief) * 10 + evidence.tails + 1;
+  const posterior = alpha / (alpha + beta);
+  
+  return (
+    <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">
+      <h3 className="text-xl font-bold text-purple-400 mb-4 flex items-center gap-2">
+        <Brain className="w-5 h-5" />
+        Bayesian Inference: Updating Beliefs with Data
+      </h3>
+      
+      <div ref={contentRef} className="space-y-4">
+        <div className="bg-purple-900/20 rounded-lg p-4 border border-purple-700/50">
+          <h4 className="font-semibold text-purple-400 mb-3">The Bayesian Approach</h4>
+          <p className="text-sm text-neutral-300 mb-3">
+            While classical (frequentist) inference treats parameters as fixed but unknown constants, 
+            Bayesian inference treats them as random variables with probability distributions. This allows 
+            us to incorporate prior knowledge and update our beliefs as we collect data.
+          </p>
+          <div className="text-center p-3 bg-neutral-800 rounded">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[\\text{Posterior} \\propto \\text{Likelihood} \\times \\text{Prior}\\]` 
+            }} />
+          </div>
+        </div>
+        
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="bg-neutral-900/50 rounded-lg p-4">
+            <h5 className="font-semibold text-purple-400 mb-3">Interactive Coin Bias Example</h5>
+            <p className="text-sm text-neutral-300 mb-3">
+              Is this coin fair? Start with your prior belief and update it with evidence:
+            </p>
+            
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm text-neutral-300">Prior belief (probability of heads): {priorBelief.toFixed(2)}</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={priorBelief}
+                  onChange={(e) => setPriorBelief(Number(e.target.value))}
+                  className="w-full mt-1"
+                />
+              </div>
+              
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setEvidence({...evidence, heads: evidence.heads + 1})}
+                  className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm"
+                >
+                  Flip: Heads
+                </button>
+                <button
+                  onClick={() => setEvidence({...evidence, tails: evidence.tails + 1})}
+                  className="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 rounded text-white text-sm"
+                >
+                  Flip: Tails
+                </button>
+              </div>
+              
+              <div className="text-sm text-neutral-400">
+                Evidence: {evidence.heads} heads, {evidence.tails} tails
+              </div>
+              
+              <button
+                onClick={() => setEvidence({ heads: 0, tails: 0 })}
+                className="text-sm text-neutral-400 hover:text-neutral-300"
+              >
+                Reset Evidence
+              </button>
+            </div>
+          </div>
+          
+          <div className="bg-neutral-900/50 rounded-lg p-4">
+            <h5 className="font-semibold text-purple-400 mb-3">Belief Evolution</h5>
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-neutral-400">Prior:</span>
+                <span className="font-mono text-neutral-300">{priorBelief.toFixed(3)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-neutral-400">Posterior:</span>
+                <span className="font-mono text-purple-400">{posterior.toFixed(3)}</span>
+              </div>
+              <div className="h-px bg-neutral-700" />
+              <p className="text-xs text-neutral-400">
+                {evidence.heads + evidence.tails === 0 
+                  ? "Start flipping to see how evidence updates your belief!"
+                  : `After ${evidence.heads + evidence.tails} flips, your belief has ${Math.abs(posterior - priorBelief) > 0.1 ? 'significantly' : 'slightly'} changed.`
+                }
+              </p>
+              
+              <div className="bg-neutral-800 rounded p-3">
+                <p className="text-xs text-neutral-400 mb-2">Mathematical Update:</p>
+                <div className="text-xs" dangerouslySetInnerHTML={{ 
+                  __html: `\\[p(\\theta|data) \\propto \\theta^{${evidence.heads}}(1-\\theta)^{${evidence.tails}} \\times Beta(${(priorBelief * 10).toFixed(1)}, ${((1-priorBelief) * 10).toFixed(1)})\\]` 
+                }} />
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-purple-900/20 to-indigo-900/20 rounded-lg p-4 border border-purple-700/50">
+          <h5 className="font-semibold text-purple-400 mb-2">Key Differences: Bayesian vs. Frequentist</h5>
+          <div className="grid md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="font-medium text-indigo-400 mb-1">Frequentist Approach:</p>
+              <ul className="text-neutral-300 space-y-1">
+                <li>• Parameters are fixed constants</li>
+                <li>• Probability = long-run frequency</li>
+                <li>• Confidence intervals</li>
+                <li>• No prior information used</li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-medium text-purple-400 mb-1">Bayesian Approach:</p>
+              <ul className="text-neutral-300 space-y-1">
+                <li>• Parameters have distributions</li>
+                <li>• Probability = degree of belief</li>
+                <li>• Credible intervals</li>
+                <li>• Prior knowledge incorporated</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </VisualizationSection>
+  );
+});
 
 // Introduction Component
 const StatisticalInferenceIntroduction = React.memo(function StatisticalInferenceIntroduction() {
@@ -81,19 +235,42 @@ const StatisticalInferenceIntroduction = React.memo(function StatisticalInferenc
         className="bg-blue-900/20 rounded-xl p-6 border border-blue-500/20"
       >
         <h3 className="text-xl font-bold text-blue-400 mb-4">
-          The Fundamental Goal
+          The Fundamental Challenge of Statistical Inference
         </h3>
-        <p className="text-base text-neutral-200 leading-relaxed">
-          One of the goals of statistical inference is to draw conclusions about a
-          <span className="mx-1 px-2 py-1 bg-blue-500/20 text-blue-400 rounded">
-            population
-          </span>
-          based on a
-          <span className="mx-1 px-2 py-1 bg-blue-500/20 text-blue-400 rounded">
-            random sample
-          </span>
-          from the population.
-        </p>
+        <div className="space-y-4">
+          <p className="text-base text-neutral-200 leading-relaxed">
+            Statistical inference is the art and science of drawing conclusions about a
+            <span className="mx-1 px-2 py-1 bg-blue-500/20 text-blue-400 rounded">
+              population
+            </span>
+            based on information from a
+            <span className="mx-1 px-2 py-1 bg-blue-500/20 text-blue-400 rounded">
+              random sample
+            </span>
+            from that population.
+          </p>
+          <div className="bg-neutral-800/50 rounded-lg p-4">
+            <p className="text-sm text-neutral-300 mb-3">
+              <span className="text-blue-400 font-semibold">The Central Question:</span> How can we use limited data (what we observe) 
+              to make reliable statements about the entire population (what we want to know)?
+            </p>
+            <div className="grid md:grid-cols-3 gap-3 text-sm">
+              <div className="text-center p-3 bg-neutral-900/50 rounded">
+                <p className="text-xs text-neutral-400 mb-1">What We Want</p>
+                <p className="font-semibold text-blue-400">Parameters</p>
+                <p className="text-xs mt-1">True population values</p>
+              </div>
+              <div className="flex items-center justify-center">
+                <span className="text-neutral-400">→</span>
+              </div>
+              <div className="text-center p-3 bg-neutral-900/50 rounded">
+                <p className="text-xs text-neutral-400 mb-1">What We Have</p>
+                <p className="font-semibold text-purple-400">Statistics</p>
+                <p className="text-xs mt-1">Sample-based estimates</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       
       {/* Course Examples Grid */}
@@ -202,6 +379,170 @@ const StatisticalInferenceIntroduction = React.memo(function StatisticalInferenc
   );
 });
 
+// Properties of Estimators Component
+const EstimatorProperties = React.memo(function EstimatorProperties() {
+  const contentRef = useRef(null);
+  const [selectedProperty, setSelectedProperty] = useState('unbiased');
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [selectedProperty]);
+  
+  const properties = {
+    unbiased: {
+      name: 'Unbiasedness',
+      definition: 'An estimator is unbiased if its expected value equals the true parameter value.',
+      formula: `E[\\hat{\\theta}] = \\theta`,
+      example: 'Sample mean is an unbiased estimator of population mean',
+      visual: 'Center of sampling distribution matches true value'
+    },
+    consistent: {
+      name: 'Consistency',
+      definition: 'An estimator is consistent if it converges to the true parameter as sample size increases.',
+      formula: `\\lim_{n \\to \\infty} P(|\\hat{\\theta}_n - \\theta| < \\epsilon) = 1`,
+      example: 'Sample variance (with n-1) is consistent for population variance',
+      visual: 'Sampling distribution narrows around true value as n increases'
+    },
+    efficient: {
+      name: 'Efficiency',
+      definition: 'An estimator is efficient if it has the smallest variance among all unbiased estimators.',
+      formula: `Var(\\hat{\\theta}) \\geq \\frac{1}{nI(\\theta)}`,
+      example: 'Sample mean is the most efficient estimator of normal distribution mean',
+      visual: 'Narrowest possible sampling distribution'
+    },
+    sufficient: {
+      name: 'Sufficiency',
+      definition: 'An estimator is sufficient if it captures all information about the parameter in the sample.',
+      formula: `P(X|T(X)=t, \\theta) = P(X|T(X)=t)`,
+      example: 'Sum of observations is sufficient for Poisson rate parameter',
+      visual: 'No information loss when reducing data to statistic'
+    }
+  };
+  
+  return (
+    <VisualizationSection>
+      <h3 className="text-xl font-bold text-blue-400 mb-4 flex items-center gap-2">
+        <Target className="w-5 h-5" />
+        Desirable Properties of Estimators
+      </h3>
+      
+      {/* Advanced Topic Warning */}
+      <div className="mb-4">
+        <div className="flex items-start gap-2">
+          <span className="text-yellow-500 text-lg">📚</span>
+          <div>
+            <span className="text-yellow-500 font-semibold text-sm">Advanced Topic</span>
+            <p className="text-xs text-yellow-400/80 mt-1">
+              This section covers advanced theoretical concepts. While important for deeper understanding,
+              you may skip this section if you're focusing on practical applications.
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <div ref={contentRef} className="space-y-4">
+        <div className="bg-blue-900/20 rounded-lg p-4 border border-blue-700/50">
+          <p className="text-sm text-neutral-300">
+            Not all estimators are created equal! Good estimators should possess certain mathematical 
+            properties that ensure they provide reliable and accurate estimates. Let's explore the 
+            four most important properties:
+          </p>
+        </div>
+        
+        <div className="flex gap-2 mb-4 flex-wrap">
+          {Object.entries(properties).map(([key, prop]) => (
+            <button
+              key={key}
+              onClick={() => setSelectedProperty(key)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                selectedProperty === key
+                  ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-500/50'
+                  : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+              }`}
+            >
+              {prop.name}
+            </button>
+          ))}
+        </div>
+        
+        <div className="bg-neutral-900/50 rounded-lg p-6 border border-neutral-700/50">
+          <h4 className="font-semibold text-blue-400 mb-3">
+            {properties[selectedProperty].name}
+          </h4>
+          
+          <div className="space-y-4">
+            <p className="text-neutral-300">
+              {properties[selectedProperty].definition}
+            </p>
+            
+            <div className="bg-neutral-800 rounded p-3 text-center">
+              <span dangerouslySetInnerHTML={{ 
+                __html: `\\[${properties[selectedProperty].formula}\\]` 
+              }} />
+            </div>
+            
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="bg-blue-900/20 rounded-lg p-3 border border-blue-700/50">
+                <p className="text-sm font-semibold text-blue-400 mb-1">Example:</p>
+                <p className="text-sm text-neutral-300">
+                  {properties[selectedProperty].example}
+                </p>
+              </div>
+              <div className="bg-purple-900/20 rounded-lg p-3 border border-purple-700/50">
+                <p className="text-sm font-semibold text-purple-400 mb-1">Visual Interpretation:</p>
+                <p className="text-sm text-neutral-300">
+                  {properties[selectedProperty].visual}
+                </p>
+              </div>
+            </div>
+            
+            {selectedProperty === 'unbiased' && (
+              <div className="mt-3">
+                <p className="text-sm text-amber-400 flex items-start gap-2">
+                  <span className="text-amber-500">💡</span>
+                  <span><strong>Note:</strong> Unbiasedness alone doesn't guarantee a good estimator. A broken clock 
+                  that randomly shows times is unbiased for the true time on average, but it's 
+                  not useful!</span>
+                </p>
+              </div>
+            )}
+            
+            {selectedProperty === 'efficient' && (
+              <div className="bg-teal-900/20 rounded-lg p-3 border border-teal-700/50">
+                <p className="text-sm text-teal-400">
+                  The Cramér-Rao Lower Bound sets the theoretical limit on how efficient 
+                  an unbiased estimator can be. Estimators achieving this bound are called 
+                  "minimum variance unbiased estimators" (MVUE).
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-indigo-900/20 to-purple-900/20 rounded-lg p-4 border border-indigo-700/50">
+          <h5 className="font-semibold text-indigo-400 mb-2">The Trade-offs</h5>
+          <p className="text-sm text-neutral-300">
+            In practice, we often face trade-offs between these properties. For example, a biased 
+            estimator might have lower overall error (MSE) than an unbiased one if it has much 
+            smaller variance. The key is choosing estimators that balance these properties 
+            appropriately for your specific application.
+          </p>
+        </div>
+      </div>
+    </VisualizationSection>
+  );
+});
+
 // Mathematical Foundations Component
 const MathematicalFoundations = React.memo(function MathematicalFoundations() {
   const contentRef = useRef(null);
@@ -237,12 +578,52 @@ const MathematicalFoundations = React.memo(function MathematicalFoundations() {
               <p className="text-sm text-neutral-300 mb-3">
                 A point estimate <span dangerouslySetInnerHTML={{ __html: `\\(\\hat{\\theta}\\)` }} /> 
                 is a single value used to estimate an unknown population parameter 
-                <span dangerouslySetInnerHTML={{ __html: ` \\(\\theta\\)` }} />.
+                <span dangerouslySetInnerHTML={{ __html: ` \\(\\theta\\)` }} />. It's our "best guess" 
+                based on the available sample data.
               </p>
               <div className="text-center p-3 bg-neutral-800 rounded">
                 <span dangerouslySetInnerHTML={{ 
                   __html: `\\[\\hat{\\theta} = g(X_1, X_2, ..., X_n)\\]` 
                 }} />
+              </div>
+              <p className="text-xs text-neutral-400 mt-2">
+                where g is a function that combines the sample observations into a single estimate
+              </p>
+            </div>
+            
+            <div className="bg-amber-900/20 rounded-lg p-4 border border-amber-700/50">
+              <h5 className="font-semibold text-amber-400 mb-2">Common Point Estimation Methods</h5>
+              <div className="space-y-3 text-sm">
+                <div>
+                  <p className="font-medium text-amber-400">1. Method of Moments (MoM)</p>
+                  <p className="text-neutral-300 mt-1">
+                    Set sample moments equal to population moments and solve for parameters. 
+                    Simple but not always efficient.
+                  </p>
+                  <p className="text-xs text-neutral-400 mt-1">
+                    Example: For normal distribution, x̄ estimates μ and s² estimates σ²
+                  </p>
+                </div>
+                <div>
+                  <p className="font-medium text-amber-400">2. Maximum Likelihood Estimation (MLE)</p>
+                  <p className="text-neutral-300 mt-1">
+                    Find parameter values that maximize the probability of observing the data. 
+                    Often more efficient than MoM.
+                  </p>
+                  <p className="text-xs text-neutral-400 mt-1">
+                    Example: MLE for exponential rate λ is 1/x̄
+                  </p>
+                </div>
+                <div>
+                  <p className="font-medium text-amber-400">3. Bayesian Estimation</p>
+                  <p className="text-neutral-300 mt-1">
+                    Combine prior knowledge with data using Bayes' theorem. Provides full 
+                    posterior distribution, not just point estimate.
+                  </p>
+                  <p className="text-xs text-neutral-400 mt-1">
+                    Example: Posterior mean or mode as point estimate
+                  </p>
+                </div>
               </div>
             </div>
             <div className="grid md:grid-cols-2 gap-3">
@@ -1249,7 +1630,7 @@ const DecisionTreeHelper = React.memo(function DecisionTreeHelper({ onSelect }) 
 });
 
 // Visual Formula Card Component
-const VisualFormulaCard = React.memo(function VisualFormulaCard({ type, values, showSteps = false }) {
+const VisualFormulaCard = React.memo(function VisualFormulaCard({ type, values }) {
   const contentRef = useRef(null);
   
   useEffect(() => {
@@ -1264,7 +1645,7 @@ const VisualFormulaCard = React.memo(function VisualFormulaCard({ type, values, 
     processMathJax();
     const timeoutId = setTimeout(processMathJax, 100);
     return () => clearTimeout(timeoutId);
-  }, [type, values, showSteps]);
+  }, [type, values]);
   
   const formulas = {
     'ci-known-sigma': {
@@ -1273,7 +1654,7 @@ const VisualFormulaCard = React.memo(function VisualFormulaCard({ type, values, 
       bgGradient: 'from-blue-900/20 to-blue-900/20',
       borderColor: 'border-blue-700/50',
       textColor: 'text-blue-400',
-      icon: '📊',
+      icon: '',
       formula: `\\[\\bar{X} \\pm z_{\\alpha/2} \\cdot \\frac{\\sigma}{\\sqrt{n}}\\]`,
       steps: [
         { label: 'Find z-value', calc: 'For 95% CI: z = 1.96' },
@@ -1289,7 +1670,7 @@ const VisualFormulaCard = React.memo(function VisualFormulaCard({ type, values, 
       bgGradient: 'from-purple-900/20 to-purple-800/20',
       borderColor: 'border-purple-700/50',
       textColor: 'text-purple-400',
-      icon: '🎯',
+      icon: '',
       formula: `\\[\\bar{X} \\pm t_{\\alpha/2,n-1} \\cdot \\frac{S}{\\sqrt{n}}\\]`,
       steps: [
         { label: 'Find df', calc: `df = n - 1 = ${values.n - 1}` },
@@ -1315,34 +1696,32 @@ const VisualFormulaCard = React.memo(function VisualFormulaCard({ type, values, 
         <span dangerouslySetInnerHTML={{ __html: current.formula }} />
       </div>
       
-      {showSteps && (
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-neutral-300 mb-2">Step-by-Step:</p>
-          {current.steps.map((step, idx) => (
-            <div
-              key={idx}
-              className="flex items-start gap-2 text-sm"
-            >
-              <span className="text-blue-400 font-mono">{idx + 1}.</span>
-              <div className="flex-1">
-                <span className="text-neutral-300">{step.label}:</span>
-                <span className="ml-2 font-mono text-neutral-400">{step.calc}</span>
-              </div>
-            </div>
-          ))}
-          
-          <div 
-            className="mt-3 p-2 bg-gradient-to-br from-red-900/20 to-red-800/20 rounded border border-red-700/50"
+      <div className="space-y-2">
+        <p className="text-sm font-medium text-neutral-300 mb-2">Step-by-Step:</p>
+        {current.steps.map((step, idx) => (
+          <div
+            key={idx}
+            className="flex items-start gap-2 text-sm"
           >
-            <p className="text-xs font-medium text-red-400 mb-1">⚠️ Common Mistakes:</p>
-            <ul className="text-xs text-neutral-300">
-              {current.commonMistakes.map((mistake, idx) => (
-                <li key={idx}>• {mistake}</li>
-              ))}
-            </ul>
+            <span className="text-blue-400 font-mono">{idx + 1}.</span>
+            <div className="flex-1">
+              <span className="text-neutral-300">{step.label}:</span>
+              <span className="ml-2 font-mono text-neutral-400">{step.calc}</span>
+            </div>
           </div>
+        ))}
+        
+        <div 
+          className="mt-3 p-2 bg-gradient-to-br from-red-900/20 to-red-800/20 rounded border border-red-700/50"
+        >
+          <p className="text-xs font-medium text-red-400 mb-1">⚠️ Common Mistakes:</p>
+          <ul className="text-xs text-neutral-300">
+            {current.commonMistakes.map((mistake, idx) => (
+              <li key={idx}>• {mistake}</li>
+            ))}
+          </ul>
         </div>
-      )}
+      </div>
     </div>
   );
 });
@@ -1350,7 +1729,7 @@ const VisualFormulaCard = React.memo(function VisualFormulaCard({ type, values, 
 // Interactive Calculator Component
 const InteractiveCalculator = () => {
   const contentRef = useRef(null);
-  const [mode, setMode] = useState(null);
+  const [mode, setMode] = useState('ci-known-sigma'); // Auto-select first option
   const [values, setValues] = useState({
     n: 30,
     xBar: 100,
@@ -1358,7 +1737,6 @@ const InteractiveCalculator = () => {
     s: 14.5,
     confidenceLevel: 0.95
   });
-  const [showSteps, setShowSteps] = useState(true);
   const [showDecisionTree, setShowDecisionTree] = useState(true);
   
   useEffect(() => {
@@ -1373,7 +1751,7 @@ const InteractiveCalculator = () => {
     processMathJax();
     const timeoutId = setTimeout(processMathJax, 100);
     return () => clearTimeout(timeoutId);
-  }, [mode, values, showSteps]);
+  }, [mode, values]);
   
   return (
     <VisualizationSection>
@@ -1388,7 +1766,7 @@ const InteractiveCalculator = () => {
               className="bg-gradient-to-br from-blue-900/20 to-blue-900/20 rounded-lg p-4 mb-4 border border-blue-700/50"
             >
               <p className="text-sm text-blue-400 mb-2">
-                🎯 Use the decision tree below to find the right formula for your problem!
+                Use the decision tree below to find the right formula for your problem!
               </p>
               <DecisionTreeHelper onSelect={setMode} />
             </div>
@@ -1465,24 +1843,8 @@ const InteractiveCalculator = () => {
           <div
             className="space-y-4"
           >
-            <VisualFormulaCard type={mode} values={values} showSteps={showSteps} />
+            <VisualFormulaCard type={mode} values={values} />
             
-            {/* Toggle Steps */}
-            <div 
-              className="bg-neutral-800/50 rounded-lg p-3 flex items-center justify-between"
-            >
-              <label className="text-sm text-neutral-300">Show calculation steps</label>
-              <button
-                onClick={() => setShowSteps(!showSteps)}
-                className={`w-12 h-6 rounded-full p-1 ${
-                  showSteps ? 'bg-blue-600' : 'bg-neutral-600'
-                }`}
-              >
-                <div className={`w-4 h-4 bg-white rounded-full transform ${
-                  showSteps ? 'translate-x-6' : 'translate-x-0'
-                }`} />
-              </button>
-            </div>
           </div>
         )}
       </div>
@@ -1492,7 +1854,7 @@ const InteractiveCalculator = () => {
 
 // Field-Specific Examples Component
 const FieldSpecificExamples = React.memo(function FieldSpecificExamples() {
-  const [selectedField, setSelectedField] = useState('engineering');
+  const [activeTab, setActiveTab] = useState('engineering');
   
   const fields = {
     engineering: {
@@ -1529,7 +1891,7 @@ const FieldSpecificExamples = React.memo(function FieldSpecificExamples() {
     },
     business: {
       title: 'Business Analytics',
-      icon: '📊',
+      icon: '',
       examples: [
         {
           scenario: 'Customer Satisfaction',
@@ -1549,27 +1911,28 @@ const FieldSpecificExamples = React.memo(function FieldSpecificExamples() {
     <VisualizationSection>
       <h3 className="text-xl font-bold text-blue-400 mb-4">Real-World Applications</h3>
       
-      <div className="flex gap-2 mb-4">
+      {/* Tab Navigation */}
+      <div className="flex gap-1 mb-4 border-b border-neutral-700">
         {Object.entries(fields).map(([key, field]) => (
           <button
             key={key}
-            onClick={() => setSelectedField(key)}
-            className={`p-3 rounded-lg ${
-              selectedField === key
-                ? 'bg-blue-600 text-white'
-                : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+            onClick={() => setActiveTab(key)}
+            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
+              activeTab === key
+                ? 'bg-neutral-700 text-white border-b-2 border-blue-500'
+                : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
             }`}
           >
-            <span className="text-2xl mr-2">{field.icon}</span>
             {field.title}
           </button>
         ))}
       </div>
       
+      {/* Tab Content */}
       <div 
         className="grid gap-4"
       >
-        {fields[selectedField].examples.map((example, idx) => (
+        {fields[activeTab].examples.map((example, idx) => (
           <div
             key={idx}
             className="bg-neutral-800/50 rounded-lg p-4 border border-neutral-700/50"
@@ -1799,9 +2162,9 @@ const PracticeProblems = React.memo(function PracticeProblems() {
   );
 });
 
-// Exam Preparation Component
-const ExamPreparation = React.memo(function ExamPreparation() {
-  const [expandedSection, setExpandedSection] = useState(null);
+// Common Mistakes Component
+const CommonMistakes = React.memo(function CommonMistakes() {
+  const [expandedSection, setExpandedSection] = useState('mistakes'); // Auto-expand mistakes
   
   const examTopics = [
     {
@@ -1838,7 +2201,7 @@ const ExamPreparation = React.memo(function ExamPreparation() {
   
   return (
     <VisualizationSection>
-      <h3 className="text-xl font-bold text-blue-400 mb-4">Exam Preparation Guide</h3>
+      <h3 className="text-xl font-bold text-blue-400 mb-4">Common Mistakes & Tips</h3>
       
       <div className="space-y-3">
         {examTopics.map((topic) => (
@@ -1850,12 +2213,15 @@ const ExamPreparation = React.memo(function ExamPreparation() {
               onClick={() => setExpandedSection(
                 expandedSection === topic.id ? null : topic.id
               )}
-              className="w-full p-4 text-left flex justify-between items-center hover:bg-neutral-700"
+              className="w-full p-4 text-left flex justify-between items-center hover:bg-neutral-700 transition-colors cursor-pointer group"
             >
-              <h4 className="font-semibold text-blue-400">{topic.title}</h4>
-              <ChevronRight className={`w-5 h-5 text-neutral-400 transform ${
+              <h4 className="font-semibold text-blue-400 group-hover:text-blue-300">{topic.title}</h4>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-neutral-500 group-hover:text-neutral-400">Click to expand</span>
+                <ChevronRight className={`w-5 h-5 text-neutral-400 group-hover:text-blue-400 transform transition-transform ${
                 expandedSection === topic.id ? 'rotate-90' : ''
               }`} />
+              </div>
             </button>
             
               {expandedSection === topic.id && (
@@ -1906,22 +2272,22 @@ const ExamPreparation = React.memo(function ExamPreparation() {
 const KeyTakeaways = () => {
   const takeaways = [
     {
-      icon: '🎯',
+      icon: '',
       title: 'Core Principle',
       content: 'Statistical inference allows us to make probabilistic statements about populations based on sample data.'
     },
     {
-      icon: '📊',
+      icon: '',
       title: 'Sampling Distribution',
       content: 'The distribution of sample statistics follows predictable patterns, enabling confidence intervals and hypothesis tests.'
     },
     {
-      icon: '📏',
+      icon: '',
       title: 'Standard Error',
       content: 'SE quantifies the variability of sample statistics and decreases with larger sample sizes (√n relationship).'
     },
     {
-      icon: '🔄',
+      icon: '',
       title: 'Central Limit Theorem',
       content: 'Sample means approach normality for large n, regardless of the population distribution shape.'
     }
@@ -1937,8 +2303,7 @@ const KeyTakeaways = () => {
             key={idx}
             className="bg-gradient-to-br from-neutral-800/50 to-neutral-700/50 rounded-lg p-4 border border-neutral-600/50"
           >
-            <div className="flex items-start gap-3">
-              <span className="text-2xl">{takeaway.icon}</span>
+            <div>
               <div>
                 <h4 className="font-semibold text-blue-400 mb-1">{takeaway.title}</h4>
                 <p className="text-sm text-neutral-300">{takeaway.content}</p>
@@ -1952,7 +2317,7 @@ const KeyTakeaways = () => {
         className="mt-6 bg-blue-900/20 rounded-lg p-4 border border-blue-500/30"
       >
         <p className="text-sm text-blue-400 text-center">
-          🎓 Remember: The goal is not just to calculate, but to understand what the results mean for decision-making!
+          Remember: The goal is not just to calculate, but to understand what the results mean for decision-making!
         </p>
       </div>
     </VisualizationSection>
@@ -1992,6 +2357,81 @@ export default function StatisticalInference() {
           <BaseballHeights />
         </div>
         
+        {/* Bayesian Inference */}
+        <div>
+          <BayesianInferenceIntro />
+        </div>
+        
+        {/* Concept Check Quiz */}
+        <div className="bg-neutral-800/30 rounded-lg p-6">
+          <h3 className="text-xl font-bold text-blue-400 mb-4">Check Your Understanding</h3>
+          <QuizBreak
+            questions={[
+              {
+                question: "What is the fundamental difference between a parameter and a statistic?",
+                type: "multiple-choice",
+                options: [
+                  "Parameters describe samples, statistics describe populations",
+                  "Parameters describe populations, statistics describe samples",
+                  "Parameters are calculated, statistics are estimated",
+                  "There is no difference, they are synonyms"
+                ],
+                correct: 1,
+                explanation: "Parameters are fixed (but unknown) values that describe populations (like μ or σ). Statistics are values calculated from samples (like x̄ or s) that we use to estimate parameters."
+              },
+              {
+                question: "Which of the following is NOT a desirable property of an estimator?",
+                type: "multiple-choice",
+                options: [
+                  "Unbiasedness",
+                  "Consistency",
+                  "Maximum variance",
+                  "Efficiency"
+                ],
+                correct: 2,
+                explanation: "We want estimators with MINIMUM variance (efficiency), not maximum. High variance means our estimates are unreliable and vary widely from sample to sample."
+              },
+              {
+                question: "In Bayesian inference, what does the posterior distribution represent?",
+                type: "multiple-choice",
+                options: [
+                  "Our belief about the parameter before seeing data",
+                  "The probability of the data given the parameter",
+                  "Our updated belief about the parameter after seeing data",
+                  "The long-run frequency of the parameter"
+                ],
+                correct: 2,
+                explanation: "The posterior distribution combines our prior beliefs with the likelihood of the observed data to give us an updated belief about the parameter. It's calculated as: Posterior ∝ Likelihood × Prior"
+              },
+              {
+                question: "According to the Central Limit Theorem, what happens to the sampling distribution of x̄ as n increases?",
+                type: "multiple-choice",
+                options: [
+                  "It becomes more skewed",
+                  "It approaches a normal distribution",
+                  "It becomes uniform",
+                  "It matches the population distribution"
+                ],
+                correct: 1,
+                explanation: "The CLT states that regardless of the population distribution shape, the sampling distribution of the sample mean approaches a normal distribution as sample size increases. This is why we can use normal-based methods for large samples."
+              },
+              {
+                question: "If the standard error of x̄ is 2 when n = 25, what will it be when n = 100?",
+                type: "multiple-choice",
+                options: [
+                  "0.5",
+                  "1",
+                  "4",
+                  "8"
+                ],
+                correct: 1,
+                explanation: "Standard error follows the formula SE = σ/√n. When n increases by a factor of 4 (from 25 to 100), SE decreases by a factor of 2 (since √4 = 2). So SE goes from 2 to 1."
+              }
+            ]}
+            onComplete={() => console.log('Quiz completed')}
+          />
+        </div>
+        
         {/* Practice Problems */}
         <div>
           <PracticeProblems />
@@ -2004,9 +2444,14 @@ export default function StatisticalInference() {
           <ConceptConnections />
         </div>
         
-        {/* Exam Preparation */}
+        {/* Common Mistakes */}
         <div>
-          <ExamPreparation />
+          <CommonMistakes />
+        </div>
+        
+        {/* Estimator Properties - Advanced Topic */}
+        <div>
+          <EstimatorProperties />
         </div>
         
         {/* Key Takeaways */}

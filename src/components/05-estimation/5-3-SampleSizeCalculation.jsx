@@ -78,8 +78,6 @@ const JourneyProgress = React.memo(function JourneyProgress({
             <div
               key={key}
               className="flex-1 mx-2"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
             >
               <button
                 onClick={() => onStageSelect(key)}
@@ -187,12 +185,16 @@ const MathematicalFoundation = React.memo(function MathematicalFoundation() {
           <div className="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700/50">
             <h4 className={`${typography.h3} mb-3`}>Key Insight</h4>
             <p className="text-sm text-neutral-300 mb-3">
-              The margin of error E represents the maximum distance between our sample mean and the true population mean (with specified confidence).
+              The margin of error E represents the maximum distance between our sample mean and the true population mean (with specified confidence). 
+              <span className="text-yellow-400 font-semibold"> Think of it as the "plus-or-minus" in poll results.</span>
             </p>
             <div className="bg-purple-900/20 rounded p-3 text-center">
               <p className="text-sm text-purple-300">If we want E = 2 with 95% confidence:</p>
               <p className="text-xs text-neutral-400 mt-1">
                 We're 95% sure the true mean is within ±2 of our sample mean
+              </p>
+              <p className="text-xs text-yellow-400 mt-2 italic">
+                Smaller E = More precision = Larger sample needed
               </p>
             </div>
           </div>
@@ -360,16 +362,21 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
     
     if (activeRelationship === 'n-E') {
       // n vs E (inverse square relationship)
+      // Adjust x-axis to more practical margin of error values (1% to 5%)
       xScale = d3.scaleLinear()
-        .domain([0.5, 5])
+        .domain([1, 5])
         .range([margin.left, width - margin.right]);
       
+      // Calculate max sample size for the minimum margin of error to set proper y-axis scale
+      const maxSampleSize = Math.pow((1.96 * 15) / 1, 2); // ~864 when E = 1
+      
       yScale = d3.scaleLinear()
-        .domain([0, 1000])
+        .domain([0, Math.ceil(maxSampleSize * 1.1)]) // Add 10% padding
         .range([height - margin.bottom, margin.top]);
       
       // Generate curve: n = (1.96 * 15 / E)²
-      data = d3.range(0.5, 5.1, 0.1).map(E => ({
+      // Start from E = 1 instead of 0.5 for more practical values
+      data = d3.range(1, 5.1, 0.1).map(E => ({
         x: E,
         y: Math.pow((1.96 * 15) / E, 2)
       }));
@@ -407,6 +414,16 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
     
     // Create main group
     const g = svg.append("g");
+    
+    // Add clip path to prevent overflow
+    const clipPath = defs.append("clipPath")
+      .attr("id", "chart-area-clip");
+    
+    clipPath.append("rect")
+      .attr("x", margin.left)
+      .attr("y", margin.top)
+      .attr("width", width - margin.left - margin.right)
+      .attr("height", height - margin.top - margin.bottom);
     
     // Draw axes with grid lines
     const xAxis = g.append("g")
@@ -453,7 +470,8 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
       .attr("fill", "none")
       .attr("stroke", relationships[activeRelationship].color)
       .attr("stroke-width", 3)
-      .attr("d", line);
+      .attr("d", line)
+      .attr("clip-path", "url(#chart-area-clip)");
     
     // Animate path drawing
     setAnimating(true);
@@ -466,8 +484,11 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
       .attr("stroke-dashoffset", 0)
       .on("end", () => setAnimating(false));
     
-    // Add data points
-    g.selectAll("circle")
+    // Add data points with clipping
+    const pointsGroup = g.append("g")
+      .attr("clip-path", "url(#chart-area-clip)");
+    
+    pointsGroup.selectAll("circle")
       .data(data)
       .enter()
       .append("circle")
@@ -529,7 +550,17 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
     
     function mousemove(event) {
       const [mouseX] = d3.pointer(event);
-      const x = xScale.invert(mouseX + margin.left);
+      // Fix: don't add margin.left when inverting - mouseX is already relative to the SVG
+      let x = xScale.invert(mouseX);
+      
+      // Clamp x to the domain bounds for each relationship type
+      if (activeRelationship === 'n-E') {
+        x = Math.max(1, Math.min(5, x)); // Domain: [1, 5]
+      } else if (activeRelationship === 'n-sigma') {
+        x = Math.max(5, Math.min(30, x)); // Domain: [5, 30]
+      } else {
+        x = Math.max(90, Math.min(99, x)); // Domain: [90, 99]
+      }
       
       let y;
       if (activeRelationship === 'n-E') {
@@ -540,7 +571,11 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
         y = Math.pow((getZ(Math.round(x)) * 15) / 2, 2);
       }
       
-      if (y > 0 && y < 1000) {
+      // Get the actual y-axis domain max from the current scale
+      const yDomainMax = yScale.domain()[1];
+      
+      // Only show hover if y is within the valid range
+      if (y > 0 && y <= yDomainMax) {
         focus.attr("opacity", 1)
           .attr("transform", `translate(${xScale(x)},${yScale(y)})`);
         
@@ -551,6 +586,10 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
           .text(`${relationships[activeRelationship].xLabel.split(' ')[0]} = ${x.toFixed(1)}`);
         
         setHoveredPoint({ x, y });
+      } else {
+        // Hide the hover if outside bounds
+        focus.attr("opacity", 0);
+        setHoveredPoint(null);
       }
     }
     
@@ -592,8 +631,6 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
             style={{
               backgroundColor: activeRelationship === key ? rel.color : undefined
             }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
             disabled={animating}
           >
             {rel.title.split(' vs. ')[1]}
@@ -952,12 +989,10 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
             
             {/* Opening parenthesis */}
             <span
-              className={`cursor-pointer transition-all ${
+              className={`cursor-pointer transition-all hover:scale-110 active:scale-90 transform ${
                 selectedParts.squared ? 'text-purple-400' : 'text-neutral-500'
               }`}
               onClick={() => setSelectedParts({...selectedParts, squared: !selectedParts.squared})}
-              whileHover={{ scale: 1.2 }}
-              whileTap={{ scale: 0.9 }}
             >
               (
             </span>
@@ -966,12 +1001,10 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
             <div className="inline-flex flex-col items-center">
               {/* Numerator */}
               <div
-                className={`cursor-pointer transition-all flex items-center gap-1 ${
+                className={`cursor-pointer transition-all hover:scale-110 active:scale-90 transform flex items-center gap-1 ${
                   selectedParts.numerator ? 'text-blue-400' : 'text-neutral-400'
                 }`}
                 onClick={() => setSelectedParts({...selectedParts, numerator: !selectedParts.numerator})}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
               >
                 <span 
                   className={understanding.z ? 'text-green-400' : ''}
@@ -1000,15 +1033,13 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
               
               {/* Denominator */}
               <div
-                className={`cursor-pointer transition-all ${
+                className={`cursor-pointer transition-all hover:scale-110 active:scale-90 transform ${
                   selectedParts.denominator ? 'text-yellow-400' : 'text-neutral-400'
                 }`}
                 onClick={() => {
                   setSelectedParts({...selectedParts, denominator: !selectedParts.denominator});
                   setUnderstanding({...understanding, E: true});
                 }}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
               >
                 <span className={understanding.E ? 'text-green-400' : ''}>E</span>
               </div>
@@ -1016,15 +1047,13 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
             
             {/* Closing parenthesis and square */}
             <span
-              className={`cursor-pointer transition-all ${
+              className={`cursor-pointer transition-all hover:scale-110 active:scale-90 transform ${
                 selectedParts.squared ? 'text-purple-400' : 'text-neutral-500'
               }`}
               onClick={() => {
                 setSelectedParts({...selectedParts, squared: !selectedParts.squared});
                 setUnderstanding({...understanding, squared: true});
               }}
-              whileHover={{ scale: 1.2 }}
-              whileTap={{ scale: 0.9 }}
             >
               )²
             </span>
@@ -1803,15 +1832,150 @@ const ExplorationMode = React.memo(function ExplorationMode({ inputs, setInputs,
   );
 });
 
+// Mathematical Framework Component for Budget Constraints
+const MathematicalFramework = React.memo(function MathematicalFramework() {
+  const contentRef = useRef(null);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, []);
+  
+  return (
+    <div ref={contentRef} className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 rounded-lg p-6 mb-6 border border-blue-700/30">
+      <h4 className="text-lg font-bold text-white mb-4">Mathematical Framework: Cost-Constrained Optimization</h4>
+      
+      <div className="grid md:grid-cols-2 gap-6">
+        <div>
+          <h5 className="text-emerald-400 font-semibold mb-2">The Optimization Problem</h5>
+          <div className="bg-neutral-900/50 rounded p-3 space-y-2">
+            <p className="text-sm text-neutral-300 mb-2">Minimize margin of error E subject to:</p>
+            <div dangerouslySetInnerHTML={{ 
+              __html: `\\[n = \\left(\\frac{z_{\\alpha/2} \\cdot \\sigma}{E}\\right)^2\\]` 
+            }} />
+            <div dangerouslySetInnerHTML={{ 
+              __html: `\\[TC(n) = F + cn \\leq B\\]` 
+            }} />
+            <div className="text-xs text-neutral-400 mt-2">
+              where F = fixed costs, c = cost per subject, B = budget
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <h5 className="text-purple-400 font-semibold mb-2">The Solution</h5>
+          <div className="bg-neutral-900/50 rounded p-3 space-y-2">
+            <p className="text-sm text-neutral-300 mb-2">Maximum affordable sample size:</p>
+            <div dangerouslySetInnerHTML={{ 
+              __html: `\\[n_{max} = \\frac{B - F}{c}\\]` 
+            }} />
+            <p className="text-sm text-neutral-300 mt-2 mb-1">Minimum achievable error:</p>
+            <div dangerouslySetInnerHTML={{ 
+              __html: `\\[E_{min} = \\frac{z_{\\alpha/2} \\cdot \\sigma}{\\sqrt{n_{max}}}\\]` 
+            }} />
+          </div>
+        </div>
+      </div>
+      
+      <div className="mt-4 bg-yellow-900/20 rounded p-3 border border-yellow-700/30">
+        <p className="text-sm text-yellow-300">
+          <strong>Key Insight:</strong> The relationship E ∝ 1/√n means doubling precision (halving E) requires 4× the sample size and roughly 4× the variable costs.
+        </p>
+      </div>
+    </div>
+  );
+});
+
+// Live Calculations Component
+const LiveCalculations = React.memo(function LiveCalculations({ scenario, optimalPoint }) {
+  const contentRef = useRef(null);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [scenario, optimalPoint]);
+  
+  const maxN = Math.floor((scenario.budgetLimit - scenario.fixedCosts) / scenario.costPerSubject);
+  const minE = maxN > 0 ? (1.96 * scenario.sigma) / Math.sqrt(maxN) : Infinity;
+  
+  return (
+    <div ref={contentRef} className="bg-neutral-800/50 rounded-lg p-4">
+      <h5 className="font-semibold text-amber-400 mb-3">Live Calculations</h5>
+      
+      <div className="grid md:grid-cols-2 gap-4 text-sm">
+        <div className="space-y-2">
+          <p className="text-neutral-400">Available for subjects:</p>
+          <div className="font-mono text-white bg-neutral-900/50 rounded p-2">
+            ${scenario.budgetLimit.toLocaleString()} - ${scenario.fixedCosts.toLocaleString()} = ${(scenario.budgetLimit - scenario.fixedCosts).toLocaleString()}
+          </div>
+          
+          <p className="text-neutral-400 mt-3">Maximum sample size:</p>
+          <div className="bg-neutral-900/50 rounded p-2">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\(n_{max} = \\frac{${(scenario.budgetLimit - scenario.fixedCosts).toLocaleString()}}{${scenario.costPerSubject}} = ${maxN}\\)` 
+            }} />
+          </div>
+        </div>
+        
+        <div className="space-y-2">
+          <p className="text-neutral-400">Minimum achievable error:</p>
+          <div className="bg-neutral-900/50 rounded p-2">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\(E_{min} = \\frac{1.96 \\times ${scenario.sigma}}{\\sqrt{${maxN}}} = ${minE.toFixed(2)}\\)` 
+            }} />
+          </div>
+          
+          {optimalPoint && (
+            <>
+              <p className="text-neutral-400 mt-3">Cost efficiency:</p>
+              <div className="font-mono text-emerald-400 bg-neutral-900/50 rounded p-2">
+                ${(optimalPoint.cost / optimalPoint.n).toFixed(2)} per unit precision
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+      
+      {maxN < 30 && (
+        <div className="mt-3 bg-red-900/20 rounded p-2 border border-red-700/30">
+          <p className="text-xs text-red-300">
+            ⚠️ Sample size {maxN} may be too small for reliable estimates (typically need n ≥ 30)
+          </p>
+        </div>
+      )}
+    </div>
+  );
+});
+
 // Cost-Benefit Analysis Component
 const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete }) {
   const [scenario, setScenario] = useState({
-    costPerSubject: 50,
+    costPerSubject: 100,
     fixedCosts: 5000,
     sigma: 15,
-    budgetLimit: 25000,
-    minPrecision: 1,
-    maxPrecision: 5
+    budgetLimit: 55000,
+    minPrecision: 0.5,
+    maxPrecision: 3
   });
   
   const [optimalPoint, setOptimalPoint] = useState(null);
@@ -1838,12 +2002,15 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
     
     svg.selectAll("*").remove();
     
-    // Generate data points
+    // Generate data points with finer granularity for smooth curve
     const data = [];
-    for (let E = scenario.minPrecision; E <= scenario.maxPrecision; E += 0.1) {
+    const step = (scenario.maxPrecision - scenario.minPrecision) / 50; // 50 points for smooth curve
+    for (let E = scenario.minPrecision; E <= scenario.maxPrecision; E += step) {
       const n = Math.ceil(Math.pow((1.96 * scenario.sigma) / E, 2));
       const cost = calculateCost(n);
-      data.push({ E, n, cost });
+      if (cost <= scenario.budgetLimit * 1.5) { // Only include reasonable costs
+        data.push({ E, n, cost });
+      }
     }
     
     // Filter data within budget
@@ -1861,8 +2028,19 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
     // Create main group
     const g = svg.append("g");
     
-    // Add gradient
+    // Add gradient and clipPath
     const defs = svg.append("defs");
+    
+    // Add clipPath to constrain chart within axes
+    const clipPath = defs.append("clipPath")
+      .attr("id", "cost-chart-clip");
+    
+    clipPath.append("rect")
+      .attr("x", margin.left)
+      .attr("y", margin.top)
+      .attr("width", width - margin.left - margin.right)
+      .attr("height", height - margin.top - margin.bottom);
+    
     const gradient = defs.append("linearGradient")
       .attr("id", "cost-gradient")
       .attr("gradientUnits", "userSpaceOnUse")
@@ -1944,7 +2122,8 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
     g.append("path")
       .datum(data)
       .attr("fill", "url(#cost-gradient)")
-      .attr("d", area);
+      .attr("d", area)
+      .attr("clip-path", "url(#cost-chart-clip)");
     
     // Cost curve
     const line = d3.line()
@@ -1957,7 +2136,8 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
       .attr("fill", "none")
       .attr("stroke", "#10b981")
       .attr("stroke-width", 3)
-      .attr("d", line);
+      .attr("d", line)
+      .attr("clip-path", "url(#cost-chart-clip)");
     
     // Find optimal point (smallest E within budget)
     if (affordableData.length > 0) {
@@ -2025,8 +2205,11 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
   return (
     <VisualizationSection>
       <h3 className="text-xl font-bold text-white mb-6">
-        Cost-Benefit Analysis
+        Cost-Benefit Analysis: Optimizing Precision Within Budget
       </h3>
+      
+      {/* Mathematical Framework */}
+      <MathematicalFramework />
       
       {/* Controls in a horizontal layout */}
       <div className="mb-6 bg-neutral-800/50 rounded-lg p-4">
@@ -2040,7 +2223,8 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
               <input
                 type="range"
                 min="10"
-                max="200"
+                max="500"
+                step="10"
                 value={scenario.costPerSubject}
                 onChange={(e) => setScenario({
                   ...scenario, 
@@ -2048,7 +2232,7 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
                 })}
                 className="flex-1"
               />
-              <span className="text-sm font-mono text-white w-12">${scenario.costPerSubject}</span>
+              <span className="text-sm font-mono text-white w-16">${scenario.costPerSubject}</span>
             </div>
           </div>
           
@@ -2081,7 +2265,7 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
               <input
                 type="range"
                 min="10000"
-                max="100000"
+                max="200000"
                 step="5000"
                 value={scenario.budgetLimit}
                 onChange={(e) => setScenario({
@@ -2090,7 +2274,7 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
                 })}
                 className="flex-1"
               />
-              <span className="text-sm font-mono text-white w-16">${(scenario.budgetLimit/1000).toFixed(0)}k</span>
+              <span className="text-sm font-mono text-white w-20">${(scenario.budgetLimit/1000).toFixed(0)}k</span>
             </div>
           </div>
           
@@ -2116,8 +2300,11 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
         </div>
       </div>
       
+      {/* Live Calculations Panel */}
+      <LiveCalculations scenario={scenario} optimalPoint={optimalPoint} />
+      
       {/* Main visualization with full width */}
-      <div className="space-y-4">
+      <div className="space-y-4 mt-6">
         <GraphContainer height="500px">
           <svg ref={svgRef} width="100%" height="100%" />
         </GraphContainer>
@@ -2155,26 +2342,48 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
             </div>
           )}
           
-          {/* Key Insights */}
+          {/* Key Insights with Mathematical Context */}
           <div className="bg-neutral-800/50 rounded-lg p-4">
-            <p className="text-neutral-400 mb-2 font-semibold">Key Insights:</p>
-            <ul className="space-y-1 text-sm text-neutral-300">
+            <p className="text-neutral-400 mb-2 font-semibold">Understanding the Trade-offs:</p>
+            <ul className="space-y-2 text-sm text-neutral-300">
               <li className="flex items-start gap-2">
                 <span className="text-emerald-400">•</span>
-                <span>Green curve shows total cost vs. precision trade-off</span>
+                <div>
+                  <span className="font-semibold">Hyperbolic relationship:</span> Cost increases as 1/E²
+                  <div className="text-xs text-neutral-400 mt-1">
+                    Halving error from 2 to 1 quadruples sample size (and variable costs)
+                  </div>
+                </div>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-emerald-400">•</span>
-                <span>Red dashed line indicates budget constraint</span>
+                <span className="text-yellow-400">•</span>
+                <div>
+                  <span className="font-semibold">Fixed cost impact:</span> ${scenario.fixedCosts.toLocaleString()} reduces available funds
+                  <div className="text-xs text-neutral-400 mt-1">
+                    Higher fixed costs = fewer subjects = less precision achievable
+                  </div>
+                </div>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-emerald-400">•</span>
-                <span>Optimal point maximizes precision within budget</span>
+                <span className="text-purple-400">•</span>
+                <div>
+                  <span className="font-semibold">Diminishing returns:</span> Each $ buys less precision as E decreases
+                  <div className="text-xs text-neutral-400 mt-1">
+                    The curve flattens at high cost, showing inefficient precision gains
+                  </div>
+                </div>
               </li>
-              <li className="flex items-start gap-2">
-                <span className="text-emerald-400">•</span>
-                <span>Shaded area shows feasible cost region</span>
-              </li>
+              {optimalPoint && (
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-400">•</span>
+                  <div>
+                    <span className="font-semibold">Current efficiency:</span> {((1 / optimalPoint.E) / (optimalPoint.cost / 1000)).toFixed(2)} precision per $1K
+                    <div className="text-xs text-neutral-400 mt-1">
+                      This measures how much precision you get per thousand dollars spent
+                    </div>
+                  </div>
+                </li>
+              )}
             </ul>
           </div>
         </div>
@@ -2289,8 +2498,6 @@ const RealWorldScenarios = React.memo(function RealWorldScenarios({ onComplete }
                   ? `${scen.color}20` 
                   : 'rgb(38 38 38)'
               }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
             >
               <Icon className="w-8 h-8 mx-auto mb-2" style={{
                 color: selectedScenario === key ? scen.color : '#e5e5e5'
@@ -2366,9 +2573,8 @@ const RealWorldScenarios = React.memo(function RealWorldScenarios({ onComplete }
             </div>
             
             <div
-              className="mt-6 p-4 rounded-lg"
+              className="mt-6 p-4 rounded-lg hover:scale-[1.02] transition-transform"
               style={{ backgroundColor: `${scenario.color}10` }}
-              whileHover={{ scale: 1.02 }}
             >
               <p className="text-sm font-semibold mb-2" style={{ color: scenario.color }}>
                 Sample Size Recommendation
@@ -2508,6 +2714,47 @@ export default function SampleSizeCalculation() {
       description="Find the perfect balance between precision, confidence, and cost"
     >
       <BackToHub chapter={5} />
+      
+      {/* Conceptual Introduction */}
+      <div className="mb-8 p-6 bg-gradient-to-br from-teal-900/20 to-blue-900/20 rounded-lg border border-teal-700/50">
+        <h2 className="text-2xl font-bold text-teal-400 mb-4">The Fundamental Question</h2>
+        <div className="space-y-4 text-neutral-300">
+          <p>
+            Before collecting any data, researchers face a critical question: 
+            <span className="text-teal-400 font-semibold"> "How many observations do we need?"</span> 
+            Too few and your results are unreliable. Too many and you waste time and money.
+          </p>
+          <div className="bg-neutral-800/50 rounded-lg p-4">
+            <h3 className="font-semibold text-yellow-400 mb-2">The Three-Way Trade-off</h3>
+            <ul className="space-y-2 text-sm">
+              <li className="flex items-start gap-2">
+                <span className="text-teal-400">1.</span>
+                <div>
+                  <span className="font-semibold">Precision (E):</span> How close do we need to be to the truth? 
+                  A political poll with ±10% is less useful than one with ±3%.
+                </div>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-teal-400">2.</span>
+                <div>
+                  <span className="font-semibold">Confidence (1-α):</span> How sure do we want to be? 
+                  95% confidence is standard, but critical decisions might need 99%.
+                </div>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-teal-400">3.</span>
+                <div>
+                  <span className="font-semibold">Cost/Time:</span> What resources are available? 
+                  Each additional subject costs money and time.
+                </div>
+              </li>
+            </ul>
+          </div>
+          <p className="text-sm italic text-neutral-400">
+            This section teaches you to optimize this trade-off using mathematical precision.
+          </p>
+        </div>
+      </div>
       
       {/* Journey Progress */}
       <JourneyProgress
