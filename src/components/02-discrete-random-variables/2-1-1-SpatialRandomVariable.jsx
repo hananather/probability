@@ -13,6 +13,7 @@ import { Button } from '../ui/button';
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
 import { useMathJax } from '../../hooks/useMathJax';
 import { AnimatePresence } from 'framer-motion';
+import { Chapter2ReferenceSheet } from '../reference-sheets/Chapter2ReferenceSheet';
 
 // Import Gold Standard components
 import { SemanticGradientCard } from '../ui/patterns/SemanticGradientCard';
@@ -673,7 +674,9 @@ const SpatialRandomVariable = () => {
   }, []);
 
   return (
-    <VisualizationContainer
+    <>
+      <Chapter2ReferenceSheet mode="floating" />
+      <VisualizationContainer
       title="Random Variable Builder"
       description={
         <>
@@ -823,6 +826,7 @@ const SpatialRandomVariable = () => {
         </div>
       </VisualizationSection>
     </VisualizationContainer>
+    </>
   );
 };
 

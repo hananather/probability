@@ -7,6 +7,7 @@ import MontyHallSimulation from './MontyHallSimulation';
 import { Button } from '../../ui/button';
 import { ProgressBar } from '../../ui/ProgressBar';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Chapter1ReferenceSheet } from '../../reference-sheets/Chapter1ReferenceSheet';
 
 // Animation timing constants
 const ANIMATION_CONSTANTS = {
@@ -104,7 +105,9 @@ function MontyHallJourney() {
   };
   
   return (
-    <div className="space-y-6">
+    <>
+      <Chapter1ReferenceSheet mode="floating" />
+      <div className="space-y-6">
       {/* Journey Header */}
       <div className="bg-gradient-to-r from-emerald-900/20 to-teal-900/20 border border-emerald-600/30 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
@@ -243,6 +246,7 @@ function MontyHallJourney() {
         )}
       </div>
     </div>
+    </>
   );
 }
 

@@ -11,6 +11,7 @@ import {
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
 import { RangeSlider } from '../ui/RangeSlider';
 import { tutorial_2_2_1 } from '@/tutorials/chapter2.jsx';
+import { Chapter2ReferenceSheet } from '../reference-sheets/Chapter2ReferenceSheet';
 
 // Use probability color scheme for discrete distributions
 const colorScheme = createColorScheme('probability');
@@ -513,7 +514,9 @@ export default function ExpectationVariance() {
   }
 
   return (
-    <VisualizationContainer
+    <>
+      <Chapter2ReferenceSheet mode="floating" />
+      <VisualizationContainer
       title="🎲 Expectation & Variance Explorer"
       tutorialSteps={tutorial_2_2_1}
       tutorialKey="expectation-variance-2-2-1"
@@ -688,5 +691,6 @@ export default function ExpectationVariance() {
         <ExpectationVarianceWorkedExample probs={displayProbs} />
       </div>
     </VisualizationContainer>
+    </>
   );
 }

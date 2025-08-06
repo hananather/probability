@@ -12,6 +12,7 @@ import BackToHub from '@/components/ui/BackToHub';
 import SectionComplete from '@/components/ui/SectionComplete';
 import { BookOpen, Code, FileText, Zap, AlertCircle, CheckCircle } from 'lucide-react';
 import { QuizBreak } from '../mdx/QuizBreak';
+import { Chapter5ReferenceSheet } from '../reference-sheets/Chapter5ReferenceSheet';
 
 // Get Chapter 5 color scheme
 const chapterColors = createColorScheme('estimation');
@@ -750,10 +751,12 @@ export default function ConfidenceIntervalPractice() {
   ];
   
   return (
-    <VisualizationContainer
-      title="Practice: Confidence Intervals"
-      description="Master confidence interval problems through practice and interactive exploration"
-    >
+    <>
+      <Chapter5ReferenceSheet mode="floating" />
+      <VisualizationContainer
+        title="Practice: Confidence Intervals"
+        description="Master confidence interval problems through practice and interactive exploration"
+      >
       <div className="space-y-8">
         {/* Back to Hub */}
         <BackToHub chapter={5} />
@@ -792,6 +795,7 @@ export default function ConfidenceIntervalPractice() {
           section="confidence-intervals-practice"
         />
       </div>
-    </VisualizationContainer>
+      </VisualizationContainer>
+    </>
   );
 }

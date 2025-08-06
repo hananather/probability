@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Card } from "../ui/card";
 import { createColorScheme } from "@/lib/design-system";
 import { useMathJax } from "../../hooks/useMathJax";
+import { Chapter3ReferenceSheet } from "../reference-sheets/Chapter3ReferenceSheet";
 import { 
   GitBranch, AreaChart, Calculator, Bell, 
   Timer, Flame, Grid3x3, TrendingUp 
@@ -283,6 +284,9 @@ export default function ContinuousDistributionsHub() {
           onSectionClick={handleSectionClick}
           hideHeader={true}
         />
+
+        {/* Floating Reference Sheet */}
+        <Chapter3ReferenceSheet mode="floating" />
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ import { colors, createColorScheme } from '../../lib/design-system';
 import BackToHub from '@/components/ui/BackToHub';
 import SectionComplete from '@/components/ui/SectionComplete';
 import { QuizBreak } from '../mdx/QuizBreak';
+import { Chapter5ReferenceSheet } from '../reference-sheets/Chapter5ReferenceSheet';
 import { 
   Brain, Target, Activity, BarChart, RefreshCw, 
   TrendingUp, Users, Dice6, Package, Vote, ChevronRight,
@@ -2327,7 +2328,11 @@ const KeyTakeaways = () => {
 // Main Component - Simplified
 export default function StatisticalInference() {
   return (
-    <VisualizationContainer
+    <>
+      {/* Chapter 5 Reference Sheet - Floating button */}
+      <Chapter5ReferenceSheet mode="floating" />
+      
+      <VisualizationContainer
       title="5.1 Statistical Inference"
       description="From Data to Decisions"
     >
@@ -2463,5 +2468,6 @@ export default function StatisticalInference() {
         <SectionComplete chapter={5} />
       </div>
     </VisualizationContainer>
+    </>
   );
 }

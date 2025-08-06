@@ -10,6 +10,7 @@ import {
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../../lib/design-system';
 import { Button } from '../../ui/button';
 import { ProgressBar } from '../../ui/ProgressBar';
+import { Chapter1ReferenceSheet } from '../../reference-sheets/Chapter1ReferenceSheet';
 
 // Use probability color scheme
 const colorScheme = createColorScheme('probability');
@@ -686,7 +687,9 @@ export default function ProbabilisticFallacies() {
   };
 
   return (
-    <VisualizationContainer
+    <>
+      <Chapter1ReferenceSheet mode="floating" />
+      <VisualizationContainer
       title="Probabilistic Fallacies Explorer"
       description="Understand common mistakes in probabilistic reasoning and how to avoid them"
     >
@@ -749,5 +752,6 @@ export default function ProbabilisticFallacies() {
         </div>
       </div>
     </VisualizationContainer>
+    </>
   );
 }

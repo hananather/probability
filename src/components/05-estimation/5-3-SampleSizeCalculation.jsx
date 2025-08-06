@@ -23,6 +23,7 @@ import {
   GraphContainer,
   ControlGroup
 } from '../ui/VisualizationContainer';
+import { Chapter5ReferenceSheet } from '../reference-sheets/Chapter5ReferenceSheet';
 import { colors, typography, createColorScheme } from '@/lib/design-system';
 
 // Chapter 7 Design Patterns - Consistent Colors
@@ -2720,10 +2721,12 @@ export default function SampleSizeCalculation() {
   }, []);
   
   return (
-    <VisualizationContainer
-      title="5.3 Sample Size Determination"
-      description="Find the perfect balance between precision, confidence, and cost"
-    >
+    <>
+      <Chapter5ReferenceSheet mode="floating" />
+      <VisualizationContainer
+        title="5.3 Sample Size Determination"
+        description="Find the perfect balance between precision, confidence, and cost"
+      >
       <BackToHub chapter={5} />
       
       {/* Conceptual Introduction */}
@@ -2795,6 +2798,7 @@ export default function SampleSizeCalculation() {
       
       {/* Section Complete - Standardized Component */}
       <SectionComplete chapter={5} />
-    </VisualizationContainer>
+      </VisualizationContainer>
+    </>
   );
 }

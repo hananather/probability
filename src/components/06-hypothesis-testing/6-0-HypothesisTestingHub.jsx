@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Card } from "../ui/card";
 import { createColorScheme } from "@/lib/design-system";
 import { useMathJax } from "../../hooks/useMathJax";
+import { Chapter6ReferenceSheet } from "../reference-sheets/Chapter6ReferenceSheet";
 import { 
   Lightbulb, AlertCircle, TrendingUp, Calculator, 
   Scale, Target, Users, Percent, FlaskConical
@@ -304,6 +305,9 @@ export default function HypothesisTestingHub() {
           onSectionClick={handleSectionClick}
           hideHeader={true}
         />
+
+        {/* Floating Reference Sheet */}
+        <Chapter6ReferenceSheet mode="floating" />
       </div>
     </div>
   );

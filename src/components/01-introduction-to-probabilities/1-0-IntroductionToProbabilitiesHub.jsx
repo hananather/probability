@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Card } from "../ui/card";
 import { createColorScheme } from "@/lib/design-system";
 import { useMathJax } from "../../hooks/useMathJax";
+import { Chapter1ReferenceSheet } from "../reference-sheets/Chapter1ReferenceSheet";
 import { 
   CircleDot, Calculator, Grid3x3, Shuffle, 
   Dices, GitBranch, BrainCircuit, AlertTriangle, DoorOpen
@@ -340,6 +341,9 @@ export default function IntroductionToProbabilitiesHub() {
           onSectionClick={handleSectionClick}
           hideHeader={true}
         />
+
+        {/* Floating Reference Sheet */}
+        <Chapter1ReferenceSheet mode="floating" />
       </div>
     </div>
   );

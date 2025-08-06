@@ -16,16 +16,31 @@ const chapter5Sections = [
     content: (
       <div className="space-y-2 text-sm">
         <div>
-          <strong>Point Estimate:</strong> Single value θ̂ to estimate population parameter θ
+          <strong>Point Estimate:</strong>
+          <div className="text-center my-1">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[\\hat{\\theta} \\text{ estimates } \\theta\\]` 
+            }} />
+          </div>
         </div>
         <div>
           <strong>Interval Estimate:</strong> Range of plausible values with confidence level
         </div>
         <div>
-          <strong>Standard Error:</strong> SE = σ/√n (σ known) or s/√n (σ unknown)
+          <strong>Standard Error:</strong>
+          <div className="text-center my-1">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[SE = \\frac{\\sigma}{\\sqrt{n}} \\text{ (known } \\sigma\\text{) or } \\frac{s}{\\sqrt{n}} \\text{ (unknown } \\sigma\\text{)}\\]` 
+            }} />
+          </div>
         </div>
         <div>
-          <strong>Margin of Error:</strong> ME = critical value × SE
+          <strong>Margin of Error:</strong>
+          <div className="text-center my-1">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[ME = \\text{critical value} \\times SE\\]` 
+            }} />
+          </div>
         </div>
       </div>
     )
@@ -71,7 +86,7 @@ const chapter5Sections = [
       "Calculate p̂ = x/n (sample proportion)",
       "Check: np̂ ≥ 10 and n(1-p̂) ≥ 10",
       "Find z-critical value",
-      `Calculate SE = \\(\\sqrt{\\frac{\\hat{p}(1-\\hat{p})}{n}}\\)`,
+      "Calculate SE = √[p̂(1-p̂)/n]",
       "CI = p̂ ± z × SE"
     ],
     description: "For binary outcomes (success/failure)"
@@ -203,67 +218,57 @@ const chapter5Sections = [
     )
   },
 
-  // === COMMON MISTAKES ===
-  {
-    title: "10. Common Mistakes to Avoid",
-    color: "red",
-    content: (
-      <div className="space-y-2 text-sm">
-        <div>❌ Using z when σ is unknown</div>
-        <div>❌ Using n instead of n-1 for df</div>
-        <div>❌ Forgetting √n in denominator</div>
-        <div>❌ Wrong interpretation of CI</div>
-        <div>❌ Not checking normality assumptions</div>
-        <div>❌ Rounding sample size down</div>
-      </div>
-    )
-  },
 
   // === QUICK FORMULAS SUMMARY ===
   {
-    title: "11. Formula Quick Reference",
+    title: "10. Formula Quick Reference",
     color: "gray",
     content: (
       <div className="space-y-2 text-xs font-mono">
         <div>
-          <strong>Sample Mean:</strong> x̄ = Σxᵢ/n
+          <strong>Sample Mean:</strong>
+          <div className="text-center my-1">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[\\bar{x} = \\frac{1}{n}\\sum_{i=1}^n x_i\\]` 
+            }} />
+          </div>
         </div>
         <div>
-          <strong>Sample SD:</strong> s = √[Σ(xᵢ-x̄)²/(n-1)]
+          <strong>Sample Standard Deviation:</strong>
+          <div className="text-center my-1">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[s = \\sqrt{\\frac{\\sum_{i=1}^n (x_i - \\bar{x})^2}{n-1}}\\]` 
+            }} />
+          </div>
         </div>
         <div>
-          <strong>Standard Error (mean):</strong> SE = σ/√n or s/√n
+          <strong>Standard Error (mean):</strong>
+          <div className="text-center my-1">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[SE = \\frac{\\sigma}{\\sqrt{n}} \\text{ or } \\frac{s}{\\sqrt{n}}\\]` 
+            }} />
+          </div>
         </div>
         <div>
-          <strong>Standard Error (prop):</strong> SE = √[p̂(1-p̂)/n]
+          <strong>Standard Error (proportion):</strong>
+          <div className="text-center my-1">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[SE = \\sqrt{\\frac{\\hat{p}(1-\\hat{p})}{n}}\\]` 
+            }} />
+          </div>
         </div>
         <div>
-          <strong>Margin of Error:</strong> ME = critical × SE
+          <strong>Margin of Error:</strong>
+          <div className="text-center my-1">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[ME = \\text{critical value} \\times SE\\]` 
+            }} />
+          </div>
         </div>
       </div>
     )
   },
 
-  // === EXAM TIPS ===
-  {
-    title: "12. Exam Strategy",
-    color: "amber",
-    content: (
-      <div className="space-y-2 text-sm">
-        <div className="font-semibold text-amber-400">Quick Checklist:</div>
-        <ol className="ml-4 space-y-1">
-          <li>1. Identify parameter (μ or p)</li>
-          <li>2. Check what's known (σ?)</li>
-          <li>3. Choose correct distribution</li>
-          <li>4. Calculate step-by-step</li>
-          <li>5. Interpret in context</li>
-        </ol>
-        <div className="mt-2 p-2 bg-amber-900/20 rounded">
-          <strong>Time-saver:</strong> Memorize z₀.₀₂₅ = 1.96
-        </div>
-      </div>
-    )
-  }
 ];
 
 // Main Chapter 5 Reference Sheet Component
@@ -286,7 +291,7 @@ export const Chapter5ReferenceSheet = ({ mode = "floating" }) => {
 // Alternative compact version for specific topics
 export const EstimationFormulasOnly = ({ mode = "inline" }) => {
   const formulaSections = chapter5Sections.filter(section => 
-    [2, 3, 4, 5, 6, 11].includes(parseInt(section.title.split('.')[0]))
+    [2, 3, 4, 5, 6, 10].includes(parseInt(section.title.split('.')[0]))
   );
   
   return (

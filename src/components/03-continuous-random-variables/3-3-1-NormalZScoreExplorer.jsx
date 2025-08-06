@@ -15,6 +15,7 @@ import * as jStat from "jstat";
 import { useSafeMathJax } from '../../utils/mathJaxFix';
 import { tutorial_3_3_1 } from '@/tutorials/chapter3';
 import BackToHub from '../ui/BackToHub';
+import { Chapter3ReferenceSheet } from '../reference-sheets/Chapter3ReferenceSheet';
 
 // LaTeX content wrapper component to prevent re-renders
 const LatexContent = memo(function LatexContent({ children }) {
@@ -561,7 +562,9 @@ const NormalZScoreExplorer = () => {
   const progressPercent = Math.min((interactionCount / 15) * 100, 100);
   
   return (
-    <VisualizationContainer
+    <>
+      <Chapter3ReferenceSheet mode="floating" />
+      <VisualizationContainer
       title="📊 Normal Distribution & Z-Score Explorer"
       description={
         <>
@@ -771,6 +774,7 @@ const NormalZScoreExplorer = () => {
       </VisualizationSection>
       <BackToHub chapter={3} bottom={true} />
     </VisualizationContainer>
+    </>
   );
 };
 

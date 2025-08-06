@@ -11,6 +11,7 @@ import { Button } from '../ui/button';
 import { RangeSlider } from '../ui/RangeSlider';
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
 import { useMathJax } from '../../hooks/useMathJax';
+import { Chapter6ReferenceSheet } from '../reference-sheets/Chapter6ReferenceSheet';
 
 const colorScheme = createColorScheme('hypothesis');
 
@@ -636,7 +637,9 @@ export default function HypothesisTestingFundamentals() {
   }, [explorerHeads, showPValueExplorer]);
   
   return (
-    <VisualizationContainer
+    <>
+      <Chapter6ReferenceSheet mode="floating" />
+      <VisualizationContainer
       title="Hypothesis Testing Fundamentals"
       description="Explore how sample size affects evidence strength in hypothesis testing"
     >
@@ -1342,5 +1345,6 @@ export default function HypothesisTestingFundamentals() {
         </div>
       </div>
     </VisualizationContainer>
+    </>
   );
 }

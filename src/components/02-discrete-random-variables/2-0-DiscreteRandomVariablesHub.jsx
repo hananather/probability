@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Card } from "../ui/card";
 import { createColorScheme } from "@/lib/design-system";
 import { useMathJax } from "../../hooks/useMathJax";
+import { Chapter2ReferenceSheet } from "../reference-sheets/Chapter2ReferenceSheet";
 import { 
   Shuffle, Calculator, Binary, Dices, 
   TrendingDown, Layers, Zap, BookOpen 
@@ -275,6 +276,9 @@ export default function DiscreteRandomVariablesHub() {
           onSectionClick={handleSectionClick}
           hideHeader={true}
         />
+
+        {/* Floating Reference Sheet */}
+        <Chapter2ReferenceSheet mode="floating" />
       </div>
     </div>
   );

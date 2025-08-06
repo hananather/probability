@@ -13,6 +13,7 @@ import SectionComplete from '@/components/ui/SectionComplete';
 import { Target, Activity, BarChart, RefreshCw, ChevronRight, AlertCircle, CheckCircle } from 'lucide-react';
 import { CIHypothesisTestingBridge } from './5-6-CIHypothesisTestingBridge';
 import { CIInterpretationTrainer } from './5-7-CIInterpretationTrainer';
+import { Chapter5ReferenceSheet } from '../reference-sheets/Chapter5ReferenceSheet';
 
 // Helper function for inverse normal CDF (quantileNormal approximation)
 const quantileNormal = (p) => {
@@ -2108,10 +2109,12 @@ export default function ConfidenceIntervalKnownVariance() {
   const [mode, setMode] = useState(LEARNING_MODES.INTUITIVE);
   
   return (
-    <VisualizationContainer
-      title="5.2 Confidence Intervals (σ Known)"
-      description="Master confidence interval construction when population variance is known"
-    >
+    <>
+      <Chapter5ReferenceSheet mode="floating" />
+      <VisualizationContainer
+        title="5.2 Confidence Intervals (σ Known)"
+        description="Master confidence interval construction when population variance is known"
+      >
       <BackToHub chapter={5} />
       
       <CIIntroduction 
@@ -2196,6 +2199,7 @@ export default function ConfidenceIntervalKnownVariance() {
         {/* Section Complete - Standardized Component */}
         <SectionComplete chapter={5} />
       </div>
-    </VisualizationContainer>
+      </VisualizationContainer>
+    </>
   );
 }

@@ -21,6 +21,7 @@ import PMFBarChart from '@/components/shared/distributions/PMFBarChart';
 import SingleRunControls from '@/components/shared/distributions/SingleRunControls';
 import AnimatedOutcome from '@/components/shared/distributions/AnimatedOutcome';
 import { distributionThemes, getThemeStyles } from '@/utils/distribution-theme';
+import { Chapter2ReferenceSheet } from '../reference-sheets/Chapter2ReferenceSheet';
 
 // Get consistent color scheme for binomial
 const colors = createColorScheme('binomial');
@@ -428,7 +429,9 @@ export default function BinomialDistribution() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-950">
+    <>
+      <Chapter2ReferenceSheet mode="floating" />
+      <div className="min-h-screen bg-gray-950">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <motion.div
@@ -611,5 +614,6 @@ export default function BinomialDistribution() {
         </Card>
       </div>
     </div>
+    </>
   );
 }

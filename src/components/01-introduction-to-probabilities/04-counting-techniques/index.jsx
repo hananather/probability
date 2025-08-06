@@ -10,6 +10,7 @@ import { colors, typography, cn, createColorScheme } from '../../../lib/design-s
 import { tutorial_1_2_1 } from '@/tutorials/chapter1';
 import { useMathJax } from '@/hooks/useMathJax';
 import MathErrorBoundary from '@/components/ui/error-handling/MathErrorBoundary';
+import { Chapter1ReferenceSheet } from '../../reference-sheets/Chapter1ReferenceSheet';
 
 // Use probability color scheme
 const colorScheme = createColorScheme('probability');
@@ -477,11 +478,13 @@ const CountingTechniques = memo(function CountingTechniques() {
   
   
   return (
-    <MathErrorBoundary
-      fallbackMessage="The counting techniques visualization encountered an error. This may be due to complex tree calculations, D3 rendering issues, or factorial computation limits. Please try reducing the values of n or r, or refresh the page."
-      showRetry={true}
-    >
-      <VisualizationContainer 
+    <>
+      <Chapter1ReferenceSheet mode="floating" />
+      <MathErrorBoundary
+        fallbackMessage="The counting techniques visualization encountered an error. This may be due to complex tree calculations, D3 rendering issues, or factorial computation limits. Please try reducing the values of n or r, or refresh the page."
+        showRetry={true}
+      >
+        <VisualizationContainer 
         title="Counting Techniques: Permutations and Combinations" 
         className="p-2"
         tutorialSteps={tutorial_1_2_1}
@@ -824,8 +827,9 @@ const CountingTechniques = memo(function CountingTechniques() {
           )}
         </div>
       </div>
-    </VisualizationContainer>
-    </MathErrorBoundary>
+      </VisualizationContainer>
+      </MathErrorBoundary>
+    </>
   );
 });
 

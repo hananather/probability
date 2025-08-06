@@ -16,6 +16,7 @@ import SectionComplete from '@/components/ui/SectionComplete';
 import { createColorScheme, typography } from "@/lib/design-system";
 import { SemanticGradientCard, SemanticGradientGrid } from '../ui/patterns/SemanticGradientCard';
 import { InterpretationBox } from '../ui/patterns/InterpretationBox';
+import { Chapter5ReferenceSheet } from '../reference-sheets/Chapter5ReferenceSheet';
 
 // Use Chapter 7 color scheme for consistency
 const colorScheme = createColorScheme('regression');
@@ -2047,10 +2048,12 @@ export default function ProportionConfidenceInterval() {
   ];
   
   return (
-    <VisualizationContainer
-      title="5.5 Proportion Confidence Intervals"
-      description="From polls to population proportions"
-    >
+    <>
+      <Chapter5ReferenceSheet mode="floating" />
+      <VisualizationContainer
+        title="5.5 Proportion Confidence Intervals"
+        description="From polls to population proportions"
+      >
       <BackToHub chapter={5} />
       
       {/* Conceptual Introduction */}
@@ -2164,6 +2167,7 @@ export default function ProportionConfidenceInterval() {
       
       {/* Section Complete - Standardized Component */}
       <SectionComplete chapter={5} />
-    </VisualizationContainer>
+      </VisualizationContainer>
+    </>
   );
 }

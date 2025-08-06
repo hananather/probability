@@ -8,6 +8,7 @@ import { useMathJax } from "../../hooks/useMathJax";
 import { 
   Brain, Target, Calculator, Activity, PieChart, ArrowRight, GitBranch
 } from 'lucide-react';
+import { Chapter5ReferenceSheet } from '../reference-sheets/Chapter5ReferenceSheet';
 
 // Get consistent color scheme for estimation
 const colors = createColorScheme('estimation');
@@ -280,6 +281,9 @@ export default function EstimationHub() {
 
   return (
     <div className="min-h-screen bg-gray-950">
+      {/* Add the floating reference sheet for Chapter 5 */}
+      <Chapter5ReferenceSheet mode="floating" />
+      
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">

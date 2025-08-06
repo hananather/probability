@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Card } from "../ui/card";
 import { createColorScheme } from "@/lib/design-system";
 import { useMathJax } from "../../hooks/useMathJax";
+import { Chapter4ReferenceSheet } from "../reference-sheets/Chapter4ReferenceSheet";
 import { 
   BarChart, TrendingUp, Activity, PieChart,
   Calculator, Sigma, LineChart, GitBranch
@@ -531,6 +532,9 @@ export default function DescriptiveStatisticsHub() {
           onSectionClick={handleSectionClick}
           hideHeader={true}
         />
+
+        {/* Floating Reference Sheet */}
+        <Chapter4ReferenceSheet mode="floating" />
       </div>
     </div>
   );

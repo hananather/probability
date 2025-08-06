@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Card } from "../ui/card";
 import { createColorScheme } from "@/lib/design-system";
 import { useMathJax } from "../../hooks/useMathJax";
+import { Chapter7ReferenceSheet } from "../reference-sheets/Chapter7ReferenceSheet";
 import { 
   TrendingUp, Calculator, Target, BarChart3, 
   Sigma, Activity, ChartLine, GitBranch
@@ -245,6 +246,9 @@ export default function LinearRegressionHub() {
           onSectionClick={handleSectionClick}
           hideHeader={true}
         />
+
+        {/* Floating Reference Sheet */}
+        <Chapter7ReferenceSheet mode="floating" />
       </div>
     </div>
   );

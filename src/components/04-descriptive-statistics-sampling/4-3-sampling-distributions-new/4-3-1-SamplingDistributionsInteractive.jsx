@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { RangeSlider } from "@/components/ui/RangeSlider";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { colors, cn, typography } from "@/lib/design-system";
+import { Chapter4ReferenceSheet } from '../../reference-sheets/Chapter4ReferenceSheet';
 import { RefreshCw, Play, Pause, TrendingUp, Users, BarChart3 } from "lucide-react";
 import { useAnimationCleanup } from "@/hooks/useAnimationCleanup";
 
@@ -263,7 +264,9 @@ const SamplingDistributionsInteractive = ({ onComplete }) => {
   const progress = Math.min((samplesCollected / 30) * 100, 100);
 
   return (
-    <VisualizationContainer 
+    <>
+      <Chapter4ReferenceSheet mode="floating" />
+      <VisualizationContainer 
       title="Sampling Distribution Basics: Rolling Dice"
       className="max-w-6xl mx-auto"
     >
@@ -668,6 +671,7 @@ const SamplingDistributionsInteractive = ({ onComplete }) => {
         </VisualizationSection>
       )}
     </VisualizationContainer>
+    </>
   );
 };
 

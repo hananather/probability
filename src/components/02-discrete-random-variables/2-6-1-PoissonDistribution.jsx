@@ -15,6 +15,7 @@ import { Play, Pause, Timer, Calculator } from 'lucide-react';
 import { PoissonTimeline } from './components/PoissonTimeline';
 import { PoissonPMF } from './components/PoissonPMF';
 import { BinomialApproximation } from './components/BinomialApproximation';
+import { Chapter2ReferenceSheet } from '../reference-sheets/Chapter2ReferenceSheet';
 
 // Enhanced color scheme for Poisson distribution
 const poissonColors = {
@@ -110,7 +111,9 @@ const PoissonDistribution = React.memo(function PoissonDistribution() {
   const effectiveLambda = lambda > 5 ? 5 : lambda; // Limit visual elements for performance
 
   return (
-    <div className="min-h-screen bg-gray-950">
+    <>
+      <Chapter2ReferenceSheet mode="floating" />
+      <div className="min-h-screen bg-gray-950">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <motion.div
@@ -261,6 +264,7 @@ const PoissonDistribution = React.memo(function PoissonDistribution() {
         </Card>
       </div>
     </div>
+    </>
   );
 });
 

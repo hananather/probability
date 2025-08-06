@@ -11,6 +11,7 @@ import {
 import { colors, createColorScheme } from '../../lib/design-system';
 import BackToHub from '../ui/BackToHub';
 import { TrendingUp, TrendingDown, Activity, Info } from 'lucide-react';
+import { Chapter7ReferenceSheet } from '../reference-sheets/Chapter7ReferenceSheet';
 
 // Get Chapter 7 color scheme
 const chapterColors = createColorScheme('regression');
@@ -1471,7 +1472,9 @@ export default function CorrelationCoefficient() {
   }, [currentData, showDeviations, stats]);
   
   return (
-    <VisualizationContainer
+    <>
+      <Chapter7ReferenceSheet mode="floating" />
+      <VisualizationContainer
       title="Correlation Coefficient"
       description="Explore the strength and direction of linear relationships between variables."
     >
@@ -1620,5 +1623,6 @@ export default function CorrelationCoefficient() {
         </VisualizationSection>
       </div>
     </VisualizationContainer>
+    </>
   );
 }

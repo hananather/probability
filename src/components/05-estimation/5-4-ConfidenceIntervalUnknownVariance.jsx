@@ -66,8 +66,8 @@ const PlainEnglishCard = ({ title, explanation, example }) => {
   );
 };
 
-// Exam Tip Component
-const ExamTip = ({ tip, points, warning }) => {
+// Exam Tip Component (without point values)
+const ExamTip = ({ tip, warning }) => {
   return (
     <div 
       className="bg-gradient-to-r from-yellow-900/20 to-orange-900/20 rounded-lg p-4 mb-4 border border-yellow-700/50"
@@ -77,11 +77,6 @@ const ExamTip = ({ tip, points, warning }) => {
         <div className="flex-1">
           <h4 className="font-semibold text-yellow-400 mb-1">Exam Tip</h4>
           <p className="text-white text-sm">{tip}</p>
-          {points && (
-            <p className="text-yellow-300 text-xs mt-1">
-              Typically worth: {points} points
-            </p>
-          )}
           {warning && (
             <p className="text-orange-400 text-xs mt-1 flex items-center gap-1">
               <AlertTriangle className="w-3 h-3" />
@@ -95,163 +90,38 @@ const ExamTip = ({ tip, points, warning }) => {
 };
 
 
-// Journey Navigator Component with Clear Sequential Numbering
-const JourneyNavigator = ({ journey, currentSection, userInsights, onNavigate }) => {
-  const sections = Object.values(journey);
-  
-  const getColorClasses = (section, isActive, isCompleted) => {
-    if (isActive) {
-      switch(section.color) {
-        case 'yellow': return 'bg-yellow-900/30 border-yellow-500 shadow-lg shadow-yellow-500/20';
-        case 'blue': return 'bg-blue-900/30 border-blue-500 shadow-lg shadow-blue-500/20';
-        case 'purple': return 'bg-purple-900/30 border-purple-500 shadow-lg shadow-purple-500/20';
-        case 'emerald': return 'bg-emerald-900/30 border-emerald-500 shadow-lg shadow-emerald-500/20';
-        case 'pink': return 'bg-pink-900/30 border-pink-500 shadow-lg shadow-pink-500/20';
-        default: return 'bg-neutral-800 border-neutral-600';
-      }
-    }
-    if (isCompleted) return 'bg-neutral-800 border-emerald-500/50';
-    return 'bg-neutral-900 border-neutral-700 hover:border-neutral-600';
-  };
-  
-  const getIconColor = (color) => {
-    switch(color) {
-      case 'yellow': return 'text-yellow-400';
-      case 'blue': return 'text-blue-400';
-      case 'purple': return 'text-purple-400';
-      case 'emerald': return 'text-emerald-400';
-      case 'pink': return 'text-pink-400';
-      default: return 'text-neutral-400';
-    }
-  };
-
-  const getStepNumberBg = (section, isActive, isCompleted) => {
-    if (isCompleted) return 'bg-emerald-500 text-white';
-    if (isActive) {
-      switch(section.color) {
-        case 'yellow': return 'bg-yellow-500 text-black';
-        case 'blue': return 'bg-blue-500 text-white';
-        case 'purple': return 'bg-purple-500 text-white';
-        case 'emerald': return 'bg-emerald-500 text-white';
-        case 'pink': return 'bg-pink-500 text-white';
-        default: return 'bg-neutral-600 text-white';
-      }
-    }
-    return 'bg-neutral-700 text-neutral-300';
-  };
-  
+// Simple Tab Navigation Component
+const TabNavigation = ({ tabs, activeTab, onTabChange }) => {
   return (
     <div className="mb-8">
-      {/* Section Header */}
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-white">Learning Journey</h3>
-        <p className="text-sm text-neutral-400 mt-1">
-          Follow these steps sequentially for the best learning experience
-        </p>
-      </div>
-
-      {/* Progress Indicator */}
-      <div className="mb-4">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-neutral-400">Progress:</span>
-          <div className="flex-1 h-2 bg-neutral-800 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-500"
-              style={{ 
-                width: `${(Object.values(userInsights).filter(v => v === true).length / 
-                         Object.values(userInsights).length) * 100}%` 
-              }}
-            />
-          </div>
-          <span className="text-xs text-neutral-400">
-            {Object.values(userInsights).filter(v => v === true).length}/{Object.values(userInsights).length}
-          </span>
-        </div>
-      </div>
-
-      {/* Navigation Cards */}
-      <div className="flex items-stretch gap-3 overflow-x-auto pb-2">
-        {sections.map((section, idx) => {
-          const Icon = section.icon;
-          const isActive = currentSection === section.id;
-          const isCompleted = userInsights[`${section.id}Completed`];
-          const stepNumber = idx + 1;
-          
-          return (
-            <div key={section.id} className="relative flex-1 min-w-[200px]">
-              {/* Connection Line */}
-              {idx < sections.length - 1 && (
-                <div 
-                  className={`absolute top-8 -right-[13px] w-[26px] h-0.5 z-10 ${
-                    isCompleted ? 'bg-emerald-500' : 'bg-neutral-700'
-                  }`}
-                />
-              )}
-              
+      <div className="border-b border-neutral-700">
+        <div className="flex space-x-1 overflow-x-auto">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            
+            return (
               <button
-                onClick={() => onNavigate(section.id)}
-                className={`relative w-full p-4 rounded-lg border-2 transition-all duration-300 ${
-                  getColorClasses(section, isActive, isCompleted)
-                } ${isActive ? 'scale-[1.02]' : 'hover:scale-[1.01]'}`}
+                key={tab.id}
+                onClick={() => onTabChange(tab.id)}
+                className={`
+                  flex items-center gap-2 px-4 py-3 text-sm font-medium 
+                  rounded-t-lg transition-all duration-200 whitespace-nowrap
+                  ${
+                    isActive
+                      ? 'bg-neutral-700 text-white border-b-2'
+                      : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
+                  }
+                `}
+                style={{
+                  borderBottomColor: isActive ? tab.color : 'transparent'
+                }}
               >
-                {/* Step Number Badge */}
-                <div className="absolute -top-3 -left-3 z-20">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                    getStepNumberBg(section, isActive, isCompleted)
-                  } shadow-lg`}>
-                    {isCompleted ? (
-                      <Check size={16} className="text-white" />
-                    ) : (
-                      stepNumber
-                    )}
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="flex items-start justify-between mb-2">
-                  <Icon size={20} className={`${getIconColor(section.color)} mt-1`} />
-                  {isActive && (
-                    <span className="text-xs px-2 py-1 bg-neutral-700 rounded text-white">
-                      Current
-                    </span>
-                  )}
-                </div>
-                
-                <h4 className="font-semibold text-white text-sm text-left mb-1">
-                  Step {stepNumber}: {section.title}
-                </h4>
-                <p className="text-xs text-neutral-400 text-left">{section.subtitle}</p>
-                
-                {/* Action Indicator */}
-                <div className="mt-3 pt-3 border-t border-neutral-700">
-                  <p className="text-xs text-left">
-                    {isCompleted ? (
-                      <span className="text-emerald-400">Completed</span>
-                    ) : isActive ? (
-                      <span className="text-blue-400">In Progress...</span>
-                    ) : (
-                      <span className="text-neutral-500">Click to begin</span>
-                    )}
-                  </p>
-                </div>
+                <Icon size={18} className={isActive ? `text-${tab.iconColor}` : ''} />
+                <span>{tab.title}</span>
               </button>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Instructions */}
-      <div className="mt-4 p-3 bg-neutral-800/50 rounded-lg border border-neutral-700">
-        <div className="flex items-start gap-2">
-          <AlertCircle size={16} className="text-blue-400 mt-0.5" />
-          <div className="text-xs text-neutral-300">
-            <p className="font-semibold text-blue-400 mb-1">Navigation Tips:</p>
-            <ul className="space-y-1">
-              <li>• Complete each step in order for the best learning experience</li>
-              <li>• Click any completed step to review the material</li>
-              <li>• Green checkmarks indicate completed sections</li>
-            </ul>
-          </div>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -272,7 +142,6 @@ const ProblemStatement = ({ onInsight }) => {
       
       <ExamTip
         tip="Questions about 'when to use t vs z' appear on EVERY exam. Remember: Unknown σ → Use t-distribution!"
-        points="5-10"
         warning="Most students lose points by using z when they should use t"
       />
       
@@ -1490,7 +1359,6 @@ const MathematicalFoundation = React.memo(function MathematicalFoundation({ onIn
       
       <ExamTip
         tip="You DON'T need to derive the t-distribution on exams. Focus on: 1) When to use it (σ unknown), 2) How to find critical values, 3) Calculating df = n-1"
-        points="15-20"
       />
       
       <div ref={contentRef} className="space-y-4">
@@ -1688,7 +1556,6 @@ const StepByStepGuide = React.memo(function StepByStepGuide({ onInsight }) {
       
       <ExamTip
         tip="ALWAYS show ALL steps on exams! Even if you make a calculation error, you'll get partial credit for correct methodology."
-        points="20-25"
         warning="Skipping steps is the #1 reason students lose points"
       />
       
@@ -1863,7 +1730,6 @@ const PracticeProblems = React.memo(function PracticeProblems({ onInsight }) {
       
       <ExamTip
         tip="On exams, always state your interpretation in context. Don't just write the numbers - explain what they mean for the specific scenario."
-        points="5"
         warning="Forgetting interpretation costs easy points!"
       />
       
@@ -2155,66 +2021,61 @@ const SummaryComparison = () => {
   );
 };
 
-// Main Component with Journey Framework
+// Main Component with Tabbed Interface
 export default function ConfidenceIntervalUnknownVariance() {
-  const [currentSection, setCurrentSection] = useState('problem');
+  const [activeTab, setActiveTab] = useState('problem');
   const [userInsights, setUserInsights] = useState({
     understoodProblem: false,
     sawTConvergence: false,
     completedExample: false,
     exploredMath: false,
     completedGuide: false,
-    viewedSolution: false,
-    problemCompleted: false,
-    solutionCompleted: false,
-    applicationCompleted: false,
-    foundationCompleted: false,
-    practiceCompleted: false
+    viewedSolution: false
   });
   
-  // Journey definition
-  const TDistributionJourney = {
-    problem: {
+  // Tab definition with colors matching the sections
+  const tabs = [
+    {
       id: 'problem',
       title: 'The Unknown σ Problem',
       subtitle: 'Why we need a new approach',
       icon: HelpCircle,
-      color: 'yellow',
-      sections: ['ProblemStatement', 'NaiveApproach', 'WhyItFails']
+      color: '#fbbf24',  // yellow
+      iconColor: 'yellow-400'
     },
-    solution: {
+    {
       id: 'solution',
-      title: 'Enter the t-Distribution',
+      title: 't-Distribution',
       subtitle: 'A distribution that accounts for uncertainty',
       icon: Lightbulb,
-      color: 'blue',
-      sections: ['TDistributionIntro', 'DegreesOfFreedom', 'TvsNormal']
+      color: '#3b82f6',  // blue
+      iconColor: 'blue-400'
     },
-    foundation: {
+    {
       id: 'foundation',
       title: 'Mathematical Foundation',
       subtitle: 'Understanding the theory',
       icon: Calculator,
-      color: 'purple',
-      sections: ['MathematicalDerivation', 'StepByStep']
+      color: '#a855f7',  // purple
+      iconColor: 'purple-400'
     },
-    application: {
+    {
       id: 'application',
       title: 'Apply to Real Data',
-      subtitle: 'Build confidence intervals with t',
+      subtitle: 'Build confidence intervals',
       icon: BarChart,
-      color: 'emerald',
-      sections: ['OzoneExample', 'InteractiveBuilder', 'Comparison']
+      color: '#10b981',  // emerald
+      iconColor: 'emerald-400'
     },
-    practice: {
+    {
       id: 'practice',
       title: 'Practice & Master',
-      subtitle: 'Exam preparation & common mistakes',
+      subtitle: 'Common mistakes & exercises',
       icon: Activity,
-      color: 'pink',
-      sections: ['PracticeProblems', 'CommonMistakes']
+      color: '#ec4899',  // pink
+      iconColor: 'pink-400'
     }
-  };
+  ];
   
   const handleInsight = (insight) => {
     setUserInsights(prev => ({
@@ -2245,20 +2106,29 @@ export default function ConfidenceIntervalUnknownVariance() {
       
       <ConfidenceIntervalReference mode="floating" />
       
-      <JourneyNavigator
-        journey={TDistributionJourney}
-        currentSection={currentSection}
-        userInsights={userInsights}
-        onNavigate={setCurrentSection}
+      <TabNavigation
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
       />
       
-      <div
-        key={currentSection}
-      >
-        <SectionContent
-          section={TDistributionJourney[currentSection]}
-          onInsight={handleInsight}
-        />
+      {/* Tab Content Area */}
+      <div className="bg-neutral-900/50 rounded-lg p-6 border border-neutral-700">
+        <div className="mb-4">
+          <h2 className="text-xl font-bold text-white">
+            {tabs.find(t => t.id === activeTab)?.title}
+          </h2>
+          <p className="text-sm text-neutral-400 mt-1">
+            {tabs.find(t => t.id === activeTab)?.subtitle}
+          </p>
+        </div>
+        
+        <div key={activeTab}>
+          <SectionContent
+            section={{ id: activeTab }}
+            onInsight={handleInsight}
+          />
+        </div>
       </div>
       
       <SummaryComparison />

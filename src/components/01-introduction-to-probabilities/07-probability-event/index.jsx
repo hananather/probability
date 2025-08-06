@@ -11,6 +11,7 @@ import { colors, typography, components, formatNumber, cn, createColorScheme } f
 import { tutorial_1_5_1 } from '@/tutorials/chapter1';
 import { useMathJax } from '@/hooks/useMathJax';
 import SVGErrorBoundary, { getSafeSVGDimensions } from '../../ui/error-handling/SVGErrorBoundary';
+import { Chapter1ReferenceSheet } from '../../reference-sheets/Chapter1ReferenceSheet';
 
 // Use probability color scheme
 const colorScheme = createColorScheme('probability');
@@ -426,7 +427,9 @@ function ProbabilityEvent() {
   }, []);
 
   return (
-    <VisualizationContainer 
+    <>
+      <Chapter1ReferenceSheet mode="floating" />
+      <VisualizationContainer 
       title="Probability of an Event" 
       className="p-2"
       tutorialSteps={tutorial_1_5_1}
@@ -716,6 +719,7 @@ function ProbabilityEvent() {
         </div>
       </div>
     </VisualizationContainer>
+    </>
   );
 }
 

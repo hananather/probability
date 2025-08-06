@@ -10,6 +10,7 @@ import { ProgressBar, ProgressNavigation } from "../ui/ProgressBar";
 import { Button } from "../ui/button";
 import { tutorial_3_4_1 } from '@/tutorials/chapter3';
 import BackToHub from '../ui/BackToHub';
+import { Chapter3ReferenceSheet } from '../reference-sheets/Chapter3ReferenceSheet';
 
 // Define learning stages
 const learningStages = [
@@ -447,7 +448,9 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
   }, [lambda, showCDF, t, meanValue, colors, stage]);
   
   return (
-    <VisualizationContainer 
+    <>
+      <Chapter3ReferenceSheet mode="floating" />
+      <VisualizationContainer 
       title="Understanding the Exponential Distribution"
       subtitle="Modeling time between events in continuous processes"
       tutorialSteps={tutorial_3_4_1}
@@ -626,6 +629,7 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
         )}
       </div>
     </VisualizationContainer>
+    </>
   );
 });
 
