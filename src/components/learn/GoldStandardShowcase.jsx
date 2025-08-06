@@ -8,12 +8,244 @@ import { StatisticalTestCard, HypothesisSetup, TestStatistic, SignificanceResult
 import { MultiFormulaDisplay, createCorrelationFormulas, SimpleFormulaSelector } from '../ui/patterns/MultiFormulaDisplay';
 import { ComparisonTable, createCIPIComparison, SimpleComparisonTable } from '../ui/patterns/ComparisonTable';
 import { SideBySideFormulas, createCorrelationSideBySide, createRegressionSideBySide, StaticFormulaGrid } from '../ui/patterns/SideBySideFormulas';
-import { ChevronDown, ChevronUp, Star, Palette, Calculator, TestTube, BarChart3, Table, Grid3X3, HelpCircle, StickyNote } from 'lucide-react';
+import { ChevronDown, ChevronUp, Star, Palette, Calculator, TestTube, BarChart3, Table, Grid3X3, HelpCircle, StickyNote, Check } from 'lucide-react';
 import { QuizBreak } from '../mdx/QuizBreak';
 import { QuickReferenceCard, ConfidenceIntervalReference, HypothesisTestingReference, DistributionsReference } from '../ui/patterns/QuickReferenceCard';
 
+// Interactive Formula Component
+const InteractiveFormulaDemo = React.memo(() => {
+  const [selectedParts, setSelectedParts] = useState({
+    numerator: false,
+    denominator: false,
+    squared: false
+  });
+  
+  const [understanding, setUnderstanding] = useState({
+    z: false,
+    sigma: false,
+    E: false,
+    squared: false
+  });
+  
+  const allUnderstood = Object.values(understanding).every(v => v);
+
+  return (
+    <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-lg p-6 border border-purple-700/50">
+      <h3 className="text-xl font-bold text-purple-400 mb-6">
+        Build the Formula Step by Step
+      </h3>
+      
+      <div className="text-center mb-8">
+        <p className="text-neutral-300 mb-4">
+          Click on each part to understand why it's in the formula
+        </p>
+        
+        {/* Interactive Formula Display */}
+        <div className="text-4xl font-mono inline-flex items-center gap-2">
+          <span className="text-neutral-500">n =</span>
+          
+          {/* Opening parenthesis */}
+          <span
+            className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
+              selectedParts.squared ? 'text-purple-400' : 'text-neutral-500'
+            }`}
+            onClick={() => {
+              if (!selectedParts.squared) {
+                setSelectedParts({...selectedParts, squared: true});
+              }
+            }}
+          >
+            (
+          </span>
+          
+          {/* Fraction */}
+          <div className="inline-flex flex-col items-center">
+            {/* Numerator */}
+            <div className="flex items-center gap-1">
+              <span 
+                className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
+                  understanding.z ? 'text-green-400' : 
+                  selectedParts.numerator ? 'text-blue-400' : 'text-neutral-400'
+                }`}
+                onClick={() => {
+                  if (!selectedParts.numerator) {
+                    setSelectedParts({...selectedParts, numerator: true});
+                  }
+                  setUnderstanding({...understanding, z: true});
+                }}
+              >
+                z
+              </span>
+              <span 
+                className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform text-xs ${
+                  understanding.z ? 'text-green-400' : 
+                  selectedParts.numerator ? 'text-blue-400' : 'text-neutral-400'
+                }`}
+                onClick={() => {
+                  if (!selectedParts.numerator) {
+                    setSelectedParts({...selectedParts, numerator: true});
+                  }
+                  setUnderstanding({...understanding, z: true});
+                }}
+              >
+                α/2
+              </span>
+              <span className="text-neutral-400">×</span>
+              <span 
+                className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
+                  understanding.sigma ? 'text-green-400' : 
+                  selectedParts.numerator ? 'text-blue-400' : 'text-neutral-400'
+                }`}
+                onClick={() => {
+                  if (!selectedParts.numerator) {
+                    setSelectedParts({...selectedParts, numerator: true});
+                  }
+                  setUnderstanding({...understanding, sigma: true});
+                }}
+              >
+                σ
+              </span>
+            </div>
+            
+            {/* Fraction bar */}
+            <div className="w-full h-0.5 bg-neutral-500 my-1"></div>
+            
+            {/* Denominator */}
+            <div>
+              <span 
+                className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
+                  understanding.E ? 'text-green-400' : 
+                  selectedParts.denominator ? 'text-yellow-400' : 'text-neutral-400'
+                }`}
+                onClick={() => {
+                  if (!selectedParts.denominator) {
+                    setSelectedParts({...selectedParts, denominator: true});
+                  }
+                  setUnderstanding({...understanding, E: true});
+                }}
+              >
+                E
+              </span>
+            </div>
+          </div>
+          
+          {/* Closing parenthesis and square */}
+          <span
+            className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
+              selectedParts.squared ? 'text-purple-400' : 'text-neutral-500'
+            }`}
+            onClick={() => {
+              if (!selectedParts.squared) {
+                setSelectedParts({...selectedParts, squared: true});
+              }
+              setUnderstanding({...understanding, squared: true});
+            }}
+          >
+            )²
+          </span>
+        </div>
+      </div>
+      
+      {/* Explanations */}
+      <div>
+        {selectedParts.numerator && (
+          <div className="bg-blue-900/20 rounded-lg p-4 mb-4 border border-blue-500/30">
+            <h5 className="font-semibold text-blue-400 mb-2">Why z × σ?</h5>
+            <p className="text-sm text-neutral-300">
+              This represents how many standard errors we need to capture for our confidence level. 
+              The z-value (like 1.96 for 95%) tells us how many standard deviations, and σ is the population 
+              standard deviation. Together they give us the "margin" we need.
+            </p>
+            <div className="mt-3 text-center">
+              <span dangerouslySetInnerHTML={{ 
+                __html: `\\[\\text{Margin} = z_{\\alpha/2} \\times \\text{Standard Error}\\]` 
+              }} />
+            </div>
+          </div>
+        )}
+        
+        {selectedParts.denominator && (
+          <div className="bg-yellow-900/20 rounded-lg p-4 mb-4 border border-yellow-500/30">
+            <h5 className="font-semibold text-yellow-400 mb-2">Why divide by E?</h5>
+            <p className="text-sm text-neutral-300">
+              E is our desired margin of error - how close we want to be to the true value. 
+              Smaller E means we need more precision, which requires a larger sample size. 
+              Think of it like zoom: to see finer details (smaller E), you need more data points.
+            </p>
+            <p className="text-xs text-neutral-500 mt-2">
+              If E = 1, we're okay being ±1 unit off. If E = 0.1, we want to be ±0.1 units off (10× more precise!).
+            </p>
+          </div>
+        )}
+        
+        {selectedParts.squared && (
+          <div className="bg-purple-900/20 rounded-lg p-4 mb-4 border border-purple-500/30">
+            <h5 className="font-semibold text-purple-400 mb-2">Why squared?</h5>
+            <p className="text-sm text-neutral-300">
+              Remember that standard error = σ/√n. When we solve for n, we need to square both sides 
+              to eliminate the square root. This creates the quadratic relationship: halving the error 
+              quadruples the sample size!
+            </p>
+            <div className="mt-3 text-center text-sm">
+              <span dangerouslySetInnerHTML={{ 
+                __html: `\\[E = \\frac{z \\times \\sigma}{\\sqrt{n}} \\Rightarrow \\sqrt{n} = \\frac{z \\times \\sigma}{E} \\Rightarrow n = \\left(\\frac{z \\times \\sigma}{E}\\right)^2\\]` 
+              }} />
+            </div>
+          </div>
+        )}
+      </div>
+      
+      {/* Understanding Progress */}
+      <div className="mt-6 bg-neutral-800/50 rounded-lg p-4">
+        <h5 className="font-semibold text-white mb-3">Your Understanding</h5>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {Object.entries(understanding).map(([key, understood]) => (
+            <div 
+              key={key}
+              className={`p-3 rounded-lg text-center transition-all ${
+                understood 
+                  ? 'bg-green-900/30 border border-green-500/50' 
+                  : 'bg-neutral-700/50 border border-neutral-600'
+              }`}
+            >
+              <p className="text-sm font-medium">
+                {key === 'z' && 'Critical Value (z)'}
+                {key === 'sigma' && 'Std Dev (σ)'}
+                {key === 'E' && 'Margin of Error (E)'}
+                {key === 'squared' && 'Why Squared'}
+              </p>
+              {understood && <Check className="w-4 h-4 text-green-400 mx-auto mt-1" />}
+            </div>
+          ))}
+        </div>
+        
+        {allUnderstood && (
+          <p className="text-center text-green-400 mt-4 font-medium">
+            Great! You understand all parts of the formula! 🎉
+          </p>
+        )}
+      </div>
+      
+      {/* Quick tip */}
+      <div className="mt-4 p-3 bg-purple-900/10 rounded-lg border border-purple-700/30">
+        <p className="text-sm text-purple-300">
+          <strong>Exam Tip:</strong> Remember this as "confidence × variability ÷ precision, all squared"
+        </p>
+      </div>
+    </div>
+  );
+});
+
 // Component showcases
 const componentShowcases = {
+  interactiveFormula: {
+    name: 'Interactive Formula',
+    icon: Calculator,
+    color: 'text-blue-400',
+    description: 'Click-to-learn formula with hover effects',
+    component: InteractiveFormulaDemo
+  },
+  
   semanticCards: {
     name: 'Semantic Gradient Cards',
     icon: Palette,
@@ -518,7 +750,8 @@ const sections = [
 
 export function GoldStandardShowcase() {
   const [expandedComponents, setExpandedComponents] = useState({
-    semanticCards: true,
+    interactiveFormula: true,
+    semanticCards: false,
     interpretationBoxes: false,
     stepByStepCalculations: false,
     statisticalTests: false,

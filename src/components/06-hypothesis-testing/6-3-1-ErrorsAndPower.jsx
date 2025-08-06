@@ -14,6 +14,8 @@ import { Button } from '../ui/button';
 import BackToHub from '../ui/BackToHub';
 import { AlertTriangle, Shield, Target } from 'lucide-react';
 import { useMathJax } from '../../hooks/useMathJax';
+import { SemanticGradientCard, SemanticGradientGrid } from '../ui/patterns/SemanticGradientCard';
+import { InterpretationBox } from '../ui/patterns/InterpretationBox';
 
 // Get vibrant Chapter 6 color scheme
 const chapterColors = createColorScheme('hypothesis');
@@ -636,6 +638,57 @@ export default function ErrorsAndPower() {
       <div className="space-y-8">
         {/* Back to Hub Button */}
         <BackToHub chapter={6} />
+
+        {/* Learning Context Section */}
+        <VisualizationSection>
+          <InterpretationBox title="Learning Context" theme="blue">
+            <p className="text-sm">
+              This module examines the inherent trade-offs in hypothesis testing. Every statistical decision carries 
+              risk—we might reject a true null hypothesis (Type I error) or fail to detect a false null hypothesis 
+              (Type II error). Understanding these errors is essential for designing effective studies.
+            </p>
+            <p className="text-sm mt-2">
+              <strong>Connection to Practice:</strong> In quality control, medical testing, and scientific research, 
+              the consequences of these errors differ dramatically. A false positive in cancer screening causes anxiety; 
+              a false negative could be fatal.
+            </p>
+            <p className="text-sm mt-2">
+              <strong>Key Insight:</strong> We can control Type I error directly (α), but Type II error (β) depends on 
+              the true parameter value, sample size, and effect magnitude.
+            </p>
+          </InterpretationBox>
+          
+          <SemanticGradientGrid title="Core Concepts" theme="purple">
+            <SemanticGradientCard
+              title="Type I Error (α)"
+              description="Rejecting a true null hypothesis"
+              formula={`\\[\\alpha = P(\\text{Reject } H_0 | H_0 \\text{ true})\\]`}
+              note="Set by researcher before testing (typically 0.05)"
+              theme="red"
+            />
+            <SemanticGradientCard
+              title="Type II Error (β)"
+              description="Failing to reject a false null"
+              formula={`\\[\\beta = P(\\text{Fail to reject } H_0 | H_1 \\text{ true})\\]`}
+              note="Depends on true parameter value and sample size"
+              theme="yellow"
+            />
+            <SemanticGradientCard
+              title="Statistical Power"
+              description="Probability of detecting a true effect"
+              formula={`\\[\\text{Power} = 1 - \\beta\\]`}
+              note="Increases with larger n, larger effect size, or higher α"
+              theme="green"
+            />
+            <SemanticGradientCard
+              title="Trade-off Principle"
+              description="α and β are inversely related"
+              formula={`\\[\\alpha \\downarrow \\Rightarrow \\beta \\uparrow\\]`}
+              note="Reducing one error increases the other (for fixed n)"
+              theme="blue"
+            />
+          </SemanticGradientGrid>
+        </VisualizationSection>
 
         {/* Enhanced Introduction with Analogies */}
         <VisualizationSection>

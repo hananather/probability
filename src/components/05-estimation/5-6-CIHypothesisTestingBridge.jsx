@@ -54,11 +54,13 @@ const CIHypothesisTestingBridge = React.memo(function CIHypothesisTestingBridge(
   xBar = 100, 
   sigma = 15, 
   n = 30, 
-  confidenceLevel = 0.95 
+  confidenceLevel = 0.95,
+  isActive = true 
 }) {
   const svgRef = useRef(null);
   const [hypothesizedMean, setHypothesizedMean] = useState(95);
   const [showExplanation, setShowExplanation] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
   const contentRef = useMathJax([hypothesizedMean, showExplanation]);
   
   // Calculate CI bounds
@@ -84,14 +86,23 @@ const CIHypothesisTestingBridge = React.memo(function CIHypothesisTestingBridge(
   const pValue = 2 * (1 - normalCDF(Math.abs(zStatistic)));
   
   useEffect(() => {
+    if (!isActive) return;
     if (!svgRef.current) return;
     
-    const svg = d3.select(svgRef.current);
-    svg.selectAll("*").remove();
-    
-    const width = svgRef.current.clientWidth;
-    const height = 300;
-    const margin = { top: 40, right: 40, bottom: 60, left: 40 };
+    // Use a timeout to ensure DOM is ready
+    const initTimeout = setTimeout(() => {
+      if (!svgRef.current) return;
+      
+      const svg = d3.select(svgRef.current);
+      svg.selectAll("*").remove();
+      
+      const width = svgRef.current.clientWidth || 800;
+      const height = 300;
+      const margin = { top: 40, right: 40, bottom: 60, left: 40 };
+      
+      if (!hasInitialized && isActive) {
+        setHasInitialized(true);
+      }
     
     const g = svg
       .attr("width", width)
@@ -223,7 +234,12 @@ const CIHypothesisTestingBridge = React.memo(function CIHypothesisTestingBridge(
       .style("stroke-dasharray", "2,2")
       .style("opacity", 0.3);
     
-  }, [xBar, sigma, n, confidenceLevel, hypothesizedMean]);
+    }, 100); // Small delay to ensure DOM is ready
+    
+    return () => clearTimeout(initTimeout);
+  }, [xBar, sigma, n, confidenceLevel, hypothesizedMean, isActive, hasInitialized]);
+  
+  if (!isActive) return null;
   
   return (
     <div ref={contentRef} className="bg-neutral-800/30 rounded-lg p-6">

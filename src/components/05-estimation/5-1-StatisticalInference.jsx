@@ -15,14 +15,97 @@ import { Chapter5ReferenceSheet } from '../reference-sheets/Chapter5ReferenceShe
 import { 
   Brain, Target, Activity, BarChart, RefreshCw, 
   TrendingUp, Users, Dice6, Package, Vote, ChevronRight,
-  Play, Pause, RotateCcw
+  Play, Pause, RotateCcw, CheckCircle
 } from 'lucide-react';
 
 // Use probability color scheme for consistency with Chapter 2
 const chapterColors = createColorScheme('probability');
 
+// Learning modes
+const LEARNING_MODES = {
+  FOUNDATIONS: 'foundations',
+  EXPLORATION: 'exploration',
+  PRACTICE: 'practice'
+};
+
+// Mode colors
+const MODE_COLORS = {
+  [LEARNING_MODES.FOUNDATIONS]: '#3b82f6', // blue
+  [LEARNING_MODES.EXPLORATION]: '#10b981', // emerald
+  [LEARNING_MODES.PRACTICE]: '#8b5cf6' // purple
+};
+
+// Learning Path Navigation Component
+const LearningPathNavigation = React.memo(function LearningPathNavigation({ mode, onModeChange }) {
+  const contentRef = useRef(null);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [mode]);
+  
+  return (
+    <div className="mb-8">
+      <VisualizationSection className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+        <h2 className="text-2xl font-bold text-white mb-4">Learning Path</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          {Object.entries(LEARNING_MODES).map(([key, value]) => {
+            const isActive = mode === value;
+            const color = MODE_COLORS[value];
+            
+            return (
+              <button
+                key={key}
+                onClick={() => onModeChange(value)}
+                className={`relative p-4 rounded-lg border-2 transition-all ${
+                  isActive 
+                    ? 'bg-gradient-to-br border-opacity-100' 
+                    : 'bg-gray-800/50 border-gray-600 hover:border-gray-500'
+                }`}
+                style={isActive ? { borderColor: color, background: `linear-gradient(to bottom right, ${color}20, ${color}10)` } : {}}
+              >
+                {isActive && (
+                  <CheckCircle className="absolute top-2 right-2 w-4 h-4" style={{ color }} />
+                )}
+                
+                <h3 className="font-semibold text-lg mb-1" style={{ color: isActive ? color : '#fff' }}>
+                  {key.charAt(0) + key.slice(1).toLowerCase()}
+                </h3>
+                <p className="text-sm text-gray-400">
+                  {value === LEARNING_MODES.FOUNDATIONS && "Core concepts and theory"}
+                  {value === LEARNING_MODES.EXPLORATION && "Interactive demonstrations"}
+                  {value === LEARNING_MODES.PRACTICE && "Apply your knowledge"}
+                </p>
+              </button>
+            );
+          })}
+        </div>
+        
+        <div ref={contentRef} className="text-center">
+          <p className="text-gray-300 text-sm">
+            Choose your learning path to explore statistical inference concepts
+          </p>
+        </div>
+      </VisualizationSection>
+    </div>
+  );
+});
+
 // Add Bayesian Inference Introduction Component
-const BayesianInferenceIntro = React.memo(function BayesianInferenceIntro() {
+const BayesianInferenceIntro = React.memo(function BayesianInferenceIntro({ isActive }) {
+  if (!isActive) return null;
+  
   const contentRef = useRef(null);
   const [priorBelief, setPriorBelief] = useState(0.5);
   const [evidence, setEvidence] = useState({ heads: 0, tails: 0 });
@@ -806,13 +889,14 @@ const InteractiveInsights = React.memo(() => {
 });
 
 // Gear Wheel Factory Visualization - Updated with Gold Standard styling
-const GearWheelFactory = React.memo(() => {
+const GearWheelFactory = React.memo(({ isActive }) => {
   const svgRef = useRef(null);
   const [sampleSize, setSampleSize] = useState(30);
   const [isSampling, setIsSampling] = useState(false);
   const [samples, setSamples] = useState([]);
   const [allSampleMeans, setAllSampleMeans] = useState([]);
   const [currentMean, setCurrentMean] = useState(null);
+  const [hasInitialized, setHasInitialized] = useState(false);
   
   // True population parameters (hidden from user)
   const TRUE_MU = 50;
@@ -838,15 +922,25 @@ const GearWheelFactory = React.memo(() => {
   };
   
   
+  // Initialize visualization when active
   useEffect(() => {
+    if (!isActive) return;
     if (!svgRef.current) return;
     
-    const svg = d3.select(svgRef.current);
-    svg.selectAll("*").remove();
-    
-    const width = svgRef.current.clientWidth;
-    const height = 400;
-    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
+    // Use a timeout to ensure DOM is ready
+    const initTimeout = setTimeout(() => {
+      if (!svgRef.current) return;
+      
+      const svg = d3.select(svgRef.current);
+      svg.selectAll("*").remove();
+      
+      const width = svgRef.current.clientWidth || 800;
+      const height = 400;
+      const margin = { top: 40, right: 40, bottom: 60, left: 60 };
+      
+      if (!hasInitialized && isActive) {
+        setHasInitialized(true);
+      }
     
     const g = svg
       .attr("width", width)
@@ -1016,7 +1110,12 @@ const GearWheelFactory = React.memo(() => {
         .duration(800)
         .style("opacity", 1);
     }
-  }, [allSampleMeans]);
+    }, 100); // Small delay to ensure DOM is ready
+    
+    return () => clearTimeout(initTimeout);
+  }, [allSampleMeans, isActive, hasInitialized]);
+  
+  if (!isActive) return null;
   
   return (
     <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">
@@ -1135,11 +1234,12 @@ const GearWheelFactory = React.memo(() => {
 });
 
 // Central Limit Theorem Demonstration - Replacing confusing visualization
-const CentralLimitTheoremDemo = React.memo(() => {
+const CentralLimitTheoremDemo = React.memo(({ isActive }) => {
   const svgRef = useRef(null);
   const [activeDistribution, setActiveDistribution] = useState('uniform');
   const [sampleSize, setSampleSize] = useState(5);
   const contentRef = useRef(null);
+  const [isInitialized, setIsInitialized] = useState(false);
   
   useEffect(() => {
     const processMathJax = () => {
@@ -1177,12 +1277,18 @@ const CentralLimitTheoremDemo = React.memo(() => {
   };
   
   useEffect(() => {
+    if (!isActive) return;
     if (!svgRef.current) return;
+    
+    // Force initialization on first active render
+    if (!isInitialized && isActive) {
+      setIsInitialized(true);
+    }
     
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
     
-    const width = svgRef.current.clientWidth;
+    const width = svgRef.current.clientWidth || 800; // Fallback width
     const height = 550;
     const margin = { top: 40, right: 40, bottom: 50, left: 60 };
     
@@ -1342,7 +1448,10 @@ const CentralLimitTheoremDemo = React.memo(() => {
         .style("opacity", 0.3);
     });
     
-  }, [activeDistribution, sampleSize]);
+  }, [activeDistribution, sampleSize, isActive, isInitialized]);
+  
+  // Don't render if not active
+  if (!isActive) return null;
   
   return (
     <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">
@@ -1440,8 +1549,10 @@ const CentralLimitTheoremDemo = React.memo(() => {
 });
 
 // Baseball Heights Example
-const BaseballHeights = React.memo(function BaseballHeights() {
+const BaseballHeights = React.memo(function BaseballHeights({ isActive }) {
   const contentRef = useRef(null);
+  
+  if (!isActive) return null;
   const [showCalculation, setShowCalculation] = useState(true);
   
   // Exact data from course
@@ -1854,7 +1965,9 @@ const InteractiveCalculator = () => {
 };
 
 // Field-Specific Examples Component
-const FieldSpecificExamples = React.memo(function FieldSpecificExamples() {
+const FieldSpecificExamples = React.memo(function FieldSpecificExamples({ isActive }) {
+  if (!isActive) return null;
+  
   const [activeTab, setActiveTab] = useState('engineering');
   
   const fields = {
@@ -1957,7 +2070,9 @@ const FieldSpecificExamples = React.memo(function FieldSpecificExamples() {
 });
 
 // Concept Connections Component
-const ConceptConnections = () => {
+const ConceptConnections = ({ isActive }) => {
+  if (!isActive) return null;
+  
   const connections = [
     {
       from: 'Sampling Distribution',
@@ -2327,6 +2442,8 @@ const KeyTakeaways = () => {
 
 // Main Component - Simplified
 export default function StatisticalInference() {
+  const [mode, setMode] = useState(LEARNING_MODES.FOUNDATIONS);
+  
   return (
     <>
       {/* Chapter 5 Reference Sheet - Floating button */}
@@ -2338,12 +2455,17 @@ export default function StatisticalInference() {
     >
       <BackToHub chapter={5} />
       
-      {/* All content in single scrollable view */}
-      <div className="space-y-8">
+      <LearningPathNavigation 
+        mode={mode} 
+        onModeChange={setMode}
+      />
+      
+      {/* FOUNDATIONS Mode */}
+      <div style={{ display: mode === LEARNING_MODES.FOUNDATIONS ? 'block' : 'none' }}>
+        <div className="space-y-8">
         {/* Introduction */}
         <div>
           <StatisticalInferenceIntroduction />
-          <InteractiveInsights />
         </div>
         
         {/* Mathematical Foundations */}
@@ -2351,9 +2473,24 @@ export default function StatisticalInference() {
           <MathematicalFoundations />
         </div>
         
+        {/* Estimator Properties - Advanced Topic */}
+        <div>
+          <EstimatorProperties />
+        </div>
+        </div>
+      </div>
+      
+      {/* EXPLORATION Mode */}
+      <div style={{ display: mode === LEARNING_MODES.EXPLORATION ? 'block' : 'none' }}>
+        <div className="space-y-8">
+        {/* Interactive Insights */}
+        <div>
+          <InteractiveInsights />
+        </div>
+        
         {/* Exploration */}
         <div>
-          <GearWheelFactory />
+          <GearWheelFactory isActive={mode === LEARNING_MODES.EXPLORATION} />
         </div>
         
         {/* Discovery */}
@@ -2364,8 +2501,20 @@ export default function StatisticalInference() {
         
         {/* Bayesian Inference */}
         <div>
-          <BayesianInferenceIntro />
+          <BayesianInferenceIntro isActive={mode === LEARNING_MODES.EXPLORATION} />
         </div>
+        
+        {/* Application */}
+        <div>
+          <FieldSpecificExamples isActive={mode === LEARNING_MODES.EXPLORATION} />
+          <ConceptConnections isActive={mode === LEARNING_MODES.EXPLORATION} />
+        </div>
+        </div>
+      </div>
+      
+      {/* PRACTICE Mode */}
+      <div style={{ display: mode === LEARNING_MODES.PRACTICE ? 'block' : 'none' }}>
+        <div className="space-y-8">
         
         {/* Concept Check Quiz */}
         <div className="bg-neutral-800/30 rounded-lg p-6">
@@ -2442,11 +2591,9 @@ export default function StatisticalInference() {
           <PracticeProblems />
         </div>
         
-        {/* Application */}
+        {/* Interactive Calculator */}
         <div>
           <InteractiveCalculator />
-          <FieldSpecificExamples />
-          <ConceptConnections />
         </div>
         
         {/* Common Mistakes */}
@@ -2454,19 +2601,15 @@ export default function StatisticalInference() {
           <CommonMistakes />
         </div>
         
-        {/* Estimator Properties - Advanced Topic */}
-        <div>
-          <EstimatorProperties />
-        </div>
-        
         {/* Key Takeaways */}
         <div>
           <KeyTakeaways />
         </div>
-        
-        {/* Section Complete - Standardized Component */}
-        <SectionComplete chapter={5} />
+        </div>
       </div>
+      
+      {/* Section Complete - Standardized Component */}
+      <SectionComplete chapter={5} />
     </VisualizationContainer>
     </>
   );

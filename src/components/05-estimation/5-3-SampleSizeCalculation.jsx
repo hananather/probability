@@ -13,7 +13,8 @@ import {
   ArrowLeft,
   Info,
   Play,
-  Pause
+  Pause,
+  CheckCircle
 } from 'lucide-react';
 import BackToHub from '../ui/BackToHub';
 import SectionComplete from '@/components/ui/SectionComplete';
@@ -25,6 +26,20 @@ import {
 } from '../ui/VisualizationContainer';
 import { Chapter5ReferenceSheet } from '../reference-sheets/Chapter5ReferenceSheet';
 import { colors, typography, createColorScheme } from '@/lib/design-system';
+
+// Learning modes
+const LEARNING_MODES = {
+  FOUNDATIONS: 'foundations',
+  PRACTICE: 'practice',
+  APPLICATIONS: 'applications'
+};
+
+// Mode colors
+const MODE_COLORS = {
+  [LEARNING_MODES.FOUNDATIONS]: '#10b981', // emerald
+  [LEARNING_MODES.PRACTICE]: '#3b82f6',   // blue
+  [LEARNING_MODES.APPLICATIONS]: '#8b5cf6' // purple
+};
 
 // Chapter 7 Design Patterns - Consistent Colors
 const chapterColors = {
@@ -70,6 +85,92 @@ const SampleSizeJourney = {
     sections: ['CostAnalysis', 'ScenarioPlanning', 'OptimizationTool']
   }
 };
+
+// Learning Path Navigation Component
+const LearningPathNavigation = React.memo(function LearningPathNavigation({ mode, onModeChange }) {
+  const contentRef = useRef(null);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [mode]);
+  
+  return (
+    <div className="mb-8">
+      <VisualizationSection className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+        <h2 className="text-2xl font-bold text-white mb-4">Learning Path</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          {Object.entries(LEARNING_MODES).map(([key, value]) => {
+            const isActive = mode === value;
+            const color = MODE_COLORS[value];
+            
+            return (
+              <button
+                key={key}
+                onClick={() => onModeChange(value)}
+                className={`relative p-4 rounded-lg border-2 transition-all ${
+                  isActive 
+                    ? `bg-gradient-to-br from-${color}/20 to-${color}/10 border-${color}` 
+                    : 'bg-gray-800/50 border-gray-600 hover:border-gray-500'
+                }`}
+                style={isActive ? { borderColor: color, background: `linear-gradient(to bottom right, ${color}20, ${color}10)` } : {}}
+              >
+                {isActive && (
+                  <CheckCircle className="absolute top-2 right-2 w-4 h-4" style={{ color }} />
+                )}
+                
+                <h3 className="font-semibold text-lg mb-1" style={{ color: isActive ? color : '#fff' }}>
+                  {key.charAt(0) + key.slice(1).toLowerCase()}
+                </h3>
+                <p className="text-sm text-gray-400">
+                  {value === LEARNING_MODES.FOUNDATIONS && "Core concepts and theory"}
+                  {value === LEARNING_MODES.PRACTICE && "Calculators and examples"}
+                  {value === LEARNING_MODES.APPLICATIONS && "Real-world scenarios"}
+                </p>
+              </button>
+            );
+          })}
+        </div>
+      </VisualizationSection>
+      
+      <div 
+        ref={contentRef} 
+        className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 mt-4"
+      >
+        <div className="text-sm text-neutral-300 space-y-3">
+          <p className="text-lg font-semibold text-white mb-3">
+            Sample Size Determination: Balancing Precision, Confidence, and Cost
+          </p>
+          <p>
+            Before collecting data, determine the optimal sample size using the relationship between 
+            <strong className="text-emerald-400"> margin of error (E)</strong>, 
+            <strong className="text-blue-400"> confidence level (1-α)</strong>, 
+            and <strong className="text-purple-400"> population variance (σ²)</strong>.
+          </p>
+          
+          <div className="bg-gray-800/50 rounded p-3 text-center">
+            <span dangerouslySetInnerHTML={{ __html: `\\[n = \\left(\\frac{z_{\\alpha/2} \\cdot \\sigma}{E}\\right)^2\\]` }} />
+          </div>
+          
+          <p className="text-xs text-neutral-400">
+            Progress through the learning modes to master sample size calculations.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+});
 
 // Journey Progress Component
 const JourneyProgress = React.memo(function JourneyProgress({ 
@@ -1001,7 +1102,7 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
             
             {/* Opening parenthesis */}
             <span
-              className={`cursor-pointer transition-all hover:scale-110 active:scale-90 transform ${
+              className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
                 selectedParts.squared ? 'text-purple-400' : 'text-neutral-500'
               }`}
               onClick={() => setSelectedParts({...selectedParts, squared: !selectedParts.squared})}
@@ -1012,27 +1113,39 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
             {/* Fraction */}
             <div className="inline-flex flex-col items-center">
               {/* Numerator */}
-              <div
-                className={`cursor-pointer transition-all hover:scale-110 active:scale-90 transform flex items-center gap-1 ${
-                  selectedParts.numerator ? 'text-blue-400' : 'text-neutral-400'
-                }`}
-                onClick={() => setSelectedParts({...selectedParts, numerator: !selectedParts.numerator})}
-              >
+              <div className="flex items-center gap-1">
                 <span 
-                  className={understanding.z ? 'text-green-400' : ''}
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
+                    understanding.z ? 'text-green-400' : 
+                    selectedParts.numerator ? 'text-blue-400' : 'text-neutral-400'
+                  }`}
+                  onClick={() => {
+                    setSelectedParts({...selectedParts, numerator: !selectedParts.numerator});
                     setUnderstanding({...understanding, z: true});
                   }}
                 >
                   z
                 </span>
-                <span className="text-xs">α/2</span>
-                <span>×</span>
                 <span 
-                  className={understanding.sigma ? 'text-green-400' : ''}
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform text-xs ${
+                    understanding.z ? 'text-green-400' : 
+                    selectedParts.numerator ? 'text-blue-400' : 'text-neutral-400'
+                  }`}
+                  onClick={() => {
+                    setSelectedParts({...selectedParts, numerator: !selectedParts.numerator});
+                    setUnderstanding({...understanding, z: true});
+                  }}
+                >
+                  α/2
+                </span>
+                <span className="text-neutral-400">×</span>
+                <span 
+                  className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
+                    understanding.sigma ? 'text-green-400' : 
+                    selectedParts.numerator ? 'text-blue-400' : 'text-neutral-400'
+                  }`}
+                  onClick={() => {
+                    setSelectedParts({...selectedParts, numerator: !selectedParts.numerator});
                     setUnderstanding({...understanding, sigma: true});
                   }}
                 >
@@ -1044,22 +1157,25 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
               <div className="w-full h-0.5 bg-neutral-500 my-1"></div>
               
               {/* Denominator */}
-              <div
-                className={`cursor-pointer transition-all hover:scale-110 active:scale-90 transform ${
-                  selectedParts.denominator ? 'text-yellow-400' : 'text-neutral-400'
-                }`}
-                onClick={() => {
-                  setSelectedParts({...selectedParts, denominator: !selectedParts.denominator});
-                  setUnderstanding({...understanding, E: true});
-                }}
-              >
-                <span className={understanding.E ? 'text-green-400' : ''}>E</span>
+              <div>
+                <span 
+                  className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
+                    understanding.E ? 'text-green-400' : 
+                    selectedParts.denominator ? 'text-yellow-400' : 'text-neutral-400'
+                  }`}
+                  onClick={() => {
+                    setSelectedParts({...selectedParts, denominator: !selectedParts.denominator});
+                    setUnderstanding({...understanding, E: true});
+                  }}
+                >
+                  E
+                </span>
               </div>
             </div>
             
             {/* Closing parenthesis and square */}
             <span
-              className={`cursor-pointer transition-all hover:scale-110 active:scale-90 transform ${
+              className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
                 selectedParts.squared ? 'text-purple-400' : 'text-neutral-500'
               }`}
               onClick={() => {
@@ -2708,6 +2824,7 @@ const StageContent = React.memo(function StageContent({
 
 // Main Component
 export default function SampleSizeCalculation() {
+  const [mode, setMode] = useState(LEARNING_MODES.FOUNDATIONS);
   const [currentStage, setCurrentStage] = useState('DISCOVER');
   const [completedActivities, setCompletedActivities] = useState(new Set());
   const [savedCalculations, setSavedCalculations] = useState([]);
@@ -2729,8 +2846,15 @@ export default function SampleSizeCalculation() {
       >
       <BackToHub chapter={5} />
       
-      {/* Conceptual Introduction */}
-      <div className="mb-8 p-6 bg-gradient-to-br from-teal-900/20 to-blue-900/20 rounded-lg border border-teal-700/50">
+      <LearningPathNavigation 
+        mode={mode} 
+        onModeChange={setMode}
+      />
+      
+      {/* FOUNDATIONS Mode */}
+      <div style={{ display: mode === LEARNING_MODES.FOUNDATIONS ? 'block' : 'none' }}>
+        {/* Conceptual Introduction */}
+        <div className="mb-8 p-6 bg-gradient-to-br from-teal-900/20 to-blue-900/20 rounded-lg border border-teal-700/50">
         <h2 className="text-2xl font-bold text-teal-400 mb-4">The Fundamental Question</h2>
         <div className="space-y-4 text-neutral-300">
           <p>
@@ -2769,31 +2893,26 @@ export default function SampleSizeCalculation() {
           </p>
         </div>
       </div>
+        
+        {/* Additional Foundations Content */}
+        <MathematicalFoundation />
+        <VisualExploration onComplete={handleActivityComplete} />
+      </div>
       
-      {/* Journey Progress */}
-      <JourneyProgress
-        stages={SampleSizeJourney}
-        currentStage={currentStage}
-        completedActivities={completedActivities}
-        onStageSelect={setCurrentStage}
-      />
+      {/* PRACTICE Mode */}
+      <div style={{ display: mode === LEARNING_MODES.PRACTICE ? 'block' : 'none' }}>
+        <InteractiveFormulaBuilder onComplete={handleActivityComplete} />
+        <SampleSizeCalculator 
+          onComplete={handleActivityComplete} 
+          onSaveCalculation={handleSaveCalculation} 
+        />
+        <ExamPracticeProblems onComplete={handleActivityComplete} />
+      </div>
       
-      {/* Dynamic Content */}
-      <div>
-        <div
-          key={currentStage}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
-        >
-          <StageContent
-            stage={SampleSizeJourney[currentStage]}
-            onActivityComplete={handleActivityComplete}
-            savedCalculations={savedCalculations}
-            onSaveCalculation={handleSaveCalculation}
-          />
-        </div>
+      {/* APPLICATIONS Mode */}
+      <div style={{ display: mode === LEARNING_MODES.APPLICATIONS ? 'block' : 'none' }}>
+        <CostBenefitAnalysis onComplete={handleActivityComplete} />
+        <RealWorldScenarios onComplete={handleActivityComplete} />
       </div>
       
       {/* Section Complete - Standardized Component */}

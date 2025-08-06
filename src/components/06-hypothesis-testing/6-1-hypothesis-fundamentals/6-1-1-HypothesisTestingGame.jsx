@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import * as d3 from "@/utils/d3-utils";
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   VisualizationContainer, 
   VisualizationSection,
@@ -599,7 +600,7 @@ export default function HypothesisTestingGame() {
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
         
         {/* Right Panel - Visualizations */}
         <motion.div 
@@ -686,7 +687,7 @@ export default function HypothesisTestingGame() {
             )}
           </motion.div>
         </motion.div>
-      </motion.div>
+      </div>
       
       {/* Full Width Insight Section */}
       <motion.div 

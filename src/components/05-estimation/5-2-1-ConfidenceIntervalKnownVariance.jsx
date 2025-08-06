@@ -210,6 +210,7 @@ const CriticalValuesExplorer = React.memo(({ isActive, onComplete }) => {
   const [confidence, setConfidence] = useState(95);
   const [showAreas, setShowAreas] = useState(true);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
   const svgRef = useRef(null);
   
   const alpha = 1 - confidence / 100;
@@ -225,12 +226,20 @@ const CriticalValuesExplorer = React.memo(({ isActive, onComplete }) => {
   useEffect(() => {
     if (!isActive) return;
     
-    const svg = d3.select(svgRef.current);
-    svg.selectAll("*").remove();
-    
-    const width = 600;
-    const height = 300;
-    const margin = { top: 20, right: 20, bottom: 40, left: 40 };
+    // Use a timeout to ensure DOM is ready
+    const initTimeout = setTimeout(() => {
+      if (!svgRef.current) return;
+      
+      const svg = d3.select(svgRef.current);
+      svg.selectAll("*").remove();
+      
+      const width = 600;
+      const height = 300;
+      const margin = { top: 20, right: 20, bottom: 40, left: 40 };
+      
+      if (!hasInitialized && isActive) {
+        setHasInitialized(true);
+      }
     
     const xScale = d3.scaleLinear()
       .domain([-4, 4])
@@ -388,7 +397,10 @@ const CriticalValuesExplorer = React.memo(({ isActive, onComplete }) => {
           .style("opacity", 1);
       });
     }
-  }, [confidence, criticalValue, showAreas, isActive]);
+    }, 100); // Small delay to ensure DOM is ready
+    
+    return () => clearTimeout(initTimeout);
+  }, [confidence, criticalValue, showAreas, isActive, hasInitialized]);
   
   useEffect(() => {
     if (hasInteracted && isActive) {
@@ -2143,7 +2155,8 @@ export default function ConfidenceIntervalKnownVariance() {
           xBar={100} 
           sigma={15} 
           n={30} 
-          confidenceLevel={0.95} 
+          confidenceLevel={0.95}
+          isActive={mode === LEARNING_MODES.EXPLORATION} 
         />
         <InteractiveCIBuilder isActive={mode === LEARNING_MODES.EXPLORATION} />
       </div>

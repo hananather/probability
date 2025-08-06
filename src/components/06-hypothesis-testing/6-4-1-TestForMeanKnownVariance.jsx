@@ -13,6 +13,8 @@ import { colors, createColorScheme } from '@/lib/design-system';
 import { Button } from '../ui/button';
 import BackToHub from '../ui/BackToHub';
 import { Calculator, Shield, Target, BarChart3, Info, TrendingUp, AlertCircle, Play, Pause, RotateCcw, Eye, EyeOff, Settings } from 'lucide-react';
+import { SemanticGradientCard, SemanticGradientGrid } from '../ui/patterns/SemanticGradientCard';
+import { InterpretationBox } from '../ui/patterns/InterpretationBox';
 
 // Get vibrant Chapter 6 color scheme
 const chapterColors = createColorScheme('hypothesis');
@@ -905,6 +907,56 @@ export default function TestForMeanKnownVariance() {
       <div className="space-y-8">
         {/* Back to Hub Button */}
         <BackToHub chapter={6} />
+
+        {/* Learning Context Section */}
+        <VisualizationSection>
+          <InterpretationBox title="Learning Context" theme="blue">
+            <p className="text-sm">
+              The z-test for a mean represents the simplest hypothesis testing scenario—when population variance is known. 
+              While rare in practice, this case provides the clearest introduction to test construction and the relationship 
+              between test statistics, critical values, and p-values.
+            </p>
+            <p className="text-sm mt-2">
+              <strong>Practical Context:</strong> This test applies in manufacturing with established processes, 
+              standardized testing with known precision, or when using measurement instruments with documented variability.
+            </p>
+            <p className="text-sm mt-2">
+              <strong>Bridge to t-test:</strong> Once you master the z-test logic, transitioning to the t-test 
+              (unknown variance) requires only adjusting for the additional uncertainty through degrees of freedom.
+            </p>
+          </InterpretationBox>
+          
+          <SemanticGradientGrid title="Key Components" theme="blue">
+            <SemanticGradientCard
+              title="Test Statistic"
+              description="Standardized distance from null"
+              formula={`\\[Z = \\frac{\\bar{X} - \\mu_0}{\\sigma/\\sqrt{n}}\\]`}
+              note="Follows standard normal distribution under H₀"
+              theme="purple"
+            />
+            <SemanticGradientCard
+              title="Critical Value Method"
+              description="Compare Z to threshold"
+              formula={`\\[|Z| > z_{\\alpha/2}\\]`}
+              note="Reject H₀ if test statistic exceeds critical value"
+              theme="blue"
+            />
+            <SemanticGradientCard
+              title="P-Value Method"
+              description="Probability of extreme data"
+              formula={`\\[p = P(|Z| > |z_{obs}|)\\]`}
+              note="Reject H₀ if p-value < significance level α"
+              theme="teal"
+            />
+            <SemanticGradientCard
+              title="Confidence Interval"
+              description="Range of plausible values"
+              formula={`\\[\\bar{X} \\pm z_{\\alpha/2} \\cdot \\frac{\\sigma}{\\sqrt{n}}\\]`}
+              note="Reject H₀ if μ₀ outside interval"
+              theme="green"
+            />
+          </SemanticGradientGrid>
+        </VisualizationSection>
 
         {/* Introduction */}
         <VisualizationSection>

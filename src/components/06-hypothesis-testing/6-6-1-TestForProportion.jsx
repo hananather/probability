@@ -1,16 +1,12 @@
 'use client'
 
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import * as d3 from 'd3'
 import { Button } from '../ui/button'
 import BackToHub from '../ui/BackToHub'
 import ProgressBar from '../ui/ProgressBar'
-import { motion, AnimatePresence } from 'framer-motion'
-import { createColorScheme } from '../../lib/design-system'
-import { BarChart3, Target, TrendingUp, TrendingDown, Activity } from 'lucide-react'
+import { TrendingUp, TrendingDown, Activity } from 'lucide-react'
 
-// Create hypothesis testing color scheme
-const colorScheme = createColorScheme('hypothesis')
 
 // Memoized formula sections to prevent re-renders
 const ObservedProportionFormula = React.memo(function ObservedProportionFormula({ observedCount, sampleSize, observedProportion }) {
@@ -149,7 +145,7 @@ const WorkedExample = React.memo(function WorkedExample() {
   }, [])
   
   return (
-    <div className="bg-gradient-to-br from-neutral-800/50 to-neutral-900/50 rounded-lg p-6 border border-neutral-700/50">
+    <div className="bg-neutral-800 rounded-lg p-6">
       <h3 className="text-xl font-bold text-purple-400 mb-6">
         Step-by-Step Test for Proportion
       </h3>
@@ -225,7 +221,7 @@ const WorkedExample = React.memo(function WorkedExample() {
         </div>
 
         {/* Conclusion */}
-        <div className="bg-gradient-to-br from-red-900/20 to-red-800/20 border border-red-500/30 rounded-lg p-4">
+        <div className="bg-neutral-900/50 rounded-lg p-4">
           <h4 className="font-bold text-red-400 mb-3">Conclusion</h4>
           <div className="text-sm text-neutral-300 space-y-2">
             <p>At significance level α = 0.05:</p>
@@ -242,7 +238,7 @@ const WorkedExample = React.memo(function WorkedExample() {
         </div>
 
         {/* With Continuity Correction */}
-        <div className="bg-gradient-to-br from-teal-900/20 to-teal-800/20 border border-teal-500/30 rounded-lg p-4">
+        <div className="bg-neutral-900/50 rounded-lg p-4">
           <h4 className="font-bold text-teal-400 mb-3">Alternative: With Continuity Correction</h4>
           <div className="text-sm text-neutral-300 space-y-2">
             <p>For improved accuracy with discrete data:</p>
@@ -277,12 +273,9 @@ const BinomialFoundationCompletion = React.memo(function BinomialFoundationCompl
   }, [])
   
   return (
-    <motion.div
+    <div
       ref={contentRef}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="mt-8 bg-gradient-to-br from-green-900/20 to-green-800/20 border border-green-500/30 rounded-lg p-6"
+      className="mt-8 bg-neutral-900/50 rounded-lg p-6"
     >
       <div className="flex items-start gap-4">
         <div className="text-3xl">✅</div>
@@ -290,7 +283,7 @@ const BinomialFoundationCompletion = React.memo(function BinomialFoundationCompl
           <h3 className="text-xl font-bold text-green-400 mb-3">
             Section Complete: Binomial Foundation
           </h3>
-          <div className="bg-green-900/30 rounded-lg p-4 mb-4">
+          <div className="bg-neutral-800/50 rounded-lg p-4 mb-4">
             <h4 className="font-semibold text-white mb-2">Key Concept Mastered</h4>
             <p className="text-sm text-green-200 mb-3">
               The binomial distribution approaches a normal distribution as n increases:
@@ -305,7 +298,7 @@ const BinomialFoundationCompletion = React.memo(function BinomialFoundationCompl
           </p>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 })
 
@@ -327,12 +320,9 @@ const ContinuityCorrectionCompletion = React.memo(function ContinuityCorrectionC
   }, [])
   
   return (
-    <motion.div
+    <div
       ref={contentRef}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="mt-8 bg-gradient-to-br from-teal-900/20 to-teal-800/20 border border-teal-500/30 rounded-lg p-6"
+      className="mt-8 bg-neutral-900/50 rounded-lg p-6"
     >
       <div className="flex items-start gap-4">
         <div className="text-3xl">🎯</div>
@@ -355,7 +345,7 @@ const ContinuityCorrectionCompletion = React.memo(function ContinuityCorrectionC
           </p>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 })
 
@@ -377,12 +367,9 @@ const LargeCountsConditionCompletion = React.memo(function LargeCountsConditionC
   }, [])
   
   return (
-    <motion.div
+    <div
       ref={contentRef}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="mt-8 bg-gradient-to-br from-purple-900/20 to-purple-800/20 border border-purple-500/30 rounded-lg p-6"
+      className="mt-8 bg-neutral-900/50 rounded-lg p-6"
     >
       <div className="flex items-start gap-4">
         <div className="text-3xl">🔬</div>
@@ -390,7 +377,7 @@ const LargeCountsConditionCompletion = React.memo(function LargeCountsConditionC
           <h3 className="text-xl font-bold text-purple-400 mb-3">
             Section Complete: Large Counts Condition
           </h3>
-          <div className="bg-purple-900/30 rounded-lg p-4 mb-4">
+          <div className="bg-neutral-800/50 rounded-lg p-4 mb-4">
             <h4 className="font-semibold text-white mb-2">Key Validation Rule</h4>
             <p className="text-sm text-purple-200 mb-3">
               Normal approximation requires sufficient expected counts:
@@ -405,7 +392,7 @@ const LargeCountsConditionCompletion = React.memo(function LargeCountsConditionC
           </p>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 })
 
@@ -427,12 +414,9 @@ const SampleSizeEffectsCompletion = React.memo(function SampleSizeEffectsComplet
   }, [])
   
   return (
-    <motion.div
+    <div
       ref={contentRef}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="mt-8 bg-gradient-to-br from-blue-900/20 to-blue-800/20 border border-blue-500/30 rounded-lg p-6"
+      className="mt-8 bg-neutral-900/50 rounded-lg p-6"
     >
       <div className="flex items-start gap-4">
         <div className="text-3xl">📊</div>
@@ -440,7 +424,7 @@ const SampleSizeEffectsCompletion = React.memo(function SampleSizeEffectsComplet
           <h3 className="text-xl font-bold text-blue-400 mb-3">
             Section Complete: Sample Size Effects
           </h3>
-          <div className="bg-blue-900/30 rounded-lg p-4 mb-4">
+          <div className="bg-neutral-800/50 rounded-lg p-4 mb-4">
             <h4 className="font-semibold text-white mb-2">Key Insight Gained</h4>
             <p className="text-sm text-blue-200 mb-3">
               Larger samples can detect smaller differences from the null hypothesis:
@@ -466,7 +450,7 @@ const SampleSizeEffectsCompletion = React.memo(function SampleSizeEffectsComplet
           </p>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 })
 
@@ -550,38 +534,6 @@ export default function TestForProportion() {
     satisfied: sampleSize * nullProportion >= 10 && sampleSize * (1 - nullProportion) >= 10
   }
   
-  // Memoized binomial probabilities
-  const binomialProbabilities = useMemo(() => {
-    const probs = []
-    const maxK = Math.min(sampleSize, 40) // Limit for performance
-    
-    // Pre-calculate factorials
-    const factorials = [1]
-    for (let i = 1; i <= maxK; i++) {
-      factorials[i] = factorials[i - 1] * i
-    }
-    
-    const binomialCoeff = (n, k) => {
-      if (k > n) return 0
-      if (k === 0 || k === n) return 1
-      if (k > maxK || n - k > maxK) {
-        // Stirling's approximation for large values
-        return Math.exp(
-          n * Math.log(n) - k * Math.log(k) - (n - k) * Math.log(n - k) -
-          0.5 * Math.log(2 * Math.PI * n) + 0.5 * Math.log(2 * Math.PI * k) + 
-          0.5 * Math.log(2 * Math.PI * (n - k))
-        )
-      }
-      return factorials[n] / (factorials[k] * factorials[n - k])
-    }
-    
-    for (let k = 0; k <= maxK; k++) {
-      const coeff = binomialCoeff(sampleSize, k)
-      const prob = coeff * Math.pow(nullProportion, k) * Math.pow(1 - nullProportion, sampleSize - k)
-      probs.push({ x: k, p: prob })
-    }
-    return probs
-  }, [sampleSize, nullProportion])
 
   // Visualization refs
   const proportionVizRef = useRef(null)
@@ -638,7 +590,7 @@ export default function TestForProportion() {
     
     bars.transition()
       .duration(1200)
-      .delay((d, i) => i * 200)
+      .delay((_, i) => i * 200)
       .ease(d3.easeCubicOut)
       .attr('y', d => y(d.value))
       .attr('height', d => height - y(d.value));
@@ -658,7 +610,7 @@ export default function TestForProportion() {
       .text(d => d.value.toFixed(3))
       .transition()
       .duration(1200)
-      .delay((d, i) => i * 200 + 800)
+      .delay((_, i) => i * 200 + 800)
       .style('opacity', 1);
     
     // Add axes
@@ -741,7 +693,6 @@ export default function TestForProportion() {
       .style('opacity', 1);
     
     // Add critical regions
-    const alpha = 0.05;
     const criticalValue = 1.96; // For two-sided test
     
     if (testType === 'two-sided') {
@@ -866,7 +817,7 @@ export default function TestForProportion() {
           stroke: #6b7280;
         }
       `}</style>
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-8 rounded-xl mb-8 shadow-2xl">
+      <div className="bg-purple-600 text-white p-8 rounded-xl mb-8">
         <h1 className="text-3xl font-bold mb-4">Test for Proportion</h1>
         <p className="text-lg opacity-90">
           Master hypothesis testing for proportions using the normal approximation to the binomial distribution
@@ -889,10 +840,10 @@ export default function TestForProportion() {
             onClick={() => {
               setActiveSection(idx)
             }}
-            className={`p-4 rounded-lg transition-all duration-300 transform hover:scale-105 ${
+            className={`p-4 rounded-lg transition-all duration-200 ${
               activeSection === idx
-                ? 'bg-blue-600/90 text-white shadow-lg scale-105 border border-blue-500/50'
-                : 'bg-neutral-800/50 border border-neutral-700/50 text-neutral-300 hover:border-blue-500/50 hover:bg-neutral-800/70'
+                ? 'bg-blue-600 text-white'
+                : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
             }`}
           >
             <div className="text-2xl mb-2">{section?.icon || '📊'}</div>
@@ -905,14 +856,14 @@ export default function TestForProportion() {
       
       {/* Section 0: Binomial Foundation */}
       {activeSection === 0 && (
-        <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl shadow-2xl p-6">
+        <div className="bg-neutral-800 rounded-xl p-6">
           <h2 className="text-2xl font-bold mb-6 text-white">
             Binomial Distribution and Normal Approximation
           </h2>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
-              <div className="bg-gray-800/50 border border-gray-700/50 p-6 rounded-lg">
+              <div className="bg-neutral-900/50 p-6 rounded-lg">
                 <h3 className="font-semibold mb-4 text-gray-200 text-lg">Interactive Parameters</h3>
                 <div className="space-y-5">
                   <div>
@@ -960,7 +911,7 @@ export default function TestForProportion() {
                 </div>
                 
                 <div className="mt-6 pt-6 border-t border-gray-600">
-                  <div className="bg-yellow-900/20 border border-yellow-700/30 p-4 rounded-lg">
+                  <div className="bg-neutral-900/50 p-4 rounded-lg">
                     <h4 className="font-semibold mb-3 text-yellow-300">Observed Proportion</h4>
                     <ObservedProportionFormula 
                       observedCount={observedCount}
@@ -973,13 +924,13 @@ export default function TestForProportion() {
             </div>
             
             <div className="space-y-4">
-              <div className="bg-blue-900/20 border border-blue-700/30 p-6 rounded-lg">
+              <div className="bg-neutral-900/50 p-6 rounded-lg">
                 <h3 className="font-semibold mb-3 text-blue-300 text-lg">Normal Approximation Principle</h3>
                 <p className="text-blue-200 mb-4">
                   When <span dangerouslySetInnerHTML={{ __html: `\\(n\\)` }} /> is large, the binomial distribution 
                   <span dangerouslySetInnerHTML={{ __html: ` \\(B(n, p)\\)` }} /> approximates a normal distribution:
                 </p>
-                <div className="bg-blue-900/30 p-4 rounded-lg text-center">
+                <div className="bg-neutral-800/50 p-4 rounded-lg text-center">
                   <p className="text-blue-100">
                     Mean: <span dangerouslySetInnerHTML={{ __html: `\\(\\mu = np = ${sampleSize} \\times ${nullProportion.toFixed(2)} = ${(sampleSize * nullProportion).toFixed(1)}\\)` }} />
                   </p>
@@ -992,7 +943,7 @@ export default function TestForProportion() {
                 </div>
               </div>
               
-              <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 border border-purple-700/30 p-6 rounded-lg">
+              <div className="bg-neutral-900/50 p-6 rounded-lg">
                 <h3 className="font-semibold mb-3 text-purple-300 text-lg">Why This Matters</h3>
                 <ul className="space-y-3 text-purple-200">
                   <li className="flex items-start">
@@ -1010,7 +961,7 @@ export default function TestForProportion() {
                 </ul>
               </div>
               
-              <div className="bg-neutral-800/50 border border-neutral-700/50 p-4 rounded-lg">
+              <div className="bg-neutral-900/50 p-4 rounded-lg">
                 <h4 className="font-semibold text-neutral-200 mb-2">Current Conditions Check</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
@@ -1041,7 +992,7 @@ export default function TestForProportion() {
       
       {/* Section 1: Continuity Correction */}
       {activeSection === 1 && (
-        <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl shadow-2xl p-6">
+        <div className="bg-neutral-800 rounded-xl p-6">
           <h2 className="text-2xl font-bold mb-6 text-white">Continuity Correction</h2>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1060,7 +1011,7 @@ export default function TestForProportion() {
                 </p>
               </div>
               
-              <div className="bg-yellow-900/20 border border-yellow-700/30 p-6 rounded-lg">
+              <div className="bg-neutral-900/50 p-6 rounded-lg">
                 <h3 className="font-semibold mb-3 text-yellow-300 text-lg">Practical Example</h3>
                 <p className="text-yellow-200">
                   In quality control, if 60 out of 100 products pass inspection,
@@ -1075,14 +1026,14 @@ export default function TestForProportion() {
             </div>
             
             <div>
-              <div className="bg-blue-900/20 border border-blue-700/30 p-6 rounded-lg">
+              <div className="bg-neutral-900/50 p-6 rounded-lg">
                 <h3 className="font-semibold mb-4 text-blue-300 text-lg">Test Statistic Comparison</h3>
                 <div className="mb-4">
                   <button
                     onClick={() => setShowContinuityCorrection(!showContinuityCorrection)}
                     className={`w-full px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
                       showContinuityCorrection 
-                        ? 'bg-teal-600 text-white shadow-md ring-2 ring-teal-500/50' 
+                        ? 'bg-teal-600 text-white' 
                         : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
                     }`}
                   >
@@ -1120,12 +1071,12 @@ export default function TestForProportion() {
       
       {/* Section 2: Large Counts Condition */}
       {activeSection === 2 && (
-        <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl shadow-2xl p-6">
+        <div className="bg-neutral-800 rounded-xl p-6">
           <h2 className="text-2xl font-bold mb-6 text-white">Large Counts Condition</h2>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
-              <div className="bg-gray-800/50 border border-gray-700/50 p-6 rounded-lg">
+              <div className="bg-neutral-900/50 p-6 rounded-lg">
                 <h3 className="font-semibold mb-4 text-gray-200 text-lg">Interactive Condition Check</h3>
                 
                 <div className="space-y-6">
@@ -1182,11 +1133,7 @@ export default function TestForProportion() {
                   </div>
                 </div>
                 
-                <div className={`mt-6 p-4 rounded-lg transition-all duration-300 ${
-                  largeCountsCondition.satisfied 
-                    ? 'bg-green-900/20 border border-green-700/30' 
-                    : 'bg-red-900/20 border border-red-700/30'
-                }`}>
+                <div className="mt-6 p-4 rounded-lg bg-neutral-900/50">
                   <p className={`text-center font-semibold ${
                     largeCountsCondition.satisfied ? 'text-green-400' : 'text-red-400'
                   }`}>
@@ -1197,7 +1144,7 @@ export default function TestForProportion() {
                 </div>
               </div>
               
-              <div className="mt-4 bg-yellow-900/20 border border-yellow-700/30 p-6 rounded-lg">
+              <div className="mt-4 bg-neutral-900/50 p-6 rounded-lg">
                 <h3 className="font-semibold mb-3 text-yellow-300 text-lg">Common Scenarios</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-neutral-800/50 p-3 rounded-lg border border-neutral-700/50">
@@ -1225,12 +1172,12 @@ export default function TestForProportion() {
             </div>
             
             <div className="space-y-4">
-              <div className="bg-purple-900/20 border border-purple-700/30 p-6 rounded-lg">
+              <div className="bg-neutral-900/50 p-6 rounded-lg">
                 <h3 className="font-semibold mb-3 text-purple-300 text-lg">The Rule of Thumb</h3>
                 <p className="text-purple-200 mb-4">
                   For the normal approximation to be valid, both conditions must be satisfied:
                 </p>
-                <div className="bg-purple-900/30 p-4 rounded-lg text-center">
+                <div className="bg-neutral-800/50 p-4 rounded-lg text-center">
                   <div dangerouslySetInnerHTML={{ 
                     __html: `\\[np_0 \\geq 10 \\text{ and } n(1-p_0) \\geq 10\\]` 
                   }} />
@@ -1240,7 +1187,7 @@ export default function TestForProportion() {
                 </p>
               </div>
               
-              <div className="bg-blue-900/20 border border-blue-700/30 p-6 rounded-lg">
+              <div className="bg-neutral-900/50 p-6 rounded-lg">
                 <h3 className="font-semibold mb-3 text-blue-300 text-lg">Why 10?</h3>
                 <ul className="space-y-2 text-blue-200">
                   <li className="flex items-start">
@@ -1258,7 +1205,7 @@ export default function TestForProportion() {
                 </ul>
               </div>
               
-              <div className="bg-gray-800/50 border border-gray-700/50 p-6 rounded-lg">
+              <div className="bg-neutral-900/50 p-6 rounded-lg">
                 <h3 className="font-semibold mb-3 text-gray-200 text-lg">Alternative Methods</h3>
                 <p className="text-gray-300 mb-3">
                   When the large counts condition fails:
@@ -1288,7 +1235,7 @@ export default function TestForProportion() {
       
       {/* Section 3: Sample Size Effects */}
       {activeSection === 3 && (
-        <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl shadow-2xl p-6">
+        <div className="bg-neutral-800 rounded-xl p-6">
           <h2 className="text-2xl font-bold mb-6 text-white">Sample Size and Statistical Power</h2>
           
           <div className="mb-4">
@@ -1342,7 +1289,7 @@ export default function TestForProportion() {
                 </div>
               </div>
               
-              <div className="bg-blue-900/20 border border-blue-700/30 p-4 rounded-lg">
+              <div className="bg-neutral-900/50 p-4 rounded-lg">
                 <h3 className="font-semibold mb-2 text-blue-300">Key Insight</h3>
                 <p className="text-sm text-blue-200">
                   The same observed proportion (60%) can be:
@@ -1357,7 +1304,7 @@ export default function TestForProportion() {
                 </p>
               </div>
               
-              <div className="bg-yellow-900/20 border border-yellow-700/30 p-4 rounded-lg">
+              <div className="bg-neutral-900/50 p-4 rounded-lg">
                 <h3 className="font-semibold mb-3 text-yellow-300">Test Type</h3>
                 <div className="space-y-2">
                   {[
@@ -1370,7 +1317,7 @@ export default function TestForProportion() {
                       onClick={() => setTestType(value)}
                       className={`px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 flex items-center gap-2 ${
                         testType === value
-                          ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-500/50'
+                          ? 'bg-blue-600 text-white'
                           : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
                       }`}
                     >
@@ -1393,7 +1340,7 @@ export default function TestForProportion() {
           </div>
           
           {/* Complete Test Summary */}
-          <div className="mt-6 bg-gradient-to-br from-blue-900/20 to-blue-800/20 border border-blue-700/30 p-6 rounded-lg">
+          <div className="mt-6 bg-neutral-900/50 p-6 rounded-lg">
             <h3 className="font-bold text-lg mb-4 text-white">Complete Hypothesis Test</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1418,10 +1365,10 @@ export default function TestForProportion() {
               </div>
             </div>
             
-            <div className={`mt-4 p-3 rounded transition-all duration-300 border ${
+            <div className={`mt-4 p-3 rounded transition-all duration-300 ${
               pValue < 0.05 
-                ? 'bg-red-900/20 border-red-700/30' 
-                : 'bg-neutral-800/50 border-neutral-700/50'
+                ? 'bg-neutral-900/50' 
+                : 'bg-neutral-900/50'
             }`}>
               <p className={`font-semibold ${pValue < 0.05 ? 'text-red-400' : 'text-neutral-300'}`}>
                 Decision at <span dangerouslySetInnerHTML={{ __html: `\\\\(\\\\alpha = 0.05\\\\)` }} />: {pValue < 0.05 ? <>Reject <span dangerouslySetInnerHTML={{ __html: `\\\\(H_0\\\\)` }} /></> : <>Fail to reject <span dangerouslySetInnerHTML={{ __html: `\\\\(H_0\\\\)` }} /></>}

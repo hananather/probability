@@ -246,6 +246,120 @@ const CHAPTER_6_SECTIONS = [
   }
 ];
 
+// Additional deep-dive components for section 6.1
+const BONUS_COMPONENTS = [
+  {
+    id: 'hypothesis-game',
+    title: '6.1.1 Interactive Hypothesis Testing Game',
+    subtitle: 'Coin fairness detective game',
+    description: 'Play detective: determine if a coin is fair or biased through interactive experimentation. Build intuition for hypothesis testing concepts.',
+    icon: Lightbulb,
+    difficulty: 'Beginner',
+    estimatedTime: '15 min',
+    prerequisites: [],
+    learningGoals: [
+      'Build intuition for hypothesis testing',
+      'Experience evidence accumulation',
+      'Understand decision thresholds',
+      'Learn from interactive gameplay'
+    ],
+    route: '/chapter6/hypothesis-game',
+    color: '#10b981',
+    question: "Can you detect a biased coin?",
+    preview: "Interactive coin-testing game",
+    isBonus: true,
+    isComplete: true
+  },
+  {
+    id: 'hypothesis-evidence',
+    title: '6.1.2 Evidence Accumulation Visualizer',
+    subtitle: 'Chi-square test with dice',
+    description: 'Watch evidence accumulate against the null hypothesis. Interactive demonstration using dice rolls and chi-square testing.',
+    icon: Lightbulb,
+    difficulty: 'Intermediate',
+    estimatedTime: '20 min',
+    prerequisites: ['hypothesis-fundamentals'],
+    learningGoals: [
+      'Visualize evidence accumulation',
+      'Understand chi-square testing',
+      'See how sample size affects conclusions',
+      'Build statistical intuition'
+    ],
+    route: '/chapter6/hypothesis-evidence',
+    color: '#10b981',
+    question: "How does evidence build up?",
+    preview: "Chi-square test visualization",
+    isBonus: true,
+    isComplete: true
+  },
+  {
+    id: 'type-error-visualizer',
+    title: '6.1.3 Type I/II Error Interactive',
+    subtitle: 'Visual error trade-offs',
+    description: 'Explore the trade-off between Type I and Type II errors through interactive visualization. See how changing α affects β.',
+    icon: AlertCircle,
+    difficulty: 'Intermediate',
+    estimatedTime: '15 min',
+    prerequisites: ['hypothesis-fundamentals'],
+    learningGoals: [
+      'Visualize Type I and Type II errors',
+      'Understand the α-β trade-off',
+      'See how sample size affects both errors',
+      'Build decision-making intuition'
+    ],
+    route: '/chapter6/type-error-visualizer',
+    color: '#ef4444',
+    question: "How do we balance different types of errors?",
+    preview: "Interactive error visualization",
+    isBonus: true,
+    isComplete: true
+  },
+  {
+    id: 'p-value-meaning',
+    title: '6.1.4 P-Value Deep Dive',
+    subtitle: 'What p-values really mean',
+    description: 'Demystify p-values with interactive visualizations. Understand what they tell us and, more importantly, what they don\'t.',
+    icon: Calculator,
+    difficulty: 'Intermediate',
+    estimatedTime: '20 min',
+    prerequisites: ['hypothesis-fundamentals'],
+    learningGoals: [
+      'Correctly interpret p-values',
+      'Avoid common misconceptions',
+      'Understand sampling distributions',
+      'Connect p-values to decisions'
+    ],
+    route: '/chapter6/p-value-meaning',
+    color: '#3b82f6',
+    question: "What does a p-value actually tell us?",
+    preview: "P-value interpretation tool",
+    isBonus: true,
+    isComplete: true
+  },
+  {
+    id: 'types-hypotheses-interactive',
+    title: '6.2.2 Interactive Hypothesis Types',
+    subtitle: 'One vs two-tailed comparison',
+    description: 'Interactive comparison of one-tailed and two-tailed tests. See how the choice affects power and conclusions.',
+    icon: Scale,
+    difficulty: 'Intermediate',
+    estimatedTime: '15 min',
+    prerequisites: ['types-of-hypotheses'],
+    learningGoals: [
+      'Compare test types interactively',
+      'Understand power implications',
+      'See rejection region differences',
+      'Make appropriate test choices'
+    ],
+    route: '/chapter6/types-hypotheses-interactive',
+    color: '#3b82f6',
+    question: "When should we use each test type?",
+    preview: "Test type comparison tool",
+    isBonus: true,
+    isComplete: true
+  }
+];
+
 /**
  * Chapter 6 Hub Component - Hypothesis Testing
  * 
@@ -294,17 +408,41 @@ export default function HypothesisTestingHub() {
           </p>
         </Card>
 
-        {/* Chapter Hub with Sections */}
+        {/* Main Chapter Sections */}
         <ChapterHub
           chapterNumber={6}
-          chapterTitle="Hypothesis Testing"
-          chapterSubtitle="Testing claims with statistical rigor"
+          chapterTitle="Core Topics"
+          chapterSubtitle="Essential hypothesis testing concepts"
           sections={CHAPTER_6_SECTIONS}
           storageKey="hypothesisTestingProgress"
           progressVariant="purple"
           onSectionClick={handleSectionClick}
           hideHeader={true}
         />
+
+        {/* Bonus Components Section */}
+        <div className="mt-12">
+          <Card className="mb-6 p-6 bg-gradient-to-br from-indigo-900/20 to-purple-900/20 border-indigo-700/50">
+            <h2 className="text-2xl font-bold text-white mb-2">
+              📚 Deep Dive Components
+            </h2>
+            <p className="text-gray-300">
+              Additional interactive visualizations and games to reinforce your understanding. 
+              These bonus components provide hands-on practice with key concepts.
+            </p>
+          </Card>
+          
+          <ChapterHub
+            chapterNumber={6}
+            chapterTitle="Interactive Explorations"
+            chapterSubtitle="Hands-on learning experiences"
+            sections={BONUS_COMPONENTS}
+            storageKey="hypothesisTestingBonusProgress"
+            progressVariant="indigo"
+            onSectionClick={handleSectionClick}
+            hideHeader={true}
+          />
+        </div>
 
         {/* Floating Reference Sheet */}
         <Chapter6ReferenceSheet mode="floating" />

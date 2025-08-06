@@ -3,44 +3,42 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from "@/utils/d3-utils";
 
-const JourneyPath = React.memo(({ currentSection }) => {
+const JourneyPath = React.memo(({ currentSection, scrollProgress = 0 }) => {
   const svgRef = useRef(null);
   const animationRef = useRef(null);
-  const tooltipRef = useRef(null);
-  const [hoveredChapter, setHoveredChapter] = useState(null);
+  const [hoveredIndex, setHoveredIndex] = useState(null);
   
-  // Chapter information for the 7 core chapters
+  // Chapter configuration with unique colors for each chapter
   const chapters = [
-    { name: 'Introduction to Probabilities', icon: '∩', shortName: 'Ch 1' },
-    { name: 'Discrete Random Variables', icon: 'X', shortName: 'Ch 2' },
-    { name: 'Continuous Random Variables', icon: '∫', shortName: 'Ch 3' },
-    { name: 'Descriptive Statistics', icon: 'μ', shortName: 'Ch 4' },
-    { name: 'Estimation', icon: '̂θ', shortName: 'Ch 5' },
-    { name: 'Hypothesis Testing', icon: 'H₀', shortName: 'Ch 6' },
-    { name: 'Linear Regression', icon: 'ρ', shortName: 'Ch 7' }
+    { name: 'Introduction', color: '#3b82f6' },    // Blue
+    { name: 'Discrete', color: '#10b981' },        // Emerald
+    { name: 'Continuous', color: '#f59e0b' },      // Amber
+    { name: 'Statistics', color: '#8b5cf6' },      // Purple
+    { name: 'Estimation', color: '#f97316' },      // Orange
+    { name: 'Hypothesis', color: '#ef4444' },      // Red
+    { name: 'Regression', color: '#06b6d4' }       // Cyan
   ];
   
   useEffect(() => {
     const svg = d3.select(svgRef.current);
-    const width = 120;
-    const height = 700;
+    const width = 80;
+    const height = 500;
     
     svg.attr('viewBox', `0 0 ${width} ${height}`);
     
     // Only redraw if SVG is empty (first render)
-    if (svg.select('path').empty()) {
+    if (svg.select('.milestone').empty()) {
       svg.selectAll('*').remove();
       
-      // Journey path data for 7 chapters with elegant curved path
+      // Beautiful curved journey path for 7 chapters
       const pathData = [
-        { x: 60, y: 50 },   // Start point
-        { x: 35, y: 120 },  // Ch 1
-        { x: 75, y: 190 },  // Ch 2
-        { x: 45, y: 260 },  // Ch 3
-        { x: 80, y: 330 },  // Ch 4
-        { x: 50, y: 400 },  // Ch 5
-        { x: 70, y: 470 },  // Ch 6
-        { x: 60, y: 540 }   // Ch 7
+        { x: 40, y: 70 },   // Ch 1
+        { x: 25, y: 130 },  // Ch 2
+        { x: 55, y: 190 },  // Ch 3
+        { x: 30, y: 250 },  // Ch 4
+        { x: 50, y: 310 },  // Ch 5
+        { x: 35, y: 370 },  // Ch 6
+        { x: 45, y: 430 }   // Ch 7
       ];
       
       const line = d3.line()
@@ -48,15 +46,15 @@ const JourneyPath = React.memo(({ currentSection }) => {
         .y(d => d.y)
         .curve(d3.curveBasis);
       
-      // Background path (dotted)
+      // Background path (subtle dotted line)
       svg.append('path')
         .datum(pathData)
         .attr('d', line)
         .attr('fill', 'none')
-        .attr('stroke', '#52525b')
-        .attr('stroke-width', 3)
-        .attr('stroke-dasharray', '6,6')
-        .attr('opacity', 0.6);
+        .attr('stroke', '#3f3f46')
+        .attr('stroke-width', 2)
+        .attr('stroke-dasharray', '4,4')
+        .attr('opacity', 0.5);
       
       // Progress path
       const pathLength = svg.append('path')
@@ -66,18 +64,7 @@ const JourneyPath = React.memo(({ currentSection }) => {
         .attr('stroke', 'transparent')
         .node().getTotalLength();
       
-      svg.append('path')
-        .datum(pathData)
-        .attr('class', 'progress-path')
-        .attr('d', line)
-        .attr('fill', 'none')
-        .attr('stroke', 'url(#progressGradient)')
-        .attr('stroke-width', 4)
-        .attr('stroke-dasharray', pathLength)
-        .attr('stroke-dashoffset', pathLength)
-        .attr('stroke-linecap', 'round');
-      
-      // Add gradient definition for progress path
+      // Create gradient for progress path
       const defs = svg.append('defs');
       const gradient = defs.append('linearGradient')
         .attr('id', 'progressGradient')
@@ -87,188 +74,181 @@ const JourneyPath = React.memo(({ currentSection }) => {
       
       gradient.append('stop')
         .attr('offset', '0%')
-        .attr('stop-color', '#06b6d4');
+        .attr('stop-color', '#3b82f6');
       gradient.append('stop')
         .attr('offset', '50%')
-        .attr('stop-color', '#14b8a6');
+        .attr('stop-color', '#8b5cf6');
       gradient.append('stop')
         .attr('offset', '100%')
-        .attr('stop-color', '#10b981');
+        .attr('stop-color', '#06b6d4');
       
-      // Chapter milestone groups (skip first point, use only 7 chapters)
+      svg.append('path')
+        .datum(pathData)
+        .attr('class', 'progress-path')
+        .attr('d', line)
+        .attr('fill', 'none')
+        .attr('stroke', 'url(#progressGradient)')
+        .attr('stroke-width', 3)
+        .attr('stroke-dasharray', pathLength)
+        .attr('stroke-dashoffset', pathLength)
+        .attr('stroke-linecap', 'round');
+      
+      // Milestone dots for 7 chapters
       const milestones = svg.selectAll('.milestone')
-        .data(pathData.slice(1)) // Skip start point, use 7 chapters
+        .data(pathData)
         .enter()
         .append('g')
         .attr('class', 'milestone')
-        .attr('transform', (d, i) => `translate(${d.x}, ${d.y})`)
-        .style('cursor', 'pointer');
-      
-      // Outer ring for milestone
-      milestones.append('circle')
-        .attr('class', 'milestone-ring')
-        .attr('r', 14)
-        .attr('fill', 'none')
-        .attr('stroke', '#52525b')
-        .attr('stroke-width', 2)
-        .attr('opacity', 0.3);
-      
-      // Main milestone circle
-      milestones.append('circle')
-        .attr('class', 'milestone-circle')
-        .attr('r', 10)
-        .attr('fill', '#27272a')
-        .attr('stroke', '#52525b')
-        .attr('stroke-width', 2);
-      
-      // Chapter number text
-      milestones.append('text')
-        .attr('class', 'milestone-text')
-        .attr('text-anchor', 'middle')
-        .attr('dy', '0.35em')
-        .attr('font-size', '10px')
-        .attr('font-weight', 'bold')
-        .attr('fill', '#71717a')
-        .text((d, i) => i + 1);
-      
-      // Add hover effects
-      milestones
-        .on('mouseenter', function(event, d, i) {
-          const index = pathData.slice(1).indexOf(d);
+        .attr('transform', (d) => `translate(${d.x}, ${d.y})`)
+        .style('cursor', 'pointer')
+        .on('mouseenter', function(event, d) {
+          const index = pathData.indexOf(d);
+          setHoveredIndex(index);
+          
+          // Hover animation
           d3.select(this).select('.milestone-circle')
             .transition()
             .duration(200)
-            .attr('r', 12);
-          d3.select(this).select('.milestone-ring')
+            .attr('r', 10)
+            .attr('stroke-width', 3);
+            
+          d3.select(this).select('.milestone-dot')
             .transition()
             .duration(200)
-            .attr('opacity', 0.6);
+            .attr('r', 4);
         })
         .on('mouseleave', function(event, d) {
-          const index = pathData.slice(1).indexOf(d);
+          const index = pathData.indexOf(d);
           const isActive = index <= currentSection;
+          
+          setHoveredIndex(null);
+          
           d3.select(this).select('.milestone-circle')
             .transition()
             .duration(200)
-            .attr('r', index === currentSection ? 12 : 10);
-          d3.select(this).select('.milestone-ring')
+            .attr('r', index === currentSection ? 9 : 8)
+            .attr('stroke-width', 2);
+            
+          d3.select(this).select('.milestone-dot')
             .transition()
             .duration(200)
-            .attr('opacity', isActive ? 0.8 : 0.3);
+            .attr('r', index === currentSection ? 4 : 3);
         });
+      
+      // Outer circle with chapter colors
+      milestones.append('circle')
+        .attr('class', 'milestone-circle')
+        .attr('r', 8)
+        .attr('fill', '#18181b')
+        .attr('stroke', (d, i) => chapters[i].color)
+        .attr('stroke-width', 2)
+        .attr('stroke-opacity', 0)
+        .style('transition', 'all 0.3s ease');
+      
+      // Inner dot
+      milestones.append('circle')
+        .attr('class', 'milestone-dot')
+        .attr('r', 3)
+        .attr('fill', '#3f3f46')
+        .attr('pointer-events', 'none')
+        .style('transition', 'all 0.3s ease');
     }
     
-    // Update progress and milestones based on currentSection (7 chapters max)
-    // Start from -1 (no progress) to 6 (all 7 chapters complete)
-    const adjustedSection = Math.min(currentSection, 6);
-    const progress = adjustedSection < 0 ? 0 : (adjustedSection + 1) / 7;
+    // Update based on currentSection (starts at -1 for no progress)
+    const activeIndex = Math.max(-1, Math.min(6, currentSection));
+    
+    // Update progress path based on scroll progress for smooth animation
     const pathLength = svg.select('.progress-path').node()?.getTotalLength() || 0;
     
-    svg.select('.progress-path')
-      .transition()
-      .duration(800)
-      .ease(d3.easeCubicOut)
-      .attr('stroke-dashoffset', pathLength * (1 - progress));
+    // Use scrollProgress for smooth line animation
+    if (scrollProgress > 0) {
+      // Map scroll progress to the path (with some adjustments for better visual)
+      // Scale it so the line doesn't fill completely until near the end
+      const scaledProgress = Math.min(1, scrollProgress * 0.9 + 0.05); // Start filling earlier, don't fill 100% until very end
+      
+      svg.select('.progress-path')
+        .transition()
+        .duration(200) // Faster transition for smoother response
+        .ease(d3.easeLinear) // Linear for direct correlation with scroll
+        .attr('stroke-dashoffset', pathLength * (1 - scaledProgress))
+        .attr('opacity', 0.8);
+    } else {
+      // At the very top, hide the line completely
+      svg.select('.progress-path')
+        .transition()
+        .duration(200)
+        .attr('stroke-dashoffset', pathLength)
+        .attr('opacity', 0);
+    }
     
-    // Update milestone states
+    // Update milestone appearance based on scroll progress
+    // Calculate which milestones should be active based on scroll
+    const totalSections = 7;
+    const progressPerSection = 1 / totalSections;
+    const activeMilestones = Math.floor(scrollProgress / progressPerSection);
+    
     svg.selectAll('.milestone-circle')
       .transition()
       .duration(400)
       .attr('fill', (d, i) => {
-        if (i <= adjustedSection) {
-          return i === adjustedSection ? '#06b6d4' : '#14b8a6';
+        // Color milestones based on scroll progress
+        const milestoneProgress = (i + 1) * progressPerSection;
+        if (scrollProgress >= milestoneProgress - progressPerSection * 0.5) {
+          return chapters[i].color;
         }
-        return '#27272a';
+        return '#18181b';
       })
-      .attr('stroke', (d, i) => {
-        if (i <= adjustedSection) {
-          return i === adjustedSection ? '#0ea5e9' : '#10b981';
-        }
-        return '#52525b';
+      .attr('stroke-opacity', (d, i) => {
+        if (i === activeIndex) return 0.8;
+        if (i < activeIndex) return 0.3;
+        return 0.1;
       })
-      .attr('r', (d, i) => i === adjustedSection ? 12 : 10);
+      .attr('r', (d, i) => i === activeIndex ? 9 : 8);
     
-    svg.selectAll('.milestone-ring')
-      .transition()
-      .duration(400)
-      .attr('stroke', (d, i) => i <= adjustedSection ? '#14b8a6' : '#52525b')
-      .attr('opacity', (d, i) => i <= adjustedSection ? 0.8 : 0.3);
-    
-    svg.selectAll('.milestone-text')
+    svg.selectAll('.milestone-dot')
       .transition()
       .duration(400)
       .attr('fill', (d, i) => {
-        if (i <= adjustedSection) {
-          return i === adjustedSection ? '#ffffff' : '#f4f4f5';
+        // Color dots based on scroll progress
+        const milestoneProgress = (i + 1) * progressPerSection;
+        if (scrollProgress >= milestoneProgress - progressPerSection * 0.5) {
+          return '#ffffff';
         }
-        return '#71717a';
+        return '#3f3f46';
       })
-      .attr('font-weight', (d, i) => i === adjustedSection ? 'bold' : 'normal');
+      .attr('r', (d, i) => i === activeIndex ? 4 : 3);
     
-    // Enhanced pulsing effect on current section with "You are here" indicator
-    if (adjustedSection >= 0 && adjustedSection < 7) {
+    // Clear any existing pulse animations
+    svg.selectAll('.pulse-circle').remove();
+    if (animationRef.current) {
+      clearTimeout(animationRef.current);
+    }
+    
+    // Subtle pulsing effect on current milestone
+    if (activeIndex >= 0 && activeIndex < 7) {
       const currentMilestone = svg.selectAll('.milestone')
-        .filter((d, i) => i === adjustedSection);
-      
-      // Add "You are here" indicator
-      currentMilestone.selectAll('.current-indicator').remove();
-      const indicator = currentMilestone.append('g').attr('class', 'current-indicator');
-      
-      // Arrow pointing to current chapter
-      indicator.append('path')
-        .attr('d', 'M -25 -5 L -15 0 L -25 5 Z')
-        .attr('fill', '#06b6d4')
-        .attr('opacity', 0)
-        .transition()
-        .duration(500)
-        .attr('opacity', 1);
-      
-      indicator.append('text')
-        .attr('x', -30)
-        .attr('y', 0)
-        .attr('text-anchor', 'end')
-        .attr('dy', '0.35em')
-        .attr('font-size', '9px')
-        .attr('font-weight', 'bold')
-        .attr('fill', '#06b6d4')
-        .attr('opacity', 0)
-        .text('You are here')
-        .transition()
-        .duration(500)
-        .delay(200)
-        .attr('opacity', 1);
+        .filter((d, i) => i === activeIndex);
       
       const pulseCircle = () => {
-        if (adjustedSection !== Math.min(currentSection, 6)) return; // Stop if section changed
-        
         const pulse = currentMilestone.append('circle')
-          .attr('class', 'pulse-ring')
-          .attr('r', 12)
+          .attr('class', 'pulse-circle')
+          .attr('r', 9)
           .attr('fill', 'none')
-          .attr('stroke', '#06b6d4')
+          .attr('stroke', chapters[activeIndex].color)
           .attr('stroke-width', 2)
           .attr('opacity', 0.6);
         
         pulse.transition()
           .duration(2000)
-          .ease(d3.easeCubicOut)
-          .attr('r', 25)
-          .attr('stroke-width', 1)
+          .ease(d3.easeLinear)
+          .attr('r', 20)
           .attr('opacity', 0)
           .remove();
         
-        animationRef.current = setTimeout(pulseCircle, 2500);
+        animationRef.current = setTimeout(pulseCircle, 3000);
       };
       
-      // Clear previous animation
-      if (animationRef.current) {
-        clearTimeout(animationRef.current);
-      }
-      
       pulseCircle();
-    } else {
-      // Remove current indicators if no active section
-      svg.selectAll('.current-indicator').remove();
     }
     
     // Cleanup
@@ -277,35 +257,23 @@ const JourneyPath = React.memo(({ currentSection }) => {
         clearTimeout(animationRef.current);
       }
     };
-  }, [currentSection]);
-  
-  // Calculate display values outside useEffect for render
-  const adjustedSection = Math.min(currentSection, 6);
+  }, [currentSection, scrollProgress]);
   
   return (
     <div className="relative w-full h-full">
       <svg ref={svgRef} className="w-full h-full" />
       
-      {/* Journey Title */}
-      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 text-center">
-        <div className="text-xs font-semibold text-cyan-400 mb-1">
-          Learning Journey
-        </div>
-        <div className="text-xs text-gray-400">
-          {adjustedSection >= 0 ? `${adjustedSection + 1}/7` : '0/7'} Complete
-        </div>
-      </div>
-      
-      {/* Chapter tooltip */}
-      {hoveredChapter !== null && (
-        <div className="absolute left-full ml-4 top-1/2 transform -translate-y-1/2 z-50">
-          <div className="bg-gray-800 text-white px-3 py-2 rounded-lg shadow-xl border border-gray-600 max-w-48">
-            <div className="font-semibold text-sm text-cyan-400">
-              {chapters[hoveredChapter]?.shortName}
-            </div>
-            <div className="text-xs text-gray-300 mt-1">
-              {chapters[hoveredChapter]?.name}
-            </div>
+      {/* Subtle tooltip on hover */}
+      {hoveredIndex !== null && (
+        <div 
+          className="absolute left-full ml-2 pointer-events-none z-50"
+          style={{ 
+            top: `${70 + (hoveredIndex * 60)}px`,
+            transform: 'translateY(-50%)'
+          }}
+        >
+          <div className="bg-neutral-800/90 backdrop-blur-sm text-white px-2 py-1 rounded text-xs whitespace-nowrap border border-neutral-700">
+            Chapter {hoveredIndex + 1}
           </div>
         </div>
       )}

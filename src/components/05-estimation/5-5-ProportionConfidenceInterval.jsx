@@ -21,6 +21,20 @@ import { Chapter5ReferenceSheet } from '../reference-sheets/Chapter5ReferenceShe
 // Use Chapter 7 color scheme for consistency
 const colorScheme = createColorScheme('regression');
 
+// Learning modes
+const LEARNING_MODES = {
+  FOUNDATIONS: 'foundations',
+  EXAMPLES: 'examples', 
+  PRACTICE: 'practice'
+};
+
+// Mode colors
+const MODE_COLORS = {
+  [LEARNING_MODES.FOUNDATIONS]: '#8b5cf6', // purple
+  [LEARNING_MODES.EXAMPLES]: '#3b82f6', // blue
+  [LEARNING_MODES.PRACTICE]: '#10b981' // emerald
+};
+
 // Animation constants for consistency (1.5s as per checklist)
 const ANIMATION_DURATION = 1.5;
 const ANIMATION_CONFIG = {
@@ -1965,6 +1979,50 @@ const CommonMistakes = React.memo(function CommonMistakes() {
 });
 
 // Key Takeaways
+// Learning Path Navigation Component
+const LearningPathNavigation = React.memo(function LearningPathNavigation({ mode, onModeChange }) {
+  return (
+    <div className="mb-8">
+      <VisualizationSection className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+        <h2 className="text-2xl font-bold text-white mb-4">Learning Path</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          {Object.entries(LEARNING_MODES).map(([key, value]) => {
+            const isActive = mode === value;
+            const color = MODE_COLORS[value];
+            
+            return (
+              <button
+                key={key}
+                onClick={() => onModeChange(value)}
+                className={`relative p-4 rounded-lg border-2 transition-all ${
+                  isActive 
+                    ? 'bg-gradient-to-br border-current' 
+                    : 'bg-gray-800/50 border-gray-600 hover:border-gray-500'
+                }`}
+                style={isActive ? { borderColor: color, background: `linear-gradient(to bottom right, ${color}20, ${color}10)` } : {}}
+              >
+                {isActive && (
+                  <CheckCircle className="absolute top-2 right-2 w-4 h-4" style={{ color }} />
+                )}
+                
+                <h3 className="font-semibold text-lg mb-1" style={{ color: isActive ? color : '#fff' }}>
+                  {key.charAt(0) + key.slice(1).toLowerCase()}
+                </h3>
+                <p className="text-sm text-gray-400">
+                  {value === LEARNING_MODES.FOUNDATIONS && "Mathematical theory and validation"}
+                  {value === LEARNING_MODES.EXAMPLES && "Introduction and real-world examples"}
+                  {value === LEARNING_MODES.PRACTICE && "Interactive practice and applications"}
+                </p>
+              </button>
+            );
+          })}
+        </div>
+      </VisualizationSection>
+    </div>
+  );
+});
+
 const KeyTakeaways = React.memo(function KeyTakeaways() {
   const contentRef = useRef(null);
   
@@ -2038,14 +2096,7 @@ const KeyTakeaways = React.memo(function KeyTakeaways() {
 
 // Main Component
 export default function ProportionConfidenceInterval() {
-  const [activeTab, setActiveTab] = useState('intro');
-  
-  // Tab configuration with numbers
-  const tabs = [
-    { id: 'intro', label: 'Introduction', number: '1' },
-    { id: 'foundations', label: 'Mathematical Foundations', number: '2' },
-    { id: 'election', label: 'Election Story', number: '3' }
-  ];
+  const [mode, setMode] = useState(LEARNING_MODES.FOUNDATIONS);
   
   return (
     <>
@@ -2056,105 +2107,69 @@ export default function ProportionConfidenceInterval() {
       >
       <BackToHub chapter={5} />
       
-      {/* Conceptual Introduction */}
-      <div className="mb-6 p-6 bg-gradient-to-br from-purple-900/20 to-blue-900/20 rounded-lg border border-purple-700/50">
-        <h2 className="text-2xl font-bold text-purple-400 mb-4">Why Proportions Are Different</h2>
-        <div className="space-y-4 text-neutral-300">
-          <p>
-            So far, we've built confidence intervals for means. But what about proportions – percentages, rates, and probabilities? 
-            <span className="text-purple-400 font-semibold"> These require special treatment because they're bounded between 0 and 1.</span>
-          </p>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="bg-neutral-800/50 rounded-lg p-4">
-              <h3 className="font-semibold text-blue-400 mb-2">Examples of Proportions</h3>
-              <ul className="text-sm space-y-1">
-                <li>• Percentage voting for a candidate</li>
-                <li>• Product defect rate</li>
-                <li>• Drug effectiveness rate</li>
-                <li>• Customer satisfaction percentage</li>
-                <li>• Pass rate on an exam</li>
-              </ul>
-            </div>
-            <div className="bg-neutral-800/50 rounded-lg p-4">
-              <h3 className="font-semibold text-yellow-400 mb-2">Why They're Special</h3>
-              <ul className="text-sm space-y-1">
-                <li>• Can't go below 0% or above 100%</li>
-                <li>• Variance depends on the proportion itself</li>
-                <li>• Extreme values (near 0 or 1) behave oddly</li>
-                <li>• Standard methods fail at boundaries</li>
-              </ul>
-            </div>
-          </div>
-          <p className="text-sm italic text-neutral-400">
-            This section teaches you to handle these unique challenges properly.
-          </p>
-        </div>
-      </div>
+      <LearningPathNavigation 
+        mode={mode} 
+        onModeChange={setMode}
+      />
       
-      {/* TABBED SECTION - First 3 sections with numbered tabs */}
-      <div className="mb-12 bg-neutral-800/30 rounded-lg">
-        {/* Tab Navigation */}
-        <div className="border-b border-neutral-700">
-          <div className="flex space-x-1 px-6">
-            {tabs.map(({ id, label, number }) => (
-              <button
-                key={id}
-                onClick={() => setActiveTab(id)}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
-                  activeTab === id
-                    ? 'bg-neutral-700 text-white'
-                    : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
-                }`}
-              >
-                <span className="font-bold text-base">{number}.</span>
-                <span>{label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      
-        {/* Tab Content */}
-        <div className="p-6">
-          {activeTab === 'intro' && (
-            <div className="space-y-8">
-              <ProportionIntroduction />
-            </div>
-          )}
-          
-          {activeTab === 'foundations' && (
-            <div className="space-y-8">
-              <MathematicalFoundations />
-            </div>
-          )}
-          
-          {activeTab === 'election' && (
-            <ElectionStory 
-              onComplete={() => {
-                // No longer needed - removed navigation
-              }}
-            />
-          )}
-        </div>
-      </div>
-      
-      {/* THEORY & VALIDATION SECTION - Always visible below tabs */}
-      <div className="mb-12">
-        <h2 className="text-2xl font-bold text-teal-400 mb-6 flex items-center gap-2">
-          <span className="font-bold">4.</span>
-          Theory & Validation
-        </h2>
+      {/* FOUNDATIONS Mode */}
+      <div style={{ display: mode === LEARNING_MODES.FOUNDATIONS ? 'block' : 'none' }}>
         <div className="space-y-8">
+          <MathematicalFoundations />
           <NormalApproximationTheory />
           <NormalApproximationValidator />
         </div>
       </div>
       
-      {/* PRACTICE & APPLY SECTION - Always visible below tabs */}
-      <div className="mb-12">
-        <h2 className="text-2xl font-bold text-emerald-400 mb-6 flex items-center gap-2">
-          <span className="font-bold">5.</span>
-          Practice & Apply
-        </h2>
+      {/* EXAMPLES Mode */}
+      <div style={{ display: mode === LEARNING_MODES.EXAMPLES ? 'block' : 'none' }}>
+        {/* Conceptual Introduction */}
+        <div className="mb-6 p-6 bg-gradient-to-br from-purple-900/20 to-blue-900/20 rounded-lg border border-purple-700/50">
+          <h2 className="text-2xl font-bold text-purple-400 mb-4">Why Proportions Are Different</h2>
+          <div className="space-y-4 text-neutral-300">
+            <p>
+              So far, we've built confidence intervals for means. But what about proportions – percentages, rates, and probabilities? 
+              <span className="text-purple-400 font-semibold"> These require special treatment because they're bounded between 0 and 1.</span>
+            </p>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="bg-neutral-800/50 rounded-lg p-4">
+                <h3 className="font-semibold text-blue-400 mb-2">Examples of Proportions</h3>
+                <ul className="text-sm space-y-1">
+                  <li>• Percentage voting for a candidate</li>
+                  <li>• Product defect rate</li>
+                  <li>• Drug effectiveness rate</li>
+                  <li>• Customer satisfaction percentage</li>
+                  <li>• Pass rate on an exam</li>
+                </ul>
+              </div>
+              <div className="bg-neutral-800/50 rounded-lg p-4">
+                <h3 className="font-semibold text-yellow-400 mb-2">Why They're Special</h3>
+                <ul className="text-sm space-y-1">
+                  <li>• Can't go below 0% or above 100%</li>
+                  <li>• Variance depends on the proportion itself</li>
+                  <li>• Extreme values (near 0 or 1) behave oddly</li>
+                  <li>• Standard methods fail at boundaries</li>
+                </ul>
+              </div>
+            </div>
+            <p className="text-sm italic text-neutral-400">
+              This section teaches you to handle these unique challenges properly.
+            </p>
+          </div>
+        </div>
+        
+        <div className="space-y-8">
+          <ProportionIntroduction />
+          <ElectionStory 
+            onComplete={() => {
+              // No longer needed - removed navigation
+            }}
+          />
+        </div>
+      </div>
+      
+      {/* PRACTICE Mode */}
+      <div style={{ display: mode === LEARNING_MODES.PRACTICE ? 'block' : 'none' }}>
         <div className="space-y-8">
           <ProportionCIBuilder />
           <ExamPracticeProblems />

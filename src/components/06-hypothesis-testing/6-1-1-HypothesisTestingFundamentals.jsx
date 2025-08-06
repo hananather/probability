@@ -12,6 +12,8 @@ import { RangeSlider } from '../ui/RangeSlider';
 import { colors, typography, components, formatNumber, cn, createColorScheme } from '../../lib/design-system';
 import { useMathJax } from '../../hooks/useMathJax';
 import { Chapter6ReferenceSheet } from '../reference-sheets/Chapter6ReferenceSheet';
+import { SemanticGradientCard, SemanticGradientGrid } from '../ui/patterns/SemanticGradientCard';
+import { InterpretationBox } from '../ui/patterns/InterpretationBox';
 
 const colorScheme = createColorScheme('hypothesis');
 
@@ -644,6 +646,55 @@ export default function HypothesisTestingFundamentals() {
       description="Explore how sample size affects evidence strength in hypothesis testing"
     >
       <div ref={contentRef} className="space-y-8">
+        {/* Learning Context Section */}
+        <VisualizationSection>
+          <InterpretationBox title="Learning Context" theme="blue">
+            <p className="text-sm">
+              This module introduces the fundamental logic of hypothesis testing—the cornerstone of statistical inference. 
+              You will learn to translate research questions into testable hypotheses and understand how sample evidence 
+              leads to statistical decisions.
+            </p>
+            <p className="text-sm mt-2">
+              <strong>Prerequisites:</strong> Basic probability, sampling distributions, and the normal distribution.
+            </p>
+            <p className="text-sm mt-2">
+              <strong>Core Question:</strong> How do we use sample data to make decisions about population parameters 
+              when we cannot observe the entire population?
+            </p>
+          </InterpretationBox>
+          
+          <SemanticGradientGrid title="Learning Objectives" theme="purple">
+            <SemanticGradientCard
+              title="1. Conceptual Framework"
+              description="Understand the logic of hypothesis testing"
+              formula={`\\[H_0 \\text{ vs } H_1\\]`}
+              note="Master the relationship between null and alternative hypotheses"
+              theme="purple"
+            />
+            <SemanticGradientCard
+              title="2. Statistical Evidence"
+              description="Quantify evidence against the null"
+              formula={`\\[\\text{p-value} = P(\\text{data} | H_0)\\]`}
+              note="Interpret p-values correctly without common misconceptions"
+              theme="teal"
+            />
+            <SemanticGradientCard
+              title="3. Sample Size Effects"
+              description="Recognize how n affects conclusions"
+              formula={`\\[SE = \\frac{\\sigma}{\\sqrt{n}}\\]`}
+              note="Same proportion, different n → different evidence strength"
+              theme="blue"
+            />
+            <SemanticGradientCard
+              title="4. Decision Framework"
+              description="Make statistical decisions systematically"
+              formula={`\\[\\text{Reject } H_0 \\text{ if p} < \\alpha\\]`}
+              note="Balance Type I and Type II error risks"
+              theme="green"
+            />
+          </SemanticGradientGrid>
+        </VisualizationSection>
+        
         {/* Introduction with enhanced educational content */}
         <VisualizationSection>
           <div className="space-y-6">

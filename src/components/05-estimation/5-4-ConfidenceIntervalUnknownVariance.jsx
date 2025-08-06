@@ -14,9 +14,23 @@ import SectionComplete from '@/components/ui/SectionComplete';
 import { 
   FlaskConical, TrendingUp, AlertTriangle, Lightbulb, 
   ChevronRight, RefreshCw, Activity, HelpCircle, BarChart,
-  Check, X, Calculator, BookOpen, GraduationCap, StickyNote, AlertCircle
+  Check, X, Calculator, BookOpen, GraduationCap, StickyNote, AlertCircle, CheckCircle
 } from 'lucide-react';
 import { ConfidenceIntervalReference } from '../ui/patterns/QuickReferenceCard';
+
+// Learning modes
+const LEARNING_MODES = {
+  FOUNDATIONS: 'foundations',
+  EXPLORATION: 'exploration',
+  PRACTICE: 'practice'
+};
+
+// Mode colors
+const MODE_COLORS = {
+  [LEARNING_MODES.FOUNDATIONS]: '#3b82f6', // blue
+  [LEARNING_MODES.EXPLORATION]: '#10b981', // emerald
+  [LEARNING_MODES.PRACTICE]: '#8b5cf6' // purple
+};
 
 // Chapter 7 Design Patterns - Consistent Colors
 const chapterColors = {
@@ -89,44 +103,72 @@ const ExamTip = ({ tip, warning }) => {
   );
 };
 
-
-// Simple Tab Navigation Component
-const TabNavigation = ({ tabs, activeTab, onTabChange }) => {
+// Learning Path Navigation Component
+const LearningPathNavigation = React.memo(function LearningPathNavigation({ mode, onModeChange }) {
+  const contentRef = useRef(null);
+  
+  useEffect(() => {
+    const processMathJax = () => {
+      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
+        if (window.MathJax.typesetClear) {
+          window.MathJax.typesetClear([contentRef.current]);
+        }
+        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+      }
+    };
+    
+    processMathJax();
+    const timeoutId = setTimeout(processMathJax, 100);
+    return () => clearTimeout(timeoutId);
+  }, [mode]);
+  
   return (
     <div className="mb-8">
-      <div className="border-b border-neutral-700">
-        <div className="flex space-x-1 overflow-x-auto">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
+      <VisualizationSection className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+        <h2 className="text-2xl font-bold text-white mb-4">Learning Path</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          {Object.entries(LEARNING_MODES).map(([key, value]) => {
+            const isActive = mode === value;
+            const color = MODE_COLORS[value];
             
             return (
               <button
-                key={tab.id}
-                onClick={() => onTabChange(tab.id)}
-                className={`
-                  flex items-center gap-2 px-4 py-3 text-sm font-medium 
-                  rounded-t-lg transition-all duration-200 whitespace-nowrap
-                  ${
-                    isActive
-                      ? 'bg-neutral-700 text-white border-b-2'
-                      : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
-                  }
-                `}
-                style={{
-                  borderBottomColor: isActive ? tab.color : 'transparent'
-                }}
+                key={key}
+                onClick={() => onModeChange(value)}
+                className={`relative p-4 rounded-lg border-2 transition-all ${
+                  isActive 
+                    ? 'bg-gradient-to-br border-opacity-100' 
+                    : 'bg-gray-800/50 border-gray-600 hover:border-gray-500'
+                }`}
+                style={isActive ? { borderColor: color, background: `linear-gradient(to bottom right, ${color}20, ${color}10)` } : {}}
               >
-                <Icon size={18} className={isActive ? `text-${tab.iconColor}` : ''} />
-                <span>{tab.title}</span>
+                {isActive && (
+                  <CheckCircle className="absolute top-2 right-2 w-4 h-4" style={{ color }} />
+                )}
+                
+                <h3 className="font-semibold text-lg mb-1" style={{ color: isActive ? color : '#fff' }}>
+                  {key.charAt(0) + key.slice(1).toLowerCase()}
+                </h3>
+                <p className="text-sm text-gray-400">
+                  {value === LEARNING_MODES.FOUNDATIONS && "Core concepts and theory"}
+                  {value === LEARNING_MODES.EXPLORATION && "Interactive demonstrations"}
+                  {value === LEARNING_MODES.PRACTICE && "Apply your knowledge"}
+                </p>
               </button>
             );
           })}
         </div>
-      </div>
+        
+        <div ref={contentRef} className="text-center">
+          <p className="text-gray-300 text-sm">
+            Choose your learning path to explore confidence intervals with unknown variance
+          </p>
+        </div>
+      </VisualizationSection>
     </div>
   );
-};
+});
 
 // Problem Section: Why We Can't Just Use Z
 const ProblemStatement = ({ onInsight }) => {
@@ -500,42 +542,6 @@ const OzoneExample = React.memo(function OzoneExample({ onInsight }) {
   );
 });
 
-// Section Content Component
-const SectionContent = ({ section, onInsight }) => {
-  switch (section.id) {
-    case 'problem':
-      return <ProblemStatement onInsight={onInsight} />;
-    case 'solution':
-      return (
-        <>
-          <TDistributionExplorer onInsight={onInsight} />
-          <TvsZComparison />
-        </>
-      );
-    case 'foundation':
-      return (
-        <>
-          <MathematicalFoundation onInsight={onInsight} />
-          <StepByStepGuide onInsight={onInsight} />
-        </>
-      );
-    case 'application':
-      return (
-        <>
-          <OzoneExample onInsight={onInsight} />
-          <InteractiveCIBuilder />
-        </>
-      );
-    case 'practice':
-      return (
-        <>
-          <PracticeProblems onInsight={onInsight} />
-        </>
-      );
-    default:
-      return null;
-  }
-};
 
 // Interactive CI Builder
 const InteractiveCIBuilder = () => {
@@ -2021,9 +2027,9 @@ const SummaryComparison = () => {
   );
 };
 
-// Main Component with Tabbed Interface
+// Main Component with Mode-Based Navigation
 export default function ConfidenceIntervalUnknownVariance() {
-  const [activeTab, setActiveTab] = useState('problem');
+  const [mode, setMode] = useState(LEARNING_MODES.FOUNDATIONS);
   const [userInsights, setUserInsights] = useState({
     understoodProblem: false,
     sawTConvergence: false,
@@ -2032,50 +2038,6 @@ export default function ConfidenceIntervalUnknownVariance() {
     completedGuide: false,
     viewedSolution: false
   });
-  
-  // Tab definition with colors matching the sections
-  const tabs = [
-    {
-      id: 'problem',
-      title: 'The Unknown σ Problem',
-      subtitle: 'Why we need a new approach',
-      icon: HelpCircle,
-      color: '#fbbf24',  // yellow
-      iconColor: 'yellow-400'
-    },
-    {
-      id: 'solution',
-      title: 't-Distribution',
-      subtitle: 'A distribution that accounts for uncertainty',
-      icon: Lightbulb,
-      color: '#3b82f6',  // blue
-      iconColor: 'blue-400'
-    },
-    {
-      id: 'foundation',
-      title: 'Mathematical Foundation',
-      subtitle: 'Understanding the theory',
-      icon: Calculator,
-      color: '#a855f7',  // purple
-      iconColor: 'purple-400'
-    },
-    {
-      id: 'application',
-      title: 'Apply to Real Data',
-      subtitle: 'Build confidence intervals',
-      icon: BarChart,
-      color: '#10b981',  // emerald
-      iconColor: 'emerald-400'
-    },
-    {
-      id: 'practice',
-      title: 'Practice & Master',
-      subtitle: 'Common mistakes & exercises',
-      icon: Activity,
-      color: '#ec4899',  // pink
-      iconColor: 'pink-400'
-    }
-  ];
   
   const handleInsight = (insight) => {
     setUserInsights(prev => ({
@@ -2106,28 +2068,63 @@ export default function ConfidenceIntervalUnknownVariance() {
       
       <ConfidenceIntervalReference mode="floating" />
       
-      <TabNavigation
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
+      <LearningPathNavigation 
+        mode={mode} 
+        onModeChange={setMode}
       />
       
-      {/* Tab Content Area */}
-      <div className="bg-neutral-900/50 rounded-lg p-6 border border-neutral-700">
-        <div className="mb-4">
-          <h2 className="text-xl font-bold text-white">
-            {tabs.find(t => t.id === activeTab)?.title}
-          </h2>
-          <p className="text-sm text-neutral-400 mt-1">
-            {tabs.find(t => t.id === activeTab)?.subtitle}
-          </p>
+      {/* FOUNDATIONS Mode */}
+      <div style={{ display: mode === LEARNING_MODES.FOUNDATIONS ? 'block' : 'none' }}>
+        <div className="space-y-8">
+          {/* Problem Statement - Why we need t-distribution */}
+          <div>
+            <ProblemStatement onInsight={handleInsight} />
+          </div>
+          
+          {/* Mathematical Foundation */}
+          <div>
+            <MathematicalFoundation onInsight={handleInsight} />
+          </div>
+          
+          {/* Step by Step Guide */}
+          <div>
+            <StepByStepGuide onInsight={handleInsight} />
+          </div>
         </div>
-        
-        <div key={activeTab}>
-          <SectionContent
-            section={{ id: activeTab }}
-            onInsight={handleInsight}
-          />
+      </div>
+      
+      {/* EXPLORATION Mode */}
+      <div style={{ display: mode === LEARNING_MODES.EXPLORATION ? 'block' : 'none' }}>
+        <div className="space-y-8">
+          {/* Interactive t-Distribution Explorer */}
+          <div>
+            <TDistributionExplorer onInsight={handleInsight} />
+          </div>
+          
+          {/* t vs Z Comparison */}
+          <div>
+            <TvsZComparison />
+          </div>
+          
+          {/* Real Data Example - Ozone */}
+          <div>
+            <OzoneExample onInsight={handleInsight} />
+          </div>
+          
+          {/* Interactive CI Builder */}
+          <div>
+            <InteractiveCIBuilder />
+          </div>
+        </div>
+      </div>
+      
+      {/* PRACTICE Mode */}
+      <div style={{ display: mode === LEARNING_MODES.PRACTICE ? 'block' : 'none' }}>
+        <div className="space-y-8">
+          {/* Practice Problems */}
+          <div>
+            <PracticeProblems onInsight={handleInsight} />
+          </div>
         </div>
       </div>
       

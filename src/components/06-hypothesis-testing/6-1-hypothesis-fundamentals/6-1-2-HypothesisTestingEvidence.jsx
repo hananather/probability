@@ -515,8 +515,8 @@ export default function HypothesisTestingEvidence() {
                 <p className="text-xs text-neutral-300">Observed ≈ Expected → Consistent with fair die</p>
               </div>
               <div>
-                <p className="font-semibold text-purple-200">Large χ² (> 11.07)</p>
-                <p className="text-xs text-neutral-300">Big deviations → Evidence of unfairness (p < 0.05)</p>
+                <p className="font-semibold text-purple-200">Large χ² (&gt; 11.07)</p>
+                <p className="text-xs text-neutral-300">Big deviations → Evidence of unfairness (p &lt; 0.05)</p>
               </div>
             </div>
             <p className="text-xs text-neutral-400 mt-3">

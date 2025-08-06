@@ -766,7 +766,7 @@ export default function PValueMeaning() {
               <li>• The p-value is NOT the probability that the null hypothesis is true</li>
               <li>• Multiple testing increases false positive rates dramatically</li>
               <li>• Statistical significance ≠ practical importance</li>
-              <li>• P-values don't measure effect size - a tiny effect can have p < 0.001</li>
+              <li>• P-values don't measure effect size - a tiny effect can have p &lt; 0.001</li>
             </ul>
           </div>
           
