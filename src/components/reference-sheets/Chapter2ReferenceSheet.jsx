@@ -16,6 +16,14 @@ const chapter2Sections = [
     content: (
       <div className="space-y-2 text-sm">
         <div>
+          <strong>Random Variable Definition:</strong>
+          <div className="text-center my-1">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[X: \\Omega \\to \\mathbb{R}\\]` 
+            }} />
+          </div>
+        </div>
+        <div>
           <strong>Random Variable (X):</strong> Function that assigns numbers to outcomes
         </div>
         <div>
@@ -51,7 +59,15 @@ const chapter2Sections = [
           </div>
         </div>
         <div>
-          <strong>Variance:</strong>
+          <strong>Variance Definition:</strong>
+          <div className="text-center my-1">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[\\text{Var}(X) = E[(X - \\mu)^2]\\]` 
+            }} />
+          </div>
+        </div>
+        <div>
+          <strong>Variance (Alternative):</strong>
           <div className="text-center my-1">
             <span dangerouslySetInnerHTML={{ 
               __html: `\\[\\text{Var}(X) = \\sigma_X^2 = E[X^2] - (E[X])^2\\]` 
@@ -199,6 +215,15 @@ const chapter2Sections = [
             <div dangerouslySetInnerHTML={{ __html: `\\(E[X] = \\lambda\\)` }} />
             <div dangerouslySetInnerHTML={{ __html: `\\(\\text{Var}(X) = \\lambda\\)` }} />
           </div>
+        </div>
+        <div>
+          <strong>Addition Property:</strong>
+          <div className="text-center my-1">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[X_1 + X_2 \\sim \\text{Poisson}(\\lambda_1 + \\lambda_2)\\]` 
+            }} />
+          </div>
+          <div className="text-xs text-neutral-400">when X₁ and X₂ are independent</div>
         </div>
         <div className="text-xs text-neutral-400">
           Models rare events in fixed time/space intervals

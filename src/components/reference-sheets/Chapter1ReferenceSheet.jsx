@@ -129,6 +129,30 @@ const chapter1Sections = [
             }} />
           </div>
         </div>
+        <div>
+          <strong>Chain Rule for 3 Events:</strong>
+          <div className="text-center my-2">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[P(A \\cap B \\cap C) = P(A) \\cdot P(B|A) \\cdot P(C|A \\cap B)\\]` 
+            }} />
+          </div>
+        </div>
+        <div>
+          <strong>Multiple Conditions:</strong>
+          <div className="text-center my-2">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[P(A|B \\cap C) = \\frac{P(A \\cap B \\cap C)}{P(B \\cap C)}\\]` 
+            }} />
+          </div>
+        </div>
+        <div>
+          <strong>Complement with Condition:</strong>
+          <div className="text-center my-2">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[P(A^c|B) = 1 - P(A|B)\\]` 
+            }} />
+          </div>
+        </div>
         <div className="bg-purple-900/20 p-2 rounded text-xs">
           <strong>Key insight:</strong> P(A|B) answers "What's the probability of A given that B occurred?"
         </div>

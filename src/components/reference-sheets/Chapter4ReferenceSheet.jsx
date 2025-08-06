@@ -67,6 +67,14 @@ const chapter4Sections = [
           </div>
         </div>
         <div>
+          <strong>Coefficient of Variation:</strong>
+          <div className="text-center my-1">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[CV = \\frac{\\sigma}{\\mu} = \\frac{s}{\\bar{x}}\\]` 
+            }} />
+          </div>
+        </div>
+        <div>
           <strong>Range:</strong> Maximum - Minimum
         </div>
         <div>
@@ -118,9 +126,43 @@ const chapter4Sections = [
     )
   },
 
+  // === SKEWNESS ===
+  {
+    title: "4. Skewness and Shape Measures",
+    color: "indigo",
+    content: (
+      <div className="space-y-2 text-sm">
+        <div>
+          <strong>Skewness:</strong>
+          <div className="text-center my-1">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[\\text{Skew} = \\frac{E[(X - \\mu)^3]}{\\sigma^3}\\]` 
+            }} />
+          </div>
+        </div>
+        <div>
+          <strong>Interpretation:</strong>
+          <ul className="ml-4 space-y-1 text-xs">
+            <li>• Skew = 0: Symmetric distribution</li>
+            <li>• Skew &gt; 0: Right-skewed (tail extends right)</li>
+            <li>• Skew &lt; 0: Left-skewed (tail extends left)</li>
+          </ul>
+        </div>
+        <div>
+          <strong>Relationship to Mean/Median:</strong>
+          <ul className="ml-4 space-y-1 text-xs">
+            <li>Right skewed: Mean &gt; Median</li>
+            <li>Left skewed: Mean &lt; Median</li>
+            <li>Symmetric: Mean ≈ Median</li>
+          </ul>
+        </div>
+      </div>
+    )
+  },
+
   // === HISTOGRAMS ===
   {
-    title: "4. Histograms and Distribution Shapes",
+    title: "5. Histograms and Distribution Shapes",
     color: "teal",
     content: (
       <div className="space-y-2 text-sm">
@@ -148,7 +190,7 @@ const chapter4Sections = [
 
   // === BOXPLOTS ===
   {
-    title: "5. Boxplots",
+    title: "6. Boxplots",
     color: "yellow",
     content: (
       <div className="space-y-2 text-sm">
@@ -175,7 +217,7 @@ const chapter4Sections = [
 
   // === SAMPLING DISTRIBUTIONS ===
   {
-    title: "6. Sampling Distribution of Sample Mean",
+    title: "7. Sampling Distribution of Sample Mean",
     color: "orange",
     content: (
       <div className="space-y-2 text-sm">
@@ -212,7 +254,7 @@ const chapter4Sections = [
 
   // === CENTRAL LIMIT THEOREM ===
   {
-    title: "7. Central Limit Theorem (CLT)",
+    title: "8. Central Limit Theorem (CLT)",
     color: "pink",
     formula: `\\[\\bar{X} \\sim N\\left(\\mu, \\frac{\\sigma^2}{n}\\right) \\text{ as } n \\to \\infty\\]`,
     steps: [
@@ -227,7 +269,7 @@ const chapter4Sections = [
 
   // === CLT APPLICATIONS ===
   {
-    title: "8. CLT Applications",
+    title: "9. CLT Applications",
     color: "indigo",
     content: (
       <div className="space-y-2 text-sm">
@@ -253,7 +295,7 @@ const chapter4Sections = [
 
   // === T-DISTRIBUTION ===
   {
-    title: "9. t-Distribution",
+    title: "10. t-Distribution",
     color: "green",
     content: (
       <div className="space-y-2 text-sm">
@@ -283,7 +325,7 @@ const chapter4Sections = [
 
   // === CHI-SQUARE DISTRIBUTION ===
   {
-    title: "10. Chi-Square Distribution",
+    title: "11. Chi-Square Distribution",
     color: "red",
     content: (
       <div className="space-y-2 text-sm">
@@ -310,7 +352,7 @@ const chapter4Sections = [
 
   // === F-DISTRIBUTION ===
   {
-    title: "11. F-Distribution",
+    title: "12. F-Distribution for ANOVA",
     color: "gray",
     content: (
       <div className="space-y-2 text-sm">
@@ -328,8 +370,16 @@ const chapter4Sections = [
             <li>• Two degrees of freedom: df₁, df₂</li>
             <li>• Right-skewed</li>
             <li>• Always positive</li>
-            <li>• Used for comparing variances</li>
+            <li>• Used for comparing variances and ANOVA</li>
           </ul>
+        </div>
+        <div>
+          <strong>ANOVA Application:</strong>
+          <div className="text-center my-1">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[F = \\frac{\\text{Between-group variance}}{\\text{Within-group variance}}\\]` 
+            }} />
+          </div>
         </div>
       </div>
     )
@@ -337,7 +387,7 @@ const chapter4Sections = [
 
   // === SUMMARY TABLE ===
   {
-    title: "12. Distribution Summary",
+    title: "13. Distribution Summary",
     color: "amber",
     content: (
       <div className="space-y-2 text-xs">

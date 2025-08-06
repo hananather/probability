@@ -180,6 +180,22 @@ const chapter6Sections = [
         <div>
           <strong>df = n₁ + n₂ - 2</strong>
         </div>
+        <div className="mt-3">
+          <strong>Welch's t-Test (Unequal Variances):</strong>
+          <div className="text-center my-1">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[t = \\frac{\\bar{x}_1 - \\bar{x}_2}{\\sqrt{\\frac{s_1^2}{n_1} + \\frac{s_2^2}{n_2}}}\\]` 
+            }} />
+          </div>
+        </div>
+        <div>
+          <strong>Cohen's d (Effect Size):</strong>
+          <div className="text-center my-1">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[d = \\frac{\\bar{x}_1 - \\bar{x}_2}{s_p}\\]` 
+            }} />
+          </div>
+        </div>
       </div>
     )
   },
@@ -191,12 +207,13 @@ const chapter6Sections = [
     content: (
       <div className="space-y-2 text-sm">
         <div>
-          <strong>Test Statistic:</strong>
+          <strong>Test Statistic (Paired t-test):</strong>
           <div className="text-center my-1">
             <span dangerouslySetInnerHTML={{ 
-              __html: `\\[t = \\frac{\\bar{d} - \\mu_d}{s_d/\\sqrt{n}}\\]` 
+              __html: `\\[t = \\frac{\\bar{d}}{s_d/\\sqrt{n}}\\]` 
             }} />
           </div>
+          <div className="text-xs text-center text-gray-400">where μd = 0 under H₀</div>
         </div>
         <div>
           <strong>Where:</strong>

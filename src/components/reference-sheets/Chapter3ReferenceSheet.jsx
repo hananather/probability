@@ -361,9 +361,95 @@ const chapter3Sections = [
     )
   },
 
+  // === BETA DISTRIBUTION ===
+  {
+    title: "13. Beta Distribution Beta(α,β)",
+    color: "cyan",
+    content: (
+      <div className="space-y-2 text-sm">
+        <div>
+          <strong>PDF:</strong>
+          <div className="text-center my-1">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[f(x) = \\frac{x^{\\alpha-1}(1-x)^{\\beta-1}}{B(\\alpha,\\beta)}\\]` 
+            }} />
+          </div>
+        </div>
+        <div>
+          <strong>Support:</strong> 0 ≤ x ≤ 1
+        </div>
+        <div>
+          <strong>Properties:</strong>
+          <ul className="ml-4 space-y-1 text-xs">
+            <li dangerouslySetInnerHTML={{ __html: `\\(E[X] = \\frac{\\alpha}{\\alpha + \\beta}\\)` }} />
+            <li dangerouslySetInnerHTML={{ __html: `\\(\\text{Var}(X) = \\frac{\\alpha\\beta}{(\\alpha+\\beta)^2(\\alpha+\\beta+1)}\\)` }} />
+            <li>Models proportions and probabilities</li>
+          </ul>
+        </div>
+      </div>
+    )
+  },
+
+  // === CHI-SQUARE DISTRIBUTION ===
+  {
+    title: "14. Chi-Square Distribution χ²(k)",
+    color: "violet",
+    content: (
+      <div className="space-y-2 text-sm">
+        <div>
+          <strong>Special Case of Gamma:</strong>
+          <div className="text-center my-1">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[\\chi^2(k) = \\text{Gamma}\\left(\\frac{k}{2}, \\frac{1}{2}\\right)\\]` 
+            }} />
+          </div>
+        </div>
+        <div>
+          <strong>Properties:</strong>
+          <ul className="ml-4 space-y-1 text-xs">
+            <li>k degrees of freedom</li>
+            <li dangerouslySetInnerHTML={{ __html: `\\(E[X] = k\\)` }} />
+            <li dangerouslySetInnerHTML={{ __html: `\\(\\text{Var}(X) = 2k\\)` }} />
+            <li>Used for variance testing</li>
+          </ul>
+        </div>
+      </div>
+    )
+  },
+
+  // === T-DISTRIBUTION ===
+  {
+    title: "15. t-Distribution t(ν)",
+    color: "rose",
+    content: (
+      <div className="space-y-2 text-sm">
+        <div>
+          <strong>Use Case:</strong> Small sample inference when σ unknown
+        </div>
+        <div>
+          <strong>Properties:</strong>
+          <ul className="ml-4 space-y-1 text-xs">
+            <li>ν degrees of freedom</li>
+            <li>Symmetric, bell-shaped</li>
+            <li>Heavier tails than normal</li>
+            <li>Approaches N(0,1) as ν → ∞</li>
+          </ul>
+        </div>
+        <div>
+          <strong>Common Use:</strong>
+          <div className="text-center my-1">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[T = \\frac{\\bar{X} - \\mu}{S/\\sqrt{n}}\\]` 
+            }} />
+          </div>
+        </div>
+      </div>
+    )
+  },
+
   // === DISTRIBUTION COMPARISON ===
   {
-    title: "13. Continuous Distribution Summary",
+    title: "16. Continuous Distribution Summary",
     color: "amber",
     content: (
       <div className="space-y-2 text-xs">
@@ -391,6 +477,21 @@ const chapter3Sections = [
           <div>Gamma(α,β)</div>
           <div>α/β</div>
           <div>α/β²</div>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          <div>Beta(α,β)</div>
+          <div>α/(α+β)</div>
+          <div>αβ/[(α+β)²(α+β+1)]</div>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          <div>Chi-Square(k)</div>
+          <div>k</div>
+          <div>2k</div>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          <div>t(ν)</div>
+          <div>0</div>
+          <div>ν/(ν-2), ν &gt; 2</div>
         </div>
       </div>
     )

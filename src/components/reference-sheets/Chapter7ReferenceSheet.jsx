@@ -306,10 +306,26 @@ const chapter7Sections = [
           </ul>
         </div>
         <div>
+          <strong>Mean Square Error:</strong>
+          <div className="text-center my-1">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[\\text{MSE} = \\frac{\\text{SSE}}{n-2}\\]` 
+            }} />
+          </div>
+        </div>
+        <div>
+          <strong>Mean Square Regression:</strong>
+          <div className="text-center my-1">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[\\text{MSR} = \\frac{\\text{SSR}}{1}\\]` 
+            }} />
+          </div>
+        </div>
+        <div>
           <strong>F-Statistic:</strong>
           <div className="text-center my-1">
             <span dangerouslySetInnerHTML={{ 
-              __html: `\\\\[F = \\\\frac{\\\\text{MSR}}{\\\\text{MSE}} = \\\\frac{\\\\text{SSR}/1}{\\\\text{SSE}/(n-2)}\\\\]` 
+              __html: `\\[F = \\frac{\\text{MSR}}{\\text{MSE}}\\]` 
             }} />
           </div>
         </div>
@@ -345,7 +361,7 @@ const chapter7Sections = [
           <strong>Test Statistic:</strong>
           <div className="text-center my-1">
             <span dangerouslySetInnerHTML={{ 
-              __html: `\\\\[t = \\\\frac{r\\\\sqrt{n-2}}{\\\\sqrt{1-r^2}}\\\\]` 
+              __html: `\\[t = \\frac{r\\sqrt{n-2}}{\\sqrt{1-r^2}}\\]` 
             }} />
           </div>
         </div>
