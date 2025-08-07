@@ -1,12 +1,20 @@
 "use client";
 import React, { useState } from 'react';
 import NormalDistributionBuilder from './NormalDistributionBuilder';
-import { Bell, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import ZScoreBuilder from './ZScoreBuilder';
+import ExponentialDistributionBuilder from './ExponentialDistributionBuilder';
+import UniformDistributionBuilder from './UniformDistributionBuilder';
+import NormalApproximationBuilder from './NormalApproximationBuilder';
+import { Bell, Target, Clock, BarChart3, ArrowRightLeft, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 import { useMathJax } from '@/hooks/useMathJax';
 
 const Chapter3FormulaHub = () => {
   const [expandedSections, setExpandedSections] = useState({
-    normalDistribution: true
+    normalDistribution: true,
+    zScore: false,
+    exponentialDistribution: false,
+    uniformDistribution: false,
+    normalApproximation: false
   });
 
   const toggleSection = (section) => {
@@ -32,6 +40,7 @@ const Chapter3FormulaHub = () => {
           </div>
           <p className="text-neutral-400 max-w-2xl mx-auto">
             Master the fundamental formulas of continuous random variables by building them step-by-step.
+            Click on each part to understand why it's there and how it works.
           </p>
         </div>
 
@@ -44,8 +53,8 @@ const Chapter3FormulaHub = () => {
               className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-teal-900/30 rounded-lg">
-                  <Bell className="w-6 h-6 text-teal-400" />
+                <div className="p-3 bg-blue-900/30 rounded-lg">
+                  <Bell className="w-6 h-6 text-blue-400" />
                 </div>
                 <div className="text-left">
                   <h2 className="text-xl font-bold text-white">Normal Distribution</h2>
@@ -63,6 +72,126 @@ const Chapter3FormulaHub = () => {
             {expandedSections.normalDistribution && (
               <div className="p-6 pt-0">
                 <NormalDistributionBuilder />
+              </div>
+            )}
+          </div>
+
+          {/* Z-Score Formula */}
+          <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
+            <button
+              onClick={() => toggleSection('zScore')}
+              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-emerald-900/30 rounded-lg">
+                  <Target className="w-6 h-6 text-emerald-400" />
+                </div>
+                <div className="text-left">
+                  <h2 className="text-xl font-bold text-white">Z-Score Formula</h2>
+                  <p className="text-sm text-neutral-400 mt-1">
+                    Master standardization: convert any value to standard units
+                  </p>
+                </div>
+              </div>
+              {expandedSections.zScore ? 
+                <ChevronUp className="w-5 h-5 text-neutral-400" /> : 
+                <ChevronDown className="w-5 h-5 text-neutral-400" />
+              }
+            </button>
+            
+            {expandedSections.zScore && (
+              <div className="p-6 pt-0">
+                <ZScoreBuilder />
+              </div>
+            )}
+          </div>
+
+          {/* Exponential Distribution */}
+          <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
+            <button
+              onClick={() => toggleSection('exponentialDistribution')}
+              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-orange-900/30 rounded-lg">
+                  <Clock className="w-6 h-6 text-orange-400" />
+                </div>
+                <div className="text-left">
+                  <h2 className="text-xl font-bold text-white">Exponential Distribution</h2>
+                  <p className="text-sm text-neutral-400 mt-1">
+                    Understand waiting times and the memoryless property
+                  </p>
+                </div>
+              </div>
+              {expandedSections.exponentialDistribution ? 
+                <ChevronUp className="w-5 h-5 text-neutral-400" /> : 
+                <ChevronDown className="w-5 h-5 text-neutral-400" />
+              }
+            </button>
+            
+            {expandedSections.exponentialDistribution && (
+              <div className="p-6 pt-0">
+                <ExponentialDistributionBuilder />
+              </div>
+            )}
+          </div>
+
+          {/* Uniform Distribution */}
+          <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
+            <button
+              onClick={() => toggleSection('uniformDistribution')}
+              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-violet-900/30 rounded-lg">
+                  <BarChart3 className="w-6 h-6 text-violet-400" />
+                </div>
+                <div className="text-left">
+                  <h2 className="text-xl font-bold text-white">Uniform Distribution</h2>
+                  <p className="text-sm text-neutral-400 mt-1">
+                    Master the flat distribution where all outcomes are equally likely
+                  </p>
+                </div>
+              </div>
+              {expandedSections.uniformDistribution ? 
+                <ChevronUp className="w-5 h-5 text-neutral-400" /> : 
+                <ChevronDown className="w-5 h-5 text-neutral-400" />
+              }
+            </button>
+            
+            {expandedSections.uniformDistribution && (
+              <div className="p-6 pt-0">
+                <UniformDistributionBuilder />
+              </div>
+            )}
+          </div>
+
+          {/* Normal Approximation to Binomial */}
+          <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
+            <button
+              onClick={() => toggleSection('normalApproximation')}
+              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-indigo-900/30 rounded-lg">
+                  <ArrowRightLeft className="w-6 h-6 text-indigo-400" />
+                </div>
+                <div className="text-left">
+                  <h2 className="text-xl font-bold text-white">Normal Approximation to Binomial</h2>
+                  <p className="text-sm text-neutral-400 mt-1">
+                    Learn when and how discrete binomial becomes continuous normal
+                  </p>
+                </div>
+              </div>
+              {expandedSections.normalApproximation ? 
+                <ChevronUp className="w-5 h-5 text-neutral-400" /> : 
+                <ChevronDown className="w-5 h-5 text-neutral-400" />
+              }
+            </button>
+            
+            {expandedSections.normalApproximation && (
+              <div className="p-6 pt-0">
+                <NormalApproximationBuilder />
               </div>
             )}
           </div>
