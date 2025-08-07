@@ -9,7 +9,7 @@ import { useMathJax } from "../../hooks/useMathJax";
 import { Chapter7ReferenceSheet } from "../reference-sheets/Chapter7ReferenceSheet";
 import { 
   TrendingUp, Calculator, Target, BarChart3, 
-  Sigma, Activity, ChartLine, GitBranch
+  Sigma, Activity, ChartLine, GitBranch, Sparkles
 } from 'lucide-react';
 
 // Get consistent color scheme for regression
@@ -59,6 +59,26 @@ const KeyConceptsCard = React.memo(() => {
 
 // Chapter 7 specific configuration with navigation
 const CHAPTER_7_SECTIONS = [
+  {
+    id: 'formula-builder',
+    title: 'Interactive Formula Builder',
+    subtitle: 'Build formulas step-by-step',
+    description: 'Master linear regression formulas by building them interactively. Click on each part to understand why it\'s there and how it works.',
+    icon: Sparkles,
+    difficulty: 'Beginner',
+    estimatedTime: '20 min',
+    prerequisites: [],
+    learningGoals: [
+      'Regression line: ŷ = b₀ + b₁x',
+      'Correlation coefficient: r formula',
+      'Coefficient of determination: R²',
+      'Master formula structure through interaction'
+    ],
+    route: '/chapter7/formula-builder',
+    color: '#ec4899',
+    question: "How do linear regression formulas really work?",
+    preview: "Interactive formula construction"
+  },
   {
     id: 'correlation-coefficient',
     title: '7.1 Correlation Coefficient',

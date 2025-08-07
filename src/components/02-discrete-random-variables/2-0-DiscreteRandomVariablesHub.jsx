@@ -9,7 +9,7 @@ import { useMathJax } from "../../hooks/useMathJax";
 import { Chapter2ReferenceSheet } from "../reference-sheets/Chapter2ReferenceSheet";
 import { 
   Shuffle, Calculator, Binary, Dices, 
-  TrendingDown, Layers, Zap, BookOpen 
+  TrendingDown, Layers, Zap, BookOpen, Sparkles 
 } from 'lucide-react';
 
 // Get consistent color scheme for discrete random variables
@@ -59,6 +59,26 @@ const KeyConceptsCard = React.memo(() => {
 
 // All Chapter 2 sections
 const CHAPTER_2_SECTIONS = [
+  {
+    id: 'formula-builder',
+    title: 'Interactive Formula Builder',
+    subtitle: 'Build formulas step-by-step',
+    description: 'Master discrete distribution formulas by building them interactively. Click on each part to understand why it\'s there and how it works.',
+    icon: Sparkles,
+    difficulty: 'Beginner',
+    estimatedTime: '20 min',
+    prerequisites: [],
+    learningGoals: [
+      'Build binomial distribution formula',
+      'Understand expectation and variance formulas',
+      'Create Poisson distribution formula',
+      'Master formula structure through interaction'
+    ],
+    route: '/chapter2/formula-builder',
+    color: '#ec4899',
+    question: "How do discrete distribution formulas really work?",
+    preview: "Interactive formula construction"
+  },
   {
     id: 'random-variables',
     title: '2.1 Random Variables & Distributions',

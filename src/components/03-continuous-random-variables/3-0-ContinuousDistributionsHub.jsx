@@ -9,7 +9,7 @@ import { useMathJax } from "../../hooks/useMathJax";
 import { Chapter3ReferenceSheet } from "../reference-sheets/Chapter3ReferenceSheet";
 import { 
   GitBranch, AreaChart, Calculator, Bell, 
-  Timer, Flame, Grid3x3, TrendingUp 
+  Timer, Flame, Grid3x3, TrendingUp, Sparkles 
 } from 'lucide-react';
 
 // Get consistent color scheme for continuous distributions
@@ -59,6 +59,26 @@ const KeyConceptsCard = React.memo(() => {
 
 // All Chapter 3 sections
 const CHAPTER_3_SECTIONS = [
+  {
+    id: 'formula-builder',
+    title: 'Interactive Formula Builder',
+    subtitle: 'Build formulas step-by-step',
+    description: 'Master continuous distribution formulas by building them interactively. Click on each part to understand why it\'s there and how it works.',
+    icon: Sparkles,
+    difficulty: 'Beginner',
+    estimatedTime: '20 min',
+    prerequisites: [],
+    learningGoals: [
+      'Probability density function f(x)',
+      'Cumulative distribution function F(x)',
+      'Normal distribution formula N(μ,σ²)',
+      'Master formula structure through interaction'
+    ],
+    route: '/chapter3/formula-builder',
+    color: '#ec4899',
+    question: "How do continuous distribution formulas really work?",
+    preview: "Interactive formula construction"
+  },
   {
     id: 'introduction',
     title: 'Introduction: Bridge to Continuous',

@@ -60,8 +60,8 @@ export const QuickReferenceCard = ({
 
           {/* Formula Display */}
           {section.formula && (
-            <div className="text-center mb-2">
-              <span dangerouslySetInnerHTML={{ __html: section.formula }} />
+            <div className="text-center mb-2 overflow-x-auto">
+              <span className="inline-block whitespace-nowrap" dangerouslySetInnerHTML={{ __html: section.formula }} />
             </div>
           )}
 
@@ -123,7 +123,7 @@ export const QuickReferenceCard = ({
         {/* Formula Card */}
         {isOpen && (
           <div
-            className={`absolute bottom-16 right-0 w-80 bg-neutral-900 rounded-lg shadow-2xl 
+            className={`absolute bottom-16 right-0 w-[500px] max-w-[90vw] bg-neutral-900 rounded-lg shadow-2xl 
               border border-${colorScheme.primary}-500/50 overflow-hidden`}
           >
             <div className={`bg-${colorScheme.primary}-900/30 p-3 flex items-center justify-between`}>
@@ -138,7 +138,7 @@ export const QuickReferenceCard = ({
               </button>
             </div>
             
-            <div className="p-4">
+            <div className="p-4 overflow-x-auto max-w-full">
               {renderContent()}
             </div>
           </div>
@@ -150,7 +150,7 @@ export const QuickReferenceCard = ({
   // Inline mode (collapsible)
   if (mode === 'inline') {
     return (
-      <div className={`bg-neutral-900/50 rounded-lg border border-${colorScheme.primary}-500/30 overflow-hidden`}>
+      <div className={`bg-neutral-900/50 rounded-lg border border-${colorScheme.primary}-500/30`}>
         <button
           onClick={() => setIsOpen(!isOpen)}
           className={`w-full p-4 bg-${colorScheme.primary}-900/20 flex items-center justify-between 
@@ -169,7 +169,7 @@ export const QuickReferenceCard = ({
         </button>
 
         {isOpen && (
-          <div className="p-4">
+          <div className="p-4 overflow-x-auto max-w-full">
             {renderContent()}
           </div>
         )}
@@ -180,7 +180,7 @@ export const QuickReferenceCard = ({
   // Embedded mode (always visible)
   if (mode === 'embedded') {
     return (
-      <div className={`bg-neutral-900/50 rounded-lg border border-${colorScheme.primary}-500/30 p-4`}>
+      <div className={`bg-neutral-900/50 rounded-lg border border-${colorScheme.primary}-500/30 p-4 overflow-x-auto max-w-full`}>
         <div className="flex items-center gap-2 mb-4">
           <StickyNote className={`w-5 h-5 text-${colorScheme.primary}-400`} />
           <h3 className={`font-semibold text-${colorScheme.primary}-400`}>

@@ -9,7 +9,7 @@ import { useMathJax } from "../../hooks/useMathJax";
 import { Chapter6ReferenceSheet } from "../reference-sheets/Chapter6ReferenceSheet";
 import { 
   Lightbulb, AlertCircle, TrendingUp, Calculator, 
-  Scale, Target, Users, Percent, FlaskConical
+  Scale, Target, Users, Percent, FlaskConical, Sparkles
 } from 'lucide-react';
 
 // Get consistent color scheme for hypothesis testing
@@ -64,6 +64,26 @@ KeyConceptsCard.displayName = 'KeyConceptsCard';
 
 // All Chapter 6 sections
 const CHAPTER_6_SECTIONS = [
+  {
+    id: 'formula-builder',
+    title: 'Interactive Formula Builder',
+    subtitle: 'Build formulas step-by-step',
+    description: 'Master hypothesis testing formulas by building them interactively. Click on each part to understand why it\'s there and how it works.',
+    icon: Sparkles,
+    difficulty: 'Beginner',
+    estimatedTime: '20 min',
+    prerequisites: [],
+    learningGoals: [
+      'Z-test statistic: Z = (x̄ - μ₀)/(σ/√n)',
+      'T-test statistic: t = (x̄ - μ₀)/(s/√n)',
+      'Proportion test: Z = (p̂ - p₀)/√(p₀(1-p₀)/n)',
+      'Master formula structure through interaction'
+    ],
+    route: '/chapter6/formula-builder',
+    color: '#ec4899',
+    question: "How do hypothesis testing formulas really work?",
+    preview: "Interactive formula construction"
+  },
   {
     id: 'hypothesis-fundamentals',
     title: '6.1 Hypothesis Testing Fundamentals',

@@ -175,7 +175,11 @@
       "Bash(-e '/exit={{.*}}/d' )",
       "Bash(-e '/transition={{.*}}/d' )",
       "Bash(/Users/hananather/Desktop/Javascript/prob-lab/src/components/05-estimation/5-2-ConfidenceIntervalKnownVariance.jsx)",
-      "Bash(timeout 30 npm run build)"
+      "Bash(timeout 30 npm run build)",
+      "Bash(if [ -f \"$file\" ])",
+      "Bash(if ! grep -q \"useMathJax\" \"$file\")",
+      "Bash(if [ -f \"/Users/hananather/Desktop/Javascript/prob-lab/src/app/chapter$i/formula-builder/page.jsx\" ])",
+      "Bash(else)"
     ],
     "deny": []
   },

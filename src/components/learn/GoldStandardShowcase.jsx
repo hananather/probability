@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from 'react';
+import { useMathJax } from '../../hooks/useMathJax';
 import { Button } from '../ui/button';
 import { SemanticGradientCard, SemanticGradientGrid } from '../ui/patterns/SemanticGradientCard';
 import { InterpretationBox, StepInterpretation } from '../ui/patterns/InterpretationBox';
@@ -28,9 +29,10 @@ const InteractiveFormulaDemo = React.memo(() => {
   });
   
   const allUnderstood = Object.values(understanding).every(v => v);
+  const mathRef = useMathJax([selectedParts, understanding]);
 
   return (
-    <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-lg p-6 border border-purple-700/50">
+    <div ref={mathRef} className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-lg p-6 border border-purple-700/50">
       <h3 className="text-xl font-bold text-purple-400 mb-6">
         Build the Formula Step by Step
       </h3>

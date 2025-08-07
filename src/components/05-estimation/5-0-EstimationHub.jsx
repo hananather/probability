@@ -6,7 +6,7 @@ import { Card } from "../ui/card";
 import { createColorScheme } from "@/lib/design-system";
 import { useMathJax } from "../../hooks/useMathJax";
 import { 
-  Brain, Target, Calculator, Activity, PieChart, ArrowRight, GitBranch
+  Brain, Target, Calculator, Activity, PieChart, ArrowRight, GitBranch, Sparkles
 } from 'lucide-react';
 import { Chapter5ReferenceSheet } from '../reference-sheets/Chapter5ReferenceSheet';
 
@@ -83,6 +83,26 @@ KeyConceptsCard.displayName = 'KeyConceptsCard';
 
 // All Chapter 5 sections
 const CHAPTER_5_SECTIONS = [
+  {
+    id: 'formula-builder',
+    title: 'Interactive Formula Builder',
+    subtitle: 'Build formulas step-by-step',
+    description: 'Master estimation formulas by building them interactively. Click on each part to understand why it\'s there and how it works.',
+    icon: Sparkles,
+    difficulty: 'Beginner',
+    estimatedTime: '20 min',
+    prerequisites: [],
+    learningGoals: [
+      'Confidence interval: x̄ ± z(α/2) × SE',
+      'Standard error: SE = σ/√n',
+      'Margin of error formula',
+      'Master formula structure through interaction'
+    ],
+    route: '/chapter5/formula-builder',
+    color: '#ec4899',
+    question: "How do estimation formulas really work?",
+    preview: "Interactive formula construction"
+  },
   {
     id: 'statistical-inference',
     title: '5.1 Statistical Inference',

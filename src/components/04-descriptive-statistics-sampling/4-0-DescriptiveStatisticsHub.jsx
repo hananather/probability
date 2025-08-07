@@ -9,7 +9,7 @@ import { useMathJax } from "../../hooks/useMathJax";
 import { Chapter4ReferenceSheet } from "../reference-sheets/Chapter4ReferenceSheet";
 import { 
   BarChart, TrendingUp, Activity, PieChart,
-  Calculator, Sigma, LineChart, GitBranch
+  Calculator, Sigma, LineChart, GitBranch, Sparkles
 } from 'lucide-react';
 
 // Get consistent color scheme for descriptive statistics
@@ -350,6 +350,26 @@ KeyConceptsCard.displayName = 'KeyConceptsCard';
 
 // Chapter 4 section configuration
 const CHAPTER_4_SECTIONS = [
+  {
+    id: 'formula-builder',
+    title: 'Interactive Formula Builder',
+    subtitle: 'Build formulas step-by-step',
+    description: 'Master descriptive statistics formulas by building them interactively. Click on each part to understand why it\'s there and how it works.',
+    icon: Sparkles,
+    difficulty: 'Beginner',
+    estimatedTime: '20 min',
+    prerequisites: [],
+    learningGoals: [
+      'Sample mean x̄ = Σx/n',
+      'Sample variance s² formula',
+      'Standard error SE = σ/√n',
+      'Master formula structure through interaction'
+    ],
+    route: '/chapter4/formula-builder',
+    color: '#ec4899',
+    question: "How do descriptive statistics formulas really work?",
+    preview: "Interactive formula construction"
+  },
   {
     id: 'data-descriptions',
     title: '4.1 Data Descriptions',
