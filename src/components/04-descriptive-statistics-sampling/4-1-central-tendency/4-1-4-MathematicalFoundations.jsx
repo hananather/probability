@@ -66,7 +66,7 @@ const FoundationsSection = React.memo(function FoundationsSection() {
     <div ref={contentRef}>
       {/* Opening Hook */}
       <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 p-4 rounded-lg mb-6">
-        <p className="text-lg font-semibold text-white mb-2">🎯 Quick Scenario:</p>
+        <p className="text-lg font-semibold text-white mb-2">Quick Scenario:</p>
         <p className="text-neutral-300">
           Your study group asks: "What was the typical exam score?" Three different students give three different answers - 
           and they're all correct! How is this possible?
@@ -89,19 +89,19 @@ const FoundationsSection = React.memo(function FoundationsSection() {
           <p className="mb-4 text-neutral-300">Different measures capture different aspects of "center":</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
             <div className="bg-blue-900/20 border border-blue-600/30 p-3 rounded-lg">
-              <div className="text-2xl mb-2 text-center">⚖️</div>
+              <div className="text-2xl mb-2 text-center"></div>
               <p className="text-sm font-semibold text-blue-400 text-center">Mean</p>
               <p className="text-xs text-neutral-300 text-center mt-1">The balance point</p>
               <p className="text-xs text-neutral-400 mt-2">Best for: Symmetric data</p>
             </div>
             <div className="bg-green-900/20 border border-green-600/30 p-3 rounded-lg">
-              <div className="text-2xl mb-2 text-center">🚶</div>
+              <div className="text-2xl mb-2 text-center"></div>
               <p className="text-sm font-semibold text-green-400 text-center">Median</p>
               <p className="text-xs text-neutral-300 text-center mt-1">The middle value</p>
               <p className="text-xs text-neutral-400 mt-2">Best for: Skewed data</p>
             </div>
             <div className="bg-amber-900/20 border border-amber-600/30 p-3 rounded-lg">
-              <div className="text-2xl mb-2 text-center">👑</div>
+              <div className="text-2xl mb-2 text-center"></div>
               <p className="text-sm font-semibold text-amber-400 text-center">Mode</p>
               <p className="text-xs text-neutral-300 text-center mt-1">Most frequent</p>
               <p className="text-xs text-neutral-400 mt-2">Best for: Categories</p>
@@ -110,7 +110,7 @@ const FoundationsSection = React.memo(function FoundationsSection() {
           
           {/* Exam Alert */}
           <div className="mt-4 bg-red-900/20 border border-red-600/30 p-3 rounded-lg">
-            <p className="text-xs font-semibold text-red-400">⚠️ Exam Alert:</p>
+            <p className="text-xs font-semibold text-red-400">Exam Alert:</p>
             <p className="text-xs text-neutral-300">
               Questions often ask you to choose the "most appropriate" measure. Remember: it depends on your data type and distribution!
             </p>
@@ -1308,13 +1308,13 @@ const FocusedContent = React.memo(function FocusedContent({ section }) {
               <p className="text-xs text-neutral-400">Example:</p>
               <p className="text-xs text-neutral-300">{info.example}</p>
             </div>
-            <p className="text-xs text-amber-400 mt-1">💡 {info.tip}</p>
+            <p className="text-xs text-amber-400 mt-1">{info.tip}</p>
           </div>
         ))}
       </div>
       
       <div className="bg-red-900/20 border border-red-600/30 p-3 rounded">
-        <p className="text-sm font-semibold text-red-400">🎯 Common Exam Pattern:</p>
+        <p className="text-sm font-semibold text-red-400">Common Exam Pattern:</p>
         <p className="text-xs text-neutral-300">
           Mean {'>'} Median = Right-skewed (outliers on right)<br/>
           Mean {'<'} Median = Left-skewed (outliers on left)<br/>
@@ -1408,7 +1408,7 @@ const DataTypesSection = React.memo(function DataTypesSection() {
         </div>
       </ExampleSection>
       
-      <InsightBox variant="warning" icon="⚠️">
+      <InsightBox variant="warning">
         Always report multiple measures when possible. A single number rarely tells the complete story about your data's center.
       </InsightBox>
     </WorkedExample>

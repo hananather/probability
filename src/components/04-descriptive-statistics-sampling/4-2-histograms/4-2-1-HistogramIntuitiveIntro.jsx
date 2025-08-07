@@ -647,7 +647,7 @@ const HistogramIntuitiveIntro = () => {
       {/* Learning tips */}
       {stage === 3 && (
         <div className="mt-6 p-4 bg-blue-900/20 border border-blue-600/30 rounded-lg">
-          <h4 className="font-semibold text-blue-400 mb-2">💡 Key Takeaways</h4>
+          <h4 className="font-semibold text-blue-400 mb-2">Key Takeaways</h4>
           <ul className="space-y-1 text-sm text-gray-300">
             <li>• Histograms organize continuous data into "bins" or "buckets"</li>
             <li>• The height of each bar shows how many values fall in that range</li>

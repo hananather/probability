@@ -72,7 +72,7 @@ const KnowledgeCheck = React.memo(function KnowledgeCheck({ stage, onComplete })
   
   return (
     <div className="bg-purple-900/20 border border-purple-600/30 p-4 rounded-lg mt-4">
-      <p className="text-sm font-semibold text-purple-400 mb-2">🧠 Quick Check:</p>
+      <p className="text-sm font-semibold text-purple-400 mb-2">Quick Check:</p>
       <p className="text-sm text-neutral-300 mb-3">{currentQ.question}</p>
       <div className="flex gap-2 mb-3">
         {currentQ.options.map(opt => (
@@ -100,7 +100,7 @@ const KnowledgeCheck = React.memo(function KnowledgeCheck({ stage, onComplete })
       </div>
       {showFeedback && (
         <p className="text-xs text-neutral-300">
-          {answer === currentQ.correct ? '✅ ' : '❌ '}
+          {answer === currentQ.correct ? '• ' : '• '}
           {currentQ.explanation}
         </p>
       )}
@@ -235,7 +235,7 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
               </div>
               
               <div className="mt-4 bg-purple-900/20 p-3 rounded-lg border border-purple-600/30">
-                <strong className="text-indigo-300 text-sm">💡 Key Insight:</strong>
+                <strong className="text-indigo-300 text-sm">Key Insight:</strong>
                 <div className="mt-1 text-xs text-indigo-200">
                   {Math.abs(stats.mean - stats.median) < stats.stdDev * 0.2 
                     ? "Mean ≈ Median: Your data is roughly symmetric"
@@ -295,7 +295,7 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
               </div>
               
               <div className="mt-4 bg-blue-900/20 p-3 rounded-lg border border-blue-600/30">
-                <strong className="text-teal-300 text-sm">📏 Interpretation:</strong>
+                <strong className="text-teal-300 text-sm">Interpretation:</strong>
                 <div className="mt-1 text-xs text-teal-200">
                   About 68% of your data falls within {stats.mean.toFixed(1)} ± {stats.stdDev.toFixed(1)} 
                   = [{(stats.mean - stats.stdDev).toFixed(1)}, {(stats.mean + stats.stdDev).toFixed(1)}]
@@ -351,7 +351,7 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
               </div>
               
               <div className="mt-4 bg-green-900/20 p-3 rounded-lg border border-green-600/30">
-                <strong className="text-green-300 text-sm">🎯 Why IQR Matters:</strong>
+                <strong className="text-green-300 text-sm">Why IQR Matters:</strong>
                 <div className="mt-1 text-xs text-green-200">
                   IQR is robust to outliers - it only looks at the middle 50% of data, 
                   making it more reliable than range for understanding typical spread.
@@ -393,14 +393,14 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
                     stats.outliers.length > 0 ? "text-amber-300" : "text-emerald-300"
                   )}>
                     {stats.outliers.length > 0 
-                      ? `⚠️ Outliers detected: ${stats.outliers.map(x => x.toFixed(2)).join(', ')}`
-                      : '✅ No outliers detected'}
+                      ? `Outliers detected: ${stats.outliers.map(x => x.toFixed(2)).join(', ')}`
+                      : 'No outliers detected'}
                   </div>
                 </div>
               </div>
               
               <div className="mt-4 bg-amber-900/20 p-3 rounded-lg border border-amber-600/30">
-                <strong className="text-rose-300 text-sm">🔍 Robustness Analysis:</strong>
+                <strong className="text-rose-300 text-sm">Robustness Analysis:</strong>
                 <div className="mt-1 space-y-1 text-xs text-rose-200">
                   <div>• Mean is {Math.abs(stats.mean - stats.median) > stats.stdDev * 0.5 ? 'significantly' : 'slightly'} affected by outliers</div>
                   <div>• Median remains stable (robust measure)</div>

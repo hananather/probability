@@ -104,7 +104,7 @@ const FDistributionWorkedExample = React.memo(function FDistributionWorkedExampl
       </div>
       
       <div className="mt-4 p-3 bg-gradient-to-r from-cyan-900/30 to-blue-900/30 rounded-lg border border-cyan-600/30">
-        <p className="text-sm font-medium text-cyan-400">💡 Key Insight:</p>
+        <p className="text-sm font-medium text-cyan-400">Key Insight:</p>
         <p className="text-sm text-cyan-200 mt-1">
           The F-distribution is right-skewed and always positive. When σ₁² = σ₂², 
           the F-statistic follows an F-distribution with (ν₁, ν₂) degrees of freedom. 

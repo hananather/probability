@@ -1032,7 +1032,7 @@ function DescriptiveStatisticsFoundations({ onComplete }) {
         .attr("y", panelHeight - 20)
         .attr("fill", "#666")
         .attr("font-size", "11px")
-        .text("✓ Simple to calculate  ✗ Affected by outliers");
+        .text("Simple to calculate but affected by outliers");
       
       // Panel 2: Standard Deviation
       const sdPanel = g.append("g")
@@ -1118,7 +1118,7 @@ function DescriptiveStatisticsFoundations({ onComplete }) {
         .attr("y", panelHeight - 20)
         .attr("fill", "#666")
         .attr("font-size", "11px")
-        .text("✓ Uses all data points  ✓ Less affected by outliers  ✗ More complex");
+        .text("Uses all data points, less affected by outliers, more complex");
       
       // Panel 3: Coefficient of Variation
       const cvPanel = g.append("g")
@@ -1211,7 +1211,7 @@ function DescriptiveStatisticsFoundations({ onComplete }) {
         .attr("y", panelHeight - 20)
         .attr("fill", "#666")
         .attr("font-size", "11px")
-        .text("✓ Scale-independent comparison  ✗ Not useful when mean ≈ 0");
+        .text("Scale-independent comparison, not useful when mean ≈ 0");
       
       // Bottom axis for reference
       g.append("g")
@@ -2468,7 +2468,7 @@ function DescriptiveStatisticsFoundations({ onComplete }) {
                   </p>
                 </div>
                 <p className="text-xs text-neutral-400 mt-2">
-                  ⚠️ Limitation: Range only uses two values and ignores the distribution of all other data points.
+                  Limitation: Range only uses two values and ignores the distribution of all other data points.
                 </p>
               </div>
             )}
@@ -2492,7 +2492,7 @@ function DescriptiveStatisticsFoundations({ onComplete }) {
                   </p>
                 </div>
                 <p className="text-xs text-neutral-400 mt-2">
-                  📊 About 68% of data typically falls within ±1 standard deviation of the mean.
+                  About 68% of data typically falls within ±1 standard deviation of the mean.
                 </p>
               </div>
             )}
@@ -2511,7 +2511,7 @@ function DescriptiveStatisticsFoundations({ onComplete }) {
                   </p>
                 </div>
                 <p className="text-xs text-neutral-400 mt-2">
-                  💡 CV {'>'} 100% indicates very high variability relative to the mean.
+                  CV &gt; 100% indicates very high variability relative to the mean.
                 </p>
               </div>
             )}
@@ -2874,7 +2874,7 @@ function DescriptiveStatisticsFoundations({ onComplete }) {
               }
             }}
           >
-            {hasCompleted ? "✓ Completed" : "Complete Section"}
+            {hasCompleted ? "Completed" : "Complete Section"}
           </Button>
         )}
       </div>

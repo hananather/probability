@@ -615,26 +615,26 @@ const SamplingDistributionsInteractive = ({ onComplete }) => {
         <VisualizationSection className="mt-6">
           <div className="bg-gradient-to-r from-green-900/20 to-teal-900/20 rounded-lg p-6 border border-green-600/30 space-y-4">
             <h3 className={cn(typography.h3, "text-green-400")}>
-              🎉 What We've Discovered
+              What We've Discovered
             </h3>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <h4 className="font-semibold text-neutral-300">The Big Picture:</h4>
                 <ul className="text-sm space-y-1">
                   <li className="flex items-start gap-2">
-                    <span className="text-green-400 mt-1">✓</span>
+                    <span className="text-green-400 mt-1"></span>
                     <span className={typography.description}>
                       Individual dice values vary from 1-6, but sample means cluster much more tightly
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-green-400 mt-1">✓</span>
+                    <span className="text-green-400 mt-1"></span>
                     <span className={typography.description}>
                       The sampling distribution is approximately normal, even from a non-uniform population
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-green-400 mt-1">✓</span>
+                    <span className="text-green-400 mt-1"></span>
                     <span className={typography.description}>
                       Sample means center around μ = {populationMean.toFixed(2)} with SE = {(populationStd / Math.sqrt(sampleSize)).toFixed(3)}
                     </span>

@@ -972,7 +972,7 @@ const FDistributionJourney = () => {
             {samples.length === 0 && "Generate samples to begin"}
             {samples.length > 0 && samples.length < 30 && `${samples.length}/30 samples for pattern`}
             {samples.length >= 30 && samples.length < 100 && `${samples.length}/100 for convergence`}
-            {samples.length >= 100 && "Distribution converged! 🎉"}
+            {samples.length >= 100 && "Distribution converged!"}
           </div>
         </div>
       </div>

@@ -81,7 +81,7 @@ const FDistributionExplorer = () => {
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div className="flex items-start gap-2">
-            <span className="text-cyan-400">🎯</span>
+            <span className="text-cyan-400"></span>
             <div>
               <strong>Beginners:</strong> Start with the Intuitive Introduction
             </div>

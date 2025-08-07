@@ -80,7 +80,7 @@ const PracticeProblems = React.memo(function PracticeProblems({ mathRef }) {
       <div className="flex items-center justify-between">
         <h3 className="text-xl font-bold text-white">Practice Problems</h3>
         <div className="text-sm text-neutral-400">
-          🎯 Total Points: {problems.reduce((sum, p) => sum + p.points, 0)}
+          Total Points: {problems.reduce((sum, p) => sum + p.points, 0)}
         </div>
       </div>
       <p className="text-neutral-300">
@@ -89,25 +89,25 @@ const PracticeProblems = React.memo(function PracticeProblems({ mathRef }) {
       
       {/* Confidence Tracker */}
       <div className="bg-purple-900/20 border border-purple-600/30 p-3 rounded-lg">
-        <p className="text-xs font-semibold text-purple-400 mb-2">💪 Your Confidence Level:</p>
+        <p className="text-xs font-semibold text-purple-400 mb-2">Your Confidence Level:</p>
         <div className="flex gap-4">
           <span className={cn(
             "text-xs",
             Object.values(confidence).filter(c => c === 'high').length >= 2 ? "text-green-400" : "text-neutral-400"
           )}>
-            ✅ Ready for exam
+            Ready for exam
           </span>
           <span className={cn(
             "text-xs",
             Object.values(confidence).filter(c => c === 'medium').length >= 2 ? "text-amber-400" : "text-neutral-400"
           )}>
-            🛠 Need more practice
+            Need more practice
           </span>
           <span className={cn(
             "text-xs",
             Object.values(confidence).filter(c => c === 'low').length >= 1 ? "text-red-400" : "text-neutral-400"
           )}>
-            🆘 Review material
+            Review material
           </span>
         </div>
       </div>
@@ -132,7 +132,7 @@ const PracticeProblems = React.memo(function PracticeProblems({ mathRef }) {
                     {problem.points} pts
                   </span>
                   <span className="px-2 py-1 bg-blue-900/50 text-blue-300 rounded">
-                    📈 {problem.examFrequency}
+                    {problem.examFrequency}
                   </span>
                 </div>
               </div>
@@ -848,7 +848,7 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
           <div className="space-y-4" ref={mathRef}>
             {/* Attention-Grabbing Opening */}
             <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 p-4 rounded-lg mb-4">
-              <h3 className="text-lg font-bold text-white mb-2">🎯 Real Scenario:</h3>
+              <h3 className="text-lg font-bold text-white mb-2">Real Scenario:</h3>
               <p className="text-neutral-300">
                 Your professor announces: "The class average was 72% on the midterm." 
                 But wait... <strong className="text-amber-400">half the class failed!</strong> How is this possible?
@@ -866,22 +866,22 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
             
             {/* What's In It For Me? */}
             <div className="bg-amber-900/20 border border-amber-600/30 p-4 rounded-lg">
-              <p className="text-sm font-semibold text-amber-400 mb-2">🎓 What's In It For You?</p>
+              <p className="text-sm font-semibold text-amber-400 mb-2">What's In It For You?</p>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="flex items-start gap-2">
-                  <span className="text-green-400">✓</span>
+                  <span className="text-green-400">•</span>
                   <span className="text-neutral-300"><strong>15%</strong> of exam questions</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="text-green-400">✓</span>
+                  <span className="text-green-400">•</span>
                   <span className="text-neutral-300">Foundation for <strong>60%</strong> of course</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="text-green-400">✓</span>
+                  <span className="text-green-400">•</span>
                   <span className="text-neutral-300">Used in <strong>every</strong> assignment</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="text-green-400">✓</span>
+                  <span className="text-green-400">•</span>
                   <span className="text-neutral-300"><strong>5 min</strong> to learn basics</span>
                 </div>
               </div>
@@ -900,20 +900,20 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
             
             {/* Visual Memory Aid */}
             <div className="bg-neutral-900 p-4 rounded-lg">
-              <p className="text-sm text-neutral-400 mb-3">🧠 Quick Visual Memory Aid:</p>
+              <p className="text-sm text-neutral-400 mb-3">Quick Visual Memory Aid:</p>
               <div className="grid grid-cols-3 gap-3 text-center">
                 <div className="bg-blue-900/20 p-3 rounded">
-                  <p className="text-2xl mb-1">⚖️</p>
+                  <p className="text-2xl mb-1"></p>
                   <p className="text-xs font-semibold text-blue-400">Mean</p>
                   <p className="text-xs text-neutral-400">Balance point</p>
                 </div>
                 <div className="bg-green-900/20 p-3 rounded">
-                  <p className="text-2xl mb-1">🚶</p>
+                  <p className="text-2xl mb-1">|</p>
                   <p className="text-xs font-semibold text-green-400">Median</p>
                   <p className="text-xs text-neutral-400">Middle person</p>
                 </div>
                 <div className="bg-amber-900/20 p-3 rounded">
-                  <p className="text-2xl mb-1">👑</p>
+                  <p className="text-2xl mb-1">▲</p>
                   <p className="text-xs font-semibold text-amber-400">Mode</p>
                   <p className="text-xs text-neutral-400">Most popular</p>
                 </div>
@@ -1018,7 +1018,7 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
             
             {/* Micro Quiz */}
             <div className="bg-purple-900/20 border border-purple-600/30 p-4 rounded-lg mt-4">
-              <p className="text-sm font-semibold text-purple-400 mb-2">🧠 Quick Check:</p>
+              <p className="text-sm font-semibold text-purple-400 mb-2">Quick Check:</p>
               <p className="text-sm text-neutral-300 mb-2">
                 Data: 2, 4, 6, 8, 10. What is the mean?
               </p>
@@ -1046,8 +1046,8 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
               {showQuizFeedback.mean && (
                 <p className="text-xs mt-2 text-neutral-300">
                   {microQuizAnswers.mean === 6 
-                    ? "✅ Correct! (2+4+6+8+10)/5 = 30/5 = 6"
-                    : "❌ Try again! Add all values, then divide by count (5)"}
+                    ? "Correct! (2+4+6+8+10)/5 = 30/5 = 6"
+                    : "Incorrect. Try again! Add all values, then divide by count (5)"}
                 </p>
               )}
             </div>
@@ -1095,7 +1095,7 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
             
             {/* Common Mistake Alert */}
             <div className="bg-red-900/20 border border-red-600/30 p-3 rounded-lg">
-              <p className="text-xs font-semibold text-red-400">🚨 Common Exam Mistake:</p>
+              <p className="text-xs font-semibold text-red-400">Common Exam Mistake:</p>
               <p className="text-xs text-neutral-300">
                 Always SORT the data first! Forgetting this step costs easy marks.
               </p>
@@ -1103,7 +1103,7 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
             
             {/* Micro Quiz */}
             <div className="bg-purple-900/20 border border-purple-600/30 p-4 rounded-lg mt-4">
-              <p className="text-sm font-semibold text-purple-400 mb-2">🧠 Quick Check:</p>
+              <p className="text-sm font-semibold text-purple-400 mb-2">Quick Check:</p>
               <p className="text-sm text-neutral-300 mb-2">
                 Data: 3, 7, 2, 9, 5. What is the median?
               </p>
@@ -1131,8 +1131,8 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
               {showQuizFeedback.median && (
                 <p className="text-xs mt-2 text-neutral-300">
                   {microQuizAnswers.median === 5 
-                    ? "✅ Correct! Sorted: 2, 3, 5, 7, 9. Middle value is 5."
-                    : "❌ Remember to SORT first! Then find the middle value."}
+                    ? "Correct! Sorted: 2, 3, 5, 7, 9. Middle value is 5."
+                    : "Incorrect. Remember to SORT first! Then find the middle value."}
                 </p>
               )}
             </div>
@@ -1184,7 +1184,7 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
             
             {/* Real-World Example */}
             <div className="bg-blue-900/20 border border-blue-600/30 p-3 rounded-lg">
-              <p className="text-xs font-semibold text-blue-400">🌍 Real Example:</p>
+              <p className="text-xs font-semibold text-blue-400">Real Example:</p>
               <p className="text-xs text-neutral-300">
                 Survey: "What's your major?" Engineering (45), Business (45), Science (20), Arts (10).<br/>
                 Mode = Engineering and Business (bimodal)

@@ -560,7 +560,7 @@ const HistogramShapeAnalysis = () => {
         <div className="mt-8 p-6 bg-gradient-to-r from-green-900/30 to-emerald-900/30 rounded-lg border border-green-600/30 text-center">
           <Award className="w-12 h-12 text-green-400 mx-auto mb-3" />
           <h3 className="text-xl font-bold text-green-400 mb-2">
-            🎉 Shape Master Achievement Unlocked!
+            Shape Master Achievement Unlocked!
           </h3>
           <p className="text-gray-300 mb-4">
             You've mastered all histogram shapes! You can now identify distribution patterns 

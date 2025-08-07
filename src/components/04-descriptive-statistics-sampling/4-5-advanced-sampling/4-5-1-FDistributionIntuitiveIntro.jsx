@@ -600,7 +600,7 @@ const FDistributionIntuitiveIntro = () => {
                 called the <span className="text-violet-400 font-semibold">F-distribution</span>.
               </p>
               <div className="bg-gradient-to-r from-emerald-900/20 to-teal-900/20 p-4 rounded-lg border border-emerald-600/30">
-                <h4 className="text-emerald-400 font-semibold mb-2">🎉 Congratulations!</h4>
+                <h4 className="text-emerald-400 font-semibold mb-2">Congratulations!</h4>
                 <p className="text-sm">
                   You've discovered how statisticians compare variances! The F-distribution helps us 
                   determine if differences in consistency are real or just due to random chance.

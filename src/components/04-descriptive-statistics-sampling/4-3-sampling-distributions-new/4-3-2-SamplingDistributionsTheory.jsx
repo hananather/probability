@@ -536,7 +536,7 @@ function WhatAreSamplingDistributionsTheoryFirst() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
             <div className="text-center">
               <div className="bg-blue-900/30 border border-blue-600/50 rounded-lg p-3 mb-2">
-                <span className="text-2xl">📊</span>
+                <span className="text-2xl"></span>
               </div>
               <p className="font-semibold text-blue-400">Population</p>
               <p className="text-xs text-neutral-400">Parameters: μ, σ</p>
@@ -557,7 +557,7 @@ function WhatAreSamplingDistributionsTheoryFirst() {
             </div>
             <div className="text-center">
               <div className="bg-purple-900/30 border border-purple-600/50 rounded-lg p-3 mb-2">
-                <span className="text-2xl">📈</span>
+                <span className="text-2xl"></span>
               </div>
               <p className="font-semibold text-purple-400">Repeat</p>
               <p className="text-xs text-neutral-400">Many times</p>
@@ -734,7 +734,7 @@ function WhatAreSamplingDistributionsTheoryFirst() {
                     {counts.length >= 30 && (
                       <div className="mt-2 pt-2 border-t border-neutral-700">
                         <p className="text-xs text-green-400">
-                          ✓ With {counts.length} samples, the Central Limit Theorem is in effect!
+                          With {counts.length} samples, the Central Limit Theorem is in effect!
                         </p>
                       </div>
                     )}

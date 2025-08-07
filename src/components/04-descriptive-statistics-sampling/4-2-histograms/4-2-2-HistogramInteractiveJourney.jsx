@@ -482,15 +482,15 @@ const HistogramInteractiveJourney = () => {
       {/* Learning summary for final stage */}
       {stage === 3 && (
         <div className="mt-6 p-4 bg-green-900/20 border border-green-600/30 rounded-lg">
-          <h4 className="font-semibold text-green-400 mb-2">🎉 Congratulations!</h4>
+          <h4 className="font-semibold text-green-400 mb-2">Congratulations!</h4>
           <p className="text-gray-300 mb-3">
             You've mastered the square root rule for creating optimal histograms!
           </p>
           <ul className="space-y-1 text-sm text-gray-300">
-            <li>✓ Too few bins hide important patterns</li>
-            <li>✓ Too many bins create visual noise</li>
-            <li>✓ The square root rule (k = √n) provides a good starting point</li>
-            <li>✓ Always adjust based on your specific data and goals</li>
+            <li>Too few bins hide important patterns</li>
+            <li>Too many bins create visual noise</li>
+            <li>The square root rule (k = √n) provides a good starting point</li>
+            <li>Always adjust based on your specific data and goals</li>
           </ul>
         </div>
       )}

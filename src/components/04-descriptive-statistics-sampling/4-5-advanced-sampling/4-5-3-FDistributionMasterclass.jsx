@@ -147,10 +147,10 @@ const learningStages = [
     content: {
       main: "You now understand how to compare variances using the F-distribution!",
       learned: [
-        "✓ F-statistics measure variance ratios",
-        "✓ Shape depends on two df parameters",
-        "✓ Critical for ANOVA and regression",
-        "✓ Tests equality of variances"
+        "F-statistics measure variance ratios",
+        "Shape depends on two df parameters",
+        "Critical for ANOVA and regression",
+        "Tests equality of variances"
       ],
       next: "Try the practice problems to solidify your understanding!"
     }

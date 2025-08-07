@@ -100,7 +100,7 @@ const HistogramHub = () => {
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <span className="text-emerald-400">🎯</span>
+            <span className="text-emerald-400"></span>
             <div>
               <strong className="text-emerald-300">Master Shapes:</strong> Identify real-world patterns
             </div>
@@ -234,7 +234,7 @@ const HistogramHub = () => {
       {/* Quick tip */}
       <div className="mt-6 p-4 bg-blue-900/20 border border-blue-600/30 rounded-lg">
         <p className="text-sm text-blue-300">
-          <strong className="text-blue-400">💡 Pro Tip:</strong> The square root rule (k = √n) is a great 
+          <strong className="text-blue-400">Pro Tip:</strong> The square root rule (k = √n) is a great 
           starting point, but always look at your histogram and adjust if needed. The goal is to reveal 
           the underlying pattern without creating too much noise or losing important details.
         </p>

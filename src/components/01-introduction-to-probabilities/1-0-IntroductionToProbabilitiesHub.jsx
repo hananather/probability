@@ -9,7 +9,7 @@ import { useMathJax } from "../../hooks/useMathJax";
 import { Chapter1ReferenceSheet } from "../reference-sheets/Chapter1ReferenceSheet";
 import { 
   CircleDot, Calculator, Grid3x3, Shuffle, 
-  Dices, GitBranch, BrainCircuit, AlertTriangle, DoorOpen
+  Dices, GitBranch, BrainCircuit, AlertTriangle, DoorOpen, Sparkles
 } from 'lucide-react';
 
 // Get consistent color scheme for probability/introduction
@@ -62,6 +62,27 @@ KeyConceptsCard.displayName = 'KeyConceptsCard';
 
 // All Chapter 1 sections
 const CHAPTER_1_SECTIONS = [
+  {
+    id: 'formula-builder',
+    title: 'Interactive Formula Builder',
+    subtitle: 'Build formulas step-by-step',
+    description: 'Master the fundamental formulas of probability by building them interactively. Click on each part to understand why it\'s there and how it works.',
+    icon: Sparkles,
+    difficulty: 'Beginner',
+    estimatedTime: '20 min',
+    prerequisites: [],
+    learningGoals: [
+      'Build basic probability formula interactively',
+      'Understand each component of Bayes\' Theorem',
+      'Connect formula parts to real-world meanings',
+      'Master formula structure through interaction'
+    ],
+    route: '/chapter1/formula-builder',
+    color: '#ec4899',
+    question: "How do probability formulas really work?",
+    preview: "Interactive formula builder with step-by-step explanations",
+    isNew: true
+  },
   {
     id: 'foundations',
     title: '1.1 Foundations',

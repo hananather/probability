@@ -174,7 +174,8 @@
       "Bash(-e '/animate={{.*}}/d' )",
       "Bash(-e '/exit={{.*}}/d' )",
       "Bash(-e '/transition={{.*}}/d' )",
-      "Bash(/Users/hananather/Desktop/Javascript/prob-lab/src/components/05-estimation/5-2-ConfidenceIntervalKnownVariance.jsx)"
+      "Bash(/Users/hananather/Desktop/Javascript/prob-lab/src/components/05-estimation/5-2-ConfidenceIntervalKnownVariance.jsx)",
+      "Bash(timeout 30 npm run build)"
     ],
     "deny": []
   },

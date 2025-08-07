@@ -1057,7 +1057,7 @@ function BoxplotQuartilesJourney() {
         {/* Learning Tips */}
         <div className="bg-gradient-to-br from-blue-900/20 to-indigo-900/20 border border-blue-600/30 rounded-lg p-4 mt-4">
           <h4 className="text-sm font-semibold text-blue-400 mb-2">
-            💡 {stage === STAGES.SORTING ? "Why Sort?" :
+            {stage === STAGES.SORTING ? "Why Sort?" :
                 stage === STAGES.QUARTILES ? "Understanding Quartiles" :
                 stage === STAGES.BOXPLOT ? "Boxplot Components" :
                 "Reading Patterns"}
