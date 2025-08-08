@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef } from "react";
-import { useSafeMathJax } from '../../utils/mathJaxFix';
+import { useSafeMathJax } from '../../../utils/mathJaxFix';
 
 const IntegralWorkedExample = React.memo(function IntegralWorkedExample({
   distName = "Normal",

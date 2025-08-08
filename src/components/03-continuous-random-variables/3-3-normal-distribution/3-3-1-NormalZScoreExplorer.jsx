@@ -6,16 +6,15 @@ import {
   VisualizationSection,
   GraphContainer,
   ControlGroup
-} from '../ui/VisualizationContainer';
-import { colors, typography, formatNumber, cn, createColorScheme } from '../../lib/design-system';
-import { RangeSlider } from '../ui/RangeSlider';
-import NormalZScoreWorkedExample from "./3-3-2-NormalZScoreWorkedExample";
+} from '../../ui/VisualizationContainer';
+import { colors, typography, formatNumber, cn, createColorScheme } from '../../../lib/design-system';
+import { RangeSlider } from '../../ui/RangeSlider';
 import { RotateCcw } from "lucide-react";
 import * as jStat from "jstat";
-import { useSafeMathJax } from '../../utils/mathJaxFix';
+import { useSafeMathJax } from '../../../utils/mathJaxFix';
 import { tutorial_3_3_1 } from '@/tutorials/chapter3';
-import BackToHub from '../ui/BackToHub';
-import { Chapter3ReferenceSheet } from '../reference-sheets/Chapter3ReferenceSheet';
+import BackToHub from '../../ui/BackToHub';
+// Removed Chapter3ReferenceSheet import - handled at page level
 
 // LaTeX content wrapper component to prevent re-renders
 const LatexContent = memo(function LatexContent({ children }) {
@@ -76,21 +75,37 @@ const NormalVisualization = memo(({
       .attr("offset", "100%")
       .attr("style", "stop-color:#1e293b;stop-opacity:1");
     
-    // Primary gradient (for shaded areas)
-    const primaryGradient = defs.append("linearGradient")
-      .attr("id", "primaryGradientNormal")
+    // Blue gradient for original distribution (like healthy in Type errors)
+    const blueGradient = defs.append("linearGradient")
+      .attr("id", "blueGradientNormal")
       .attr("x1", "0%").attr("y1", "0%")
       .attr("x2", "0%").attr("y2", "100%");
     
-    primaryGradient.append("stop")
+    blueGradient.append("stop")
       .attr("offset", "0%")
-      .attr("stop-color", colorScheme.primary)
-      .attr("stop-opacity", 0.8);
+      .attr("stop-color", "#3b82f6")
+      .attr("stop-opacity", 0.6);
     
-    primaryGradient.append("stop")
+    blueGradient.append("stop")
       .attr("offset", "100%")
-      .attr("stop-color", colorScheme.secondary)
-      .attr("stop-opacity", 0.3);
+      .attr("stop-color", "#3b82f6")
+      .attr("stop-opacity", 0.2);
+      
+    // Red gradient for standard normal (like Type I error)
+    const redGradient = defs.append("linearGradient")
+      .attr("id", "redGradientNormal")
+      .attr("x1", "0%").attr("y1", "0%")
+      .attr("x2", "0%").attr("y2", "100%");
+    
+    redGradient.append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", "#ef4444")
+      .attr("stop-opacity", 0.6);
+    
+    redGradient.append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", "#ef4444")
+      .attr("stop-opacity", 0.2);
     
     svg.append("rect")
       .attr("width", width)
@@ -271,11 +286,15 @@ const NormalVisualization = memo(({
     elementsRef.current.yAxisTop.call(yAxisTop);
     elementsRef.current.yAxisBottom.call(yAxisBottom);
     
-    // Style axes
+    // Style axes with better visibility - brighter text, subtle lines
     [elementsRef.current.xAxisTop, elementsRef.current.xAxisBottom, 
      elementsRef.current.yAxisTop, elementsRef.current.yAxisBottom].forEach(axis => {
-      axis.selectAll("path, line").attr("stroke", colorScheme.chart.grid);
-      axis.selectAll("text").attr("fill", colorScheme.chart.text);
+      // Hide domain line (the main axis line) to avoid duplicate appearance
+      axis.select(".domain").remove();
+      // Style tick lines to be subtle
+      axis.selectAll(".tick line").attr("stroke", "#4b5563").attr("opacity", 0.5);
+      // Make text much brighter for better visibility
+      axis.selectAll("text").attr("fill", "#f3f4f6").attr("font-weight", "500");
     });
     
     // Area and line generators
@@ -308,33 +327,31 @@ const NormalVisualization = memo(({
     elementsRef.current.areaTop
       .datum(areaDataTop)
       .attr("d", areaTop)
-      .attr("fill", "url(#primaryGradientNormal)")
-      .attr("opacity", 0.8)
-      .attr("filter", "drop-shadow(0 0 10px rgba(6, 182, 212, 0.3))");
+      .attr("fill", "url(#blueGradientNormal)")
+      .attr("opacity", 0.8);
     
     elementsRef.current.areaBottom
       .datum(areaDataBottom)
       .attr("d", areaBottom)
-      .attr("fill", "url(#primaryGradientNormal)")
-      .attr("opacity", 0.8)
-      .attr("filter", "drop-shadow(0 0 10px rgba(6, 182, 212, 0.3))");
+      .attr("fill", "url(#redGradientNormal)")
+      .attr("opacity", 0.8);
     
-    // Update lines
+    // Update lines with better colors
     elementsRef.current.lineTop
       .datum(topData)
       .attr("d", lineTop)
-      .attr("stroke", colorScheme.primary)
+      .attr("stroke", "#3b82f6")
       .attr("stroke-width", 3)
       .attr("fill", "none")
-      .attr("filter", "drop-shadow(0 0 8px rgba(6, 182, 212, 0.5))");
+      .attr("opacity", 0.9);
     
     elementsRef.current.lineBottom
       .datum(bottomData)
       .attr("d", lineBottom)
-      .attr("stroke", colorScheme.primary)
+      .attr("stroke", "#ef4444")
       .attr("stroke-width", 3)
       .attr("fill", "none")
-      .attr("filter", "drop-shadow(0 0 8px rgba(6, 182, 212, 0.5))");
+      .attr("opacity", 0.9);
     
     // Update mean line
     elementsRef.current.meanLine
@@ -562,9 +579,7 @@ const NormalZScoreExplorer = () => {
   const progressPercent = Math.min((interactionCount / 15) * 100, 100);
   
   return (
-    <>
-      <Chapter3ReferenceSheet mode="floating" />
-      <VisualizationContainer
+    <VisualizationContainer
       title="📊 Normal Distribution & Z-Score Explorer"
       description={
         <>
@@ -761,20 +776,8 @@ const NormalZScoreExplorer = () => {
           </GraphContainer>
         </div>
       </div>
-
-      {/* Worked Example */}
-      <VisualizationSection divider className="mt-4">
-        <NormalZScoreWorkedExample 
-          mu={mu}
-          sigma={sigma}
-          xValue={xValue}
-          zScore={zScore}
-          probability={probability}
-        />
-      </VisualizationSection>
       <BackToHub chapter={3} bottom={true} />
     </VisualizationContainer>
-    </>
   );
 };
 

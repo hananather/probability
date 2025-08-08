@@ -1,23 +1,25 @@
 "use client";
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { useSafeMathJax } from '../../utils/mathJaxFix';
-import { createColorScheme, typography } from "../../lib/design-system";
+import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { createColorScheme, typography } from "../../../lib/design-system";
 import { 
   ArrowRight, Calculator, BookOpen, 
   Info, TrendingUp, Target, Award,
-  Lightbulb, CheckCircle, AlertCircle
+  Lightbulb, CheckCircle, AlertCircle,
+  StickyNote
 } from "lucide-react";
-import { cn } from "../../lib/utils";
+import { cn } from "../../../lib/utils";
 import { 
   VisualizationContainer, 
   VisualizationSection
-} from "../ui/VisualizationContainer";
-import { Button } from "../ui/button";
-import { ProgressBar, ProgressNavigation } from "../ui/ProgressBar";
-import { Tutorial } from "../ui/Tutorial";
-import ZTableExplorer from "./ZTableExplorer";
+} from "../../ui/VisualizationContainer";
+import { Button } from "../../ui/button";
+import { ProgressBar, ProgressNavigation } from "../../ui/ProgressBar";
+import { Tutorial } from "../../ui/Tutorial";
+import ZTableExplorer from "./3-3-6-ZTableExplorer";
 import { tutorial_3_3_4 } from '@/tutorials/chapter3';
-import BackToHub from '../ui/BackToHub';
+import BackToHub from '../../ui/BackToHub';
+import { NormalDistributionReference } from '../../reference-sheets/Chapter3ReferenceSheet';
 
 const ZTableLookup = () => {
   const colors = createColorScheme('hypothesis'); // Using hypothesis scheme for better vibrancy
@@ -45,6 +47,7 @@ const ZTableLookup = () => {
   
   // UI state
   const [showTutorial, setShowTutorial] = useState(false);
+  const [showReferenceSheet, setShowReferenceSheet] = useState(false);
   
   // Use safe MathJax processing with error handling
   useSafeMathJax(contentRef, [learningStage]);
@@ -610,18 +613,22 @@ const ZTableLookup = () => {
           />
         </div>
         
-        {/* Help Button */}
+        {/* Reference Sheet Button */}
         <div className="fixed bottom-6 right-6">
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setShowTutorial(true)}
-            className="shadow-lg"
+          <button
+            onClick={() => setShowReferenceSheet(!showReferenceSheet)}
+            className="w-14 h-14 rounded-full shadow-lg flex items-center justify-center cursor-pointer bg-blue-500 hover:bg-blue-600 transition-colors"
           >
-            <Info className="w-4 h-4" />
-            Help
-          </Button>
+            <StickyNote className="w-7 h-7 text-white" />
+          </button>
         </div>
+        
+        {/* Reference Sheet Modal */}
+        {showReferenceSheet && (
+          <div className="fixed bottom-24 right-6 z-50">
+            <NormalDistributionReference mode="inline" />
+          </div>
+        )}
       </div>
     </VisualizationContainer>
   );

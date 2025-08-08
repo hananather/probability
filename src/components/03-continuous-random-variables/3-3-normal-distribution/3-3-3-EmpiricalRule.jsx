@@ -1,15 +1,15 @@
 "use client";
 import React, { useState, useEffect, useRef, useMemo, memo } from "react";
-import { useSafeMathJax } from '../../utils/mathJaxFix';
+import { useSafeMathJax } from '../../../utils/mathJaxFix';
 import * as d3 from "@/utils/d3-utils";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { createColorScheme, typography } from "../../lib/design-system";
-import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
+import { createColorScheme, typography } from "../../../lib/design-system";
+import { Button } from "../../ui/button";
 import { Play, Pause, RotateCcw, BarChart } from "lucide-react";
 import * as jStat from "jstat";
-import { VisualizationContainer } from "../ui/VisualizationContainer";
+import { VisualizationContainer } from "../../ui/VisualizationContainer";
 import { tutorial_3_3_3 } from '@/tutorials/chapter3';
-import BackToHub from '../ui/BackToHub';
+import BackToHub from '../../ui/BackToHub';
 
 // LaTeX-containing components wrapped in React.memo to prevent re-renders
 const ParameterLabel = memo(function ParameterLabel({ label, symbol }) {

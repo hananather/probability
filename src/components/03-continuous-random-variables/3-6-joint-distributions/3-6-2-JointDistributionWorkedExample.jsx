@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Card } from '../ui/card';
-import { Button } from '../ui/button';
-import { VisualizationContainer } from '../ui/VisualizationContainer';
-import { cn } from '../../lib/utils';
-import { useSafeMathJax } from '../../utils/mathJaxFix';
+import { Card } from '../../ui/card';
+import { Button } from '../../ui/button';
+import { VisualizationContainer } from '../../ui/VisualizationContainer';
+import { cn } from '../../../lib/utils';
+import { useSafeMathJax } from '../../../utils/mathJaxFix';
 
 // LaTeX formula component
 const LaTeXFormula = React.memo(function LaTeXFormula({ formula, isBlock = false }) {

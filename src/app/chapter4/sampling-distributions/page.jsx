@@ -18,15 +18,15 @@ const WorkedExamplesTab = dynamic(() =>
 
 // Combine CLT components into Quick Reference
 const QuickReferenceTab = dynamic(() => 
-  Promise.resolve(() => {
-    const CLTGateway = dynamic(() => 
-      import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions-new/4-3-3-CLTGateway'),
-      { ssr: false }
-    );
-    
-    const React = require('react');
-    
-    const CLTQuickReference = () => {
+  Promise.resolve({
+    default: () => {
+      const CLTGateway = dynamic(() => 
+        import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions-new/4-3-3-CLTGateway'),
+        { ssr: false }
+      );
+      
+      const React = require('react');
+      
       return (
         <div className="space-y-6">
           <CLTGateway />
@@ -67,28 +67,26 @@ const QuickReferenceTab = dynamic(() =>
           </div>
         </div>
       );
-    };
-    
-    return CLTQuickReference;
+    }
   }),
   { ssr: false }
 );
 
 // Combine advanced CLT components into Interactive
 const InteractiveTab = dynamic(() => 
-  Promise.resolve(() => {
-    const CLTProperties = dynamic(() => 
-      import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions-new/4-3-4-CLTProperties'),
-      { ssr: false }
-    );
-    const SamplingDistributionsVisual = dynamic(() => 
-      import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions-new/4-3-5-SamplingDistributionsVisual'),
-      { ssr: false }
-    );
-    
-    const React = require('react');
-    
-    const CLTInteractiveExplorer = () => {
+  Promise.resolve({
+    default: () => {
+      const CLTProperties = dynamic(() => 
+        import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions-new/4-3-4-CLTProperties'),
+        { ssr: false }
+      );
+      const SamplingDistributionsVisual = dynamic(() => 
+        import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions-new/4-3-5-SamplingDistributionsVisual'),
+        { ssr: false }
+      );
+      
+      const React = require('react');
+      
       const [view, setView] = React.useState('properties');
       
       return (
@@ -122,9 +120,7 @@ const InteractiveTab = dynamic(() =>
           </div>
         </div>
       );
-    };
-    
-    return CLTInteractiveExplorer;
+    }
   }),
   { ssr: false }
 );

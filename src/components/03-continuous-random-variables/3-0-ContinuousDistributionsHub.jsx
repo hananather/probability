@@ -9,7 +9,7 @@ import { useMathJax } from "../../hooks/useMathJax";
 import { Chapter3ReferenceSheet } from "../reference-sheets/Chapter3ReferenceSheet";
 import { 
   GitBranch, AreaChart, Calculator, Bell, 
-  Timer, Flame, Grid3x3, TrendingUp, Sparkles 
+  Timer, Flame, Grid3x3, TrendingUp, Sparkles, Sigma 
 } from 'lucide-react';
 
 // Get consistent color scheme for continuous distributions
@@ -240,6 +240,26 @@ const CHAPTER_3_SECTIONS = [
     color: '#8b5cf6',
     question: "When can we use normal approximation?",
     preview: "Binomial to normal transition visualizer"
+  },
+  {
+    id: 'double-integral-calculator',
+    title: 'Bonus: Double Integral Calculator',
+    subtitle: 'Interactive integration tool',
+    description: 'Master double integrals for joint distributions. Visualize numerical integration step-by-step with different methods and see how probabilities are calculated over regions.',
+    icon: Sigma,
+    difficulty: 'Advanced',
+    estimatedTime: '25 min',
+    prerequisites: ['joint-distributions'],
+    learningGoals: [
+      'Understand double integration visually',
+      'Compare Riemann sum methods',
+      'Calculate probabilities over regions',
+      'See numerical integration in action'
+    ],
+    route: '/chapter3/double-integral-calculator',
+    color: '#a855f7',
+    question: "How do we calculate P(X∈A, Y∈B)?",
+    preview: "Step-by-step double integral visualization"
   }
 ];
 

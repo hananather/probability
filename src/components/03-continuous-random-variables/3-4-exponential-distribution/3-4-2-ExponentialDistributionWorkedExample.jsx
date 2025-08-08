@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useRef } from "react";
-import { useSafeMathJax } from '../../utils/mathJaxFix';
-import { cn } from '../../lib/utils';
+import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { cn } from '../../../lib/utils';
 
 const ExponentialDistributionWorkedExample = React.memo(function ExponentialDistributionWorkedExample({
   lambda = 1,

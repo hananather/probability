@@ -1,16 +1,16 @@
 'use client';
 
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { Card } from '../ui/card';
-import { Button } from '../ui/button';
-import { VisualizationContainer } from '../ui/VisualizationContainer';
-import { ProgressTracker } from '../ui/ProgressTracker';
+import { Card } from '../../ui/card';
+import { Button } from '../../ui/button';
+import { VisualizationContainer } from '../../ui/VisualizationContainer';
+import { ProgressTracker } from '../../ui/ProgressTracker';
 import * as d3 from "@/utils/d3-utils";
 import { ProgressBar, ProgressNavigation } from '@/components/ui/ProgressBar';
-import { cn } from '../../lib/utils';
-import { useSafeMathJax } from '../../utils/mathJaxFix';
+import { cn } from '../../../lib/utils';
+import { useSafeMathJax } from '../../../utils/mathJaxFix';
 import { tutorial_3_0_1 } from '@/tutorials/chapter3';
-import BackToHub from '../ui/BackToHub';
+import BackToHub from '../../ui/BackToHub';
 
 // Memoized LaTeX component to prevent re-rendering
 const LaTeXFormula = React.memo(function LaTeXFormula({ formula, isBlock = false }) {

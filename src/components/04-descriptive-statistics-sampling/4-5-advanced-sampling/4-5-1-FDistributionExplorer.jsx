@@ -4,9 +4,9 @@ import React, { useState } from "react";
 import { VisualizationContainer } from '@/components/ui/VisualizationContainer';
 import { cn } from '@/lib/design-system';
 import { Button } from '@/components/ui/button';
-import { FDistributionIntuitiveIntro } from "./4-5-1-FDistributionIntuitiveIntro";
-import { FDistributionInteractiveJourney } from "./4-5-2-FDistributionInteractiveJourney";
-import { FDistributionMastery } from "./4-5-3-FDistributionMastery";
+import FDistributionIntuitiveIntro from "./4-5-1-FDistributionIntuitiveIntro";
+import FDistributionInteractiveJourney from "./4-5-2-FDistributionInteractiveJourney";
+import FDistributionMastery from "./4-5-3-FDistributionMastery";
 import { BookOpen, Compass, Trophy } from "lucide-react";
 
 // Learning paths
@@ -190,4 +190,4 @@ const FDistributionExplorer = () => {
   );
 };
 
-export { FDistributionExplorer };
+export default FDistributionExplorer;

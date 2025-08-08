@@ -7,16 +7,16 @@ import {
   GraphContainer,
   ControlGroup,
   StatsDisplay
-} from '../ui/VisualizationContainer';
-import { colors, typography, formatNumber, cn, createColorScheme } from '../../lib/design-system';
-import { RangeSlider } from '../ui/RangeSlider';
+} from '../../ui/VisualizationContainer';
+import { colors, typography, formatNumber, cn, createColorScheme } from '../../../lib/design-system';
+import { RangeSlider } from '../../ui/RangeSlider';
 import { ProgressBar, ProgressNavigation } from '@/components/ui/ProgressBar';
 import { Button } from '@/components/ui/button';
 import { jStat } from "jstat";
-import { useSafeMathJax } from '../../utils/mathJaxFix';
+import { useSafeMathJax } from '../../../utils/mathJaxFix';
 import { Info, TrendingUp, Calculator, BarChart3 } from 'lucide-react';
 import { tutorial_3_2_1 } from '@/tutorials/chapter3';
-import BackToHub from '../ui/BackToHub';
+import BackToHub from '../../ui/BackToHub';
 
 // Memoized LaTeX components to prevent re-rendering
 const FormulaDisplay = React.memo(function FormulaDisplay({ formula, color = "text-white", className = "" }) {

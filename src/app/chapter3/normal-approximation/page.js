@@ -5,7 +5,7 @@ import BackToHub from '@/components/ui/BackToHub';
 import { Chapter3ReferenceSheet } from '@/components/reference-sheets/Chapter3ReferenceSheet';
 
 const NormalApproxBinomial = dynamic(
-  () => import('@/components/03-continuous-random-variables/3-7-1-NormalApproxBinomialClient'),
+  () => import('@/components/03-continuous-random-variables/3-7-normal-approximation/3-7-1-NormalApproxBinomialClient'),
   { 
     ssr: false,
     loading: () => <div className="flex justify-center items-center h-64">Loading...</div>
@@ -13,7 +13,7 @@ const NormalApproxBinomial = dynamic(
 );
 
 const NormalApproxWorkedExample = dynamic(
-  () => import('@/components/03-continuous-random-variables/3-7-2-NormalApproxBinomialWorkedExample'),
+  () => import('@/components/03-continuous-random-variables/3-7-normal-approximation/3-7-2-NormalApproxBinomialWorkedExample'),
   { 
     ssr: false,
     loading: () => <div className="flex justify-center items-center h-64">Loading...</div>

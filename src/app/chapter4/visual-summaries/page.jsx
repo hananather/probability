@@ -23,23 +23,23 @@ const QuickReferenceTab = dynamic(() =>
 
 // Combine the boxplot components into an interactive tab
 const InteractiveTab = dynamic(() => 
-  Promise.resolve(() => {
-    const BoxplotQuartilesExplorer = dynamic(() => 
-      import('@/components/04-descriptive-statistics-sampling/4-2-histograms/4-2-4-BoxplotQuartilesExplorer'),
-      { ssr: false }
-    );
-    const BoxplotQuartilesJourney = dynamic(() => 
-      import('@/components/04-descriptive-statistics-sampling/4-2-histograms/4-2-5-BoxplotQuartilesJourney'),
-      { ssr: false }
-    );
-    const BoxplotRealWorldExplorer = dynamic(() => 
-      import('@/components/04-descriptive-statistics-sampling/4-2-histograms/4-2-6-BoxplotRealWorldExplorer'),
-      { ssr: false }
-    );
-    
-    const React = require('react');
-    
-    const BoxplotInteractiveTab = () => {
+  Promise.resolve({
+    default: () => {
+      const BoxplotQuartilesExplorer = dynamic(() => 
+        import('@/components/04-descriptive-statistics-sampling/4-2-histograms/4-2-4-BoxplotQuartilesExplorer'),
+        { ssr: false }
+      );
+      const BoxplotQuartilesJourney = dynamic(() => 
+        import('@/components/04-descriptive-statistics-sampling/4-2-histograms/4-2-5-BoxplotQuartilesJourney'),
+        { ssr: false }
+      );
+      const BoxplotRealWorldExplorer = dynamic(() => 
+        import('@/components/04-descriptive-statistics-sampling/4-2-histograms/4-2-6-BoxplotRealWorldExplorer'),
+        { ssr: false }
+      );
+      
+      const React = require('react');
+      
       const [selectedView, setSelectedView] = React.useState('explorer');
       
       return (
@@ -84,9 +84,7 @@ const InteractiveTab = dynamic(() =>
           </div>
         </div>
       );
-    };
-    
-    return BoxplotInteractiveTab;
+    }
   }),
   { ssr: false }
 );

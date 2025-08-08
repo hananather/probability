@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Card } from '../ui/card';
-import { Button } from '../ui/button';
-import { VisualizationContainer } from '../ui/VisualizationContainer';
+import { Card } from '../../ui/card';
+import { Button } from '../../ui/button';
+import { VisualizationContainer } from '../../ui/VisualizationContainer';
 import * as d3 from "@/utils/d3-utils";
-import { useSafeMathJax } from '../../utils/mathJaxFix';
-import BackToHub from '../ui/BackToHub';
+import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import BackToHub from '../../ui/BackToHub';
 
 // LaTeX formula component
 const LaTeXFormula = React.memo(function LaTeXFormula({ formula, isBlock = false }) {

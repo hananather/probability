@@ -1,16 +1,16 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import * as d3 from "@/utils/d3-utils";
-import { VisualizationContainer } from "../ui/VisualizationContainer";
-import { RangeSlider } from "../ui/RangeSlider";
-import { createColorScheme, typography } from "../../lib/design-system";
-import { useSafeMathJax } from '../../utils/mathJaxFix';
+import { VisualizationContainer } from "../../ui/VisualizationContainer";
+import { RangeSlider } from "../../ui/RangeSlider";
+import { createColorScheme, typography } from "../../../lib/design-system";
+import { useSafeMathJax } from '../../../utils/mathJaxFix';
 import ExponentialDistributionWorkedExample from "./3-4-2-ExponentialDistributionWorkedExample";
-import { ProgressBar, ProgressNavigation } from "../ui/ProgressBar";
-import { Button } from "../ui/button";
+import { ProgressBar, ProgressNavigation } from "../../ui/ProgressBar";
+import { Button } from "../../ui/button";
 import { tutorial_3_4_1 } from '@/tutorials/chapter3';
-import BackToHub from '../ui/BackToHub';
-import { Chapter3ReferenceSheet } from '../reference-sheets/Chapter3ReferenceSheet';
+import BackToHub from '../../ui/BackToHub';
+import { Chapter3ReferenceSheet } from '../../reference-sheets/Chapter3ReferenceSheet';
 
 // Define learning stages
 const learningStages = [

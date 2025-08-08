@@ -18,8 +18,8 @@ const WorkedExamplesTab = dynamic(() =>
 
 // Create wrapper components for the existing CLT content
 const QuickReferenceTab = dynamic(() => 
-  Promise.resolve(() => {
-    const CLTQuickReference = () => {
+  Promise.resolve({
+    default: () => {
       return (
         <div className="space-y-6">
           <div className="bg-neutral-800/50 rounded-lg p-6">
@@ -67,89 +67,13 @@ const QuickReferenceTab = dynamic(() =>
           </div>
         </div>
       );
-    };
-    return CLTQuickReference;
+    }
   }),
   { ssr: false }
 );
 
 const InteractiveTab = dynamic(() => 
-  Promise.resolve(() => {
-    const React = require('react');
-    const CLTInteractive = () => {
-      const [sampleSize, setSampleSize] = React.useState(30);
-      const [distribution, setDistribution] = React.useState('uniform');
-      
-      return (
-        <div className="space-y-6">
-          <div className="bg-neutral-800/50 rounded-lg p-6">
-            <h3 className="text-xl font-bold mb-4">Interactive CLT Explorer</h3>
-            
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <h4 className="font-semibold mb-3">Population Distribution</h4>
-                <div className="space-y-3">
-                  <label className="block">
-                    <span className="text-sm text-neutral-400">Distribution Type</span>
-                    <select 
-                      className="mt-1 block w-full rounded-md bg-neutral-700 border-neutral-600 text-white"
-                      value={distribution}
-                      onChange={(e) => setDistribution(e.target.value)}
-                    >
-                      <option value="uniform">Uniform</option>
-                      <option value="exponential">Exponential</option>
-                      <option value="bimodal">Bimodal</option>
-                      <option value="skewed">Heavily Skewed</option>
-                    </select>
-                  </label>
-                  
-                  <label className="block">
-                    <span className="text-sm text-neutral-400">Sample Size (n)</span>
-                    <input 
-                      type="range"
-                      min="1"
-                      max="100"
-                      value={sampleSize}
-                      onChange={(e) => setSampleSize(Number(e.target.value))}
-                      className="mt-1 block w-full"
-                    />
-                    <span className="text-xs text-neutral-500">n = {sampleSize}</span>
-                  </label>
-                </div>
-              </div>
-              
-              <div>
-                <h4 className="font-semibold mb-3">Sampling Distribution of X̄</h4>
-                <div className="bg-neutral-900 rounded-lg p-4 h-48 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-3xl mb-2">
-                      {sampleSize >= 30 ? '🔔' : '📊'}
-                    </div>
-                    <p className="text-sm text-neutral-400">
-                      {sampleSize >= 30 
-                        ? 'Approximately Normal!' 
-                        : `Need n ≥ 30 (currently ${sampleSize})`}
-                    </p>
-                    <p className="text-xs text-neutral-500 mt-2">
-                      Shape: {sampleSize >= 30 ? 'Bell Curve' : 'Not Yet Normal'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="mt-6 p-4 bg-blue-900/20 rounded-lg border border-blue-800">
-              <p className="text-sm">
-                <strong>Key Insight:</strong> Watch how the sampling distribution becomes normal 
-                as n increases, regardless of the original distribution shape!
-              </p>
-            </div>
-          </div>
-        </div>
-      );
-    };
-    return CLTInteractive;
-  }),
+  import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions-new/4-3-5-SamplingDistributionsVisual'), 
   { ssr: false }
 );
 

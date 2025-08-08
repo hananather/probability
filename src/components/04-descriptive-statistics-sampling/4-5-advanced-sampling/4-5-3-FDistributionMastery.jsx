@@ -792,4 +792,4 @@ const FDistributionMastery = () => {
   );
 };
 
-export { FDistributionMastery };
+export default FDistributionMastery;

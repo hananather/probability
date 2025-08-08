@@ -11,7 +11,7 @@ const STAGES = [
     id: 'binomial',
     title: 'Counting Successes',
     subtitle: 'The Binomial Distribution',
-    icon: '🎯',
+    icon: '',
     description: 'How many defective items in a batch of 20?',
     story: 'A factory produces items with a 10% defect rate. Quality control checks batches of 20 items.'
   },
@@ -19,7 +19,7 @@ const STAGES = [
     id: 'geometric',
     title: 'Waiting for Success',
     subtitle: 'The Geometric Distribution',
-    icon: '⏱️',
+    icon: '',
     description: 'How many calls until the first sale?',
     story: 'A call center has a 30% success rate per call. How long until the first sale?'
   },
@@ -27,7 +27,7 @@ const STAGES = [
     id: 'poisson',
     title: 'Random Events in Time',
     subtitle: 'The Poisson Distribution',
-    icon: '🌟',
+    icon: '',
     description: 'How many visitors per hour?',
     story: 'A website receives an average of 3 visitors per minute. How many in the next minute?'
   },
@@ -35,7 +35,7 @@ const STAGES = [
     id: 'binomial-poisson',
     title: 'The Great Convergence',
     subtitle: 'Binomial → Poisson',
-    icon: '🔄',
+    icon: '',
     description: 'When many rare events approximate Poisson',
     story: 'As trials increase and probability decreases, Binomial morphs into Poisson.'
   },
@@ -43,7 +43,7 @@ const STAGES = [
     id: 'negative-binomial',
     title: 'Multiple Successes',
     subtitle: 'The Negative Binomial',
-    icon: '🎰',
+    icon: '',
     description: 'How many trials for r successes?',
     story: 'A clinical trial needs 3 positive outcomes. How many patients must we test?'
   },
@@ -51,7 +51,7 @@ const STAGES = [
     id: 'relationships',
     title: 'Everything Connects',
     subtitle: 'Distribution Relationships',
-    icon: '🕸️',
+    icon: '',
     description: 'The beautiful web of probability',
     story: 'All distributions are connected through limits, special cases, and transformations.'
   }

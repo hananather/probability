@@ -1090,7 +1090,7 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
   const majorExamples = {
     business: {
       title: 'Business & Marketing',
-      icon: '📊',
+      icon: '',
       examples: [
         {
           scenario: 'Market Research',
@@ -1110,7 +1110,7 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
     },
     psychology: {
       title: 'Psychology & Social Sciences',
-      icon: '🧠',
+      icon: '',
       examples: [
         {
           scenario: 'Therapy Effectiveness',
@@ -1130,7 +1130,7 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
     },
     premed: {
       title: 'Pre-Med & Healthcare',
-      icon: '⚕️',
+      icon: '',
       examples: [
         {
           scenario: 'Drug Trial',
@@ -1150,7 +1150,7 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
     },
     engineering: {
       title: 'Engineering & Tech',
-      icon: '⚙️',
+      icon: '',
       examples: [
         {
           scenario: 'Quality Control',
@@ -1170,7 +1170,7 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
     },
     other: {
       title: 'General Applications',
-      icon: '🎯',
+      icon: '',
       examples: [
         {
           scenario: 'Sports Analytics',
@@ -1397,7 +1397,7 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
             }`}
           >
-            📝 Formula Card
+            Formula Card
           </button>
           
           <button
@@ -1491,7 +1491,7 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
             <div
               className="bg-gradient-to-br from-blue-900/20 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-blue-700/30"
             >
-              <h4 className="font-bold text-blue-400 mb-4">⚡ 10-Minute Crash Course</h4>
+              <h4 className="font-bold text-blue-400 mb-4">10-Minute Crash Course</h4>
               
               <div className="space-y-4">
                 <div className="border-l-4 border-blue-500 pl-4">
@@ -1523,10 +1523,10 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
                 <div className="border-l-4 border-teal-500 pl-4">
                   <h5 className="font-semibold text-white mb-1">3. Quick Steps (2 min)</h5>
                   <ol className="text-sm space-y-1 text-gray-300">
-                    <li>1️⃣ Calculate SE = σ/√n</li>
-                    <li>2️⃣ Find z (use table above)</li>
-                    <li>3️⃣ ME = z × SE</li>
-                    <li>4️⃣ CI = x̄ ± ME</li>
+                    <li>1. Calculate SE = σ/√n</li>
+                    <li>2. Find z (use table above)</li>
+                    <li>3. ME = z × SE</li>
+                    <li>4. CI = x̄ ± ME</li>
                   </ol>
                 </div>
                 
@@ -1551,7 +1551,7 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
               
               <div className="mt-6 p-3 bg-gradient-to-r from-blue-900/30 to-cyan-900/30 rounded-lg border border-blue-600/50">
                 <p className="text-sm text-blue-400 font-semibold">
-                  ⏱️ Total: 10 minutes to understand 90% of what you need!
+                  Total: 10 minutes to understand 90% of what you need!
                 </p>
               </div>
             </div>
@@ -1665,8 +1665,8 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
                 }`}>
                   <p className="font-semibold mb-2">
                     {readinessScore.percentage >= 75 
-                      ? '🎉 You\'re ready for the exam!' 
-                      : '📚 Keep practicing these areas:'}
+                      ? 'You\'re ready for the exam!' 
+                      : 'Keep practicing these areas:'}
                   </p>
                   {readinessScore.percentage < 75 && (
                     <ul className="text-sm space-y-1">
@@ -2165,7 +2165,7 @@ export default function ConfidenceIntervalKnownVariance() {
       <VisualizationSection className="bg-gradient-to-r from-amber-900/20 to-orange-900/20 border border-amber-600/30 rounded-lg p-6 mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-xl font-bold text-amber-400 mb-2">📝 Practice Before Moving On</h3>
+            <h3 className="text-xl font-bold text-amber-400 mb-2">Practice Before Moving On</h3>
             <p className="text-neutral-300 text-sm">
               Solidify your understanding with practice problems, quizzes, and interactive exercises.
             </p>

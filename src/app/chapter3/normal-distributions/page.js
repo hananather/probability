@@ -5,7 +5,7 @@ import BackToHub from '@/components/ui/BackToHub';
 import { Chapter3ReferenceSheet } from '@/components/reference-sheets/Chapter3ReferenceSheet';
 
 const NormalZScoreExplorer = dynamic(
-  () => import('@/components/03-continuous-random-variables/3-3-1-NormalZScoreExplorerClient'),
+  () => import('@/components/03-continuous-random-variables/3-3-normal-distribution/3-3-1-NormalZScoreExplorerClient'),
   { 
     ssr: false,
     loading: () => <div className="flex justify-center items-center h-64">Loading...</div>
@@ -13,7 +13,7 @@ const NormalZScoreExplorer = dynamic(
 );
 
 const NormalZScoreWorkedExample = dynamic(
-  () => import('@/components/03-continuous-random-variables/3-3-2-NormalZScoreWorkedExample'),
+  () => import('@/components/03-continuous-random-variables/3-3-normal-distribution/3-3-2-NormalZScoreWorkedExample'),
   { 
     ssr: false,
     loading: () => <div className="flex justify-center items-center h-64">Loading...</div>
@@ -21,7 +21,7 @@ const NormalZScoreWorkedExample = dynamic(
 );
 
 const EmpiricalRule = dynamic(
-  () => import('@/components/03-continuous-random-variables/3-3-3-EmpiricalRuleClient'),
+  () => import('@/components/03-continuous-random-variables/3-3-normal-distribution/3-3-3-EmpiricalRuleClient'),
   { 
     ssr: false,
     loading: () => <div className="flex justify-center items-center h-64">Loading...</div>
@@ -29,7 +29,7 @@ const EmpiricalRule = dynamic(
 );
 
 const ZTableLookup = dynamic(
-  () => import('@/components/03-continuous-random-variables/3-3-4-ZTableLookupClient'),
+  () => import('@/components/03-continuous-random-variables/3-3-normal-distribution/3-3-4-ZTableLookupClient'),
   { 
     ssr: false,
     loading: () => <div className="flex justify-center items-center h-64">Loading...</div>
@@ -37,7 +37,7 @@ const ZTableLookup = dynamic(
 );
 
 const ZScorePracticeProblems = dynamic(
-  () => import('@/components/03-continuous-random-variables/3-3-5-ZScorePracticeProblemsClient'),
+  () => import('@/components/03-continuous-random-variables/3-3-normal-distribution/3-3-5-ZScorePracticeProblemsClient'),
   { 
     ssr: false,
     loading: () => <div className="flex justify-center items-center h-64">Loading...</div>

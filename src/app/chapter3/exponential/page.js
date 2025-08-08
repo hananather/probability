@@ -5,7 +5,7 @@ import BackToHub from '@/components/ui/BackToHub';
 import { Chapter3ReferenceSheet } from '@/components/reference-sheets/Chapter3ReferenceSheet';
 
 const ExponentialDistribution = dynamic(
-  () => import('@/components/03-continuous-random-variables/3-4-1-ExponentialDistributionClient'),
+  () => import('@/components/03-continuous-random-variables/3-4-exponential-distribution/3-4-1-ExponentialDistributionClient'),
   { 
     ssr: false,
     loading: () => <div className="flex justify-center items-center h-64">Loading...</div>
@@ -13,7 +13,7 @@ const ExponentialDistribution = dynamic(
 );
 
 const ExponentialWorkedExample = dynamic(
-  () => import('@/components/03-continuous-random-variables/3-4-2-ExponentialDistributionWorkedExample'),
+  () => import('@/components/03-continuous-random-variables/3-4-exponential-distribution/3-4-2-ExponentialDistributionWorkedExample'),
   { 
     ssr: false,
     loading: () => <div className="flex justify-center items-center h-64">Loading...</div>

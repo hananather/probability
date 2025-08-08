@@ -785,4 +785,4 @@ const FDistributionInteractiveJourney = () => {
   );
 };
 
-export { FDistributionInteractiveJourney };
+export default FDistributionInteractiveJourney;

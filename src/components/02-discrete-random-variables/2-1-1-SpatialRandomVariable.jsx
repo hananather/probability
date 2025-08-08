@@ -16,8 +16,8 @@ import { AnimatePresence } from 'framer-motion';
 import { Chapter2ReferenceSheet } from '../reference-sheets/Chapter2ReferenceSheet';
 
 // Import Gold Standard components
-import { SemanticGradientCard } from '../ui/patterns/SemanticGradientCard';
-import { InterpretationBox } from '../ui/patterns/InterpretationBox';
+import { SemanticGradientCard, SemanticGradientGrid } from '../ui/patterns/SemanticGradientCard';
+import { InterpretationBox, StepInterpretation } from '../ui/patterns/InterpretationBox';
 import { StepByStepCalculation, CalculationStep, FormulaDisplay } from '../ui/patterns/StepByStepCalculation';
 
 // Use probability color scheme for random variables
@@ -31,185 +31,6 @@ const WIDTH_DIST = 320;
 const HEIGHT_DIST = 300;
 const PAD_DIST = 15;
 
-// Educational content focused on Random Variable definition
-const RandomVariableEducation = React.memo(() => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const contentRef = useRef(null);
-  
-  // Handle MathJax processing when content expands
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [isExpanded]); // Re-process when expanded state changes
-  
-  return (
-    <div ref={contentRef}>
-      <VisualizationSection title="What is a Random Variable?" divider>
-        <div className="space-y-4">
-          {/* Key Concept Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <SemanticGradientCard
-              title="The Definition"
-              description="A function that assigns numbers to outcomes"
-              formula={`\\[X: \\Omega \\to \\mathbb{R}\\]`}
-              note="Maps outcomes to real numbers"
-              theme="teal"
-            />
-            <SemanticGradientCard
-              title="Not Actually Random!"
-              description="Despite its name, it's a deterministic function"
-              formula={`\\[X(\\text{outcome}) = \\text{fixed number}\\]`}
-              note="The randomness comes from which outcome occurs, not from X"
-              theme="blue"
-            />
-          </div>
-          
-          {/* Common Misconception Alert */}
-          <InterpretationBox title="Common Misconception" theme="yellow">
-            <p className="font-semibold text-yellow-400">The name "random variable" is misleading!</p>
-            <p className="mt-2">A random variable is NOT:</p>
-            <ul className="mt-1 space-y-1 text-sm">
-              <li>• A variable that changes randomly</li>
-              <li>• A number that fluctuates</li>
-            </ul>
-            <p className="mt-2">It IS:</p>
-            <ul className="mt-1 space-y-1 text-sm text-green-400">
-              <li>• A fixed function that never changes</li>
-              <li>• A rule for assigning numbers to outcomes</li>
-            </ul>
-          </InterpretationBox>
-          
-          <button 
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="text-sm text-teal-400 hover:text-teal-300 transition-colors flex items-center gap-2"
-          >
-            {isExpanded ? "Show less ▲" : "Learn more about why we need numbers ▼"}
-          </button>
-          
-          {isExpanded && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              className="space-y-4 mt-4"
-            >
-              {/* Why Numbers? */}
-              <InterpretationBox title="Why Do We Need Numbers?" theme="purple">
-                <p className="font-semibold">To do mathematics with random outcomes!</p>
-                <div className="mt-3 space-y-3">
-                  <div>
-                    <p className="text-sm font-semibold text-purple-400">Without numbers:</p>
-                    <p className="text-sm mt-1">"What's the average of {heads, tails, heads}?" ❌</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-green-400">With numbers (X = # of heads):</p>
-                    <p className="text-sm mt-1">"What's the average of {1, 0, 1}?" → <span dangerouslySetInnerHTML={{ __html: `\\(\\frac{2}{3}\\)` }} /> ✅</p>
-                  </div>
-                </div>
-              </InterpretationBox>
-              
-              {/* Real-World Examples */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InterpretationBox title="Example: Weather" theme="green">
-                  <p className="font-semibold">X = "Temperature tomorrow"</p>
-                  <ul className="mt-2 space-y-1 text-sm">
-                    <li>• X(sunny day) = 25°C</li>
-                    <li>• X(cloudy day) = 20°C</li>
-                    <li>• X(rainy day) = 15°C</li>
-                  </ul>
-                  <p className="mt-2 text-sm text-neutral-400">Now we can calculate expected temperature!</p>
-                </InterpretationBox>
-                
-                <InterpretationBox title="Example: Stock Market" theme="blue">
-                  <p className="font-semibold">X = "Daily return"</p>
-                  <ul className="mt-2 space-y-1 text-sm">
-                    <li>• X(good news) = +5%</li>
-                    <li>• X(no news) = 0%</li>
-                    <li>• X(bad news) = -3%</li>
-                  </ul>
-                  <p className="mt-2 text-sm text-neutral-400">Now we can analyze risk and return!</p>
-                </InterpretationBox>
-              </div>
-              
-              {/* Common Pitfalls */}
-              <InterpretationBox title="Common Pitfalls to Avoid" theme="red">
-                <div className="space-y-3">
-                  <div>
-                    <p className="font-semibold text-red-400">Pitfall 1: Confusing the function with its output</p>
-                    <p className="text-sm mt-1">X is the function, X(outcome) is a number</p>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-red-400">Pitfall 2: Thinking X changes</p>
-                    <p className="text-sm mt-1">X is fixed; only which outcome occurs is random</p>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-red-400">Pitfall 3: Forgetting X must be numerical</p>
-                    <p className="text-sm mt-1">Can't do math with "red" or "blue" - need numbers!</p>
-                  </div>
-                </div>
-              </InterpretationBox>
-            </motion.div>
-          )}
-        </div>
-      </VisualizationSection>
-
-      <VisualizationSection title="How to Build Your Random Variable" className="mt-6">
-        <StepByStepCalculation title="Three Simple Steps" theme="green">
-          <CalculationStep title="Step 1: Create Your Sample Space">
-            <p className="font-semibold">Click and drag to create regions (outcomes)</p>
-            <div className="mt-2 space-y-2">
-              <p className="text-sm">• Each colored region = one possible outcome</p>
-              <p className="text-sm">• Region size = probability (larger = more likely)</p>
-            </div>
-            <div className="mt-3 p-3 bg-green-900/30 border border-green-600/30 rounded">
-              <p className="text-sm font-semibold text-green-400">Think of it like:</p>
-              <p className="text-xs mt-1">Dividing a dartboard into colored sections</p>
-            </div>
-          </CalculationStep>
-          
-          <CalculationStep title="Step 2: Define Your Function X">
-            <p className="font-semibold">Assign a number to each region</p>
-            <FormulaDisplay formula={`X(\\text{region}) = \\text{your chosen value}`} />
-            <div className="mt-3 space-y-2">
-              <div className="p-2 bg-neutral-800 rounded">
-                <p className="text-sm font-semibold text-blue-400">Example assignments:</p>
-                <ul className="text-xs mt-1 space-y-0.5">
-                  <li>• Loss scenario: X(red) = -10</li>
-                  <li>• Break even: X(yellow) = 0</li>
-                  <li>• Profit scenario: X(green) = 20</li>
-                </ul>
-              </div>
-            </div>
-          </CalculationStep>
-          
-          <CalculationStep title="Step 3: Observe X in Action">
-            <p className="font-semibold">Click "Start Sampling" to see your function work</p>
-            <div className="mt-2 space-y-2">
-              <p className="text-sm">• Random points land in regions (random outcome)</p>
-              <p className="text-sm">• X converts each outcome to its assigned number</p>
-              <p className="text-sm">• Bar chart shows the distribution of values</p>
-            </div>
-            <div className="mt-3 p-3 bg-purple-900/30 border border-purple-600/30 rounded">
-              <p className="text-sm font-semibold text-purple-400">Key insight:</p>
-              <p className="text-xs mt-1">X doesn't change - it always maps the same region to the same number!</p>
-            </div>
-          </CalculationStep>
-        </StepByStepCalculation>
-      </VisualizationSection>
-    </div>
-  );
-});
-
-RandomVariableEducation.displayName = 'RandomVariableEducation';
 
 // Main component using original design with educational improvements
 const SpatialRandomVariable = () => {
@@ -219,6 +40,9 @@ const SpatialRandomVariable = () => {
   const mousePaintingRef = useRef(0); // -1: erase, 0: not painting, 1: fill
   const samplingIntervalRef = useRef(null);
   const animationsRef = useRef(new Set());
+  
+  // Use MathJax hook for formula rendering
+  useMathJax();
   
   // State - using original color scheme
   const [availableColors] = useState([
@@ -692,14 +516,67 @@ const SpatialRandomVariable = () => {
         </>
       }
     >
-      {/* Educational Content */}
-      <RandomVariableEducation />
+      {/* Definition and Properties */}
+      <VisualizationSection title="Definition & Key Properties" divider>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="bg-gradient-to-br from-teal-900/30 to-teal-800/20 p-4 rounded-lg border border-teal-700/50">
+            <h3 className="text-lg font-semibold text-teal-400 mb-3">Mathematical Definition</h3>
+            <p className="text-sm mb-3 text-neutral-300">A function that assigns numbers to outcomes</p>
+            <div className="bg-neutral-800/50 p-3 rounded">
+              <p className="text-sm font-mono text-teal-300">X: Ω → ℝ</p>
+              <p className="text-xs text-neutral-400 mt-2">Maps each outcome ω ∈ Ω to a real number X(ω)</p>
+            </div>
+            <div className="mt-3 text-xs text-neutral-400">
+              <p>• Domain: Sample space Ω</p>
+              <p>• Codomain: Real numbers ℝ</p>
+              <p>• Each outcome gets exactly one value</p>
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-br from-purple-900/30 to-purple-800/20 p-4 rounded-lg border border-purple-700/50">
+            <h3 className="text-lg font-semibold text-purple-400 mb-3">Key Properties</h3>
+            <p className="text-sm mb-3 text-neutral-300">What makes it special?</p>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-start gap-2">
+                <span className="text-purple-400 mt-0.5">1.</span>
+                <span className="text-neutral-300"><strong className="text-purple-300">Deterministic:</strong> Same outcome always gives same value</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-purple-400 mt-0.5">2.</span>
+                <span className="text-neutral-300"><strong className="text-purple-300">Complete:</strong> Every outcome has a value</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-purple-400 mt-0.5">3.</span>
+                <span className="text-neutral-300"><strong className="text-purple-300">Measurable:</strong> Enables probability calculations</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </VisualizationSection>
+
+      {/* Simple Instructions */}
+      <VisualizationSection title="How to Use" className="mt-8">
+        <div className="bg-neutral-800/50 rounded-lg p-4 space-y-3">
+          <div className="flex items-start gap-3">
+            <span className="text-teal-400">1.</span>
+            <span>Click and drag to create regions on the grid</span>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="text-teal-400">2.</span>
+            <span>Assign a numerical value to each region</span>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="text-teal-400">3.</span>
+            <span>Click "Start Sampling" to see the distribution</span>
+          </div>
+        </div>
+      </VisualizationSection>
 
       {/* Interactive Component */}
-      <VisualizationSection title="Build Your Random Variable" className="mt-6">
-        <div className="grid grid-cols-12 gap-4">
+      <VisualizationSection title="Build Your Random Variable" className="mt-8">
+        <div className="grid grid-cols-12 gap-6 max-w-7xl mx-auto">
           {/* Left: Hexagonal Grid */}
-          <div className="col-span-8">
+          <div className="col-span-12 lg:col-span-8">
             <Card className="p-0 bg-neutral-900 border-neutral-700">
               {/* Controls */}
               <div className="bg-neutral-800 border-b border-neutral-700 px-4 py-3">
@@ -772,7 +649,7 @@ const SpatialRandomVariable = () => {
           </div>
           
           {/* Right: Stats and Distribution */}
-          <div className="col-span-4 space-y-4">
+          <div className="col-span-12 lg:col-span-4 space-y-4">
             {/* Legend */}
             <Card className="p-4 bg-neutral-900 border-neutral-700">
               <h4 className="text-sm font-semibold text-neutral-300 mb-3">Your Function X</h4>

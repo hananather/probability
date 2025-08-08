@@ -115,4 +115,4 @@ const FDistributionWorkedExample = React.memo(function FDistributionWorkedExampl
   );
 });
 
-export { FDistributionWorkedExample };
+export default FDistributionWorkedExample;

@@ -1,18 +1,18 @@
 "use client";
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import * as d3 from "@/utils/d3-utils";
-import { createColorScheme } from "../../lib/design-system";
+import { createColorScheme } from "../../../lib/design-system";
 import { 
   Search, Calculator
 } from "lucide-react";
 import * as jStat from "jstat";
-import { cn } from "../../lib/utils";
+import { cn } from "../../../lib/utils";
 import { 
   VisualizationContainer,
   VisualizationSection
-} from "../ui/VisualizationContainer";
-import { RangeSlider } from "../ui/RangeSlider";
-import { Button } from "../ui/button";
+} from "../../ui/VisualizationContainer";
+import { RangeSlider } from "../../ui/RangeSlider";
+import { Button } from "../../ui/button";
 
 const ZTableExplorer = ({ 
   practicalExamples, 

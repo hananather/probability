@@ -727,4 +727,4 @@ const FDistributionIntuitiveIntro = () => {
   );
 };
 
-export { FDistributionIntuitiveIntro };
+export default FDistributionIntuitiveIntro;

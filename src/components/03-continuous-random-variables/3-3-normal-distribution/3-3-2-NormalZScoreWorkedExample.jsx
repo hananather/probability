@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef } from "react";
-import { useSafeMathJax } from '../../utils/mathJaxFix';
+import { useSafeMathJax } from '../../../utils/mathJaxFix';
 
 const NormalZScoreWorkedExample = React.memo(function NormalZScoreWorkedExample({ 
   mu = 100, 

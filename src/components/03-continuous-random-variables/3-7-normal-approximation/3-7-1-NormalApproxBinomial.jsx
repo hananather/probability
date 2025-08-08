@@ -1,16 +1,15 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import * as d3 from "@/utils/d3-utils";
-import { createColorScheme, typography, cn } from "../../lib/design-system";
-import { useSafeMathJax } from '../../utils/mathJaxFix';
+import { createColorScheme, typography, cn } from "../../../lib/design-system";
+import { useSafeMathJax } from '../../../utils/mathJaxFix';
 import { jStat } from "jstat";
 import NormalApproxBinomialWorkedExample from "./3-7-2-NormalApproxBinomialWorkedExample";
-import { Tutorial } from "../ui/Tutorial";
-import { ProgressBar, ProgressNavigation } from "../ui/ProgressBar";
-import { Button } from "../ui/button";
-import { VisualizationContainer } from '../ui/VisualizationContainer';
+import { ProgressBar, ProgressNavigation } from "../../ui/ProgressBar";
+import { Button } from "../../ui/button";
+import { VisualizationContainer } from '../../ui/VisualizationContainer';
 import { tutorial_3_7_1 } from '@/tutorials/chapter3';
-import BackToHub from '../ui/BackToHub';
+import BackToHub from '../../ui/BackToHub';
 
 // Add custom styles for the sliders
 const sliderStyles = `
@@ -134,38 +133,6 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
     
     return () => { mounted = false; };
   }, [n, k]);
-  
-  // Tutorial steps
-  const tutorialSteps = [
-    {
-      title: "Welcome to Normal Approximation!",
-      content: (
-        <div className="space-y-2">
-          <p>When working with binomial distributions for large n, exact calculations become tedious.</p>
-          <p className="font-semibold text-teal-400">The normal distribution can approximate binomial probabilities!</p>
-          <p>Let's explore when and how this powerful technique works.</p>
-        </div>
-      )
-    },
-    {
-      target: ".parameter-controls",
-      title: "Set Your Parameters",
-      content: "Start by adjusting n (number of trials) and p (probability of success). Watch how the distributions change!",
-      position: "right"
-    },
-    {
-      target: ".rule-of-thumb",
-      title: "Rule of Thumb",
-      content: "The approximation works best when both np ≥ 5 and n(1-p) ≥ 5. Green checkmarks mean good approximation!",
-      position: "left"
-    },
-    {
-      target: ".visualization-area",
-      title: "Visual Comparison",
-      content: "Blue bars show exact binomial probabilities. The orange curve is the normal approximation. Notice how they align!",
-      position: "top"
-    }
-  ];
   
   // Use safe MathJax processing with error handling
   useSafeMathJax(contentRef, [n, p, k, probType, showCC, stage]);
@@ -666,11 +633,6 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
     >
       <BackToHub />
       <div ref={contentRef} className="min-h-screen flex flex-col bg-gradient-to-br from-neutral-900 to-neutral-950">
-        <Tutorial
-          steps={tutorialSteps}
-          persistKey="normal-approx-binomial"
-          mode="tooltip"
-        />
       
       {/* Strip 1: Header & Key Controls */}
       <div className="bg-neutral-900 border-b border-neutral-700 px-4 sm:px-6 py-4 sm:py-5">

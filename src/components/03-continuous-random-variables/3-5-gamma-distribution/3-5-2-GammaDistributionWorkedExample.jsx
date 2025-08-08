@@ -2,12 +2,12 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import * as d3 from "@/utils/d3-utils";
 import jStat from "jstat";
-import { cn } from "../../lib/utils";
-import { RangeSlider } from "../ui/RangeSlider";
-import { useSafeMathJax } from '../../utils/mathJaxFix';
-import { colors, typography, components, formatNumber, createColorScheme } from '../../lib/design-system';
-import { VisualizationContainer, ControlGroup } from '../ui/VisualizationContainer';
-import BackToHub from '../ui/BackToHub';
+import { cn } from "../../../lib/utils";
+import { RangeSlider } from "../../ui/RangeSlider";
+import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { colors, typography, components, formatNumber, createColorScheme } from '../../../lib/design-system';
+import { VisualizationContainer, ControlGroup } from '../../ui/VisualizationContainer';
+import BackToHub from '../../ui/BackToHub';
 
 // Use probability color scheme
 const colorScheme = createColorScheme('probability');

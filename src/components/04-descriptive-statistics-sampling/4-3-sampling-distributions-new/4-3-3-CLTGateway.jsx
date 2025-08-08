@@ -1,23 +1,37 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import * as d3 from 'd3';
-import { ArrowRight, Sparkles, TrendingUp, Zap } from 'lucide-react';
+import { ArrowRight, Sparkles, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Button } from '../../ui/button';
 import { cn } from '../../../lib/utils';
 import { VisualizationSection } from '@/components/ui/VisualizationContainer';
+import { useSafeMathJax } from '../../../utils/mathJaxFix';
 
 const CLTGateway = () => {
-  const [showTeaser, setShowTeaser] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   const svgRef = useRef(null);
+  const contentRef = useRef(null);
+  const animationTimeoutRef = useRef(null);
+  useSafeMathJax(contentRef);
 
   useEffect(() => {
-    if (showTeaser && svgRef.current) {
+    // Start animation immediately when component mounts
+    if (svgRef.current) {
       animateTransformation();
     }
-  }, [showTeaser]);
+    
+    // Cleanup on unmount
+    return () => {
+      if (animationTimeoutRef.current) {
+        clearTimeout(animationTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const animateTransformation = () => {
+    if (!svgRef.current) return;
+    
+    setIsAnimating(true);
     const svg = d3.select(svgRef.current);
     const width = 600;
     const height = 300;
@@ -54,6 +68,7 @@ const CLTGateway = () => {
       .attr('y', -5)
       .attr('text-anchor', 'middle')
       .style('font-weight', 'bold')
+      .style('fill', '#94A3B8')
       .text('Original Distribution');
 
     leftPlot.selectAll('.bar')
@@ -121,6 +136,7 @@ const CLTGateway = () => {
         .attr('y', -5)
         .attr('text-anchor', 'middle')
         .style('font-weight', 'bold')
+        .style('fill', '#94A3B8')
         .text('Sampling Distribution (n=30)');
 
       rightPlot.selectAll('.bar')
@@ -162,14 +178,21 @@ const CLTGateway = () => {
           .attr('opacity', 0)
           .transition()
           .duration(1000)
-          .attr('opacity', 1);
+          .attr('opacity', 1)
+          .on('end', () => {
+            // After animation completes, wait 3 seconds then restart
+            setIsAnimating(false);
+            animationTimeoutRef.current = setTimeout(() => {
+              animateTransformation();
+            }, 3000);
+          });
       }, 1000);
     }, 1200);
   };
 
   return (
     <VisualizationSection>
-      <div className="space-y-8">
+      <div className="space-y-8" ref={contentRef}>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-blue-400 mb-4">Central Limit Theorem Gateway</h1>
         <p className="text-lg text-neutral-300">
@@ -190,43 +213,37 @@ const CLTGateway = () => {
           </div>
         </div>
 
-        {!showTeaser ? (
-          <Button
-            onClick={() => setShowTeaser(true)}
-            size="lg"
-            className="w-full sm:w-auto"
-          >
-            <Zap className="w-5 h-5 mr-2" />
-            See the Transformation
-          </Button>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="bg-neutral-800 rounded-lg p-6 border border-blue-600/30"
-          >
-            <svg ref={svgRef} width="600" height="300" className="w-full" />
-            <p className="text-center text-sm text-neutral-400 mt-4">
-              Watch how an exponential distribution transforms into a normal distribution!
-            </p>
-          </motion.div>
-        )}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="bg-neutral-800 rounded-lg p-6 border border-blue-600/30"
+        >
+          <svg ref={svgRef} width="600" height="300" className="w-full" />
+          <p className="text-center text-sm text-neutral-400 mt-4">
+            Watch how an exponential distribution transforms into a normal distribution!
+          </p>
+        </motion.div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-neutral-800 rounded-xl p-6 border border-blue-600/30">
           <h3 className="text-xl font-semibold text-teal-400 mb-4">Formal Statement</h3>
           <div className="space-y-4">
-            <div className="p-4 bg-neutral-900 rounded-lg font-mono text-sm border border-blue-600/20">
-              <p className="mb-2">If X₁, X₂, ..., Xₙ are i.i.d. with:</p>
-              <p className="ml-4">• E[Xᵢ] = μ</p>
-              <p className="ml-4">• Var(Xᵢ) = σ² &lt; ∞</p>
-              <p className="mt-2">Then as n → ∞:</p>
-              <p className="ml-4 text-green-400 font-semibold">
-                √n(X̄ₙ - μ)/σ → N(0, 1)
-              </p>
-            </div>
+            <div 
+              className="p-4 bg-neutral-900 rounded-lg font-mono text-sm border border-blue-600/20"
+              dangerouslySetInnerHTML={{
+                __html: `
+                  <p class="mb-2">If \\(X_1, X_2, ..., X_n\\) are i.i.d. with:</p>
+                  <p class="ml-4">• \\(E[X_i] = \\mu\\)</p>
+                  <p class="ml-4">• \\(\\text{Var}(X_i) = \\sigma^2 < \\infty\\)</p>
+                  <p class="mt-2">Then as \\(n \\to \\infty\\):</p>
+                  <p class="ml-4 text-green-400 font-semibold">
+                    \\(\\frac{\\sqrt{n}(\\bar{X}_n - \\mu)}{\\sigma} \\to N(0, 1)\\)
+                  </p>
+                `
+              }}
+            />
             <p className="text-neutral-400">
               In practice, n ≥ 30 often gives a good approximation.
             </p>

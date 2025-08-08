@@ -1,16 +1,16 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import * as d3 from "@/utils/d3-utils";
-import { VisualizationContainer } from "../ui/VisualizationContainer";
-import { Button } from "../ui/button";
-import { ProgressBar, ProgressNavigation } from "../ui/ProgressBar";
-import { useSafeMathJax } from '../../utils/mathJaxFix';
-import { createColorScheme, typography } from "../../lib/design-system";
+import { VisualizationContainer } from "../../ui/VisualizationContainer";
+import { Button } from "../../ui/button";
+import { ProgressBar, ProgressNavigation } from "../../ui/ProgressBar";
+import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { createColorScheme, typography } from "../../../lib/design-system";
 import { jStat } from "jstat";
-import { Tutorial } from "../ui/Tutorial";
+import { Tutorial } from "../../ui/Tutorial";
 import { Clock, Zap, ChartBar, Target } from "lucide-react";
 import { tutorial_3_5_1 } from '@/tutorials/chapter3';
-import BackToHub from '../ui/BackToHub';
+import BackToHub from '../../ui/BackToHub';
 
 const GammaDistribution = React.memo(function GammaDistribution() {
   // Core state
@@ -114,7 +114,7 @@ const GammaDistribution = React.memo(function GammaDistribution() {
       .domain([0, yMax * 1.1])
       .range([height, 0]);
     
-    // Grid lines
+    // Grid lines with better visibility
     g.append("g")
       .attr("class", "grid")
       .attr("transform", `translate(0,${height})`)
@@ -123,8 +123,8 @@ const GammaDistribution = React.memo(function GammaDistribution() {
         .tickFormat("")
       )
       .style("stroke-dasharray", "3,3")
-      .style("opacity", 0.2)
-      .style("stroke", colors.chart.grid || "#374151");
+      .style("opacity", 0.3)
+      .style("stroke", "#4b5563");
     
     g.append("g")
       .attr("class", "grid")
@@ -133,26 +133,41 @@ const GammaDistribution = React.memo(function GammaDistribution() {
         .tickFormat("")
       )
       .style("stroke-dasharray", "3,3")
-      .style("opacity", 0.2)
-      .style("stroke", colors.chart.grid || "#374151");
+      .style("opacity", 0.3)
+      .style("stroke", "#4b5563");
     
-    // Axes
-    g.append("g")
+    // Axes with better visibility
+    const xAxis = g.append("g")
       .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(x))
-      .style("color", colors.chart.text || "#9ca3af");
+      .call(d3.axisBottom(x));
     
-    g.append("g")
-      .call(d3.axisLeft(y))
-      .style("color", colors.chart.text || "#9ca3af");
+    xAxis.selectAll("text")
+      .style("fill", "#e5e7eb")
+      .style("font-size", "12px");
+    xAxis.selectAll("line")
+      .style("stroke", "#9ca3af");
+    xAxis.select(".domain")
+      .style("stroke", "#9ca3af");
     
-    // Labels
+    const yAxis = g.append("g")
+      .call(d3.axisLeft(y));
+    
+    yAxis.selectAll("text")
+      .style("fill", "#e5e7eb")
+      .style("font-size", "12px");
+    yAxis.selectAll("line")
+      .style("stroke", "#9ca3af");
+    yAxis.select(".domain")
+      .style("stroke", "#9ca3af");
+    
+    // Labels with better visibility
     g.append("text")
       .attr("x", width / 2)
       .attr("y", height + 45)
       .attr("text-anchor", "middle")
-      .attr("fill", colors.chart.text || "#e5e7eb")
+      .attr("fill", "#f3f4f6")
       .style("font-size", "14px")
+      .style("font-weight", "500")
       .text("Time");
     
     g.append("text")
@@ -160,11 +175,31 @@ const GammaDistribution = React.memo(function GammaDistribution() {
       .attr("y", -50)
       .attr("x", -height / 2)
       .attr("text-anchor", "middle")
-      .attr("fill", colors.chart.text || "#e5e7eb")
+      .attr("fill", "#f3f4f6")
       .style("font-size", "14px")
+      .style("font-weight", "500")
       .text("Probability Density");
     
-    // Area under curve
+    // Create gradient for area fill
+    const gradient = svg.append("defs")
+      .append("linearGradient")
+      .attr("id", "gamma-gradient")
+      .attr("x1", "0%")
+      .attr("y1", "0%")
+      .attr("x2", "0%")
+      .attr("y2", "100%");
+    
+    gradient.append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", "#10b981")
+      .attr("stop-opacity", 0.7);
+    
+    gradient.append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", "#10b981")
+      .attr("stop-opacity", 0.2);
+    
+    // Area under curve with gradient
     const area = d3.area()
       .x(d => x(d.x))
       .y0(height)
@@ -173,11 +208,10 @@ const GammaDistribution = React.memo(function GammaDistribution() {
     
     g.append("path")
       .datum(data)
-      .attr("fill", colors.chart.primary)
-      .attr("opacity", 0.3)
+      .attr("fill", "url(#gamma-gradient)")
       .attr("d", area);
     
-    // Main curve
+    // Main curve with vibrant color
     const line = d3.line()
       .x(d => x(d.x))
       .y(d => y(d.y))
@@ -186,8 +220,9 @@ const GammaDistribution = React.memo(function GammaDistribution() {
     const path = g.append("path")
       .datum(data)
       .attr("fill", "none")
-      .attr("stroke", colors.chart.primary)
+      .attr("stroke", "#10b981")
       .attr("stroke-width", 3)
+      .attr("opacity", 0.95)
       .attr("d", line);
     
     // Animate
@@ -199,27 +234,28 @@ const GammaDistribution = React.memo(function GammaDistribution() {
       .duration(1000)
       .attr("stroke-dashoffset", 0);
     
-    // Mean line
+    // Mean line with better color
     if (mean <= xMax) {
       g.append("line")
         .attr("x1", x(mean))
         .attr("x2", x(mean))
         .attr("y1", 0)
         .attr("y2", height)
-        .attr("stroke", colors.chart.accent)
-        .attr("stroke-width", 2)
+        .attr("stroke", "#fbbf24")
+        .attr("stroke-width", 2.5)
         .attr("stroke-dasharray", "5,3")
         .attr("opacity", 0)
         .transition()
         .delay(800)
-        .attr("opacity", 1);
+        .attr("opacity", 0.9);
       
       g.append("text")
         .attr("x", x(mean))
         .attr("y", -10)
         .attr("text-anchor", "middle")
-        .attr("fill", colors.chart.accent)
-        .style("font-size", "12px")
+        .attr("fill", "#fbbf24")
+        .style("font-size", "13px")
+        .style("font-weight", "600")
         .text(`μ = ${mean.toFixed(1)}`)
         .attr("opacity", 0)
         .transition()
@@ -232,11 +268,11 @@ const GammaDistribution = React.memo(function GammaDistribution() {
       const buildingG = g.append("g")
         .attr("transform", `translate(0, -${height + 100})`);
       
-      // Show individual exponentials
+      // Show individual exponentials with vibrant colors
       const numExp = Math.floor(shape);
       const expColors = d3.scaleOrdinal()
         .domain(d3.range(numExp))
-        .range([colors.chart.primary, colors.chart.secondary, colors.chart.accent, colors.chart.tertiary, colors.chart.quaternary || colors.chart.primary]);
+        .range(["#3b82f6", "#ef4444", "#fbbf24", "#a855f7", "#06b6d4"]);
       
       for (let i = 0; i < numExp; i++) {
         const expData = [];
@@ -251,8 +287,8 @@ const GammaDistribution = React.memo(function GammaDistribution() {
           .datum(expData)
           .attr("fill", "none")
           .attr("stroke", expColors(i))
-          .attr("stroke-width", 2)
-          .attr("opacity", 0.7)
+          .attr("stroke-width", 2.5)
+          .attr("opacity", 0.85)
           .attr("d", line)
           .attr("stroke-dasharray", function() { return this.getTotalLength(); })
           .attr("stroke-dashoffset", function() { return this.getTotalLength(); })

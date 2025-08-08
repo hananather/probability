@@ -1,14 +1,14 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { useSafeMathJax } from '../../utils/mathJaxFix';
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { createColorScheme, typography } from "../../lib/design-system";
-import { Button } from "../ui/button";
+import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
+import { createColorScheme, typography } from "../../../lib/design-system";
+import { Button } from "../../ui/button";
 import { CheckCircle, XCircle, RefreshCw, HelpCircle, ChevronRight } from "lucide-react";
 import * as jStat from "jstat";
-import { VisualizationContainer } from "../ui/VisualizationContainer";
+import { VisualizationContainer } from "../../ui/VisualizationContainer";
 import { tutorial_3_3_5 } from '@/tutorials/chapter3';
-import BackToHub from '../ui/BackToHub';
+import BackToHub from '../../ui/BackToHub';
 
 // Memoized component for problem type buttons to prevent re-renders
 const ProblemTypeButton = React.memo(({ type, isSelected, onClick }) => {

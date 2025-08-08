@@ -9,16 +9,16 @@ import {
   ControlGroup,
   ControlPanel,
   StatsDisplay
-} from '../ui/VisualizationContainer';
-import { RangeSlider } from '../ui/RangeSlider';
-import { Button } from '../ui/button';
-import { createColorScheme, typography, formatNumber } from '../../lib/design-system';
+} from '../../ui/VisualizationContainer';
+import { RangeSlider } from '../../ui/RangeSlider';
+import { Button } from '../../ui/button';
+import { createColorScheme, typography, formatNumber } from '../../../lib/design-system';
 import IntegralWorkedExample from "./3-1-2-IntegralWorkedExample";
 import { Info, Sparkles, ArrowRight, CheckCircle, BarChart3, TrendingUp } from "lucide-react";
 import { ProgressBar, ProgressNavigation } from '@/components/ui/ProgressBar';
-import { useSafeMathJax } from '../../utils/mathJaxFix';
+import { useSafeMathJax } from '../../../utils/mathJaxFix';
 import { tutorial_3_1_1 } from '@/tutorials/chapter3';
-import BackToHub from '../ui/BackToHub';
+import BackToHub from '../../ui/BackToHub';
 
 // Color scheme for the visualization - using vibrant colors
 const colorScheme = createColorScheme('estimation'); // Violet/Cyan/Amber for better visibility
