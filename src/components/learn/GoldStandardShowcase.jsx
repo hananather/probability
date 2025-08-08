@@ -9,9 +9,11 @@ import { StatisticalTestCard, HypothesisSetup, TestStatistic, SignificanceResult
 import { MultiFormulaDisplay, createCorrelationFormulas, SimpleFormulaSelector } from '../ui/patterns/MultiFormulaDisplay';
 import { ComparisonTable, createCIPIComparison, SimpleComparisonTable } from '../ui/patterns/ComparisonTable';
 import { SideBySideFormulas, createCorrelationSideBySide, createRegressionSideBySide, StaticFormulaGrid } from '../ui/patterns/SideBySideFormulas';
-import { ChevronDown, ChevronUp, Star, Palette, Calculator, TestTube, BarChart3, Table, Grid3X3, HelpCircle, StickyNote, Check } from 'lucide-react';
+import { ChevronDown, ChevronUp, Star, Palette, Calculator, TestTube, BarChart3, Table, Grid3X3, HelpCircle, StickyNote, Check, Book, Maximize2 } from 'lucide-react';
 import { QuizBreak } from '../mdx/QuizBreak';
 import { QuickReferenceCard, ConfidenceIntervalReference, HypothesisTestingReference, DistributionsReference } from '../ui/patterns/QuickReferenceCard';
+import { JointDistributionShowcase } from '../ui/patterns/JointDistributionExamples';
+import { ExpandableVisual, ExpandableVisualInline, ExpandButton } from '../ui/patterns/ExpandableVisual';
 
 // Interactive Formula Component
 const InteractiveFormulaDemo = React.memo(() => {
@@ -233,6 +235,157 @@ const InteractiveFormulaDemo = React.memo(() => {
         <p className="text-sm text-purple-300">
           <strong>Exam Tip:</strong> Remember this as "confidence × variability ÷ precision, all squared"
         </p>
+      </div>
+    </div>
+  );
+});
+
+// Expandable Visual Demo Component
+const ExpandableVisualDemo = React.memo(() => {
+  return (
+    <div className="space-y-6">
+      {/* Demo Section */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Standard Expandable */}
+        <div>
+          <h4 className="text-sm font-semibold text-neutral-400 mb-3">Standard Expandable</h4>
+          <ExpandableVisual
+            title="Distribution Analysis"
+            buttonText="View Full Analysis"
+            buttonVariant="primary"
+          >
+            <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 p-6 rounded-lg border border-blue-500/30">
+              <h5 className="text-lg font-semibold text-blue-400 mb-3">Normal Distribution</h5>
+              <div className="h-40 bg-neutral-800/50 rounded flex items-center justify-center">
+                <p className="text-neutral-400">Chart/Visualization Content</p>
+              </div>
+              <div className="mt-4 grid grid-cols-3 gap-3">
+                <div className="text-center">
+                  <p className="text-xs text-neutral-400">Mean</p>
+                  <p className="text-lg font-mono text-blue-400">μ = 0</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-neutral-400">Std Dev</p>
+                  <p className="text-lg font-mono text-green-400">σ = 1</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-neutral-400">Samples</p>
+                  <p className="text-lg font-mono text-purple-400">n = 1000</p>
+                </div>
+              </div>
+            </div>
+          </ExpandableVisual>
+        </div>
+
+        {/* Inline Expandable */}
+        <div>
+          <h4 className="text-sm font-semibold text-neutral-400 mb-3">Inline Expand (Hover to see button)</h4>
+          <ExpandableVisualInline buttonPosition="top-right">
+            <div className="bg-gradient-to-br from-emerald-900/20 to-teal-900/20 p-6 rounded-lg border border-emerald-500/30">
+              <h5 className="text-lg font-semibold text-emerald-400 mb-3">Correlation Matrix</h5>
+              <div className="h-40 bg-neutral-800/50 rounded flex items-center justify-center">
+                <p className="text-neutral-400">Hover to see expand button →</p>
+              </div>
+            </div>
+          </ExpandableVisualInline>
+        </div>
+      </div>
+
+      {/* Worked Example Pattern */}
+      <div>
+        <h4 className="text-sm font-semibold text-neutral-400 mb-3">Worked Example Pattern (from Chapter 3.7)</h4>
+        <div className="bg-gradient-to-br from-orange-900/20 to-red-900/20 p-4 rounded-lg border border-orange-500/30">
+          <p className="text-sm text-orange-300 font-semibold mb-2">Engineering Problem:</p>
+          <p className="text-sm text-orange-200">
+            A factory produces 1000 items daily with a 2% defect rate. 
+            What's the probability of having between 15 and 25 defective items?
+          </p>
+          
+          <ExpandButton
+            buttonText="Try Example"
+            variant="primary"
+            size="sm"
+            className="w-full mt-3"
+            title="Interactive Worked Example"
+            expandedContent={
+              <div className="p-6">
+                <h3 className="text-2xl text-emerald-400 mb-4">Step-by-Step Solution</h3>
+                <div className="space-y-4">
+                  <div className="p-4 bg-neutral-800/50 rounded">
+                    <p className="text-sm text-neutral-400 mb-2">Given Parameters</p>
+                    <p className="text-white font-mono">n = 1000, p = 0.02</p>
+                  </div>
+                  <div className="p-4 bg-neutral-800/50 rounded">
+                    <p className="text-sm text-neutral-400 mb-2">Step 1: Calculate Mean</p>
+                    <p className="text-white font-mono">μ = np = 1000 × 0.02 = 20</p>
+                  </div>
+                  <div className="p-4 bg-neutral-800/50 rounded">
+                    <p className="text-sm text-neutral-400 mb-2">Step 2: Calculate Standard Deviation</p>
+                    <p className="text-white font-mono">σ = √(np(1-p)) = √(20 × 0.98) = 4.43</p>
+                  </div>
+                  <div className="h-64 bg-neutral-800/30 rounded flex items-center justify-center mt-4">
+                    <p className="text-neutral-500">Interactive visualization would go here</p>
+                  </div>
+                </div>
+              </div>
+            }
+          />
+        </div>
+      </div>
+
+      {/* Usage Guide */}
+      <div className="bg-neutral-800 rounded-lg p-4 border border-neutral-700">
+        <h4 className="text-sm font-semibold text-yellow-400 mb-3">📦 Usage</h4>
+        <div className="space-y-3">
+          <div>
+            <p className="text-xs text-neutral-400 mb-1">Import:</p>
+            <pre className="bg-neutral-900 rounded p-2 text-xs text-green-400 overflow-x-auto">
+              {`import { ExpandableVisual, ExpandableVisualInline, ExpandButton } from '@/components/ui/patterns/ExpandableVisual';`}
+            </pre>
+          </div>
+          <div>
+            <p className="text-xs text-neutral-400 mb-1">Basic Usage:</p>
+            <pre className="bg-neutral-900 rounded p-2 text-xs text-blue-400 overflow-x-auto">
+{`// Standard expandable
+<ExpandableVisual title="Chart Title" buttonText="Expand">
+  <YourChart />
+</ExpandableVisual>
+
+// Inline button (appears on hover)
+<ExpandableVisualInline buttonPosition="top-right">
+  <YourVisualization />
+</ExpandableVisualInline>
+
+// Different content when expanded
+<ExpandButton 
+  buttonText="View Details"
+  expandedContent={<DetailedView />}
+/>`}
+            </pre>
+          </div>
+        </div>
+
+        {/* Features */}
+        <div className="grid md:grid-cols-2 gap-4 text-sm mt-4">
+          <div className="bg-purple-900/20 rounded-lg p-3 border border-purple-500/30">
+            <h5 className="font-semibold text-purple-400 mb-2">✨ Key Features</h5>
+            <ul className="space-y-1 text-neutral-300 text-xs">
+              <li>• Three component variants</li>
+              <li>• Smooth animations</li>
+              <li>• Backdrop blur effect</li>
+              <li>• Customizable sizing</li>
+            </ul>
+          </div>
+          <div className="bg-blue-900/20 rounded-lg p-3 border border-blue-500/30">
+            <h5 className="font-semibold text-blue-400 mb-2">🎨 Customization</h5>
+            <ul className="space-y-1 text-neutral-300 text-xs">
+              <li>• Button variants & positioning</li>
+              <li>• Modal width control</li>
+              <li>• Optional callbacks</li>
+              <li>• Custom expanded content</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -598,6 +751,22 @@ const componentShowcases = {
     })
   },
 
+  jointDistribution: {
+    name: 'Joint Distribution Examples',
+    icon: Book,
+    color: 'text-purple-400',
+    description: 'Complex worked examples for joint continuous distributions',
+    component: JointDistributionShowcase
+  },
+
+  expandableVisual: {
+    name: 'Expandable Visual',
+    icon: Maximize2,
+    color: 'text-cyan-400',
+    description: 'Make any visual expandable with modal view',
+    component: ExpandableVisualDemo
+  },
+
   quickReference: {
     name: 'Quick Reference Cards',
     icon: StickyNote,
@@ -761,6 +930,8 @@ export function GoldStandardShowcase() {
     sideBySideFormulas: false,
     comparisonTables: false,
     quizComponent: false,
+    jointDistribution: false,
+    expandableVisual: false,
     quickReference: false
   });
 
@@ -777,7 +948,7 @@ export function GoldStandardShowcase() {
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white mb-2">🏆 Gold Standard Components</h1>
         <p className="text-neutral-400 max-w-3xl mx-auto">
-          Extracted patterns from Chapter 7.1 Correlation Coefficient - your favorite designs 
+          Extracted patterns from Chapter 7.1 Correlation Coefficient and Chapter 3.6 Joint Distributions - your favorite designs 
           now available as reusable components with exact colors, gradients, and interactions.
         </p>
       </div>
