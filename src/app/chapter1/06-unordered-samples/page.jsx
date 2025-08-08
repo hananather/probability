@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import TabbedLearningPage from '@/components/ui/TabbedLearningPage';
 import { BookOpen, Target, Zap } from 'lucide-react';
+import { Chapter1ReferenceSheet } from '@/components/reference-sheets/Chapter1ReferenceSheet';
 
 // Import new tabs from new folder (with tab numbers for clarity)
 const FoundationsTab = dynamic(() => 
@@ -49,13 +50,16 @@ export default function UnorderedSamplesPage() {
   ];
   
   return (
-    <TabbedLearningPage
-      title="Unordered Samples (Combinations)"
-      subtitle="Master the art of counting when order doesn't matter"
-      chapter={1}
-      tabs={TABS}
-      storageKey="chapter1-unordered-samples-progress"
-      colorScheme="purple"
-    />
+    <>
+      <Chapter1ReferenceSheet mode="floating" />
+      <TabbedLearningPage
+        title="Unordered Samples (Combinations)"
+        subtitle="Master the art of counting when order doesn't matter"
+        chapter={1}
+        tabs={TABS}
+        storageKey="chapter1-unordered-samples-progress"
+        colorScheme="purple"
+      />
+    </>
   );
 }

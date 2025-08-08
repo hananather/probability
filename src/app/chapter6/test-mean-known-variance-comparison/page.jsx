@@ -3,12 +3,14 @@ import TestForMeanKnownVarianceV2 from '@/components/06-hypothesis-testing/6-4-1
 // import TestForMeanKnownVarianceV3 from '@/components/06-hypothesis-testing/6-4-1-TestForMeanKnownVariance-v3';
 import Link from 'next/link';
 import { useState } from 'react';
+import { Chapter6ReferenceSheet } from '@/components/reference-sheets/Chapter6ReferenceSheet';
 
 export default function ComparisonPage() {
   const [version, setVersion] = useState('v2');
   
   return (
     <div className="min-h-screen bg-[#0F0F10]">
+      <Chapter6ReferenceSheet mode="floating" />
       <div className="p-4 bg-neutral-900 border-b border-neutral-800">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <h1 className="text-xl font-bold text-white">Test for Mean (Known Variance) - Version Comparison</h1>

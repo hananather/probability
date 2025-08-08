@@ -179,7 +179,9 @@
       "Bash(if [ -f \"$file\" ])",
       "Bash(if ! grep -q \"useMathJax\" \"$file\")",
       "Bash(if [ -f \"/Users/hananather/Desktop/Javascript/prob-lab/src/app/chapter$i/formula-builder/page.jsx\" ])",
-      "Bash(else)"
+      "Bash(else)",
+      "Bash(do echo \"=== CHAPTER $chapter ===\")",
+      "Bash(do echo \"--- $file ---\")"
     ],
     "deny": []
   },

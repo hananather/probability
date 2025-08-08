@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import TabbedLearningPage from '@/components/ui/TabbedLearningPage';
 import { BookOpen, Target, Zap, Languages } from 'lucide-react';
+import { Chapter1ReferenceSheet } from '@/components/reference-sheets/Chapter1ReferenceSheet';
 
 // Import new tabs from new folder (with tab numbers for clarity)
 const FoundationsTab = dynamic(() => 
@@ -53,13 +54,16 @@ export default function ProbabilityDictionaryPage() {
   ];
   
   return (
-    <TabbedLearningPage
-      title="English-to-Math Translation Hub"
-      subtitle="Master the translation between natural language and mathematical notation"
-      chapter={1}
-      tabs={TABS}
-      storageKey="chapter1-probability-dictionary-progress"
-      colorScheme="blue"
-    />
+    <>
+      <Chapter1ReferenceSheet mode="floating" />
+      <TabbedLearningPage
+        title="English-to-Math Translation Hub"
+        subtitle="Master the translation between natural language and mathematical notation"
+        chapter={1}
+        tabs={TABS}
+        storageKey="chapter1-probability-dictionary-progress"
+        colorScheme="blue"
+      />
+    </>
   );
 }

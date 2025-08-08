@@ -40,46 +40,35 @@ const TTestStatisticBuilder = React.memo(() => {
         </p>
         
         {/* Interactive Formula Display */}
-        <div className="text-2xl md:text-3xl font-mono inline-flex items-center gap-2 flex-wrap justify-center">
-          {/* t */}
-          <div 
-            className={`cursor-pointer transition-all hover:scale-110 hover:text-white active:scale-90 px-2 ${
-              understanding.testStatisticConcept ? 'text-green-400' : 
-              selectedParts.testStatistic ? 'text-red-400' : 'text-neutral-400'
-            }`}
-            onClick={() => handlePartClick('testStatistic', 'testStatisticConcept')}
-          >
-            t
-          </div>
+        <div className="text-3xl md:text-4xl font-mono inline-flex items-center gap-2">
+          <span className="text-neutral-500">t =</span>
           
-          <span className="text-neutral-500">=</span>
-          
-          {/* (x̄ - μ₀) */}
-          <div 
-            className={`cursor-pointer transition-all hover:scale-110 hover:text-white active:scale-90 px-2 ${
-              understanding.differenceConcept ? 'text-green-400' : 
-              selectedParts.difference ? 'text-orange-400' : 'text-neutral-400'
-            }`}
-            onClick={() => handlePartClick('difference', 'differenceConcept')}
-          >
-            <span dangerouslySetInnerHTML={{ 
-              __html: `(\\bar{x} - \\mu_0)` 
-            }} />
-          </div>
-          
-          <span className="text-neutral-500">/</span>
-          
-          {/* s/√n */}
-          <div 
-            className={`cursor-pointer transition-all hover:scale-110 hover:text-white active:scale-90 px-2 ${
-              understanding.standardErrorConcept ? 'text-green-400' : 
-              selectedParts.standardError ? 'text-yellow-400' : 'text-neutral-400'
-            }`}
-            onClick={() => handlePartClick('standardError', 'standardErrorConcept')}
-          >
-            <span dangerouslySetInnerHTML={{ 
-              __html: `\\frac{s}{\\sqrt{n}}` 
-            }} />
+          {/* Fraction */}
+          <div className="inline-flex flex-col items-center">
+            {/* Numerator */}
+            <div 
+              className={`cursor-pointer transition-all hover:scale-110 hover:text-white active:scale-90 px-2 ${
+                understanding.differenceConcept ? 'text-green-400' : 
+                selectedParts.difference ? 'text-orange-400' : 'text-neutral-400'
+              }`}
+              onClick={() => handlePartClick('difference', 'differenceConcept')}
+            >
+              <span className="text-sm">x̄ - μ₀</span>
+            </div>
+            
+            {/* Fraction bar */}
+            <div className="w-full h-0.5 bg-neutral-500 my-1"></div>
+            
+            {/* Denominator */}
+            <div 
+              className={`cursor-pointer transition-all hover:scale-110 hover:text-white active:scale-90 px-2 ${
+                understanding.standardErrorConcept ? 'text-green-400' : 
+                selectedParts.standardError ? 'text-yellow-400' : 'text-neutral-400'
+              }`}
+              onClick={() => handlePartClick('standardError', 'standardErrorConcept')}
+            >
+              <span className="text-sm">s/√n</span>
+            </div>
           </div>
         </div>
 

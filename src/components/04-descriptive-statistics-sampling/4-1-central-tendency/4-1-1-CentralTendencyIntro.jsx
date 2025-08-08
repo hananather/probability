@@ -24,156 +24,61 @@ const measureColors = {
   highlight: '#8b5cf6', // Purple
 };
 
-// Practice Problems Component
+// Practice Problems Component with Multiple Choice
 const PracticeProblems = React.memo(function PracticeProblems({ mathRef }) {
-  const [answers, setAnswers] = useState({});
-  const [showSolutions, setShowSolutions] = useState({});
-  const [confidence, setConfidence] = useState({});
-  const [timeSpent, setTimeSpent] = useState({});
-  const [startTime, setStartTime] = useState({});
+  const { QuizBreak } = require('@/components/mdx/QuizBreak');
+  const [quizCompleted, setQuizCompleted] = useState({});
   
   const problems = [
     {
-      id: 'p1',
-      difficulty: 'Easy',
-      points: 5,
-      examFrequency: 'Very Common',
-      question: 'A quality control engineer measures 6 components: 12.1, 11.9, 12.3, 12.0, 12.2, 13.5 mm. Calculate the mean, median, and mode.',
-      hint: 'Remember to sort for median!',
-      solution: {
-        mean: 12.33,
-        median: 12.15,
-        mode: 'No mode',
-        explanation: 'Step 1: Mean = (12.1 + 11.9 + 12.3 + 12.0 + 12.2 + 13.5) / 6 = 74.0 / 6 = 12.33\n\nStep 2: Sort data: 11.9, 12.0, 12.1, 12.2, 12.3, 13.5\nMedian = (12.1 + 12.2) / 2 = 12.15 (middle two values)\n\nStep 3: Mode = No repeated values'
-      }
+      question: 'A quality control engineer measures 6 components: 12.1, 11.9, 12.3, 12.0, 12.2, 13.5 mm. What is the mean?',
+      options: ['12.00 mm', '12.15 mm', '12.33 mm', '12.50 mm'],
+      correctIndex: 2,
+      explanation: 'Mean = (12.1 + 11.9 + 12.3 + 12.0 + 12.2 + 13.5) / 6 = 74.0 / 6 = 12.33 mm'
     },
     {
-      id: 'p2',
-      question: 'House prices in a neighborhood (in thousands): 250, 280, 300, 320, 350, 850. Which measure best represents a typical house price?',
-      solution: {
-        answer: 'Median',
-        mean: 391.67,
-        median: 310,
-        explanation: 'The median (310) is best because the 850 is an outlier that pulls the mean (391.67) much higher than most houses.'
-      }
+      question: 'For the same data (sorted: 11.9, 12.0, 12.1, 12.2, 12.3, 13.5), what is the median?',
+      options: ['12.0 mm', '12.1 mm', '12.15 mm', '12.2 mm'],
+      correctIndex: 2,
+      explanation: 'With 6 values (even count), median = (12.1 + 12.2) / 2 = 12.15 mm (average of the two middle values)'
     },
     {
-      id: 'p3',
+      question: 'House prices: 250k, 280k, 300k, 320k, 350k, 850k. Which measure best represents a typical house price?',
+      options: ['Mean (391.67k)', 'Median (310k)', 'Mode', 'Range'],
+      correctIndex: 1,
+      explanation: 'The median (310k) is best because the 850k outlier pulls the mean (391.67k) much higher than most houses.'
+    },
+    {
       question: 'Exam scores have mean = 68, median = 72, mode = 78. What is the shape of the distribution?',
-      solution: {
-        answer: 'Left-skewed (negative skew)',
-        explanation: 'When mean < median < mode, the distribution is left-skewed. The tail extends to the left (lower scores).'
-      }
+      options: ['Symmetric', 'Right-skewed (positive skew)', 'Left-skewed (negative skew)', 'Uniform'],
+      correctIndex: 2,
+      explanation: 'When mean < median < mode, the distribution is left-skewed. The tail extends to the left (lower scores).'
     }
   ];
   
-  const handleAnswer = (problemId, value) => {
-    setAnswers({ ...answers, [problemId]: value });
-  };
-  
-  const toggleSolution = (problemId) => {
-    setShowSolutions({ ...showSolutions, [problemId]: !showSolutions[problemId] });
-  };
-  
   return (
-    <div className="space-y-4" ref={mathRef}>
-      <div className="flex items-center justify-between">
-        <h3 className="text-xl font-bold text-white">Practice Problems</h3>
-        <div className="text-sm text-neutral-400">
-          Total Points: {problems.reduce((sum, p) => sum + p.points, 0)}
+    <div className="space-y-6" ref={mathRef}>
+      <div className="bg-neutral-900 rounded-lg p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-bold text-white">Practice Problems</h3>
+          <div className="text-sm text-neutral-400">
+            Test your understanding
+          </div>
         </div>
+        
+        <QuizBreak
+          questions={problems}
+          onComplete={() => setQuizCompleted({ practice: true })}
+        />
+        
+        {quizCompleted.practice && (
+          <div className="mt-6 p-4 bg-green-900/20 border border-green-600/30 rounded-lg">
+            <p className="text-sm text-green-400">
+              Excellent work! You've mastered the concepts of central tendency.
+            </p>
+          </div>
+        )}
       </div>
-      <p className="text-neutral-300">
-        Test your understanding with these exam-style problems.
-      </p>
-      
-      {/* Confidence Tracker */}
-      <div className="bg-purple-900/20 border border-purple-600/30 p-3 rounded-lg">
-        <p className="text-xs font-semibold text-purple-400 mb-2">Your Confidence Level:</p>
-        <div className="flex gap-4">
-          <span className={cn(
-            "text-xs",
-            Object.values(confidence).filter(c => c === 'high').length >= 2 ? "text-green-400" : "text-neutral-400"
-          )}>
-            Ready for exam
-          </span>
-          <span className={cn(
-            "text-xs",
-            Object.values(confidence).filter(c => c === 'medium').length >= 2 ? "text-amber-400" : "text-neutral-400"
-          )}>
-            Need more practice
-          </span>
-          <span className={cn(
-            "text-xs",
-            Object.values(confidence).filter(c => c === 'low').length >= 1 ? "text-red-400" : "text-neutral-400"
-          )}>
-            Review material
-          </span>
-        </div>
-      </div>
-      
-      {problems.map((problem, idx) => (
-        <div key={problem.id} className="bg-neutral-900 p-4 rounded-lg space-y-3">
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-2 flex-1">
-              <span className="text-purple-400 font-bold">Q{idx + 1}.</span>
-              <div className="flex-1">
-                <p className="text-neutral-300">{problem.question}</p>
-                <div className="flex gap-3 mt-2 text-xs">
-                  <span className={cn(
-                    "px-2 py-1 rounded",
-                    problem.difficulty === 'Easy' ? "bg-green-900/50 text-green-300" :
-                    problem.difficulty === 'Medium' ? "bg-amber-900/50 text-amber-300" :
-                    "bg-red-900/50 text-red-300"
-                  )}>
-                    {problem.difficulty}
-                  </span>
-                  <span className="px-2 py-1 bg-purple-900/50 text-purple-300 rounded">
-                    {problem.points} pts
-                  </span>
-                  <span className="px-2 py-1 bg-blue-900/50 text-blue-300 rounded">
-                    {problem.examFrequency}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="ml-6">
-            <input
-              type="text"
-              className="w-full bg-neutral-800 text-white p-2 rounded border border-neutral-700 focus:border-purple-500 focus:outline-none"
-              placeholder="Enter your answer..."
-              value={answers[problem.id] || ''}
-              onChange={(e) => handleAnswer(problem.id, e.target.value)}
-            />
-          </div>
-          
-          <div className="ml-6 flex gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => toggleSolution(problem.id)}
-            >
-              {showSolutions[problem.id] ? 'Hide Solution' : 'Show Solution'}
-            </Button>
-          </div>
-          
-          {showSolutions[problem.id] && (
-            <div className="ml-6 bg-purple-900/20 border border-purple-600/30 p-3 rounded">
-              <p className="text-sm font-semibold text-purple-400 mb-2">Solution:</p>
-              <p className="text-sm text-neutral-300 whitespace-pre-line">
-                {problem.solution.explanation}
-              </p>
-              {problem.solution.answer && (
-                <p className="text-sm text-green-400 mt-2">
-                  Answer: {problem.solution.answer}
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-      ))}
       
       <div className="bg-amber-900/20 border border-amber-600/30 p-4 rounded-lg">
         <p className="text-sm font-semibold text-amber-400 mb-2">Study Tips:</p>
@@ -903,7 +808,7 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
               <p className="text-sm text-neutral-400 mb-3">Quick Visual Memory Aid:</p>
               <div className="grid grid-cols-3 gap-3 text-center">
                 <div className="bg-blue-900/20 p-3 rounded">
-                  <p className="text-2xl mb-1"></p>
+                  <p className="text-2xl mb-1">⚖️</p>
                   <p className="text-xs font-semibold text-blue-400">Mean</p>
                   <p className="text-xs text-neutral-400">Balance point</p>
                 </div>

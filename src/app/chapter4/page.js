@@ -1,4 +1,5 @@
 import DescriptiveStatisticsHub from '@/components/04-descriptive-statistics-sampling/4-0-DescriptiveStatisticsHub';
+import { Chapter4ReferenceSheet } from '@/components/reference-sheets/Chapter4ReferenceSheet';
 
 export const metadata = {
   title: 'Chapter 4: Descriptive Statistics & Sampling Distributions',
@@ -6,5 +7,10 @@ export const metadata = {
 };
 
 export default function Chapter4Page() {
-  return <DescriptiveStatisticsHub />;
+  return (
+    <>
+      <Chapter4ReferenceSheet mode="floating" />
+      <DescriptiveStatisticsHub />
+    </>
+  );
 }

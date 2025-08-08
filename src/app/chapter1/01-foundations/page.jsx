@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import TabbedLearningPage from '@/components/ui/TabbedLearningPage';
 import { BookOpen, Target, Zap, Palette } from 'lucide-react';
+import { Chapter1ReferenceSheet } from '@/components/reference-sheets/Chapter1ReferenceSheet';
 
 // Import new tabs from new folder (with tab numbers for clarity)
 const FoundationsTab = dynamic(() => 
@@ -53,13 +54,16 @@ export default function FoundationsPage() {
   ];
   
   return (
-    <TabbedLearningPage
-      title="Foundations of Probability"
-      subtitle="Build intuitive understanding of probability through physical models"
-      chapter={1}
-      tabs={TABS}
-      storageKey="chapter1-foundations-progress"
-      colorScheme="teal"
-    />
+    <>
+      <Chapter1ReferenceSheet mode="floating" />
+      <TabbedLearningPage
+        title="Foundations of Probability"
+        subtitle="Build intuitive understanding of probability through physical models"
+        chapter={1}
+        tabs={TABS}
+        storageKey="chapter1-foundations-progress"
+        colorScheme="teal"
+      />
+    </>
   );
 }

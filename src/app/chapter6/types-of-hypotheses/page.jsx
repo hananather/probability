@@ -3,6 +3,7 @@ import { useState } from 'react';
 import TypesOfHypotheses from '@/components/06-hypothesis-testing/6-2-1-TypesOfHypotheses';
 import TypesOfHypothesesInteractive from '@/components/06-hypothesis-testing/6-2-2-TypesOfHypotheses-Interactive';
 import { Button } from '@/components/ui/button';
+import { Chapter6ReferenceSheet } from '@/components/reference-sheets/Chapter6ReferenceSheet';
 
 export default function TypesOfHypothesesPage() {
   const [version, setVersion] = useState('rigorous');
@@ -13,6 +14,7 @@ export default function TypesOfHypothesesPage() {
 
   return (
     <div>
+      <Chapter6ReferenceSheet mode="floating" />
       <div className="flex justify-center gap-4 mb-6 mt-4">
         <Button
           onClick={() => setVersion('rigorous')}

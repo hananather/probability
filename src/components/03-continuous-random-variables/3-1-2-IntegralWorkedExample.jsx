@@ -82,4 +82,4 @@ const IntegralWorkedExample = React.memo(function IntegralWorkedExample({
   );
 });
 
-export { IntegralWorkedExample }; // Exporting for use
+export default IntegralWorkedExample;

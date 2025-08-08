@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import BackToHub from '@/components/ui/BackToHub';
+import { Chapter3ReferenceSheet } from '@/components/reference-sheets/Chapter3ReferenceSheet';
 
 const GammaDistribution = dynamic(
   () => import('@/components/03-continuous-random-variables/3-5-1-GammaDistributionClient'),
@@ -22,6 +23,7 @@ const GammaWorkedExample = dynamic(
 export default function GammaPage() {
   return (
     <>
+      <Chapter3ReferenceSheet mode="floating" />
       <BackToHub chapter={3} />
       <div className="space-y-12">
         <GammaDistribution />

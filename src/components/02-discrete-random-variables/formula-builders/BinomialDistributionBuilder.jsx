@@ -77,9 +77,7 @@ const BinomialDistributionBuilder = React.memo(() => {
             }`}
             onClick={() => handlePartClick('successes', 'successPart')}
           >
-            <span dangerouslySetInnerHTML={{ 
-              __html: `p^k` 
-            }} />
+            <span>p<sup>k</sup></span>
           </div>
           
           <span className="text-neutral-500">×</span>
@@ -92,9 +90,7 @@ const BinomialDistributionBuilder = React.memo(() => {
             }`}
             onClick={() => handlePartClick('failures', 'failurePart')}
           >
-            <span dangerouslySetInnerHTML={{ 
-              __html: `(1-p)^{(n-k)}` 
-            }} />
+            <span>(1-p)<sup>(n-k)</sup></span>
           </div>
         </div>
 

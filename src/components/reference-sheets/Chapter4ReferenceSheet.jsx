@@ -36,9 +36,33 @@ const chapter4Sections = [
     )
   },
 
+  // === ALTERNATIVE MEANS ===
+  {
+    title: "2. Alternative Means (Special Cases)",
+    color: "cyan",
+    content: (
+      <div className="space-y-2 text-sm">
+        <div className="grid grid-cols-1 gap-2 text-xs">
+          <div className="bg-cyan-900/20 p-2 rounded">
+            <strong>Geometric Mean:</strong> <span dangerouslySetInnerHTML={{ __html: `\\(\\bar{x}_g = \\sqrt[n]{\\prod_{i=1}^n x_i} = (x_1 \\cdot x_2 \\cdots x_n)^{1/n}\\)` }} />
+            <div className="text-xs mt-1">Use for growth rates, ratios</div>
+          </div>
+          <div className="bg-cyan-900/20 p-2 rounded">
+            <strong>Harmonic Mean:</strong> <span dangerouslySetInnerHTML={{ __html: `\\(\\bar{x}_h = \\frac{n}{\\sum_{i=1}^n \\frac{1}{x_i}}\\)` }} />
+            <div className="text-xs mt-1">Use for rates (e.g., speed)</div>
+          </div>
+          <div className="bg-cyan-900/20 p-2 rounded">
+            <strong>Trimmed Mean:</strong> Remove top/bottom k% before averaging
+            <div className="text-xs mt-1">Robust to outliers</div>
+          </div>
+        </div>
+      </div>
+    )
+  },
+
   // === MEASURES OF VARIABILITY ===
   {
-    title: "2. Measures of Variability",
+    title: "3. Measures of Variability",
     color: "emerald",
     content: (
       <div className="space-y-2 text-sm">
@@ -91,7 +115,7 @@ const chapter4Sections = [
 
   // === QUARTILES AND PERCENTILES ===
   {
-    title: "3. Quartiles and Percentiles",
+    title: "4. Quartiles and Percentiles",
     color: "purple",
     content: (
       <div className="space-y-2 text-sm">
@@ -126,9 +150,9 @@ const chapter4Sections = [
     )
   },
 
-  // === SKEWNESS ===
+  // === SKEWNESS AND KURTOSIS ===
   {
-    title: "4. Skewness and Shape Measures",
+    title: "5. Skewness and Shape Measures",
     color: "indigo",
     content: (
       <div className="space-y-2 text-sm">
@@ -156,13 +180,17 @@ const chapter4Sections = [
             <li>Symmetric: Mean ≈ Median</li>
           </ul>
         </div>
+        <div className="bg-indigo-900/20 p-2 rounded text-xs">
+          <strong>Kurtosis:</strong> <span dangerouslySetInnerHTML={{ __html: `\\(\\text{Kurt} = \\frac{E[(X-\\mu)^4]}{\\sigma^4} - 3\\)` }} />
+          <div className="text-xs mt-1">Measures tail heaviness (excess kurtosis)</div>
+        </div>
       </div>
     )
   },
 
   // === HISTOGRAMS ===
   {
-    title: "5. Histograms and Distribution Shapes",
+    title: "6. Histograms and Distribution Shapes",
     color: "teal",
     content: (
       <div className="space-y-2 text-sm">
@@ -190,7 +218,7 @@ const chapter4Sections = [
 
   // === BOXPLOTS ===
   {
-    title: "6. Boxplots",
+    title: "7. Boxplots",
     color: "yellow",
     content: (
       <div className="space-y-2 text-sm">
@@ -217,7 +245,7 @@ const chapter4Sections = [
 
   // === SAMPLING DISTRIBUTIONS ===
   {
-    title: "7. Sampling Distribution of Sample Mean",
+    title: "8. Sampling Distribution of Sample Mean",
     color: "orange",
     content: (
       <div className="space-y-2 text-sm">
@@ -254,7 +282,7 @@ const chapter4Sections = [
 
   // === CENTRAL LIMIT THEOREM ===
   {
-    title: "8. Central Limit Theorem (CLT)",
+    title: "9. Central Limit Theorem (CLT)",
     color: "pink",
     formula: `\\[\\bar{X} \\sim N\\left(\\mu, \\frac{\\sigma^2}{n}\\right) \\text{ as } n \\to \\infty\\]`,
     steps: [
@@ -269,7 +297,7 @@ const chapter4Sections = [
 
   // === CLT APPLICATIONS ===
   {
-    title: "9. CLT Applications",
+    title: "10. CLT Applications",
     color: "indigo",
     content: (
       <div className="space-y-2 text-sm">
@@ -295,7 +323,7 @@ const chapter4Sections = [
 
   // === T-DISTRIBUTION ===
   {
-    title: "10. t-Distribution",
+    title: "11. t-Distribution",
     color: "green",
     content: (
       <div className="space-y-2 text-sm">
@@ -325,7 +353,7 @@ const chapter4Sections = [
 
   // === CHI-SQUARE DISTRIBUTION ===
   {
-    title: "11. Chi-Square Distribution",
+    title: "12. Chi-Square Distribution",
     color: "red",
     content: (
       <div className="space-y-2 text-sm">
@@ -352,7 +380,7 @@ const chapter4Sections = [
 
   // === F-DISTRIBUTION ===
   {
-    title: "12. F-Distribution for ANOVA",
+    title: "13. F-Distribution for ANOVA",
     color: "gray",
     content: (
       <div className="space-y-2 text-sm">
@@ -387,7 +415,7 @@ const chapter4Sections = [
 
   // === SUMMARY TABLE ===
   {
-    title: "13. Distribution Summary",
+    title: "14. Distribution Summary",
     color: "amber",
     content: (
       <div className="space-y-2 text-xs">
@@ -441,7 +469,7 @@ export const Chapter4ReferenceSheet = ({ mode = "floating" }) => {
 // Descriptive Statistics specific reference
 export const DescriptiveStatisticsReference = ({ mode = "inline" }) => {
   const descriptiveSections = chapter4Sections.filter(section => 
-    [1, 2, 3, 4, 5].includes(parseInt(section.title.split('.')[0]))
+    [1, 2, 3, 4, 5, 6].includes(parseInt(section.title.split('.')[0]))
   );
   
   return (
@@ -462,7 +490,7 @@ export const DescriptiveStatisticsReference = ({ mode = "inline" }) => {
 // Central Limit Theorem specific reference
 export const CentralLimitTheoremReference = ({ mode = "inline" }) => {
   const cltSections = chapter4Sections.filter(section => 
-    [6, 7, 8, 9].includes(parseInt(section.title.split('.')[0]))
+    [7, 8, 9, 10].includes(parseInt(section.title.split('.')[0]))
   );
   
   return (
@@ -483,7 +511,7 @@ export const CentralLimitTheoremReference = ({ mode = "inline" }) => {
 // Sampling Distributions specific reference
 export const SamplingDistributionsReference = ({ mode = "inline" }) => {
   const samplingSection = chapter4Sections.filter(section => 
-    [6, 9, 10, 11, 12].includes(parseInt(section.title.split('.')[0]))
+    [8, 10, 11, 12, 13].includes(parseInt(section.title.split('.')[0]))
   );
   
   return (

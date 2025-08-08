@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import BackToHub from '@/components/ui/BackToHub';
+import { Chapter3ReferenceSheet } from '@/components/reference-sheets/Chapter3ReferenceSheet';
 
 const NormalApproxBinomial = dynamic(
   () => import('@/components/03-continuous-random-variables/3-7-1-NormalApproxBinomialClient'),
@@ -22,6 +23,7 @@ const NormalApproxWorkedExample = dynamic(
 export default function NormalApproximationPage() {
   return (
     <>
+      <Chapter3ReferenceSheet mode="floating" />
       <BackToHub chapter={3} />
       <div className="space-y-12">
         <NormalApproxBinomial />

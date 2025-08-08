@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import BackToHub from '@/components/ui/BackToHub';
+import { Chapter3ReferenceSheet } from '@/components/reference-sheets/Chapter3ReferenceSheet';
 
 const JointDistributions = dynamic(
   () => import('@/components/03-continuous-random-variables/3-6-1-JointDistributionsClient'),
@@ -30,6 +31,7 @@ const JointProbabilityCalculator = dynamic(
 export default function JointDistributionsPage() {
   return (
     <>
+      <Chapter3ReferenceSheet mode="floating" />
       <BackToHub chapter={3} />
       <div className="space-y-12">
         <JointDistributions />

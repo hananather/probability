@@ -1,12 +1,24 @@
 "use client";
 import React, { useState } from 'react';
 import TTestStatisticBuilder from './TTestStatisticBuilder';
-import { TestTube, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import ZTestStatisticBuilder from './ZTestStatisticBuilder';
+import ProportionTestBuilder from './ProportionTestBuilder';
+import TwoSampleTTestBuilder from './TwoSampleTTestBuilder';
+import PooledStandardDeviationBuilder from './PooledStandardDeviationBuilder';
+import PairedTTestBuilder from './PairedTTestBuilder';
+import EffectSizeBuilder from './EffectSizeBuilder';
+import { TestTube, ChevronDown, ChevronUp, Sparkles, Target, Percent, Users, Calculator, Link, Zap } from 'lucide-react';
 import { useMathJax } from '@/hooks/useMathJax';
 
 const Chapter6FormulaHub = () => {
   const [expandedSections, setExpandedSections] = useState({
-    tTestStatistic: true
+    tTestStatistic: true,
+    zTestStatistic: false,
+    proportionTest: false,
+    twoSampleTTest: false,
+    pooledStandardDeviation: false,
+    pairedTTest: false,
+    effectSize: false
   });
 
   const toggleSection = (section) => {
@@ -44,13 +56,13 @@ const Chapter6FormulaHub = () => {
               className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-teal-900/30 rounded-lg">
-                  <TestTube className="w-6 h-6 text-teal-400" />
+                <div className="p-3 bg-red-900/30 rounded-lg">
+                  <TestTube className="w-6 h-6 text-red-400" />
                 </div>
                 <div className="text-left">
                   <h2 className="text-xl font-bold text-white">T-Test Statistic</h2>
                   <p className="text-sm text-neutral-400 mt-1">
-                    Learn the foundation of hypothesis testing
+                    Learn the foundation of hypothesis testing with unknown σ
                   </p>
                 </div>
               </div>
@@ -63,6 +75,186 @@ const Chapter6FormulaHub = () => {
             {expandedSections.tTestStatistic && (
               <div className="p-6 pt-0">
                 <TTestStatisticBuilder />
+              </div>
+            )}
+          </div>
+
+          {/* Z-Test Statistic Formula */}
+          <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
+            <button
+              onClick={() => toggleSection('zTestStatistic')}
+              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-blue-900/30 rounded-lg">
+                  <Target className="w-6 h-6 text-blue-400" />
+                </div>
+                <div className="text-left">
+                  <h2 className="text-xl font-bold text-white">Z-Test Statistic</h2>
+                  <p className="text-sm text-neutral-400 mt-1">
+                    Hypothesis testing when population standard deviation is known
+                  </p>
+                </div>
+              </div>
+              {expandedSections.zTestStatistic ? 
+                <ChevronUp className="w-5 h-5 text-neutral-400" /> : 
+                <ChevronDown className="w-5 h-5 text-neutral-400" />
+              }
+            </button>
+            
+            {expandedSections.zTestStatistic && (
+              <div className="p-6 pt-0">
+                <ZTestStatisticBuilder />
+              </div>
+            )}
+          </div>
+
+          {/* Proportion Test Formula */}
+          <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
+            <button
+              onClick={() => toggleSection('proportionTest')}
+              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-green-900/30 rounded-lg">
+                  <Percent className="w-6 h-6 text-green-400" />
+                </div>
+                <div className="text-left">
+                  <h2 className="text-xl font-bold text-white">Proportion Test Statistic</h2>
+                  <p className="text-sm text-neutral-400 mt-1">
+                    Testing hypotheses about population proportions
+                  </p>
+                </div>
+              </div>
+              {expandedSections.proportionTest ? 
+                <ChevronUp className="w-5 h-5 text-neutral-400" /> : 
+                <ChevronDown className="w-5 h-5 text-neutral-400" />
+              }
+            </button>
+            
+            {expandedSections.proportionTest && (
+              <div className="p-6 pt-0">
+                <ProportionTestBuilder />
+              </div>
+            )}
+          </div>
+
+          {/* Two-Sample T-Test Formula */}
+          <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
+            <button
+              onClick={() => toggleSection('twoSampleTTest')}
+              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-purple-900/30 rounded-lg">
+                  <Users className="w-6 h-6 text-purple-400" />
+                </div>
+                <div className="text-left">
+                  <h2 className="text-xl font-bold text-white">Two-Sample T-Test</h2>
+                  <p className="text-sm text-neutral-400 mt-1">
+                    Comparing means between two independent groups
+                  </p>
+                </div>
+              </div>
+              {expandedSections.twoSampleTTest ? 
+                <ChevronUp className="w-5 h-5 text-neutral-400" /> : 
+                <ChevronDown className="w-5 h-5 text-neutral-400" />
+              }
+            </button>
+            
+            {expandedSections.twoSampleTTest && (
+              <div className="p-6 pt-0">
+                <TwoSampleTTestBuilder />
+              </div>
+            )}
+          </div>
+
+          {/* Pooled Standard Deviation Formula */}
+          <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
+            <button
+              onClick={() => toggleSection('pooledStandardDeviation')}
+              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-amber-900/30 rounded-lg">
+                  <Calculator className="w-6 h-6 text-amber-400" />
+                </div>
+                <div className="text-left">
+                  <h2 className="text-xl font-bold text-white">Pooled Standard Deviation</h2>
+                  <p className="text-sm text-neutral-400 mt-1">
+                    Combining variance estimates from two samples
+                  </p>
+                </div>
+              </div>
+              {expandedSections.pooledStandardDeviation ? 
+                <ChevronUp className="w-5 h-5 text-neutral-400" /> : 
+                <ChevronDown className="w-5 h-5 text-neutral-400" />
+              }
+            </button>
+            
+            {expandedSections.pooledStandardDeviation && (
+              <div className="p-6 pt-0">
+                <PooledStandardDeviationBuilder />
+              </div>
+            )}
+          </div>
+
+          {/* Paired T-Test Formula */}
+          <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
+            <button
+              onClick={() => toggleSection('pairedTTest')}
+              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-rose-900/30 rounded-lg">
+                  <Link className="w-6 h-6 text-rose-400" />
+                </div>
+                <div className="text-left">
+                  <h2 className="text-xl font-bold text-white">Paired T-Test</h2>
+                  <p className="text-sm text-neutral-400 mt-1">
+                    Testing differences within paired observations
+                  </p>
+                </div>
+              </div>
+              {expandedSections.pairedTTest ? 
+                <ChevronUp className="w-5 h-5 text-neutral-400" /> : 
+                <ChevronDown className="w-5 h-5 text-neutral-400" />
+              }
+            </button>
+            
+            {expandedSections.pairedTTest && (
+              <div className="p-6 pt-0">
+                <PairedTTestBuilder />
+              </div>
+            )}
+          </div>
+
+          {/* Effect Size (Cohen's d) Formula */}
+          <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
+            <button
+              onClick={() => toggleSection('effectSize')}
+              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-violet-900/30 rounded-lg">
+                  <Zap className="w-6 h-6 text-violet-400" />
+                </div>
+                <div className="text-left">
+                  <h2 className="text-xl font-bold text-white">Effect Size (Cohen's d)</h2>
+                  <p className="text-sm text-neutral-400 mt-1">
+                    Measuring practical significance of differences
+                  </p>
+                </div>
+              </div>
+              {expandedSections.effectSize ? 
+                <ChevronUp className="w-5 h-5 text-neutral-400" /> : 
+                <ChevronDown className="w-5 h-5 text-neutral-400" />
+              }
+            </button>
+            
+            {expandedSections.effectSize && (
+              <div className="p-6 pt-0">
+                <EffectSizeBuilder />
               </div>
             )}
           </div>

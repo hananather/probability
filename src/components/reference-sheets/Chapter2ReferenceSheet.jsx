@@ -195,9 +195,39 @@ const chapter2Sections = [
     )
   },
 
+  // === HYPERGEOMETRIC DISTRIBUTION ===
+  {
+    title: "7. Hypergeometric Distribution",
+    color: "cyan",
+    content: (
+      <div className="space-y-2 text-sm">
+        <div>
+          <strong>PMF (sampling without replacement):</strong>
+          <div className="text-center my-1">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[P(X = k) = \\frac{\\binom{K}{k}\\binom{N-K}{n-k}}{\\binom{N}{n}}\\]` 
+            }} />
+          </div>
+        </div>
+        <div className="text-xs">
+          <ul className="ml-4 space-y-1">
+            <li>N = population size</li>
+            <li>K = success states in population</li>
+            <li>n = sample size</li>
+            <li>k = successes in sample</li>
+          </ul>
+        </div>
+        <div className="text-xs bg-cyan-900/20 p-1 rounded">
+          <div dangerouslySetInnerHTML={{ __html: `\\(E[X] = n\\frac{K}{N}\\)` }} />, 
+          <span dangerouslySetInnerHTML={{ __html: ` \\(\\text{Var}(X) = n\\frac{K}{N}\\frac{N-K}{N}\\frac{N-n}{N-1}\\)` }} />
+        </div>
+      </div>
+    )
+  },
+
   // === POISSON DISTRIBUTION ===
   {
-    title: "7. Poisson Distribution Pois(λ)",
+    title: "8. Poisson Distribution Pois(λ)",
     color: "pink",
     content: (
       <div className="space-y-2 text-sm">
@@ -234,7 +264,7 @@ const chapter2Sections = [
 
   // === POISSON APPROXIMATION ===
   {
-    title: "8. Poisson Approximation to Binomial",
+    title: "9. Poisson Approximation to Binomial",
     color: "indigo",
     content: (
       <div className="space-y-2 text-sm">
@@ -263,7 +293,7 @@ const chapter2Sections = [
 
   // === DISTRIBUTION COMPARISON ===
   {
-    title: "9. Distribution Comparison Table",
+    title: "10. Distribution Comparison Table",
     color: "green",
     content: (
       <div className="space-y-2 text-xs">
@@ -292,13 +322,18 @@ const chapter2Sections = [
           <div>λ</div>
           <div>λ</div>
         </div>
+        <div className="grid grid-cols-3 gap-2">
+          <div>Hypergeometric</div>
+          <div>nK/N</div>
+          <div className="text-xs">n(K/N)(N-K)/N(N-n)/(N-1)</div>
+        </div>
       </div>
     )
   },
 
   // === MOMENT GENERATING FUNCTIONS ===
   {
-    title: "10. Moment Generating Functions",
+    title: "11. Moment Generating Functions",
     color: "red",
     content: (
       <div className="space-y-2 text-sm">
@@ -321,7 +356,7 @@ const chapter2Sections = [
 
   // === PROBLEM SOLVING STRATEGY ===
   {
-    title: "11. Distribution Selection Guide",
+    title: "12. Distribution Selection Guide",
     color: "gray",
     content: (
       <div className="space-y-2 text-sm">
@@ -336,6 +371,9 @@ const chapter2Sections = [
         </div>
         <div className="p-2 bg-gray-900/20 rounded">
           <strong>Poisson:</strong> Rare events, fixed interval
+        </div>
+        <div className="p-2 bg-gray-900/20 rounded">
+          <strong>Hypergeometric:</strong> Without replacement, finite population
         </div>
       </div>
     )
@@ -363,7 +401,7 @@ export const Chapter2ReferenceSheet = ({ mode = "floating" }) => {
 // Distribution-specific references
 export const DiscreteDistributionsOnly = ({ mode = "inline" }) => {
   const distributionSections = chapter2Sections.filter(section => 
-    [4, 5, 6, 7, 9].includes(parseInt(section.title.split('.')[0]))
+    [4, 5, 6, 7, 8, 10].includes(parseInt(section.title.split('.')[0]))
   );
   
   return (
@@ -384,7 +422,7 @@ export const DiscreteDistributionsOnly = ({ mode = "inline" }) => {
 // Expectation and Variance specific reference
 export const ExpectationVarianceReference = ({ mode = "inline" }) => {
   const expectationSections = chapter2Sections.filter(section => 
-    [2, 3, 9, 10].includes(parseInt(section.title.split('.')[0]))
+    [2, 3, 10, 11].includes(parseInt(section.title.split('.')[0]))
   );
   
   return (

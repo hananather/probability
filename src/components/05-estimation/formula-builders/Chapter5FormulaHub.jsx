@@ -1,12 +1,22 @@
 "use client";
 import React, { useState } from 'react';
 import ConfidenceIntervalBuilder from './ConfidenceIntervalBuilder';
-import { Target, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import MarginOfErrorBuilder from './MarginOfErrorBuilder';
+import ZIntervalBuilder from './ZIntervalBuilder';
+import ProportionCIBuilder from './ProportionCIBuilder';
+import SampleSizeMeanBuilder from './SampleSizeMeanBuilder';
+import SampleSizeProportionBuilder from './SampleSizeProportionBuilder';
+import { Target, ChevronDown, ChevronUp, Sparkles, Calculator, Zap, Percent, BarChart3, TrendingUp } from 'lucide-react';
 import { useMathJax } from '@/hooks/useMathJax';
 
 const Chapter5FormulaHub = () => {
   const [expandedSections, setExpandedSections] = useState({
-    confidenceInterval: true
+    marginOfError: false,
+    zInterval: false,
+    confidenceInterval: true,
+    proportionCI: false,
+    sampleSizeMean: false,
+    sampleSizeProportion: false
   });
 
   const toggleSection = (section) => {
@@ -37,6 +47,66 @@ const Chapter5FormulaHub = () => {
 
         {/* Formula Sections */}
         <div className="space-y-6">
+          {/* Margin of Error Formula */}
+          <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
+            <button
+              onClick={() => toggleSection('marginOfError')}
+              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-orange-900/30 rounded-lg">
+                  <Calculator className="w-6 h-6 text-orange-400" />
+                </div>
+                <div className="text-left">
+                  <h2 className="text-xl font-bold text-white">Margin of Error</h2>
+                  <p className="text-sm text-neutral-400 mt-1">
+                    Understanding uncertainty in statistical estimates
+                  </p>
+                </div>
+              </div>
+              {expandedSections.marginOfError ? 
+                <ChevronUp className="w-5 h-5 text-neutral-400" /> : 
+                <ChevronDown className="w-5 h-5 text-neutral-400" />
+              }
+            </button>
+            
+            {expandedSections.marginOfError && (
+              <div className="p-6 pt-0">
+                <MarginOfErrorBuilder />
+              </div>
+            )}
+          </div>
+
+          {/* Z-Interval Formula */}
+          <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
+            <button
+              onClick={() => toggleSection('zInterval')}
+              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-blue-900/30 rounded-lg">
+                  <Zap className="w-6 h-6 text-blue-400" />
+                </div>
+                <div className="text-left">
+                  <h2 className="text-xl font-bold text-white">Z-Interval (Known σ)</h2>
+                  <p className="text-sm text-neutral-400 mt-1">
+                    Confidence intervals when population standard deviation is known
+                  </p>
+                </div>
+              </div>
+              {expandedSections.zInterval ? 
+                <ChevronUp className="w-5 h-5 text-neutral-400" /> : 
+                <ChevronDown className="w-5 h-5 text-neutral-400" />
+              }
+            </button>
+            
+            {expandedSections.zInterval && (
+              <div className="p-6 pt-0">
+                <ZIntervalBuilder />
+              </div>
+            )}
+          </div>
+
           {/* Confidence Interval Formula */}
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
@@ -48,7 +118,7 @@ const Chapter5FormulaHub = () => {
                   <Target className="w-6 h-6 text-teal-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">Confidence Interval</h2>
+                  <h2 className="text-xl font-bold text-white">T-Interval (Unknown σ)</h2>
                   <p className="text-sm text-neutral-400 mt-1">
                     Learn the foundation of statistical estimation
                   </p>
@@ -63,6 +133,96 @@ const Chapter5FormulaHub = () => {
             {expandedSections.confidenceInterval && (
               <div className="p-6 pt-0">
                 <ConfidenceIntervalBuilder />
+              </div>
+            )}
+          </div>
+
+          {/* Proportion Confidence Interval Formula */}
+          <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
+            <button
+              onClick={() => toggleSection('proportionCI')}
+              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-green-900/30 rounded-lg">
+                  <Percent className="w-6 h-6 text-green-400" />
+                </div>
+                <div className="text-left">
+                  <h2 className="text-xl font-bold text-white">Proportion Confidence Interval</h2>
+                  <p className="text-sm text-neutral-400 mt-1">
+                    Estimating population proportions and percentages
+                  </p>
+                </div>
+              </div>
+              {expandedSections.proportionCI ? 
+                <ChevronUp className="w-5 h-5 text-neutral-400" /> : 
+                <ChevronDown className="w-5 h-5 text-neutral-400" />
+              }
+            </button>
+            
+            {expandedSections.proportionCI && (
+              <div className="p-6 pt-0">
+                <ProportionCIBuilder />
+              </div>
+            )}
+          </div>
+
+          {/* Sample Size for Means Formula */}
+          <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
+            <button
+              onClick={() => toggleSection('sampleSizeMean')}
+              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-violet-900/30 rounded-lg">
+                  <BarChart3 className="w-6 h-6 text-violet-400" />
+                </div>
+                <div className="text-left">
+                  <h2 className="text-xl font-bold text-white">Sample Size for Means</h2>
+                  <p className="text-sm text-neutral-400 mt-1">
+                    Calculate required sample size to estimate population means
+                  </p>
+                </div>
+              </div>
+              {expandedSections.sampleSizeMean ? 
+                <ChevronUp className="w-5 h-5 text-neutral-400" /> : 
+                <ChevronDown className="w-5 h-5 text-neutral-400" />
+              }
+            </button>
+            
+            {expandedSections.sampleSizeMean && (
+              <div className="p-6 pt-0">
+                <SampleSizeMeanBuilder />
+              </div>
+            )}
+          </div>
+
+          {/* Sample Size for Proportions Formula */}
+          <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
+            <button
+              onClick={() => toggleSection('sampleSizeProportion')}
+              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-emerald-900/30 rounded-lg">
+                  <TrendingUp className="w-6 h-6 text-emerald-400" />
+                </div>
+                <div className="text-left">
+                  <h2 className="text-xl font-bold text-white">Sample Size for Proportions</h2>
+                  <p className="text-sm text-neutral-400 mt-1">
+                    Calculate required sample size to estimate population proportions
+                  </p>
+                </div>
+              </div>
+              {expandedSections.sampleSizeProportion ? 
+                <ChevronUp className="w-5 h-5 text-neutral-400" /> : 
+                <ChevronDown className="w-5 h-5 text-neutral-400" />
+              }
+            </button>
+            
+            {expandedSections.sampleSizeProportion && (
+              <div className="p-6 pt-0">
+                <SampleSizeProportionBuilder />
               </div>
             )}
           </div>

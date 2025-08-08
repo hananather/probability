@@ -173,6 +173,10 @@ const chapter7Sections = [
         <div>
           <strong>Interpretation:</strong> Proportion of variation in Y explained by X
         </div>
+        <div className="bg-orange-900/20 p-2 rounded text-xs">
+          <strong>Adjusted R²:</strong> <span dangerouslySetInnerHTML={{ __html: `\\(R_{\\text{adj}}^2 = 1 - \\frac{(1-R^2)(n-1)}{n-p-1}\\)` }} />
+          <div className="text-xs mt-1">Adjusts for number of predictors (p)</div>
+        </div>
       </div>
     )
   },

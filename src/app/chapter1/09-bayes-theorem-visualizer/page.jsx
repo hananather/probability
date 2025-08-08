@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import TabbedLearningPage from '@/components/ui/TabbedLearningPage';
 import { BookOpen, Target, Zap } from 'lucide-react';
+import { Chapter1ReferenceSheet } from '@/components/reference-sheets/Chapter1ReferenceSheet';
 
 // Import new tabs from new folder (with tab numbers for clarity)
 const FoundationsTab = dynamic(() => 
@@ -48,13 +49,16 @@ export default function BayesTheoremVisualizerPage() {
   ];
   
   return (
-    <TabbedLearningPage
-      title="Bayes' Theorem"
-      subtitle="Master the art of updating beliefs with evidence - a cornerstone of machine learning and AI"
-      chapter={1}
-      tabs={TABS}
-      storageKey="chapter1-bayes-theorem-visualizer-progress"
-      colorScheme="purple"
-    />
+    <>
+      <Chapter1ReferenceSheet mode="floating" />
+      <TabbedLearningPage
+        title="Bayes' Theorem"
+        subtitle="Master the art of updating beliefs with evidence - a cornerstone of machine learning and AI"
+        chapter={1}
+        tabs={TABS}
+        storageKey="chapter1-bayes-theorem-visualizer-progress"
+        colorScheme="purple"
+      />
+    </>
   );
 }

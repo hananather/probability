@@ -51,9 +51,7 @@ const ConfidenceIntervalBuilder = React.memo(() => {
             }`}
             onClick={() => handlePartClick('sampleMean', 'sampleMeanConcept')}
           >
-            <span dangerouslySetInnerHTML={{ 
-              __html: `\\bar{x}` 
-            }} />
+            <span>x̄</span>
           </div>
           
           {/* ± */}
@@ -75,9 +73,7 @@ const ConfidenceIntervalBuilder = React.memo(() => {
             }`}
             onClick={() => handlePartClick('criticalValue', 'criticalValueConcept')}
           >
-            <span dangerouslySetInnerHTML={{ 
-              __html: `t_{(\\alpha/2,df)}` 
-            }} />
+            <span>t<sub>(α/2,df)</sub></span>
           </div>
           
           <span className="text-neutral-500">×</span>
@@ -90,9 +86,11 @@ const ConfidenceIntervalBuilder = React.memo(() => {
             }`}
             onClick={() => handlePartClick('standardError', 'standardErrorConcept')}
           >
-            <span dangerouslySetInnerHTML={{ 
-              __html: `\\frac{s}{\\sqrt{n}}` 
-            }} />
+            <div className="flex flex-col items-center">
+              <span className="text-lg">s</span>
+              <div className="w-full h-0.5 bg-current my-1"></div>
+              <span className="text-lg">√n</span>
+            </div>
           </div>
         </div>
 

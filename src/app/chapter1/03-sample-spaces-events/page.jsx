@@ -4,6 +4,7 @@ import React from 'react';
 import dynamic from 'next/dynamic';
 import TabbedLearningPage from '@/components/ui/TabbedLearningPage';
 import { BookOpen, Target, Zap } from 'lucide-react';
+import { Chapter1ReferenceSheet } from '@/components/reference-sheets/Chapter1ReferenceSheet';
 
 // Dynamic imports for tab components
 const FoundationsTab = dynamic(() => 
@@ -51,13 +52,16 @@ const TABS = [
 
 export default function SampleSpacesEventsPage() {
   return (
-    <TabbedLearningPage
-      title="Sample Spaces and Events"
-      subtitle="Master the foundation of probability theory"
-      chapter={1}
-      tabs={TABS}
-      storageKey="chapter1-sample-spaces-events-progress"
-      colorScheme="purple"
-    />
+    <>
+      <Chapter1ReferenceSheet mode="floating" />
+      <TabbedLearningPage
+        title="Sample Spaces and Events"
+        subtitle="Master the foundation of probability theory"
+        chapter={1}
+        tabs={TABS}
+        storageKey="chapter1-sample-spaces-events-progress"
+        colorScheme="purple"
+      />
+    </>
   );
 }

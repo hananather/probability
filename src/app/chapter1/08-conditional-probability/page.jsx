@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import TabbedLearningPage from '@/components/ui/TabbedLearningPage';
 import { BookOpen, Target, Zap, GitBranch } from 'lucide-react';
+import { Chapter1ReferenceSheet } from '@/components/reference-sheets/Chapter1ReferenceSheet';
 
 // Import new tabs from new folder
 const FoundationsTab = dynamic(() => 
@@ -59,13 +60,16 @@ export default function ConditionalProbabilityPage() {
   ];
   
   return (
-    <TabbedLearningPage
-      title="Conditional Probability and Independence"
-      subtitle="Master the foundation of probabilistic reasoning and Bayes' theorem"
-      chapter={1}
-      tabs={TABS}
-      storageKey="chapter1-conditional-probability-progress"
-      colorScheme="purple"
-    />
+    <>
+      <Chapter1ReferenceSheet mode="floating" />
+      <TabbedLearningPage
+        title="Conditional Probability and Independence"
+        subtitle="Master the foundation of probabilistic reasoning and Bayes' theorem"
+        chapter={1}
+        tabs={TABS}
+        storageKey="chapter1-conditional-probability-progress"
+        colorScheme="purple"
+      />
+    </>
   );
 }

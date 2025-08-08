@@ -1,4 +1,7 @@
+'use client';
+
 import ContinuousDistributionsHub from '@/components/03-continuous-random-variables/3-0-ContinuousDistributionsHub';
+import { Chapter3ReferenceSheet } from '@/components/reference-sheets/Chapter3ReferenceSheet';
 
 /**
  * Chapter 3 Page - Continuous Random Variables
@@ -9,5 +12,10 @@ import ContinuousDistributionsHub from '@/components/03-continuous-random-variab
  * @returns {JSX.Element} The Chapter 3 page component
  */
 export default function Chapter3Page() {
-  return <ContinuousDistributionsHub />;
+  return (
+    <>
+      <Chapter3ReferenceSheet mode="floating" />
+      <ContinuousDistributionsHub />
+    </>
+  );
 }

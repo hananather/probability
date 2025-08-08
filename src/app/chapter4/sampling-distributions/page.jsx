@@ -1,276 +1,181 @@
 "use client";
-import React, { useState, useEffect, Suspense } from "react";
+
 import dynamic from 'next/dynamic';
-import { 
-  VisualizationContainer,
-  VisualizationSection
-} from '@/components/ui/VisualizationContainer';
-import BackToHub from '@/components/ui/BackToHub';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Sparkles, 
-  Calculator, 
-  Layers, 
-  Zap, 
-  TrendingUp,
-  Loader2 
-} from 'lucide-react';
+import TabbedLearningPage from '@/components/ui/TabbedLearningPage';
+import { BookOpen, Target, Zap, Palette } from 'lucide-react';
+import { Chapter4ReferenceSheet } from '@/components/reference-sheets/Chapter4ReferenceSheet';
 
-// Dynamic imports for all components with updated file names
-const SamplingDistributionsInteractive = dynamic(() => 
+// Dynamic imports for sampling distribution components
+const FoundationsTab = dynamic(() => 
   import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions-new/4-3-1-SamplingDistributionsInteractive'),
-  {
-    loading: () => <LoadingComponent />,
-    ssr: false
-  }
+  { ssr: false }
 );
 
-const SamplingDistributionsTheory = dynamic(() => 
+const WorkedExamplesTab = dynamic(() => 
   import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions-new/4-3-2-SamplingDistributionsTheory'),
-  {
-    loading: () => <LoadingComponent />,
-    ssr: false
-  }
+  { ssr: false }
 );
 
-const CLTGateway = dynamic(() => 
-  import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions-new/4-3-3-CLTGateway'),
-  {
-    loading: () => <LoadingComponent />,
-    ssr: false
-  }
-);
-
-const CLTProperties = dynamic(() => 
-  import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions-new/4-3-4-CLTProperties'),
-  {
-    loading: () => <LoadingComponent />,
-    ssr: false
-  }
-);
-
-const SamplingDistributionsVisual = dynamic(() => 
-  import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions-new/4-3-5-SamplingDistributionsVisual'),
-  {
-    loading: () => <LoadingComponent />,
-    ssr: false
-  }
-);
-
-// Loading component
-const LoadingComponent = () => (
-  <div className="flex items-center justify-center py-12">
-    <div className="flex items-center gap-3 text-neutral-400">
-      <Loader2 className="w-6 h-6 animate-spin" />
-      <span>Loading section...</span>
-    </div>
-  </div>
-);
-
-// Tab configuration with clean sequential numbering (4-3-1 through 4-3-5)
-const TABS = [
-  {
-    id: '4-3-1-interactive',
-    label: 'Interactive Discovery',
-    icon: Sparkles,
-    description: 'Hands-on exploration with dice sampling',
-    component: SamplingDistributionsInteractive,
-    color: '#10b981'
-  },
-  {
-    id: '4-3-2-theory',
-    label: 'Theory Foundations',
-    icon: Calculator,
-    description: 'Mathematical theory of sampling distributions',
-    component: SamplingDistributionsTheory,
-    color: '#3b82f6'
-  },
-  {
-    id: '4-3-3-clt-gateway',
-    label: 'CLT Gateway',
-    icon: Layers,
-    description: 'Bridge to Central Limit Theorem',
-    component: CLTGateway,
-    color: '#6366f1'
-  },
-  {
-    id: '4-3-4-clt-properties',
-    label: 'CLT Properties',
-    icon: Zap,
-    description: 'Sample size effects and transformations',
-    component: CLTProperties,
-    color: '#7c3aed'
-  },
-  {
-    id: '4-3-5-visual-master',
-    label: 'CLT Mastery',
-    icon: TrendingUp,
-    description: 'Advanced CLT exploration and applications',
-    component: SamplingDistributionsVisual,
-    color: '#8b5cf6'
-  }
-];
-
-// Progress tracking
-function useTabProgress() {
-  const [completedTabs, setCompletedTabs] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('sampling-distributions-tab-progress');
-      return saved ? JSON.parse(saved) : [];
-    }
-    return [];
-  });
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('sampling-distributions-tab-progress', JSON.stringify(completedTabs));
-    }
-  }, [completedTabs]);
-
-  const markTabComplete = (tabId) => {
-    if (!completedTabs.includes(tabId)) {
-      setCompletedTabs(prev => [...prev, tabId]);
-    }
-  };
-
-  return { completedTabs, markTabComplete };
-}
-
-// Component wrapper to standardize interfaces
-const ComponentWrapper = ({ component: Component, tabId, onComplete, isActive }) => {
-  const handleComplete = () => {
-    // Section completion tracking - removed debug console.log
-    if (onComplete) {
-      onComplete(tabId);
-    }
-  };
-
-  if (!isActive) {
-    return null;
-  }
-
-  return (
-    <div className="w-full">
-      <Component onComplete={handleComplete} />
-    </div>
-  );
-};
-
-// Main Page Component
-export default function SamplingDistributionsPage() {
-  const [activeTab, setActiveTab] = useState('4-3-1-interactive');
-  const { completedTabs, markTabComplete } = useTabProgress();
-
-  const handleTabComplete = (tabId) => {
-    markTabComplete(tabId);
-  };
-
-  const activeTabData = TABS.find(tab => tab.id === activeTab);
-
-  return (
-    <VisualizationContainer>
-      <BackToHub chapter={4} />
-      
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Sampling Distributions</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Discover how sample statistics behave when we repeatedly sample from a population
-        </p>
-      </div>
-
-      {/* Tab Navigation */}
-      <VisualizationSection className="bg-neutral-800/30 rounded-lg mb-6">
-        <div className="border-b border-neutral-700">
-          <div className="flex space-x-1 px-6 overflow-x-auto">
-            {TABS.map(({ id, label, icon: Icon, description, color }) => (
-              <button
-                key={id}
-                onClick={() => setActiveTab(id)}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap ${
-                  activeTab === id
-                    ? 'bg-neutral-700 text-white border-b-2'
-                    : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
-                }`}
-                style={{
-                  borderBottomColor: activeTab === id ? color : 'transparent'
-                }}
-              >
-                <Icon className="w-4 h-4" style={{ color: activeTab === id ? color : 'currentColor' }} />
-                <span>{label}</span>
-                {completedTabs.includes(id) && (
-                  <div className="w-2 h-2 bg-green-500 rounded-full ml-1" />
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-        
-        {/* Active tab description */}
-        {activeTabData && (
-          <div className="px-6 py-4">
-            <div className="flex items-center gap-3">
-              <div 
-                className="p-2 rounded-lg"
-                style={{ backgroundColor: `${activeTabData.color}20` }}
-              >
-                <activeTabData.icon 
-                  className="w-5 h-5" 
-                  style={{ color: activeTabData.color }} 
-                />
+// Combine CLT components into Quick Reference
+const QuickReferenceTab = dynamic(() => 
+  Promise.resolve(() => {
+    const CLTGateway = dynamic(() => 
+      import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions-new/4-3-3-CLTGateway'),
+      { ssr: false }
+    );
+    
+    const React = require('react');
+    
+    const CLTQuickReference = () => {
+      return (
+        <div className="space-y-6">
+          <CLTGateway />
+          
+          <div className="bg-neutral-800/50 rounded-lg p-6 mt-6">
+            <h3 className="text-xl font-bold mb-4">Quick Reference: Sampling Distributions</h3>
+            
+            <div className="space-y-4">
+              <div className="bg-neutral-700/30 rounded-lg p-4">
+                <h4 className="font-semibold mb-2 text-blue-400">Key Concepts</h4>
+                <ul className="space-y-1 text-sm">
+                  <li>• Sampling distribution: Distribution of a sample statistic</li>
+                  <li>• Standard error: Standard deviation of the sampling distribution</li>
+                  <li>• Sample mean distribution: Centers around population mean</li>
+                  <li>• Law of Large Numbers: Larger samples → more accurate estimates</li>
+                </ul>
               </div>
-              <div>
-                <h3 className="font-semibold text-white">{activeTabData.label}</h3>
-                <p className="text-sm text-neutral-400">{activeTabData.description}</p>
+              
+              <div className="bg-neutral-700/30 rounded-lg p-4">
+                <h4 className="font-semibold mb-2 text-green-400">Important Formulas</h4>
+                <div className="space-y-2 font-mono text-sm">
+                  <div>Mean of X̄: μ_X̄ = μ</div>
+                  <div>Standard Error: SE = σ/√n</div>
+                  <div>For proportions: SE_p = √(p(1-p)/n)</div>
+                  <div>Finite population: SE × √((N-n)/(N-1))</div>
+                </div>
+              </div>
+              
+              <div className="bg-neutral-700/30 rounded-lg p-4">
+                <h4 className="font-semibold mb-2 text-purple-400">Central Limit Theorem</h4>
+                <p className="text-sm mb-2">As n increases, the sampling distribution of X̄ approaches normal:</p>
+                <div className="bg-neutral-900 p-2 rounded font-mono text-sm">
+                  X̄ ~ N(μ, σ²/n) for large n
+                </div>
+                <p className="text-xs text-neutral-400 mt-2">Rule of thumb: n ≥ 30 for most distributions</p>
               </div>
             </div>
           </div>
-        )}
-      </VisualizationSection>
+        </div>
+      );
+    };
+    
+    return CLTQuickReference;
+  }),
+  { ssr: false }
+);
 
-      {/* Tab Content */}
-      <motion.div
-        key={activeTab}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="max-w-6xl mx-auto"
-      >
-        <Suspense fallback={<LoadingComponent />}>
-          {TABS.map(tab => (
-            <ComponentWrapper
-              key={tab.id}
-              component={tab.component}
-              tabId={tab.id}
-              onComplete={handleTabComplete}
-              isActive={activeTab === tab.id}
-            />
-          ))}
-        </Suspense>
-      </motion.div>
-
-      {/* Progress indicator */}
-      <div className="fixed bottom-6 right-6 bg-neutral-800 rounded-lg p-3 shadow-lg border border-neutral-700">
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-neutral-400">Progress:</span>
-          <span className="font-semibold text-white">
-            {completedTabs.length}/{TABS.length}
-          </span>
-          <div className="flex gap-1 ml-2">
-            {TABS.map(tab => (
-              <div
-                key={tab.id}
-                className={`w-2 h-2 rounded-full ${
-                  completedTabs.includes(tab.id) 
-                    ? 'bg-green-500' 
-                    : activeTab === tab.id 
-                      ? 'bg-blue-500' 
-                      : 'bg-neutral-600'
-                }`}
-              />
-            ))}
+// Combine advanced CLT components into Interactive
+const InteractiveTab = dynamic(() => 
+  Promise.resolve(() => {
+    const CLTProperties = dynamic(() => 
+      import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions-new/4-3-4-CLTProperties'),
+      { ssr: false }
+    );
+    const SamplingDistributionsVisual = dynamic(() => 
+      import('@/components/04-descriptive-statistics-sampling/4-3-sampling-distributions-new/4-3-5-SamplingDistributionsVisual'),
+      { ssr: false }
+    );
+    
+    const React = require('react');
+    
+    const CLTInteractiveExplorer = () => {
+      const [view, setView] = React.useState('properties');
+      
+      return (
+        <div className="space-y-6">
+          <div className="flex gap-2 mb-4">
+            <button
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                view === 'properties' 
+                  ? 'bg-orange-600 text-white' 
+                  : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+              }`}
+              onClick={() => setView('properties')}
+            >
+              CLT Properties
+            </button>
+            <button
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                view === 'visual' 
+                  ? 'bg-orange-600 text-white' 
+                  : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+              }`}
+              onClick={() => setView('visual')}
+            >
+              Visual Mastery
+            </button>
+          </div>
+          
+          <div>
+            {view === 'properties' && <CLTProperties />}
+            {view === 'visual' && <SamplingDistributionsVisual />}
           </div>
         </div>
-      </div>
-    </VisualizationContainer>
+      );
+    };
+    
+    return CLTInteractiveExplorer;
+  }),
+  { ssr: false }
+);
+
+export default function SamplingDistributionsPage() {
+  const TABS = [
+    { 
+      id: 'foundations', 
+      label: 'Foundations', 
+      icon: BookOpen, 
+      component: FoundationsTab, 
+      color: '#10b981',
+      description: 'Hands-on exploration with dice sampling'
+    },
+    { 
+      id: 'worked-examples', 
+      label: 'Worked Examples', 
+      icon: Target,
+      component: WorkedExamplesTab, 
+      color: '#3b82f6',
+      description: 'Mathematical theory of sampling distributions'
+    },
+    { 
+      id: 'quick-reference', 
+      label: 'Quick Reference', 
+      icon: Zap,
+      component: QuickReferenceTab, 
+      color: '#7c3aed',
+      description: 'CLT gateway and key formulas'
+    },
+    { 
+      id: 'interactive', 
+      label: 'Interactive Explorer', 
+      icon: Palette,
+      component: InteractiveTab, 
+      color: '#f59e0b',
+      description: 'Advanced CLT exploration and applications'
+    }
+  ];
+  
+  return (
+    <>
+      <Chapter4ReferenceSheet mode="floating" />
+      <TabbedLearningPage
+        title="Sampling Distributions"
+        subtitle="Discover how sample statistics behave and why the CLT is magical"
+        chapter={4}
+        tabs={TABS}
+        storageKey="chapter4-sampling-distributions-progress"
+        colorScheme="indigo"
+      />
+    </>
   );
 }

@@ -1,12 +1,20 @@
 "use client";
 import React, { useState } from 'react';
 import BinomialDistributionBuilder from './BinomialDistributionBuilder';
-import { Calculator, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import PoissonDistributionBuilder from './PoissonDistributionBuilder';
+import GeometricDistributionBuilder from './GeometricDistributionBuilder';
+import ExpectedValueBuilder from './ExpectedValueBuilder';
+import VarianceBuilder from './VarianceBuilder';
+import { Calculator, ChevronDown, ChevronUp, Sparkles, Clock, Repeat, BarChart3, TrendingUp } from 'lucide-react';
 import { useMathJax } from '@/hooks/useMathJax';
 
 const Chapter2FormulaHub = () => {
   const [expandedSections, setExpandedSections] = useState({
-    binomialDistribution: true
+    binomialDistribution: true,
+    poissonDistribution: false,
+    geometricDistribution: false,
+    expectedValue: false,
+    variance: false
   });
 
   const toggleSection = (section) => {
@@ -44,13 +52,13 @@ const Chapter2FormulaHub = () => {
               className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-teal-900/30 rounded-lg">
-                  <Calculator className="w-6 h-6 text-teal-400" />
+                <div className="p-3 bg-emerald-900/30 rounded-lg">
+                  <Calculator className="w-6 h-6 text-emerald-400" />
                 </div>
                 <div className="text-left">
                   <h2 className="text-xl font-bold text-white">Binomial Distribution</h2>
                   <p className="text-sm text-neutral-400 mt-1">
-                    Learn the foundation of discrete probability distributions
+                    Master counting successes in fixed number of trials
                   </p>
                 </div>
               </div>
@@ -63,6 +71,126 @@ const Chapter2FormulaHub = () => {
             {expandedSections.binomialDistribution && (
               <div className="p-6 pt-0">
                 <BinomialDistributionBuilder />
+              </div>
+            )}
+          </div>
+
+          {/* Poisson Distribution Formula */}
+          <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
+            <button
+              onClick={() => toggleSection('poissonDistribution')}
+              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-indigo-900/30 rounded-lg">
+                  <Clock className="w-6 h-6 text-indigo-400" />
+                </div>
+                <div className="text-left">
+                  <h2 className="text-xl font-bold text-white">Poisson Distribution</h2>
+                  <p className="text-sm text-neutral-400 mt-1">
+                    Model rare events occurring over time or space
+                  </p>
+                </div>
+              </div>
+              {expandedSections.poissonDistribution ? 
+                <ChevronUp className="w-5 h-5 text-neutral-400" /> : 
+                <ChevronDown className="w-5 h-5 text-neutral-400" />
+              }
+            </button>
+            
+            {expandedSections.poissonDistribution && (
+              <div className="p-6 pt-0">
+                <PoissonDistributionBuilder />
+              </div>
+            )}
+          </div>
+
+          {/* Geometric Distribution Formula */}
+          <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
+            <button
+              onClick={() => toggleSection('geometricDistribution')}
+              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-rose-900/30 rounded-lg">
+                  <Repeat className="w-6 h-6 text-rose-400" />
+                </div>
+                <div className="text-left">
+                  <h2 className="text-xl font-bold text-white">Geometric Distribution</h2>
+                  <p className="text-sm text-neutral-400 mt-1">
+                    Calculate waiting time until first success
+                  </p>
+                </div>
+              </div>
+              {expandedSections.geometricDistribution ? 
+                <ChevronUp className="w-5 h-5 text-neutral-400" /> : 
+                <ChevronDown className="w-5 h-5 text-neutral-400" />
+              }
+            </button>
+            
+            {expandedSections.geometricDistribution && (
+              <div className="p-6 pt-0">
+                <GeometricDistributionBuilder />
+              </div>
+            )}
+          </div>
+
+          {/* Expected Value Formula */}
+          <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
+            <button
+              onClick={() => toggleSection('expectedValue')}
+              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-blue-900/30 rounded-lg">
+                  <BarChart3 className="w-6 h-6 text-blue-400" />
+                </div>
+                <div className="text-left">
+                  <h2 className="text-xl font-bold text-white">Expected Value</h2>
+                  <p className="text-sm text-neutral-400 mt-1">
+                    Understand the theoretical average of a random variable
+                  </p>
+                </div>
+              </div>
+              {expandedSections.expectedValue ? 
+                <ChevronUp className="w-5 h-5 text-neutral-400" /> : 
+                <ChevronDown className="w-5 h-5 text-neutral-400" />
+              }
+            </button>
+            
+            {expandedSections.expectedValue && (
+              <div className="p-6 pt-0">
+                <ExpectedValueBuilder />
+              </div>
+            )}
+          </div>
+
+          {/* Variance Formula */}
+          <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
+            <button
+              onClick={() => toggleSection('variance')}
+              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-emerald-900/30 rounded-lg">
+                  <TrendingUp className="w-6 h-6 text-emerald-400" />
+                </div>
+                <div className="text-left">
+                  <h2 className="text-xl font-bold text-white">Variance</h2>
+                  <p className="text-sm text-neutral-400 mt-1">
+                    Learn how to measure the spread around the mean
+                  </p>
+                </div>
+              </div>
+              {expandedSections.variance ? 
+                <ChevronUp className="w-5 h-5 text-neutral-400" /> : 
+                <ChevronDown className="w-5 h-5 text-neutral-400" />
+              }
+            </button>
+            
+            {expandedSections.variance && (
+              <div className="p-6 pt-0">
+                <VarianceBuilder />
               </div>
             )}
           </div>

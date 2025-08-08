@@ -1,4 +1,5 @@
 import UnpairedTwoSampleTest from '@/components/06-hypothesis-testing/6-8-1-UnpairedTwoSampleTest';
+import { Chapter6ReferenceSheet } from '@/components/reference-sheets/Chapter6ReferenceSheet';
 
 export const metadata = {
   title: 'Unpaired Two-Sample Test | Chapter 6',
@@ -6,5 +7,10 @@ export const metadata = {
 };
 
 export default function UnpairedTwoSamplePage() {
-  return <UnpairedTwoSampleTest />;
+  return (
+    <>
+      <Chapter6ReferenceSheet mode="floating" />
+      <UnpairedTwoSampleTest />
+    </>
+  );
 }
