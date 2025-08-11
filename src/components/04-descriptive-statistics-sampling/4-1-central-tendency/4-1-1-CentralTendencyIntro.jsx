@@ -74,7 +74,7 @@ const PracticeProblems = React.memo(function PracticeProblems({ mathRef }) {
         {quizCompleted.practice && (
           <div className="mt-6 p-4 bg-green-900/20 border border-green-600/30 rounded-lg">
             <p className="text-sm text-green-400">
-              Excellent work! You've mastered the concepts of central tendency.
+              Well done! You've learned the concepts of central tendency.
             </p>
           </div>
         )}
@@ -768,30 +768,6 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
               A measure of central tendency is a single value that represents the center or typical value of a dataset. 
               It provides a summary of where the data tends to cluster.
             </p>
-            
-            {/* What's In It For Me? */}
-            <div className="bg-amber-900/20 border border-amber-600/30 p-4 rounded-lg">
-              <p className="text-sm font-semibold text-amber-400 mb-2">What's In It For You?</p>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="flex items-start gap-2">
-                  <span className="text-green-400">•</span>
-                  <span className="text-neutral-300"><strong>15%</strong> of exam questions</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-green-400">•</span>
-                  <span className="text-neutral-300">Foundation for <strong>60%</strong> of course</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-green-400">•</span>
-                  <span className="text-neutral-300">Used in <strong>every</strong> assignment</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-green-400">•</span>
-                  <span className="text-neutral-300"><strong>5 min</strong> to learn basics</span>
-                </div>
-              </div>
-            </div>
-            
             {/* Learning Objectives */}
             <div className="bg-purple-900/20 border border-purple-600/30 p-4 rounded-lg">
               <p className="text-sm font-semibold text-purple-400 mb-2">Learning Objectives:</p>

@@ -280,7 +280,7 @@ const StandardErrorBuilder = React.memo(() => {
         {allUnderstood && (
           <div className="mt-4 text-center">
             <p className="text-green-400 font-medium">
-              Excellent! You understand the standard error formula!
+              Correct! You understand the standard error formula!
             </p>
             <p className="text-sm text-neutral-400 mt-2">
               Remember: Standard error decreases with √n - bigger samples help, but with diminishing returns.

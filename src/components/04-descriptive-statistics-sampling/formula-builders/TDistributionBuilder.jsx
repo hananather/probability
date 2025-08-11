@@ -351,7 +351,7 @@ const TDistributionBuilder = React.memo(() => {
         {allUnderstood && (
           <div className="mt-4 text-center">
             <p className="text-green-400 font-medium">
-              Excellent! You understand the t-distribution formula!
+              Correct! You understand the t-distribution formula!
             </p>
             <p className="text-sm text-neutral-400 mt-2">
               Remember: t-statistic = signal/noise, where noise is estimated (not known).

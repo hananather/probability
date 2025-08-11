@@ -12,7 +12,7 @@ import {
 import { createColorScheme, cn, typography, colors, formatNumber } from "@/lib/design-system";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import { ArrowRight, CheckCircle, TrendingUp, TrendingDown, Activity, Award } from "lucide-react";
+import { ArrowRight, CheckCircle, TrendingUp, TrendingDown, Activity } from "lucide-react";
 
 const colorScheme = createColorScheme('sampling');
 
@@ -558,12 +558,11 @@ const HistogramShapeAnalysis = () => {
       {/* Completion celebration */}
       {completedShapes.size === shapePatterns.length && !quizMode && (
         <div className="mt-8 p-6 bg-gradient-to-r from-green-900/30 to-emerald-900/30 rounded-lg border border-green-600/30 text-center">
-          <Award className="w-12 h-12 text-green-400 mx-auto mb-3" />
           <h3 className="text-xl font-bold text-green-400 mb-2">
-            Shape Master Achievement Unlocked!
+            Complete!
           </h3>
           <p className="text-gray-300 mb-4">
-            You've mastered all histogram shapes! You can now identify distribution patterns 
+            You've learned all histogram shapes! You can now identify distribution patterns 
             and understand what they reveal about data.
           </p>
           <Button

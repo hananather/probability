@@ -523,7 +523,7 @@ const HistogramIntuitiveIntro = () => {
     {
       title: "Welcome to Histograms!",
       description: "Let's discover why histograms are useful for understanding data.",
-      action: "Start Learning"
+      action: "Begin"
     },
     {
       title: "The Problem: Too Many Numbers",

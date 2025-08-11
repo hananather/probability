@@ -8,7 +8,7 @@ import { Button } from '../../ui/button';
 import { ProgressBar } from '../../ui/ProgressBar';
 import { cn } from '@/lib/design-system';
 import { 
-  BookOpen, Lightbulb, Trophy, FlaskConical, 
+  BookOpen, Lightbulb, FlaskConical, 
   Calculator, ChevronRight, Star, Lock, AlertCircle 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -38,7 +38,7 @@ const LEARNING_COMPONENTS = [
     title: '2. Descriptive Stats Journey',
     subtitle: 'Complete statistical analysis',
     description: 'Master statistical analysis through interactive exploration and computation. Progress through central tendency, dispersion, quartiles, and outlier detection.',
-    icon: Trophy,
+    icon: Calculator,
     difficulty: 'Intermediate',
     estimatedTime: '25 min',
     prerequisites: ['intuitive-intro'],
@@ -385,7 +385,7 @@ export default function CentralTendencyHub() {
             </p>
           </div>
           <div className="bg-neutral-800 rounded-lg p-4">
-            <Trophy className="text-yellow-400 mb-2" size={24} />
+            <Calculator className="text-yellow-400 mb-2" size={24} />
             <h4 className="font-semibold mb-1">Practice Makes Perfect</h4>
             <p className="text-sm text-neutral-400">
               Complete challenges in the journey to reinforce your learning
@@ -404,7 +404,7 @@ export default function CentralTendencyHub() {
       {/* Quick stats */}
       {completedComponents.length > 0 && (
         <div className="mt-8 p-4 bg-neutral-900 rounded-lg">
-          <h3 className="font-semibold mb-2">Your Achievements</h3>
+          <h3 className="font-semibold mb-2">Your Progress</h3>
           <div className="flex flex-wrap gap-2">
             {completedComponents.map(id => {
               const component = LEARNING_COMPONENTS.find(c => c.id === id);

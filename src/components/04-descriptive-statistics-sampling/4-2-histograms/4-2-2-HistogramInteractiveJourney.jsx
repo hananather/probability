@@ -14,22 +14,12 @@ import { createColorScheme, cn, typography, colors, formatNumber } from "@/lib/d
 import { Button } from "@/components/ui/button";
 import { RangeSlider } from "@/components/ui/RangeSlider";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import { AlertCircle, CheckCircle, TrendingUp, Award, Info, Lightbulb } from "lucide-react";
+import { Info, Lightbulb } from "lucide-react";
 import { useAnimationCleanup } from "@/hooks/useAnimationCleanup";
 import SharedNavigation from "../shared/SharedNavigation";
 
 const colorScheme = createColorScheme('sampling');
 
-// Achievement notification component
-const Achievement = ({ title, description, icon: Icon }) => (
-  <div className="fixed top-4 right-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 animate-slide-in z-50">
-    <Icon className="w-6 h-6" />
-    <div>
-      <p className="font-semibold">{title}</p>
-      <p className="text-sm opacity-90">{description}</p>
-    </div>
-  </div>
-);
 
 // Visual quality indicator for bin count
 const BinQualityIndicator = ({ binCount, optimalBins }) => {
@@ -66,8 +56,6 @@ const HistogramInteractiveJourney = () => {
   const [manualBins, setManualBins] = useState(10);
   const [showOptimal, setShowOptimal] = useState(false);
   const [data, setData] = useState([]);
-  const [achievements, setAchievements] = useState(new Set());
-  const [showAchievement, setShowAchievement] = useState(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   
@@ -93,29 +81,6 @@ const HistogramInteractiveJourney = () => {
     generateData();
   }, [generateData]);
   
-  // Achievement system
-  const unlockAchievement = useCallback((id, title, description, icon) => {
-    if (!achievements.has(id)) {
-      setAchievements(prev => new Set([...prev, id]));
-      setShowAchievement({ title, description, icon });
-      setTimeout(() => setShowAchievement(null), 3000);
-    }
-  }, [achievements]);
-  
-  // Check for achievements
-  useEffect(() => {
-    if (hasInteracted && Math.abs(manualBins - optimalBins) === 0) {
-      unlockAchievement('perfect-bins', 'Perfect Bins!', 'You found the optimal bin count!', CheckCircle);
-    }
-    
-    if (stage >= 2) {
-      unlockAchievement('formula-learned', 'Formula Master!', 'You learned the square root rule!', Lightbulb);
-    }
-    
-    if (achievements.size >= 3) {
-      unlockAchievement('histogram-expert', 'Histogram Expert!', 'You\'ve mastered histogram creation!', Award);
-    }
-  }, [manualBins, optimalBins, stage, hasInteracted, unlockAchievement, achievements.size]);
   
   // Main visualization
   useEffect(() => {
@@ -451,21 +416,12 @@ const HistogramInteractiveJourney = () => {
         ]}
       />
       
-      {/* Achievements display */}
-      <div className="mt-4 text-center text-sm text-gray-400">
-        Achievements: {achievements.size} unlocked
-      </div>
 
       {/* Navigation with arrow key support */}
       <SharedNavigation
         currentStep={stage}
         totalSteps={stages.length}
-        onNavigate={(newStage) => {
-          setStage(newStage);
-          if (newStage === 2 && stage === 1) {
-            unlockAchievement('learned-rule', 'Rule Learned!', 'You discovered the square root rule!', TrendingUp);
-          }
-        }}
+        onNavigate={setStage}
         showProgress={false}
         nextLabel="Next Stage"
         previousLabel="Previous Stage"
@@ -474,9 +430,9 @@ const HistogramInteractiveJourney = () => {
       {/* Learning summary for final stage */}
       {stage === 3 && (
         <div className="mt-6 p-4 bg-green-900/20 border border-green-600/30 rounded-lg">
-          <h4 className="font-semibold text-green-400 mb-2">Congratulations!</h4>
+          <h4 className="font-semibold text-green-400 mb-2">Complete!</h4>
           <p className="text-gray-300 mb-3">
-            You've mastered the square root rule for creating optimal histograms!
+            You've learned the square root rule for creating optimal histograms!
           </p>
           <ul className="space-y-1 text-sm text-gray-300">
             <li>Too few bins hide important patterns</li>
@@ -487,14 +443,6 @@ const HistogramInteractiveJourney = () => {
         </div>
       )}
       
-      {/* Achievement notification */}
-      {showAchievement && (
-        <Achievement
-          title={showAchievement.title}
-          description={showAchievement.description}
-          icon={showAchievement.icon}
-        />
-      )}
     </VisualizationContainer>
   );
 };

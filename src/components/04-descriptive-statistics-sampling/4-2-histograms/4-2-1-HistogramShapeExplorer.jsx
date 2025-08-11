@@ -172,7 +172,7 @@ const HistogramShapeExplorer = () => {
                     size="sm"
                     className="px-4"
                   >
-                    Start Learning
+                    Begin
                   </Button>
                 </div>
               </div>

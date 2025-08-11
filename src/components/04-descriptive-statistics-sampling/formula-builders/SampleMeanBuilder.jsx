@@ -222,7 +222,7 @@ const SampleMeanBuilder = React.memo(() => {
         {allUnderstood && (
           <div className="mt-4 text-center">
             <p className="text-green-400 font-medium">
-              Excellent! You understand the sample mean formula!
+              Correct! You understand the sample mean formula!
             </p>
             <p className="text-sm text-neutral-400 mt-2">
               Remember: It's the total divided by the count - a fair redistribution of all values.

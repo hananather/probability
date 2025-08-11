@@ -142,8 +142,8 @@ const learningStages = [
   },
   {
     id: 'mastery',
-    title: 'Congratulations!',
-    subtitle: 'You\'ve mastered the F-distribution',
+    title: 'Complete!',
+    subtitle: 'You\'ve learned the F-distribution',
     icon: <Award className="w-5 h-5" />,
     content: {
       main: "You now understand how to compare variances using the F-distribution!",
@@ -864,7 +864,7 @@ const FDistributionMasterclass = () => {
               <div className="bg-emerald-900/30 border border-emerald-700/50 rounded-lg p-3">
                 <p className="text-sm text-emerald-400 flex items-center gap-2">
                   <Award className="w-4 h-4" />
-                  Milestone achieved! {stage.content.milestone}
+                  Complete! {stage.content.milestone}
                 </p>
               </div>
             )}

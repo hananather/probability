@@ -252,7 +252,7 @@ const CentralLimitTheoremBuilder = React.memo(() => {
         {allUnderstood && (
           <div className="mt-4 text-center">
             <p className="text-green-400 font-medium">
-              Excellent! You understand the Central Limit Theorem formula!
+              Correct! You understand the Central Limit Theorem formula!
             </p>
             <p className="text-sm text-neutral-400 mt-2">
               Remember: Larger samples mean more normal distributions and smaller standard errors.

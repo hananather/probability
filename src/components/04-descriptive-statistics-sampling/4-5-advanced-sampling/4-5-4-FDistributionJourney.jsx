@@ -19,7 +19,6 @@ import {
   ChevronLeft,
   Lightbulb,
   Target,
-  Trophy,
   Sparkles,
   Play,
   RotateCcw,
@@ -89,8 +88,8 @@ const tutorialSteps = [
     highlight: ["critical-region"]
   },
   {
-    title: "Congratulations!",
-    content: "You've mastered the F-distribution! Try different sample sizes to see how the shape changes, or reset to practice again.",
+    title: "Complete!",
+    content: "You've learned the F-distribution! Try different sample sizes to see how the shape changes, or reset to practice again.",
     target: null,
     action: null,
     highlight: []
@@ -215,31 +214,12 @@ const StepIndicator = ({ currentStep, totalSteps }) => (
   </div>
 );
 
-// Achievement notification
-const AchievementNotification = ({ achievement, onClose }) => {
-  useEffect(() => {
-    const timer = setTimeout(onClose, 3000);
-    return () => clearTimeout(timer);
-  }, [onClose]);
-  
-  return (
-    <div className="fixed top-4 right-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 animate-slide-in">
-      <Trophy className="w-6 h-6" />
-      <div>
-        <p className="font-semibold">Achievement Unlocked!</p>
-        <p className="text-sm opacity-90">{achievement}</p>
-      </div>
-    </div>
-  );
-};
 
 // Main component
 const FDistributionJourney = () => {
   // Tutorial state
   const [tutorialStep, setTutorialStep] = useState(0);
   const [tutorialActive, setTutorialActive] = useState(true);
-  const [achievements, setAchievements] = useState([]);
-  const [showAchievement, setShowAchievement] = useState(null);
   
   // Visualization state
   const [sampleSize1, setSampleSize1] = useState(15);
@@ -262,35 +242,6 @@ const FDistributionJourney = () => {
   // Current tutorial step
   const currentTutorial = tutorialSteps[tutorialStep];
   
-  // Check and unlock achievements
-  const checkAchievements = useCallback(() => {
-    const newAchievements = [];
-    
-    if (samples.length === 1 && !achievements.includes('first-sample')) {
-      newAchievements.push({ id: 'first-sample', text: 'First F-statistic generated!' });
-    }
-    
-    if (samples.length >= 30 && !achievements.includes('thirty-samples')) {
-      newAchievements.push({ id: 'thirty-samples', text: 'Statistical Explorer - 30 samples!' });
-    }
-    
-    if (samples.length >= 100 && !achievements.includes('hundred-samples')) {
-      newAchievements.push({ id: 'hundred-samples', text: 'Distribution Master - 100 samples!' });
-    }
-    
-    if (df1 === df2 && samples.length > 0 && !achievements.includes('equal-df')) {
-      newAchievements.push({ id: 'equal-df', text: 'Balanced Design - Equal degrees of freedom!' });
-    }
-    
-    newAchievements.forEach(achievement => {
-      setAchievements(prev => [...prev, achievement.id]);
-      setShowAchievement(achievement.text);
-    });
-  }, [samples.length, df1, df2, achievements]);
-  
-  useEffect(() => {
-    checkAchievements();
-  }, [checkAchievements]);
   
   // Generate F-statistic
   const generateFStatistic = useCallback(() => {
@@ -707,13 +658,6 @@ const FDistributionJourney = () => {
       title="4.5 F-Distribution Journey"
       subtitle="Learn by doing - compare variances step by step"
     >
-      {/* Achievement Notification */}
-      {showAchievement && (
-        <AchievementNotification 
-          achievement={showAchievement}
-          onClose={() => setShowAchievement(null)}
-        />
-      )}
       
       {/* Tutorial Overlay */}
       {tutorialActive && (

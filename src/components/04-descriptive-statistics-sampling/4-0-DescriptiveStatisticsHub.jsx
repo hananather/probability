@@ -320,7 +320,7 @@ const KeyConceptsCard = React.memo(() => {
 
   return (
     <Card ref={contentRef} className="mb-8 p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
-      <h3 className="text-xl font-bold text-white mb-4">Key Concepts You'll Master</h3>
+      <h3 className="text-xl font-bold text-white mb-4">Key Concepts</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {concepts.map((concept, i) => (
           <motion.div
@@ -354,7 +354,7 @@ const CHAPTER_4_SECTIONS = [
     id: 'formula-builder',
     title: 'Interactive Formula Builder',
     subtitle: 'Build formulas step-by-step',
-    description: 'Master descriptive statistics formulas by building them interactively. Click on each part to understand why it\'s there and how it works.',
+    description: 'Build descriptive statistics formulas interactively. Click on each part to understand why it\'s there and how it works.',
     icon: Sparkles,
     difficulty: 'Beginner',
     estimatedTime: '20 min',
@@ -363,7 +363,7 @@ const CHAPTER_4_SECTIONS = [
       'Sample mean x̄ = Σx/n',
       'Sample variance s² formula',
       'Standard error SE = σ/√n',
-      'Master formula structure through interaction'
+      'Understand formula structure through interaction'
     ],
     route: '/chapter4/formula-builder',
     color: '#ec4899',
@@ -374,7 +374,7 @@ const CHAPTER_4_SECTIONS = [
     id: 'data-descriptions',
     title: '4.1 Data Descriptions',
     subtitle: 'Measures of center and spread',
-    description: 'Master the fundamental tools for summarizing data: mean, median, mode, variance, and standard deviation.',
+    description: 'Learn the fundamental tools for summarizing data: mean, median, mode, variance, and standard deviation.',
     icon: Calculator,
     difficulty: 'Beginner',
     estimatedTime: '45 min',
@@ -460,7 +460,7 @@ const CHAPTER_4_SECTIONS = [
     estimatedTime: '50 min',
     prerequisites: ['central-limit-theorem'],
     learningGoals: [
-      'Master the t-distribution',
+      'Understand the t-distribution',
       'Understand the F-distribution',
       'Apply to hypothesis testing',
       'Compare different distributions'
@@ -535,7 +535,7 @@ export default function DescriptiveStatisticsHub() {
           <h2 className="text-2xl font-bold text-white mb-3">From Data to Understanding</h2>
           <p className="text-gray-300">
             Descriptive statistics are the foundation of all data analysis. In this chapter, 
-            you'll master the tools to summarize, visualize, and understand data. Then discover 
+            you'll learn the tools to summarize, visualize, and understand data. Then discover 
             how sampling distributions bridge the gap between samples and populations, 
             culminating in the profound Central Limit Theorem.
           </p>
@@ -545,7 +545,7 @@ export default function DescriptiveStatisticsHub() {
         <ChapterHub
           chapterNumber={4}
           chapterTitle="Descriptive Statistics"
-          chapterSubtitle="Master data analysis fundamentals"
+          chapterSubtitle="Data analysis fundamentals"
           sections={CHAPTER_4_SECTIONS}
           storageKey="descriptiveStatsProgress"
           progressVariant="purple"

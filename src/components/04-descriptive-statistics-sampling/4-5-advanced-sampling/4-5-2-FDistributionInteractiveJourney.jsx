@@ -78,8 +78,8 @@ const tutorialSteps = [
   },
   {
     id: 'mastery',
-    title: "F-Distribution Mastery!",
-    content: "Congratulations! You've mastered the F-distribution. Use it to compare variances in ANOVA, regression diagnostics, and quality control.",
+    title: "F-Distribution Complete!",
+    content: "You've learned the F-distribution. Use it to compare variances in ANOVA, regression diagnostics, and quality control.",
     target: null,
     action: null,
     highlight: []

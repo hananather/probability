@@ -154,7 +154,7 @@ const FDistributionExplorer = () => {
                   className="w-full"
                   variant="default"
                 >
-                  Start Learning
+                  Begin
                 </Button>
               </div>
             </div>

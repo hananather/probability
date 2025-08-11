@@ -253,7 +253,7 @@ const SampleVarianceBuilder = React.memo(() => {
         {allUnderstood && (
           <div className="mt-4 text-center">
             <p className="text-green-400 font-medium">
-              Excellent! You understand sample variance and Bessel's correction!
+              Correct! You understand sample variance and Bessel's correction!
             </p>
             <p className="text-sm text-neutral-400 mt-2">
               Remember: n-1 gives us an unbiased estimate of population variance.

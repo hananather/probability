@@ -7,7 +7,12 @@ import { Button } from "@/components/ui/button";
 import HistogramIntuitiveIntro from "./4-2-1-HistogramIntuitiveIntro";
 import HistogramInteractiveJourney from "./4-2-2-HistogramInteractiveJourney";
 import HistogramShapeAnalysis from "./4-2-3-HistogramShapeAnalysis";
-import { Sparkles, Calculator, BarChart3, ChevronLeft } from "lucide-react";
+import ScatterPlotAnimation from "./4-2-7-ScatterPlotAnimation";
+import LineChartAnimation from "./4-2-8-LineChartAnimation";
+import BoxPlotAnimation from "./4-2-9-BoxPlotAnimation";
+import BarChartAnimation from "./4-2-10-BarChartAnimation";
+import PieChartAnimation from "./4-2-11-PieChartAnimation";
+import { Sparkles, Calculator, BarChart3, ChevronLeft, TrendingUp, LineChart, Box, BarChart2, PieChart } from "lucide-react";
 
 // Learning paths configuration
 const learningPaths = [
@@ -36,13 +41,68 @@ const learningPaths = [
   {
     id: 'shapes',
     title: 'Shape Recognition',
-    description: 'Master different distribution shapes and their real-world meanings.',
+    description: 'Learn different distribution shapes and their real-world meanings.',
     icon: BarChart3,
     color: 'from-emerald-500 to-teal-500',
     component: HistogramShapeAnalysis,
     difficulty: 'Advanced',
     duration: '15 min',
     concepts: ['Normal distribution', 'Skewness', 'Real-world patterns']
+  },
+  {
+    id: 'scatter',
+    title: 'Scatter Plots',
+    description: 'Discover relationships between two variables with animated scatter plots.',
+    icon: TrendingUp,
+    color: 'from-orange-500 to-red-500',
+    component: ScatterPlotAnimation,
+    difficulty: 'Beginner',
+    duration: '5 min',
+    concepts: ['Correlation', 'Trend lines', 'Variable relationships']
+  },
+  {
+    id: 'line',
+    title: 'Line Charts',
+    description: 'Learn how to visualize trends and changes over time.',
+    icon: LineChart,
+    color: 'from-pink-500 to-rose-500',
+    component: LineChartAnimation,
+    difficulty: 'Beginner',
+    duration: '5 min',
+    concepts: ['Time series', 'Trends', 'Seasonal patterns']
+  },
+  {
+    id: 'box',
+    title: 'Box Plots',
+    description: 'Understand data distributions with five-number summaries.',
+    icon: Box,
+    color: 'from-indigo-500 to-blue-600',
+    component: BoxPlotAnimation,
+    difficulty: 'Intermediate',
+    duration: '7 min',
+    concepts: ['Quartiles', 'IQR', 'Outliers', 'Distribution spread']
+  },
+  {
+    id: 'bar',
+    title: 'Bar Charts',
+    description: 'Compare categories visually with animated bar charts.',
+    icon: BarChart2,
+    color: 'from-green-500 to-emerald-500',
+    component: BarChartAnimation,
+    difficulty: 'Beginner',
+    duration: '5 min',
+    concepts: ['Categorical data', 'Comparisons', 'Rankings']
+  },
+  {
+    id: 'pie',
+    title: 'Pie Charts',
+    description: 'Visualize parts of a whole with engaging pie chart animations.',
+    icon: PieChart,
+    color: 'from-purple-500 to-pink-500',
+    component: PieChartAnimation,
+    difficulty: 'Beginner',
+    duration: '5 min',
+    concepts: ['Proportions', 'Percentages', 'Parts of whole']
   }
 ];
 
@@ -73,16 +133,16 @@ const HistogramHub = () => {
   // Otherwise show the path selector
   return (
     <VisualizationContainer
-      title="4.2 Visual Summaries Hub"
-      description="Learn about histograms, shapes of datasets, skewness, and dispersion measures"
+      title="4.2 Data Visualization Fundamentals"
+      description="Learn the essential charts and graphs for understanding data"
     >
       {/* Introduction */}
       <div className="mb-8 p-6 bg-gradient-to-r from-blue-900/20 to-purple-900/20 rounded-lg border border-blue-600/30">
-        <h2 className="text-xl font-semibold mb-3 text-blue-400">Welcome to Visual Summaries!</h2>
+        <h2 className="text-xl font-semibold mb-3 text-blue-400">Welcome to Data Visualization Fundamentals!</h2>
         <p className="text-gray-300 mb-4">
-          Visual summaries are essential tools for understanding data distributions. Learn how histograms 
-          help us see patterns, identify skewness, and understand the shape of datasets. This journey covers 
-          visualization techniques and dispersion measures.
+          Data visualization is the cornerstone of data analysis. Through interactive animations, you'll learn 
+          how different chart types reveal patterns, relationships, and insights in your data. From histograms 
+          and scatter plots to pie charts and box plots, learn the fundamental visualizations every data analyst needs.
         </p>
         
         {/* Key concepts preview */}
@@ -90,19 +150,19 @@ const HistogramHub = () => {
           <div className="flex items-start gap-2">
             <span className="text-cyan-400">📊</span>
             <div>
-              <strong className="text-cyan-300">Beginners:</strong> Start with the Intuitive Introduction
+              <strong className="text-cyan-300">Distributions:</strong> Histograms & Box Plots
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <span className="text-violet-400">📐</span>
+            <span className="text-violet-400">📈</span>
             <div>
-              <strong className="text-violet-300">Learn the Rule:</strong> Discover the √n formula
+              <strong className="text-violet-300">Relationships:</strong> Scatter Plots & Line Charts
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <span className="text-emerald-400"></span>
+            <span className="text-emerald-400">🥧</span>
             <div>
-              <strong className="text-emerald-300">Master Shapes:</strong> Identify real-world patterns
+              <strong className="text-emerald-300">Comparisons:</strong> Bar Charts & Pie Charts
             </div>
           </div>
         </div>
@@ -172,7 +232,7 @@ const HistogramHub = () => {
                     size="sm"
                     className="px-4"
                   >
-                    Start Learning
+                    Begin
                   </Button>
                 </div>
               </div>
@@ -186,45 +246,53 @@ const HistogramHub = () => {
         <h3 className="text-lg font-semibold mb-4">Complete Learning Objectives</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-3">
-            <h4 className="font-medium text-cyan-400">Core Concepts</h4>
+            <h4 className="font-medium text-cyan-400">Core Visualization Concepts</h4>
             <ul className="text-sm text-gray-300 space-y-2">
               <li className="flex items-start gap-2">
                 <span className="text-cyan-500 mt-1">•</span>
-                <span>Understanding what histograms are and why we use them</span>
+                <span>When to use each chart type for maximum insight</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-cyan-500 mt-1">•</span>
-                <span>The square root rule: k = √n for optimal bin count</span>
+                <span>Understanding distributions with histograms and box plots</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-cyan-500 mt-1">•</span>
-                <span>How bin width relates to range and number of bins</span>
+                <span>Revealing relationships with scatter plots</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-cyan-500 mt-1">•</span>
-                <span>Reading and interpreting histogram shapes</span>
+                <span>Tracking trends over time with line charts</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-cyan-500 mt-1">•</span>
+                <span>Comparing categories with bar and pie charts</span>
               </li>
             </ul>
           </div>
           
           <div className="space-y-3">
-            <h4 className="font-medium text-violet-400">Practical Skills</h4>
+            <h4 className="font-medium text-violet-400">Practical Data Skills</h4>
             <ul className="text-sm text-gray-300 space-y-2">
               <li className="flex items-start gap-2">
                 <span className="text-violet-500 mt-1">•</span>
-                <span>Choosing appropriate bin counts for your data</span>
+                <span>Choosing the right visualization for your data type</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-violet-500 mt-1">•</span>
-                <span>Identifying normal, skewed, and bimodal distributions</span>
+                <span>Identifying correlations and outliers</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-violet-500 mt-1">•</span>
-                <span>Connecting histogram patterns to real-world phenomena</span>
+                <span>Understanding quartiles and five-number summaries</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-violet-500 mt-1">•</span>
-                <span>Avoiding common pitfalls in histogram creation</span>
+                <span>Interpreting patterns and drawing conclusions</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-violet-500 mt-1">•</span>
+                <span>Avoiding common visualization mistakes</span>
               </li>
             </ul>
           </div>
@@ -234,9 +302,9 @@ const HistogramHub = () => {
       {/* Quick tip */}
       <div className="mt-6 p-4 bg-blue-900/20 border border-blue-600/30 rounded-lg">
         <p className="text-sm text-blue-300">
-          <strong className="text-blue-400">Pro Tip:</strong> The square root rule (k = √n) is a great 
-          starting point, but always look at your histogram and adjust if needed. The goal is to reveal 
-          the underlying pattern without creating too much noise or losing important details.
+          <strong className="text-blue-400">Pro Tip:</strong> Each visualization type has its strengths. 
+          Histograms show distributions, scatter plots reveal correlations, line charts track changes over time, 
+          and bar charts compare categories. Choose the right tool for your data story!
         </p>
       </div>
     </VisualizationContainer>
