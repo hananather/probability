@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useMathJax } from '@/hooks/useMathJax';
 import * as d3 from "@/utils/d3-utils";
 import { 
   VisualizationContainer, 
@@ -145,7 +146,6 @@ function DescriptiveStatisticsFoundations({ onComplete }) {
   const [currentSection, setCurrentSection] = useState(0);
   const [data] = useState(ACCIDENT_DATA);
   const svgRef = useRef(null);
-  const mathRef = useRef(null);
   const [hasCompleted, setHasCompleted] = useState(false);
   const [animationStep, setAnimationStep] = useState(0);
   
@@ -202,6 +202,9 @@ function DescriptiveStatisticsFoundations({ onComplete }) {
       variance, stdDev, cv
     };
   }, [data]);
+  
+  // MathJax hook - must be after stats is defined
+  const mathRef = useMathJax([currentSection, stats, data]);
   
   // Render LaTeX
   useEffect(() => {

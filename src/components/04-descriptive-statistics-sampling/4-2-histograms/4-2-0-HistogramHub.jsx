@@ -5,8 +5,12 @@ import { VisualizationContainer } from "@/components/ui/VisualizationContainer";
 import { cn } from "@/lib/design-system";
 import { Button } from "@/components/ui/button";
 import HistogramIntuitiveIntro from "./4-2-1-HistogramIntuitiveIntro";
+import HistogramShapeExplorer from "./4-2-1-HistogramShapeExplorer";
 import HistogramInteractiveJourney from "./4-2-2-HistogramInteractiveJourney";
 import HistogramShapeAnalysis from "./4-2-3-HistogramShapeAnalysis";
+import BoxplotQuartilesExplorer from "./4-2-4-BoxplotQuartilesExplorer";
+import BoxplotQuartilesJourney from "./4-2-5-BoxplotQuartilesJourney";
+import BoxplotRealWorldExplorer from "./4-2-6-BoxplotRealWorldExplorer";
 import ScatterPlotAnimation from "./4-2-7-ScatterPlotAnimation";
 import LineChartAnimation from "./4-2-8-LineChartAnimation";
 import BoxPlotAnimation from "./4-2-9-BoxPlotAnimation";
@@ -18,7 +22,7 @@ import { Sparkles, Calculator, BarChart3, ChevronLeft, TrendingUp, LineChart, Bo
 const learningPaths = [
   {
     id: 'intro',
-    title: 'Intuitive Introduction',
+    title: '1. Histogram Introduction',
     description: 'Start here! See why we need histograms through animated examples.',
     icon: Sparkles,
     color: 'from-cyan-500 to-blue-500',
@@ -28,8 +32,19 @@ const learningPaths = [
     concepts: ['What are bins?', 'Why group data?', 'Visual patterns']
   },
   {
+    id: 'shape-explorer',
+    title: '2. Histogram Shape Explorer',
+    description: 'Explore how histogram shapes reveal data patterns.',
+    icon: BarChart3,
+    color: 'from-blue-500 to-indigo-500',
+    component: HistogramShapeExplorer,
+    difficulty: 'Beginner',
+    duration: '8 min',
+    concepts: ['Shape patterns', 'Data distributions', 'Visual analysis']
+  },
+  {
     id: 'journey',
-    title: 'Finding Optimal Bins',
+    title: '3. Finding Optimal Bins',
     description: 'Learn the square root rule for choosing the perfect number of bins.',
     icon: Calculator,
     color: 'from-violet-500 to-purple-500', 
@@ -40,7 +55,7 @@ const learningPaths = [
   },
   {
     id: 'shapes',
-    title: 'Shape Recognition',
+    title: '4. Shape Recognition',
     description: 'Learn different distribution shapes and their real-world meanings.',
     icon: BarChart3,
     color: 'from-emerald-500 to-teal-500',
@@ -50,8 +65,41 @@ const learningPaths = [
     concepts: ['Normal distribution', 'Skewness', 'Real-world patterns']
   },
   {
+    id: 'boxplot-quartiles',
+    title: '5. Boxplot Quartiles Explorer',
+    description: 'Master quartiles and the five-number summary with interactive boxplots.',
+    icon: Box,
+    color: 'from-teal-500 to-cyan-500',
+    component: BoxplotQuartilesExplorer,
+    difficulty: 'Intermediate',
+    duration: '10 min',
+    concepts: ['Quartiles', 'Five-number summary', 'IQR', 'Data spread']
+  },
+  {
+    id: 'boxplot-journey',
+    title: '6. Boxplot Interactive Journey',
+    description: 'Take an interactive journey through boxplot analysis.',
+    icon: Box,
+    color: 'from-cyan-500 to-blue-500',
+    component: BoxplotQuartilesJourney,
+    difficulty: 'Intermediate',
+    duration: '12 min',
+    concepts: ['Boxplot construction', 'Outlier detection', 'Distribution comparison']
+  },
+  {
+    id: 'boxplot-realworld',
+    title: '7. Boxplot Real-World Explorer',
+    description: 'Apply boxplots to real-world datasets and scenarios.',
+    icon: Box,
+    color: 'from-blue-500 to-purple-500',
+    component: BoxplotRealWorldExplorer,
+    difficulty: 'Advanced',
+    duration: '15 min',
+    concepts: ['Real data analysis', 'Practical applications', 'Data insights']
+  },
+  {
     id: 'scatter',
-    title: 'Scatter Plots',
+    title: '8. Scatter Plots',
     description: 'Discover relationships between two variables with animated scatter plots.',
     icon: TrendingUp,
     color: 'from-orange-500 to-red-500',
@@ -62,7 +110,7 @@ const learningPaths = [
   },
   {
     id: 'line',
-    title: 'Line Charts',
+    title: '9. Line Charts',
     description: 'Learn how to visualize trends and changes over time.',
     icon: LineChart,
     color: 'from-pink-500 to-rose-500',
@@ -72,9 +120,9 @@ const learningPaths = [
     concepts: ['Time series', 'Trends', 'Seasonal patterns']
   },
   {
-    id: 'box',
-    title: 'Box Plots',
-    description: 'Understand data distributions with five-number summaries.',
+    id: 'box-animation',
+    title: '10. Box Plot Animation',
+    description: 'Understand data distributions with animated five-number summaries.',
     icon: Box,
     color: 'from-indigo-500 to-blue-600',
     component: BoxPlotAnimation,
@@ -84,7 +132,7 @@ const learningPaths = [
   },
   {
     id: 'bar',
-    title: 'Bar Charts',
+    title: '11. Bar Charts',
     description: 'Compare categories visually with animated bar charts.',
     icon: BarChart2,
     color: 'from-green-500 to-emerald-500',
@@ -95,7 +143,7 @@ const learningPaths = [
   },
   {
     id: 'pie',
-    title: 'Pie Charts',
+    title: '12. Pie Charts',
     description: 'Visualize parts of a whole with engaging pie chart animations.',
     icon: PieChart,
     color: 'from-purple-500 to-pink-500',
@@ -169,7 +217,7 @@ const HistogramHub = () => {
       </div>
       
       {/* Learning path cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {learningPaths.map((path) => {
           const Icon = path.icon;
           return (

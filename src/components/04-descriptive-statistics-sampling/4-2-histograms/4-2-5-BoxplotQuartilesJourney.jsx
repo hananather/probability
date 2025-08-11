@@ -269,8 +269,26 @@ function BoxplotQuartilesJourney() {
       
       const sortedG = g.append("g").attr("class", "sorted-data");
       
+      // Calculate positions with collision detection
+      const circleRadius = 20;
+      const minDistance = circleRadius * 2 + 5; // Add 5px spacing between circles
+      const positions = [];
+      
       sortedData.forEach((d, i) => {
-        const x = xScale(d);
+        let x = xScale(d);
+        
+        // Check for collisions with previous circles
+        if (i > 0) {
+          const prevPos = positions[i - 1];
+          const distance = x - prevPos;
+          
+          // If circles would overlap, adjust position
+          if (distance < minDistance) {
+            x = prevPos + minDistance;
+          }
+        }
+        
+        positions.push(x);
         
         sortedG.append("circle")
           .attr("cx", x)
@@ -279,7 +297,7 @@ function BoxplotQuartilesJourney() {
           .transition()
           .duration(800)
           .delay(i * 100)
-          .attr("r", 20)
+          .attr("r", circleRadius)
           .attr("fill", colorScheme.chart.success)
           .attr("fill-opacity", 0.2)
           .attr("stroke", colorScheme.chart.success)
