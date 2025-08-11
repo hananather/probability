@@ -11,6 +11,7 @@ import { colors, typography, components, formatNumber, cn, createColorScheme } f
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { Button } from '@/components/ui/button';
 import { RangeSlider } from '@/components/ui/RangeSlider';
+import SharedNavigation from '../shared/SharedNavigation';
 
 // Use clean color scheme for better focus on learning
 const colorScheme = createColorScheme('descriptive');
@@ -853,6 +854,23 @@ function BoxplotQuartilesJourney() {
       updateProgress();
     }
   };
+
+  // Navigation handlers for SharedNavigation
+  const handleNavigate = (stepIndex) => {
+    const stages = Object.values(STAGES);
+    if (stepIndex >= 0 && stepIndex < stages.length) {
+      setStage(stages[stepIndex]);
+      if (stages[stepIndex] === STAGES.QUARTILES && sortedData.length === 0) {
+        setSortedData([...data].sort((a, b) => a - b));
+      }
+      updateProgress();
+    }
+  };
+
+  const getCurrentStep = () => {
+    const stages = Object.values(STAGES);
+    return stages.indexOf(stage);
+  };
   
   // Get current stats
   const stats = calculateStats(data);
@@ -921,21 +939,12 @@ function BoxplotQuartilesJourney() {
                   Find Median
                 </Button>
               )}
-              {showMedian && (
-                <Button
-                  variant="success"
-                  size="sm"
-                  onClick={handleNextStage}
-                >
-                  Continue to Quartiles →
-                </Button>
-              )}
             </div>
           )}
           
           {stage === STAGES.QUARTILES && (
             <div className="flex gap-3">
-              {!showQuartiles ? (
+              {!showQuartiles && (
                 <Button
                   variant="primary"
                   size="sm"
@@ -943,23 +952,6 @@ function BoxplotQuartilesJourney() {
                 >
                   Show Quartiles
                 </Button>
-              ) : (
-                <>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={handlePrevStage}
-                  >
-                    ← Back
-                  </Button>
-                  <Button
-                    variant="success"
-                    size="sm"
-                    onClick={handleNextStage}
-                  >
-                    Build Boxplot →
-                  </Button>
-                </>
               )}
             </div>
           )}
@@ -974,27 +966,10 @@ function BoxplotQuartilesJourney() {
                 >
                   Build Step by Step
                 </Button>
-              ) : !showOutliers ? (
+              ) : !showOutliers && (
                 <Button variant="secondary" size="sm" disabled>
                   Building...
                 </Button>
-              ) : (
-                <>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={handlePrevStage}
-                  >
-                    ← Back
-                  </Button>
-                  <Button
-                    variant="success"
-                    size="sm"
-                    onClick={handleNextStage}
-                  >
-                    Explore Patterns →
-                  </Button>
-                </>
               )}
             </div>
           )}
@@ -1024,17 +999,23 @@ function BoxplotQuartilesJourney() {
                   ))}
                 </div>
               </ControlGroup>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handlePrevStage}
-                className="w-32"
-              >
-                ← Back
-              </Button>
             </div>
           )}
         </div>
+        
+        {/* SharedNavigation */}
+        <SharedNavigation
+          currentStep={getCurrentStep()}
+          totalSteps={Object.values(STAGES).length}
+          onNavigate={handleNavigate}
+          nextLabel={stage === STAGES.PATTERNS ? "Complete" : "Next Stage"}
+          previousLabel="Previous Stage"
+          disabled={
+            (stage === STAGES.SORTING && sortedData.length === 0) ||
+            (stage === STAGES.QUARTILES && !showQuartiles) ||
+            (stage === STAGES.BOXPLOT && !showOutliers)
+          }
+        />
         
         {/* Key Insights */}
         {stats && (

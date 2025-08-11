@@ -16,6 +16,7 @@ import { RangeSlider } from "@/components/ui/RangeSlider";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { AlertCircle, CheckCircle, TrendingUp, Award, Info, Lightbulb } from "lucide-react";
 import { useAnimationCleanup } from "@/hooks/useAnimationCleanup";
+import SharedNavigation from "../shared/SharedNavigation";
 
 const colorScheme = createColorScheme('sampling');
 
@@ -450,34 +451,25 @@ const HistogramInteractiveJourney = () => {
         ]}
       />
       
-      {/* Navigation */}
-      <div className="mt-6 flex justify-between items-center">
-        <Button
-          onClick={() => setStage(Math.max(0, stage - 1))}
-          variant="outline"
-          disabled={stage === 0}
-        >
-          Previous Stage
-        </Button>
-        
-        <div className="text-sm text-gray-400">
-          Achievements: {achievements.size} unlocked
-        </div>
-        
-        <Button
-          onClick={() => {
-            if (stage < stages.length - 1) {
-              setStage(stage + 1);
-              if (stage === 1) {
-                unlockAchievement('learned-rule', 'Rule Learned!', 'You discovered the square root rule!', TrendingUp);
-              }
-            }
-          }}
-          disabled={stage === stages.length - 1}
-        >
-          Next Stage
-        </Button>
+      {/* Achievements display */}
+      <div className="mt-4 text-center text-sm text-gray-400">
+        Achievements: {achievements.size} unlocked
       </div>
+
+      {/* Navigation with arrow key support */}
+      <SharedNavigation
+        currentStep={stage}
+        totalSteps={stages.length}
+        onNavigate={(newStage) => {
+          setStage(newStage);
+          if (newStage === 2 && stage === 1) {
+            unlockAchievement('learned-rule', 'Rule Learned!', 'You discovered the square root rule!', TrendingUp);
+          }
+        }}
+        showProgress={false}
+        nextLabel="Next Stage"
+        previousLabel="Previous Stage"
+      />
       
       {/* Learning summary for final stage */}
       {stage === 3 && (

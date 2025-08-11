@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import * as d3 from "@/utils/d3-utils";
 import { createColorScheme, typography, cn } from "../../../lib/design-system";
 import { useSafeMathJax } from '../../../utils/mathJaxFix';
@@ -107,8 +107,8 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
     return () => document.head.removeChild(styleElement);
   }, []);
   
-  // Color scheme - use distinct colors for clarity
-  const colors = createColorScheme('hypothesis'); // Teal/Amber/Orange for better contrast
+  // Color scheme - memoized to prevent unnecessary re-renders
+  const colors = useMemo(() => createColorScheme('hypothesis'), []); // Teal/Amber/Orange for better contrast
   
   // Calculate Normal approximation parameters
   const mu = n * p;

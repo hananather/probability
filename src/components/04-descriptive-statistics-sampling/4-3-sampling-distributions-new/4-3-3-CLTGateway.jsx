@@ -1,194 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import * as d3 from 'd3';
-import { ArrowRight, Sparkles, TrendingUp } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { cn } from '../../../lib/utils';
+import React, { useRef, useState } from 'react';
+import { Sparkles, Calculator, Check, X, ChevronRight } from 'lucide-react';
 import { VisualizationSection } from '@/components/ui/VisualizationContainer';
 import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { StepByStepCalculation, CalculationStep, NestedCalculation, FormulaDisplay } from '../../ui/patterns/StepByStepCalculation';
+import { InterpretationBox, StepInterpretation } from '../../ui/patterns/InterpretationBox';
+import { QuizBreak } from '../../mdx/QuizBreak';
+import { ComparisonTable, SimpleComparisonTable } from '../../ui/patterns/ComparisonTable';
 
 const CLTGateway = () => {
-  const [isAnimating, setIsAnimating] = useState(false);
-  const svgRef = useRef(null);
   const contentRef = useRef(null);
-  const animationTimeoutRef = useRef(null);
   useSafeMathJax(contentRef);
-
-  useEffect(() => {
-    // Start animation immediately when component mounts
-    if (svgRef.current) {
-      animateTransformation();
-    }
-    
-    // Cleanup on unmount
-    return () => {
-      if (animationTimeoutRef.current) {
-        clearTimeout(animationTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  const animateTransformation = () => {
-    if (!svgRef.current) return;
-    
-    setIsAnimating(true);
-    const svg = d3.select(svgRef.current);
-    const width = 600;
-    const height = 300;
-    const margin = { top: 20, right: 20, bottom: 40, left: 20 };
-
-    svg.selectAll('*').remove();
-
-    const g = svg.append('g')
-      .attr('transform', `translate(${margin.left},${margin.top})`);
-
-    const plotWidth = (width - margin.left - margin.right) / 2 - 30;
-    const plotHeight = height - margin.top - margin.bottom;
-
-    const leftPlot = g.append('g');
-    const rightPlot = g.append('g')
-      .attr('transform', `translate(${plotWidth + 60}, 0)`);
-
-    const exponentialData = Array(1000).fill(0).map(() => -Math.log(1 - Math.random()) * 50);
-    
-    const leftBins = d3.bin()
-      .domain([0, 200])
-      .thresholds(20)(exponentialData);
-
-    const xLeft = d3.scaleLinear()
-      .domain([0, 200])
-      .range([0, plotWidth]);
-
-    const yLeft = d3.scaleLinear()
-      .domain([0, d3.max(leftBins, d => d.length)])
-      .range([plotHeight, 0]);
-
-    leftPlot.append('text')
-      .attr('x', plotWidth / 2)
-      .attr('y', -5)
-      .attr('text-anchor', 'middle')
-      .style('font-weight', 'bold')
-      .style('fill', '#94A3B8')
-      .text('Original Distribution');
-
-    leftPlot.selectAll('.bar')
-      .data(leftBins)
-      .enter().append('rect')
-      .attr('class', 'bar')
-      .attr('x', d => xLeft(d.x0))
-      .attr('y', d => yLeft(d.length))
-      .attr('width', d => xLeft(d.x1) - xLeft(d.x0) - 1)
-      .attr('height', d => plotHeight - yLeft(d.length))
-      .attr('fill', '#F87171')
-      .attr('opacity', 0)
-      .transition()
-      .duration(500)
-      .attr('opacity', 0.7);
-
-    const sampleMeans = [];
-    for (let i = 0; i < 500; i++) {
-      const sample = Array(30).fill(0).map(() => exponentialData[Math.floor(Math.random() * exponentialData.length)]);
-      sampleMeans.push(d3.mean(sample));
-    }
-
-    setTimeout(() => {
-      const arrow = g.append('g')
-        .attr('transform', `translate(${plotWidth + 10}, ${plotHeight / 2})`);
-
-      arrow.append('path')
-        .attr('d', 'M 0,0 L 40,0')
-        .attr('stroke', '#94A3B8')
-        .attr('stroke-width', 2)
-        .attr('marker-end', 'url(#arrowhead)')
-        .attr('stroke-dasharray', '40')
-        .attr('stroke-dashoffset', '40')
-        .transition()
-        .duration(500)
-        .attr('stroke-dashoffset', '0');
-
-      svg.append('defs').append('marker')
-        .attr('id', 'arrowhead')
-        .attr('markerWidth', 10)
-        .attr('markerHeight', 10)
-        .attr('refX', 10)
-        .attr('refY', 5)
-        .attr('orient', 'auto')
-        .append('polygon')
-        .attr('points', '0,0 10,5 0,10')
-        .attr('fill', '#94A3B8');
-    }, 700);
-
-    setTimeout(() => {
-      const rightBins = d3.bin()
-        .domain([d3.min(sampleMeans) - 5, d3.max(sampleMeans) + 5])
-        .thresholds(20)(sampleMeans);
-
-      const xRight = d3.scaleLinear()
-        .domain([rightBins[0].x0, rightBins[rightBins.length - 1].x1])
-        .range([0, plotWidth]);
-
-      const yRight = d3.scaleLinear()
-        .domain([0, d3.max(rightBins, d => d.length)])
-        .range([plotHeight, 0]);
-
-      rightPlot.append('text')
-        .attr('x', plotWidth / 2)
-        .attr('y', -5)
-        .attr('text-anchor', 'middle')
-        .style('font-weight', 'bold')
-        .style('fill', '#94A3B8')
-        .text('Sampling Distribution (n=30)');
-
-      rightPlot.selectAll('.bar')
-        .data(rightBins)
-        .enter().append('rect')
-        .attr('class', 'bar')
-        .attr('x', d => xRight(d.x0))
-        .attr('y', plotHeight)
-        .attr('width', d => xRight(d.x1) - xRight(d.x0) - 1)
-        .attr('height', 0)
-        .attr('fill', '#34D399')
-        .attr('opacity', 0.7)
-        .transition()
-        .duration(800)
-        .delay((d, i) => i * 20)
-        .attr('y', d => yRight(d.length))
-        .attr('height', d => plotHeight - yRight(d.length));
-
-      const mean = d3.mean(sampleMeans);
-      const std = d3.deviation(sampleMeans);
-      const xValues = d3.range(xRight.domain()[0], xRight.domain()[1], 0.1);
-      
-      const line = d3.line()
-        .x(d => xRight(d))
-        .y(d => {
-          const density = (1 / (std * Math.sqrt(2 * Math.PI))) * 
-            Math.exp(-0.5 * Math.pow((d - mean) / std, 2));
-          return yRight(density * sampleMeans.length * (rightBins[0].x1 - rightBins[0].x0));
-        })
-        .curve(d3.curveBasis);
-
-      setTimeout(() => {
-        rightPlot.append('path')
-          .datum(xValues)
-          .attr('fill', 'none')
-          .attr('stroke', '#60A5FA')
-          .attr('stroke-width', 3)
-          .attr('d', line)
-          .attr('opacity', 0)
-          .transition()
-          .duration(1000)
-          .attr('opacity', 1)
-          .on('end', () => {
-            // After animation completes, wait 3 seconds then restart
-            setIsAnimating(false);
-            animationTimeoutRef.current = setTimeout(() => {
-              animateTransformation();
-            }, 3000);
-          });
-      }, 1000);
-    }, 1200);
-  };
 
   return (
     <VisualizationSection>
@@ -201,7 +22,7 @@ const CLTGateway = () => {
       </div>
 
       <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 rounded-xl p-8 border border-blue-600/30">
-        <div className="flex items-start gap-4 mb-6">
+        <div className="flex items-start gap-4">
           <Sparkles className="w-8 h-8 text-blue-400 flex-shrink-0 mt-1" />
           <div>
             <h2 className="text-2xl font-bold text-blue-400 mb-3">The Magic of the Central Limit Theorem</h2>
@@ -212,18 +33,6 @@ const CLTGateway = () => {
             </p>
           </div>
         </div>
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="bg-neutral-800 rounded-lg p-6 border border-blue-600/30"
-        >
-          <svg ref={svgRef} width="600" height="300" className="w-full" />
-          <p className="text-center text-sm text-neutral-400 mt-4">
-            Watch how an exponential distribution transforms into a normal distribution!
-          </p>
-        </motion.div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -290,23 +99,174 @@ const CLTGateway = () => {
         </div>
       </div>
 
-      <div className="bg-gradient-to-br from-green-900/20 to-blue-900/20 rounded-xl p-8 border border-blue-600/30">
-        <div className="text-center space-y-4">
-          <TrendingUp className="w-12 h-12 text-green-400 mx-auto" />
-          <h3 className="text-2xl font-bold text-blue-400">Ready to Explore the Full Power of CLT?</h3>
-          <p className="text-neutral-300 max-w-2xl mx-auto">
-            Dive into our interactive CLT simulation where you can experiment with different 
-            distributions, sample sizes, and see the theorem in action!
-          </p>
-          <Link
-            href="/chapter4?section=central-limit-theorem"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg font-semibold hover:from-green-700 hover:to-blue-700 transition-colors"
-          >
-            Explore the Full CLT Simulation
-            <ArrowRight className="w-5 h-5" />
-          </Link>
+      {/* Classical Examples from Course Materials */}
+      <div className="bg-gradient-to-r from-indigo-900/20 to-blue-900/20 rounded-xl p-8 border border-indigo-600/30">
+        <h2 className="text-2xl font-bold text-indigo-400 mb-6">Worked Examples</h2>
+        
+        {/* Example 1: Exam Scores */}
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold text-teal-400 mb-4">Example 1: University Exam Scores</h3>
+          <div className="bg-neutral-900 rounded-lg p-6 mb-4">
+            <p className="text-neutral-300 mb-4">
+              Examination scores in a university course have mean 56 and standard deviation 11. 
+              In a class of 49 students:
+            </p>
+            <ul className="list-disc list-inside text-neutral-400 space-y-2 mb-4">
+              <li>What is the probability that the average mark is below 50?</li>
+              <li>What is the probability that the average mark lies between 50 and 60?</li>
+            </ul>
+          </div>
+          
+          <StepByStepCalculation>
+            <CalculationStep
+              stepNumber={1}
+              title="Identify the Distribution"
+              description="By CLT, the sample mean follows a normal distribution"
+              formula={`\\bar{X} \\sim N\\left(56, \\frac{11^2}{49}\\right)`}
+              explanation="With n = 49 students, mean μ = 56, and σ = 11"
+            />
+            <CalculationStep
+              stepNumber={2}
+              title="Standardize for P(X̄ < 50)"
+              description="Convert to standard normal"
+              formula={`Z = \\frac{\\bar{X} - 56}{11/7} = \\frac{50 - 56}{11/7} = -3.82`}
+              explanation="The standard error is σ/√n = 11/√49 = 11/7"
+            />
+            <CalculationStep
+              stepNumber={3}
+              title="Find Probability"
+              description="Look up in standard normal table"
+              formula={`P(\\bar{X} < 50) = P(Z < -3.82) = 0.0001`}
+              explanation="Extremely unlikely to have an average below 50"
+            />
+            <CalculationStep
+              stepNumber={4}
+              title="Calculate P(50 < X̄ < 60)"
+              description="Find the probability for the range"
+              formula={`P(-3.82 < Z < 2.55) = \\Phi(2.55) - \\Phi(-3.82) = 0.9945`}
+              explanation="Very likely (99.45%) the average is between 50 and 60"
+            />
+          </StepByStepCalculation>
+        </div>
+
+        {/* Example 2: Blood Pressure */}
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold text-teal-400 mb-4">Example 2: Blood Pressure Study</h3>
+          <div className="bg-neutral-900 rounded-lg p-6 mb-4">
+            <p className="text-neutral-300 mb-4">
+              Systolic blood pressure readings for women aged 35-40 have mean 122.6 mm Hg and 
+              standard deviation 11 mm Hg. For a sample of 25 women, what is the probability 
+              that the average blood pressure is greater than 125 mm Hg?
+            </p>
+          </div>
+          
+          <StepByStepCalculation>
+            <CalculationStep
+              stepNumber={1}
+              title="Apply CLT"
+              description="Sample mean distribution"
+              formula={`\\bar{X} \\sim N\\left(122.6, \\frac{121}{25}\\right)`}
+              explanation="n = 25, μ = 122.6, σ² = 121"
+            />
+            <CalculationStep
+              stepNumber={2}
+              title="Standardize"
+              description="Convert to Z-score"
+              formula={`Z = \\frac{125 - 122.6}{11/\\sqrt{25}} = \\frac{2.4}{2.2} = 1.09`}
+              explanation="Standard error = 11/5 = 2.2"
+            />
+            <CalculationStep
+              stepNumber={3}
+              title="Find Probability"
+              description="Use standard normal table"
+              formula={`P(\\bar{X} > 125) = P(Z > 1.09) = 0.1378`}
+              explanation="About 13.78% chance the average exceeds 125 mm Hg"
+            />
+          </StepByStepCalculation>
         </div>
       </div>
+
+      {/* Multiple Choice Questions */}
+      <QuizBreak 
+        questions={[
+          {
+            question: "As the sample size increases, what happens to the sampling distribution of the mean?",
+            options: [
+              "The distribution becomes more skewed",
+              "The variance increases",
+              "The distribution approaches normal with smaller variance",
+              "The mean changes"
+            ],
+            correctIndex: 2,
+            explanation: "As sample size increases, the CLT tells us the sampling distribution approaches normal with variance σ²/n, which decreases as n increases."
+          },
+          {
+            question: "The CLT states that the sampling distribution of the mean approaches normal when:",
+            options: [
+              "The population is normal",
+              "The sample size is large (typically n ≥ 30)",
+              "The population variance is known",
+              "The data is discrete"
+            ],
+            correctIndex: 1,
+            explanation: "The CLT requires a sufficiently large sample size (typically n ≥ 30) for the sampling distribution to approximate normal, regardless of the population distribution."
+          },
+          {
+            question: "If a population has standard deviation σ = 12 and we take samples of size n = 36, what is the standard error of the mean?",
+            options: [
+              "12",
+              "6",
+              "2",
+              "0.33"
+            ],
+            correctIndex: 2,
+            explanation: "Standard Error = σ/√n = 12/√36 = 12/6 = 2"
+          }
+        ]}
+      />
+
+      {/* Key Insights and Interpretations */}
+      <InterpretationBox title="Understanding CLT in Practice">
+        <StepInterpretation
+          step="Why n ≥ 30?"
+          interpretation="The rule of thumb n ≥ 30 comes from empirical observation that for most distributions, this sample size provides a good normal approximation. However, for highly skewed distributions, you may need larger samples."
+        />
+        <StepInterpretation
+          step="Effect on Variance"
+          interpretation="The variance of the sample mean is σ²/n, which decreases as n increases. This means larger samples give more precise estimates of the population mean."
+        />
+        <StepInterpretation
+          step="Real-world Impact"
+          interpretation="CLT justifies using normal-based methods (like t-tests and confidence intervals) even when the underlying data isn't normally distributed, which is why it's so fundamental to statistics."
+        />
+      </InterpretationBox>
+
+      {/* Comparison Table */}
+      <SimpleComparisonTable
+        title="CLT Requirements vs Applications"
+        data={[
+          {
+            aspect: "Sample Size",
+            requirement: "n ≥ 30 (general rule)",
+            application: "Quality control with 50 measurements per batch"
+          },
+          {
+            aspect: "Independence",
+            requirement: "Observations must be independent",
+            application: "Random sampling without replacement (< 10% of population)"
+          },
+          {
+            aspect: "Finite Variance",
+            requirement: "Population variance must be finite",
+            application: "Most real-world measurements (excludes Cauchy distribution)"
+          },
+          {
+            aspect: "Distribution Shape",
+            requirement: "Any distribution (with finite variance)",
+            application: "Works for exponential, uniform, binomial, etc."
+          }
+        ]}
+      />
 
       <div className="grid md:grid-cols-3 gap-4">
         <div className="bg-neutral-800 rounded-lg p-4 border border-blue-600/30">

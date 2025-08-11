@@ -28,6 +28,7 @@ import {
   Award
 } from "lucide-react";
 import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import SharedNavigation from '../shared/SharedNavigation';
 
 // Color scheme
 const colorScheme = createColorScheme('hypothesis');
@@ -722,12 +723,13 @@ const FDistributionMasterclass = () => {
         />
         
         {/* Navigation */}
-        <ProgressNavigation
-          current={currentStage + 1}
-          total={learningStages.length}
-          onPrevious={() => setCurrentStage(Math.max(0, currentStage - 1))}
-          onNext={() => setCurrentStage(Math.min(learningStages.length - 1, currentStage + 1))}
-          variant="emerald"
+        <SharedNavigation
+          currentStep={currentStage}
+          totalSteps={learningStages.length}
+          onNavigate={setCurrentStage}
+          showProgress={true}
+          nextLabel="Next Stage"
+          previousLabel="Previous Stage"
         />
         
         {/* Stage Content */}

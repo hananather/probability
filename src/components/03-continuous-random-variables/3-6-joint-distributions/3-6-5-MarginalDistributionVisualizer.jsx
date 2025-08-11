@@ -34,6 +34,8 @@ const MarginalDistributionVisualizer = () => {
   const [lambda1, setLambda1] = useState(1);
   const [lambda2, setLambda2] = useState(1.5);
   const [highlightDimension, setHighlightDimension] = useState('none'); // 'x', 'y', or 'none'
+  const [mousePosition, setMousePosition] = useState(null);
+  const [cursorDensity, setCursorDensity] = useState(null)
   
   const contentRef = useRef(null);
   const svgRef = useRef(null);
@@ -158,13 +160,23 @@ const MarginalDistributionVisualizer = () => {
 
   // Main visualization component
   const MarginalVisualization = () => {
-    const totalWidth = 500;
-    const totalHeight = 500;
-    const margin = { top: 80, right: 80, bottom: 60, left: 60 };
-    const jointWidth = totalWidth - margin.left - margin.right;
-    const jointHeight = totalHeight - margin.top - margin.bottom;
+    // Increase dimensions to accommodate marginal distributions
+    const jointWidth = 360;
+    const jointHeight = 360;
     const marginalHeight = 60;
     const marginalWidth = 60;
+    const gap = 15; // Space between joint and marginal distributions
+    
+    // Calculate total SVG dimensions to fit everything
+    const margin = { 
+      top: marginalHeight + gap + 20,  // Space for top marginal + gap + padding
+      right: marginalWidth + gap + 20, // Space for right marginal + gap + padding
+      bottom: 60, 
+      left: 60 
+    };
+    
+    const totalWidth = margin.left + jointWidth + margin.right;
+    const totalHeight = margin.top + jointHeight + margin.bottom;
 
     useEffect(() => {
       if (!svgRef.current) return;
@@ -198,9 +210,30 @@ const MarginalDistributionVisualizer = () => {
       const colorScale = d3.scaleSequential(d3.interpolateBlues)
         .domain([0, d3.max(contourData.thresholds)]);
 
-      // Add contour paths with highlighting
+      // Add grid lines
       jointGroup.append("g")
-        .selectAll("path")
+        .attr("class", "grid")
+        .attr("opacity", 0.15)
+        .call(d3.axisBottom(xScale)
+          .tickSize(jointHeight)
+          .tickFormat("")
+        )
+        .style("stroke-dasharray", "2,2");
+
+      jointGroup.append("g")
+        .attr("class", "grid")
+        .attr("opacity", 0.15)
+        .call(d3.axisLeft(yScale)
+          .tickSize(-jointWidth)
+          .tickFormat("")
+        )
+        .style("stroke-dasharray", "2,2");
+
+      // Add contour paths with highlighting
+      const contourGroup = jointGroup.append("g")
+        .attr("class", "contours");
+        
+      contourGroup.selectAll("path")
         .data(contours)
         .enter().append("path")
         .attr("d", d3.geoPath()
@@ -219,7 +252,8 @@ const MarginalDistributionVisualizer = () => {
         .attr("opacity", () => {
           if (highlightDimension === 'none') return 0.8;
           return 0.2; // Dim more when highlighting marginals
-        });
+        })
+        .style("transition", "opacity 0.3s ease");
 
       // Add projection lines when highlighting marginals
       if (highlightDimension === 'x') {
@@ -256,31 +290,49 @@ const MarginalDistributionVisualizer = () => {
 
 
       // Add axes for joint distribution
-      jointGroup.append("g")
+      const xAxis = jointGroup.append("g")
         .attr("transform", `translate(0,${jointHeight})`)
-        .call(d3.axisBottom(xScale))
-        .append("text")
+        .call(d3.axisBottom(xScale));
+        
+      xAxis.selectAll("text")
+        .style("fill", "white");
+      xAxis.selectAll("line")
+        .style("stroke", "white");
+      xAxis.select(".domain")
+        .style("stroke", "white");
+        
+      xAxis.append("text")
         .attr("x", jointWidth / 2)
         .attr("y", 40)
         .attr("fill", "white")
         .style("text-anchor", "middle")
         .style("font-size", "14px")
-        .text("X");
+        .style("font-weight", "600")
+        .text("X Variable");
 
-      jointGroup.append("g")
-        .call(d3.axisLeft(yScale))
-        .append("text")
+      const yAxis = jointGroup.append("g")
+        .call(d3.axisLeft(yScale));
+        
+      yAxis.selectAll("text")
+        .style("fill", "white");
+      yAxis.selectAll("line")
+        .style("stroke", "white");
+      yAxis.select(".domain")
+        .style("stroke", "white");
+        
+      yAxis.append("text")
         .attr("transform", "rotate(-90)")
-        .attr("y", -50)
+        .attr("y", -45)
         .attr("x", -jointHeight / 2)
         .attr("fill", "white")
         .style("text-anchor", "middle")
         .style("font-size", "14px")
-        .text("Y");
+        .style("font-weight", "600")
+        .text("Y Variable");
 
       // X Marginal Distribution (top)
       const xMarginalGroup = g.append("g")
-        .attr("transform", `translate(${margin.left},${margin.top - marginalHeight - 10})`);
+        .attr("transform", `translate(${margin.left},${20})`); // Position at top with padding
 
       const xMarginalScale = d3.scaleLinear()
         .domain([0, d3.max(xMarginalData, d => d.y) * 1.1])
@@ -324,7 +376,7 @@ const MarginalDistributionVisualizer = () => {
 
       // Y Marginal Distribution (right)
       const yMarginalGroup = g.append("g")
-        .attr("transform", `translate(${margin.left + jointWidth + 10},${margin.top})`);
+        .attr("transform", `translate(${margin.left + jointWidth + gap},${margin.top})`);
 
       const yMarginalScale = d3.scaleLinear()
         .domain([0, d3.max(yMarginalData, d => d.x) * 1.1])
@@ -377,17 +429,126 @@ const MarginalDistributionVisualizer = () => {
         .style("font-weight", "bold")
         .text("Joint Distribution f(x,y)");
 
+      // Add color scale legend
+      const legendWidth = 20;
+      const legendHeight = 200;
+      const legendGroup = g.append("g")
+        .attr("transform", `translate(${margin.left + jointWidth + gap + marginalWidth + 20}, ${margin.top + 50})`);
+
+      // Create gradient for legend
+      const gradientId = "contour-gradient";
+      const gradient = svg.append("defs")
+        .append("linearGradient")
+        .attr("id", gradientId)
+        .attr("x1", "0%")
+        .attr("y1", "100%")
+        .attr("x2", "0%")
+        .attr("y2", "0%");
+
+      const nStops = 10;
+      for (let i = 0; i <= nStops; i++) {
+        const value = (i / nStops) * d3.max(contourData.thresholds);
+        gradient.append("stop")
+          .attr("offset", `${(i / nStops) * 100}%`)
+          .attr("stop-color", colorScale(value));
+      }
+
+      legendGroup.append("rect")
+        .attr("width", legendWidth)
+        .attr("height", legendHeight)
+        .style("fill", `url(#${gradientId})`);
+
+      const legendScale = d3.scaleLinear()
+        .domain([0, d3.max(contourData.thresholds)])
+        .range([legendHeight, 0]);
+
+      legendGroup.append("g")
+        .attr("transform", `translate(${legendWidth}, 0)`)
+        .call(d3.axisRight(legendScale).ticks(5))
+        .selectAll("text")
+        .style("font-size", "10px")
+        .style("fill", "white");
+
+      legendGroup.append("text")
+        .attr("x", legendWidth / 2)
+        .attr("y", -10)
+        .attr("text-anchor", "middle")
+        .style("font-size", "11px")
+        .style("fill", "white")
+        .text("Density");
+
+      // Add interactive overlay for crosshair
+      const overlay = jointGroup.append("rect")
+        .attr("width", jointWidth)
+        .attr("height", jointHeight)
+        .attr("fill", "none")
+        .attr("pointer-events", "all");
+
+      const crosshairGroup = jointGroup.append("g")
+        .attr("class", "crosshair")
+        .style("display", "none");
+
+      const verticalLine = crosshairGroup.append("line")
+        .attr("y1", 0)
+        .attr("y2", jointHeight)
+        .attr("stroke", "yellow")
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "3,3")
+        .attr("opacity", 0.7);
+
+      const horizontalLine = crosshairGroup.append("line")
+        .attr("x1", 0)
+        .attr("x2", jointWidth)
+        .attr("stroke", "yellow")
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "3,3")
+        .attr("opacity", 0.7);
+
+      const coordText = crosshairGroup.append("text")
+        .attr("fill", "yellow")
+        .style("font-size", "11px")
+        .style("font-weight", "bold")
+        .style("text-shadow", "1px 1px 2px rgba(0,0,0,0.8)");
+
+      overlay
+        .on("mousemove", function(event) {
+          const [mx, my] = d3.pointer(event);
+          const x = xScale.invert(mx);
+          const y = yScale.invert(my);
+          const density = getJointPDF(x, y);
+
+          crosshairGroup.style("display", null);
+          verticalLine.attr("x1", mx).attr("x2", mx);
+          horizontalLine.attr("y1", my).attr("y2", my);
+          
+          coordText
+            .attr("x", mx + 5)
+            .attr("y", my - 5)
+            .text(`(${x.toFixed(2)}, ${y.toFixed(2)}) = ${density.toFixed(4)}`);
+
+          setMousePosition({ x, y });
+          setCursorDensity(density);
+        })
+        .on("mouseout", function() {
+          crosshairGroup.style("display", "none");
+          setMousePosition(null);
+          setCursorDensity(null);
+        });
+
     }, [
       contourData, 
       xMarginalData, 
       yMarginalData, 
       bounds, 
-      highlightDimension
+      highlightDimension,
+      getJointPDF,
+      setMousePosition,
+      setCursorDensity
     ]);
 
     return (
-      <div className="flex flex-col items-center">
-        <svg ref={svgRef} width={totalWidth} height={totalHeight} />
+      <div className="flex flex-col items-center" style={{ width: '100%', minWidth: `${totalWidth}px` }}>
+        <svg ref={svgRef} width={totalWidth} height={totalHeight} style={{ overflow: 'visible' }} />
       </div>
     );
   };
@@ -408,6 +569,7 @@ const MarginalDistributionVisualizer = () => {
                   onClick={() => setDistribution('bivariate-normal')}
                   variant={distribution === 'bivariate-normal' ? "default" : "outline"}
                   size="sm"
+                  className="transition-all duration-300"
                 >
                   Bivariate Normal
                 </Button>
@@ -415,6 +577,7 @@ const MarginalDistributionVisualizer = () => {
                   onClick={() => setDistribution('uniform')}
                   variant={distribution === 'uniform' ? "default" : "outline"}
                   size="sm"
+                  className="transition-all duration-300"
                 >
                   Uniform
                 </Button>
@@ -422,6 +585,7 @@ const MarginalDistributionVisualizer = () => {
                   onClick={() => setDistribution('exponential')}
                   variant={distribution === 'exponential' ? "default" : "outline"}
                   size="sm"
+                  className="transition-all duration-300"
                 >
                   Exponential
                 </Button>
@@ -483,34 +647,117 @@ const MarginalDistributionVisualizer = () => {
                   onClick={() => setHighlightDimension('x')}
                   variant={highlightDimension === 'x' ? "default" : "outline"}
                   size="sm"
-                  className="bg-red-600 hover:bg-red-700 text-white"
+                  className="bg-red-600 hover:bg-red-700 text-white transition-all duration-200"
                 >
-                  Show X Marginal
+                  Highlight X Marginal
                 </Button>
                 
                 <Button
                   onClick={() => setHighlightDimension('y')}
                   variant={highlightDimension === 'y' ? "default" : "outline"}
                   size="sm"
-                  className="bg-teal-600 hover:bg-teal-700 text-white"
+                  className="bg-teal-600 hover:bg-teal-700 text-white transition-all duration-200"
                 >
-                  Show Y Marginal
+                  Highlight Y Marginal
                 </Button>
 
                 <Button
                   onClick={() => setHighlightDimension('none')}
                   variant={highlightDimension === 'none' ? "default" : "outline"}
                   size="sm"
+                  className="transition-all duration-200"
                 >
                   Show Both Marginals
                 </Button>
+              </div>
+              
+              {/* Quick Presets */}
+              <div className="mt-3 flex flex-wrap gap-2 justify-center">
+                <span className="text-xs text-neutral-400 self-center">Quick Presets:</span>
+                {distribution === 'bivariate-normal' && (
+                  <>
+                    <Button
+                      onClick={() => setCorrelation(0)}
+                      size="sm"
+                      variant="outline"
+                      className="text-xs py-1 px-2"
+                    >
+                      Independent (ρ=0)
+                    </Button>
+                    <Button
+                      onClick={() => setCorrelation(0.7)}
+                      size="sm"
+                      variant="outline"
+                      className="text-xs py-1 px-2"
+                    >
+                      Strong Positive (ρ=0.7)
+                    </Button>
+                    <Button
+                      onClick={() => setCorrelation(-0.7)}
+                      size="sm"
+                      variant="outline"
+                      className="text-xs py-1 px-2"
+                    >
+                      Strong Negative (ρ=-0.7)
+                    </Button>
+                  </>
+                )}
+                {distribution === 'exponential' && (
+                  <>
+                    <Button
+                      onClick={() => { setLambda1(1); setLambda2(1); }}
+                      size="sm"
+                      variant="outline"
+                      className="text-xs py-1 px-2"
+                    >
+                      Equal Rates (λ=1)
+                    </Button>
+                    <Button
+                      onClick={() => { setLambda1(0.5); setLambda2(2); }}
+                      size="sm"
+                      variant="outline"
+                      className="text-xs py-1 px-2"
+                    >
+                      Different Rates
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </Card>
 
           {/* Main visualization */}
-          <div className="flex justify-center my-6">
-            <MarginalVisualization />
+          <div className="flex justify-center" style={{ marginTop: '20px', marginBottom: '40px' }}>
+            <div style={{ minHeight: '600px', overflow: 'visible' }}>
+              <MarginalVisualization />
+              {/* Statistical Info Overlay */}
+              {cursorDensity !== null && (
+                <div className="mt-4 p-3 bg-neutral-800/90 rounded-lg border border-neutral-600">
+                  <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <span className="text-neutral-400">Cursor Position:</span>
+                      <div className="font-mono text-yellow-400">
+                        ({mousePosition?.x.toFixed(2)}, {mousePosition?.y.toFixed(2)})
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-neutral-400">Density at Cursor:</span>
+                      <div className="font-mono text-yellow-400">
+                        {cursorDensity.toFixed(4)}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-neutral-400">Distribution Parameters:</span>
+                      <div className="font-mono text-blue-400">
+                        {distribution === 'bivariate-normal' && `ρ = ${correlation.toFixed(2)}`}
+                        {distribution === 'exponential' && `λ₁ = ${lambda1.toFixed(1)}, λ₂ = ${lambda2.toFixed(1)}`}
+                        {distribution === 'uniform' && `[0,2] × [0,2]`}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Mathematical formulas */}
@@ -622,6 +869,13 @@ const MarginalDistributionVisualizer = () => {
                   Higher contour levels indicate regions where both X and Y are more likely to occur together.
                 </div>
               </div>
+              
+              <div className="flex items-start gap-3">
+                <div className="w-3 h-3 bg-yellow-500 rounded-full mt-1 flex-shrink-0"></div>
+                <div>
+                  <span className="font-medium text-yellow-400">Interactive Crosshair:</span> Hover over the joint distribution to see exact coordinates and probability density values.
+                </div>
+              </div>
 
               <div className="mt-4 p-3 bg-yellow-900/20 rounded-lg border border-yellow-500/30">
                 <p className="text-yellow-400 font-medium">💡 Key Insights:</p>
@@ -630,6 +884,17 @@ const MarginalDistributionVisualizer = () => {
                   <li>• <strong>Projection:</strong> The dashed lines show how the joint distribution "projects" onto each axis</li>
                   <li>• <strong>Independence:</strong> For independent variables (uniform, exponential), the joint PDF equals the product of marginals</li>
                   <li>• <strong>Correlation:</strong> For bivariate normal, ρ affects the joint shape but not the marginal distributions</li>
+                </ul>
+              </div>
+              
+              <div className="mt-3 p-3 bg-green-900/20 rounded-lg border border-green-500/30">
+                <p className="text-green-400 font-medium text-sm">✨ New Interactive Features:</p>
+                <ul className="text-neutral-300 text-xs mt-2 space-y-1">
+                  <li>• <strong>Hover over the plot</strong> to see coordinates and density values with yellow crosshair</li>
+                  <li>• <strong>Color scale legend</strong> on the right shows density levels</li>
+                  <li>• <strong>Grid lines</strong> for better readability</li>
+                  <li>• <strong>Quick presets</strong> for common parameter values</li>
+                  <li>• <strong>Live statistics</strong> displayed below the plot when hovering</li>
                 </ul>
               </div>
             </div>

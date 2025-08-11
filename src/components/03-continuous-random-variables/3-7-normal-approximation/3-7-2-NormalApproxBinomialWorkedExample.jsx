@@ -5,11 +5,12 @@ import jStat from "jstat";
 import { cn } from "../../../lib/utils";
 import { RangeSlider } from "../../ui/RangeSlider";
 import { useSafeMathJax } from '../../../utils/mathJaxFix';
-import { colors, typography, components, formatNumber, createColorScheme } from '../../../lib/design-system';
+import { colors, typography, components, formatNumber } from '../../../lib/design-system';
 import { VisualizationContainer, ControlGroup } from '../../ui/VisualizationContainer';
-
-// Use probability color scheme
-const colorScheme = createColorScheme('probability');
+import { SemanticGradientCard } from '../../ui/patterns/SemanticGradientCard';
+import { InterpretationBox, StepInterpretation } from '../../ui/patterns/InterpretationBox';
+import { StepByStepCalculation, CalculationStep, FormulaDisplay } from '../../ui/patterns/StepByStepCalculation';
+import { ChevronRight, Calculator, CheckCircle, AlertTriangle, Info, TrendingUp } from 'lucide-react';
 
 const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomialWorkedExample({
   initialN = 50,
@@ -160,19 +161,26 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
   
   // D3 visualization
   useEffect(() => {
-    if (!svgRef.current || !distributionData.binomialData.length) return;
+    if (!svgRef.current) return;
+    if (!distributionData || !distributionData.binomialData || distributionData.binomialData.length === 0) return;
     
-    const svg = d3.select(svgRef.current);
-    const width = svgRef.current.clientWidth || 600;
-    const height = 400;
-    const margin = { top: 20, right: 20, bottom: 50, left: 60 };
-    
-    svg.selectAll("*").remove();
-    
-    const { binomialData, normalData } = distributionData;
-    
-    // Scales
-    const xScale = d3.scaleLinear()
+    // Small delay to ensure DOM is ready
+    const renderChart = () => {
+      const svg = d3.select(svgRef.current);
+      // Ensure minimum width if container hasn't sized yet
+      const containerWidth = svgRef.current.parentElement?.clientWidth || svgRef.current.clientWidth;
+      const width = containerWidth > 0 ? containerWidth : 800;
+      const height = 450;
+      const margin = { top: 20, right: 30, bottom: 50, left: 60 };
+      
+      // Set SVG dimensions explicitly
+      svg.attr("width", width).attr("height", height);
+      svg.selectAll("*").remove();
+      
+      const { binomialData, normalData } = distributionData;
+      
+      // Scales
+      const xScale = d3.scaleLinear()
       .domain([
         Math.min(...binomialData.map(d => d.x), ...normalData.map(d => d.x)),
         Math.max(...binomialData.map(d => d.x), ...normalData.map(d => d.x))
@@ -303,8 +311,12 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
       .style("fill", "#3b82f6")
       .style("font-size", "12px")
       .text(`\u03bc = ${mu.toFixed(2)}`);
+    };
     
-  }, [distributionData, k, mu, showCC, highlightedConcept, colorScheme]);
+    // Use requestAnimationFrame for smoother rendering
+    requestAnimationFrame(renderChart);
+    
+  }, [n, p, k, mu, sigma, showCC, highlightedConcept, distributionData]);
   
   // Use safe MathJax processing with error handling
   useSafeMathJax(contentRef, [n, p, k, mu, sigma, probType, showCC, currentStep]);
@@ -354,6 +366,7 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
       case "le": return `P(X \\le ${k})`;
       case "ge": return `P(X \\ge ${k})`;
       case "eq": return `P(X = ${k})`;
+      default: return `P(X \\le ${k})`;
     }
   };
   
@@ -365,18 +378,30 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
     useSafeMathJax(stepRef, [n, p, mu, variance, sigma]);
     
     return (
-      <div ref={stepRef} className={cn(
-        "p-3 rounded-lg animate-fadeIn",
-        "bg-neutral-800 border border-neutral-700"
-      )}>
-        <h5 className="text-sm font-semibold mb-2">2. Normal Parameters</h5>
-        <div dangerouslySetInnerHTML={{ 
-          __html: `\\[\\begin{align}
-            \\mu &= np = ${n} \\times ${p} = ${mu.toFixed(2)} \\\\
-            \\sigma^2 &= np(1-p) = ${variance.toFixed(2)} \\\\
-            \\sigma &= ${sigma.toFixed(3)}
-          \\end{align}\\]` 
-        }} />
+      <div ref={stepRef} className="space-y-3">
+        <FormulaDisplay>
+          <div dangerouslySetInnerHTML={{ 
+            __html: `\\[\\begin{align}
+              \\mu &= np = ${n} \\times ${p} = ${mu.toFixed(2)} \\\\
+              \\sigma^2 &= np(1-p) = ${variance.toFixed(2)} \\\\
+              \\sigma &= \\sqrt{${variance.toFixed(2)}} = ${sigma.toFixed(3)}
+            \\end{align}\\]` 
+          }} />
+        </FormulaDisplay>
+        <div className="grid grid-cols-3 gap-2 text-sm">
+          <div className="bg-purple-900/20 border border-purple-700/50 rounded p-2 text-center">
+            <p className="text-xs text-purple-300">Mean</p>
+            <p className="font-mono text-purple-400">μ = {mu.toFixed(2)}</p>
+          </div>
+          <div className="bg-indigo-900/20 border border-indigo-700/50 rounded p-2 text-center">
+            <p className="text-xs text-indigo-300">Variance</p>
+            <p className="font-mono text-indigo-400">σ² = {variance.toFixed(2)}</p>
+          </div>
+          <div className="bg-blue-900/20 border border-blue-700/50 rounded p-2 text-center">
+            <p className="text-xs text-blue-300">Std Dev</p>
+            <p className="font-mono text-blue-400">σ = {sigma.toFixed(3)}</p>
+          </div>
+        </div>
       </div>
     );
   });
@@ -418,86 +443,44 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
       description="Explore when and how the normal distribution approximates the binomial distribution"
     >
       
-      {/* Main Content Area */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Visualization (60% width on desktop) */}
-        <div className="lg:col-span-3">
-          <div className={cn(
-            "bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-lg p-4",
-            "border border-neutral-700"
-          )}>
-            {/* Distribution Comparison */}
-            <div className="mb-4">
-              <div className="flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <div className={cn("w-4 h-4 rounded", `bg-${colorScheme.primary}`)} 
-                       style={{ backgroundColor: colorScheme.primary }} />
-                  <span>Binomial (Exact)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className={cn("w-4 h-1", `bg-${colorScheme.tertiary}`)} 
-                       style={{ backgroundColor: colorScheme.tertiary }} />
-                  <span>Normal (Approximation)</span>
-                </div>
+      {/* Main Content Area - Reorganized Layout */}
+      <div className="space-y-6">
+        {/* Full Width Visualization at Top */}
+        <div className={cn(
+          "bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-lg p-4",
+          "border border-neutral-700"
+        )}>
+          {/* Distribution Comparison Legend */}
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-4 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded bg-blue-500" />
+                <span>Binomial (Exact)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-1 bg-emerald-500" />
+                <span>Normal (Approximation)</span>
               </div>
             </div>
-            
-            <svg
-              ref={svgRef}
-              className="w-full h-[400px]"
-              style={{ minHeight: '400px' }}
-            />
-            
-            {/* Continuity Correction Visual */}
-            {showCC && probType === "eq" && interactionCount >= 5 && (
-              <div className={cn(
-                "mt-4 p-3 rounded-lg animate-fadeIn",
-                "bg-gradient-to-r from-teal-900/30 to-emerald-900/30",
-                "border border-teal-700/50 cursor-pointer"
-              )}
-              onClick={() => setHighlightedConcept(
-                highlightedConcept === "continuity" ? null : "continuity"
-              )}>
-                <p className="text-sm font-semibold text-teal-400">
-                  📐 Continuity Correction Visualization
-                </p>
-                <p className="text-xs text-gray-300 mt-1">
-                  The bar at k={k} spans from {k-0.5} to {k+0.5}. 
-                  {highlightedConcept === "continuity" && " (Shown as dashed lines)"}
-                </p>
-              </div>
-            )}
+            <div className="text-sm text-gray-400">
+              μ = {mu.toFixed(2)}, σ = {sigma.toFixed(3)}
+            </div>
           </div>
           
-          {/* Dynamic Insight Box */}
-          {dynamicInsight && interactionCount >= 3 && (
-            <div className={cn(
-              "mt-4 p-4 rounded-lg animate-fadeIn",
-              dynamicInsight.type === 'warning' && "bg-yellow-900/30 border border-yellow-700/50",
-              dynamicInsight.type === 'error' && "bg-red-900/30 border border-red-700/50",
-              dynamicInsight.type === 'info' && "bg-blue-900/30 border border-blue-700/50",
-              dynamicInsight.type === 'success' && "bg-green-900/30 border border-green-700/50"
-            )}>
-              <h4 className={cn(
-                "text-base font-semibold mb-2",
-                dynamicInsight.type === 'warning' && "text-yellow-400",
-                dynamicInsight.type === 'error' && "text-red-400",
-                dynamicInsight.type === 'info' && "text-blue-400",
-                dynamicInsight.type === 'success' && "text-green-400"
-              )}>
-                {dynamicInsight.title}
-              </h4>
-              <p className="text-sm text-gray-300">
-                {dynamicInsight.content}
-              </p>
-            </div>
-          )}
+          <svg
+            ref={svgRef}
+            className="w-full"
+            style={{ minHeight: '450px', height: '450px', display: 'block' }}
+          />
         </div>
         
-        {/* Controls and Calculations (40% width on desktop) */}
-        <div className="lg:col-span-2 space-y-4" ref={contentRef}>
-          {/* Parameter Controls */}
-          <ControlGroup>
+        {/* Controls and Dynamic Insights Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left Column: Controls */}
+          <div className="space-y-4" ref={contentRef}>
+            <h3 className="text-lg font-semibold text-gray-300 mb-2">Parameters & Controls</h3>
+            {/* Parameter Controls */}
+            <ControlGroup>
             <RangeSlider
               label="n (trials)"
               value={n}
@@ -570,121 +553,192 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
             </label>
           </ControlGroup>
           
-          {/* Step Navigation */}
-          <div className="flex items-center justify-between p-3 bg-neutral-800 rounded-lg">
-            <button
-              onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
-              disabled={currentStep === 1}
-              className={cn(
-                "px-3 py-1 rounded text-sm",
-                currentStep === 1
-                  ? "bg-neutral-700 text-neutral-500 cursor-not-allowed"
-                  : "bg-neutral-600 text-white hover:bg-neutral-500"
-              )}
-            >
-              Previous Step
-            </button>
-            <span className="text-sm font-mono">Step {currentStep} of 7</span>
-            <button
-              onClick={() => setCurrentStep(Math.min(7, currentStep + 1))}
-              disabled={currentStep === 7}
-              className={cn(
-                "px-3 py-1 rounded text-sm",
-                currentStep === 7
-                  ? "bg-neutral-700 text-neutral-500 cursor-not-allowed"
-                  : "bg-neutral-600 text-white hover:bg-neutral-500"
-              )}
-            >
-              Next Step
-            </button>
-          </div>
-          
-          {/* Keyboard Hint */}
-          <div className="mt-2 text-center">
-            <p className="text-xs text-neutral-500">
-              Tip: Use <kbd className="px-2 py-1 bg-neutral-800 rounded text-neutral-300">←</kbd> and{' '}
-              <kbd className="px-2 py-1 bg-neutral-800 rounded text-neutral-300">→</kbd> arrow keys to navigate
-            </p>
-          </div>
-          
-          {/* Step-by-Step Calculations */}
+          {/* Enhanced Step Navigation with Progress Indicator */}
           <div className="space-y-3">
+            {/* Progress Bar */}
+            <div className="bg-neutral-800/50 rounded-lg p-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-gray-400">Progress</span>
+                <span className="text-xs font-mono text-teal-400">Step {currentStep} of {showCC ? 7 : 6}</span>
+              </div>
+              <div className="h-2 bg-neutral-700 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-teal-500 to-emerald-500 transition-all duration-500 rounded-full"
+                  style={{ width: `${(currentStep / (showCC ? 7 : 6)) * 100}%` }}
+                />
+              </div>
+              
+              {/* Step Indicators */}
+              <div className="flex justify-between mt-3">
+                {Array.from({ length: showCC ? 7 : 6 }, (_, i) => i + 1).map(step => (
+                  <button
+                    key={step}
+                    onClick={() => setCurrentStep(step)}
+                    className={cn(
+                      "w-8 h-8 rounded-full text-xs font-bold transition-all",
+                      step <= currentStep 
+                        ? "bg-teal-600 text-white" 
+                        : "bg-neutral-700 text-neutral-400 hover:bg-neutral-600"
+                    )}
+                  >
+                    {step}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Navigation Buttons */}
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
+                disabled={currentStep === 1}
+                className={cn(
+                  "px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition-all",
+                  currentStep === 1
+                    ? "bg-neutral-700 text-neutral-500 cursor-not-allowed"
+                    : "bg-neutral-600 text-white hover:bg-neutral-500"
+                )}
+              >
+                <ChevronRight className="w-4 h-4 rotate-180" />
+                Previous
+              </button>
+              <button
+                onClick={() => setCurrentStep(Math.min(showCC ? 7 : 6, currentStep + 1))}
+                disabled={currentStep === (showCC ? 7 : 6)}
+                className={cn(
+                  "px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition-all",
+                  currentStep === (showCC ? 7 : 6)
+                    ? "bg-neutral-700 text-neutral-500 cursor-not-allowed"
+                    : "bg-neutral-600 text-white hover:bg-neutral-500"
+                )}
+              >
+                Next
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          
+          <StepByStepCalculation>
             {/* Step 1: Problem Setup */}
             {currentStep >= 1 && (
-              <div className={cn(
-                "p-3 rounded-lg animate-fadeIn",
-                "bg-neutral-800 border border-neutral-700"
-              )}>
-                <h5 className="text-sm font-semibold mb-2">1. Problem Setup</h5>
-                <p className="text-sm">
-                  Approximate <span dangerouslySetInnerHTML={{ __html: `\\(${getProbabilityNotation()}\\)` }} /> for <span dangerouslySetInnerHTML={{ __html: `\\(X \\sim B(n=${n}, p=${p})\\)` }} />
-                </p>
-              </div>
+              <CalculationStep 
+                number={1} 
+                title="Problem Setup"
+                icon={<Info className="w-4 h-4" />}
+                variant="info"
+              >
+                <div className="space-y-2">
+                  <p className="text-sm" dangerouslySetInnerHTML={{ 
+                    __html: `Approximate \\(${getProbabilityNotation()}\\)` 
+                  }} />
+                  <FormulaDisplay>
+                    <div dangerouslySetInnerHTML={{ 
+                      __html: `\\[X \\sim B(n=${n}, p=${p})\\]` 
+                    }} />
+                  </FormulaDisplay>
+                </div>
+              </CalculationStep>
             )}
             
             {/* Step 2: Normal Parameters */}
             {currentStep >= 2 && (
-              <Step2NormalParameters 
-                n={n} 
-                p={p} 
-                mu={mu} 
-                variance={variance} 
-                sigma={sigma} 
-              />
+              <CalculationStep 
+                number={2} 
+                title="Normal Parameters"
+                icon={<Calculator className="w-4 h-4" />}
+                variant="primary"
+              >
+                <Step2NormalParameters 
+                  n={n} 
+                  p={p} 
+                  mu={mu} 
+                  variance={variance} 
+                  sigma={sigma} 
+                />
+              </CalculationStep>
             )}
             
             {/* Step 3: Rule of Thumb */}
             {currentStep >= 3 && (
-              <div className={cn(
-                "p-3 rounded-lg animate-fadeIn",
-                "bg-neutral-800 border",
-                ruleOfThumbMet ? "border-green-700" : "border-red-700"
-              )}>
-                <h5 className="text-sm font-semibold mb-2">3. Rule of Thumb Check</h5>
-                <div className="space-y-1 text-sm">
-                  <div className={cn("flex justify-between", np >= 10 ? "text-green-400" : "text-red-400")}>
-                    <span>np = {np.toFixed(2)}</span>
-                    <span>{np >= 10 ? "\u2713 \u2265 10" : "\u2717 < 10"}</span>
+              <CalculationStep 
+                number={3} 
+                title="Rule of Thumb Check"
+                icon={ruleOfThumbMet ? <CheckCircle className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+                variant={ruleOfThumbMet ? "success" : "warning"}
+              >
+                <div className="space-y-2">
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className={cn("flex items-center justify-between p-2 rounded", 
+                      np >= 10 ? "bg-green-900/20 border border-green-700/50" : "bg-red-900/20 border border-red-700/50"
+                    )}>
+                      <span>np = {np.toFixed(2)}</span>
+                      <span className={np >= 10 ? "text-green-400" : "text-red-400"}>
+                        {np >= 10 ? "✓ ≥ 10" : "✗ < 10"}
+                      </span>
+                    </div>
+                    <div className={cn("flex items-center justify-between p-2 rounded",
+                      nq >= 10 ? "bg-green-900/20 border border-green-700/50" : "bg-red-900/20 border border-red-700/50"
+                    )}>
+                      <span>n(1-p) = {nq.toFixed(2)}</span>
+                      <span className={nq >= 10 ? "text-green-400" : "text-red-400"}>
+                        {nq >= 10 ? "✓ ≥ 10" : "✗ < 10"}
+                      </span>
+                    </div>
                   </div>
-                  <div className={cn("flex justify-between", nq >= 10 ? "text-green-400" : "text-red-400")}>
-                    <span>n(1-p) = {nq.toFixed(2)}</span>
-                    <span>{nq >= 10 ? "\u2713 \u2265 10" : "\u2717 < 10"}</span>
-                  </div>
+                  <InterpretationBox type={ruleOfThumbMet ? "success" : "warning"}>
+                    Approximation {ruleOfThumbMet ? "suitable" : "not recommended"} - 
+                    {ruleOfThumbMet 
+                      ? " Both conditions met for accurate normal approximation"
+                      : " Consider using exact binomial calculations instead"}
+                  </InterpretationBox>
                 </div>
-                <p className={cn("text-xs mt-2", ruleOfThumbMet ? "text-green-400" : "text-red-400")}>
-                  Approximation {ruleOfThumbMet ? "suitable ✓" : "not recommended ✗"}
-                </p>
-              </div>
+              </CalculationStep>
             )}
             
             {/* Step 4: Continuity Correction */}
             {currentStep >= 4 && showCC && (
-              <div className={cn(
-                "p-3 rounded-lg animate-fadeIn",
-                "bg-neutral-800 border border-neutral-700"
-              )}>
-                <h5 className="text-sm font-semibold mb-2">4. Continuity Correction</h5>
-                {probType === "le" && (
-                  <p className="text-sm">For <span dangerouslySetInnerHTML={{ __html: `\\(${getProbabilityNotation()}\\)` }} />, adjust: <span dangerouslySetInnerHTML={{ __html: `\\(k' = ${k} + 0.5 = ${k + 0.5}\\)` }} /></p>
-                )}
-                {probType === "ge" && (
-                  <p className="text-sm">For <span dangerouslySetInnerHTML={{ __html: `\\(${getProbabilityNotation()}\\)` }} />, adjust: <span dangerouslySetInnerHTML={{ __html: `\\(k' = ${k} - 0.5 = ${k - 0.5}\\)` }} /></p>
-                )}
-                {probType === "eq" && (
-                  <p className="text-sm">For <span dangerouslySetInnerHTML={{ __html: `\\(${getProbabilityNotation()}\\)` }} />, use interval: <span dangerouslySetInnerHTML={{ __html: `\\([${k - 0.5}, ${k + 0.5}]\\)` }} /></p>
-                )}
-              </div>
+              <CalculationStep 
+                number={4} 
+                title="Continuity Correction"
+                icon={<TrendingUp className="w-4 h-4" />}
+                variant="info"
+              >
+                <div className="space-y-3">
+                  <p className="text-sm text-gray-300">
+                    Converting discrete to continuous distribution:
+                  </p>
+                  <FormulaDisplay>
+                    {probType === "le" && (
+                      <div dangerouslySetInnerHTML={{ __html: `\\[P(X \\leq ${k}) \\approx P(X < ${k + 0.5})\\]` }} />
+                    )}
+                    {probType === "ge" && (
+                      <div dangerouslySetInnerHTML={{ __html: `\\[P(X \\geq ${k}) \\approx P(X > ${k - 0.5})\\]` }} />
+                    )}
+                    {probType === "eq" && (
+                      <div dangerouslySetInnerHTML={{ __html: `\\[P(X = ${k}) \\approx P(${k - 0.5} < X < ${k + 0.5})\\]` }} />
+                    )}
+                  </FormulaDisplay>
+                  <div className="bg-blue-900/20 border border-blue-700/50 rounded p-2">
+                    <p className="text-xs text-blue-300">
+                      Adjusted value: k' = {
+                        probType === "le" ? `${k + 0.5}` :
+                        probType === "ge" ? `${k - 0.5}` :
+                        `[${k - 0.5}, ${k + 0.5}]`
+                      }
+                    </p>
+                  </div>
+                </div>
+              </CalculationStep>
             )}
             
             {/* Step 5: Z-Score */}
-            {currentStep >= 5 && (
-              <div className={cn(
-                "p-3 rounded-lg animate-fadeIn",
-                "bg-neutral-800 border border-neutral-700"
-              )}>
-                <h5 className="text-sm font-semibold mb-2">
-                  {showCC ? "5" : "4"}. Calculate Z-Score
-                </h5>
+            {currentStep >= (showCC ? 5 : 4) && (
+              <CalculationStep 
+                number={showCC ? 5 : 4} 
+                title="Calculate Z-Score"
+                icon={<Calculator className="w-4 h-4" />}
+                variant="primary"
+              >
                 <ZScoreCalculation 
                   probType={probType}
                   showCC={showCC}
@@ -692,90 +746,158 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
                   mu={mu}
                   sigma={sigma}
                 />
-              </div>
+              </CalculationStep>
             )}
             
             {/* Step 6: Probability Result */}
-            {currentStep >= 6 && (
+            {currentStep >= (showCC ? 6 : 5) && (
+              <CalculationStep 
+                number={showCC ? 6 : 5} 
+                title="Probability Result"
+                icon={<TrendingUp className="w-4 h-4" />}
+                variant="success"
+              >
+                <div className="space-y-3">
+                  <div className="bg-gradient-to-r from-emerald-900/30 to-green-900/30 rounded-lg p-3 border border-emerald-700/50">
+                    <p className="text-sm text-gray-300 mb-2">Normal Approximation:</p>
+                    <p className="text-2xl font-mono text-emerald-400">
+                      {normalProb.toFixed(6)}
+                    </p>
+                  </div>
+                  <InterpretationBox type="info">
+                    Using the standard normal table with Z = {(((showCC ? (probType === "le" ? k + 0.5 : probType === "ge" ? k - 0.5 : k) : k) - mu) / sigma).toFixed(3)}
+                  </InterpretationBox>
+                </div>
+              </CalculationStep>
+            )}
+            
+            {/* Step 7: Comparison */}
+            {currentStep >= (showCC ? 7 : 6) && (
+              <CalculationStep 
+                number={showCC ? 7 : 6} 
+                title="Final Comparison"
+                icon={<CheckCircle className="w-4 h-4" />}
+                variant="highlight"
+              >
+                <SemanticGradientCard type="comparison">
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="bg-blue-900/20 border border-blue-700/50 rounded-lg p-3 text-center">
+                      <p className="text-xs text-blue-300 mb-1">Exact (Binomial)</p>
+                      <p className="text-2xl font-mono text-blue-400">
+                        {binomialProb.toFixed(6)}
+                      </p>
+                    </div>
+                    <div className="bg-emerald-900/20 border border-emerald-700/50 rounded-lg p-3 text-center">
+                      <p className="text-xs text-emerald-300 mb-1">Normal Approximation</p>
+                      <p className="text-2xl font-mono text-emerald-400">
+                        {normalProb.toFixed(6)}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Error Analysis */}
+                  <div className="space-y-3">
+                    <div className="bg-neutral-800/50 rounded-lg p-3">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-gray-400">Absolute Error</span>
+                        <span className="font-mono text-yellow-400">{error.toFixed(6)}</span>
+                      </div>
+                      <div className="h-3 bg-neutral-700 rounded-full overflow-hidden">
+                        <div 
+                          className={cn(
+                            "h-full transition-all duration-500 rounded-full",
+                            error < 0.01 ? "bg-gradient-to-r from-green-500 to-emerald-500" : 
+                            error < 0.05 ? "bg-gradient-to-r from-yellow-500 to-orange-500" : 
+                            "bg-gradient-to-r from-red-500 to-pink-500"
+                          )}
+                          style={{ width: `${Math.min(error * 1000, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                    
+                    <InterpretationBox type={error < 0.01 ? "success" : error < 0.05 ? "warning" : "error"}>
+                      {error < 0.01 ? "Excellent approximation!" : error < 0.05 ? "Good approximation." : "Poor approximation."}
+                      {error < 0.01 
+                        ? " The normal distribution closely matches the binomial." 
+                        : error < 0.05 
+                        ? " Consider whether this accuracy is sufficient for your use case."
+                        : " Consider using exact binomial calculations instead."}
+                    </InterpretationBox>
+                  </div>
+                </SemanticGradientCard>
+              </CalculationStep>
+            )}
+          </StepByStepCalculation>
+          </div>
+          
+          {/* Right Column: Dynamic Insights and Tips */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-300 mb-2">Analysis & Insights</h3>
+            {/* Continuity Correction Visual */}
+            {showCC && probType === "eq" && interactionCount >= 5 && (
               <div className={cn(
-                "p-3 rounded-lg animate-fadeIn",
-                "bg-neutral-800 border border-neutral-700"
+                "p-3 rounded-lg",
+                "bg-gradient-to-r from-teal-900/30 to-emerald-900/30",
+                "border border-teal-700/50 cursor-pointer"
+              )}
+              onClick={() => setHighlightedConcept(
+                highlightedConcept === "continuity" ? null : "continuity"
               )}>
-                <h5 className="text-sm font-semibold mb-2">
-                  {showCC ? "6" : "5"}. Probability Result
-                </h5>
-                <p className="text-sm mb-2">
-                  Normal Approximation: <span className="font-mono text-emerald-400">{normalProb.toFixed(6)}</span>
+                <p className="text-sm font-semibold text-teal-400">
+                  Continuity Correction Visualization
+                </p>
+                <p className="text-xs text-gray-300 mt-1">
+                  The bar at k={k} spans from {k-0.5} to {k+0.5}. 
+                  {highlightedConcept === "continuity" && " (Shown as dashed lines)"}
                 </p>
               </div>
             )}
             
-            {/* Step 7: Comparison */}
-            {currentStep >= 7 && (
+            {/* Dynamic Insight Box */}
+            {dynamicInsight && interactionCount >= 3 && (
               <div className={cn(
                 "p-4 rounded-lg animate-fadeIn",
-                "bg-gradient-to-r from-gray-800 to-gray-700",
-                "border border-neutral-600"
+                dynamicInsight.type === 'warning' && "bg-yellow-900/30 border border-yellow-700/50",
+                dynamicInsight.type === 'error' && "bg-red-900/30 border border-red-700/50",
+                dynamicInsight.type === 'info' && "bg-blue-900/30 border border-blue-700/50",
+                dynamicInsight.type === 'success' && "bg-green-900/30 border border-green-700/50"
               )}>
-                <h5 className="text-sm font-semibold mb-3">7. Comparison</h5>
-                <div className="grid grid-cols-2 gap-4 mb-3">
-                  <div className="text-center">
-                    <div className="text-2xl font-mono text-blue-400">
-                      {binomialProb.toFixed(6)}
-                    </div>
-                    <div className="text-xs text-gray-400">Exact (Binomial)</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-mono text-emerald-400">
-                      {normalProb.toFixed(6)}
-                    </div>
-                    <div className="text-xs text-gray-400">Approximation</div>
-                  </div>
-                </div>
-                
-                {/* Error Visualization */}
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-400">Absolute Error</span>
-                    <span className="font-mono text-yellow-400">{error.toFixed(6)}</span>
-                  </div>
-                  <div className="h-2 bg-neutral-700 rounded-full overflow-hidden">
-                    <div 
-                      className={cn(
-                        "h-full transition-all duration-300",
-                        error < 0.01 ? "bg-green-500" : 
-                        error < 0.05 ? "bg-yellow-500" : "bg-red-500"
-                      )}
-                      style={{ width: `${Math.min(error * 1000, 100)}%` }}
-                    />
-                  </div>
-                  <p className="text-xs text-center text-gray-400">
-                    {error < 0.01 ? "Excellent" : error < 0.05 ? "Good" : "Poor"} approximation
-                  </p>
-                </div>
+                <h4 className={cn(
+                  "text-base font-semibold mb-2",
+                  dynamicInsight.type === 'warning' && "text-yellow-400",
+                  dynamicInsight.type === 'error' && "text-red-400",
+                  dynamicInsight.type === 'info' && "text-blue-400",
+                  dynamicInsight.type === 'success' && "text-green-400"
+                )}>
+                  {dynamicInsight.title}
+                </h4>
+                <p className="text-sm text-gray-300">
+                  {dynamicInsight.content}
+                </p>
+              </div>
+            )}
+            
+            {/* Educational Tips */}
+            {interactionCount >= 10 && (
+              <div className={cn(
+                "p-4 rounded-lg animate-fadeIn",
+                "bg-gradient-to-r from-blue-900/30 to-indigo-900/30",
+                "border border-blue-700/50"
+              )}>
+                <p className="text-sm font-semibold text-blue-300 mb-2">
+                  Key Insights
+                </p>
+                <ul className="text-xs space-y-1 text-gray-300">
+                  <li>• Continuity correction improves accuracy, especially for P(X=k)</li>
+                  <li>• Approximation works best when p is near 0.5</li>
+                  <li>• Larger n generally gives better approximation</li>
+                  <li>• Check the rule of thumb before using this method</li>
+                </ul>
               </div>
             )}
           </div>
-          
-          {/* Educational Tips */}
-          {interactionCount >= 10 && (
-            <div className={cn(
-              "p-4 rounded-lg animate-fadeIn",
-              "bg-gradient-to-r from-blue-900/30 to-indigo-900/30",
-              "border border-blue-700/50"
-            )}>
-              <p className="text-sm font-semibold text-blue-300 mb-2">
-                💡 Key Insights
-              </p>
-              <ul className="text-xs space-y-1 text-gray-300">
-                <li>• Continuity correction improves accuracy, especially for P(X=k)</li>
-                <li>• Approximation works best when p is near 0.5</li>
-                <li>• Larger n generally gives better approximation</li>
-                <li>• Check the rule of thumb before using this method</li>
-              </ul>
-            </div>
-          )}
         </div>
+        
       </div>
     </VisualizationContainer>
   );

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import * as d3 from "@/utils/d3-utils";
 import { VisualizationContainer } from "../../ui/VisualizationContainer";
 import { Button } from "../../ui/button";
@@ -24,8 +24,8 @@ const GammaDistribution = React.memo(function GammaDistribution() {
   const mainSvgRef = useRef(null);
   const contentRef = useRef(null);
   
-  // Color scheme
-  const colors = createColorScheme('probability');
+  // Color scheme - memoized to prevent unnecessary re-renders
+  const colors = useMemo(() => createColorScheme('probability'), []);
   
   // Handle keyboard navigation
   const handleKeyDown = useCallback((e) => {
@@ -124,7 +124,7 @@ const GammaDistribution = React.memo(function GammaDistribution() {
       )
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.3)
-      .style("stroke", "#4b5563");
+      .style("stroke", "#e5e7eb");
     
     g.append("g")
       .attr("class", "grid")
@@ -134,7 +134,7 @@ const GammaDistribution = React.memo(function GammaDistribution() {
       )
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.3)
-      .style("stroke", "#4b5563");
+      .style("stroke", "#e5e7eb");
     
     // Axes with better visibility
     const xAxis = g.append("g")
@@ -145,9 +145,9 @@ const GammaDistribution = React.memo(function GammaDistribution() {
       .style("fill", "#e5e7eb")
       .style("font-size", "12px");
     xAxis.selectAll("line")
-      .style("stroke", "#9ca3af");
+      .style("stroke", "#e5e7eb");
     xAxis.select(".domain")
-      .style("stroke", "#9ca3af");
+      .style("stroke", "#e5e7eb");
     
     const yAxis = g.append("g")
       .call(d3.axisLeft(y));
@@ -156,9 +156,9 @@ const GammaDistribution = React.memo(function GammaDistribution() {
       .style("fill", "#e5e7eb")
       .style("font-size", "12px");
     yAxis.selectAll("line")
-      .style("stroke", "#9ca3af");
+      .style("stroke", "#e5e7eb");
     yAxis.select(".domain")
-      .style("stroke", "#9ca3af");
+      .style("stroke", "#e5e7eb");
     
     // Labels with better visibility
     g.append("text")

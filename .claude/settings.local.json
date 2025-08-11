@@ -182,7 +182,8 @@
       "Bash(else)",
       "Bash(do echo \"=== CHAPTER $chapter ===\")",
       "Bash(do echo \"--- $file ---\")",
-      "Bash(timeout 5 npm run dev)"
+      "Bash(timeout 5 npm run dev)",
+      "Bash(timeout 15 npm run dev)"
     ],
     "deny": []
   },

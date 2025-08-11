@@ -64,11 +64,23 @@ const KnowledgeCheck = React.memo(function KnowledgeCheck({ stage, onComplete })
       options: ['Data is spread out', 'Data is clustered', 'Data has outliers'],
       correct: 'Data is spread out',
       explanation: 'Large standard deviation means values are far from the mean on average.'
+    },
+    'quartiles': {
+      question: 'What percentage of data is between Q1 and Q3?',
+      options: ['25%', '50%', '75%'],
+      correct: '50%',
+      explanation: 'The IQR (Q3 - Q1) contains the middle 50% of the data.'
+    },
+    'outliers': {
+      question: 'Using the 1.5×IQR rule, an outlier is a value that is:',
+      options: ['More than 1.5×IQR from mean', 'More than 1.5×IQR from Q1 or Q3', 'More than 1.5 standard deviations from mean'],
+      correct: 'More than 1.5×IQR from Q1 or Q3',
+      explanation: 'Outliers are below Q1 - 1.5×IQR or above Q3 + 1.5×IQR.'
     }
   };
   
   const currentQ = questions[stage];
-  if (!currentQ) return null;
+  if (!currentQ || !currentQ.options) return null;
   
   return (
     <div className="bg-purple-900/20 border border-purple-600/30 p-4 rounded-lg mt-4">

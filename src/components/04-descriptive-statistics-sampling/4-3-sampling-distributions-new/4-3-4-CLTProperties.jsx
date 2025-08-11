@@ -2,392 +2,45 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { jStat } from 'jstat';
-import { ArrowRight, Sparkles, TrendingUp, Zap, Activity, TrendingDown, Play, Pause } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight, TrendingUp, Activity, TrendingDown, Calculator, BarChart3, BookOpen, ChevronRight } from 'lucide-react';
 import { Button } from '../../ui/button';
 import { Card, CardContent } from '../../ui/card';
-import { VisualizationContainer, GraphContainer } from '@/components/ui/VisualizationContainer';
+import { VisualizationContainer, GraphContainer, VisualizationSection } from '@/components/ui/VisualizationContainer';
 import { RangeSlider } from '@/components/ui/RangeSlider';
 import { cn } from '../../../lib/utils';
-import { VisualizationSection } from '@/components/ui/VisualizationContainer';
+import { QuizBreak } from '../../mdx/QuizBreak';
+import { InterpretationBox, StepInterpretation } from '../../ui/patterns/InterpretationBox';
+import { StepByStepCalculation, CalculationStep, FormulaDisplay } from '../../ui/patterns/StepByStepCalculation';
+import { ComparisonTable, SimpleComparisonTable } from '../../ui/patterns/ComparisonTable';
+import { useMathJax } from '../../../hooks/useMathJax';
 
 const CLTPropertiesMerged = () => {
-  const [showTransformation, setShowTransformation] = useState(false);
-  const [animationStage, setAnimationStage] = useState(0);
-  const [sampleSize, setSampleSize] = useState(5);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const transformationRef = useRef(null);
+  const [sampleSize, setSampleSize] = useState(30);
+  const [showDistribution, setShowDistribution] = useState(false);
   const sizeComparisonRef = useRef(null);
-  const animationFrameRef = useRef(null);
-  const contentRef = useRef(null);
+  const contentRef = useMathJax([sampleSize, showDistribution]);
 
-  // MathJax processing
+  // Visualization for sample size effect
   useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== 'undefined' && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [showTransformation, animationStage]);
-
-  // Animation for CLT transformation
-  useEffect(() => {
-    if (showTransformation && transformationRef.current) {
-      animateCLTTransformation();
+    if (showDistribution && sizeComparisonRef.current) {
+      visualizeSampleSizeEffect();
     }
-  }, [showTransformation]);
+  }, [showDistribution, sampleSize]);
 
-  // Animation for sample size comparison
-  useEffect(() => {
-    if (animationStage === 1 && sizeComparisonRef.current) {
-      animateSizeComparison();
-    }
-  }, [animationStage, sampleSize]);
-
-  // Cleanup animation frame
-  useEffect(() => {
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, []);
-
-  const animateCLTTransformation = () => {
-    const svg = d3.select(transformationRef.current);
-    const width = 700;
-    const height = 350;
-    const margin = { top: 30, right: 30, bottom: 50, left: 30 };
-
-    svg.selectAll('*').remove();
-    svg.attr('viewBox', `0 0 ${width} ${height}`);
-
-    // Dark background with subtle gradient
-    const defs = svg.append('defs');
-    const gradient = defs.append('linearGradient')
-      .attr('id', 'bg-gradient')
-      .attr('x1', '0%').attr('y1', '0%')
-      .attr('x2', '100%').attr('y2', '100%');
-    
-    gradient.append('stop')
-      .attr('offset', '0%')
-      .attr('stop-color', '#0f172a');
-    
-    gradient.append('stop')
-      .attr('offset', '100%')
-      .attr('stop-color', '#1e293b');
-
-    svg.append('rect')
-      .attr('width', width)
-      .attr('height', height)
-      .attr('fill', 'url(#bg-gradient)');
-
-    const g = svg.append('g')
-      .attr('transform', `translate(${margin.left},${margin.top})`);
-
-    const plotWidth = (width - margin.left - margin.right) / 2 - 40;
-    const plotHeight = height - margin.top - margin.bottom;
-
-    const leftPlot = g.append('g');
-    const rightPlot = g.append('g')
-      .attr('transform', `translate(${plotWidth + 80}, 0)`);
-
-    // Generate exponential data
-    const exponentialData = Array(1000).fill(0).map(() => -Math.log(1 - Math.random()) * 50);
-    
-    const leftBins = d3.bin()
-      .domain([0, 200])
-      .thresholds(25)(exponentialData);
-
-    const xLeft = d3.scaleLinear()
-      .domain([0, 200])
-      .range([0, plotWidth]);
-
-    const yLeft = d3.scaleLinear()
-      .domain([0, d3.max(leftBins, d => d.length)])
-      .range([plotHeight, 0]);
-
-    // Left plot title
-    leftPlot.append('text')
-      .attr('x', plotWidth / 2)
-      .attr('y', -10)
-      .attr('text-anchor', 'middle')
-      .style('font-weight', 'bold')
-      .style('font-size', '16px')
-      .style('fill', '#facc15')
-      .text('Original Distribution')
-      .style('opacity', 0)
-      .transition()
-      .duration(500)
-      .style('opacity', 1);
-
-    // Animated bars for original distribution
-    leftPlot.selectAll('.bar')
-      .data(leftBins)
-      .enter().append('rect')
-      .attr('class', 'bar')
-      .attr('x', d => xLeft(d.x0))
-      .attr('y', plotHeight)
-      .attr('width', d => xLeft(d.x1) - xLeft(d.x0) - 1)
-      .attr('height', 0)
-      .attr('fill', '#fbbf24')
-      .attr('opacity', 0.8)
-      .transition()
-      .duration(800)
-      .delay((d, i) => i * 20)
-      .attr('y', d => yLeft(d.length))
-      .attr('height', d => plotHeight - yLeft(d.length));
-
-    // Generate sample means
-    const sampleMeans = [];
-    for (let i = 0; i < 500; i++) {
-      const sample = Array(30).fill(0).map(() => exponentialData[Math.floor(Math.random() * exponentialData.length)]);
-      sampleMeans.push(d3.mean(sample));
-    }
-
-    // Animated arrow
-    setTimeout(() => {
-      const arrow = g.append('g')
-        .attr('transform', `translate(${plotWidth + 20}, ${plotHeight / 2})`);
-
-      // Glowing arrow effect
-      const arrowGlow = arrow.append('path')
-        .attr('d', 'M 0,0 L 40,0')
-        .attr('stroke', '#60a5fa')
-        .attr('stroke-width', 4)
-        .attr('opacity', 0.3)
-        .attr('filter', 'blur(4px)');
-
-      arrow.append('path')
-        .attr('d', 'M 0,0 L 40,0')
-        .attr('stroke', '#60a5fa')
-        .attr('stroke-width', 2)
-        .attr('marker-end', 'url(#arrowhead)')
-        .attr('stroke-dasharray', '40')
-        .attr('stroke-dashoffset', '40')
-        .transition()
-        .duration(600)
-        .attr('stroke-dashoffset', '0');
-
-      // Pulse animation for arrow
-      arrowGlow.transition()
-        .duration(1000)
-        .attr('opacity', 0.6)
-        .transition()
-        .duration(1000)
-        .attr('opacity', 0.3)
-        .on('end', function repeat() {
-          d3.select(this)
-            .transition()
-            .duration(1000)
-            .attr('opacity', 0.6)
-            .transition()
-            .duration(1000)
-            .attr('opacity', 0.3)
-            .on('end', repeat);
-        });
-
-      svg.select('defs').append('marker')
-        .attr('id', 'arrowhead')
-        .attr('markerWidth', 10)
-        .attr('markerHeight', 10)
-        .attr('refX', 10)
-        .attr('refY', 5)
-        .attr('orient', 'auto')
-        .append('polygon')
-        .attr('points', '0,0 10,5 0,10')
-        .attr('fill', '#60a5fa');
-
-      // "CLT Magic" text
-      arrow.append('text')
-        .attr('x', 20)
-        .attr('y', -10)
-        .attr('text-anchor', 'middle')
-        .style('font-size', '12px')
-        .style('fill', '#60a5fa')
-        .style('font-weight', 'bold')
-        .text('CLT')
-        .style('opacity', 0)
-        .transition()
-        .delay(300)
-        .duration(300)
-        .style('opacity', 1);
-    }, 1000);
-
-    // Right plot - sampling distribution
-    setTimeout(() => {
-      const rightBins = d3.bin()
-        .domain([d3.min(sampleMeans) - 5, d3.max(sampleMeans) + 5])
-        .thresholds(25)(sampleMeans);
-
-      const xRight = d3.scaleLinear()
-        .domain([rightBins[0].x0, rightBins[rightBins.length - 1].x1])
-        .range([0, plotWidth]);
-
-      const yRight = d3.scaleLinear()
-        .domain([0, d3.max(rightBins, d => d.length)])
-        .range([plotHeight, 0]);
-
-      // Right plot title
-      rightPlot.append('text')
-        .attr('x', plotWidth / 2)
-        .attr('y', -10)
-        .attr('text-anchor', 'middle')
-        .style('font-weight', 'bold')
-        .style('font-size', '16px')
-        .style('fill', '#34d399')
-        .text('Sampling Distribution (n=30)')
-        .style('opacity', 0)
-        .transition()
-        .duration(500)
-        .style('opacity', 1);
-
-      // Animated bars for sampling distribution
-      rightPlot.selectAll('.bar')
-        .data(rightBins)
-        .enter().append('rect')
-        .attr('class', 'bar')
-        .attr('x', d => xRight(d.x0))
-        .attr('y', plotHeight)
-        .attr('width', d => xRight(d.x1) - xRight(d.x0) - 1)
-        .attr('height', 0)
-        .attr('fill', '#34d399')
-        .attr('opacity', 0.8)
-        .transition()
-        .duration(1000)
-        .delay((d, i) => i * 30)
-        .attr('y', d => yRight(d.length))
-        .attr('height', d => plotHeight - yRight(d.length));
-
-      // Normal curve overlay
-      const mean = d3.mean(sampleMeans);
-      const std = d3.deviation(sampleMeans);
-      const xValues = d3.range(xRight.domain()[0], xRight.domain()[1], 0.1);
-      
-      const line = d3.line()
-        .x(d => xRight(d))
-        .y(d => {
-          const density = (1 / (std * Math.sqrt(2 * Math.PI))) * 
-            Math.exp(-0.5 * Math.pow((d - mean) / std, 2));
-          return yRight(density * sampleMeans.length * (rightBins[0].x1 - rightBins[0].x0));
-        })
-        .curve(d3.curveBasis);
-
-      setTimeout(() => {
-        const path = rightPlot.append('path')
-          .datum(xValues)
-          .attr('fill', 'none')
-          .attr('stroke', '#fff')
-          .attr('stroke-width', 3)
-          .attr('d', line)
-          .attr('opacity', 0);
-
-        const totalLength = path.node().getTotalLength();
-        
-        path
-          .attr('stroke-dasharray', totalLength + ' ' + totalLength)
-          .attr('stroke-dashoffset', totalLength)
-          .transition()
-          .duration(1500)
-          .attr('opacity', 1)
-          .attr('stroke-dashoffset', 0)
-          .on('end', () => {
-            // Glow effect on completion
-            path.transition()
-              .duration(500)
-              .attr('filter', 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))')
-              .transition()
-              .duration(500)
-              .attr('filter', 'none');
-          });
-
-        // "Normal!" label
-        rightPlot.append('text')
-          .attr('x', xRight(mean))
-          .attr('y', yRight.range()[0] / 2)
-          .attr('text-anchor', 'middle')
-          .style('font-size', '14px')
-          .style('fill', '#fff')
-          .style('font-weight', 'bold')
-          .text('Normal!')
-          .style('opacity', 0)
-          .transition()
-          .delay(1500)
-          .duration(500)
-          .style('opacity', 1);
-      }, 1500);
-
-      // Trigger next animation stage
-      setTimeout(() => setAnimationStage(1), 3500);
-    }, 1800);
-  };
-
-  const animateSampleSizeTransition = () => {
-    let currentSize = sampleSize;
-    const targetSize = 100;
-    const duration = 4000; // 4 seconds
-    const startTime = Date.now();
-    
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      
-      // Easing function for smooth animation
-      const easeInOutCubic = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-      const easedProgress = easeInOutCubic(progress);
-      
-      currentSize = 5 + (targetSize - 5) * easedProgress;
-      setSampleSize(Math.round(currentSize));
-      
-      if (progress < 1) {
-        animationFrameRef.current = requestAnimationFrame(animate);
-      } else {
-        setIsAnimating(false);
-        // Reset after completion
-        setTimeout(() => {
-          setSampleSize(5);
-        }, 2000);
-      }
-    };
-    
-    setIsAnimating(true);
-    animate();
-  };
-
-  const animateSizeComparison = () => {
+  const visualizeSampleSizeEffect = () => {
     const svg = d3.select(sizeComparisonRef.current);
     const width = 700;
     const height = 400;
-    const margin = { top: 40, right: 40, bottom: 60, left: 40 };
+    const margin = { top: 40, right: 30, bottom: 50, left: 60 };
 
     svg.selectAll('*').remove();
     svg.attr('viewBox', `0 0 ${width} ${height}`);
 
-    // Gradient background
-    const defs = svg.append('defs');
-    const bgGradient = defs.append('linearGradient')
-      .attr('id', 'size-bg-gradient')
-      .attr('x1', '0%').attr('y1', '0%')
-      .attr('x2', '100%').attr('y2', '100%');
-    
-    bgGradient.append('stop')
-      .attr('offset', '0%')
-      .attr('stop-color', '#0f172a');
-    
-    bgGradient.append('stop')
-      .attr('offset', '100%')
-      .attr('stop-color', '#1e293b');
-
+    // Background
     svg.append('rect')
       .attr('width', width)
       .attr('height', height)
-      .attr('fill', 'url(#size-bg-gradient)');
+      .attr('fill', '#0f172a');
 
     const g = svg.append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
@@ -396,303 +49,269 @@ const CLTPropertiesMerged = () => {
     const innerHeight = height - margin.top - margin.bottom;
 
     // Generate sampling distribution data
-    const populationMean = 50;
-    const populationSD = 15;
-    const means = [];
-    
-    for (let i = 0; i < 1000; i++) {
-      let sum = 0;
-      for (let j = 0; j < sampleSize; j++) {
-        sum += jStat.normal.sample(populationMean, populationSD);
-      }
-      means.push(sum / sampleSize);
-    }
-
-    // Scales
-    const extent = [populationMean - 4 * populationSD, populationMean + 4 * populationSD];
-    const x = d3.scaleLinear()
-      .domain(extent)
+    const xExtent = [-4, 4];
+    const xScale = d3.scaleLinear()
+      .domain(xExtent)
       .range([0, innerWidth]);
 
-    const histogram = d3.histogram()
-      .domain(x.domain())
-      .thresholds(x.ticks(40));
-
-    const bins = histogram(means);
-    
-    const y = d3.scaleLinear()
-      .domain([0, d3.max(bins, d => d.length)])
+    const yScale = d3.scaleLinear()
+      .domain([0, 0.5])
       .range([innerHeight, 0]);
 
-    // Color gradient for bars
-    const barGradient = defs.append('linearGradient')
-      .attr('id', 'bar-gradient')
+    // X and Y axes
+    g.append('g')
+      .attr('transform', `translate(0,${innerHeight})`)
+      .call(d3.axisBottom(xScale).ticks(8))
+      .style('color', '#94a3b8');
+
+    g.append('g')
+      .call(d3.axisLeft(yScale).ticks(5))
+      .style('color', '#94a3b8');
+
+    // Labels
+    g.append('text')
+      .attr('x', innerWidth / 2)
+      .attr('y', -10)
+      .attr('text-anchor', 'middle')
+      .style('fill', '#60a5fa')
+      .style('font-size', '16px')
+      .style('font-weight', 'bold')
+      .text(`Sampling Distribution (n = ${sampleSize})`);
+
+    g.append('text')
+      .attr('x', innerWidth / 2)
+      .attr('y', innerHeight + 40)
+      .attr('text-anchor', 'middle')
+      .style('fill', '#94a3b8')
+      .style('font-size', '14px')
+      .text('Standardized Sample Mean');
+
+    // Generate normal curve based on sample size
+    const standardError = 1 / Math.sqrt(sampleSize);
+    const points = d3.range(-4, 4.1, 0.1).map(x => {
+      const y = jStat.normal.pdf(x, 0, standardError);
+      return { x, y };
+    });
+
+    // Draw the curve
+    const line = d3.line()
+      .x(d => xScale(d.x))
+      .y(d => yScale(d.y))
+      .curve(d3.curveBasis);
+
+    g.append('path')
+      .datum(points)
+      .attr('fill', 'none')
+      .attr('stroke', '#60a5fa')
+      .attr('stroke-width', 3)
+      .attr('d', line);
+
+    // Fill under curve
+    const area = d3.area()
+      .x(d => xScale(d.x))
+      .y0(innerHeight)
+      .y1(d => yScale(d.y))
+      .curve(d3.curveBasis);
+
+    g.append('path')
+      .datum(points)
+      .attr('fill', 'url(#gradient)')
+      .attr('opacity', 0.3)
+      .attr('d', area);
+
+    // Gradient definition
+    const defs = svg.append('defs');
+    const gradient = defs.append('linearGradient')
+      .attr('id', 'gradient')
       .attr('x1', '0%').attr('y1', '0%')
       .attr('x2', '0%').attr('y2', '100%');
     
-    const color = d3.scaleSequential(d3.interpolateViridis)
-      .domain([5, 100]);
-    
-    barGradient.append('stop')
+    gradient.append('stop')
       .attr('offset', '0%')
-      .attr('stop-color', color(sampleSize))
-      .attr('stop-opacity', 1);
-    
-    barGradient.append('stop')
-      .attr('offset', '100%')
-      .attr('stop-color', d3.color(color(sampleSize)).darker(1))
+      .attr('stop-color', '#60a5fa')
       .attr('stop-opacity', 0.8);
+    
+    gradient.append('stop')
+      .attr('offset', '100%')
+      .attr('stop-color', '#60a5fa')
+      .attr('stop-opacity', 0.1);
 
-    // Title with sample size
-    const title = g.append('text')
-      .attr('x', innerWidth / 2)
-      .attr('y', -15)
-      .attr('text-anchor', 'middle')
-      .style('font-size', '24px')
-      .style('font-weight', 'bold')
-      .style('fill', '#fff');
-    
-    // Animated title update
-    title.append('tspan')
-      .text('n = ');
-    
-    const sizeText = title.append('tspan')
-      .attr('fill', color(sampleSize))
-      .style('font-size', '28px')
-      .text(sampleSize);
-
-    // Histogram bars with smooth transitions
-    const barGroup = g.append('g');
-    
-    const bars = barGroup.selectAll('.bar')
-      .data(bins)
-      .enter().append('rect')
-      .attr('class', 'bar')
-      .attr('x', d => x(d.x0) + 1)
-      .attr('width', d => Math.max(0, x(d.x1) - x(d.x0) - 2))
-      .attr('y', innerHeight)
-      .attr('height', 0)
-      .attr('fill', 'url(#bar-gradient)')
-      .attr('opacity', 0.9);
-    
-    bars.transition()
-      .duration(300)
-      .attr('y', d => y(d.length))
-      .attr('height', d => innerHeight - y(d.length));
-
-    // Normal curve overlay
-    const se = populationSD / Math.sqrt(sampleSize);
-    const normalData = d3.range(extent[0], extent[1], 0.5).map(xVal => ({
-      x: xVal,
-      y: jStat.normal.pdf(xVal, populationMean, se) * means.length * (bins[0].x1 - bins[0].x0)
-    }));
-    
-    const line = d3.line()
-      .x(d => x(d.x))
-      .y(d => y(d.y))
-      .curve(d3.curveBasis);
-    
-    const curvePath = g.append('path')
-      .datum(normalData)
-      .attr('fill', 'none')
-      .attr('stroke', '#fff')
-      .attr('stroke-width', 3)
-      .attr('d', line)
-      .attr('opacity', 0);
-    
-    curvePath.transition()
-      .delay(300)
-      .duration(500)
-      .attr('opacity', 1);
-
-    // Standard error visualization
-    const seGroup = g.append('g')
-      .attr('opacity', 0);
-    
-    const seLeft = x(populationMean - se);
-    const seRight = x(populationMean + se);
-    
-    // SE shaded area
-    seGroup.append('rect')
-      .attr('x', seLeft)
-      .attr('width', seRight - seLeft)
-      .attr('y', 0)
-      .attr('height', innerHeight)
-      .attr('fill', color(sampleSize))
-      .attr('opacity', 0.1);
-    
-    // SE bracket
-    const bracketY = innerHeight + 25;
-    seGroup.append('line')
-      .attr('x1', seLeft)
-      .attr('x2', seRight)
-      .attr('y1', bracketY)
-      .attr('y2', bracketY)
-      .attr('stroke', color(sampleSize))
-      .attr('stroke-width', 2);
-    
-    seGroup.append('text')
-      .attr('x', (seLeft + seRight) / 2)
-      .attr('y', bracketY + 20)
-      .attr('text-anchor', 'middle')
-      .style('font-size', '16px')
-      .style('font-weight', 'bold')
-      .style('fill', color(sampleSize))
-      .text(`SE = ${se.toFixed(2)}`);
-    
-    seGroup.transition()
-      .delay(500)
-      .duration(500)
-      .attr('opacity', 1);
-
-    // Mean line
-    g.append('line')
-      .attr('x1', x(populationMean))
-      .attr('x2', x(populationMean))
-      .attr('y1', 0)
-      .attr('y2', innerHeight)
-      .attr('stroke', '#fbbf24')
-      .attr('stroke-width', 2)
-      .attr('stroke-dasharray', '5,5')
-      .attr('opacity', 0)
-      .transition()
-      .delay(300)
-      .duration(500)
-      .attr('opacity', 0.8);
-
-    // X-axis
-    g.append('g')
-      .attr('transform', `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(x).ticks(8))
-      .attr('opacity', 0)
-      .transition()
-      .duration(500)
-      .attr('opacity', 0.5)
-      .selectAll('text')
-      .style('fill', '#94a3b8');
+    // Add standard error annotation
+    g.append('text')
+      .attr('x', innerWidth - 10)
+      .attr('y', 20)
+      .attr('text-anchor', 'end')
+      .style('fill', '#a78bfa')
+      .style('font-size', '14px')
+      .text(`SE = ${standardError.toFixed(3)}`);
   };
+
+  // Quiz questions based on course materials
+  const cltQuizQuestions = [
+    {
+      question: "According to the Central Limit Theorem, what happens to the sampling distribution of the mean as sample size increases?",
+      options: [
+        "It becomes more skewed",
+        "It approaches a normal distribution",
+        "It becomes uniform",
+        "It remains unchanged"
+      ],
+      correctIndex: 1,
+      explanation: "The CLT states that regardless of the population distribution shape, the sampling distribution of the mean approaches a normal distribution as n increases."
+    },
+    {
+      question: "A professor's exam grades have μ = 56 and σ = 11. For a class of 49 students, what is the standard error of the mean?",
+      options: [
+        "11",
+        "1.57",
+        "2.24",
+        "0.22"
+      ],
+      correctIndex: 1,
+      explanation: "SE = σ/√n = 11/√49 = 11/7 = 1.57"
+    },
+    {
+      question: "What is the general rule of thumb for when the CLT provides a good approximation?",
+      options: [
+        "n ≥ 10",
+        "n ≥ 20",
+        "n ≥ 30",
+        "n ≥ 50"
+      ],
+      correctIndex: 2,
+      explanation: "While the CLT works for any n as n→∞, the rule of thumb is n ≥ 30 for a good practical approximation."
+    }
+  ];
 
   return (
     <VisualizationSection>
       <div ref={contentRef} className="space-y-8">
         <h2 className="text-3xl font-bold text-blue-400 mb-4">Central Limit Theorem & Sampling Distribution Properties</h2>
-        {/* CLT Introduction */}
+        
+        {/* Core CLT Concepts */}
         <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 rounded-xl p-8 border border-blue-600/30">
           <div className="flex items-start gap-4 mb-6">
-            <Sparkles className="w-8 h-8 text-blue-400 flex-shrink-0 mt-1" />
+            <Calculator className="w-8 h-8 text-blue-400 flex-shrink-0 mt-1" />
             <div>
-              <h2 className="text-2xl font-bold text-blue-400 mb-3">The Magic of the Central Limit Theorem</h2>
+              <h2 className="text-2xl font-bold text-blue-400 mb-3">Understanding the Central Limit Theorem</h2>
               <p className="text-neutral-300 leading-relaxed">
-                One of the most remarkable results in statistics: no matter what shape your original 
-                distribution has, the distribution of sample means approaches a normal distribution 
-                as sample size increases.
+                The Central Limit Theorem is one of the most important results in statistics. It tells us that 
+                the distribution of sample means will be approximately normal, regardless of the population distribution, 
+                when the sample size is sufficiently large.
               </p>
             </div>
           </div>
 
-          <AnimatePresence>
-            {!showTransformation ? (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-              >
-                <Button
-                  onClick={() => setShowTransformation(true)}
-                  size="lg"
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-3"
-                >
-                  <Zap className="w-5 h-5 mr-2" />
-                  See the Transformation
-                </Button>
-              </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="space-y-6"
-              >
-                <GraphContainer height="350px" className="bg-gradient-to-br from-neutral-900 to-neutral-800 rounded-lg border border-blue-600/30">
-                  <svg ref={transformationRef} style={{ width: '100%', height: 350 }} />
-                </GraphContainer>
+          {/* Interactive Visualization */}
+          <div className="space-y-4">
+            <Button
+              onClick={() => setShowDistribution(true)}
+              disabled={showDistribution}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2"
+            >
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Visualize Sample Size Effect
+            </Button>
+
+            {showDistribution && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <span className="text-neutral-300">Sample Size (n):</span>
+                  <RangeSlider
+                    value={sampleSize}
+                    onChange={setSampleSize}
+                    min={5}
+                    max={100}
+                    step={1}
+                    className="w-64"
+                  />
+                  <span className="text-blue-400 font-mono font-bold">{sampleSize}</span>
+                </div>
                 
-                {animationStage >= 1 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
-                    className="space-y-6"
-                  >
-                    <h3 className="text-xl font-semibold text-teal-400 text-center">
-                      How Sample Size Affects the Distribution
-                    </h3>
-                    
-                    <div className="flex flex-col items-center space-y-4">
-                      <div className="flex items-center gap-4">
-                        <Button
-                          onClick={animateSampleSizeTransition}
-                          disabled={isAnimating}
-                          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold px-6 py-2"
-                        >
-                          {isAnimating ? (
-                            <>
-                              <Pause className="w-4 h-4 mr-2" />
-                              Animating...
-                            </>
-                          ) : (
-                            <>
-                              <Play className="w-4 h-4 mr-2" />
-                              Animate Transition
-                            </>
-                          )}
-                        </Button>
-                        
-                        <div className="text-sm text-neutral-400">
-                          Or adjust manually:
-                        </div>
-                        
-                        <RangeSlider
-                          value={sampleSize}
-                          onChange={setSampleSize}
-                          min={5}
-                          max={100}
-                          step={1}
-                          disabled={isAnimating}
-                          className="w-48"
-                        />
-                      </div>
-                      
-                      <GraphContainer height="400px" className="bg-gradient-to-br from-neutral-900 to-neutral-800 rounded-lg border border-blue-600/30 w-full">
-                        <svg ref={sizeComparisonRef} style={{ width: '100%', height: 400 }} />
-                      </GraphContainer>
-                      
-                      <div className="grid grid-cols-3 gap-4 text-center">
-                        <div className="p-4 bg-neutral-900/50 rounded-lg border border-blue-600/20">
-                          <div className="text-sm text-neutral-400">Sample Size</div>
-                          <div className="text-2xl font-bold text-white">n = {sampleSize}</div>
-                        </div>
-                        <div className="p-4 bg-neutral-900/50 rounded-lg border border-blue-600/20">
-                          <div className="text-sm text-neutral-400">Standard Error</div>
-                          <div className="text-2xl font-bold text-blue-400">SE = {(15 / Math.sqrt(sampleSize)).toFixed(2)}</div>
-                        </div>
-                        <div className="p-4 bg-neutral-900/50 rounded-lg border border-blue-600/20">
-                          <div className="text-sm text-neutral-400">Shape</div>
-                          <div className="text-xl font-bold text-green-400">
-                            {sampleSize < 30 ? 'Approaching' : 'Normal'}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </motion.div>
+                <GraphContainer height="400px" className="bg-gradient-to-br from-neutral-900 to-neutral-800 rounded-lg border border-blue-600/30">
+                  <svg ref={sizeComparisonRef} style={{ width: '100%', height: 400 }} />
+                </GraphContainer>
+              </div>
             )}
-          </AnimatePresence>
+          </div>
         </div>
 
-        {/* Key Properties */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Worked Example 1: Professor's Class */}
+        <Card className="bg-gradient-to-br from-orange-900/20 to-red-900/20 border-orange-500/30">
+          <CardContent className="p-6">
+            <h3 className="text-xl font-bold text-orange-400 mb-4 flex items-center gap-2">
+              <BookOpen className="w-5 h-5" />
+              Worked Example 1: Exam Scores
+            </h3>
+            <p className="text-neutral-300 mb-4">
+              A professor has been teaching a course for 20 years. The mid-term exam grades have E[X] = 56 and SD[X] = 11. 
+              This year there are 49 students. What is the probability the class average will be less than 50?
+            </p>
+            
+            <StepByStepCalculation>
+              <CalculationStep
+                label="Step 1: Identify Parameters"
+                formula={`n = 49, \\mu = 56, \\sigma = 11`}
+                explanation="Given information from the problem"
+              />
+              <CalculationStep
+                label="Step 2: Calculate Standard Error"
+                formula={`SE = \\frac{\\sigma}{\\sqrt{n}} = \\frac{11}{\\sqrt{49}} = \\frac{11}{7} = 1.57`}
+                explanation="The standard error tells us the spread of the sampling distribution"
+              />
+              <CalculationStep
+                label="Step 3: Standardize"
+                formula={`Z = \\frac{\\bar{X} - \\mu}{SE} = \\frac{50 - 56}{1.57} = \\frac{-6}{1.57} = -3.82`}
+                explanation="Convert to standard normal distribution"
+              />
+              <CalculationStep
+                label="Step 4: Find Probability"
+                formula={`P(\\bar{X} < 50) = P(Z < -3.82) = 0.0001`}
+                explanation="Using standard normal table, this is extremely unlikely!"
+              />
+            </StepByStepCalculation>
+          </CardContent>
+        </Card>
+
+        {/* Worked Example 2: Blood Pressure Study */}
+        <Card className="bg-gradient-to-br from-green-900/20 to-teal-900/20 border-green-500/30">
+          <CardContent className="p-6">
+            <h3 className="text-xl font-bold text-green-400 mb-4 flex items-center gap-2">
+              <BookOpen className="w-5 h-5" />
+              Worked Example 2: Blood Pressure Study
+            </h3>
+            <p className="text-neutral-300 mb-4">
+              Systolic blood pressure for women aged 18-24 is normally distributed with μ = 122.6 and σ = 11. 
+              For a sample of 25 women, what is the probability their average blood pressure exceeds 125?
+            </p>
+            
+            <StepByStepCalculation>
+              <CalculationStep
+                label="Step 1: Given Information"
+                formula={`n = 25, \\mu = 122.6, \\sigma = 11`}
+                explanation="Population parameters and sample size"
+              />
+              <CalculationStep
+                label="Step 2: Standard Error"
+                formula={`SE = \\frac{11}{\\sqrt{25}} = \\frac{11}{5} = 2.2`}
+                explanation="Standard error of the sample mean"
+              />
+              <CalculationStep
+                label="Step 3: Z-Score"
+                formula={`Z = \\frac{125 - 122.6}{2.2} = \\frac{2.4}{2.2} = 1.09`}
+                explanation="Standardize the sample mean"
+              />
+              <CalculationStep
+                label="Step 4: Probability"
+                formula={`P(\\bar{X} > 125) = P(Z > 1.09) = 1 - 0.8621 = 0.1379`}
+                explanation="About 13.79% chance the average exceeds 125"
+              />
+            </StepByStepCalculation>
+          </CardContent>
+        </Card>
+
+        {/* Key Properties Grid */}
+        <div className="grid md:grid-cols-3 gap-6">
           <Card className="bg-gradient-to-br from-green-900/20 to-green-800/20 border-green-600/30">
             <CardContent className="p-6">
               <div className="flex items-center gap-3 mb-4">
@@ -732,7 +351,7 @@ const CLTPropertiesMerged = () => {
           <Card className="bg-gradient-to-br from-blue-900/20 to-blue-800/20 border-blue-600/30">
             <CardContent className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <Zap className="w-6 h-6 text-blue-400" />
+                <TrendingUp className="w-6 h-6 text-blue-400" />
                 <h4 className="text-lg font-bold text-blue-400">√n Relationship</h4>
               </div>
               <p className="text-sm text-neutral-300 mb-4">
@@ -746,6 +365,44 @@ const CLTPropertiesMerged = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Quiz Section */}
+        <QuizBreak
+          questions={cltQuizQuestions}
+        />
+
+        {/* Interpretation Box */}
+        <InterpretationBox title="Why n ≥ 30?">
+          <StepInterpretation
+            step="Mathematical Foundation"
+            interpretation="The CLT technically requires n → ∞, but in practice we need a finite cutoff."
+          />
+          <StepInterpretation
+            step="Empirical Evidence"
+            interpretation="For most real-world distributions, n = 30 provides a good normal approximation."
+          />
+          <StepInterpretation
+            step="Effect on Variance"
+            interpretation="At n = 30, the standard error is already reduced by a factor of √30 ≈ 5.5."
+          />
+          <StepInterpretation
+            step="Real-World Impact"
+            interpretation="This means our estimates are 5.5 times more precise than individual observations!"
+          />
+        </InterpretationBox>
+
+        {/* Comparison Table */}
+        <SimpleComparisonTable
+          title="CLT Requirements vs Reality"
+          headers={["Requirement", "Theory", "Practice"]}
+          rows={[
+            ["Sample Size", "n → ∞", "n ≥ 30 usually sufficient"],
+            ["Independence", "Strictly required", "Random sampling ensures this"],
+            ["Finite Variance", "σ² < ∞", "True for most real data"],
+            ["Distribution Shape", "Any distribution", "Works even for highly skewed data"]
+          ]}
+          className="mt-6"
+        />
 
         {/* Mathematical Foundation */}
         <div className="grid md:grid-cols-2 gap-6">
@@ -797,91 +454,54 @@ const CLTPropertiesMerged = () => {
         </div>
 
         {/* Key Conditions */}
-        <Card className="bg-neutral-800 border-blue-600/30">
+        <Card className="bg-gradient-to-r from-teal-900/20 to-cyan-900/20 border-teal-600/30">
           <CardContent className="p-6">
-            <h3 className="text-xl font-semibold text-teal-400 mb-6">CLT Conditions</h3>
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-blue-900/50 flex items-center justify-center flex-shrink-0 border border-blue-600/30">
-                  <span className="text-sm font-bold text-blue-400">1</span>
-                </div>
-                <div>
-                  <p className="font-semibold text-white">Independence</p>
-                  <p className="text-sm text-neutral-400 mt-1">
-                    Observations must be independent
-                  </p>
-                </div>
+            <h3 className="text-xl font-semibold text-teal-400 mb-4">When Does the CLT Apply?</h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <h4 className="text-green-400 font-semibold mb-2">✓ CLT Works When:</h4>
+                <ul className="space-y-2 text-sm text-neutral-300">
+                  <li>• Random sampling from any distribution</li>
+                  <li>• Sample size is sufficiently large (n ≥ 30)</li>
+                  <li>• Population has finite variance</li>
+                  <li>• Observations are independent</li>
+                </ul>
               </div>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-blue-900/50 flex items-center justify-center flex-shrink-0 border border-blue-600/30">
-                  <span className="text-sm font-bold text-blue-400">2</span>
-                </div>
-                <div>
-                  <p className="font-semibold text-white">Identical Distribution</p>
-                  <p className="text-sm text-neutral-400 mt-1">
-                    All observations from same distribution
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-blue-900/50 flex items-center justify-center flex-shrink-0 border border-blue-600/30">
-                  <span className="text-sm font-bold text-blue-400">3</span>
-                </div>
-                <div>
-                  <p className="font-semibold text-white">Finite Variance</p>
-                  <p className="text-sm text-neutral-400 mt-1">
-                    The variance must exist and be finite
-                  </p>
-                </div>
+              <div>
+                <h4 className="text-red-400 font-semibold mb-2">✗ CLT Doesn't Apply When:</h4>
+                <ul className="space-y-2 text-sm text-neutral-300">
+                  <li>• Sample size is too small (n &lt; 30 for skewed distributions)</li>
+                  <li>• Data has infinite variance (e.g., Cauchy distribution)</li>
+                  <li>• Strong dependence between observations</li>
+                  <li>• Non-random sampling methods</li>
+                </ul>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Practical Implications */}
-        <Card className="bg-gradient-to-r from-neutral-900 to-neutral-800 border-blue-600/30">
+        {/* Applications */}
+        <Card className="bg-gradient-to-r from-indigo-900/20 to-purple-900/20 border-indigo-600/30">
           <CardContent className="p-6">
-            <h3 className="text-xl font-semibold text-blue-400 mb-4">What This Means for You</h3>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <ArrowRight className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-semibold text-white">Precision vs Cost</p>
-                    <p className="text-sm text-neutral-400">
-                      Quadrupling sample size only doubles precision - balance your needs
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <ArrowRight className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-semibold text-white">Universal Application</p>
-                    <p className="text-sm text-neutral-400">
-                      CLT justifies using normal-based methods even for non-normal data
-                    </p>
-                  </div>
-                </div>
+            <h3 className="text-xl font-semibold text-indigo-400 mb-4">Real-World Applications</h3>
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="bg-neutral-800/50 p-4 rounded-lg border border-indigo-600/20">
+                <h4 className="text-indigo-300 font-semibold mb-2">Quality Control</h4>
+                <p className="text-sm text-neutral-400">
+                  Monitor manufacturing processes by sampling product measurements
+                </p>
               </div>
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <ArrowRight className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-semibold text-white">Faster for Symmetric Data</p>
-                    <p className="text-sm text-neutral-400">
-                      CLT works faster when the population is already symmetric
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <ArrowRight className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-semibold text-white">Foundation of Inference</p>
-                    <p className="text-sm text-neutral-400">
-                      This theorem underpins confidence intervals and hypothesis testing
-                    </p>
-                  </div>
-                </div>
+              <div className="bg-neutral-800/50 p-4 rounded-lg border border-indigo-600/20">
+                <h4 className="text-indigo-300 font-semibold mb-2">Medical Research</h4>
+                <p className="text-sm text-neutral-400">
+                  Estimate population health parameters from sample studies
+                </p>
+              </div>
+              <div className="bg-neutral-800/50 p-4 rounded-lg border border-indigo-600/20">
+                <h4 className="text-indigo-300 font-semibold mb-2">Financial Analysis</h4>
+                <p className="text-sm text-neutral-400">
+                  Assess portfolio risk using sampling distributions of returns
+                </p>
               </div>
             </div>
           </CardContent>

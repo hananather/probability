@@ -107,48 +107,84 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
     
     gradient.append("stop")
       .attr("offset", "0%")
-      .attr("stop-color", colorScheme.primary)
+      .attr("stop-color", "#10b981")
       .attr("stop-opacity", 0.8);
     
     gradient.append("stop")
       .attr("offset", "100%")
-      .attr("stop-color", colorScheme.primary)
+      .attr("stop-color", "#10b981")
       .attr("stop-opacity", 0.1);
     
-    // Add grid
-    svg.append("g")
+    // Add grid - horizontal lines
+    const gridY = svg.append("g")
       .attr("class", "grid")
       .attr("transform", `translate(${margin.left},0)`)
       .call(d3.axisLeft(yScale)
         .ticks(5)
         .tickSize(-(width - margin.left - margin.right))
         .tickFormat("")
-      )
+      );
+    
+    gridY.selectAll("line")
+      .style("stroke", "#e5e7eb")
       .style("stroke-dasharray", "3,3")
-      .style("opacity", 0.3)
-      .selectAll("line")
-      .style("stroke", colorScheme.grid || "#374151");
+      .style("opacity", 0.3);
+    
+    gridY.select(".domain").remove();
+    
+    // Add grid - vertical lines  
+    const gridX = svg.append("g")
+      .attr("class", "grid")
+      .attr("transform", `translate(0,${height - margin.bottom})`)
+      .call(d3.axisBottom(xScale)
+        .ticks(10)
+        .tickSize(-(height - margin.top - margin.bottom))
+        .tickFormat("")
+      );
+    
+    gridX.selectAll("line")
+      .style("stroke", "#e5e7eb")
+      .style("stroke-dasharray", "3,3")
+      .style("opacity", 0.3);
+    
+    gridX.select(".domain").remove();
     
     // Add axes
-    svg.append("g")
+    const xAxis = svg.append("g")
       .attr("transform", `translate(0,${height - margin.bottom})`)
-      .call(d3.axisBottom(xScale))
-      .append("text")
+      .call(d3.axisBottom(xScale));
+    
+    xAxis.selectAll("text")
+      .style("fill", "#e5e7eb");
+    xAxis.selectAll("line")
+      .style("stroke", "#e5e7eb");
+    xAxis.select(".domain")
+      .style("stroke", "#e5e7eb");
+    
+    xAxis.append("text")
       .attr("x", width / 2)
       .attr("y", 40)
       .style("text-anchor", "middle")
-      .style("fill", colorScheme.text || "#e5e7eb")
+      .style("fill", "#e5e7eb")
       .text("x");
     
-    svg.append("g")
+    const yAxis = svg.append("g")
       .attr("transform", `translate(${margin.left},0)`)
-      .call(d3.axisLeft(yScale).tickFormat(d => d.toFixed(2)))
-      .append("text")
+      .call(d3.axisLeft(yScale).tickFormat(d => d.toFixed(2)));
+    
+    yAxis.selectAll("text")
+      .style("fill", "#e5e7eb");
+    yAxis.selectAll("line")
+      .style("stroke", "#e5e7eb");
+    yAxis.select(".domain")
+      .style("stroke", "#e5e7eb");
+    
+    yAxis.append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", -40)
       .attr("x", -height / 2)
       .style("text-anchor", "middle")
-      .style("fill", colorScheme.text || "#e5e7eb")
+      .style("fill", "#e5e7eb")
       .text("f(x)");
     
     // Area under curve
@@ -160,7 +196,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
     
     svg.append("path")
       .datum(distributionData)
-      .attr("fill", colorScheme.primary)
+      .attr("fill", "#10b981")
       .attr("opacity", 0.3)
       .attr("d", area);
     
@@ -173,7 +209,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
     svg.append("path")
       .datum(distributionData)
       .attr("fill", "none")
-      .attr("stroke", colorScheme.primary)
+      .attr("stroke", "#10b981")
       .attr("stroke-width", 2)
       .attr("d", line);
     
@@ -183,7 +219,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
       .attr("x2", xScale(mean))
       .attr("y1", margin.top)
       .attr("y2", height - margin.bottom)
-      .attr("stroke", colorScheme.secondary)
+      .attr("stroke", "#fbbf24")
       .attr("stroke-width", 2)
       .attr("stroke-dasharray", "5,5");
     
@@ -191,7 +227,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
       .attr("x", xScale(mean))
       .attr("y", margin.top - 5)
       .attr("text-anchor", "middle")
-      .style("fill", colorScheme.secondary)
+      .style("fill", "#fbbf24")
       .style("font-size", "12px")
       .text(`μ = ${mean.toFixed(2)}`);
     
@@ -202,7 +238,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
         .attr("x2", xScale(mode))
         .attr("y1", margin.top)
         .attr("y2", height - margin.bottom)
-        .attr("stroke", colorScheme.tertiary)
+        .attr("stroke", "#f59e0b")
         .attr("stroke-width", 2)
         .attr("stroke-dasharray", "3,3");
       
@@ -210,7 +246,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
         .attr("x", xScale(mode))
         .attr("y", margin.top - 5)
         .attr("text-anchor", "middle")
-        .style("fill", colorScheme.tertiary)
+        .style("fill", "#f59e0b")
         .style("font-size", "12px")
         .text(`Mode = ${mode.toFixed(2)}`);
     }
@@ -286,14 +322,15 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
             />
           </div>
           
-          {/* Engineering Context Box */}
+          {/* Engineering Context Box - Added large margin to prevent overlap */}
           {interactionCount >= 5 && (
             <div className={cn(
-              "mt-4 p-4 rounded-lg",
+              "p-4 rounded-lg",
               "bg-gradient-to-r from-blue-900/50 to-teal-900/50",
               "border border-blue-700/50",
               "animate-fadeIn"
-            )}>
+            )}
+            style={{ marginTop: '200px' }}>
               <h4 className="text-base font-semibold text-blue-300 mb-2">
                 {engineeringContext.title}
               </h4>
@@ -471,14 +508,24 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
               </div>
               {expandedStep === 3 && (
                 <FormulaSection expanded={expandedStep === 3}>
-                  <div className="mt-3 text-sm">
-                    <div dangerouslySetInnerHTML={{ 
-                      __html: `\\[\\begin{align}
-                        E[X] &= k\\theta = ${shape.toFixed(1)} \\times ${scale.toFixed(3)} = ${mean.toFixed(3)} \\\\
-                        \\text{Var}(X) &= k\\theta^2 = ${shape.toFixed(1)} \\times ${scale.toFixed(3)}^2 = ${variance.toFixed(3)} \\\\
-                        \\text{Mode} &= ${shape > 1 ? `(k-1)\\theta = (${shape.toFixed(1)}-1) \\times ${scale.toFixed(3)} = ${mode.toFixed(3)}` : '\\text{0 (at boundary)'}
-                      \\end{align}\\]` 
-                    }} />
+                  <div className="mt-3 text-xs">
+                    <div className="space-y-2">
+                      <div>
+                        <span dangerouslySetInnerHTML={{ 
+                          __html: `\\(E[X] = k\\theta = ${shape.toFixed(1)} \\times ${scale.toFixed(2)} = ${mean.toFixed(2)}\\)` 
+                        }} />
+                      </div>
+                      <div>
+                        <span dangerouslySetInnerHTML={{ 
+                          __html: `\\(\\text{Var}(X) = k\\theta^2 = ${shape.toFixed(1)} \\times ${scale.toFixed(2)}^2 = ${variance.toFixed(2)}\\)` 
+                        }} />
+                      </div>
+                      <div>
+                        <span dangerouslySetInnerHTML={{ 
+                          __html: `\\(\\text{Mode} = ${shape > 1 ? `(k-1)\\theta = ${mode.toFixed(2)}` : '0'}\\)` 
+                        }} />
+                      </div>
+                    </div>
                     {interactionCount >= 10 && (
                       <p className="text-xs text-gray-400 mt-2">
                         The mean shifts right as either <span dangerouslySetInnerHTML={{ __html: `\\(k\\)` }} /> or <span dangerouslySetInnerHTML={{ __html: `\\(\\theta\\)` }} /> increases
