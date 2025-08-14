@@ -12,14 +12,6 @@ const ContinuousDistributionsPDF = dynamic(
   }
 );
 
-const IntegralWorkedExample = dynamic(
-  () => import('@/components/03-continuous-random-variables/3-1-probability-density/3-1-2-IntegralWorkedExample'),
-  { 
-    ssr: false,
-    loading: () => <div className="flex justify-center items-center h-64">Loading...</div>
-  }
-);
-
 export default function ProbabilityDensityPage() {
   return (
     <>
@@ -27,7 +19,6 @@ export default function ProbabilityDensityPage() {
       <BackToHub chapter={3} />
       <div className="space-y-12">
         <ContinuousDistributionsPDF />
-        <IntegralWorkedExample />
       </div>
     </>
   );

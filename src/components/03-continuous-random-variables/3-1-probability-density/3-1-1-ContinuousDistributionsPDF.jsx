@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef, memo, useCallback } from "react";
+import React, { useState, useEffect, useRef, memo, useCallback, useMemo } from "react";
 import * as d3 from "@/utils/d3-utils";
 import { jStat } from "jstat";
 import { 
@@ -194,9 +194,9 @@ const PDFVisualization = memo(({
   const scalesRef = useRef({});
   const elementsRef = useRef({});
   
-  // Calculate distribution data
-  const calculateData = useCallback(() => {
-    if (!stage.distribution) return { data: [], fixedDomain: [-10, 10], mean: 0, probability: 0 };
+  // Calculate distribution data - memoized to avoid recalculation
+  const calculatedData = useMemo(() => {
+    if (!stage.distribution) return { data: [], fixedDomain: [-10, 10], mean: 0, probability: 0, cdfA: 0, cdfB: 0 };
     
     const dist = distributions[stage.distribution];
     
@@ -404,7 +404,7 @@ const PDFVisualization = memo(({
   useEffect(() => {
     if (!isInitialized.current || !stage.distribution) return;
     
-    const { data, fixedDomain, mean, probability } = calculateData();
+    const { data, fixedDomain, mean, probability } = calculatedData;
     const { innerWidth, innerHeight } = scalesRef.current.dimensions;
     
     // Update scales
@@ -508,7 +508,7 @@ const PDFVisualization = memo(({
         .attr("y", probY + 20)
         .text(`P = ${probability.toFixed(4)}`);
     }
-  }, [calculateData, stage.distribution, params, intervalA, intervalB]);
+  }, [calculatedData, stage.distribution, params, intervalA, intervalB]);
   
   
   // Add interval markers after SVG is initialized
@@ -676,9 +676,9 @@ const ContinuousDistributionsPDF = () => {
     setHasInteracted(false);
   }, [currentStage, stage]);
   
-  // Calculate distribution data
-  const calculateDistributionData = useCallback(() => {
-    if (!stage.distribution) return { data: [], fixedDomain: [-10, 10], mean: 0, probability: 0 };
+  // Calculate distribution data - memoized to prevent duplicate calculations
+  const distributionData = useMemo(() => {
+    if (!stage.distribution) return { data: [], fixedDomain: [-10, 10], mean: 0, probability: 0, cdfA: 0, cdfB: 0 };
     
     const dist = distributions[stage.distribution];
     
@@ -920,12 +920,12 @@ const ContinuousDistributionsPDF = () => {
                 stats={[
                   { 
                     label: "Mean (μ)", 
-                    value: formatNumber(calculateDistributionData().mean), 
+                    value: formatNumber(distributionData.mean), 
                     color: colorScheme.accent 
                   },
                   { 
                     label: `P(${formatNumber(intervalA)} ≤ X ≤ ${formatNumber(intervalB)})`, 
-                    value: formatNumber(calculateDistributionData().probability, 4), 
+                    value: formatNumber(distributionData.probability, 4), 
                     color: colorScheme.secondary 
                   }
                 ]}
@@ -952,10 +952,10 @@ const ContinuousDistributionsPDF = () => {
               params={params}
               intervalA={intervalA}
               intervalB={intervalB}
-              probValue={calculateDistributionData().probability}
+              probValue={distributionData.probability}
               pdfFormula={distributions[stage.distribution].pdfTex}
-              cdfAValue={calculateDistributionData().cdfA}
-              cdfBValue={calculateDistributionData().cdfB}
+              cdfAValue={distributionData.cdfA}
+              cdfBValue={distributionData.cdfB}
             />
           </VisualizationSection>
         )}

@@ -9,7 +9,7 @@ import { useMathJax } from '../../hooks/useMathJax';
  * Interactive flowchart showing relationships between all course concepts
  * Optimized for single viewport display with side-by-side layout
  */
-export default function ConceptFlowchart() {
+function ConceptFlowchart() {
   const [hoveredNode, setHoveredNode] = useState(null);
   const [selectedChapter, setSelectedChapter] = useState(null);
   const svgRef = useRef(null);
@@ -364,4 +364,8 @@ export default function ConceptFlowchart() {
   );
 }
 
-ConceptFlowchart.displayName = 'ConceptFlowchart';
+// Wrap with React.memo to prevent unnecessary re-renders from parent scroll updates
+const MemoizedConceptFlowchart = React.memo(ConceptFlowchart);
+MemoizedConceptFlowchart.displayName = 'ConceptFlowchart';
+
+export default MemoizedConceptFlowchart;

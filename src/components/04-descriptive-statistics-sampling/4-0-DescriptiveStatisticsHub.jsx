@@ -348,11 +348,11 @@ const KeyConceptsCard = React.memo(() => {
 
 KeyConceptsCard.displayName = 'KeyConceptsCard';
 
-// Chapter 4 section configuration
+// Chapter 4 section configuration - NEW ORGANIZATION
 const CHAPTER_4_SECTIONS = [
   {
     id: 'formula-builder',
-    title: 'Interactive Formula Builder',
+    title: '4.0 Interactive Formula Builder',
     subtitle: 'Build formulas step-by-step',
     description: 'Build descriptive statistics formulas interactively. Click on each part to understand why it\'s there and how it works.',
     icon: Sparkles,
@@ -371,59 +371,99 @@ const CHAPTER_4_SECTIONS = [
     preview: "Interactive formula construction"
   },
   {
-    id: 'data-descriptions',
-    title: '4.1 Data Descriptions',
-    subtitle: 'Measures of center and spread',
-    description: 'Learn the fundamental tools for summarizing data: mean, median, mode, variance, and standard deviation.',
+    id: 'introduction',
+    title: '4.1 Introduction to Descriptive Statistics',
+    subtitle: 'Understanding data summarization',
+    description: 'Learn what descriptive statistics are, why we need them, and the types of data we work with.',
+    icon: Calculator,
+    difficulty: 'Beginner',
+    estimatedTime: '20 min',
+    prerequisites: [],
+    learningGoals: [
+      'What are descriptive statistics?',
+      'Categorical vs numerical data',
+      'Why summarize data?',
+      'Overview of statistical measures'
+    ],
+    route: '/chapter4/introduction',
+    color: '#10b981',
+    question: "What are descriptive statistics and why do we need them?",
+    preview: "Introduction to data summarization"
+  },
+  {
+    id: 'central-tendency',
+    title: '4.2 Measures of Central Tendency',
+    subtitle: 'Mean, median, and mode',
+    description: 'Master the three fundamental measures that describe the center of your data.',
     icon: Calculator,
     difficulty: 'Beginner',
     estimatedTime: '45 min',
-    prerequisites: [],
+    prerequisites: ['introduction'],
     learningGoals: [
-      'Calculate measures of central tendency',
-      'Understand quartiles and outliers',
-      'Apply measures of spread',
+      'Calculate mean, median, and mode',
+      'When to use each measure',
+      'Handle skewed distributions',
       'Work with real datasets'
     ],
-    route: '/chapter4/data-descriptions',
+    route: '/chapter4/central-tendency',
     color: '#8b5cf6',
     question: "What single number best represents your data?",
     preview: "Interactive statistics calculator"
   },
   {
-    id: 'visual-summaries',
-    title: '4.2 Visual Summaries',
-    subtitle: 'Histograms and boxplots',
-    description: 'Learn to create and interpret visual representations of data distributions using histograms and boxplots.',
-    icon: BarChart,
-    difficulty: 'Beginner',
+    id: 'variability',
+    title: '4.3 Measures of Variability',
+    subtitle: 'Spread and dispersion',
+    description: 'Understand how spread out your data is with range, variance, and standard deviation.',
+    icon: Activity,
+    difficulty: 'Intermediate',
     estimatedTime: '40 min',
-    prerequisites: ['data-descriptions'],
+    prerequisites: ['central-tendency'],
     learningGoals: [
-      'Create effective histograms',
-      'Interpret boxplots and quartiles',
-      'Identify distribution shapes',
-      'Compare datasets visually'
+      'Calculate range and IQR',
+      'Understand variance and standard deviation',
+      'Coefficient of variation',
+      'Interpret data spread'
     ],
-    route: '/chapter4/visual-summaries',
-    color: '#8b5cf6',
-    question: "How can we visualize an entire dataset at once?",
-    preview: "Interactive histogram and boxplot builder"
+    route: '/chapter4/variability',
+    color: '#f59e0b',
+    question: "How spread out is your data?",
+    preview: "Variability and dispersion measures"
+  },
+  {
+    id: 'exploratory-data-analysis',
+    title: '4.4 Exploratory Data Analysis',
+    subtitle: 'Visualizing data patterns',
+    description: 'Master the essential visualization techniques: histograms, boxplots, scatter plots, and more.',
+    icon: BarChart,
+    difficulty: 'Intermediate',
+    estimatedTime: '60 min',
+    prerequisites: ['variability'],
+    learningGoals: [
+      'Create and interpret histograms',
+      'Master boxplots and five-number summary',
+      'Explore relationships with scatter plots',
+      'Choose the right visualization'
+    ],
+    route: '/chapter4/exploratory-data-analysis',
+    color: '#6366f1',
+    question: "How can we visualize entire datasets at once?",
+    preview: "Complete data visualization toolkit"
   },
   {
     id: 'sampling-distributions',
-    title: '4.3 Sampling Distributions',
-    subtitle: 'Distribution of sample statistics',
+    title: '4.5 Introduction to Sampling Distributions',
+    subtitle: 'From samples to populations',
     description: 'Discover how sample statistics behave when we repeatedly sample from a population.',
     icon: TrendingUp,
     difficulty: 'Intermediate',
     estimatedTime: '35 min',
-    prerequisites: ['visual-summaries'],
+    prerequisites: ['exploratory-data-analysis'],
     learningGoals: [
-      'Understand sampling variability',
-      'Explore the distribution of sample means',
-      'Calculate standard error',
-      'Build intuition for inference'
+      'Population vs sample concepts',
+      'Sampling variability',
+      'Distribution of sample means',
+      'Standard error fundamentals'
     ],
     route: '/chapter4/sampling-distributions',
     color: '#3b82f6',
@@ -432,7 +472,7 @@ const CHAPTER_4_SECTIONS = [
   },
   {
     id: 'central-limit-theorem',
-    title: '4.4 Central Limit Theorem',
+    title: '4.6 Central Limit Theorem',
     subtitle: "Statistics' most important result",
     description: 'Experience the magic of the CLT: how sample means become normally distributed regardless of the population.',
     icon: Activity,
@@ -451,24 +491,24 @@ const CHAPTER_4_SECTIONS = [
     preview: "CLT interactive demonstration"
   },
   {
-    id: 'sampling-distributions-reprise',
-    title: '4.5 Advanced Sampling Distributions',
-    subtitle: 't and F distributions',
-    description: 'When population parameters are unknown, meet the t-distribution and F-distribution for real-world inference.',
+    id: 'advanced-distributions',
+    title: '4.7 Advanced Distributions',
+    subtitle: 't, F, and chi-square distributions',
+    description: 'When population parameters are unknown, meet the distributions needed for real-world inference.',
     icon: GitBranch,
     difficulty: 'Advanced',
     estimatedTime: '50 min',
     prerequisites: ['central-limit-theorem'],
     learningGoals: [
-      'Understand the t-distribution',
-      'Understand the F-distribution',
-      'Apply to hypothesis testing',
-      'Compare different distributions'
+      't-distribution for small samples',
+      'F-distribution for variance ratios',
+      'Chi-square for categorical data',
+      'Apply to hypothesis testing'
     ],
-    route: '/chapter4/sampling-distributions-reprise',
+    route: '/chapter4/advanced-distributions',
     color: '#dc2626',
-    question: "What if we don't know the population variance?",
-    preview: "t and F distribution explorers"
+    question: "What if we don't know the population parameters?",
+    preview: "Advanced distribution explorers"
   }
 ];
 

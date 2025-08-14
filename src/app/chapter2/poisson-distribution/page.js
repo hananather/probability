@@ -1,6 +1,6 @@
 'use client';
 
-import PoissonDistribution from '@/components/02-discrete-random-variables/2-6-1-PoissonDistribution';
+import PoissonDistribution from '@/components/02-discrete-random-variables/2-6-1-PoissonDistribution-Enhanced';
 import BackToHub from '@/components/ui/BackToHub';
 import { Chapter2ReferenceSheet } from '@/components/reference-sheets/Chapter2ReferenceSheet';
 

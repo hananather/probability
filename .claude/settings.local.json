@@ -183,7 +183,8 @@
       "Bash(do echo \"=== CHAPTER $chapter ===\")",
       "Bash(do echo \"--- $file ---\")",
       "Bash(timeout 5 npm run dev)",
-      "Bash(timeout 15 npm run dev)"
+      "Bash(timeout 15 npm run dev)",
+      "Bash(open http://localhost:3000/chapter4/introduction)"
     ],
     "deny": []
   },

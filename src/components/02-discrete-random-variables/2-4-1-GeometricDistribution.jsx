@@ -95,6 +95,7 @@ export default function GeometricDistribution() {
   const [animationSpeed, setAnimationSpeed] = useState(300); // ms per trial
   const [stepMode, setStepMode] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [waitingForContinue, setWaitingForContinue] = useState(false);
   
   // Refs
   const pmfSvgRef = useRef(null);
@@ -318,6 +319,7 @@ export default function GeometricDistribution() {
     isAnimatingRef.current = true;
     setCurrentTrial(0);
     setTrialHistory([]);
+    setWaitingForContinue(false);
     
     const animate = (trial = 1, history = []) => {
       if (!isAnimatingRef.current) return;
@@ -334,15 +336,54 @@ export default function GeometricDistribution() {
         animationRef.current = setTimeout(() => {
           setIsAnimating(false);
           isAnimatingRef.current = false;
+          setWaitingForContinue(false);
         }, animationSpeed);
+      } else if (stepMode) {
+        // In step mode, pause and wait for user to continue
+        setWaitingForContinue(true);
       } else {
-        // Continue animation
+        // Continue animation automatically
         animationRef.current = setTimeout(() => animate(trial + 1, newHistory), animationSpeed);
       }
     };
     
     animate();
-  }, [p, animationSpeed]);
+  }, [p, animationSpeed, stepMode]);
+  
+  // Continue animation from pause (for step mode)
+  const continueAnimation = useCallback(() => {
+    if (!isAnimatingRef.current || !waitingForContinue) return;
+    
+    setWaitingForContinue(false);
+    
+    const animate = (trial = currentTrial + 1, history = trialHistory) => {
+      if (!isAnimatingRef.current) return;
+      
+      const success = Math.random() < p;
+      const newHistory = [...history, { trial, success }];
+      
+      // Batch state updates
+      setCurrentTrial(trial);
+      setTrialHistory(newHistory);
+      
+      if (success || trial >= 100) {
+        // Success or safety limit reached
+        animationRef.current = setTimeout(() => {
+          setIsAnimating(false);
+          isAnimatingRef.current = false;
+          setWaitingForContinue(false);
+        }, animationSpeed);
+      } else if (stepMode) {
+        // In step mode, pause and wait for user to continue
+        setWaitingForContinue(true);
+      } else {
+        // Continue animation automatically
+        animationRef.current = setTimeout(() => animate(trial + 1, newHistory), animationSpeed);
+      }
+    };
+    
+    animate();
+  }, [p, animationSpeed, stepMode, currentTrial, trialHistory]);
   
   // Stop animation
   const stopAnimation = useCallback(() => {
@@ -352,6 +393,7 @@ export default function GeometricDistribution() {
     }
     setIsAnimating(false);
     isAnimatingRef.current = false;
+    setWaitingForContinue(false);
   }, []);
   
   // Reset
@@ -359,6 +401,7 @@ export default function GeometricDistribution() {
     stopAnimation();
     setCurrentTrial(0);
     setTrialHistory([]);
+    setWaitingForContinue(false);
   }, [stopAnimation]);
   
   // Cleanup on unmount and p change
@@ -455,16 +498,30 @@ export default function GeometricDistribution() {
                     </label>
                   </div>
                   
+                  {waitingForContinue && (
+                    <button
+                      onClick={continueAnimation}
+                      className={cn(
+                        "w-full px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 transform",
+                        "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700",
+                        "text-white shadow-md hover:shadow-lg hover:scale-[1.02]",
+                        "animate-pulse"
+                      )}
+                    >
+                      Continue to Next Trial
+                    </button>
+                  )}
+                  
                   {isAnimating && (
                     <button
-                      onClick={isPaused ? () => setIsPaused(false) : stopAnimation}
+                      onClick={stopAnimation}
                       className={cn(
                         "w-full px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300",
                         "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700",
                         "text-white shadow-md hover:shadow-lg"
                       )}
                     >
-                      {isPaused ? 'Resume' : 'Stop'}
+                      Stop
                     </button>
                   )}
                   

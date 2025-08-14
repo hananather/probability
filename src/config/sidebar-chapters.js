@@ -62,11 +62,14 @@ export const chapters = [
     title: 'Chapter 4: Descriptive Statistics and Sampling Distributions',
     path: '/chapter4',
     sections: [
-      { title: '4.1 Data Descriptions', url: '/chapter4/data-descriptions' },
-      { title: '4.2 Visual Summaries', url: '/chapter4/visual-summaries' },
-      { title: '4.3 Sampling Distributions', url: '/chapter4/sampling-distributions' },
-      { title: '4.4 Central Limit Theorem', url: '/chapter4/central-limit-theorem' },
-      { title: '4.5 Advanced Sampling Distributions', url: '/chapter4/sampling-distributions-reprise' },
+      { title: '4.0 Interactive Formula Builder', url: '/chapter4/formula-builder' },
+      { title: '4.1 Introduction to Descriptive Statistics', url: '/chapter4/introduction' },
+      { title: '4.2 Measures of Central Tendency', url: '/chapter4/central-tendency' },
+      { title: '4.3 Measures of Variability', url: '/chapter4/variability' },
+      { title: '4.4 Exploratory Data Analysis', url: '/chapter4/exploratory-data-analysis' },
+      { title: '4.5 Introduction to Sampling Distributions', url: '/chapter4/sampling-distributions' },
+      { title: '4.6 Central Limit Theorem', url: '/chapter4/central-limit-theorem' },
+      { title: '4.7 Advanced Distributions', url: '/chapter4/advanced-distributions' },
     ]
   },
   {

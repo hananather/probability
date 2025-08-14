@@ -313,7 +313,7 @@ const RealWorldExamples = React.memo(({ lambda }) => {
             <div>
               <strong className="text-red-400">Misconception:</strong> Higher λ always means Poisson fits better
               <p className="text-gray-300 text-sm mt-1">
-                Reality: As λ increases, events become less "rare" - consider Normal approximation for λ > 20
+                Reality: As λ increases, events become less "rare" - consider Normal approximation for λ {'>'}20
               </p>
             </div>
           </div>
@@ -516,7 +516,7 @@ const PoissonDistribution = React.memo(function PoissonDistribution() {
               </p>
               <div className="bg-gray-900/50 rounded p-3 text-sm">
                 <p className="text-purple-300">
-                  P(T > s + t | T > s) = P(T > t)
+                  P(T {'>'} s + t | T {'>'} s) = P(T {'>'} t)
                 </p>
                 <p className="text-gray-400 mt-1">
                   "The past doesn't affect the future"

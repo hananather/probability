@@ -248,10 +248,10 @@ const BridgeToContinuous = () => {
                 opacity="0.6"
                 style={{ transition: 'all 0.5s ease' }}
               />
-              <text x="160" y="100" textAnchor="middle" className="text-sm text-gray-400">
+              <text x="160" y="100" textAnchor="middle" className="text-sm text-white">
                 Smooth curve represents
               </text>
-              <text x="160" y="120" textAnchor="middle" className="text-sm text-gray-400">
+              <text x="160" y="120" textAnchor="middle" className="text-sm text-white">
                 infinite possible values
               </text>
             </>
@@ -286,7 +286,7 @@ const BridgeToContinuous = () => {
             </>
           )}
           
-          <text x="160" y="290" textAnchor="middle" className="text-sm font-medium">
+          <text x="160" y="290" textAnchor="middle" className="text-sm font-medium text-white">
             Continuous: Infinite possibilities
           </text>
         </g>
