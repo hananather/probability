@@ -11,7 +11,7 @@ import { ArrowLeft } from 'lucide-react';
  * @param {number} chapter - Chapter number for the hub link
  * @param {boolean} bottom - If true, adds margin at bottom for placement at end of content
  */
-export default function BackToHub({ chapter = 6, bottom = false }) {
+export default function BackToHub({ chapter = 3, bottom = false }) {
   return (
     <div className={`flex justify-start ${bottom ? 'mt-8 mb-4' : 'mb-6'}`}>
       <Link href={`/chapter${chapter}`}>

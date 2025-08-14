@@ -14,6 +14,7 @@ import { ProgressBar } from '@/components/ui/ProgressBar';
 import { InteractiveJourneyNavigation } from '@/components/ui/InteractiveJourneyNavigation';
 import BackToHub from '@/components/ui/BackToHub';
 import { Calculator, Target, BarChart3, TrendingUp, CheckCircle2, XCircle, HelpCircle } from 'lucide-react';
+import { QuizBreak } from '@/components/mdx/QuizBreak';
 
 // Color scheme for central tendency
 const measureColors = {
@@ -26,7 +27,6 @@ const measureColors = {
 
 // Practice Problems Component with Multiple Choice
 const PracticeProblems = React.memo(function PracticeProblems({ mathRef }) {
-  const { QuizBreak } = require('@/components/mdx/QuizBreak');
   const [quizCompleted, setQuizCompleted] = useState({});
   
   const problems = [
