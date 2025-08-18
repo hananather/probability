@@ -6,7 +6,7 @@ import { cn } from '@/lib/design-system';
 import { Button } from '@/components/ui/button';
 import FDistributionIntuitiveIntro from "./4-7-1-FDistributionIntro";
 import FDistributionInteractiveJourney from "./4-7-3-FDistributionJourney";
-import FDistributionMastery from "./4-7-5-FDistributionMasterclass";
+import FDistributionAdvanced from "./4-7-5-FDistributionMasterclass";
 import { BookOpen, Compass, Trophy } from "lucide-react";
 
 // Learning paths
@@ -33,11 +33,11 @@ const learningPaths = [
   },
   {
     id: 'mastery',
-    title: 'Real-World Mastery',
+    title: 'Real-World Applications',
     description: 'Apply F-distributions to ANOVA, regression diagnostics, and quality control scenarios.',
     icon: Trophy,
     color: 'from-emerald-500 to-teal-500',
-    component: FDistributionMastery,
+    component: FDistributionAdvanced,
     difficulty: 'Advanced',
     duration: '15-20 min'
   }

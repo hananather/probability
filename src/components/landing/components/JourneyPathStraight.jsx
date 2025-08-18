@@ -23,25 +23,27 @@ const JourneyPathStraight = React.memo(({ currentSection, scrollProgress = 0, co
     { name: 'Regression', color: '#06b6d4', shortName: 'Ch 7' }       // Cyan
   ];
   
+  // Calculate path data based on compact prop - defined outside useEffect
+  const width = compact ? 60 : 80;
+  const height = compact ? 400 : 500;
+  const centerX = width / 2;
+  const spacing = compact ? 50 : 60;
+  const startY = compact ? 50 : 70;
+  
+  // Simple vertical path with equal spacing
+  const pathData = chapters.map((_, i) => ({
+    x: centerX,
+    y: startY + (i * spacing)
+  }));
+  
   useEffect(() => {
     const svg = d3.select(svgRef.current);
-    const width = compact ? 60 : 80;
-    const height = compact ? 400 : 500;
-    const centerX = width / 2;
-    const spacing = compact ? 50 : 60;
-    const startY = compact ? 50 : 70;
     
     svg.attr('viewBox', `0 0 ${width} ${height}`);
     
     // Only redraw if SVG is empty (first render)
     if (svg.select('.milestone').empty()) {
       svg.selectAll('*').remove();
-      
-      // Simple vertical path with equal spacing
-      const pathData = chapters.map((_, i) => ({
-        x: centerX,
-        y: startY + (i * spacing)
-      }));
       
       // Background line (subtle)
       svg.append('line')
@@ -60,9 +62,9 @@ const JourneyPathStraight = React.memo(({ currentSection, scrollProgress = 0, co
         .attr('x1', 0).attr('y1', startY)
         .attr('x2', 0).attr('y2', startY + ((chapters.length - 1) * spacing));
       
-      chapters.forEach((chapter, i) => {
+      chapters.forEach((chapter, index) => {
         gradient.append('stop')
-          .attr('offset', `${(i / (chapters.length - 1)) * 100}%`)
+          .attr('offset', `${(index / (chapters.length - 1)) * 100}%`)
           .attr('stop-color', chapter.color);
       });
       
@@ -129,7 +131,7 @@ const JourneyPathStraight = React.memo(({ currentSection, scrollProgress = 0, co
             .ease(d3.easeCubicOut)
             .attr('r', index === currentSection ? (compact ? 7 : 9) : (compact ? 6 : 8))
             .attr('stroke-width', 2)
-            .attr('stroke-opacity', (d, i) => {
+            .attr('stroke-opacity', () => {
               if (index === currentSection) return 0.8;
               if (index < currentSection) return 0.3;
               return 0.1;
@@ -147,7 +149,10 @@ const JourneyPathStraight = React.memo(({ currentSection, scrollProgress = 0, co
         .attr('class', 'milestone-circle')
         .attr('r', compact ? 6 : 8)
         .attr('fill', '#18181b')
-        .attr('stroke', (d, i) => chapters[i].color)
+        .attr('stroke', (d, idx) => {
+          const chapterIndex = pathData.indexOf(d);
+          return chapters[chapterIndex] ? chapters[chapterIndex].color : '#525252';
+        })
         .attr('stroke-width', 2)
         .attr('stroke-opacity', 0.1)
         .style('transition', 'all 0.3s ease');
@@ -205,37 +210,42 @@ const JourneyPathStraight = React.memo(({ currentSection, scrollProgress = 0, co
     svg.selectAll('.milestone-circle')
       .transition()
       .duration(400)
-      .attr('fill', (d, i) => {
+      .attr('fill', (d, idx) => {
         // Color milestones based on scroll progress
-        const milestoneProgress = (i + 1) * progressPerSection;
+        const milestoneIndex = pathData.indexOf(d);
+        const milestoneProgress = (milestoneIndex + 1) * progressPerSection;
         if (scrollProgress >= milestoneProgress - progressPerSection * 0.5) {
-          return chapters[i].color;
+          return chapters[milestoneIndex] ? chapters[milestoneIndex].color : '#525252';
         }
         return '#18181b';
       })
-      .attr('stroke-opacity', (d, i) => {
-        if (i === activeIndex) return 0.8;
-        if (i < activeIndex) return 0.3;
+      .attr('stroke-opacity', (d, idx) => {
+        const milestoneIndex = pathData.indexOf(d);
+        if (milestoneIndex === activeIndex) return 0.8;
+        if (milestoneIndex < activeIndex) return 0.3;
         return 0.1;
       })
-      .attr('r', (d, i) => {
-        if (i === activeIndex) return compact ? 7 : 9;
+      .attr('r', (d, idx) => {
+        const milestoneIndex = pathData.indexOf(d);
+        if (milestoneIndex === activeIndex) return compact ? 7 : 9;
         return compact ? 6 : 8;
       });
     
     svg.selectAll('.milestone-dot')
       .transition()
       .duration(400)
-      .attr('fill', (d, i) => {
+      .attr('fill', (d, idx) => {
         // Color dots based on scroll progress
-        const milestoneProgress = (i + 1) * progressPerSection;
+        const milestoneIndex = pathData.indexOf(d);
+        const milestoneProgress = (milestoneIndex + 1) * progressPerSection;
         if (scrollProgress >= milestoneProgress - progressPerSection * 0.5) {
           return '#ffffff';
         }
         return '#3f3f46';
       })
-      .attr('r', (d, i) => {
-        if (i === activeIndex) return compact ? 3 : 4;
+      .attr('r', (d, idx) => {
+        const milestoneIndex = pathData.indexOf(d);
+        if (milestoneIndex === activeIndex) return compact ? 3 : 4;
         return compact ? 2 : 3;
       });
       
@@ -243,8 +253,9 @@ const JourneyPathStraight = React.memo(({ currentSection, scrollProgress = 0, co
     svg.selectAll('.milestone-number')
       .transition()
       .duration(400)
-      .attr('fill', (d, i) => {
-        if (i <= activeIndex) return '#ffffff';
+      .attr('fill', (d, idx) => {
+        const milestoneIndex = pathData.indexOf(d);
+        if (milestoneIndex <= activeIndex) return '#ffffff';
         return '#71717a';
       });
     
@@ -257,7 +268,7 @@ const JourneyPathStraight = React.memo(({ currentSection, scrollProgress = 0, co
     // Subtle pulsing effect on current milestone
     if (activeIndex >= 0 && activeIndex < 7) {
       const currentMilestone = svg.selectAll('.milestone')
-        .filter((d, i) => i === activeIndex);
+        .filter(function(d, i) { return i === activeIndex; });
       
       const pulseCircle = () => {
         const pulse = currentMilestone.append('circle')

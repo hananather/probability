@@ -27,7 +27,7 @@ export const chapters = [
       { title: '1.8 Conditional Probability', url: '/chapter1/08-conditional-probability' },
       { title: '1.9 Bayes\' Theorem', url: '/chapter1/09-bayes-theorem-visualizer' },
       { title: '1.10 Probabilistic Fallacies', url: '/chapter1/10-probabilistic-fallacies' },
-      { title: '1.11 Monty Hall Masterclass', url: '/chapter1/11-monty-hall-masterclass' },
+      { title: '1.11 Monty Hall Complete Analysis', url: '/chapter1/11-monty-hall-masterclass' },
     ]
   },
   {
@@ -48,7 +48,8 @@ export const chapters = [
     title: 'Chapter 3: Continuous Random Variables',
     path: '/chapter3',
     sections: [
-      { title: 'Introduction: Bridge to Continuous', url: '/chapter3/introduction' },
+      { title: '🎯 Formula Builder', url: '/chapter3/formula-builder' },
+      { title: '3.0 Bridge to Continuous', url: '/chapter3/introduction' },
       { title: '3.1 Probability Density Functions', url: '/chapter3/probability-density' },
       { title: '3.2 Expectation & Variance', url: '/chapter3/expectation-variance' },
       { title: '3.3 Normal Distributions', url: '/chapter3/normal-distributions' },
@@ -58,6 +59,7 @@ export const chapters = [
       { title: '3.4 Exponential Distributions', url: '/chapter3/exponential' },
       { title: '3.5 Gamma Distributions', url: '/chapter3/gamma' },
       { title: '3.6 Joint Distributions', url: '/chapter3/joint-distributions' },
+      { title: '  • Double Integral Calculator', url: '/chapter3/double-integral-calculator' },
       { title: '3.7 Normal Approximation', url: '/chapter3/normal-approximation' }
     ]
   },

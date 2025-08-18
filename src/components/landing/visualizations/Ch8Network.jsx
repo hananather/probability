@@ -15,7 +15,7 @@ const Ch8Network = React.memo(({ isActive }) => {
     svg.attr('viewBox', `0 0 ${width} ${height}`);
     
     // Network visualization
-    const nodes = d3.range(7).map(i => ({
+    const nodes = d3.range(7).map((_, i) => ({
       id: i,
       x: width/2 + 60 * Math.cos(i * 2 * Math.PI / 7),
       y: height/2 + 60 * Math.sin(i * 2 * Math.PI / 7)
@@ -35,53 +35,51 @@ const Ch8Network = React.memo(({ isActive }) => {
     ];
     
     // Draw links
-    const linkElements = svg.selectAll('.link')
-      .data(links)
-      .enter()
-      .append('line')
-      .attr('class', 'link')
-      .attr('x1', d => nodes[d.source].x)
-      .attr('y1', d => nodes[d.source].y)
-      .attr('stroke', '#525252')
-      .attr('stroke-width', 1)
-      .attr('opacity', 0.5);
-    
-    if (isActive) {
-      linkElements
-        .attr('x2', d => nodes[d.source].x)
-        .attr('y2', d => nodes[d.source].y)
-        .transition()
-        .delay((d, i) => i * 100)
-        .duration(500)
-        .attr('x2', d => nodes[d.target].x)
-        .attr('y2', d => nodes[d.target].y);
-    } else {
-      linkElements
-        .attr('x2', d => nodes[d.target].x)
-        .attr('y2', d => nodes[d.target].y);
-    }
+    links.forEach((link, index) => {
+      const linkElement = svg.append('line')
+        .attr('class', 'link')
+        .attr('x1', nodes[link.source].x)
+        .attr('y1', nodes[link.source].y)
+        .attr('stroke', '#525252')
+        .attr('stroke-width', 1)
+        .attr('opacity', 0.5);
+      
+      if (isActive) {
+        linkElement
+          .attr('x2', nodes[link.source].x)
+          .attr('y2', nodes[link.source].y)
+          .transition()
+          .delay(index * 100)
+          .duration(500)
+          .attr('x2', nodes[link.target].x)
+          .attr('y2', nodes[link.target].y);
+      } else {
+        linkElement
+          .attr('x2', nodes[link.target].x)
+          .attr('y2', nodes[link.target].y);
+      }
+    });
     
     // Draw nodes
-    const nodeElements = svg.selectAll('.node')
-      .data(nodes)
-      .enter()
-      .append('circle')
-      .attr('class', 'node')
-      .attr('cx', d => d.x)
-      .attr('cy', d => d.y)
-      .attr('fill', '#a78bfa');
-    
-    if (isActive) {
-      // Delay node animation until links are drawn
-      nodeElements
-        .attr('r', 0)
-        .transition()
-        .delay((d, i) => links.length * 100 + i * 100)
-        .duration(300)
-        .attr('r', 8);
-    } else {
-      nodeElements.attr('r', 6).attr('opacity', 0.7);
-    }
+    nodes.forEach((node, index) => {
+      const nodeElement = svg.append('circle')
+        .attr('class', 'node')
+        .attr('cx', node.x)
+        .attr('cy', node.y)
+        .attr('fill', '#a78bfa');
+      
+      if (isActive) {
+        // Delay node animation until links are drawn
+        nodeElement
+          .attr('r', 0)
+          .transition()
+          .delay(links.length * 100 + index * 100)
+          .duration(300)
+          .attr('r', 8);
+      } else {
+        nodeElement.attr('r', 6).attr('opacity', 0.7);
+      }
+    });
   }, [isActive]);
   
   return <svg ref={svgRef} className="w-full h-full" />;

@@ -222,7 +222,7 @@ const PieChartAnimation = () => {
       const paths = slices.append("path")
         .attr("d", arc)
         .attr("fill", d => d.data.color)
-        .attr("stroke", "#1f2937")
+        .attr("stroke", "#f3f4f6")
         .attr("stroke-width", 2)
         .attr("opacity", 0.8);
       

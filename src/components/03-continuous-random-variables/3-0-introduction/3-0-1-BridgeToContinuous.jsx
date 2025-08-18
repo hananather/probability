@@ -152,12 +152,12 @@ const BridgeToContinuous = () => {
             <rect x="160" y="120" width="40" height="130" fill="#3b82f6" opacity="0.8"/>
             <rect x="220" y="170" width="40" height="80" fill="#3b82f6" opacity="0.8"/>
             
-            <text x="60" y="270" textAnchor="middle" className="text-xs" style={{ fontFamily: 'monospace' }}>1</text>
-            <text x="120" y="270" textAnchor="middle" className="text-xs" style={{ fontFamily: 'monospace' }}>2</text>
-            <text x="180" y="270" textAnchor="middle" className="text-xs" style={{ fontFamily: 'monospace' }}>3</text>
-            <text x="240" y="270" textAnchor="middle" className="text-xs" style={{ fontFamily: 'monospace' }}>4</text>
+            <text x="60" y="270" textAnchor="middle" className="text-xs" fill="white" style={{ fontFamily: 'monospace' }}>1</text>
+            <text x="120" y="270" textAnchor="middle" className="text-xs" fill="white" style={{ fontFamily: 'monospace' }}>2</text>
+            <text x="180" y="270" textAnchor="middle" className="text-xs" fill="white" style={{ fontFamily: 'monospace' }}>3</text>
+            <text x="240" y="270" textAnchor="middle" className="text-xs" fill="white" style={{ fontFamily: 'monospace' }}>4</text>
             
-            <text x="160" y="290" textAnchor="middle" className="text-sm font-medium">
+            <text x="160" y="290" textAnchor="middle" className="text-sm font-medium" fill="white">
               Discrete: Countable outcomes
             </text>
           </>
@@ -184,7 +184,7 @@ const BridgeToContinuous = () => {
               );
             })}
             
-            <text x="160" y="290" textAnchor="middle" className="text-sm font-medium">
+            <text x="160" y="290" textAnchor="middle" className="text-sm font-medium" fill="white">
               Histogram: {binCount} bins
             </text>
           </>
@@ -248,10 +248,10 @@ const BridgeToContinuous = () => {
                 opacity="0.6"
                 style={{ transition: 'all 0.5s ease' }}
               />
-              <text x="160" y="100" textAnchor="middle" className="text-sm text-white">
+              <text x="160" y="100" textAnchor="middle" className="text-sm text-white" fill="white">
                 Smooth curve represents
               </text>
-              <text x="160" y="120" textAnchor="middle" className="text-sm text-white">
+              <text x="160" y="120" textAnchor="middle" className="text-sm text-white" fill="white">
                 infinite possible values
               </text>
             </>
@@ -279,14 +279,14 @@ const BridgeToContinuous = () => {
               {/* Labels for advanced steps */}
               {currentStep >= 2 && (
                 <>
-                  <text x="-10" y="10" textAnchor="end" className="text-xs" style={{ fontStyle: 'italic' }}>f(x)</text>
-                  <text x="320" y="265" className="text-xs" style={{ fontStyle: 'italic' }}>x</text>
+                  <text x="-10" y="10" textAnchor="end" className="text-xs" fill="white" style={{ fontStyle: 'italic' }}>f(x)</text>
+                  <text x="320" y="265" className="text-xs" fill="white" style={{ fontStyle: 'italic' }}>x</text>
                 </>
               )}
             </>
           )}
           
-          <text x="160" y="290" textAnchor="middle" className="text-sm font-medium text-white">
+          <text x="160" y="290" textAnchor="middle" className="text-sm font-medium text-white" fill="white">
             Continuous: Infinite possibilities
           </text>
         </g>

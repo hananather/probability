@@ -189,6 +189,10 @@ const ConvergenceChart = memo(function ConvergenceChart({ data, theoretical }) {
     g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(x).ticks(10))
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
+    
+    g.select(`g[transform="translate(0,${innerHeight})"]`)
       .append("text")
       .attr("x", innerWidth / 2)
       .attr("y", 40)
@@ -198,6 +202,10 @@ const ConvergenceChart = memo(function ConvergenceChart({ data, theoretical }) {
     
     g.append("g")
       .call(d3.axisLeft(y).tickFormat(d => `${(d * 100).toFixed(0)}%`))
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
+    
+    g.select("g:last-of-type")
       .append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", -40)
@@ -210,7 +218,7 @@ const ConvergenceChart = memo(function ConvergenceChart({ data, theoretical }) {
     g.selectAll(".domain, .tick line")
       .attr("stroke", "#6b7280");
     g.selectAll(".tick text")
-      .attr("fill", "#e5e7eb");
+      .attr("fill", "#f3f4f6");
     
     // Add "Start Simulation" message if no real data yet
     if (data.length <= 1) {
@@ -234,7 +242,7 @@ const ConvergenceChart = memo(function ConvergenceChart({ data, theoretical }) {
       .attr("width", 130)
       .attr("height", 90)
       .attr("fill", "#1a1a1a")
-      .attr("stroke", "#374151")
+      .attr("stroke", "#6b7280")
       .attr("rx", 4);
     
     // Switch legend

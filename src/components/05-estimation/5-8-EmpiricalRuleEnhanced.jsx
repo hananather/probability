@@ -205,7 +205,9 @@ const EmpiricalRuleEnhanced = React.memo(function EmpiricalRuleEnhanced() {
     g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(xScale).tickValues([-3, -2, -1, 0, 1, 2, 3]).tickFormat(""))
-      .style("font-size", "12px");
+      .style("font-size", "12px")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Add grid lines
     g.append("g")
@@ -217,7 +219,9 @@ const EmpiricalRuleEnhanced = React.memo(function EmpiricalRuleEnhanced() {
       )
       .style("stroke", "#374151")
       .style("stroke-dasharray", "2,2")
-      .style("opacity", 0.3);
+      .style("opacity", 0.3)
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
   }, [selectedLevel, showProbabilities]);
   

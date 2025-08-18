@@ -421,12 +421,14 @@ const EmpiricalRule = () => {
     g.append("g")
       .attr("transform", `translate(0,${height - margin.bottom})`)
       .call(xAxis)
-      .style("color", colors.secondary);
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
       
     g.append("g")
       .attr("transform", `translate(${margin.left},0)`)
       .call(yAxis)
-      .style("color", colors.secondary);
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Distribution info in top corner
     g.append("text")
@@ -507,6 +509,8 @@ const EmpiricalRule = () => {
           if (deviation <= 3) return colors.accent;
           return colors.text;
         })
+        .attr("stroke", "#f3f4f6")
+        .attr("stroke-width", 1)
         .attr("opacity", 0.6);
     }
     

@@ -34,7 +34,7 @@ const KeyConceptsCard = React.memo(() => {
 
   return (
     <Card ref={contentRef} className="mb-8 p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
-      <h3 className="text-xl font-bold text-white mb-4">Key Concepts You'll Master</h3>
+      <h3 className="text-xl font-bold text-white mb-4">Key Concepts</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {concepts.map((concept, i) => (
           <motion.div
@@ -88,7 +88,7 @@ const CHAPTER_6_SECTIONS = [
     id: 'hypothesis-fundamentals',
     title: '6.1 Hypothesis Testing Fundamentals',
     subtitle: 'Core concepts and framework',
-    description: 'Master the systematic approach to testing claims with data. Build intuition for null/alternative hypotheses, test statistics, and p-values.',
+    description: 'Systematic approach to testing claims with data. Build intuition for null/alternative hypotheses, test statistics, and p-values.',
     icon: Lightbulb,
     difficulty: 'Beginner',
     estimatedTime: '20 min',

@@ -77,7 +77,7 @@ export const graphColors = {
   
   // Text colors for SVG elements
   text: {
-    primary: '#1f2937',      // gray-800 for main text
+    primary: '#f3f4f6',      // light gray for main text
     secondary: '#4b5563',    // gray-600 for labels
     tertiary: '#6b7280',     // gray-500 for minor text
     value: '#111827',        // gray-900 for important values

@@ -186,7 +186,7 @@ const ZTableExplorer = ({
       .style("font-size", "14px")
       .selectAll("text")
       .style("font-family", "monospace")
-      .style("fill", "#e5e7eb");
+      .attr("fill", "#f3f4f6");
       
     g.append("g")
       .attr("transform", `translate(${margin.left},0)`)
@@ -194,7 +194,7 @@ const ZTableExplorer = ({
       .style("font-size", "14px")
       .selectAll("text")
       .style("font-family", "monospace")
-      .style("fill", "#e5e7eb");
+      .attr("fill", "#f3f4f6");
     
     // Style axis lines
     g.selectAll(".domain")
@@ -261,7 +261,7 @@ const ZTableExplorer = ({
       .attr("width", 180)
       .attr("height", 90)
       .attr("rx", 12)
-      .attr("fill", "#1f2937")
+      .attr("fill", "#f3f4f6")
       .attr("stroke", "#374151")
       .attr("stroke-width", 1)
       .attr("fill-opacity", 0.9);

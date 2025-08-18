@@ -209,10 +209,10 @@ const ComponentCard = React.memo(({
           <span>⏱️ {component.estimatedTime}</span>
         </div>
         
-        {/* Learning goals - CSS hover instead of state */}
+        {/* Key topics - CSS hover instead of state */}
         <div className={styles.learningGoals}>
           <p className={styles.learningGoalsTitle}>
-            You'll learn:
+            Key topics:
           </p>
           <ul className={styles.learningGoalsList}>
             {component.learningGoals.slice(0, 3).map((goal, index) => (
@@ -314,7 +314,7 @@ export default function ChapterHub({
               </h3>
               <div className="text-left space-y-3">
                 <p className="text-sm text-neutral-400 mb-4">
-                  When completed, you'll learn:
+                  Key topics covered:
                 </p>
                 <ul className="space-y-2">
                   {selectedComponent.learningGoals.map((goal, index) => (

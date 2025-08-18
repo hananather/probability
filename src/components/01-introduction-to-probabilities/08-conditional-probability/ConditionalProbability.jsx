@@ -413,7 +413,7 @@ function ConditionalProbability() {
         .attr("x", width / 2)
         .attr("y", 20)
         .attr("text-anchor", "middle")
-        .attr("fill", colors.chart.text)
+        .attr("fill", "#f3f4f6")
         .style("font-size", "14px")
         .style("font-weight", "600");
       
@@ -500,7 +500,7 @@ function ConditionalProbability() {
           .attr("width", handleWidth)
           .attr("height", handleHeight)
           .attr("fill", "white")
-          .attr("stroke", "black")
+          .attr("stroke", "#374151")
           .attr("stroke-width", 2)
           .attr("cursor", "ew-resize")
           .attr("rx", 3)
@@ -512,7 +512,7 @@ function ConditionalProbability() {
           .attr("width", handleWidth)
           .attr("height", handleHeight)
           .attr("fill", "white")
-          .attr("stroke", "black")
+          .attr("stroke", "#374151")
           .attr("stroke-width", 2)
           .attr("cursor", "ew-resize")
           .attr("rx", 3)
@@ -533,7 +533,7 @@ function ConditionalProbability() {
         eventGroup.append("text")
           .attr("class", "prob-label")
           .attr("text-anchor", "middle")
-          .attr("fill", colors.chart.text)
+          .attr("fill", "#f3f4f6")
           .style("font-size", "12px")
           .style("font-weight", "500")
           .attr("pointer-events", "none");
@@ -558,7 +558,7 @@ function ConditionalProbability() {
         .attr("class", "x-axis")
         .attr("transform", `translate(0,${height - margin.bottom + 5})`)
         .selectAll("text")
-        .attr("fill", colors.chart.text)
+        .attr("fill", "#f3f4f6")
         .style("font-size", "10px");
       
       g.select(".x-axis .domain").attr("stroke", colors.chart.grid);
@@ -1012,7 +1012,7 @@ function ConditionalProbability() {
       .attr("x", width / 2)
       .attr("y", 15)
       .attr("text-anchor", "middle")
-      .attr("fill", colors.chart.text)
+      .attr("fill", "#f3f4f6")
       .style("font-size", "12px")
       .style("font-weight", "600")
       .text(currentPerspective === 'universe' ? 'Unconditional Probabilities' : `Conditional Probabilities Given ${currentPerspective.toUpperCase()}`);
@@ -1082,7 +1082,7 @@ function ConditionalProbability() {
       .attr("x", (d, i) => xScale(i) + xScale.bandwidth() / 2)
       .attr("y", d => yScale(d.value) - 5)
       .attr("text-anchor", "middle")
-      .attr("fill", colors.chart.text)
+      .attr("fill", "#f3f4f6")
       .style("font-size", "13px")
       .style("font-weight", "600")
       .text(d => d.value.toFixed(3))
@@ -1109,7 +1109,7 @@ function ConditionalProbability() {
       .attr("class", "x-axis")
       .call(xAxis)
       .selectAll("text")
-      .attr("fill", colors.chart.text)
+      .attr("fill", "#f3f4f6")
       .style("font-size", "11px")
       .style("font-weight", "500");
     
@@ -1123,7 +1123,7 @@ function ConditionalProbability() {
       .attr("class", "y-axis")
       .call(yAxis)
       .selectAll("text")
-      .attr("fill", colors.chart.text)
+      .attr("fill", "#f3f4f6")
       .style("font-size", "10px");
     
     g.select(".x-axis .domain").attr("stroke", colors.chart.grid);

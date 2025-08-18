@@ -358,19 +358,27 @@ const FDistributionInteractiveJourney = () => {
       .range([innerHeight, 0]);
     
     // Add axes
-    g.append("g")
+    const xAxisGroup = g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(xScale).ticks(10))
-      .append("text")
+      .call(d3.axisBottom(xScale).ticks(10));
+    
+    xAxisGroup.selectAll("text")
+      .attr("fill", "#f3f4f6");
+    
+    xAxisGroup.append("text")
       .attr("x", innerWidth / 2)
       .attr("y", 40)
       .attr("fill", "currentColor")
       .style("text-anchor", "middle")
       .text("F-value");
     
-    g.append("g")
-      .call(d3.axisLeft(yScale).ticks(8))
-      .append("text")
+    const yAxisGroup = g.append("g")
+      .call(d3.axisLeft(yScale).ticks(8));
+    
+    yAxisGroup.selectAll("text")
+      .attr("fill", "#f3f4f6");
+    
+    yAxisGroup.append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", -40)
       .attr("x", -innerHeight / 2)

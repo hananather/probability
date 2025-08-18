@@ -24,9 +24,10 @@ const Ch1Venn = React.memo(({ isActive }) => {
     
     const g = svg.append('g');
     
-    // Draw circles
-    sets.forEach((set, i) => {
+    // Draw circles with indexed data
+    sets.forEach((set, index) => {
       const circle = g.append('circle')
+        .attr('class', 'venn-circle')
         .attr('cx', set.cx)
         .attr('cy', set.cy)
         .attr('fill', 'none')
@@ -37,7 +38,7 @@ const Ch1Venn = React.memo(({ isActive }) => {
       if (isActive) {
         circle.attr('r', 0)
           .transition()
-          .delay(i * 200)
+          .delay(index * 200)
           .duration(800)
           .attr('r', set.r)
           .attr('opacity', 0.8);
@@ -46,6 +47,7 @@ const Ch1Venn = React.memo(({ isActive }) => {
       }
       
       const text = g.append('text')
+        .attr('class', 'venn-text')
         .attr('x', set.cx)
         .attr('y', set.cy)
         .attr('text-anchor', 'middle')
@@ -58,7 +60,7 @@ const Ch1Venn = React.memo(({ isActive }) => {
         text.attr('opacity', 0)
           .text(set.name)
           .transition()
-          .delay(i * 200 + 400)
+          .delay(index * 200 + 400)
           .duration(400)
           .attr('opacity', 1);
       } else {

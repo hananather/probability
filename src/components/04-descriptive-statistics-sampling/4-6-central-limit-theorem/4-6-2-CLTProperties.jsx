@@ -62,11 +62,15 @@ const CLTPropertiesMerged = () => {
     g.append('g')
       .attr('transform', `translate(0,${innerHeight})`)
       .call(d3.axisBottom(xScale).ticks(8))
-      .style('color', '#94a3b8');
+      .style('color', '#94a3b8')
+      .selectAll('text')
+      .attr('fill', '#f3f4f6');
 
     g.append('g')
       .call(d3.axisLeft(yScale).ticks(5))
-      .style('color', '#94a3b8');
+      .style('color', '#94a3b8')
+      .selectAll('text')
+      .attr('fill', '#f3f4f6');
 
     // Labels
     g.append('text')
@@ -146,7 +150,7 @@ const CLTPropertiesMerged = () => {
       .text(`SE = ${standardError.toFixed(3)}`);
   };
 
-  // Quiz questions based on course materials
+  // Quiz questions
   const cltQuizQuestions = [
     {
       question: "According to the Central Limit Theorem, what happens to the sampling distribution of the mean as sample size increases?",

@@ -55,7 +55,7 @@ function WhatAreSamplingDistributionsTheoryFirst() {
     svg.append("rect")
       .attr("width", width)
       .attr("height", height)
-      .attr("fill", "#0a0a0a");
+      .attr("fill", "#f3f4f6");
     
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
@@ -112,7 +112,7 @@ function WhatAreSamplingDistributionsTheoryFirst() {
         .attr("y", y - 18)
         .attr("width", 100)
         .attr("height", 24)
-        .attr("fill", "#0a0a0a")
+        .attr("fill", "#f3f4f6")
         .attr("opacity", 0.9)
         .attr("rx", 4);
       

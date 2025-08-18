@@ -94,13 +94,13 @@ function CLTSimulation() {
     
     xAxis.selectAll("path, line").attr("stroke", colors.chart.grid);
     xAxis.selectAll("text")
-      .attr("fill", colors.chart.text)
+      .attr("fill", "#f3f4f6")
       .style("font-size", "12px");
     
     xAxis.append("text")
       .attr("x", innerWidth / 2)
       .attr("y", 40)
-      .attr("fill", colors.chart.text)
+      .attr("fill", "#f3f4f6")
       .style("font-size", "14px")
       .style("font-weight", "600")
       .style("text-anchor", "middle")
@@ -132,7 +132,7 @@ function CLTSimulation() {
       labelGroup.append("text")
         .attr("x", -margin.left + 10)
         .attr("y", y - 2)
-        .attr("fill", color || colors.chart.text)
+        .attr("fill", color || "#f3f4f6")
         .style("font-size", "12px")
         .style("font-weight", "600")
         .style("text-transform", "uppercase")
@@ -244,7 +244,7 @@ function CLTSimulation() {
         .attr("text-anchor", "middle")
         .style("font-size", "12px")
         .style("font-weight", "600")
-        .attr("fill", "#fff");
+        .attr("fill", "#f3f4f6");
       
       // Update bars
       const allBars = bar.merge(barEnter);
@@ -286,7 +286,7 @@ function CLTSimulation() {
         .attr("x", x(sampleMean))
         .attr("y", y1 + y2 - 5)
         .attr("text-anchor", "middle")
-        .attr("fill", colorScheme.chart.tertiary)
+        .attr("fill", "#f3f4f6")
         .style("font-size", "12px")
         .style("font-weight", "600")
         .text(`x̄ = ${sampleMean.toFixed(3)}`);
@@ -430,7 +430,7 @@ function CLTSimulation() {
         .attr("text-anchor", "middle")
         .style("font-size", "12px")
         .style("font-weight", "600")
-        .attr("fill", "#fff");
+        .attr("fill", "#f3f4f6");
       
       const allBars = bars.merge(barEnter);
       

@@ -167,7 +167,7 @@ const FunctionTransformations = () => {
     svg.selectAll(".domain, .tick line")
       .style("stroke", "#6B7280");
     svg.selectAll(".tick text")
-      .style("fill", "#9CA3AF");
+      .style("fill", "#f3f4f6");
     
     // Draw function curve
     const line = d3.line()
@@ -290,7 +290,7 @@ const FunctionTransformations = () => {
     svg.selectAll(".domain, .tick line")
       .style("stroke", "#6B7280");
     svg.selectAll(".tick text")
-      .style("fill", "#9CA3AF");
+      .style("fill", "#f3f4f6");
     
     // Draw original distribution
     const barWidth = 20;

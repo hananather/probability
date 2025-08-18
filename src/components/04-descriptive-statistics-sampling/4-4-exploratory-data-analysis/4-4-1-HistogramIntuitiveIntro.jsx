@@ -218,7 +218,7 @@ const HistogramIntuitiveIntro = () => {
       const binWidth = (width - 200) / numBins;
       const binHeight = 250;  // Fixed height to leave room for text
       
-      const bins = d3.range(numBins).map(i => ({
+      const bins = d3.range(numBins).map((_, i) => ({
         id: i,
         x: 100 + i * binWidth,
         width: binWidth - 5,

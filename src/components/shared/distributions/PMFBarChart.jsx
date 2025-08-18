@@ -173,7 +173,7 @@ const PMFBarChart = ({
         .attr('y', d => yScale(d.y) - 5)
         .attr('text-anchor', 'middle')
         .attr('font-size', '12px')
-        .attr('fill', theme.dark)
+        .attr('fill', '#f3f4f6')
         .attr('opacity', 0)
         .text(d => format('.3f')(d.y));
       
@@ -210,7 +210,7 @@ const PMFBarChart = ({
         .attr('y', -5)
         .attr('text-anchor', 'middle')
         .attr('font-size', '12px')
-        .attr('fill', theme.accent)
+        .attr('fill', '#f3f4f6')
         .attr('opacity', 0)
         .text(`μ = ${mean.toFixed(2)}`);
       

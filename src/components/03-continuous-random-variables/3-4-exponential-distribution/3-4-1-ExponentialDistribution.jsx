@@ -336,12 +336,14 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
       .attr("transform", `translate(0,${height})`)
       .call(d3.axisBottom(x))
       .style("font-size", "12px")
-      .style("color", "#9ca3af");
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     g.append("g")
       .call(d3.axisLeft(y))
       .style("font-size", "12px")
-      .style("color", "#9ca3af");
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Add axis labels
     g.append("text")
@@ -351,14 +353,14 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
       .attr("dy", "1em")
       .style("text-anchor", "middle")
       .style("font-size", "14px")
-      .style("fill", "#e5e7eb")
+      .attr("fill", "#f3f4f6")
       .text(showCDF ? "F(t) - Cumulative Probability" : "f(t) - Probability Density");
     
     g.append("text")
       .attr("transform", `translate(${width / 2}, ${height + margin.bottom})`)
       .style("text-anchor", "middle")
       .style("font-size", "14px")
-      .style("fill", "#e5e7eb")
+      .attr("fill", "#f3f4f6")
       .text("Time (t)");
     
     // Draw the curve - using primary color from color scheme
@@ -386,7 +388,7 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
         .attr("x2", x(t))
         .attr("y1", height)
         .attr("y2", y(yValue))
-        .attr("stroke", colors.chart.accent)
+        .attr("stroke", colors.chart.primary)
         .attr("stroke-width", 2)
         .attr("stroke-dasharray", "5,5");
       
@@ -395,8 +397,8 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
         .attr("cx", x(t))
         .attr("cy", y(yValue))
         .attr("r", 6)
-        .attr("fill", colors.chart.accent)
-        .attr("stroke", "#1f2937")
+        .attr("fill", colors.chart.primary)
+        .attr("stroke", "#f3f4f6")
         .attr("stroke-width", 2);
       
       // Label
@@ -404,7 +406,7 @@ const ExponentialDistribution = React.memo(function ExponentialDistribution() {
         .attr("x", x(t))
         .attr("y", y(yValue) - 10)
         .attr("text-anchor", "middle")
-        .attr("fill", colors.chart.accent)
+        .attr("fill", "#f3f4f6")
         .style("font-size", "12px")
         .style("font-weight", "bold")
         .text(`(${t.toFixed(1)}, ${yValue.toFixed(3)})`);

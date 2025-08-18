@@ -365,7 +365,7 @@ const ElectionStory = React.memo(function ElectionStory({ onComplete }) {
   const [currentStep, setCurrentStep] = useState(0);
   const contentRef = useRef(null);
   
-  // Fixed values from course
+  // Fixed values for example
   const n = 1000;
   const supportA = 0.52;
   const supportB = 0.48;
@@ -845,6 +845,10 @@ const NormalApproximationValidator = React.memo(function NormalApproximationVali
     g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(x))
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
+      
+    g.select("g:last-child")
       .append("text")
       .attr("x", innerWidth / 2)
       .attr("y", 25)
@@ -854,6 +858,10 @@ const NormalApproximationValidator = React.memo(function NormalApproximationVali
     
     g.append("g")
       .call(d3.axisLeft(y).ticks(4))
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
+      
+    g.select("g:last-child")
       .append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", -28)

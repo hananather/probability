@@ -118,7 +118,7 @@ const BayesianTree = memo(function BayesianTree({ selectedDoor, revealedDoor, hi
       .enter().append("path")
       .attr("class", "edge")
       .attr("d", d => line([d.source, d.target]))
-      .attr("stroke", d => d.highlight ? colorScheme.chart.primary : "#4b5563")
+      .attr("stroke", d => d.highlight ? colorScheme.chart.primary : "#9ca3af")
       .attr("stroke-width", d => d.highlight ? 3 : 1.5)
       .attr("fill", "none")
       .attr("opacity", d => d.highlight ? 1 : 0.6);
@@ -131,7 +131,7 @@ const BayesianTree = memo(function BayesianTree({ selectedDoor, revealedDoor, hi
       .attr("x", d => (d.source.x + d.target.x) / 2)
       .attr("y", d => (d.source.y + d.target.y) / 2 - 5)
       .attr("text-anchor", "middle")
-      .attr("fill", colorScheme.chart.text)
+      .attr("fill", "#f3f4f6")
       .style("font-size", "12px")
       .style("font-family", "monospace")
       .text(d => d.prob || '');
@@ -195,7 +195,7 @@ const BayesianTree = memo(function BayesianTree({ selectedDoor, revealedDoor, hi
         .attr("x", innerWidth * 0.4)
         .attr("y", 15)
         .attr("text-anchor", "middle")
-        .attr("fill", colorScheme.chart.text)
+        .attr("fill", "#f3f4f6")
         .style("font-size", "13px")
         .style("font-weight", "600")
         .text(`Key Insight: Monty's action gives you information!`);
@@ -337,16 +337,20 @@ const ProbabilityUpdate = memo(function ProbabilityUpdate({ stage, selectedDoor,
     // Axes
     g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(x));
+      .call(d3.axisBottom(x))
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     g.append("g")
-      .call(d3.axisLeft(y).tickFormat(d => `${(d * 100).toFixed(0)}%`));
+      .call(d3.axisLeft(y).tickFormat(d => `${(d * 100).toFixed(0)}%`))
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Styling
     g.selectAll(".domain, .tick line")
       .attr("stroke", "#6b7280");
     g.selectAll(".tick text")
-      .attr("fill", "#e5e7eb");
+      .attr("fill", "#f3f4f6");
     
     // Title
     svg.append("text")

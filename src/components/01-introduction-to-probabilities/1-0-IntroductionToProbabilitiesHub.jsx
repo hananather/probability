@@ -286,7 +286,7 @@ const CHAPTER_1_SECTIONS = [
   },
   {
     id: 'monty-hall-masterclass',
-    title: '1.11 Monty Hall Masterclass',
+    title: '1.11 Monty Hall Complete Analysis',
     subtitle: 'The famous probability paradox',
     description: 'Explore the counterintuitive Monty Hall problem through interactive simulations. See why switching doors doubles your chances of winning!',
     icon: DoorOpen,

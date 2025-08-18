@@ -147,12 +147,16 @@ export default function SampleSizeEffects() {
       .attr('transform', `translate(0,${height})`)
       .call(d3.axisBottom(x))
       .style('font-size', '12px')
-      .style('color', '#9ca3af');
+      .style('color', '#9ca3af')
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     g.append('g')
       .call(d3.axisLeft(y).tickFormat(d3.format('.1%')))
       .style('font-size', '12px')
-      .style('color', '#9ca3af');
+      .style('color', '#9ca3af')
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Add axis label
     g.append('text')
@@ -291,12 +295,16 @@ export default function SampleSizeEffects() {
       .attr('transform', `translate(0,${height})`)
       .call(d3.axisBottom(x))
       .style('font-size', '12px')
-      .style('color', '#9ca3af');
+      .style('color', '#9ca3af')
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     g.append('g')
       .call(d3.axisLeft(y).tickFormat(d3.format('.2f')))
       .style('font-size', '12px')
-      .style('color', '#9ca3af');
+      .style('color', '#9ca3af')
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Add axis labels
     g.append('text')

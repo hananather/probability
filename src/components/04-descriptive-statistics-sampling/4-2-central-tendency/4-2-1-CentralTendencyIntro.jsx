@@ -280,7 +280,9 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
     // X-axis
     g.append("g")
       .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(xScale));
+      .call(d3.axisBottom(xScale))
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Axis label
     g.append("text")
@@ -369,7 +371,9 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
     // X-axis
     g.append("g")
       .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(xScale));
+      .call(d3.axisBottom(xScale))
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Data points
     g.selectAll(".dot")
@@ -435,7 +439,9 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
     // X-axis
     g.append("g")
       .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(xScale));
+      .call(d3.axisBottom(xScale))
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Sorted data with positions
     const sorted = [...data].sort((a, b) => a - b);
@@ -562,11 +568,15 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
     // X-axis
     g.append("g")
       .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(xScale));
+      .call(d3.axisBottom(xScale))
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Y-axis
     g.append("g")
-      .call(d3.axisLeft(yScale).ticks(maxFreq));
+      .call(d3.axisLeft(yScale).ticks(maxFreq))
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Frequency bars
     Object.entries(measures.frequency).forEach(([value, freq]) => {
@@ -627,7 +637,9 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
     // X-axis
     g.append("g")
       .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(xScale));
+      .call(d3.axisBottom(xScale))
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Data points
     g.selectAll(".dot")

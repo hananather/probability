@@ -315,7 +315,7 @@ export default function HypothesisTestingGame() {
       coinG.append("circle")
         .attr("r", coinSize/2)
         .attr("fill", flip === 1 ? "#06b6d4" : "#ec4899")
-        .attr("stroke", "#1f2937")
+        .attr("stroke", "#f3f4f6")
         .attr("stroke-width", 0.5);
       
       coinG.append("text")

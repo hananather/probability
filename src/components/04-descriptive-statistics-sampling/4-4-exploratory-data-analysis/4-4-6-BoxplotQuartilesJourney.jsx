@@ -73,7 +73,7 @@ function BoxplotQuartilesJourney() {
     const sorted = [...values].sort((a, b) => a - b);
     const n = sorted.length;
     
-    // Calculate quartiles using method from course
+    // Calculate quartiles using standard method
     const q1Index = Math.floor(n / 4);
     const q1 = q1Index + 1 <= n ? 
       (sorted[q1Index] + sorted[Math.min(q1Index + 1, n - 1)]) / 2 : 
@@ -203,8 +203,8 @@ function BoxplotQuartilesJourney() {
     xAxis.selectAll("text")
       .style("font-size", "11px")
       .style("font-family", "monospace")
-      .attr("fill", colors.chart.text)
-      .attr("opacity", 0.7);
+      .attr("fill", "#f3f4f6")
+      .attr("opacity", 1);
     
   }, [data, sortedData, stage, showMedian, showQuartiles, showBox, showWhiskers, showOutliers]);
   

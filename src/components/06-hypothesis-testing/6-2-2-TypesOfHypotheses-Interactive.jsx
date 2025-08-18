@@ -1085,7 +1085,7 @@ export default function TypesOfHypotheses() {
         .attr("class", "test-stat-circle")
         .attr("r", 8)
         .style("fill", "#10b981")
-        .style("stroke", "#171717")
+        .style("stroke", "#f3f4f6")
         .style("stroke-width", 2)
         .style("filter", "url(#enhanced-glow)");
       

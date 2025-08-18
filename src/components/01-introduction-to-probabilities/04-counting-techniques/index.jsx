@@ -432,7 +432,7 @@ const CountingTechniques = memo(function CountingTechniques() {
       .attr("dy", ".35em")
       .attr("text-anchor", "end")
       .text(d => d.data.name)
-      .style("fill", colors.chart.text)
+      .style("fill", "#f3f4f6")
       .style("fill-opacity", 1e-6)
       .style("font-size", size <= 2 ? "12px" : (size === 3 ? "11px" : "10px"));
     

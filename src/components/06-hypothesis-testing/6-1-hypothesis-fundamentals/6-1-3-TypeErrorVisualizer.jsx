@@ -197,9 +197,12 @@ export default function TypeErrorVisualizer() {
       .call(d3.axisBottom(x))
       .style("font-size", "12px")
       .style("color", "#9ca3af")
-      .append("text")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
+    
+    g.append("text")
       .attr("x", innerWidth / 2)
-      .attr("y", 45)
+      .attr("y", innerHeight + 45)
       .attr("fill", "#e5e7eb")
       .style("text-anchor", "middle")
       .style("font-size", "14px")
@@ -210,7 +213,10 @@ export default function TypeErrorVisualizer() {
       .call(d3.axisLeft(y).tickFormat(d => d.toFixed(3)))
       .style("font-size", "12px")
       .style("color", "#9ca3af")
-      .append("text")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
+    
+    g.append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", -45)
       .attr("x", -innerHeight / 2)
@@ -227,7 +233,7 @@ export default function TypeErrorVisualizer() {
         .tickSize(-innerHeight)
         .tickFormat("")
       )
-      .style("stroke", "#374151")
+      .style("stroke", "#64748b")
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.5);
 
@@ -237,7 +243,7 @@ export default function TypeErrorVisualizer() {
         .tickSize(-innerWidth)
         .tickFormat("")
       )
-      .style("stroke", "#374151")
+      .style("stroke", "#64748b")
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.5);
     

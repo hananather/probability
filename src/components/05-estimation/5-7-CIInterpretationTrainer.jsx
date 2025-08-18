@@ -224,7 +224,9 @@ const CIInterpretationTrainer = React.memo(function CIInterpretationTrainer() {
     g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(xScale))
-      .style("font-size", "12px");
+      .style("font-size", "12px")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     g.append("text")
       .attr("x", innerWidth / 2)
@@ -276,7 +278,7 @@ const CIInterpretationTrainer = React.memo(function CIInterpretationTrainer() {
     <div ref={contentRef} className="bg-neutral-800/30 rounded-lg p-6">
       <h3 className="text-xl font-bold text-blue-400 mb-4 flex items-center gap-2">
         <AlertTriangle className="w-5 h-5" />
-        Master the Correct Interpretation
+        Understanding Correct Interpretation
       </h3>
       
       <div className="space-y-4">

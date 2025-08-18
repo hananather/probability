@@ -155,7 +155,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
       .call(d3.axisBottom(xScale));
     
     xAxis.selectAll("text")
-      .style("fill", "#e5e7eb");
+      .attr("fill", "#f3f4f6");
     xAxis.selectAll("line")
       .style("stroke", "#e5e7eb");
     xAxis.select(".domain")
@@ -165,7 +165,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
       .attr("x", width / 2)
       .attr("y", 40)
       .style("text-anchor", "middle")
-      .style("fill", "#e5e7eb")
+      .attr("fill", "#f3f4f6")
       .text("x");
     
     const yAxis = svg.append("g")
@@ -173,7 +173,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
       .call(d3.axisLeft(yScale).tickFormat(d => d.toFixed(2)));
     
     yAxis.selectAll("text")
-      .style("fill", "#e5e7eb");
+      .attr("fill", "#f3f4f6");
     yAxis.selectAll("line")
       .style("stroke", "#e5e7eb");
     yAxis.select(".domain")
@@ -184,7 +184,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
       .attr("y", -40)
       .attr("x", -height / 2)
       .style("text-anchor", "middle")
-      .style("fill", "#e5e7eb")
+      .attr("fill", "#f3f4f6")
       .text("f(x)");
     
     // Area under curve

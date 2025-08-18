@@ -19,6 +19,17 @@ const JourneyPath = React.memo(({ currentSection, scrollProgress = 0 }) => {
     { name: 'Regression', color: '#06b6d4' }       // Cyan
   ];
   
+  // Beautiful curved journey path for 7 chapters - defined outside useEffect
+  const pathData = [
+    { x: 40, y: 70 },   // Ch 1
+    { x: 25, y: 130 },  // Ch 2
+    { x: 55, y: 190 },  // Ch 3
+    { x: 30, y: 250 },  // Ch 4
+    { x: 50, y: 310 },  // Ch 5
+    { x: 35, y: 370 },  // Ch 6
+    { x: 45, y: 430 }   // Ch 7
+  ];
+  
   useEffect(() => {
     const svg = d3.select(svgRef.current);
     const width = 80;
@@ -30,15 +41,9 @@ const JourneyPath = React.memo(({ currentSection, scrollProgress = 0 }) => {
     if (svg.select('.milestone').empty()) {
       svg.selectAll('*').remove();
       
-      // Beautiful curved journey path for 7 chapters
-      const pathData = [
-        { x: 40, y: 70 },   // Ch 1
-        { x: 25, y: 130 },  // Ch 2
-        { x: 55, y: 190 },  // Ch 3
-        { x: 30, y: 250 },  // Ch 4
-        { x: 50, y: 310 },  // Ch 5
-        { x: 35, y: 370 },  // Ch 6
-        { x: 45, y: 430 }   // Ch 7
+      // Use pathData defined above
+      const pathDataToUse = [
+        ...pathData
       ];
       
       const line = d3.line()
@@ -140,7 +145,10 @@ const JourneyPath = React.memo(({ currentSection, scrollProgress = 0 }) => {
         .attr('class', 'milestone-circle')
         .attr('r', 8)
         .attr('fill', '#18181b')
-        .attr('stroke', (d, i) => chapters[i].color)
+        .attr('stroke', (d, idx) => {
+          const chapterIndex = pathData.indexOf(d);
+          return chapters[chapterIndex] ? chapters[chapterIndex].color : '#525252';
+        })
         .attr('stroke-width', 2)
         .attr('stroke-opacity', 0)
         .style('transition', 'all 0.3s ease');
@@ -190,33 +198,42 @@ const JourneyPath = React.memo(({ currentSection, scrollProgress = 0 }) => {
     svg.selectAll('.milestone-circle')
       .transition()
       .duration(400)
-      .attr('fill', (d, i) => {
+      .attr('fill', (d, idx) => {
         // Color milestones based on scroll progress
-        const milestoneProgress = (i + 1) * progressPerSection;
+        const milestoneIndex = pathData.indexOf(d);
+        const milestoneProgress = (milestoneIndex + 1) * progressPerSection;
         if (scrollProgress >= milestoneProgress - progressPerSection * 0.5) {
-          return chapters[i].color;
+          return chapters[milestoneIndex] ? chapters[milestoneIndex].color : '#525252';
         }
         return '#18181b';
       })
-      .attr('stroke-opacity', (d, i) => {
-        if (i === activeIndex) return 0.8;
-        if (i < activeIndex) return 0.3;
+      .attr('stroke-opacity', (d, idx) => {
+        const milestoneIndex = pathData.indexOf(d);
+        if (milestoneIndex === activeIndex) return 0.8;
+        if (milestoneIndex < activeIndex) return 0.3;
         return 0.1;
       })
-      .attr('r', (d, i) => i === activeIndex ? 9 : 8);
+      .attr('r', (d, idx) => {
+        const milestoneIndex = pathData.indexOf(d);
+        return milestoneIndex === activeIndex ? 9 : 8;
+      });
     
     svg.selectAll('.milestone-dot')
       .transition()
       .duration(400)
-      .attr('fill', (d, i) => {
+      .attr('fill', (d, idx) => {
         // Color dots based on scroll progress
-        const milestoneProgress = (i + 1) * progressPerSection;
+        const milestoneIndex = pathData.indexOf(d);
+        const milestoneProgress = (milestoneIndex + 1) * progressPerSection;
         if (scrollProgress >= milestoneProgress - progressPerSection * 0.5) {
           return '#ffffff';
         }
         return '#3f3f46';
       })
-      .attr('r', (d, i) => i === activeIndex ? 4 : 3);
+      .attr('r', (d, idx) => {
+        const milestoneIndex = pathData.indexOf(d);
+        return milestoneIndex === activeIndex ? 4 : 3;
+      });
     
     // Clear any existing pulse animations
     svg.selectAll('.pulse-circle').remove();
@@ -227,7 +244,7 @@ const JourneyPath = React.memo(({ currentSection, scrollProgress = 0 }) => {
     // Subtle pulsing effect on current milestone
     if (activeIndex >= 0 && activeIndex < 7) {
       const currentMilestone = svg.selectAll('.milestone')
-        .filter((d, i) => i === activeIndex);
+        .filter(function(d, i) { return i === activeIndex; });
       
       const pulseCircle = () => {
         const pulse = currentMilestone.append('circle')

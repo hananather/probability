@@ -68,7 +68,7 @@ const SampleSizeJourney = {
   },
   CALCULATE: {
     id: 'CALCULATE',
-    title: 'Master the Calculations',
+    title: 'Calculation Practice',
     subtitle: 'Apply the formula with confidence',
     icon: Calculator,
     color: '#fbbf24',  // Yellow
@@ -543,6 +543,9 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
       .attr("transform", `translate(0,${height - margin.bottom})`)
       .call(d3.axisBottom(xScale).tickSize(-height + margin.top + margin.bottom).tickPadding(10));
     
+    xAxis.selectAll("text")
+      .attr("fill", "#f3f4f6");
+    
     xAxis.selectAll(".tick line")
       .attr("stroke", "#374151")
       .attr("stroke-opacity", 0.2);
@@ -558,6 +561,9 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
     const yAxis = g.append("g")
       .attr("transform", `translate(${margin.left},0)`)
       .call(d3.axisLeft(yScale).tickSize(-width + margin.left + margin.right).tickPadding(10));
+    
+    yAxis.selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     yAxis.selectAll(".tick line")
       .attr("stroke", "#374151")
@@ -609,6 +615,8 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
       .attr("cx", d => xScale(d.x))
       .attr("cy", d => yScale(d.y))
       .attr("fill", relationships[activeRelationship].color)
+      .attr("stroke", "#f3f4f6")
+      .attr("stroke-width", 1)
       .attr("opacity", 0)
       .transition()
       .delay((d, i) => 1500 + i * 50)
@@ -1527,8 +1535,8 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
   const [compareExamples, setCompareExamples] = useState(false);
   const [savedResults, setSavedResults] = useState([]);
   
-  // Course examples
-  const courseExamples = [
+  // Example cases
+  const exampleCases = [
     { id: 1, sigma: 15, E: 2, confidence: 95, n: 217, description: "Standard case" },
     { id: 2, sigma: 3, E: 0.5, confidence: 95, n: 139, description: "Low variability" },
     { id: 3, sigma: 15, E: 2, confidence: 90, n: 153, description: "Lower confidence" },
@@ -1744,7 +1752,7 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
                   exit={{ opacity: 0, y: -20 }}
                   className="grid md:grid-cols-2 gap-4"
                 >
-                  {courseExamples.map((ex, index) => (
+                  {exampleCases.map((ex, index) => (
                     <div
                       key={ex.id}
                       initial={{ opacity: 0, x: -20 }}
@@ -1867,11 +1875,15 @@ const ExplorationMode = React.memo(function ExplorationMode({ inputs, setInputs,
     // Add axes
     svg.append("g")
       .attr("transform", `translate(0,${height - margin.bottom})`)
-      .call(d3.axisBottom(xScale));
+      .call(d3.axisBottom(xScale))
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     svg.append("g")
       .attr("transform", `translate(${margin.left},0)`)
-      .call(d3.axisLeft(yScale));
+      .call(d3.axisLeft(yScale))
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Add axis labels
     svg.append("text")
@@ -2192,6 +2204,9 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
       .attr("transform", `translate(0,${height - margin.bottom})`)
       .call(d3.axisBottom(xScale).tickSize(-height + margin.top + margin.bottom).tickPadding(10));
     
+    xAxis.selectAll("text")
+      .attr("fill", "#f3f4f6");
+    
     xAxis.selectAll(".tick line")
       .attr("stroke", "#374151")
       .attr("stroke-opacity", 0.3);
@@ -2207,6 +2222,9 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
     const yAxis = g.append("g")
       .attr("transform", `translate(${margin.left},0)`)
       .call(d3.axisLeft(yScale).tickFormat(d => `$${d/1000}k`).tickSize(-width + margin.left + margin.right).tickPadding(10));
+    
+    yAxis.selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     yAxis.selectAll(".tick line")
       .attr("stroke", "#374151")

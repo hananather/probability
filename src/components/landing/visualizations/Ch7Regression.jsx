@@ -27,33 +27,37 @@ const Ch7Regression = React.memo(({ isActive }) => {
     const yScale = d3.scaleLinear().domain([0, 200]).range([height - 30, 30]);
     
     // Plot points with staggered animation
-    const points = svg.selectAll('.point')
-      .data(data)
-      .enter()
-      .append('circle')
-      .attr('class', 'point')
-      .attr('cx', d => xScale(d.x))
-      .attr('cy', d => yScale(d.y))
-      .attr('fill', '#f59e0b')
-      .attr('opacity', 0.7);
-    
-    if (isActive) {
-      // Fast staggered appearance
-      points
-        .attr('r', 0)
-        .transition()
-        .duration(200)
-        .delay((d, i) => i * 15)
-        .attr('r', 4)
-        .on('end', function(d, i) {
-          if (i === data.length - 1) {
-            drawRegressionLine();
-          }
-        });
-    } else {
-      points.attr('r', 3);
-      drawRegressionLine();
-    }
+    let drawLineTriggered = false;
+    data.forEach((d, index) => {
+      const point = svg.append('circle')
+        .attr('class', 'point')
+        .attr('cx', xScale(d.x))
+        .attr('cy', yScale(d.y))
+        .attr('fill', '#f59e0b')
+        .attr('opacity', 0.7);
+      
+      if (isActive) {
+        // Fast staggered appearance
+        point
+          .attr('r', 0)
+          .transition()
+          .duration(200)
+          .delay(index * 15)
+          .attr('r', 4)
+          .on('end', function() {
+            if (index === data.length - 1 && !drawLineTriggered) {
+              drawLineTriggered = true;
+              drawRegressionLine();
+            }
+          });
+      } else {
+        point.attr('r', 3);
+        if (index === data.length - 1 && !drawLineTriggered) {
+          drawLineTriggered = true;
+          drawRegressionLine();
+        }
+      }
+    });
     
     function drawRegressionLine() {
       // Calculate regression line

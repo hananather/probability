@@ -312,7 +312,7 @@ const SimpsonsParadox = memo(function SimpsonsParadox() {
         .attr("text-anchor", "middle")
         .attr("font-size", "14px")
         .attr("font-weight", "bold")
-        .attr("fill", "#ffffff")
+        .attr("fill", "white")
         .text(d => `${formatNumber(d * 100, 1)}%`);
 
       // X-axis
@@ -322,7 +322,7 @@ const SimpsonsParadox = memo(function SimpsonsParadox() {
       
       // Style axis text and lines
       xAxis.selectAll("text")
-        .attr("fill", "#ffffff");
+        .attr("fill", "#f3f4f6");
       xAxis.selectAll(".domain, .tick line")
         .attr("stroke", "#ffffff");
       
@@ -330,7 +330,7 @@ const SimpsonsParadox = memo(function SimpsonsParadox() {
         .append("text")
         .attr("x", innerWidth / 2)
         .attr("y", 40)
-        .attr("fill", "#ffffff")
+        .attr("fill", "#f3f4f6")
         .attr("text-anchor", "middle")
         .text("Treatment");
 
@@ -341,7 +341,7 @@ const SimpsonsParadox = memo(function SimpsonsParadox() {
         .attr("text-anchor", "middle")
         .attr("font-size", "16px")
         .attr("font-weight", "bold")
-        .attr("fill", "#ffffff")
+        .attr("fill", "white")
         .text("Overall Success Rates");
 
     } else {
@@ -392,7 +392,7 @@ const SimpsonsParadox = memo(function SimpsonsParadox() {
           .attr("text-anchor", "middle")
           .attr("font-size", "12px")
           .attr("font-weight", "bold")
-          .attr("fill", "#ffffff")
+          .attr("fill", "white")
           .text(d => `${formatNumber(d * 100, 1)}%`);
 
         // Group title
@@ -401,7 +401,7 @@ const SimpsonsParadox = memo(function SimpsonsParadox() {
           .attr("y", innerHeight + 30)
           .attr("text-anchor", "middle")
           .attr("font-size", "14px")
-          .attr("fill", "#ffffff")
+          .attr("fill", "white")
           .text(group);
 
         // Sample sizes
@@ -421,7 +421,7 @@ const SimpsonsParadox = memo(function SimpsonsParadox() {
         .attr("text-anchor", "middle")
         .attr("font-size", "16px")
         .attr("font-weight", "bold")
-        .attr("fill", "#ffffff")
+        .attr("fill", "white")
         .text("Success Rates by Severity");
     }
 

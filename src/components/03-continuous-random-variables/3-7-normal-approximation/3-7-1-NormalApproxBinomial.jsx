@@ -252,20 +252,28 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
     g.append("g")
       .attr("transform", `translate(0,${height})`)
       .call(d3.axisBottom(x))
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
+
+    g.select("g:last-of-type")
       .append("text")
       .attr("x", width / 2)
       .attr("y", 40)
-      .attr("fill", "#9ca3af")
+      .attr("fill", "#f3f4f6")
       .style("text-anchor", "middle")
       .text("x");
     
     g.append("g")
       .call(d3.axisLeft(y))
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
+
+    g.select("g:last-of-type")
       .append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", -40)
       .attr("x", -height / 2)
-      .attr("fill", "#9ca3af")
+      .attr("fill", "#f3f4f6")
       .style("text-anchor", "middle")
       .text("Probability");
     
@@ -369,7 +377,7 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
             .attr("x2", x(k + 0.5))
             .attr("y1", 0)
             .attr("y2", height)
-            .attr("stroke", colors.chart.accent)
+            .attr("stroke", colors.chart.primary)
             .attr("stroke-width", 2)
             .attr("stroke-dasharray", "5,5");
           
@@ -377,7 +385,7 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
             .attr("x", x(k + 0.5))
             .attr("y", -5)
             .attr("text-anchor", "middle")
-            .attr("fill", colors.chart.accent)
+            .attr("fill", colors.chart.primary)
             .style("font-size", "12px")
             .text(`k + 0.5 = ${k + 0.5}`);
         } else if (probType === "ge" && k - 0.5 >= xMin) {
@@ -386,7 +394,7 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
             .attr("x2", x(k - 0.5))
             .attr("y1", 0)
             .attr("y2", height)
-            .attr("stroke", colors.chart.accent)
+            .attr("stroke", colors.chart.primary)
             .attr("stroke-width", 2)
             .attr("stroke-dasharray", "5,5");
           
@@ -394,7 +402,7 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
             .attr("x", x(k - 0.5))
             .attr("y", -5)
             .attr("text-anchor", "middle")
-            .attr("fill", colors.chart.accent)
+            .attr("fill", colors.chart.primary)
             .style("font-size", "12px")
             .text(`k - 0.5 = ${k - 0.5}`);
         } else if (probType === "eq") {
@@ -405,7 +413,7 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
               .attr("x2", x(k - 0.5))
               .attr("y1", 0)
               .attr("y2", height)
-              .attr("stroke", colors.chart.accent)
+              .attr("stroke", colors.chart.primary)
               .attr("stroke-width", 2)
               .attr("stroke-dasharray", "5,5");
           }
@@ -416,7 +424,7 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
               .attr("x2", x(k + 0.5))
               .attr("y1", 0)
               .attr("y2", height)
-              .attr("stroke", colors.chart.accent)
+              .attr("stroke", colors.chart.primary)
               .attr("stroke-width", 2)
               .attr("stroke-dasharray", "5,5");
           }
@@ -425,7 +433,7 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
             .attr("x", x(k))
             .attr("y", -5)
             .attr("text-anchor", "middle")
-            .attr("fill", colors.chart.accent)
+            .attr("fill", colors.chart.primary)
             .style("font-size", "12px")
             .text(`[${k - 0.5}, ${k + 0.5}]`);
         }

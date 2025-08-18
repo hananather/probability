@@ -233,7 +233,7 @@ export default function ErrorsAndPower() {
         .tickFormat("")
       )
       .selectAll("line")
-      .style("stroke", "#374151")
+      .style("stroke", "#64748b")
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.5);
 
@@ -244,7 +244,7 @@ export default function ErrorsAndPower() {
         .tickFormat("")
       )
       .selectAll("line")
-      .style("stroke", "#374151")
+      .style("stroke", "#64748b")
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.5);
 
@@ -253,18 +253,23 @@ export default function ErrorsAndPower() {
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(x).tickFormat(d => d.toFixed(0)))
       .style("color", "#9ca3af")
-      .style("font-size", "12px");
+      .style("font-size", "12px")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     g.append("g")
       .call(d3.axisLeft(y).tickFormat(d => d.toFixed(3)))
       .style("color", "#9ca3af")
-      .style("font-size", "12px");
+      .style("font-size", "12px")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Add axis labels
     g.append("text")
       .attr("x", innerWidth / 2)
       .attr("y", innerHeight + 45)
       .attr("text-anchor", "middle")
+      .attr("fill", "white")
       .style("font-size", "14px")
       .text("Sample Mean (kg/cm²)");
     
@@ -273,6 +278,7 @@ export default function ErrorsAndPower() {
       .attr("y", -50)
       .attr("x", -innerHeight / 2)
       .attr("text-anchor", "middle")
+      .attr("fill", "white")
       .style("font-size", "14px")
       .text("Probability Density");
     
@@ -511,7 +517,7 @@ export default function ErrorsAndPower() {
         .tickFormat("")
       )
       .selectAll("line")
-      .style("stroke", "#374151")
+      .style("stroke", "#64748b")
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.5);
 
@@ -522,7 +528,7 @@ export default function ErrorsAndPower() {
         .tickFormat("")
       )
       .selectAll("line")
-      .style("stroke", "#374151")
+      .style("stroke", "#64748b")
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.5);
 
@@ -531,18 +537,23 @@ export default function ErrorsAndPower() {
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(x))
       .style("color", "#9ca3af")
-      .style("font-size", "12px");
+      .style("font-size", "12px")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     g.append("g")
       .call(d3.axisLeft(y).tickFormat(d => (d * 100).toFixed(0) + "%"))
       .style("color", "#9ca3af")
-      .style("font-size", "12px");
+      .style("font-size", "12px")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Add axis labels
     g.append("text")
       .attr("x", innerWidth / 2)
       .attr("y", innerHeight + 45)
       .attr("text-anchor", "middle")
+      .attr("fill", "white")
       .style("font-size", "14px")
       .text("True Mean μ₁ (kg/cm²)");
     
@@ -551,6 +562,7 @@ export default function ErrorsAndPower() {
       .attr("y", -50)
       .attr("x", -innerHeight / 2)
       .attr("text-anchor", "middle")
+      .attr("fill", "white")
       .style("font-size", "14px")
       .text("Power (1 - β)");
     
@@ -633,7 +645,7 @@ export default function ErrorsAndPower() {
   return (
     <VisualizationContainer
       title="Type I & II Errors and Statistical Power"
-      description="Master the fundamental trade-offs in hypothesis testing through the cement strength scenario."
+      description="Explore the fundamental trade-offs in hypothesis testing through the cement strength scenario."
     >
       <div className="space-y-8">
         {/* Back to Hub Button */}

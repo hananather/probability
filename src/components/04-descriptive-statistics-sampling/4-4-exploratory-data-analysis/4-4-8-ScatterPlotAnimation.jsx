@@ -252,6 +252,8 @@ const ScatterPlotAnimation = () => {
         .attr("cy", innerHeight / 2)
         .attr("r", 0)
         .attr("fill", "#14b8a6")
+        .attr("stroke", "#f3f4f6")
+        .attr("stroke-width", 1)
         .attr("opacity", 0.7);
       
       points.transition()

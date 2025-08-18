@@ -24,23 +24,28 @@ const Ch4Sampling = React.memo(({ isActive }) => {
     }));
     
     // Population dots
-    const dots = svg.selectAll('.pop-dot')
-      .data(population)
-      .enter()
-      .append('circle')
-      .attr('class', 'pop-dot')
-      .attr('cx', d => d.x)
-      .attr('cy', d => d.y)
-      .attr('fill', '#525252')
-      .attr('opacity', 0.5);
+    // Draw population dots
+    population.forEach((d, index) => {
+      const dot = svg.append('circle')
+        .attr('class', 'pop-dot')
+        .attr('cx', d.x)
+        .attr('cy', d.y)
+        .attr('fill', '#525252')
+        .attr('opacity', 0.5);
+      
+      if (isActive) {
+        // Instant appearance with staggered effect
+        dot.attr('r', 0)
+          .transition()
+          .duration(200)
+          .delay(index * 10)
+          .attr('r', 3);
+      } else {
+        dot.attr('r', 3);
+      }
+    });
     
     if (isActive) {
-      // Instant appearance with staggered effect
-      dots.attr('r', 0)
-        .transition()
-        .duration(200)
-        .delay((d, i) => i * 10)
-        .attr('r', 3);
       
       // Quick sampling animation
       const sampleSize = 12;
@@ -52,15 +57,24 @@ const Ch4Sampling = React.memo(({ isActive }) => {
           .data(population)
           .transition()
           .duration(300)
-          .attr('fill', (d, i) => sampleIndices.includes(i) ? '#10b981' : '#525252')
-          .attr('r', (d, i) => sampleIndices.includes(i) ? 6 : 3)
-          .attr('opacity', (d, i) => sampleIndices.includes(i) ? 1 : 0.2);
+          .attr('fill', (d, idx) => {
+            const dotIndex = population.indexOf(d);
+            return sampleIndices.includes(dotIndex) ? '#10b981' : '#525252';
+          })
+          .attr('r', (d, idx) => {
+            const dotIndex = population.indexOf(d);
+            return sampleIndices.includes(dotIndex) ? 6 : 3;
+          })
+          .attr('opacity', (d, idx) => {
+            const dotIndex = population.indexOf(d);
+            return sampleIndices.includes(dotIndex) ? 1 : 0.2;
+          });
         
         // Draw connecting lines from samples to mean
         const meanX = width / 2;
         const meanY = height - 40;
         
-        const samplePoints = sampleIndices.map(i => population[i]);
+        const samplePoints = sampleIndices.map(index => population[index]);
         
         // Add lines from samples to center
         const lines = svg.selectAll('.sample-line')
@@ -111,11 +125,22 @@ const Ch4Sampling = React.memo(({ isActive }) => {
       }, 300);
     } else {
       // Static view
+      const dots = svg.selectAll('.pop-dot')
+        .data(population); // Bind population data to dots
       dots.attr('r', 3);
       const staticSample = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45];
-      dots.attr('fill', (d, i) => staticSample.includes(i) ? '#10b981' : '#525252')
-        .attr('r', (d, i) => staticSample.includes(i) ? 4 : 3)
-        .attr('opacity', (d, i) => staticSample.includes(i) ? 0.8 : 0.4);
+      dots.attr('fill', (d, idx) => {
+          const dotIndex = population.indexOf(d);
+          return staticSample.includes(dotIndex) ? '#10b981' : '#525252';
+        })
+        .attr('r', (d, idx) => {
+          const dotIndex = population.indexOf(d);
+          return staticSample.includes(dotIndex) ? 4 : 3;
+        })
+        .attr('opacity', (d, idx) => {
+          const dotIndex = population.indexOf(d);
+          return staticSample.includes(dotIndex) ? 0.8 : 0.4;
+        });
     }
     
     // Cleanup

@@ -115,7 +115,7 @@ export default function Tab4InteractiveTab({ onComplete }) {
       .attr("width", width - 40)
       .attr("height", height - 40)
       .attr("fill", "none")
-      .attr("stroke", "#666")
+      .attr("stroke", "#f3f4f6")
       .attr("stroke-width", 2)
       .attr("rx", 8);
     
@@ -124,7 +124,7 @@ export default function Tab4InteractiveTab({ onComplete }) {
       .attr("class", "universe-label")
       .attr("x", 30)
       .attr("y", 35)
-      .attr("fill", "#888")
+      .attr("fill", "#f3f4f6")
       .attr("font-size", "12px")
       .attr("font-weight", "bold")
       .text("S (Sample Space)");

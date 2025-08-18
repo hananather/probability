@@ -222,7 +222,7 @@ const SpatialRandomVariable = () => {
       .attr("text-anchor", "middle")
       .attr("x", WIDTH_DIST / 2)
       .attr("y", HEIGHT_DIST - 2)
-      .style("fill", "#9CA3AF")
+      .style("fill", "#f3f4f6")
       .style("font-size", "11px")
       .text("Value");
     
@@ -232,7 +232,7 @@ const SpatialRandomVariable = () => {
       .attr("transform", `rotate(-90)`)
       .attr("y", 2)
       .attr("x", -HEIGHT_DIST / 2)
-      .style("fill", "#9CA3AF")
+      .style("fill", "#f3f4f6")
       .style("font-size", "11px")
       .text("Frequency");
     
@@ -279,7 +279,7 @@ const SpatialRandomVariable = () => {
       tick.append("text")
         .attr("y", 16)
         .attr("text-anchor", "middle")
-        .style("fill", "#9CA3AF")
+        .style("fill", "#f3f4f6")
         .style("font-size", "10px")
         .text(d.value);
     });
@@ -302,7 +302,7 @@ const SpatialRandomVariable = () => {
         .attr("x", -10)
         .attr("text-anchor", "end")
         .attr("dy", "0.32em")
-        .style("fill", "#9CA3AF")
+        .style("fill", "#f3f4f6")
         .style("font-size", "10px")
         .text(tick);
     });

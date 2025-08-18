@@ -78,23 +78,29 @@ const PriorPlot = () => {
       g.append("g")
         .attr("class", "x axis")
         .attr("transform", `translate(0,${height})`)
-        .call(xAxis);
+        .call(xAxis)
+        .selectAll("text")
+        .attr("fill", "#f3f4f6");
       
       g.append("text")
         .attr("class", "label")
         .attr("text-anchor", "middle")
         .attr("transform", `translate(${width / 2},${height + margin.bottom / 2})`)
+        .attr("fill", "#f3f4f6")
         .text("p");
       
       // Create y-axis
       g.append("g")
         .attr("class", "y axis")
-        .call(d3.axisLeft(y).ticks(5));
+        .call(d3.axisLeft(y).ticks(5))
+        .selectAll("text")
+        .attr("fill", "#f3f4f6");
       
       g.append("text")
         .attr("class", "y-label")
         .attr("text-anchor", "middle")
         .attr("transform", `rotate(-90) translate(${-height/2},${-margin.left + 15})`)
+        .attr("fill", "#f3f4f6")
         .text("Density");
       
       g.append("clipPath")
@@ -110,7 +116,9 @@ const PriorPlot = () => {
       g.select(".y.axis")
         .transition()
         .duration(300)
-        .call(yAxis);
+        .call(yAxis)
+        .selectAll("text")
+        .attr("fill", "#f3f4f6");
     }
 
     const line = d3.line()

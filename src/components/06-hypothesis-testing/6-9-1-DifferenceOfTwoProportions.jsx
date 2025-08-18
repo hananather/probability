@@ -671,7 +671,7 @@ export default function DifferenceOfTwoProportions() {
     
     xAxis.style("font-size", "12px")
       .selectAll("text")
-      .style("fill", "#9ca3af");
+      .attr("fill", "#f3f4f6");
     
     xAxis.selectAll("path, line")
       .style("stroke", "#9ca3af");
@@ -686,7 +686,7 @@ export default function DifferenceOfTwoProportions() {
     
     yAxis.style("font-size", "12px")
       .selectAll("text")
-      .style("fill", "#9ca3af");
+      .attr("fill", "#f3f4f6");
     
     yAxis.selectAll("path, line")
       .style("stroke", "#9ca3af");
@@ -885,7 +885,7 @@ export default function DifferenceOfTwoProportions() {
     
     xAxis2.style("font-size", "12px")
       .selectAll("text")
-      .style("fill", "#9ca3af");
+      .attr("fill", "#f3f4f6");
     
     xAxis2.selectAll("path, line")
       .style("stroke", "#9ca3af");
@@ -895,7 +895,7 @@ export default function DifferenceOfTwoProportions() {
     
     yAxis2.style("font-size", "12px")
       .selectAll("text")
-      .style("fill", "#9ca3af");
+      .attr("fill", "#f3f4f6");
     
     yAxis2.selectAll("path, line")
       .style("stroke", "#9ca3af");

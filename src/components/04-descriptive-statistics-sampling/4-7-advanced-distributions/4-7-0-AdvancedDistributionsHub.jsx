@@ -8,7 +8,7 @@ import FDistributionIntro from "./4-7-1-FDistributionIntro";
 import FDistributionExplorer from "./4-7-2-FDistributionExplorer";
 import FDistributionJourney from "./4-7-3-FDistributionJourney";
 import FDistributionWorkedExample from "./4-7-4-FDistributionWorkedExample";
-import FDistributionMasterclass from "./4-7-5-FDistributionMasterclass";
+import FDistributionAdvanced from "./4-7-5-FDistributionMasterclass";
 import { GitBranch, FlaskConical, BookOpen, Calculator, GraduationCap, ChevronLeft } from "lucide-react";
 
 // Learning paths configuration
@@ -59,11 +59,11 @@ const learningPaths = [
   },
   {
     id: 'masterclass',
-    title: '5. F-Distribution Masterclass',
+    title: '5. F-Distribution Advanced Topics',
     description: 'Advanced topics and deep insights into the F-distribution.',
     icon: GraduationCap,
     color: 'from-lime-500 to-green-500',
-    component: FDistributionMasterclass,
+    component: FDistributionAdvanced,
     difficulty: 'Advanced',
     duration: '25 min',
     concepts: ['Theoretical depth', 'Connections to chi-square', 'Advanced applications', 'Research uses']

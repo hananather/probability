@@ -382,7 +382,7 @@ const LineComparisonDemo = ({ lineType, showResiduals }) => {
       .attr("cy", yScale(optimalRegression.yMean))
       .attr("r", 8)
       .attr("fill", "none")
-      .attr("stroke", chapterColors.accent)
+      .attr("stroke", chapterColors.chart.secondary)
       .attr("stroke-width", 2)
       .style("opacity", 0);
     
@@ -640,7 +640,7 @@ const CentroidProperty = React.memo(function CentroidProperty() {
       .attr("cx", cx)
       .attr("cy", cy)
       .attr("r", 6)
-      .attr("fill", chapterColors.accent)
+      .attr("fill", chapterColors.chart.secondary)
       .attr("stroke", "#fff")
       .attr("stroke-width", 2);
     

@@ -220,12 +220,16 @@ export default function HypothesisTestingEvidence() {
     g.append("g")
       .attr("transform", `translate(0,${height - margin.top - margin.bottom})`)
       .call(d3.axisBottom(x))
-      .attr("class", "axis");
+      .attr("class", "axis")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Y axis
     g.append("g")
       .call(d3.axisLeft(y))
-      .attr("class", "axis");
+      .attr("class", "axis")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Expected frequency line
     const expectedY = y((rolls.length || 0) * EXPECTED_FREQ);

@@ -96,7 +96,7 @@ const SamplingDistributionsInteractive = ({ onComplete }) => {
     }
     
     setSelectedIndices(indices);
-    const sample = Array.from(indices).map(i => population.current[i]);
+    const sample = Array.from(indices).map(index => population.current[index]);
     setCurrentSample(sample);
     
     // Animate the mean calculation
@@ -186,19 +186,27 @@ const SamplingDistributionsInteractive = ({ onComplete }) => {
       .range([height, 0]);
 
     // Add axes
-    g.append("g")
+    const xAxisGroup = g.append("g")
       .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(x))
-      .append("text")
+      .call(d3.axisBottom(x));
+    
+    xAxisGroup.selectAll("text")
+      .attr("fill", "#f3f4f6");
+    
+    xAxisGroup.append("text")
       .attr("x", width / 2)
       .attr("y", 35)
       .attr("fill", colors.text.secondary)
       .style("text-anchor", "middle")
       .text("Sample Mean");
 
-    g.append("g")
-      .call(d3.axisLeft(y).ticks(5))
-      .append("text")
+    const yAxisGroup = g.append("g")
+      .call(d3.axisLeft(y).ticks(5));
+    
+    yAxisGroup.selectAll("text")
+      .attr("fill", "#f3f4f6");
+    
+    yAxisGroup.append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", -35)
       .attr("x", -height / 2)

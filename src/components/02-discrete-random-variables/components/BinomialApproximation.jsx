@@ -117,12 +117,12 @@ export function BinomialApproximation({ lambda }) {
       .call(d3.axisBottom(xScale).tickValues(
         d3.range(0, maxK + 1).filter((d, i) => i % Math.ceil((maxK + 1) / 20) === 0)
       ))
-      .style('color', colors.text.secondary);
+      .style('color', colors.chart.text);
     
     g.append('g')
       .attr('transform', `translate(${margin.left},0)`)
       .call(d3.axisLeft(yScale).ticks(5).tickFormat(d => formatNumber(d, 3)))
-      .style('color', colors.text.secondary);
+      .style('color', colors.chart.text);
     
     // Legend
     const legend = g.append('g')
@@ -140,7 +140,7 @@ export function BinomialApproximation({ lambda }) {
     legend.append('text')
       .attr('x', 20)
       .attr('y', 12)
-      .attr('fill', colors.text.secondary)
+      .attr('fill', colors.chart.text)
       .style('font-size', '12px')
       .text(`Binomial(${n}, ${formatNumber(p, 3)})`);
     
@@ -156,7 +156,7 @@ export function BinomialApproximation({ lambda }) {
     legend.append('text')
       .attr('x', 20)
       .attr('y', 32)
-      .attr('fill', colors.text.secondary)
+      .attr('fill', colors.chart.text)
       .style('font-size', '12px')
       .text(`Poisson(${lambda.toFixed(1)})`);
     
@@ -165,7 +165,7 @@ export function BinomialApproximation({ lambda }) {
       .attr('x', width / 2)
       .attr('y', height - 5)
       .attr('text-anchor', 'middle')
-      .attr('fill', colors.text.secondary)
+      .attr('fill', colors.chart.text)
       .style('font-size', '12px')
       .text('k (number of events)');
     
@@ -174,7 +174,7 @@ export function BinomialApproximation({ lambda }) {
       .attr('x', -height / 2)
       .attr('y', 15)
       .attr('text-anchor', 'middle')
-      .attr('fill', colors.text.secondary)
+      .attr('fill', colors.chart.text)
       .style('font-size', '12px')
       .text('P(X = k)');
     

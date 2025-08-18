@@ -272,13 +272,13 @@ const JointDistribution3D = () => {
         tickfont: { color: '#e5e7eb' },
         gridcolor: '#374151'
       },
-      bgcolor: '#1f2937',
+      bgcolor: '#f3f4f6',
       camera: {
         eye: { x: 1.2, y: 1.2, z: 0.6 }
       }
     },
-    paper_bgcolor: '#1f2937',
-    plot_bgcolor: '#1f2937',
+    paper_bgcolor: '#f3f4f6',
+    plot_bgcolor: '#f3f4f6',
     font: { color: '#e5e7eb' },
     margin: { l: 0, r: 0, t: 40, b: 0 },
     height: 600

@@ -255,18 +255,22 @@ const CriticalValuesExplorer = React.memo(({ isActive, onComplete }) => {
       .attr("transform", `translate(0,${height - margin.bottom})`)
       .call(d3.axisBottom(xScale).tickSize(-height + margin.top + margin.bottom).tickFormat(""))
       .style("stroke-dasharray", "3,3")
-      .style("opacity", 0.3);
+      .style("opacity", 0.3)
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Axes
     svg.append("g")
       .attr("transform", `translate(0,${height - margin.bottom})`)
       .call(d3.axisBottom(xScale))
-      .style("color", "#999");
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     svg.append("g")
       .attr("transform", `translate(${margin.left},0)`)
       .call(d3.axisLeft(yScale).ticks(5))
-      .style("color", "#999");
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Normal distribution
     const normalPdf = (x) => (1 / Math.sqrt(2 * Math.PI)) * Math.exp(-0.5 * x * x);

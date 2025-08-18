@@ -578,12 +578,16 @@ export default function TestForMeanKnownVariance() {
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(xScale).ticks(9))
       .style("font-size", "12px")
-      .style("color", "#9ca3af");
+      .style("color", "#9ca3af")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     g.append("g")
       .call(d3.axisLeft(yScale).tickFormat(d => d.toFixed(2)))
       .style("font-size", "12px")
-      .style("color", "#9ca3af");
+      .style("color", "#9ca3af")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Axis labels
     g.append("text")
@@ -611,7 +615,7 @@ export default function TestForMeanKnownVariance() {
         .tickSize(-innerHeight)
         .tickFormat("")
       )
-      .style("stroke", "#374151")
+      .style("stroke", "#64748b")
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.5);
     
@@ -621,7 +625,7 @@ export default function TestForMeanKnownVariance() {
         .tickSize(-innerWidth)
         .tickFormat("")
       )
-      .style("stroke", "#374151")
+      .style("stroke", "#64748b")
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.5);
 

@@ -201,14 +201,14 @@ const TrialHistory = ({ trials, n, theme, showRecent = 10 }) => {
       .call(d3.axisBottom(x).tickFormat(d => d))
       .call(axis => {
         axis.selectAll("path, line").attr("stroke", "#6b7280");
-        axis.selectAll("text").attr("fill", "#9ca3af");
+        axis.selectAll("text").attr("fill", "#f3f4f6");
       });
     
     g.append("g")
       .call(d3.axisLeft(y))
       .call(axis => {
         axis.selectAll("path, line").attr("stroke", "#6b7280");
-        axis.selectAll("text").attr("fill", "#9ca3af");
+        axis.selectAll("text").attr("fill", "#f3f4f6");
       });
     
     // Labels

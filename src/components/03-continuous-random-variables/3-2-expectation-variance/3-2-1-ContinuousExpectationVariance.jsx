@@ -273,12 +273,12 @@ const ContinuousExpectationVariance = () => {
         .attr("transform", `translate(0,${innerHeight})`)
         .call(d3.axisBottom(xScale))
         .selectAll("text")
-        .style("fill", colors.text);
+        .attr("fill", "#f3f4f6");
       
       centerG.append("g")
         .call(d3.axisLeft(yScale).ticks(5))
         .selectAll("text")
-        .style("fill", colors.text);
+        .attr("fill", "#f3f4f6");
       
       return; // Skip normal rendering during animation
     }
@@ -353,12 +353,12 @@ const ContinuousExpectationVariance = () => {
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(discreteXScale).ticks(5))
       .selectAll("text")
-      .style("fill", colors.text);
+      .attr("fill", "#f3f4f6");
     
     discreteG.append("g")
       .call(d3.axisLeft(discreteYScale).ticks(5))
       .selectAll("text")
-      .style("fill", colors.text);
+      .attr("fill", "#f3f4f6");
     
     // Discrete title
     discreteG.append("text")
@@ -425,12 +425,12 @@ const ContinuousExpectationVariance = () => {
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(continuousXScale).ticks(5))
       .selectAll("text")
-      .style("fill", colors.text);
+      .attr("fill", "#f3f4f6");
     
     continuousG.append("g")
       .call(d3.axisLeft(continuousYScale).ticks(5).tickFormat(d => d.toFixed(2)))
       .selectAll("text")
-      .style("fill", colors.text);
+      .attr("fill", "#f3f4f6");
     
     // Continuous title
     continuousG.append("text")

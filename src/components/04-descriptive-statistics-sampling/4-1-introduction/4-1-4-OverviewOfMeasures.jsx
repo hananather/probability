@@ -167,12 +167,12 @@ const OverviewOfMeasures = () => {
     }
   };
 
-  // Learning path progression
+  // Statistical categories progression
   const learningPath = [
-    { category: "central", weeks: "Week 1-2", topics: 3 },
-    { category: "variability", weeks: "Week 3-4", topics: 4 },
-    { category: "position", weeks: "Week 5", topics: 3 },
-    { category: "shape", weeks: "Week 6", topics: 2 }
+    { category: "central", topics: 3 },
+    { category: "variability", topics: 4 },
+    { category: "position", topics: 3 },
+    { category: "shape", topics: 2 }
   ];
 
   // Self-check questions for QuizBreak component
@@ -220,9 +220,9 @@ const OverviewOfMeasures = () => {
                 Each category of measures reveals a different aspect of your data's story.
               </p>
               <p className="text-gray-400 text-sm">
-                <strong>Your Learning Journey:</strong> This overview maps out all 12 core statistical measures you'll master. 
+                <strong>Complete Overview:</strong> This overview maps out all 12 core statistical measures. 
                 Don't worry about memorizing everything now - think of this as your roadmap. You'll explore each measure 
-                in depth throughout the course.
+                in depth.
               </p>
             </div>
           </div>
@@ -450,11 +450,11 @@ const OverviewOfMeasures = () => {
           )}
         </Card>
 
-        {/* Learning Timeline */}
+        {/* Statistical Categories Overview */}
         <Card className="p-6 bg-gray-800/50">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-violet-400" />
-            Your Learning Journey
+            Statistical Categories
           </h3>
           
           <div className="relative">
@@ -476,7 +476,6 @@ const OverviewOfMeasures = () => {
                       <div className="flex items-start justify-between">
                         <div>
                           <h4 className="font-semibold">{category.title}</h4>
-                          <p className="text-sm text-gray-400">{item.weeks}</p>
                         </div>
                         <span className="text-xs px-2 py-1 bg-gray-700 rounded">
                           {item.topics} topics
@@ -599,8 +598,8 @@ const OverviewOfMeasures = () => {
               <p className="text-xs text-gray-400">Core Measures</p>
             </div>
             <div>
-              <div className="text-3xl font-bold text-emerald-400">6</div>
-              <p className="text-xs text-gray-400">Weeks to Master</p>
+              <div className="text-3xl font-bold text-emerald-400">4</div>
+              <p className="text-xs text-gray-400">Key Areas</p>
             </div>
             <div>
               <div className="text-3xl font-bold text-orange-400">∞</div>
@@ -612,10 +611,10 @@ const OverviewOfMeasures = () => {
         {/* Final Thoughts */}
         <div className="p-4 bg-emerald-900/20 border border-emerald-600/30 rounded-lg">
           <p className="text-sm text-emerald-300">
-            <strong className="text-emerald-400">Your Journey Starts Here:</strong> Don't feel overwhelmed! 
-            You'll learn these measures step by step, with plenty of practice along the way. Each measure 
+            <strong className="text-emerald-400">Getting Started:</strong> Don't feel overwhelmed! 
+            These measures form a comprehensive toolkit for understanding data. Each measure 
             builds on the previous ones, creating a complete picture of how to understand and describe data. 
-            By the end, you'll know exactly which tool to use for any data analysis challenge!
+            With practice, you'll know exactly which tool to use for any data analysis challenge!
           </p>
         </div>
       </div>

@@ -185,7 +185,13 @@
       "Bash(timeout 5 npm run dev)",
       "Bash(timeout 15 npm run dev)",
       "Bash(open http://localhost:3000/chapter4/introduction)",
-      "Bash(md5sum:*)"
+      "Bash(md5sum:*)",
+      "WebSearch",
+      "WebFetch(domain:statweb.stanford.edu)",
+      "WebFetch(domain:www.probabilitycourse.com)",
+      "WebFetch(domain:www.numberanalytics.com)",
+      "Bash(timeout 30 npm run dev)",
+      "Bash(timeout 5s npm run dev:*)"
     ],
     "deny": []
   },

@@ -437,8 +437,12 @@ const PDFVisualization = memo(({
     scalesRef.current.yScale = yScale;
     
     // Update axes
-    elementsRef.current.xAxis.call(d3.axisBottom(xScale).ticks(8));
-    elementsRef.current.yAxis.call(d3.axisLeft(yScale).ticks(5));
+    elementsRef.current.xAxis.call(d3.axisBottom(xScale).ticks(8))
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
+    elementsRef.current.yAxis.call(d3.axisLeft(yScale).ticks(5))
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Update grids
     elementsRef.current.gridX.call(d3.axisBottom(xScale)
@@ -538,7 +542,7 @@ const PDFVisualization = memo(({
       .attr('cy', 0)
       .attr('r', 10)
       .attr('fill', '#06b6d4')
-      .attr('stroke', '#0e7490')
+      .attr('stroke', '#f3f4f6')
       .attr('stroke-width', 2)
       .style('cursor', 'ew-resize');
     
@@ -567,7 +571,7 @@ const PDFVisualization = memo(({
       .attr('cy', 0)
       .attr('r', 10)
       .attr('fill', '#06b6d4')
-      .attr('stroke', '#0e7490')
+      .attr('stroke', '#f3f4f6')
       .attr('stroke-width', 2)
       .style('cursor', 'ew-resize');
     

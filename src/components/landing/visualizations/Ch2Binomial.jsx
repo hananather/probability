@@ -43,28 +43,27 @@ const Ch2Binomial = React.memo(({ isActive }) => {
       .range([height - margin.bottom, margin.top]);
     
     // Draw bars
-    const bars = svg.selectAll('.bar')
-      .data(data)
-      .enter()
-      .append('rect')
-      .attr('class', 'bar')
-      .attr('x', d => x(d.k))
-      .attr('width', x.bandwidth())
-      .attr('fill', '#3b82f6');
-    
-    if (isActive) {
-      bars.attr('y', height - margin.bottom)
-        .attr('height', 0)
-        .transition()
-        .duration(800)
-        .delay((d, i) => i * 50)
-        .attr('y', d => y(d.p))
-        .attr('height', d => height - margin.bottom - y(d.p));
-    } else {
-      bars.attr('y', d => y(d.p))
-        .attr('height', d => height - margin.bottom - y(d.p))
-        .attr('opacity', 0.7);
-    }
+    data.forEach((d, index) => {
+      const bar = svg.append('rect')
+        .attr('class', 'bar')
+        .attr('x', x(d.k))
+        .attr('width', x.bandwidth())
+        .attr('fill', '#3b82f6');
+      
+      if (isActive) {
+        bar.attr('y', height - margin.bottom)
+          .attr('height', 0)
+          .transition()
+          .duration(800)
+          .delay(index * 50)
+          .attr('y', y(d.p))
+          .attr('height', height - margin.bottom - y(d.p));
+      } else {
+        bar.attr('y', y(d.p))
+          .attr('height', height - margin.bottom - y(d.p))
+          .attr('opacity', 0.7);
+      }
+    });
     
     // Add axis
     const axis = svg.append('g')

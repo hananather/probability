@@ -357,12 +357,12 @@ const ComparisonChart = React.memo(({ leftDist, rightDist, leftParams, rightPara
       .style("display", "none");
     
     const tooltipRect = tooltip.append("rect")
-      .attr("fill", "#1f2937")
+      .attr("fill", "#f3f4f6")
       .attr("stroke", "#374151")
       .attr("rx", 4);
     
     const tooltipText = tooltip.append("text")
-      .attr("fill", "white")
+      .attr("fill", "#1f2937")
       .style("font-size", "12px")
       .style("text-anchor", "middle");
     
@@ -454,7 +454,7 @@ const ComparisonChart = React.memo(({ leftDist, rightDist, leftParams, rightPara
       .attr("width", 160)
       .attr("height", 45)
       .attr("rx", 4)
-      .attr("fill", "#1f2937")
+      .attr("fill", "#f3f4f6")
       .attr("opacity", 0.9);
     
     // Left distribution legend

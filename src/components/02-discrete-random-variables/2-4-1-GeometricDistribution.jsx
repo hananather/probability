@@ -255,13 +255,13 @@ export default function GeometricDistribution() {
         
         const rect = tooltip.append("rect")
           .attr("rx", 4)
-          .attr("fill", "#1f2937")
+          .attr("fill", "#f3f4f6")
           .attr("stroke", geometricColors.primary)
           .attr("stroke-width", 1);
         
         const text = tooltip.append("text")
           .attr("text-anchor", "middle")
-          .attr("fill", "white")
+          .attr("fill", "#1f2937")
           .style("font-size", "12px");
         
         text.append("tspan")

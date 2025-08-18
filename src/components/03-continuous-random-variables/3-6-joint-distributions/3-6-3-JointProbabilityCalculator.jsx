@@ -134,6 +134,10 @@ export const JointProbabilityCalculator = () => {
     g.append("g")
       .attr("transform", `translate(0,${plotHeight})`)
       .call(d3.axisBottom(xScale))
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
+
+    g.select("g:last-of-type")
       .append("text")
       .attr("x", plotWidth / 2)
       .attr("y", 40)
@@ -143,6 +147,10 @@ export const JointProbabilityCalculator = () => {
 
     g.append("g")
       .call(d3.axisLeft(yScale))
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
+
+    g.select("g:last-of-type")
       .append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", -40)

@@ -295,7 +295,7 @@ const MarginalDistributionVisualizer = () => {
         .call(d3.axisBottom(xScale));
         
       xAxis.selectAll("text")
-        .style("fill", "white");
+        .attr("fill", "#f3f4f6");
       xAxis.selectAll("line")
         .style("stroke", "white");
       xAxis.select(".domain")
@@ -314,7 +314,7 @@ const MarginalDistributionVisualizer = () => {
         .call(d3.axisLeft(yScale));
         
       yAxis.selectAll("text")
-        .style("fill", "white");
+        .attr("fill", "#f3f4f6");
       yAxis.selectAll("line")
         .style("stroke", "white");
       yAxis.select(".domain")
@@ -357,11 +357,13 @@ const MarginalDistributionVisualizer = () => {
         .attr("transform", `translate(0,${marginalHeight})`)
         .call(d3.axisBottom(xScale).ticks(5))
         .selectAll("text")
+        .attr("fill", "#f3f4f6")
         .style("font-size", "10px");
 
       xMarginalGroup.append("g")
         .call(d3.axisLeft(xMarginalScale).ticks(3))
         .selectAll("text")
+        .attr("fill", "#f3f4f6")
         .style("font-size", "10px");
 
       // X marginal title
@@ -400,12 +402,14 @@ const MarginalDistributionVisualizer = () => {
       yMarginalGroup.append("g")
         .call(d3.axisLeft(yScale).ticks(5))
         .selectAll("text")
+        .attr("fill", "#f3f4f6")
         .style("font-size", "10px");
 
       yMarginalGroup.append("g")
         .attr("transform", `translate(0,${jointHeight})`)
         .call(d3.axisBottom(yMarginalScale).ticks(3))
         .selectAll("text")
+        .attr("fill", "#f3f4f6")
         .style("font-size", "10px");
 
       // Y marginal title
@@ -467,7 +471,7 @@ const MarginalDistributionVisualizer = () => {
         .call(d3.axisRight(legendScale).ticks(5))
         .selectAll("text")
         .style("font-size", "10px")
-        .style("fill", "white");
+        .attr("fill", "#f3f4f6");
 
       legendGroup.append("text")
         .attr("x", legendWidth / 2)

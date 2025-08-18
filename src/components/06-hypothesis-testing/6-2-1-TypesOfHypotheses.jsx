@@ -134,7 +134,7 @@ const AnnotatedDistribution = ({ testType, alpha = 0.05, showValues = true, test
     
     distGradient.append("stop")
       .attr("offset", "100%")
-      .attr("stop-color", "#374151")
+      .attr("stop-color", "#64748b")
       .attr("stop-opacity", 0.2);
     
     g.append("path")
@@ -259,7 +259,7 @@ const AnnotatedDistribution = ({ testType, alpha = 0.05, showValues = true, test
         .tickSize(-innerHeight)
         .tickFormat("")
       )
-      .style("stroke", "#374151")
+      .style("stroke", "#64748b")
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.5);
     
@@ -269,7 +269,7 @@ const AnnotatedDistribution = ({ testType, alpha = 0.05, showValues = true, test
         .tickSize(-innerWidth)
         .tickFormat("")
       )
-      .style("stroke", "#374151")
+      .style("stroke", "#64748b")
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.5);
     
@@ -278,13 +278,17 @@ const AnnotatedDistribution = ({ testType, alpha = 0.05, showValues = true, test
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(xScale).ticks(9))
       .style("color", "#9ca3af")
-      .style("font-size", "12px");
+      .style("font-size", "12px")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Y-axis
     g.append("g")
       .call(d3.axisLeft(yScale).ticks(5))
       .style("color", "#9ca3af")
-      .style("font-size", "12px");
+      .style("font-size", "12px")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Labels
     g.append("text")

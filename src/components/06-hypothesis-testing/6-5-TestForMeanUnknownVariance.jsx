@@ -301,16 +301,22 @@ export function TestForMeanUnknownVariance() {
     g.append("g")
       .attr("transform", `translate(0, ${innerHeight})`)
       .call(d3.axisBottom(xScale))
-      .append("text")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
+
+    g.append("text")
       .attr("x", innerWidth / 2)
-      .attr("y", 45)
+      .attr("y", innerHeight + 45)
       .attr("fill", "#9ca3af")
       .style("text-anchor", "middle")
       .text("Standard Deviations");
 
     g.append("g")
       .call(d3.axisLeft(yScale))
-      .append("text")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
+
+    g.append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", -40)
       .attr("x", -innerHeight / 2)

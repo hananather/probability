@@ -262,7 +262,7 @@ const StatisticalInferenceIntroduction = React.memo(function StatisticalInferenc
   const contentRef = useRef(null);
   const [selectedExample, setSelectedExample] = useState('manufacturing');
   
-  // Example details from course material
+  // Example details
   const manufacturingDetails = {
     parameter: 'Mean defect rate',
     notation: <span dangerouslySetInnerHTML={{ __html: '\\(\\mu\\)' }} />,
@@ -985,7 +985,10 @@ const GearWheelFactory = React.memo(({ isActive }) => {
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(xScale))
       .style("font-size", "12px")
-      .style("color", "#9ca3af")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
+    
+    g.select("g:last-child")
       .append("text")
       .attr("x", innerWidth / 2)
       .attr("y", 45)
@@ -997,7 +1000,10 @@ const GearWheelFactory = React.memo(({ isActive }) => {
     g.append("g")
       .call(d3.axisLeft(yScale))
       .style("font-size", "12px")
-      .style("color", "#9ca3af")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
+    
+    g.select("g:last-child")
       .append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", -40)
@@ -1017,7 +1023,9 @@ const GearWheelFactory = React.memo(({ isActive }) => {
       )
       .style("stroke", "#374151")
       .style("stroke-dasharray", "3,3")
-      .style("opacity", 0.5);
+      .style("opacity", 0.5)
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     g.append("g")
       .attr("class", "grid")
@@ -1027,7 +1035,9 @@ const GearWheelFactory = React.memo(({ isActive }) => {
       )
       .style("stroke", "#374151")
       .style("stroke-dasharray", "3,3")
-      .style("opacity", 0.5);
+      .style("opacity", 0.5)
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // True mean line with emphasis - always show
     g.append("line")
@@ -1343,7 +1353,8 @@ const CentralLimitTheoremDemo = React.memo(({ isActive }) => {
       .attr("transform", `translate(0,${panelHeight})`)
       .call(d3.axisBottom(xScale).ticks(5))
       .style("font-size", "10px")
-      .style("color", "#9ca3af");
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Panel 2: Sampling Distribution (removed middle panel showing single sample)
     const g2 = svg.append("g")
@@ -1432,7 +1443,8 @@ const CentralLimitTheoremDemo = React.memo(({ isActive }) => {
       .attr("transform", `translate(0,${panelHeight})`)
       .call(d3.axisBottom(xScale).ticks(5))
       .style("font-size", "10px")
-      .style("color", "#9ca3af");
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Add grid lines
     [g1, g2].forEach(g => {
@@ -1445,7 +1457,9 @@ const CentralLimitTheoremDemo = React.memo(({ isActive }) => {
         )
         .style("stroke", "#374151")
         .style("stroke-dasharray", "2,2")
-        .style("opacity", 0.3);
+        .style("opacity", 0.3)
+        .selectAll("text")
+        .attr("fill", "#f3f4f6");
     });
     
   }, [activeDistribution, sampleSize, isActive, isInitialized]);
@@ -1555,7 +1569,7 @@ const BaseballHeights = React.memo(function BaseballHeights({ isActive }) {
   if (!isActive) return null;
   const [showCalculation, setShowCalculation] = useState(true);
   
-  // Exact data from course
+  // Exact data from examples
   const heights = [74,74,72,72,73,69,69,71,76,71,73,73,74,74,69,70,72,73,75,78];
   const n = 20;
   const xBar = 72.6;

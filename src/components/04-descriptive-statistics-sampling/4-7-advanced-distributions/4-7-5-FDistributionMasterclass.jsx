@@ -483,10 +483,14 @@ const FDistributionVisualization = ({
     }
     
     // Axes
-    g.append("g")
+    const xAxisGroup = g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(xScale).ticks(10))
-      .append("text")
+      .call(d3.axisBottom(xScale).ticks(10));
+    
+    xAxisGroup.selectAll("text")
+      .attr("fill", "#f3f4f6");
+    
+    xAxisGroup.append("text")
       .attr("x", innerWidth / 2)
       .attr("y", 40)
       .attr("fill", "#e5e7eb")
@@ -494,9 +498,13 @@ const FDistributionVisualization = ({
       .style("font-size", "14px")
       .text("F-value");
     
-    g.append("g")
-      .call(d3.axisLeft(yScale).ticks(8))
-      .append("text")
+    const yAxisGroup = g.append("g")
+      .call(d3.axisLeft(yScale).ticks(8));
+    
+    yAxisGroup.selectAll("text")
+      .attr("fill", "#f3f4f6");
+    
+    yAxisGroup.append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", -45)
       .attr("x", -innerHeight / 2)
@@ -561,7 +569,7 @@ const FDistributionVisualization = ({
 };
 
 // Main component
-const FDistributionMasterclass = () => {
+const FDistributionAdvanced = () => {
   // State management
   const [currentStage, setCurrentStage] = useState(0);
   const [df1Input, setDf1Input] = useState(10);
@@ -708,7 +716,7 @@ const FDistributionMasterclass = () => {
   
   return (
     <VisualizationContainer
-      title="4.5 F-Distribution Masterclass"
+      title="4.5 F-Distribution Advanced Topics"
       subtitle="A comprehensive journey through variance comparison"
       tutorialSteps={[]}
       tutorialKey="f-distribution-masterclass"
@@ -1041,4 +1049,4 @@ const FDistributionMasterclass = () => {
   );
 };
 
-export default FDistributionMasterclass;
+export default FDistributionAdvanced;

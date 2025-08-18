@@ -228,14 +228,14 @@ function ProbabilityEvent() {
         .attr('transform', `translate(0,${innerHeight})`)
         .call(d3.axisBottom(xScale))
         .selectAll('text')
-        .attr('fill', colors.chart.text)
+        .attr('fill', '#f3f4f6')
         .style('font-size', '14px');
       
       // Add y-axis
       g.append('g')
         .call(d3.axisLeft(yScale).ticks(5).tickFormat(d3.format('.0%')))
         .selectAll('text')
-        .attr('fill', colors.chart.text)
+        .attr('fill', '#f3f4f6')
         .style('font-size', '12px');
       
       // Add y-axis label
@@ -246,7 +246,7 @@ function ProbabilityEvent() {
         .attr('dy', '1em')
         .style('text-anchor', 'middle')
         .style('font-size', '14px')
-        .attr('fill', colors.chart.text)
+        .attr('fill', '#f3f4f6')
         .text('Probability');
       
       // Show all dice faces with highlighting for favorable outcomes
@@ -305,7 +305,7 @@ function ProbabilityEvent() {
             .attr('cx', (dx - 0.5) * dieSize)
             .attr('cy', (dy - 0.5) * dieSize)
             .attr('r', 3)
-            .attr('fill', isFavorable ? 'white' : colors.chart.text)
+            .attr('fill', isFavorable ? 'white' : '#f3f4f6')
             .attr('opacity', isFavorable ? 1 : 0.6);
         });
         
@@ -314,7 +314,7 @@ function ProbabilityEvent() {
           .attr('x', x)
           .attr('y', diceY + dieSize/2 + 12)
           .attr('text-anchor', 'middle')
-          .attr('fill', isFavorable ? colorScheme.chart.primary : colors.chart.text)
+          .attr('fill', isFavorable ? colorScheme.chart.primary : '#f3f4f6')
           .style('font-size', '12px')
           .style('font-weight', isFavorable ? 'bold' : 'normal')
           .text(i);

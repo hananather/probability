@@ -331,9 +331,12 @@ export default function PValueMeaning() {
       .attr("class", "x-axis")
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(x).ticks(10))
-      .append("text")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
+    
+    g.append("text")
       .attr("x", innerWidth / 2)
-      .attr("y", 35)
+      .attr("y", innerHeight + 35)
       .attr("fill", "#ffffff")
       .style("text-anchor", "middle")
       .text("P-Value");
@@ -342,7 +345,10 @@ export default function PValueMeaning() {
     g.append("g")
       .attr("class", "y-axis")
       .call(d3.axisLeft(y))
-      .append("text")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
+    
+    g.append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", -35)
       .attr("x", -innerHeight / 2)

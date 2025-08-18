@@ -155,7 +155,7 @@ export default function CoinFlipSimulation() {
     xAxis.selectAll("text")
       .style("font-size", "14px")
       .style("font-weight", "600")
-      .attr("fill", colors.chart.text);
+      .attr("fill", "#f3f4f6");
     
     // Y axis
     const yAxis = g.append("g")
@@ -167,7 +167,7 @@ export default function CoinFlipSimulation() {
     yAxis.selectAll("path, line").attr("stroke", colors.chart.grid);
     yAxis.selectAll("text")
       .style("font-size", "12px")
-      .attr("fill", colors.chart.text);
+      .attr("fill", "#f3f4f6");
     
     // Y axis label
     g.append("text")
@@ -177,7 +177,7 @@ export default function CoinFlipSimulation() {
       .attr("dy", "1em")
       .style("text-anchor", "middle")
       .style("font-size", "14px")
-      .attr("fill", colors.chart.text)
+      .attr("fill", "#f3f4f6")
       .text("Probability");
     
     // Create groups for observed and theoretical
@@ -305,7 +305,7 @@ export default function CoinFlipSimulation() {
       .attr("x", d => x1(d.side) + x1.bandwidth() / 2)
       .attr("y", innerHeight - 5)
       .attr("text-anchor", "middle")
-      .attr("fill", colors.chart.text)
+      .attr("fill", "#f3f4f6")
       .style("font-size", "14px")
       .style("font-weight", "600")
       .style("pointer-events", "none")
@@ -318,7 +318,7 @@ export default function CoinFlipSimulation() {
       .attr("x", d => x1(d.side) + x1.bandwidth() / 2)
       .attr("y", innerHeight - 20)
       .attr("text-anchor", "middle")
-      .attr("fill", colors.chart.text)
+      .attr("fill", "#f3f4f6")
       .style("font-size", "12px")
       .style("opacity", 0.8)
       .style("pointer-events", "none")
@@ -347,7 +347,7 @@ export default function CoinFlipSimulation() {
         .attr("y", legendY + 8)
         .attr("alignment-baseline", "middle")
         .style("font-size", "12px")
-        .attr("fill", colors.chart.text)
+        .attr("fill", "#f3f4f6")
         .text(v => v.side);
     });
     

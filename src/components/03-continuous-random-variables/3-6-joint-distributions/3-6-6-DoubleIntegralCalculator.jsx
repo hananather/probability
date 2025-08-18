@@ -300,6 +300,10 @@ export const DoubleIntegralCalculator = () => {
     g.append("g")
       .attr("transform", `translate(0,${plotHeight})`)
       .call(d3.axisBottom(xScale))
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
+
+    g.select("g:last-of-type")
       .append("text")
       .attr("x", plotWidth / 2)
       .attr("y", 45)
@@ -310,6 +314,10 @@ export const DoubleIntegralCalculator = () => {
 
     g.append("g")
       .call(d3.axisLeft(yScale))
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
+
+    g.select("g:last-of-type")
       .append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", -45)
@@ -763,7 +771,7 @@ export const DoubleIntegralCalculator = () => {
 
         {/* Visualization */}
         <div className="flex flex-col items-center space-y-4" style={{ marginTop: '40px' }}>
-          <svg ref={svgRef} style={{ background: '#1f2937', borderRadius: '8px' }} />
+          <svg ref={svgRef} style={{ background: '#f3f4f6', borderRadius: '8px' }} />
           <div className="text-center text-sm text-neutral-400 max-w-2xl">
             <p><strong>Instructions:</strong> Click and drag to select a rectangular region for integration.</p>
             <p>Red dots show sample points, colored rectangles show PDF values at those points.</p>

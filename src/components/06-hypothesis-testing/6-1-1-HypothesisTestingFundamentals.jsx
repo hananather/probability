@@ -306,12 +306,16 @@ export default function HypothesisTestingFundamentals() {
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(xScale))
       .attr("color", "#9ca3af")
-      .style("font-size", "14px");
+      .style("font-size", "14px")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     g.append("g")
       .call(d3.axisLeft(yScale).tickFormat(d => (d * 100).toFixed(0) + "%"))
       .attr("color", "#9ca3af")
-      .style("font-size", "14px");
+      .style("font-size", "14px")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Labels
     g.append("text")
@@ -458,12 +462,16 @@ export default function HypothesisTestingFundamentals() {
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(xScale))
       .attr("color", "#9ca3af")
-      .style("font-size", "14px");
+      .style("font-size", "14px")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     g.append("g")
       .call(d3.axisLeft(yScale).tickFormat(d => (d * 100).toFixed(1) + "%"))
       .attr("color", "#9ca3af")
-      .style("font-size", "14px");
+      .style("font-size", "14px")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Labels
     g.append("text")
@@ -599,12 +607,16 @@ export default function HypothesisTestingFundamentals() {
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(xScale))
       .attr("color", "#9ca3af")
-      .style("font-size", "14px");
+      .style("font-size", "14px")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     g.append("g")
       .call(d3.axisLeft(yScale).tickFormat(d => (d * 100).toFixed(1) + "%"))
       .attr("color", "#9ca3af")
-      .style("font-size", "14px");
+      .style("font-size", "14px")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Labels
     g.append("text")

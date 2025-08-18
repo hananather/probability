@@ -31,7 +31,7 @@ const KeyConceptsCard = React.memo(() => {
 
   return (
     <Card ref={contentRef} className="mb-8 p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
-      <h3 className="text-xl font-bold text-white mb-4">Key Concepts You'll Master</h3>
+      <h3 className="text-xl font-bold text-white mb-4">Key Concepts</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {concepts.map((concept, i) => (
           <motion.div
@@ -63,7 +63,7 @@ const CHAPTER_2_SECTIONS = [
     id: 'formula-builder',
     title: 'Interactive Formula Builder',
     subtitle: 'Build formulas step-by-step',
-    description: 'Master discrete distribution formulas by building them interactively. Click on each part to understand why it\'s there and how it works.',
+    description: 'Build discrete distribution formulas interactively. Click on each part to understand why it\'s there and how it works.',
     icon: Sparkles,
     difficulty: 'Beginner',
     estimatedTime: '20 min',
@@ -72,7 +72,7 @@ const CHAPTER_2_SECTIONS = [
       'Build binomial distribution formula',
       'Understand expectation and variance formulas',
       'Create Poisson distribution formula',
-      'Master formula structure through interaction'
+      'Interactive formula structure exploration'
     ],
     route: '/chapter2/formula-builder',
     color: '#ec4899',
@@ -83,7 +83,7 @@ const CHAPTER_2_SECTIONS = [
     id: 'random-variables',
     title: '2.1 Random Variables & Distributions',
     subtitle: 'From outcomes to numbers',
-    description: 'Learn how random variables map outcomes to numerical values. Build intuition through interactive spatial visualization.',
+    description: 'Random variables map outcomes to numerical values. Build intuition through interactive spatial visualization.',
     icon: Shuffle,
     difficulty: 'Beginner',
     estimatedTime: '20 min',
@@ -103,7 +103,7 @@ const CHAPTER_2_SECTIONS = [
     id: 'expectation-variance',
     title: '2.2 Expectation & Variance',
     subtitle: 'Center and spread of distributions',
-    description: 'Master the fundamental measures of distributions. Calculate expected values and understand variability through interactive examples.',
+    description: 'Fundamental measures of distributions. Calculate expected values and understand variability through interactive examples.',
     icon: Calculator,
     difficulty: 'Intermediate',
     estimatedTime: '30 min',
@@ -123,7 +123,7 @@ const CHAPTER_2_SECTIONS = [
     id: 'transformations',
     title: '2.2.4 Transformations',
     subtitle: 'Linear and function transformations',
-    description: 'Learn how transformations affect expectation and variance. Master the rules for linear and non-linear transformations.',
+    description: 'Transformations affect expectation and variance. Explore the rules for linear and non-linear transformations.',
     icon: Binary,
     difficulty: 'Intermediate',
     estimatedTime: '25 min',
@@ -203,7 +203,7 @@ const CHAPTER_2_SECTIONS = [
     id: 'poisson-distribution',
     title: '2.6 Poisson Distribution',
     subtitle: 'Modeling rare events',
-    description: 'Master the distribution of rare events in continuous time or space. See connections to binomial and exponential.',
+    description: 'Distribution of rare events in continuous time or space. See connections to binomial and exponential.',
     icon: Zap,
     difficulty: 'Advanced',
     estimatedTime: '30 min',
@@ -223,7 +223,7 @@ const CHAPTER_2_SECTIONS = [
     id: 'distribution-stories',
     title: '2.7 Distribution Stories',
     subtitle: 'Choosing the right model',
-    description: 'Learn when to use each distribution through real-world scenarios. Master the art of distribution selection.',
+    description: 'When to use each distribution through real-world scenarios. Practice distribution selection.',
     icon: BookOpen,
     difficulty: 'Advanced',
     estimatedTime: '35 min',
@@ -280,8 +280,8 @@ export default function DiscreteRandomVariablesHub() {
           <h2 className="text-2xl font-bold text-white mb-3">What are Discrete Random Variables?</h2>
           <p className="text-gray-300">
             Discrete random variables transform random experiments into mathematical objects we can analyze. 
-            From coin flips to customer arrivals, you'll learn to model uncertainty, calculate probabilities, 
-            and make predictions. Master the fundamental distributions that power statistics and data science.
+            From coin flips to customer arrivals, model uncertainty, calculate probabilities, 
+            and make predictions with the fundamental distributions that power statistics and data science.
           </p>
         </Card>
 

@@ -50,9 +50,9 @@ const KeyConceptsCard = React.memo(() => {
 
   return (
     <Card ref={contentRef} className="mb-8 p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
-      <h3 className="text-xl font-bold text-white mb-4">Core Concepts You'll Master</h3>
+      <h3 className="text-xl font-bold text-white mb-4">Core Concepts</h3>
       <p className="text-sm text-gray-400 mb-4">
-        These four concepts form the foundation of all statistical estimation. Click each to explore:
+        These four concepts form the foundation of all statistical estimation:
       </p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {concepts.map((concept, i) => (
@@ -390,9 +390,9 @@ export default function EstimationHub() {
           </div>
         </Card>
 
-        {/* Learning Journey Roadmap */}
+        {/* Topic Progression */}
         <Card className="mb-8 p-6 bg-gradient-to-br from-indigo-900/20 to-purple-900/20 border-indigo-700/50">
-          <h2 className="text-2xl font-bold text-white mb-4">Your Learning Journey</h2>
+          <h2 className="text-2xl font-bold text-white mb-4">Estimation Topics</h2>
           <div className="space-y-3">
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
@@ -400,7 +400,7 @@ export default function EstimationHub() {
               </div>
               <div className="flex-1">
                 <p className="text-white font-semibold">Foundation: Understanding Inference</p>
-                <p className="text-sm text-gray-400">Learn the core concepts of estimation and how samples relate to populations</p>
+                <p className="text-sm text-gray-400">Core concepts of estimation and how samples relate to populations</p>
               </div>
             </div>
             <div className="flex items-center ml-6">
@@ -412,7 +412,7 @@ export default function EstimationHub() {
               </div>
               <div className="flex-1">
                 <p className="text-white font-semibold">Known Variance: The Ideal Case</p>
-                <p className="text-sm text-gray-400">Master confidence intervals when population standard deviation is known</p>
+                <p className="text-sm text-gray-400">Confidence intervals when population standard deviation is known</p>
               </div>
             </div>
             <div className="flex items-center ml-6">
@@ -452,9 +452,6 @@ export default function EstimationHub() {
               </div>
             </div>
           </div>
-          <p className="text-sm text-gray-400 mt-6 text-center italic">
-            Each section builds on the previous. Master them in order for the smoothest learning experience.
-          </p>
         </Card>
 
         {/* Prerequisites Review Card */}

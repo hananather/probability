@@ -39,32 +39,7 @@ const FloatingSymbols = React.memo(() => {
   
   return (
     <>
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        {symbols.map((item, index) => (
-          <div
-            key={index}
-            className="absolute floating-symbol"
-            style={{
-              left: `${item.x}%`,
-              top: `${item.y}%`,
-              animationDelay: `${item.delay}s`,
-              fontSize: index < 6 ? '3rem' : index < 12 ? '2rem' : '1.5rem',
-              opacity: index < 6 ? 0.08 : index < 12 ? 0.1 : 0.12
-            }}
-          >
-            {item.symbol}
-          </div>
-        ))}
-      </div>
-      
-      <style jsx>{`
-        .floating-symbol {
-          color: rgb(163 163 163);
-          animation: float 25s infinite ease-in-out;
-          will-change: transform;
-          transform: translate3d(0, 0, 0);
-        }
-        
+      <style>{`
         @keyframes float {
           0% { 
             transform: translate3d(0px, 0px, 0) rotate(0deg) scale(1);
@@ -86,6 +61,27 @@ const FloatingSymbols = React.memo(() => {
           }
         }
       `}</style>
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        {symbols.map((item, index) => (
+          <div
+            key={index}
+            className="absolute"
+            style={{
+              left: `${item.x}%`,
+              top: `${item.y}%`,
+              animationDelay: `${item.delay}s`,
+              fontSize: index < 6 ? '3rem' : index < 12 ? '2rem' : '1.5rem',
+              opacity: index < 6 ? 0.08 : index < 12 ? 0.1 : 0.12,
+              color: 'rgb(163, 163, 163)',
+              animation: 'float 25s infinite ease-in-out',
+              willChange: 'transform',
+              transform: 'translate3d(0, 0, 0)'
+            }}
+          >
+            {item.symbol}
+          </div>
+        ))}
+      </div>
     </>
   );
 });

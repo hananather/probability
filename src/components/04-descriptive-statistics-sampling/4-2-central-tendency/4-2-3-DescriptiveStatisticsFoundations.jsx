@@ -344,7 +344,7 @@ function DescriptiveStatisticsFoundations({ onComplete }) {
         .attr("y", y)
         .attr("text-anchor", "middle")
         .attr("dy", "0.35em")
-        .attr("fill", "#000")
+        .attr("fill", "#f3f4f6")
         .attr("font-size", "10px")
         .attr("font-weight", "bold")
         .text(value)

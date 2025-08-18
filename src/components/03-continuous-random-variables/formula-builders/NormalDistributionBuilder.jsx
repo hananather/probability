@@ -67,7 +67,7 @@ const NormalDistributionBuilder = React.memo(() => {
             onClick={() => handlePartClick('normalizing', 'normalizingConstant')}
           >
             <span dangerouslySetInnerHTML={{ 
-              __html: `\\frac{1}{\\sigma\\sqrt{2\\pi}}` 
+              __html: `\\(\\frac{1}{\\sigma\\sqrt{2\\pi}}\\)` 
             }} />
           </div>
           
@@ -82,7 +82,7 @@ const NormalDistributionBuilder = React.memo(() => {
             onClick={() => handlePartClick('exponential', 'exponentialDecay')}
           >
             <span dangerouslySetInnerHTML={{ 
-              __html: `e^{-\\frac{(x-\\mu)^2}{2\\sigma^2}}` 
+              __html: `\\(e^{-\\frac{(x-\\mu)^2}{2\\sigma^2}}\\)` 
             }} />
           </div>
         </div>

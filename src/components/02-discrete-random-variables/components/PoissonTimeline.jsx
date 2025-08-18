@@ -93,7 +93,7 @@ export function PoissonTimeline({ lambda, windowSize, isAnimating }) {
         marker.append('text')
           .attr('y', 20)
           .attr('text-anchor', 'middle')
-          .attr('fill', colors.text.secondary)
+          .attr('fill', colors.chart.text)
           .style('font-size', '12px')
           .text(d);
       });
@@ -150,7 +150,7 @@ export function PoissonTimeline({ lambda, windowSize, isAnimating }) {
         .attr('width', 60)
         .attr('height', 24)
         .attr('rx', 12)
-        .attr('fill', '#1f2937')
+        .attr('fill', '#f3f4f6')
         .attr('stroke', colorScheme.secondary)
         .attr('stroke-width', 1.5);
       

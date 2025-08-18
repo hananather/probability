@@ -397,7 +397,9 @@ const OzoneExample = React.memo(function OzoneExample({ onInsight }) {
       // X-axis
       svg.append("g")
         .attr("transform", `translate(0,${height - margin.bottom})`)
-        .call(d3.axisBottom(xScale).ticks(5));
+        .call(d3.axisBottom(xScale).ticks(5))
+        .selectAll("text")
+        .attr("fill", "#f3f4f6");
         
     }, []);
     
@@ -822,6 +824,9 @@ const TDistributionExplorer = ({ onInsight }) => {
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.3);
     
+    gridLines.selectAll("text")
+      .attr("fill", "#f3f4f6");
+    
     gridLines.selectAll("line")
       .style("stroke", "#374151"); // Chapter 7 grid color
     
@@ -833,6 +838,9 @@ const TDistributionExplorer = ({ onInsight }) => {
       .call(d3.axisLeft(y).tickSize(-innerWidth).tickFormat("").ticks(5))
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.3);
+    
+    yGridLines.selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     yGridLines.selectAll("line")
       .style("stroke", "#374151");
@@ -1252,6 +1260,9 @@ const TvsZComparison = () => {
       .call(d3.axisBottom(xScale).tickSize(-innerHeight).tickFormat("").ticks(7))
       .style("stroke-dasharray", "3,3")
       .style("opacity", 0.3);
+    
+    xGrid.selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     xGrid.selectAll("line").style("stroke", "#374151");
     xGrid.select(".domain").remove();

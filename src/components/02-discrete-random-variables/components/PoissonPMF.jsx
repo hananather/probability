@@ -121,19 +121,19 @@ export function PoissonPMF({ lambda, highlightK = null }) {
       .call(d3.axisBottom(xScale).tickValues(
         data.filter((d, i) => i % Math.ceil(data.length / 20) === 0).map(d => d.k)
       ))
-      .style('color', colors.text.secondary);
+      .style('color', colors.chart.text);
     
     g.append('g')
       .attr('transform', `translate(${margin.left},0)`)
       .call(d3.axisLeft(yScale).ticks(5).tickFormat(d => formatNumber(d, 3)))
-      .style('color', colors.text.secondary);
+      .style('color', colors.chart.text);
     
     // Axis labels
     g.append('text')
       .attr('x', width / 2)
       .attr('y', height - 5)
       .attr('text-anchor', 'middle')
-      .attr('fill', colors.text.secondary)
+      .attr('fill', colors.chart.text)
       .style('font-size', '12px')
       .text('k (number of events)');
     
@@ -142,7 +142,7 @@ export function PoissonPMF({ lambda, highlightK = null }) {
       .attr('x', -height / 2)
       .attr('y', 15)
       .attr('text-anchor', 'middle')
-      .attr('fill', colors.text.secondary)
+      .attr('fill', colors.chart.text)
       .style('font-size', '12px')
       .text('P(X = k)');
     

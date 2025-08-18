@@ -297,6 +297,10 @@ export default function PairedTwoSampleTest() {
       .call(d3.axisBottom(xScale).ticks(8))
       .style("font-size", "12px")
       .style("color", "#9ca3af")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
+    
+    g
       .append("text")
       .attr("x", width / 2)
       .attr("y", 45)
@@ -310,6 +314,10 @@ export default function PairedTwoSampleTest() {
       .call(d3.axisLeft(yScale).ticks(8))
       .style("font-size", "12px")
       .style("color", "#9ca3af")
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
+    
+    g
       .append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", -45)

@@ -47,51 +47,54 @@ const Ch5Confidence = React.memo(({ isActive }) => {
     }
     
     // Intervals
-    const g = svg.selectAll('.interval')
-      .data(intervals)
-      .enter()
-      .append('g')
-      .attr('class', 'interval');
-    
-    // Interval lines
-    const intervalLines = g.append('line')
-      .attr('x1', d => d.lower)
-      .attr('x2', d => d.upper)
-      .attr('y1', d => d.y)
-      .attr('y2', d => d.y)
-      .attr('stroke', d => d.contains ? '#10b981' : '#f59e0b');
-    
-    if (isActive) {
-      intervalLines
-        .attr('stroke-width', 0)
-        .transition()
-        .delay((d, i) => 500 + i * 200)
-        .duration(400)
-        .attr('stroke-width', 3);
-    } else {
-      intervalLines.attr('stroke-width', 2).attr('opacity', 0.7);
-    }
-    
-    // End caps
-    const caps = g.selectAll('.cap')
-      .data(d => [{ value: d.lower, parent: d }, { value: d.upper, parent: d }])
-      .enter()
-      .append('line')
-      .attr('x1', d => d.value)
-      .attr('x2', d => d.value)
-      .attr('y1', d => d.parent.y - 5)
-      .attr('y2', d => d.parent.y + 5)
-      .attr('stroke', d => d.parent.contains ? '#10b981' : '#f59e0b');
-    
-    if (isActive) {
-      caps.attr('stroke-width', 0)
-        .transition()
-        .delay((d, i) => 700 + Math.floor(i/2) * 200)
-        .duration(200)
-        .attr('stroke-width', 2);
-    } else {
-      caps.attr('stroke-width', 2).attr('opacity', 0.7);
-    }
+    intervals.forEach((interval, index) => {
+      const g = svg.append('g')
+        .attr('class', 'interval');
+      
+      // Interval line
+      const intervalLine = g.append('line')
+        .attr('x1', interval.lower)
+        .attr('x2', interval.upper)
+        .attr('y1', interval.y)
+        .attr('y2', interval.y)
+        .attr('stroke', interval.contains ? '#10b981' : '#f59e0b');
+      
+      if (isActive) {
+        intervalLine
+          .attr('stroke-width', 0)
+          .transition()
+          .delay(500 + index * 200)
+          .duration(400)
+          .attr('stroke-width', 3);
+      } else {
+        intervalLine.attr('stroke-width', 2).attr('opacity', 0.7);
+      }
+      
+      // End caps
+      const capData = [
+        { value: interval.lower, y: interval.y },
+        { value: interval.upper, y: interval.y }
+      ];
+      
+      capData.forEach((cap, capIndex) => {
+        const capLine = g.append('line')
+          .attr('x1', cap.value)
+          .attr('x2', cap.value)
+          .attr('y1', cap.y - 5)
+          .attr('y2', cap.y + 5)
+          .attr('stroke', interval.contains ? '#10b981' : '#f59e0b');
+        
+        if (isActive) {
+          capLine.attr('stroke-width', 0)
+            .transition()
+            .delay(700 + index * 200)
+            .duration(200)
+            .attr('stroke-width', 2);
+        } else {
+          capLine.attr('stroke-width', 2).attr('opacity', 0.7);
+        }
+      });
+    });
   }, [isActive]);
   
   return <svg ref={svgRef} className="w-full h-full" />;

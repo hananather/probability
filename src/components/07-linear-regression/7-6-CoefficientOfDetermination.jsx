@@ -860,7 +860,7 @@ const ModelComparison = () => {
         .attr("x2", x)
         .attr("y1", innerHeight - 40)
         .attr("y2", innerHeight - 10)
-        .attr("stroke", key === selectedModel ? "#1f2937" : "#9ca3af")
+        .attr("stroke", key === selectedModel ? "#f3f4f6" : "#9ca3af")
         .attr("stroke-width", key === selectedModel ? 3 : 2)
         .style("cursor", "pointer")
         .on("click", () => setSelectedModel(key));
@@ -872,7 +872,7 @@ const ModelComparison = () => {
         .attr("text-anchor", "middle")
         .attr("font-size", "12px")
         .attr("font-weight", key === selectedModel ? "bold" : "normal")
-        .attr("fill", key === selectedModel ? "#1f2937" : "#6b7280")
+        .attr("fill", key === selectedModel ? "#f3f4f6" : "#6b7280")
         .style("cursor", "pointer")
         .text(`R² = ${model.rSquared}`)
         .on("click", () => setSelectedModel(key));

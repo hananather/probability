@@ -61,7 +61,7 @@ export default function VennDiagramSection() {
       .attr("width", width - 40)
       .attr("height", height - 40)
       .attr("fill", "none")
-      .attr("stroke", "#444")
+      .attr("stroke", "#f3f4f6")
       .attr("stroke-width", 2);
     
     // Create clip paths for regions

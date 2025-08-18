@@ -472,7 +472,9 @@ function InteractiveDataViz({ data, onDataChange, activeStage }) {
     // Add axis
     g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(xScale));
+      .call(d3.axisBottom(xScale))
+      .selectAll("text")
+      .attr("fill", "#f3f4f6");
     
     // Create drag behavior
     const drag = d3.drag()

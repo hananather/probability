@@ -197,7 +197,7 @@ export function DraggableBars({
             x={xScale(d.label || i) + (barWidth || xScale.bandwidth()) / 2}
             y={yScale(d.value) - 5}
             textAnchor="middle"
-            fill="#e5e7eb"
+            fill="#f3f4f6"
             fontSize="12px"
             pointerEvents="none"
           >
