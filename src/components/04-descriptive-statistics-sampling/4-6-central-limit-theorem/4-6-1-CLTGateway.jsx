@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Sparkles, Calculator, Check, X, ChevronRight } from 'lucide-react';
 import { VisualizationSection } from '@/components/ui/VisualizationContainer';
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 import { StepByStepCalculation, CalculationStep, NestedCalculation, FormulaDisplay } from '../../ui/patterns/StepByStepCalculation';
 import { InterpretationBox, StepInterpretation } from '../../ui/patterns/InterpretationBox';
 import { QuizBreak } from '../../mdx/QuizBreak';
@@ -9,7 +9,7 @@ import { ComparisonTable, SimpleComparisonTable } from '../../ui/patterns/Compar
 
 const CLTGateway = () => {
   const contentRef = useRef(null);
-  useSafeMathJax(contentRef);
+  useMathJax(contentRef);
 
   return (
     <VisualizationSection>

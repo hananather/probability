@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { CheckCircle, XCircle, HelpCircle } from 'lucide-react';
-import { useSafeMathJax } from '../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 
 // Single quiz question component (internal use)
 function QuizQuestion({ question, options, correctIndex, explanation, onAnswer, showExplanation }) {
@@ -13,8 +13,8 @@ function QuizQuestion({ question, options, correctIndex, explanation, onAnswer, 
   const optionsRef = useRef(null);
   
   // Use safe MathJax processing
-  useSafeMathJax(questionRef, [question]);
-  useSafeMathJax(optionsRef, [options]);
+  useMathJax(questionRef, [question]);
+  useMathJax(optionsRef, [options]);
   
   const handleAnswerSelect = (index) => {
     if (isAnswered) return;
@@ -416,8 +416,8 @@ export function MultipleChoiceQuestion({
   const optionsRef = useRef(null);
   
   // Use safe MathJax processing
-  useSafeMathJax(questionRef, [question]);
-  useSafeMathJax(optionsRef, [options]);
+  useMathJax(questionRef, [question]);
+  useMathJax(optionsRef, [options]);
   
   const handleSubmit = () => {
     if (selectedAnswer === null) return;

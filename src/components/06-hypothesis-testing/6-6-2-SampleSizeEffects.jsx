@@ -4,12 +4,12 @@ import React, { useState, useEffect, useRef } from 'react'
 import * as d3 from 'd3'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import BackToHub from '../ui/BackToHub'
-import { useSafeMathJax } from '../../utils/mathJaxFix'
+import { useMathJax } from '@/hooks/useMathJax'
 
 // Memoized formula component
 const HypothesesFormula = React.memo(function HypothesesFormula({ nullProportion, testType }) {
   const ref = useRef(null)
-  useSafeMathJax(ref, [nullProportion, testType])
+  useMathJax(ref, [nullProportion, testType])
   
   return (
     <div ref={ref}>

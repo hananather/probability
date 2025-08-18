@@ -27,7 +27,7 @@ import {
   Lightbulb,
   Award
 } from "lucide-react";
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 import SharedNavigation from '../shared/SharedNavigation';
 
 // Color scheme
@@ -596,7 +596,7 @@ const FDistributionAdvanced = () => {
   const stage = learningStages[currentStage];
   
   // Use safe MathJax processing
-  useSafeMathJax(contentRef, [currentStage]);
+  useMathJax(contentRef, [currentStage]);
   
   // Generate F-statistic
   const generateFStatistic = useCallback(() => {

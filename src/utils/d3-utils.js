@@ -1,11 +1,13 @@
-// Optimized D3 imports - only import what we need
-// This significantly reduces bundle size compared to importing all of D3
+// Consolidated D3 imports from main package
+// Using the main d3 package which includes all modules
 
-// Selection and manipulation
-import { select, selectAll, selection, pointer } from 'd3-selection';
-
-// Scales
 import {
+  // Selection and manipulation
+  select,
+  selectAll,
+  selection,
+  pointer,
+  // Scales
   scaleLinear,
   scaleOrdinal,
   scaleBand,
@@ -13,19 +15,13 @@ import {
   scaleDiverging,
   scaleQuantize,
   scaleTime,
-  scaleLog
-} from 'd3-scale';
-
-// Axes
-import {
+  scaleLog,
+  // Axes
   axisBottom,
   axisLeft,
   axisRight,
-  axisTop
-} from 'd3-axis';
-
-// Shapes and lines
-import {
+  axisTop,
+  // Shapes and lines
   line,
   area,
   arc,
@@ -41,20 +37,15 @@ import {
   symbolCircle,
   symbolSquare,
   symbolDiamond,
-  linkHorizontal
-} from 'd3-shape';
-
-// Transitions
-import { transition } from 'd3-transition';
-
-// Drag
-import { drag } from 'd3-drag';
-
-// Format
-import { format, formatPrefix } from 'd3-format';
-
-// Arrays
-import {
+  linkHorizontal,
+  // Transitions
+  transition,
+  // Drag
+  drag,
+  // Format
+  format,
+  formatPrefix,
+  // Arrays
   min,
   max,
   extent,
@@ -67,26 +58,17 @@ import {
   variance,
   histogram,
   rollup,
-  shuffle
-} from 'd3-array';
-
-// Interpolation
-import {
+  shuffle,
+  // Interpolation
   interpolate,
   interpolateRgb,
-  interpolateNumber
-} from 'd3-interpolate';
-
-// Colors
-import {
+  interpolateNumber,
+  // Colors
   interpolateBlues,
   interpolateRdBu,
   schemeCategory10,
-  interpolateWarm
-} from 'd3-scale-chromatic';
-
-// Easing
-import {
+  interpolateWarm,
+  // Easing
   easeLinear,
   easeQuad,
   easeQuadIn,
@@ -97,32 +79,29 @@ import {
   easeCubicInOut,
   easeBackOut,
   easeBounceOut,
-  easeSinInOut
-} from 'd3-ease';
+  easeSinInOut,
+  // Random
+  randomNormal,
+  randomUniform,
+  // Time
+  timeFormat,
+  timeParse,
+  // Hierarchy
+  hierarchy,
+  tree,
+  // Color
+  color,
+  // Timer
+  interval,
+  // Contour
+  contours,
+  // Geo
+  geoPath,
+  geoTransform
+} from 'd3';
 
-// Random
-import { randomNormal, randomUniform } from 'd3-random';
-
-// Time
-import { timeFormat, timeParse } from 'd3-time-format';
-
-// Hierarchy
-import { hierarchy, tree } from 'd3-hierarchy';
-
-// Color
-import { color } from 'd3-color';
-
-// Timer
-import { interval } from 'd3-timer';
-
-// Hexbin
+// Hexbin is not included in main d3 package, needs separate import
 import { hexbin } from 'd3-hexbin';
-
-// Contour
-import { contours } from 'd3-contour';
-
-// Geo
-import { geoPath, geoTransform } from 'd3-geo';
 
 // Re-export everything
 export {
