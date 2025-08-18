@@ -5,13 +5,12 @@ import { Card } from '../../ui/card';
 import { Button } from '../../ui/button';
 import { VisualizationContainer } from '../../ui/VisualizationContainer';
 import * as d3 from "@/utils/d3-utils";
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 import BackToHub from '../../ui/BackToHub';
 
 // LaTeX formula component
 const LaTeXFormula = React.memo(function LaTeXFormula({ formula, isBlock = false }) {
-  const contentRef = useRef(null);
-  useSafeMathJax(contentRef, [formula]);
+  const contentRef = useMathJax([formula]);
   
   if (isBlock) {
     return (
@@ -41,7 +40,7 @@ export const JointProbabilityCalculator = () => {
   const svgRef = useRef(null);
   const contentRef = useRef(null);
   
-  useSafeMathJax(contentRef, [distribution, probability]);
+  useMathJax(contentRef, [distribution, probability]);
 
   // PDF functions
   const bivariateNormalPDF = (x, y, rho) => {

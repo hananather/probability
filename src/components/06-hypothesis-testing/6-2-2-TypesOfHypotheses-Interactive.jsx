@@ -25,7 +25,7 @@ const LaTeXContent = React.memo(({ content }) => {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([ref.current]);
         }
-        window.MathJax.typesetPromise([ref.current]).catch(console.error);
+        window.MathJax.typesetPromise([ref.current]).catch(() => {});
       }
     };
     
@@ -50,7 +50,7 @@ const ZScoreCalculation = React.memo(({ sampleMean, mu0, sigma = 2.5, n = 30 }) 
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([ref.current]);
         }
-        window.MathJax.typesetPromise([ref.current]).catch(console.error);
+        window.MathJax.typesetPromise([ref.current]).catch(() => {});
       }
     };
     
@@ -107,7 +107,7 @@ const ProgressiveInsight = React.memo(({ step, investigator, testStatistic, pVal
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([ref.current]);
         }
-        window.MathJax.typesetPromise([ref.current]).catch(console.error);
+        window.MathJax.typesetPromise([ref.current]).catch(() => {});
       }
     };
     
@@ -330,7 +330,7 @@ const MathematicalDetails = React.memo(({ investigator, alpha }) => {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([ref.current]);
         }
-        window.MathJax.typesetPromise([ref.current]).catch(console.error);
+        window.MathJax.typesetPromise([ref.current]).catch(() => {});
       }
     };
     

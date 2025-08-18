@@ -5,12 +5,11 @@ import { Card } from '../../ui/card';
 import { Button } from '../../ui/button';
 import { VisualizationContainer } from '../../ui/VisualizationContainer';
 import { cn } from '../../../lib/utils';
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 
 // LaTeX formula component
 const LaTeXFormula = React.memo(function LaTeXFormula({ formula, isBlock = false }) {
-  const contentRef = useRef(null);
-  useSafeMathJax(contentRef, [formula]);
+  const contentRef = useMathJax([formula]);
   
   if (isBlock) {
     return (
@@ -32,7 +31,7 @@ export const JointDistributionWorkedExample = () => {
   const [showAnswer, setShowAnswer] = useState(false);
   const contentRef = useRef(null);
   
-  useSafeMathJax(contentRef, [currentStep, showAnswer]);
+  useMathJax(contentRef, [currentStep, showAnswer]);
 
   const examples = [
     {

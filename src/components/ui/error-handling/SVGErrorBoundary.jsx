@@ -163,7 +163,6 @@ export const getSafeSVGDimensions = (element, defaults = { width: 800, height: 5
   } catch (error) {
     // Only log in development
     if (process.env.NODE_ENV === 'development') {
-      console.error('Error getting SVG dimensions:', error);
     }
     return defaults;
   }

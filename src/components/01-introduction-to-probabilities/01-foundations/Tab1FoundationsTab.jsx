@@ -3,12 +3,12 @@
 import React, { useRef } from 'react';
 import SectionBasedContent from '@/components/ui/SectionBasedContent';
 import { SimpleInsightBox } from '@/components/ui/patterns/SimpleComponents';
-import { useSafeMathJax } from '@/utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 
 // Section components
 const PhysicalIntuitionSection = () => {
   const contentRef = useRef(null);
-  useSafeMathJax(contentRef);
+  useMathJax(contentRef);
   
   return (
     <div ref={contentRef} className="space-y-4">
@@ -45,7 +45,7 @@ const PhysicalIntuitionSection = () => {
 
 const CountingPrincipleSection = () => {
   const contentRef = useRef(null);
-  useSafeMathJax(contentRef);
+  useMathJax(contentRef);
   
   return (
     <div ref={contentRef} className="space-y-4">
@@ -91,7 +91,7 @@ const CountingPrincipleSection = () => {
 
 const SetOperationsSection = () => {
   const contentRef = useRef(null);
-  useSafeMathJax(contentRef);
+  useMathJax(contentRef);
   
   return (
     <div ref={contentRef} className="space-y-4">
@@ -161,7 +161,7 @@ const SetOperationsSection = () => {
 
 const CompleteExampleSection = () => {
   const contentRef = useRef(null);
-  useSafeMathJax(contentRef);
+  useMathJax(contentRef);
   
   return (
     <div ref={contentRef} className="space-y-4">

@@ -4,7 +4,7 @@ import * as d3 from "@/utils/d3-utils";
 import { VisualizationContainer, VisualizationSection } from "../../ui/VisualizationContainer";
 import { Button } from "../../ui/button";
 import { ProgressBar, ProgressNavigation } from "../../ui/ProgressBar";
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 import { createColorScheme, typography } from "../../../lib/design-system";
 import { jStat } from "jstat";
 import { Tutorial } from "../../ui/Tutorial";
@@ -68,7 +68,7 @@ const GammaDistribution = React.memo(function GammaDistribution() {
     }
   ];
   
-  useSafeMathJax(contentRef, [shape, rate, stage]);
+  useMathJax(contentRef, [shape, rate, stage]);
   
   // Main visualization
   useEffect(() => {

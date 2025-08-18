@@ -11,7 +11,7 @@ import { WorkedExample, ExampleSection, InsightBox, Formula } from '@/components
 import { Button } from '@/components/ui/button';
 import { createColorScheme } from '@/lib/design-system';
 import { CheckCircle2 } from 'lucide-react';
-import { useSafeMathJax } from '@/utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 
 const colorScheme = createColorScheme('probability');
 
@@ -22,7 +22,7 @@ const PracticeProblems = React.memo(() => {
   const [showAnswer, setShowAnswer] = useState(false);
   
   // Use the safe MathJax hook
-  useSafeMathJax(contentRef, [currentProblem, showAnswer]);
+  useMathJax(contentRef, [currentProblem, showAnswer]);
   
   
   const problems = [

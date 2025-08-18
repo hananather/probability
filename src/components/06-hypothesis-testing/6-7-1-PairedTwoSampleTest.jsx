@@ -214,7 +214,6 @@ export default function PairedTwoSampleTest() {
         // Check if SVG element exists and has dimensions
         const svgNode = svg.node();
         if (!svgNode) {
-          console.error('[Scatter] SVG node not found');
           return;
         }
         
@@ -520,8 +519,6 @@ export default function PairedTwoSampleTest() {
         setScatterLoading(false);
         
       } catch (error) {
-        console.error('[Scatter] Error in visualization:', error);
-        console.error('[Scatter] Error stack:', error.stack);
         setScatterLoading(false);
       }
     }, 100); // Reduced delay for faster rendering
@@ -930,7 +927,7 @@ function ChallengeSection({ onNext }) {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -1397,7 +1394,7 @@ function TransformSection({ transformRef, animationPhase, setAnimationPhase, tra
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -1486,7 +1483,7 @@ function ResultsSection({ stats, showFinalResult, setShowFinalResult }) {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     

@@ -8,16 +8,14 @@ import { ProgressTracker } from '../../ui/ProgressTracker';
 import * as d3 from "@/utils/d3-utils";
 import { ProgressBar, ProgressNavigation } from '@/components/ui/ProgressBar';
 import { cn } from '../../../lib/utils';
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 import { tutorial_3_0_1 } from '@/tutorials/chapter3';
 import BackToHub from '../../ui/BackToHub';
 
 // Memoized LaTeX component to prevent re-rendering
 const LaTeXFormula = React.memo(function LaTeXFormula({ formula, isBlock = false }) {
-  const contentRef = useRef(null);
-  
-  // Use safe MathJax hook with error handling
-  useSafeMathJax(contentRef, [formula]);
+  // Use MathJax hook with error handling
+  const contentRef = useMathJax([formula]);
   
   if (isBlock) {
     return (
@@ -47,11 +45,8 @@ const BridgeToContinuous = () => {
   const [selectedRange, setSelectedRange] = useState({ start: -1, end: 1 });
   
   // Refs
-  const contentRef = useRef(null);
+  const contentRef = useMathJax([currentStep]);
   const sliderRef = useRef(null);
-  
-  // Use safe MathJax processing with error handling
-  useSafeMathJax(contentRef, [currentStep]);
   
   // Handle keyboard navigation
   const handleKeyDown = useCallback((e) => {

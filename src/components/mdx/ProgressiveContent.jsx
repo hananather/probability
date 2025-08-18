@@ -121,7 +121,6 @@ export function ProgressiveContent({ children, progressKey, onAnalytics, metadat
             setQuizCompletions(progressData.quizCompletions);
           }
           
-          console.log(`Progress restored for ${storageKey}:`, progressData);
         }
       }
     } catch (error) {
@@ -156,7 +155,6 @@ export function ProgressiveContent({ children, progressKey, onAnalytics, metadat
         // Convert to JSON and save to localStorage
         localStorage.setItem(storageKey, JSON.stringify(progressData));
         
-        console.log(`Progress saved for ${storageKey}:`, progressData);
       }
     } catch (error) {
       // localStorage might be full or disabled
@@ -312,7 +310,6 @@ export function ProgressiveContent({ children, progressKey, onAnalytics, metadat
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
         localStorage.removeItem(storageKey);
-        console.log(`Progress reset for ${storageKey}`);
       }
     } catch (error) {
       console.warn('Failed to clear progress from localStorage:', error);

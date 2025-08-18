@@ -71,7 +71,6 @@ export const SafeMathExpression = ({
     const result = calculation();
     return formatResult(result);
   } catch (error) {
-    console.warn('Safe math expression error:', error);
     return fallbackValue;
   }
 };

@@ -161,8 +161,8 @@ const LeastSquaresSlopeBuilder = React.memo(() => {
               </p>
               <ul className="text-xs text-neutral-400 space-y-1">
                 <li>• If sᵧ = sₓ, then slope = correlation</li>
-                <li>• If y is more spread out than x, slope > |r|</li>
-                <li>• If x is more spread out than y, slope < |r|</li>
+                <li>• If y is more spread out than x, slope &gt; |r|</li>
+                <li>• If x is more spread out than y, slope &lt; |r|</li>
                 <li>• The sign of slope always matches the sign of r</li>
               </ul>
             </div>

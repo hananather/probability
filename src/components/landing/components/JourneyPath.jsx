@@ -115,7 +115,7 @@ const JourneyPath = React.memo(({ currentSection, scrollProgress = 0 }) => {
             .transition()
             .duration(200)
             .attr('r', 10)
-            .attr('stroke-width', 3);
+            .attr('stroke-width', 4);
             
           d3.select(this).select('.milestone-dot')
             .transition()
@@ -132,7 +132,7 @@ const JourneyPath = React.memo(({ currentSection, scrollProgress = 0 }) => {
             .transition()
             .duration(200)
             .attr('r', index === currentSection ? 9 : 8)
-            .attr('stroke-width', 2);
+            .attr('stroke-width', 3);
             
           d3.select(this).select('.milestone-dot')
             .transition()
@@ -149,8 +149,8 @@ const JourneyPath = React.memo(({ currentSection, scrollProgress = 0 }) => {
           const chapterIndex = pathData.indexOf(d);
           return chapters[chapterIndex] ? chapters[chapterIndex].color : '#525252';
         })
-        .attr('stroke-width', 2)
-        .attr('stroke-opacity', 0)
+        .attr('stroke-width', 3)  // Thicker border for better visibility
+        .attr('stroke-opacity', 0.8)  // Make colors more visible
         .style('transition', 'all 0.3s ease');
       
       // Inner dot
@@ -209,9 +209,9 @@ const JourneyPath = React.memo(({ currentSection, scrollProgress = 0 }) => {
       })
       .attr('stroke-opacity', (d, idx) => {
         const milestoneIndex = pathData.indexOf(d);
-        if (milestoneIndex === activeIndex) return 0.8;
-        if (milestoneIndex < activeIndex) return 0.3;
-        return 0.1;
+        if (milestoneIndex === activeIndex) return 1;     // Full opacity for active
+        if (milestoneIndex < activeIndex) return 0.7;     // Good visibility for visited
+        return 0.5;  // Still visible for upcoming chapters
       })
       .attr('r', (d, idx) => {
         const milestoneIndex = pathData.indexOf(d);

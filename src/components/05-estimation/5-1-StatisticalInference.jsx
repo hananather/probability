@@ -45,7 +45,7 @@ const LearningPathNavigation = React.memo(function LearningPathNavigation({ mode
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -116,7 +116,7 @@ const BayesianInferenceIntro = React.memo(function BayesianInferenceIntro({ isAc
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     processMathJax();
@@ -285,7 +285,7 @@ const StatisticalInferenceIntroduction = React.memo(function StatisticalInferenc
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     processMathJax();
@@ -474,7 +474,7 @@ const EstimatorProperties = React.memo(function EstimatorProperties() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     processMathJax();
@@ -637,7 +637,7 @@ const MathematicalFoundations = React.memo(function MathematicalFoundations() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     processMathJax();
@@ -1257,7 +1257,7 @@ const CentralLimitTheoremDemo = React.memo(({ isActive }) => {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     processMathJax();
@@ -1583,7 +1583,7 @@ const BaseballHeights = React.memo(function BaseballHeights({ isActive }) {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     processMathJax();
@@ -1765,7 +1765,7 @@ const VisualFormulaCard = React.memo(function VisualFormulaCard({ type, values }
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     processMathJax();
@@ -1871,7 +1871,7 @@ const InteractiveCalculator = () => {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     processMathJax();
@@ -2148,7 +2148,7 @@ const PracticeProblems = React.memo(function PracticeProblems() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     processMathJax();

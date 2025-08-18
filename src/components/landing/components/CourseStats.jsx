@@ -12,22 +12,22 @@ const CourseStats = React.memo(() => {
   
   const stats = [
     { 
-      value: '8', 
+      value: '7', 
       label: 'Chapters',
       icon: BookOpen,
       color: 'text-teal-400',
       bgColor: 'bg-teal-900/20',
       description: `${overallStats?.completedChapters || 0} completed`,
-      targetValue: 8
+      targetValue: 7
     },
     { 
-      value: '122', 
+      value: '147', 
       label: 'Interactive Widgets',
       icon: Activity,
       color: 'text-blue-400',
       bgColor: 'bg-blue-900/20',
       description: 'Hands-on learning',
-      targetValue: 122
+      targetValue: 147
     },
     { 
       value: '400+', 
@@ -84,8 +84,8 @@ const CourseStats = React.memo(() => {
       currentStep++;
       
       setCounters({
-        chapters: Math.floor((8 * currentStep) / steps),
-        widgets: Math.floor((122 * currentStep) / steps),
+        chapters: Math.floor((7 * currentStep) / steps),
+        widgets: Math.floor((147 * currentStep) / steps),
         exercises: Math.floor((400 * currentStep) / steps),
         hours: Math.floor((24 * currentStep) / steps)
       });
@@ -93,8 +93,8 @@ const CourseStats = React.memo(() => {
       if (currentStep >= steps) {
         clearInterval(timer);
         setCounters({
-          chapters: 8,
-          widgets: 122,
+          chapters: 7,
+          widgets: 147,
           exercises: 400,
           hours: 24
         });
@@ -125,7 +125,15 @@ const CourseStats = React.memo(() => {
         <dl className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {stats.map((stat, index) => {
             const Icon = stat.icon;
-            const counterKey = stat.label.toLowerCase().split(' ')[0];
+            // Special handling for "Interactive Widgets" to map to "widgets" counter
+            let counterKey;
+            if (stat.label === 'Interactive Widgets') {
+              counterKey = 'widgets';
+            } else if (stat.label === 'Hours of Content') {
+              counterKey = 'hours';
+            } else {
+              counterKey = stat.label.toLowerCase().split(' ')[0];
+            }
             const currentValue = counters[counterKey] || 0;
             
             return (
@@ -177,7 +185,7 @@ const CourseStats = React.memo(() => {
                         <div 
                           className="h-full bg-teal-500 transition-all duration-1000"
                           style={{ 
-                            width: `${(overallStats.completedChapters / 8) * 100}%`,
+                            width: `${(overallStats.completedChapters / 7) * 100}%`,
                             transitionDelay: '1s'
                           }}
                         />

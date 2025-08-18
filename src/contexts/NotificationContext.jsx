@@ -274,7 +274,6 @@ export function showErrorNotification(error, options = {}) {
   
   // Fallback to console in development if context not available
   if (process.env.NODE_ENV === 'development') {
-    console.error('Notification context not available:', error);
   }
   
   return null;

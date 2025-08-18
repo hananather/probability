@@ -76,7 +76,7 @@ const FoundationsContent = React.memo(function FoundationsContent() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -223,7 +223,7 @@ const WorkedExamplesContent = React.memo(function WorkedExamplesContent() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -308,7 +308,7 @@ const QuickReferenceContent = React.memo(function QuickReferenceContent() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     

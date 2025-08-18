@@ -78,7 +78,7 @@ const ExponentialDistributionBuilder = React.memo(() => {
               onClick={() => handlePartClick('exponentialDecay')}
             >
               <span dangerouslySetInnerHTML={{ 
-                __html: `e^{-\\lambda x}` 
+                __html: `\\(e^{-\\lambda x}\\)` 
               }} />
             </div>
           </div>
@@ -119,7 +119,7 @@ const ExponentialDistributionBuilder = React.memo(() => {
               onClick={() => handlePartClick('exponentialDecay')}
             >
               <span dangerouslySetInnerHTML={{ 
-                __html: `e^{-\\lambda x}` 
+                __html: `\\(e^{-\\lambda x}\\)` 
               }} />
             </div>
           </div>

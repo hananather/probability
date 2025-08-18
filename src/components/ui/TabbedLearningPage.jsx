@@ -84,7 +84,6 @@ function useTabProgress(storageKey) {
 // Component wrapper to standardize interfaces
 const ComponentWrapper = ({ component: Component, tabId, onComplete, isActive }) => {
   const handleComplete = () => {
-    console.log(`${tabId} section completed!`);
     if (onComplete) {
       onComplete(tabId);
     }

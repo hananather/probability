@@ -10,7 +10,7 @@ import {
 import { colors, typography, cn, createColorScheme } from '../../../lib/design-system';
 import { Button } from '../../ui/button';
 import { Play, RotateCcw, BarChart3 } from 'lucide-react';
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 import { tutorial_1_7_3 } from '@/tutorials/chapter1';
 import MathErrorBoundary from '@/components/ui/error-handling/MathErrorBoundary';
 

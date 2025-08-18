@@ -53,7 +53,7 @@ const FoundationsSection = React.memo(function FoundationsSection() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -143,7 +143,7 @@ const MeanSection = React.memo(function MeanSection() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -350,7 +350,7 @@ const MedianSection = React.memo(function MedianSection() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -550,7 +550,7 @@ const ModeSection = React.memo(function ModeSection() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -732,7 +732,7 @@ const ComparisonSection = React.memo(function ComparisonSection() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -961,7 +961,7 @@ const OtherMeansSection = React.memo(function OtherMeansSection() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -1062,7 +1062,7 @@ const PropertiesSection = React.memo(function PropertiesSection() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -1251,7 +1251,7 @@ const FocusedContent = React.memo(function FocusedContent({ section }) {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     

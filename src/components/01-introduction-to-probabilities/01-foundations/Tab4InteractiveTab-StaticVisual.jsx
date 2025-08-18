@@ -4,7 +4,7 @@ import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { SemanticGradientCard, SemanticGradientGrid } from '@/components/ui/patterns/SemanticGradientCard';
 import { SimpleInsightBox } from '@/components/ui/patterns/SimpleComponents';
-import { useSafeMathJax } from '@/utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 import SharedNavigation from '../shared/SharedNavigation';
 
 // Pebble Component - Simple circle with color and size
@@ -77,7 +77,7 @@ const ProbabilityDisplay = ({ title, probability, count, total, color, theme = '
 // Equal Mass Scenario Component
 const EqualMassScenario = () => {
   const contentRef = useRef(null);
-  useSafeMathJax(contentRef);
+  useMathJax(contentRef);
   
   const [selectedPebble, setSelectedPebble] = useState(null);
   const [results, setResults] = useState({ red: 0, blue: 0, green: 0, total: 0 });
@@ -236,7 +236,7 @@ const EqualMassScenario = () => {
 // Unequal Mass Scenario Component  
 const UnequalMassScenario = () => {
   const contentRef = useRef(null);
-  useSafeMathJax(contentRef);
+  useMathJax(contentRef);
   
   const [selectedPebble, setSelectedPebble] = useState(null);
   const [results, setResults] = useState({ red: 0, blue: 0, green: 0, total: 0 });
@@ -405,7 +405,7 @@ const UnequalMassScenario = () => {
 // Conceptual Understanding Section
 const ConceptualSection = () => {
   const contentRef = useRef(null);
-  useSafeMathJax(contentRef);
+  useMathJax(contentRef);
 
   return (
     <div ref={contentRef} className="space-y-6">

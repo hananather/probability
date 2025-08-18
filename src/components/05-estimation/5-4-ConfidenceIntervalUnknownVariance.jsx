@@ -113,7 +113,7 @@ const LearningPathNavigation = React.memo(function LearningPathNavigation({ mode
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     

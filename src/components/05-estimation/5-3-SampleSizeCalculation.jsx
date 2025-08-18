@@ -96,7 +96,7 @@ const LearningPathNavigation = React.memo(function LearningPathNavigation({ mode
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -254,7 +254,7 @@ const MathematicalFoundation = React.memo(function MathematicalFoundation() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -872,7 +872,7 @@ const QuickReferenceCard = React.memo(function QuickReferenceCard() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -1075,7 +1075,7 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -1323,7 +1323,7 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems({ onComple
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -1982,7 +1982,7 @@ const MathematicalFramework = React.memo(function MathematicalFramework() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -2046,7 +2046,7 @@ const LiveCalculations = React.memo(function LiveCalculations({ scenario, optima
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -2758,7 +2758,6 @@ const StageContent = React.memo(function StageContent({
           window.MathJax.typesetClear([contentRef.current]);
         }
         window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          console.error('MathJax error:', err);
         });
       }
     };

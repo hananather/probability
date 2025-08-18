@@ -94,7 +94,7 @@ const IntervalsIntroduction = React.memo(function IntervalsIntroduction() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -142,7 +142,7 @@ const MathematicalFramework = React.memo(function MathematicalFramework() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -222,7 +222,7 @@ const WorkedExample = React.memo(function WorkedExample({ data, regressionResult
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -328,7 +328,7 @@ const ComparisonTable = React.memo(function ComparisonTable() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([tableRef.current]);
         }
-        window.MathJax.typesetPromise([tableRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([tableRef.current]).catch(() => {});
       }
     };
     

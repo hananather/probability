@@ -25,7 +25,6 @@ export const safeMathJaxProcess = async (element, options = {}) => {
     }
     
     if (!silent && process.env.NODE_ENV === 'development') {
-      console.warn(error.message);
     }
     return { success: false, error };
   }
@@ -39,7 +38,6 @@ export const safeMathJaxProcess = async (element, options = {}) => {
     }
     
     if (!silent && process.env.NODE_ENV === 'development') {
-      console.warn(error.message);
     }
     return { success: false, error };
   }
@@ -148,7 +146,6 @@ export const processMathJaxWithRetry = (element, dependencies = []) => {
           finalError.originalError = err;
           
           if (process.env.NODE_ENV === 'development') {
-            console.warn(finalError.message);
           }
         }
         scheduleRetry();
@@ -269,7 +266,6 @@ export const useEnhancedMathJax = (dependencies = [], options = {}) => {
             finalError.originalError = err;
             
             if (process.env.NODE_ENV === 'development') {
-              console.warn(finalError.message);
             }
           } else {
             scheduleRetry();
@@ -408,7 +404,6 @@ export const useSafeMathJax = (ref, dependencies = [], options = {}) => {
         hookError.originalError = error;
         
         if (process.env.NODE_ENV === 'development') {
-          console.warn(hookError.message);
         }
       }
     };

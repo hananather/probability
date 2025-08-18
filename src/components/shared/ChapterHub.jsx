@@ -47,7 +47,6 @@ function useProgress(storageKey) {
           setDevMode(true);
         }
       } catch (error) {
-        console.error('Error loading progress data:', error);
       } finally {
         setIsLoading(false);
       }
@@ -62,7 +61,6 @@ function useProgress(storageKey) {
       try {
         localStorage.setItem(storageKey, JSON.stringify(data));
       } catch (error) {
-        console.error('Error saving progress:', error);
       }
     }, 1000),
     [storageKey]

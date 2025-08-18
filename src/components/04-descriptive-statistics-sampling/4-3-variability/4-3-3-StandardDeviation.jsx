@@ -40,7 +40,7 @@ const StandardDeviation = () => {
     if (typeof window !== "undefined" && window.MathJax?.typesetPromise) {
       const refs = [mathRef.current, bellRef.current].filter(Boolean);
       if (refs.length > 0) {
-        window.MathJax.typesetPromise(refs).catch(console.error);
+        window.MathJax.typesetPromise(refs).catch(() => {});
       }
     }
   }, [showEmpiricalRule, showWorkedExample, showInterpretation]);

@@ -7,7 +7,6 @@ import { AlertCircle } from 'lucide-react';
 
 export default function Error({ error, reset }) {
   useEffect(() => {
-    console.error(error);
   }, [error]);
 
   return (

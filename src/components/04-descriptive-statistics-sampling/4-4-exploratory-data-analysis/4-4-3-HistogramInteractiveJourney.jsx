@@ -94,7 +94,6 @@ const HistogramInteractiveJourney = () => {
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
-    console.log('HistogramInteractiveJourney - dimensions:', { width, height });
     
     // Clear previous content
     svg.selectAll("*").remove();

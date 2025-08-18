@@ -31,7 +31,7 @@ export function ComparisonTable({
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([tableRef.current]);
         }
-        window.MathJax.typesetPromise([tableRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([tableRef.current]).catch(() => {});
       }
     };
     
@@ -160,7 +160,7 @@ export function SimpleComparisonTable({ title, data, headers, colors, className,
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([tableRef.current]);
         }
-        window.MathJax.typesetPromise([tableRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([tableRef.current]).catch(() => {});
       }
     };
     

@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef } from "react";
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 
 const NormalZScoreWorkedExample = React.memo(function NormalZScoreWorkedExample({ 
   mu = 100, 
@@ -12,7 +12,7 @@ const NormalZScoreWorkedExample = React.memo(function NormalZScoreWorkedExample(
   const contentRef = useRef(null);
   
   // Use safe MathJax processing with error handling
-  useSafeMathJax(contentRef, [mu, sigma, xValue, zScore, probability]);
+  useMathJax(contentRef, [mu, sigma, xValue, zScore, probability]);
   
   return (
     <div ref={contentRef} style={{

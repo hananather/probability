@@ -191,7 +191,11 @@
       "WebFetch(domain:www.probabilitycourse.com)",
       "WebFetch(domain:www.numberanalytics.com)",
       "Bash(timeout 30 npm run dev)",
-      "Bash(timeout 5s npm run dev:*)"
+      "Bash(timeout 5s npm run dev:*)",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -l \"\\.catch\\(console\\.error\\)\" /Users/hananather/Desktop/Javascript/prob-lab/src -g \"*.{js,jsx}\")",
+      "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg 'console\\.' /Users/hananather/Desktop/Javascript/prob-lab/src -g \"*.{js,jsx}\")",
+      "Bash(if grep -q \"useSafeMathJax\" \"$file\")",
+      "Bash(open http://localhost:3004/chapter7/formula-builder)"
     ],
     "deny": []
   },

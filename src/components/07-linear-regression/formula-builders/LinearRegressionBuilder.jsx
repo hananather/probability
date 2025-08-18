@@ -52,7 +52,7 @@ const LinearRegressionBuilder = React.memo(() => {
             onClick={() => handlePartClick('slope', 'slopeConcept')}
           >
             <span dangerouslySetInnerHTML={{ 
-              __html: `b_1` 
+              __html: `\(b_1\)` 
             }} />
           </div>
           
@@ -82,7 +82,7 @@ const LinearRegressionBuilder = React.memo(() => {
               onClick={() => handlePartClick('stdDevY', 'stdDevYConcept')}
             >
               <span dangerouslySetInnerHTML={{ 
-                __html: `s_y` 
+                __html: `\(s_y\)` 
               }} />
             </div>
             <span className="text-neutral-500">/</span>
@@ -94,7 +94,7 @@ const LinearRegressionBuilder = React.memo(() => {
               onClick={() => handlePartClick('stdDevX', 'stdDevXConcept')}
             >
               <span dangerouslySetInnerHTML={{ 
-                __html: `s_x` 
+                __html: `\(s_x\)` 
               }} />
             </div>
             <span className="text-neutral-500">)</span>

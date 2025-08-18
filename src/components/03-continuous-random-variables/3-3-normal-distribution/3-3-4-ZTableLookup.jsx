@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 import { createColorScheme, typography } from "../../../lib/design-system";
 import { 
   ArrowRight, Calculator, BookOpen, 
@@ -50,7 +50,7 @@ const ZTableLookup = () => {
   const [showReferenceSheet, setShowReferenceSheet] = useState(false);
   
   // Use safe MathJax processing with error handling
-  useSafeMathJax(contentRef, [learningStage]);
+  useMathJax(contentRef, [learningStage]);
   
   // Tutorial steps
   const tutorialSteps = [

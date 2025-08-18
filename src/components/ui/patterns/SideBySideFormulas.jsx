@@ -34,7 +34,7 @@ export function SideBySideFormulas({
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([mathRef.current]);
         }
-        window.MathJax.typesetPromise([mathRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([mathRef.current]).catch(() => {});
       }
     };
     
@@ -190,7 +190,7 @@ export function StaticFormulaGrid({ title, formulas, theme = 'purple', className
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([mathRef.current]);
         }
-        window.MathJax.typesetPromise([mathRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([mathRef.current]).catch(() => {});
       }
     };
     

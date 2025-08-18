@@ -4,7 +4,7 @@ import * as d3 from "@/utils/d3-utils";
 import jStat from "jstat";
 import { cn } from "../../../lib/utils";
 import { RangeSlider } from "../../ui/RangeSlider";
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 import { colors, typography, components, formatNumber } from '../../../lib/design-system';
 import { VisualizationContainer, ControlGroup } from '../../ui/VisualizationContainer';
 import { SemanticGradientCard } from '../../ui/patterns/SemanticGradientCard';
@@ -319,7 +319,7 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
   }, [n, p, k, mu, sigma, showCC, highlightedConcept, distributionData]);
   
   // Use safe MathJax processing with error handling
-  useSafeMathJax(contentRef, [n, p, k, mu, sigma, probType, showCC, currentStep]);
+  useMathJax(contentRef, [n, p, k, mu, sigma, probType, showCC, currentStep]);
   
   // Get dynamic insight based on current state
   const getDynamicInsight = () => {
@@ -375,7 +375,7 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
     const stepRef = useRef(null);
     
     // Use safe MathJax processing with error handling
-    useSafeMathJax(stepRef, [n, p, mu, variance, sigma]);
+    useMathJax(stepRef, [n, p, mu, variance, sigma]);
     
     return (
       <div ref={stepRef} className="space-y-3">
@@ -411,7 +411,7 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
     const stepRef = useRef(null);
     
     // Use safe MathJax processing with error handling
-    useSafeMathJax(stepRef, [probType, showCC, k, mu, sigma]);
+    useMathJax(stepRef, [probType, showCC, k, mu, sigma]);
     
     return (
       <div ref={stepRef}>

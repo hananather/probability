@@ -238,7 +238,6 @@ export function parseSetExpression(expression) {
   } catch (error) {
     // Only log parse errors in development mode
     if (process.env.NODE_ENV === 'development') {
-      console.error('Set expression parse error:', error.message);
     }
     return null;
   }

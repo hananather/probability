@@ -345,7 +345,6 @@ export default function VennDiagramSection() {
     } catch (error) {
       // Only log parsing errors in development mode
       if (process.env.NODE_ENV === 'development') {
-        console.error('Error parsing set expression:', error);
       }
       setHighlightedRegions([]);
     }

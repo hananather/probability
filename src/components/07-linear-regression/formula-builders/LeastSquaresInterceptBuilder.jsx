@@ -191,8 +191,8 @@ const LeastSquaresInterceptBuilder = React.memo(() => {
                 <strong>Visual understanding:</strong>
               </p>
               <ul className="text-xs text-neutral-400 space-y-1">
-                <li>• If x̄ > 0 and slope > 0: intercept < ȳ (line rises from left)</li>
-                <li>• If x̄ > 0 and slope < 0: intercept > ȳ (line falls from left)</li>
+                <li>• If x̄ &gt; 0 and slope &gt; 0: intercept &lt; ȳ (line rises from left)</li>
+                <li>• If x̄ &gt; 0 and slope &lt; 0: intercept &gt; ȳ (line falls from left)</li>
                 <li>• If x̄ = 0: intercept = ȳ (data centered at origin)</li>
               </ul>
             </div>

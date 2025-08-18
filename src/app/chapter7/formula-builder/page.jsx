@@ -1,4 +1,4 @@
-import Chapter7FormulaHub from '@/components/07-regression-correlation/formula-builders/Chapter7FormulaHub';
+import Chapter7FormulaHub from '@/components/07-linear-regression/formula-builders/Chapter7FormulaHub';
 
 export const metadata = {
   title: 'Chapter 7 Interactive Formula Builder | Probability Lab',

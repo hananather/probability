@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef } from "react";
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 
 const IntegralWorkedExample = React.memo(function IntegralWorkedExample({
   distName = "Normal",
@@ -42,7 +42,7 @@ const IntegralWorkedExample = React.memo(function IntegralWorkedExample({
   const contentRef = useRef(null);
 
   // Use safe MathJax processing with error handling
-  useSafeMathJax(contentRef, [distName, params, intervalA, intervalB, probValue, pdfFormula, cdfAValue, cdfBValue]);
+  useMathJax(contentRef, [distName, params, intervalA, intervalB, probValue, pdfFormula, cdfAValue, cdfBValue]);
 
   return (
     <div

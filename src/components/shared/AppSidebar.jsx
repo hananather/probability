@@ -195,7 +195,6 @@ function AppSidebarInner() {
                         const sectionId = getSectionId(section.component);
                         href = `${chapter.path}?section=${sectionId}`;
                         if (chapter.path === '/chapter3') {
-                          console.log(`Sidebar - Chapter 3 link: ${section.title} → ${href}`);
                         }
                       } else {
                         href = chapter.path;

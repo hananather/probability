@@ -193,7 +193,7 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([mathRef.current]);
         }
-        window.MathJax.typesetPromise([mathRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([mathRef.current]).catch(() => {});
       }
     };
     

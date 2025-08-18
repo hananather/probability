@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { Card } from '../../ui/card';
 import { Button } from '../../ui/button';
 import { VisualizationContainer } from '../../ui/VisualizationContainer';
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 import BackToHub from '../../ui/BackToHub';
 
 // Dynamically import Plotly to avoid SSR issues
@@ -16,8 +16,7 @@ const Plot = dynamic(() => import('react-plotly.js'), {
 
 // LaTeX formula component following existing patterns
 const LaTeXFormula = React.memo(function LaTeXFormula({ formula, isBlock = false }) {
-  const contentRef = useRef(null);
-  useSafeMathJax(contentRef, [formula]);
+  const contentRef = useMathJax([formula]);
   
   if (isBlock) {
     return (
@@ -48,7 +47,7 @@ const JointDistribution3D = () => {
   const contentRef = useRef(null);
   
   // Use safe MathJax processing
-  useSafeMathJax(contentRef, [distribution, correlation, lambda1, lambda2]);
+  useMathJax(contentRef, [distribution, correlation, lambda1, lambda2]);
 
   // Handle keyboard navigation for region adjustment
   const handleKeyDown = useCallback((e) => {

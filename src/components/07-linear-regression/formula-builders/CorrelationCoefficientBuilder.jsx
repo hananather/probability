@@ -150,8 +150,8 @@ const CorrelationCoefficientBuilder = React.memo(() => {
             <li>• <strong>r = +1:</strong> Perfect positive linear relationship</li>
             <li>• <strong>r = -1:</strong> Perfect negative linear relationship</li>
             <li>• <strong>r = 0:</strong> No linear relationship</li>
-            <li>• <strong>|r| > 0.7:</strong> Strong linear relationship</li>
-            <li>• <strong>|r| < 0.3:</strong> Weak linear relationship</li>
+            <li>• <strong>|r| &gt; 0.7:</strong> Strong linear relationship</li>
+            <li>• <strong>|r| &lt; 0.3:</strong> Weak linear relationship</li>
           </ul>
         </div>
       )}

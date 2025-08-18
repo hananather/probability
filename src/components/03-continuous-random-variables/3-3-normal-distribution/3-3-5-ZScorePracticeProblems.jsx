@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import { createColorScheme, typography } from "../../../lib/design-system";
 import { Button } from "../../ui/button";
@@ -15,7 +15,7 @@ const ProblemTypeButton = React.memo(({ type, isSelected, onClick }) => {
   const buttonRef = useRef(null);
   
   // Use safe MathJax processing with error handling
-  useSafeMathJax(buttonRef, []);
+  useMathJax(buttonRef, []);
   
   return (
     <button
@@ -38,7 +38,7 @@ const QuickReference = React.memo(() => {
   const contentRef = useRef(null);
   
   // Use safe MathJax processing with error handling
-  useSafeMathJax(contentRef, []);
+  useMathJax(contentRef, []);
   
   return (
     <div ref={contentRef} className="mt-6 grid grid-cols-2 gap-4">
@@ -252,7 +252,7 @@ const ZScorePracticeProblems = () => {
     const contentRef = useRef(null);
     
     // Use safe MathJax processing with error handling
-    useSafeMathJax(contentRef, [question]);
+    useMathJax(contentRef, [question]);
     
     return (
       <div ref={contentRef} className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
@@ -270,7 +270,7 @@ const ZScorePracticeProblems = () => {
     const contentRef = useRef(null);
     
     // Use safe MathJax processing with error handling
-    useSafeMathJax(contentRef, [hint]);
+    useMathJax(contentRef, [hint]);
     
     return (
       <div ref={contentRef} className="mt-3 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
@@ -284,7 +284,7 @@ const ZScorePracticeProblems = () => {
     const contentRef = useRef(null);
     
     // Use safe MathJax processing with error handling
-    useSafeMathJax(contentRef, [solution]);
+    useMathJax(contentRef, [solution]);
     
     return (
       <div ref={contentRef} className="pt-3 border-t border-gray-700">

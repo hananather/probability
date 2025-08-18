@@ -11,7 +11,7 @@ import { colors, typography, components, formatNumber, cn, createColorScheme } f
 import { Button } from '../../ui/button';
 import { ProgressBar } from '../../ui/ProgressBar';
 import { Car, DoorOpen, X, RotateCcw, Play, Pause } from 'lucide-react';
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 import { tutorial_1_7_1 } from '@/tutorials/chapter1';
 
 // Use probability color scheme
@@ -24,8 +24,7 @@ const ANIMATION_CONSTANTS = {
 
 // LaTeX content wrapper
 const LatexContent = memo(function LatexContent({ children }) {
-  const contentRef = useRef(null);
-  useSafeMathJax(contentRef, [children]);
+  const contentRef = useMathJax([children]);
   return <span ref={contentRef}>{children}</span>;
 });
 

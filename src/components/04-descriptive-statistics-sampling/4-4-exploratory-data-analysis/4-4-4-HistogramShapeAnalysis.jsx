@@ -207,7 +207,6 @@ const HistogramShapeAnalysis = () => {
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
-    console.log('HistogramShapeAnalysis - dimensions:', { width, height });
     
     // Clear previous
     svg.selectAll("*").remove();

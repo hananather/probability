@@ -26,7 +26,7 @@ const CorrelationIntroduction = React.memo(function CorrelationIntroduction() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -65,7 +65,7 @@ const MathematicalFramework = React.memo(function MathematicalFramework() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -133,7 +133,7 @@ const MathematicalProperties = React.memo(function MathematicalProperties() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -222,7 +222,7 @@ const RelationshipToRegression = React.memo(function RelationshipToRegression({ 
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -408,7 +408,7 @@ const WorkedExample = React.memo(function WorkedExample() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -602,7 +602,7 @@ const StatisticalSignificance = React.memo(function StatisticalSignificance({ co
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -720,7 +720,7 @@ const EnhancedFormulaDisplay = React.memo(function EnhancedFormulaDisplay() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -1085,7 +1085,7 @@ const KeyInsights = () => {
           if (window.MathJax.typesetClear) {
             window.MathJax.typesetClear([contentRef.current]);
           }
-          window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+          window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
         }
       };
       

@@ -373,7 +373,7 @@ const FunctionTransformations = () => {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([statsRef.current]);
         }
-        window.MathJax.typesetPromise([statsRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([statsRef.current]).catch(() => {});
       }
     };
     
@@ -645,7 +645,7 @@ const FunctionTransformations = () => {
               </p>
               {functionType === 'square' && (
                 <p className="text-xs text-neutral-500 mt-2">
-                  <span dangerouslySetInnerHTML={{ __html: `g(E[X]) = (${stats.original.mean.toFixed(2)})^2 = ${(stats.original.mean ** 2).toFixed(3)}` }} />
+                  <span dangerouslySetInnerHTML={{ __html: `\\(g(E[X]) = (${stats.original.mean.toFixed(2)})^2 = ${(stats.original.mean ** 2).toFixed(3)}\\)` }} />
                 </p>
               )}
             </div>
@@ -657,7 +657,7 @@ const FunctionTransformations = () => {
             <div className="text-xs text-neutral-300 space-y-1">
               {functionType === 'square' && (
                 <>
-                  <p>• <span dangerouslySetInnerHTML={{ __html: `The square function maps negative values to positive, creating symmetry` }} /></p>                  <p>• <span dangerouslySetInnerHTML={{ __html: `Multiple X values can map to the same Y value (e.g., \(X = -2\) and \(X = 2\) both map to \(Y = 4\))` }} /></p>                  <p>• <span dangerouslySetInnerHTML={{ __html: `\(\text{Var}(X^2) \neq [\text{Var}(X)]^2\)` }} /></p>
+                  <p>• <span dangerouslySetInnerHTML={{ __html: `The square function maps negative values to positive, creating symmetry` }} /></p>                  <p>• <span dangerouslySetInnerHTML={{ __html: `Multiple X values can map to the same Y value (e.g., \\(X = -2\\) and \\(X = 2\\) both map to \\(Y = 4\\))` }} /></p>                  <p>• <span dangerouslySetInnerHTML={{ __html: `\\(\\text{Var}(X^2) \\neq [\\text{Var}(X)]^2\\)` }} /></p>
                 </>
               )}
               {functionType === 'abs' && (

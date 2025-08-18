@@ -29,7 +29,6 @@ export function useProgress(userId = 'local') {
         setProgress(data);
       } catch (err) {
         setError(err.message);
-        console.error('Failed to load progress:', err);
       } finally {
         setLoading(false);
       }
@@ -46,7 +45,6 @@ export function useProgress(userId = 'local') {
       return updated;
     } catch (err) {
       setError(err.message);
-      console.error('Failed to update progress:', err);
       return null;
     }
   }, [userId]);
@@ -59,7 +57,6 @@ export function useProgress(userId = 'local') {
       return updated;
     } catch (err) {
       setError(err.message);
-      console.error('Failed to complete section:', err);
       return null;
     }
   }, [userId]);
@@ -100,7 +97,6 @@ export function useProgress(userId = 'local') {
       return true;
     } catch (err) {
       setError(err.message);
-      console.error('Failed to reset chapter:', err);
       return false;
     }
   }, [userId]);
@@ -113,7 +109,6 @@ export function useProgress(userId = 'local') {
       return true;
     } catch (err) {
       setError(err.message);
-      console.error('Failed to reset all progress:', err);
       return false;
     }
   }, [userId]);
@@ -132,7 +127,6 @@ export function useProgress(userId = 'local') {
       return true;
     } catch (err) {
       setError(err.message);
-      console.error('Failed to export progress:', err);
       return false;
     }
   }, [userId]);
@@ -150,7 +144,6 @@ export function useProgress(userId = 'local') {
       return success;
     } catch (err) {
       setError(err.message);
-      console.error('Failed to import progress:', err);
       return false;
     }
   }, [userId]);
@@ -167,7 +160,6 @@ export function useProgress(userId = 'local') {
       return success;
     } catch (err) {
       setError(err.message);
-      console.error('Failed to sync progress:', err);
       return false;
     } finally {
       setSyncing(false);

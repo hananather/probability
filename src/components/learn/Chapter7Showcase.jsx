@@ -37,7 +37,7 @@ const useMathJax = (dependencies = []) => {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([ref.current]);
         }
-        window.MathJax.typesetPromise([ref.current]).catch(console.error);
+        window.MathJax.typesetPromise([ref.current]).catch(() => {});
       }
     };
     

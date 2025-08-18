@@ -84,7 +84,7 @@ const FormulaSection = React.memo(function FormulaSection() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([formulaRef.current]);
         }
-        window.MathJax.typesetPromise([formulaRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([formulaRef.current]).catch(() => {});
       }
     };
     
@@ -131,7 +131,7 @@ const CIIntroduction = React.memo(function CIIntroduction({ mode, onModeChange }
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -529,7 +529,7 @@ const CalculationSteps = React.memo(function CalculationSteps({ sigma, n, xBar, 
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -600,7 +600,7 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -881,7 +881,7 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -1202,7 +1202,7 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -1338,7 +1338,7 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     
@@ -1801,7 +1801,7 @@ const RealWorldInterpretationModule = React.memo(function RealWorldInterpretatio
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     

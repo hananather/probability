@@ -47,7 +47,7 @@ const VarianceIntroduction = () => {
   // Process MathJax
   useEffect(() => {
     if (typeof window !== "undefined" && window.MathJax?.typesetPromise && mathRef.current) {
-      window.MathJax.typesetPromise([mathRef.current]).catch(console.error);
+      window.MathJax.typesetPromise([mathRef.current]).catch(() => {});
     }
   }, [stage, showSquared, showAverage, showWorkedExample]);
 

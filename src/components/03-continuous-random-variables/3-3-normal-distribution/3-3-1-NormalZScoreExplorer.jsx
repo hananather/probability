@@ -11,7 +11,7 @@ import { colors, typography, formatNumber, cn, createColorScheme } from '../../.
 import { RangeSlider } from '../../ui/RangeSlider';
 import { RotateCcw } from "lucide-react";
 import * as jStat from "jstat";
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 import { tutorial_3_3_1 } from '@/tutorials/chapter3';
 import BackToHub from '../../ui/BackToHub';
 // Removed Chapter3ReferenceSheet import - handled at page level
@@ -21,7 +21,7 @@ const LatexContent = memo(function LatexContent({ children }) {
   const contentRef = useRef(null);
   
   // Use safe MathJax processing with error handling
-  useSafeMathJax(contentRef, [children]);
+  useMathJax(contentRef, [children]);
   
   return <span ref={contentRef}>{children}</span>;
 });

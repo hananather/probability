@@ -6,13 +6,13 @@ import { StepByStepCalculation, CalculationStep, FormulaDisplay } from '@/compon
 import { ComparisonTable } from '@/components/ui/patterns/ComparisonTable';
 import { InterpretationBox } from '@/components/ui/patterns/InterpretationBox';
 import { SimpleInsightBox } from '@/components/ui/patterns/SimpleComponents';
-import { useSafeMathJax } from '@/utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Visual Symbol Introduction
 const VisualSymbolsSection = () => {
   const contentRef = useRef(null);
-  useSafeMathJax(contentRef);
+  useMathJax(contentRef);
   
   return (
     <div ref={contentRef} className="space-y-6">
@@ -143,7 +143,7 @@ const VisualSymbolsSection = () => {
 // Pattern Recognition Section
 const PatternRecognitionSection = () => {
   const contentRef = useRef(null);
-  useSafeMathJax(contentRef);
+  useMathJax(contentRef);
   
   const patterns = [
     {
@@ -220,7 +220,7 @@ const BuildUpPracticeSection = () => {
   const [currentLevel, setCurrentLevel] = useState(0);
   const [answers, setAnswers] = useState({});
   const contentRef = useRef(null);
-  useSafeMathJax(contentRef);
+  useMathJax(contentRef);
   
   const levels = [
     {
@@ -399,7 +399,7 @@ const BuildUpPracticeSection = () => {
 // Real Context Practice
 const RealContextSection = () => {
   const contentRef = useRef(null);
-  useSafeMathJax(contentRef);
+  useMathJax(contentRef);
   const [selectedContext, setSelectedContext] = useState(0);
   
   const contexts = [

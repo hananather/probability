@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import * as d3 from "@/utils/d3-utils";
 import { createColorScheme, typography, cn } from "../../../lib/design-system";
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 import { jStat } from "jstat";
 import NormalApproxBinomialWorkedExample from "./3-7-2-NormalApproxBinomialWorkedExample";
 import { ProgressBar, ProgressNavigation } from "../../ui/ProgressBar";
@@ -135,7 +135,7 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
   }, [n, k]);
   
   // Use safe MathJax processing with error handling
-  useSafeMathJax(contentRef, [n, p, k, probType, showCC, stage]);
+  useMathJax(contentRef, [n, p, k, probType, showCC, stage]);
   
   // Calculate probabilities
   const calculateProbabilities = () => {

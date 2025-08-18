@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef } from "react";
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 import { cn } from '../../../lib/utils';
 
 const ExponentialDistributionWorkedExample = React.memo(function ExponentialDistributionWorkedExample({
@@ -19,7 +19,7 @@ const ExponentialDistributionWorkedExample = React.memo(function ExponentialDist
   const survivalProb = Math.exp(-lambda * t);
   
   // Use safe MathJax processing with error handling
-  useSafeMathJax(contentRef, [lambda, t]);
+  useMathJax(contentRef, [lambda, t]);
   
   return (
     <div

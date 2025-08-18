@@ -6,12 +6,11 @@ import { Button } from '../../ui/button';
 import { VisualizationContainer } from '../../ui/VisualizationContainer';
 import * as d3 from "@/utils/d3-utils";
 import { cn } from '../../../lib/utils';
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 
 // LaTeX formula component following existing patterns
 const LaTeXFormula = React.memo(function LaTeXFormula({ formula, isBlock = false }) {
-  const contentRef = useRef(null);
-  useSafeMathJax(contentRef, [formula]);
+  const contentRef = useMathJax([formula]);
   
   if (isBlock) {
     return (
@@ -41,7 +40,7 @@ const MarginalDistributionVisualizer = () => {
   const svgRef = useRef(null);
   
   // Use safe MathJax processing
-  useSafeMathJax(contentRef, [distribution, correlation, lambda1, lambda2]);
+  useMathJax(contentRef, [distribution, correlation, lambda1, lambda2]);
 
   // PDF calculation functions
   const bivariateNormalPDF = (x, y, rho) => {

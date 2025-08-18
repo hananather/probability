@@ -13,7 +13,7 @@ import { RangeSlider } from '../../ui/RangeSlider';
 import { ProgressBar, ProgressNavigation } from '@/components/ui/ProgressBar';
 import { Button } from '@/components/ui/button';
 import { jStat } from "jstat";
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 import { Info, TrendingUp, Calculator, BarChart3 } from 'lucide-react';
 import { tutorial_3_2_1 } from '@/tutorials/chapter3';
 import BackToHub from '../../ui/BackToHub';
@@ -23,7 +23,7 @@ const FormulaDisplay = React.memo(function FormulaDisplay({ formula, color = "te
   const contentRef = useRef(null);
   
   // Use safe MathJax processing with error handling
-  useSafeMathJax(contentRef, [formula]);
+  useMathJax(contentRef, [formula]);
   
   return (
     <div ref={contentRef} className={cn("text-sm", color, className)}>

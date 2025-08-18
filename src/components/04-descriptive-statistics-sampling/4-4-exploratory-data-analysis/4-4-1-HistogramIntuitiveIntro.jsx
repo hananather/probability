@@ -86,7 +86,6 @@ const HistogramIntuitiveIntro = () => {
     const width = rect.width || 800;
     const height = rect.height || 500;
     
-    console.log('Stage 1 - SVG dimensions:', { width, height });
     
     // Clear previous content
     svg.selectAll("*").remove();
@@ -194,7 +193,6 @@ const HistogramIntuitiveIntro = () => {
     const width = rect.width || 800;
     const height = rect.height || 500;
     
-    console.log('Stage 2 - SVG dimensions:', { width, height });
     
     // Clear previous content with fade
     svg.selectAll("*")

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { SimpleInsightBox } from '@/components/ui/patterns/SimpleComponents';
 import { InterpretationBox } from '@/components/ui/patterns/InterpretationBox';
 import { createColorScheme } from '@/lib/design-system';
-import { useSafeMathJax } from '@/utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 
 const chapterColors = createColorScheme('probability');
 
@@ -19,7 +19,7 @@ export default function Tab4InteractiveTab({ onComplete }) {
   const [showFeedback, setShowFeedback] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const contentRef = useRef(null);
-  useSafeMathJax(contentRef);
+  useMathJax(contentRef);
 
   // Enhanced challenges with multiple choice
   const challenges = [

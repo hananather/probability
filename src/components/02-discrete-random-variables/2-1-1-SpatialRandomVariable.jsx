@@ -719,7 +719,6 @@ class SpatialRandomVariableErrorBoundary extends React.Component {
   }
   
   componentDidCatch(error, errorInfo) {
-    console.error('SpatialRandomVariable Error:', error);
   }
   
   render() {

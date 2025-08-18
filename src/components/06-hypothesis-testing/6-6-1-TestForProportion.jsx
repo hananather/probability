@@ -18,7 +18,7 @@ const ObservedProportionFormula = React.memo(function ObservedProportionFormula(
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([ref.current])
         }
-        window.MathJax.typesetPromise([ref.current]).catch(console.error)
+        window.MathJax.typesetPromise([ref.current]).catch(() => {})
       }
     }
     processMathJax()
@@ -44,7 +44,7 @@ const ContinuityCorrectionFormula = React.memo(function ContinuityCorrectionForm
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([ref.current])
         }
-        window.MathJax.typesetPromise([ref.current]).catch(console.error)
+        window.MathJax.typesetPromise([ref.current]).catch(() => {})
       }
     }
     processMathJax()
@@ -70,7 +70,7 @@ const TestStatisticFormulas = React.memo(function TestStatisticFormulas({ zStati
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([ref.current])
         }
-        window.MathJax.typesetPromise([ref.current]).catch(console.error)
+        window.MathJax.typesetPromise([ref.current]).catch(() => {})
       }
     }
     processMathJax()
@@ -105,7 +105,7 @@ const HypothesesFormula = React.memo(function HypothesesFormula({ nullProportion
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([ref.current])
         }
-        window.MathJax.typesetPromise([ref.current]).catch(console.error)
+        window.MathJax.typesetPromise([ref.current]).catch(() => {})
       }
     }
     processMathJax()
@@ -135,7 +135,7 @@ const WorkedExample = React.memo(function WorkedExample() {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current])
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error)
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {})
       }
     }
     
@@ -264,7 +264,7 @@ const BinomialFoundationCompletion = React.memo(function BinomialFoundationCompl
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current])
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error)
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {})
       }
     }
     processMathJax()
@@ -311,7 +311,7 @@ const ContinuityCorrectionCompletion = React.memo(function ContinuityCorrectionC
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current])
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error)
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {})
       }
     }
     processMathJax()
@@ -358,7 +358,7 @@ const LargeCountsConditionCompletion = React.memo(function LargeCountsConditionC
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current])
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error)
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {})
       }
     }
     processMathJax()
@@ -405,7 +405,7 @@ const SampleSizeEffectsCompletion = React.memo(function SampleSizeEffectsComplet
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current])
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error)
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {})
       }
     }
     processMathJax()

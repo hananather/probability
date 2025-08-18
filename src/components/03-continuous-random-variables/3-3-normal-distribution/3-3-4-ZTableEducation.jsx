@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 import { createColorScheme, typography } from "../../../lib/design-system";
 import { 
   ArrowRight, BookOpen, 
@@ -41,7 +41,7 @@ const ZTableEducation = () => {
   }, [handleKeyDown]);
   
   // Use safe MathJax processing with error handling
-  useSafeMathJax(contentRef, [learningStage]);
+  useMathJax(contentRef, [learningStage]);
   
   // Critical values for quick reference
   const criticalValues = [

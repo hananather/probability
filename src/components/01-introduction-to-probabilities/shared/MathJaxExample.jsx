@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useMathJaxWithState } from '@/hooks/useMathJax';
-import { MathJaxSkeleton } from '@/utils/mathJaxFix';
+import { MathJaxSkeleton } from '@/components/ui/MathJaxSkeleton';
 
 /**
  * Example component showing best practices for MathJax rendering

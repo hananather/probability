@@ -16,7 +16,7 @@ import { createColorScheme, typography, formatNumber } from '../../../lib/design
 import IntegralWorkedExample from "./3-1-2-IntegralWorkedExample";
 import { Info, Sparkles, ArrowRight, CheckCircle, BarChart3, TrendingUp } from "lucide-react";
 import { ProgressBar, ProgressNavigation } from '@/components/ui/ProgressBar';
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 import { tutorial_3_1_1 } from '@/tutorials/chapter3';
 import BackToHub from '../../ui/BackToHub';
 
@@ -162,10 +162,8 @@ const distributions = {
 
 // Memoized PDF formula display
 const PDFFormulaDisplay = memo(function PDFFormulaDisplay({ pdfTex, label }) {
-  const formulaRef = useRef(null);
-  
-  // Use safe MathJax processing with error handling
-  useSafeMathJax(formulaRef, [pdfTex]);
+  // Use MathJax hook with error handling
+  const formulaRef = useMathJax([pdfTex]);
   
   return (
     <div className="p-3 bg-gradient-to-r from-blue-900/20 to-emerald-900/20 rounded-lg border border-blue-700/30">

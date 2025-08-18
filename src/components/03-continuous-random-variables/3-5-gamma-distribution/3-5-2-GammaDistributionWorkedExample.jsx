@@ -4,7 +4,7 @@ import * as d3 from "@/utils/d3-utils";
 import jStat from "jstat";
 import { cn } from "../../../lib/utils";
 import { RangeSlider } from "../../ui/RangeSlider";
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 import { colors, typography, components, formatNumber, createColorScheme } from '../../../lib/design-system';
 import { VisualizationContainer, ControlGroup } from '../../ui/VisualizationContainer';
 import BackToHub from '../../ui/BackToHub';
@@ -254,7 +254,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
   }, [distributionData, shape, mean, mode, colorScheme]);
   
   // Use safe MathJax processing with error handling
-  useSafeMathJax(contentRef, [shape, rate, scale, mean, variance, mode]);
+  useMathJax(contentRef, [shape, rate, scale, mean, variance, mode]);
   
   // Engineering context based on parameters
   const getEngineeringContext = () => {
@@ -296,7 +296,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
     const ref = useRef(null);
     
     // Use safe MathJax processing with error handling
-    useSafeMathJax(ref, [expanded]);
+    useMathJax(ref, [expanded]);
     
     return <div ref={ref}>{children}</div>;
   });

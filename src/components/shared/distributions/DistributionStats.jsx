@@ -44,7 +44,6 @@ const DistributionStats = ({
         mode: dist.mode ? dist.mode(parameters) : null
       };
     } catch (error) {
-      console.error('Error calculating statistics:', error);
       return null;
     }
   }, [distributionType, parameters]);

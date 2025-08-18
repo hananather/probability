@@ -9,7 +9,7 @@ import {
 } from '../../ui/VisualizationContainer';
 import { colors, typography, cn, createColorScheme } from '../../../lib/design-system';
 import { Button } from '../../ui/button';
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 import { ChevronRight } from 'lucide-react';
 import { tutorial_1_7_2 } from '@/tutorials/chapter1';
 
@@ -24,8 +24,7 @@ const colorScheme = createColorScheme('inference');
 
 // LaTeX content wrapper
 const LatexContent = memo(function LatexContent({ children }) {
-  const contentRef = useRef(null);
-  useSafeMathJax(contentRef, [children]);
+  const contentRef = useMathJax([children]);
   return <span ref={contentRef}>{children}</span>;
 });
 

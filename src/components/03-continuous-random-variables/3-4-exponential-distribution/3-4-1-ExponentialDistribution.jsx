@@ -4,7 +4,7 @@ import * as d3 from "@/utils/d3-utils";
 import { VisualizationContainer } from "../../ui/VisualizationContainer";
 import { RangeSlider } from "../../ui/RangeSlider";
 import { createColorScheme, typography } from "../../../lib/design-system";
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 import ExponentialDistributionWorkedExample from "./3-4-2-ExponentialDistributionWorkedExample";
 import { ProgressBar, ProgressNavigation } from "../../ui/ProgressBar";
 import { Button } from "../../ui/button";
@@ -41,7 +41,7 @@ const MemorylessFormula = React.memo(function MemorylessFormula() {
   const ref = useRef(null);
   
   // Use safe MathJax processing with error handling
-  useSafeMathJax(ref, []);
+  useMathJax(ref, []);
   
   return (
     <p ref={ref} className="text-xs text-neutral-300 mt-2 font-mono">
@@ -55,7 +55,7 @@ const StageContent = React.memo(function StageContent({ stage, lambda }) {
   const contentRef = useRef(null);
   
   // Use safe MathJax processing with error handling
-  useSafeMathJax(contentRef, [stage, lambda]);
+  useMathJax(contentRef, [stage, lambda]);
   
   if (stage === 1) {
     return (
@@ -152,7 +152,7 @@ const ProbabilityCalculations = React.memo(function ProbabilityCalculations({ t,
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([contentRef.current]);
         }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
       }
     };
     processMathJax();

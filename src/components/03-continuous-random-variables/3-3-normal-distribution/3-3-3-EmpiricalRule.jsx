@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef, useMemo, memo } from "react";
-import { useSafeMathJax } from '../../../utils/mathJaxFix';
+import { useMathJax } from '@/hooks/useMathJax';
 import * as d3 from "@/utils/d3-utils";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import { createColorScheme, typography } from "../../../lib/design-system";
@@ -21,7 +21,7 @@ const ParameterLabel = memo(function ParameterLabel({ label, symbol }) {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([labelRef.current]);
         }
-        window.MathJax.typesetPromise([labelRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([labelRef.current]).catch(() => {});
       }
     };
     
@@ -49,7 +49,7 @@ const SigmaButton = memo(function SigmaButton({ sd, isSelected, onClick }) {
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([buttonRef.current]);
         }
-        window.MathJax.typesetPromise([buttonRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([buttonRef.current]).catch(() => {});
       }
     };
     
@@ -82,7 +82,7 @@ const StatisticRow = memo(function StatisticRow({ label, sigmaRange, count, perc
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([rowRef.current]);
         }
-        window.MathJax.typesetPromise([rowRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([rowRef.current]).catch(() => {});
       }
     };
     
@@ -110,7 +110,7 @@ const RuleExplanation = memo(function RuleExplanation({ rule, sigmaRange, percen
         if (window.MathJax.typesetClear) {
           window.MathJax.typesetClear([ruleRef.current]);
         }
-        window.MathJax.typesetPromise([ruleRef.current]).catch(console.error);
+        window.MathJax.typesetPromise([ruleRef.current]).catch(() => {});
       }
     };
     
@@ -191,7 +191,7 @@ const EmpiricalRule = () => {
       // Force MathJax re-render when starting simulation
       setTimeout(() => {
         if (typeof window !== "undefined" && window.MathJax?.typesetPromise) {
-          window.MathJax.typesetPromise().catch(console.error);
+          window.MathJax.typesetPromise().catch(() => {});
         }
       }, 100);
     }
@@ -218,7 +218,7 @@ const EmpiricalRule = () => {
   useEffect(() => {
     const processMathJax = () => {
       if (typeof window !== "undefined" && window.MathJax?.typesetPromise) {
-        window.MathJax.typesetPromise().catch(console.error);
+        window.MathJax.typesetPromise().catch(() => {});
       }
     };
     
