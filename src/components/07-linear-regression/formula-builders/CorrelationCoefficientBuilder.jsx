@@ -144,9 +144,9 @@ const CorrelationCoefficientBuilder = React.memo(() => {
               : 'bg-gradient-to-r from-blue-900/30 to-indigo-900/30 border-blue-500/30 hover:from-blue-900/40 hover:to-indigo-900/40'
           }`}
           onClick={() => {
-            if (!understanding.relationship) {
-              setUnderstanding({...understanding, relationship: true});
-            }
+            setUnderstanding(prev => 
+              prev.relationship ? prev : {...prev, relationship: true}
+            );
           }}
         >
           <h5 className={`font-semibold mb-2 flex items-center gap-2 ${
@@ -178,9 +178,9 @@ const CorrelationCoefficientBuilder = React.memo(() => {
               : 'bg-purple-900/20 border-purple-500/30 hover:bg-purple-900/30'
           }`}
           onClick={() => {
-            if (!understanding.scaling) {
-              setUnderstanding({...understanding, scaling: true});
-            }
+            setUnderstanding(prev => 
+              prev.scaling ? prev : {...prev, scaling: true}
+            );
           }}
         >
           <h5 className={`font-semibold mb-2 ${

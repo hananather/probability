@@ -280,9 +280,9 @@ const ExponentialDistributionBuilder = React.memo(() => {
               : 'bg-indigo-900/20 border-indigo-500/30 hover:bg-indigo-900/30'
           }`}
           onClick={() => {
-            if (!understanding.memorylessProperty) {
-              setUnderstanding({...understanding, memorylessProperty: true});
-            }
+            setUnderstanding(prev => 
+              prev.memorylessProperty ? prev : {...prev, memorylessProperty: true}
+            );
           }}
         >
           <h5 className={`font-semibold mb-2 ${
