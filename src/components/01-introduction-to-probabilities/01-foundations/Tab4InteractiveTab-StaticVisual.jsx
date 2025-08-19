@@ -76,8 +76,7 @@ const ProbabilityDisplay = ({ title, probability, count, total, color, theme = '
 
 // Equal Mass Scenario Component
 const EqualMassScenario = () => {
-  const contentRef = useRef(null);
-  useMathJax(contentRef);
+  const contentRef = useMathJax([]);
   
   const [selectedPebble, setSelectedPebble] = useState(null);
   const [results, setResults] = useState({ red: 0, blue: 0, green: 0, total: 0 });
@@ -235,8 +234,7 @@ const EqualMassScenario = () => {
 
 // Unequal Mass Scenario Component  
 const UnequalMassScenario = () => {
-  const contentRef = useRef(null);
-  useMathJax(contentRef);
+  const contentRef = useMathJax([]);
   
   const [selectedPebble, setSelectedPebble] = useState(null);
   const [results, setResults] = useState({ red: 0, blue: 0, green: 0, total: 0 });
@@ -404,8 +402,7 @@ const UnequalMassScenario = () => {
 
 // Conceptual Understanding Section
 const ConceptualSection = () => {
-  const contentRef = useRef(null);
-  useMathJax(contentRef);
+  const contentRef = useMathJax([]);
 
   return (
     <div ref={contentRef} className="space-y-6">
@@ -413,7 +410,7 @@ const ConceptualSection = () => {
         <SemanticGradientCard
           title="Sample Space"
           description="The complete set of all possible outcomes"
-          formula="S = \\{\\text{all possible pebbles}\\}"
+          formula="\\[S = \\{\\text{all possible pebbles}\\}\\]"
           note="In our bag, this is every single pebble regardless of color"
           theme="teal"
         />
@@ -421,7 +418,7 @@ const ConceptualSection = () => {
         <SemanticGradientCard
           title="Event"
           description="A subset of the sample space"
-          formula="A = \\{\\text{red pebbles}\\} \\subseteq S"
+          formula="\\[A = \\{\\text{red pebbles}\\} \\subseteq S\\]"
           note="An event is any collection of outcomes we're interested in"
           theme="green"
         />
@@ -429,7 +426,7 @@ const ConceptualSection = () => {
         <SemanticGradientCard
           title="Probability Function"
           description="Assigns likelihood to each event"
-          formula="P(A) = \\frac{\\text{favorable outcomes}}{\\text{total outcomes}}"
+          formula="\\[P(A) = \\frac{\\text{favorable outcomes}}{\\text{total outcomes}}\\]"
           note="Must satisfy: \\(P(S) = 1\\) and \\(P(A) \\geq 0\\) for all events \\(A\\)"
           theme="purple"
         />
@@ -437,7 +434,7 @@ const ConceptualSection = () => {
         <SemanticGradientCard
           title="Complement Rule"
           description="Probability of 'not A'"
-          formula="P(A^c) = 1 - P(A)"
+          formula="\\[P(A^c) = 1 - P(A)\\]"
           note="The probability of not getting red equals 1 minus probability of red"
           theme="yellow"
         />

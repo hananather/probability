@@ -18,8 +18,7 @@ export default function Tab4InteractiveTab({ onComplete }) {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
-  const contentRef = useRef(null);
-  useMathJax(contentRef);
+  const contentRef = useMathJax([]);
 
   // Enhanced challenges with multiple choice
   const challenges = [

@@ -17,12 +17,11 @@ const colorScheme = createColorScheme('probability');
 
 // Practice Problems Component
 const PracticeProblems = React.memo(() => {
-  const contentRef = useRef(null);
   const [currentProblem, setCurrentProblem] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   
   // Use the safe MathJax hook
-  useMathJax(contentRef, [currentProblem, showAnswer]);
+  const contentRef = useMathJax([currentProblem, showAnswer]);
   
   
   const problems = [

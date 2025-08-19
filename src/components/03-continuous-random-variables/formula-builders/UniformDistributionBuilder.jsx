@@ -10,7 +10,9 @@ const UniformDistributionBuilder = React.memo(() => {
     constant: false,
     interval: false,
     lowerBound: false,
-    upperBound: false
+    upperBound: false,
+    cdfNumerator: false,
+    cdfDenominator: false
   });
   
   const [understanding, setUnderstanding] = useState({
@@ -106,11 +108,21 @@ const UniformDistributionBuilder = React.memo(() => {
             
             {/* (x-a)/(b-a) */}
             <div className="inline-flex flex-col items-center">
-              <div className="text-neutral-300">
+              <div 
+                className={`cursor-pointer transition-all hover:scale-110 hover:text-white active:scale-90 px-2 ${
+                  understanding.linearCDF ? 'text-green-400' : 'text-neutral-300'
+                }`}
+                onClick={() => handlePartClick('cdfNumerator', 'linearCDF')}
+              >
                 x - a
               </div>
               <div className="w-full h-0.5 bg-neutral-500 my-1"></div>
-              <div className="text-neutral-300">
+              <div 
+                className={`cursor-pointer transition-all hover:scale-110 hover:text-white active:scale-90 px-2 ${
+                  understanding.intervalLength ? 'text-green-400' : 'text-neutral-300'
+                }`}
+                onClick={() => handlePartClick('cdfDenominator', 'intervalLength')}
+              >
                 b - a
               </div>
             </div>

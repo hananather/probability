@@ -196,7 +196,9 @@
       "Bash(/Users/hananather/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg 'console\\.' /Users/hananather/Desktop/Javascript/prob-lab/src -g \"*.{js,jsx}\")",
       "Bash(if grep -q \"useSafeMathJax\" \"$file\")",
       "Bash(open http://localhost:3004/chapter7/formula-builder)",
-      "Bash(timeout 90 npm run build)"
+      "Bash(timeout 90 npm run build)",
+      "Bash(head:*)",
+      "Bash(do echo \"\")"
     ],
     "deny": []
   },

@@ -27,7 +27,14 @@ const ExponentialDistributionBuilder = React.memo(() => {
       setSelectedParts({...selectedParts, [part]: true});
     }
     if (understandingKey && !understanding[understandingKey]) {
-      setUnderstanding({...understanding, [understandingKey]: true});
+      const newUnderstanding = {...understanding, [understandingKey]: true};
+      
+      // Auto-trigger memoryless property when both prerequisites are met
+      if (newUnderstanding.waitingTime && newUnderstanding.rateParameter && !newUnderstanding.memorylessProperty) {
+        newUnderstanding.memorylessProperty = true;
+      }
+      
+      setUnderstanding(newUnderstanding);
     }
   };
 
@@ -266,8 +273,21 @@ const ExponentialDistributionBuilder = React.memo(() => {
 
       {/* Memoryless Property */}
       {understanding.waitingTime && understanding.rateParameter && (
-        <div className="mt-6 bg-indigo-900/20 rounded-lg p-4 border border-indigo-500/30">
-          <h5 className="font-semibold text-indigo-400 mb-2">The Memoryless Property</h5>
+        <div 
+          className={`mt-6 rounded-lg p-4 border transition-all cursor-pointer hover:scale-[1.02] ${
+            understanding.memorylessProperty 
+              ? 'bg-green-900/20 border-green-500/30' 
+              : 'bg-indigo-900/20 border-indigo-500/30 hover:bg-indigo-900/30'
+          }`}
+          onClick={() => {
+            if (!understanding.memorylessProperty) {
+              setUnderstanding({...understanding, memorylessProperty: true});
+            }
+          }}
+        >
+          <h5 className={`font-semibold mb-2 ${
+            understanding.memorylessProperty ? 'text-green-400' : 'text-indigo-400'
+          }`}>The Memoryless Property {!understanding.memorylessProperty && '(Click to understand)'}</h5>
           <div className="text-center my-3">
             <span className="text-lg font-mono" dangerouslySetInnerHTML={{ 
               __html: `\\[P(X > s + t \\mid X > s) = P(X > t)\\]` 

@@ -351,20 +351,31 @@ export default function NegativeBinomialDistribution() {
     
     const animate = () => {
       setAnimation(prev => {
-        if (prev.successes >= r) {
-          // Completed
-          setSimulations(sims => [...sims.slice(-9), {
-            totalTrials: prev.currentTrial,
-            successes: prev.successes,
-            failures: prev.failures
-          }]);
-          return { ...prev, isRunning: false };
-        }
-        
+        // Generate random outcome for this trial
         const success = Math.random() < validP;
         const newTrial = prev.currentTrial + 1;
+        const newSuccesses = prev.successes + (success ? 1 : 0);
+        const newFailures = prev.failures + (success ? 0 : 1);
         
-        // Schedule next frame
+        // Check if we've reached the target after this trial
+        if (newSuccesses >= r) {
+          // Completed - record the results with the correct trial count
+          setSimulations(sims => [...sims.slice(-9), {
+            totalTrials: newTrial,
+            successes: newSuccesses,
+            failures: newFailures
+          }]);
+          return {
+            ...prev,
+            currentTrial: newTrial,
+            successes: newSuccesses,
+            failures: newFailures,
+            history: [...prev.history, { trial: newTrial, success }],
+            isRunning: false
+          };
+        }
+        
+        // Continue animation for next trial
         timeoutRef.current = setTimeout(() => {
           animationFrameRef.current = requestAnimationFrame(animate);
         }, animationSpeed);
@@ -372,8 +383,8 @@ export default function NegativeBinomialDistribution() {
         return {
           ...prev,
           currentTrial: newTrial,
-          successes: prev.successes + (success ? 1 : 0),
-          failures: prev.failures + (success ? 0 : 1),
+          successes: newSuccesses,
+          failures: newFailures,
           history: [...prev.history, { trial: newTrial, success }]
         };
       });
