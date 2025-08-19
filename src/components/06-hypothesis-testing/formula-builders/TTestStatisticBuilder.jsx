@@ -41,7 +41,16 @@ const TTestStatisticBuilder = React.memo(() => {
         
         {/* Interactive Formula Display */}
         <div className="text-3xl md:text-4xl font-mono inline-flex items-center gap-2">
-          <span className="text-neutral-500">t =</span>
+          <span 
+            className={`cursor-pointer transition-all hover:scale-110 hover:text-white active:scale-90 px-2 ${
+              understanding.testStatisticConcept ? 'text-green-400' : 
+              selectedParts.testStatistic ? 'text-red-400' : 'text-neutral-400'
+            }`}
+            onClick={() => handlePartClick('testStatistic', 'testStatisticConcept')}
+          >
+            t
+          </span>
+          <span className="text-neutral-500">=</span>
           
           {/* Fraction */}
           <div className="inline-flex flex-col items-center">

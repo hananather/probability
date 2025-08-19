@@ -59,8 +59,18 @@ const SampleMeanBuilder = React.memo(() => {
           
           {/* Fraction */}
           <div className="inline-flex flex-col items-center">
-            {/* Numerator - Sum */}
+            {/* Numerator - Sum with Observations */}
             <div className="flex items-center gap-1">
+              <div 
+                className={`cursor-pointer transition-all hover:scale-110 hover:text-white active:scale-90 px-1 ${
+                  understanding.observationsConcept ? 'text-green-400' : 
+                  selectedParts.observations ? 'text-green-400' : 'text-neutral-400'
+                }`}
+                onClick={() => handlePartClick('observations', 'observationsConcept')}
+              >
+                <span className="text-xs">Σxi</span>
+              </div>
+              <span className="text-neutral-500 text-xs">=</span>
               <div 
                 className={`cursor-pointer transition-all hover:scale-110 hover:text-white active:scale-90 px-2 ${
                   understanding.sumConcept ? 'text-green-400' : 
@@ -135,6 +145,23 @@ const SampleMeanBuilder = React.memo(() => {
             <div className="bg-neutral-800/50 p-2 rounded mt-2">
               <p className="text-xs text-neutral-400">
                 <strong>Example:</strong> Test scores: 85 + 92 + 78 + 88 + 97 = 440
+              </p>
+            </div>
+          </div>
+        )}
+
+        {selectedParts.observations && (
+          <div className="bg-green-900/20 rounded-lg p-4 border border-green-500/30">
+            <h5 className="font-semibold text-green-400 mb-2 flex items-center gap-2">
+              <Target className="w-4 h-4" />
+              Individual Observations (xi) - The Data Points
+            </h5>
+            <p className="text-sm text-neutral-300 mb-2">
+              Each xi represents an individual observation in your sample. These are the actual data values you collected.
+            </p>
+            <div className="bg-neutral-800/50 p-2 rounded mt-2">
+              <p className="text-xs text-neutral-400">
+                <strong>Example:</strong> Test scores x₁=85, x₂=92, x₃=78, x₄=88, x₅=97 are the individual observations
               </p>
             </div>
           </div>

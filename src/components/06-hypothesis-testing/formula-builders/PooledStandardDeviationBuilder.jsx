@@ -44,7 +44,14 @@ const PooledStandardDeviationBuilder = React.memo(() => {
           <span className="text-neutral-500">sp =</span>
           
           {/* Square root symbol */}
-          <span className="text-neutral-500">√</span>
+          <span 
+            className={`cursor-pointer transition-all hover:scale-110 hover:text-white active:scale-90 px-1 ${
+              selectedParts.squareRoot ? 'text-green-400' : 'text-neutral-400'
+            }`}
+            onClick={() => handlePartClick('squareRoot', 'combinedEstimatorConcept')}
+          >
+            √
+          </span>
           
           {/* Fraction inside square root */}
           <div className="inline-flex flex-col items-center border-l-2 border-neutral-500 pl-2">
@@ -130,6 +137,33 @@ const PooledStandardDeviationBuilder = React.memo(() => {
           </div>
         )}
       </div>
+
+      {/* Combined Estimator Explanation */}
+      {selectedParts.squareRoot && (
+        <div className="bg-emerald-900/20 rounded-lg p-4 border border-emerald-500/30 cursor-pointer transition-all hover:border-emerald-400/50"
+             onClick={() => setUnderstanding({...understanding, combinedEstimatorConcept: true})}>
+          <h5 className="font-semibold text-emerald-400 mb-2 flex items-center gap-2">
+            <Combine className="w-4 h-4" />
+            {understanding.combinedEstimatorConcept ? 
+              "✓ Combined Estimator - A Weighted Average" : 
+              "Click to Understand: Why This is the Best Combined Estimate"}
+          </h5>
+          {understanding.combinedEstimatorConcept && (
+            <>
+              <p className="text-sm text-neutral-300 mb-2">
+                The pooled standard deviation is essentially a weighted average of the two sample standard deviations, 
+                where the weights are the degrees of freedom.
+              </p>
+              <div className="bg-neutral-800/50 p-2 rounded mt-2">
+                <p className="text-xs text-neutral-400">
+                  <strong>Key property:</strong> If both samples come from populations with the same variance, 
+                  this pooled estimate is more precise than either individual sample estimate alone.
+                </p>
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       {/* The Key Insight */}
       {Object.values(selectedParts).slice(0, 2).every(Boolean) && (

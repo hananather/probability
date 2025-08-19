@@ -137,10 +137,23 @@ const CorrelationCoefficientBuilder = React.memo(() => {
 
       {/* The Key Insight */}
       {selectedParts.numerator && selectedParts.denominator && (
-        <div className="mt-6 bg-gradient-to-r from-blue-900/30 to-indigo-900/30 rounded-lg p-4 border border-blue-500/30">
-          <h5 className="font-semibold text-blue-400 mb-2 flex items-center gap-2">
+        <div 
+          className={`mt-6 rounded-lg p-4 border transition-all cursor-pointer hover:scale-[1.02] ${
+            understanding.relationship 
+              ? 'bg-green-900/20 border-green-500/30' 
+              : 'bg-gradient-to-r from-blue-900/30 to-indigo-900/30 border-blue-500/30 hover:from-blue-900/40 hover:to-indigo-900/40'
+          }`}
+          onClick={() => {
+            if (!understanding.relationship) {
+              setUnderstanding({...understanding, relationship: true});
+            }
+          }}
+        >
+          <h5 className={`font-semibold mb-2 flex items-center gap-2 ${
+            understanding.relationship ? 'text-green-400' : 'text-blue-400'
+          }`}>
             <TrendingUp className="w-4 h-4" />
-            The Key Insight: Standardized Covariance
+            The Key Insight: Standardized Covariance {!understanding.relationship && '(Click to understand)'}
           </h5>
           <p className="text-sm text-neutral-300 mb-3">
             Correlation is <strong>standardized covariance</strong> - it measures the strength 
@@ -156,10 +169,23 @@ const CorrelationCoefficientBuilder = React.memo(() => {
         </div>
       )}
 
-      {/* Advanced Properties */}
-      {allUnderstood && (
-        <div className="mt-6 bg-green-900/20 rounded-lg p-4 border border-green-500/30">
-          <h5 className="font-semibold text-green-400 mb-2">Advanced Properties of Correlation</h5>
+      {/* Advanced Properties - Clickable for scaling understanding */}
+      {selectedParts.numerator && selectedParts.denominator && (
+        <div 
+          className={`mt-6 rounded-lg p-4 border transition-all cursor-pointer hover:scale-[1.02] ${
+            understanding.scaling 
+              ? 'bg-green-900/20 border-green-500/30' 
+              : 'bg-purple-900/20 border-purple-500/30 hover:bg-purple-900/30'
+          }`}
+          onClick={() => {
+            if (!understanding.scaling) {
+              setUnderstanding({...understanding, scaling: true});
+            }
+          }}
+        >
+          <h5 className={`font-semibold mb-2 ${
+            understanding.scaling ? 'text-green-400' : 'text-purple-400'
+          }`}>Advanced Properties of Correlation {!understanding.scaling && '(Click to understand)'}</h5>
           <div className="grid md:grid-cols-2 gap-4 text-sm">
             <div>
               <h6 className="font-medium text-white mb-2">Scale Invariance:</h6>

@@ -170,8 +170,54 @@ const LeastSquaresSlopeBuilder = React.memo(() => {
         )}
       </div>
 
+      {/* Least Squares Method Section */}
+      {(selectedParts.numerator || selectedParts.denominator) && !understanding.leastSquares && (
+        <div 
+          className="mt-6 bg-indigo-900/20 rounded-lg p-4 border border-indigo-500/30 cursor-pointer transition-all hover:border-indigo-400/50"
+          onClick={() => setUnderstanding({...understanding, leastSquares: true})}
+        >
+          <h5 className="font-semibold text-indigo-400 mb-2 flex items-center gap-2">
+            <Calculator className="w-4 h-4" />
+            Click to Learn: The Least Squares Principle 👆
+          </h5>
+          <p className="text-sm text-neutral-300">
+            Discover why this formula gives us the "best" line through the data points.
+          </p>
+        </div>
+      )}
+
+      {understanding.leastSquares && (
+        <div className="mt-6 bg-indigo-900/20 rounded-lg p-4 border border-indigo-500/30">
+          <h5 className="font-semibold text-indigo-400 mb-2 flex items-center gap-2">
+            <Calculator className="w-4 h-4" />
+            ✓ The Least Squares Principle
+          </h5>
+          <p className="text-sm text-neutral-300 mb-3">
+            This slope formula comes from minimizing the sum of squared residuals (vertical distances from points to line).
+          </p>
+          <div className="bg-neutral-900/50 rounded p-3 text-sm">
+            <span dangerouslySetInnerHTML={{ 
+              __html: `\\[\\text{Minimize: } \\sum_{i=1}^{n} (y_i - b_0 - b_1 x_i)^2\\]` 
+            }} />
+            <p className="text-xs text-neutral-400 mt-2">
+              Taking the derivative with respect to b₁ and setting to zero gives our formula!
+            </p>
+          </div>
+          <div className="mt-3 p-2 bg-indigo-900/30 rounded">
+            <p className="text-xs text-indigo-300">
+              <strong>Why "least squares"?</strong> We square the errors to:
+            </p>
+            <ul className="text-xs text-neutral-400 mt-1 space-y-1">
+              <li>• Make all errors positive (no cancellation)</li>
+              <li>• Penalize larger errors more heavily</li>
+              <li>• Make the math tractable (derivatives work nicely)</li>
+            </ul>
+          </div>
+        </div>
+      )}
+
       {/* The Geometric Interpretation */}
-      {selectedParts.numerator && selectedParts.denominator && (
+      {selectedParts.numerator && selectedParts.denominator && understanding.geometric && (
         <div className="mt-6 bg-gradient-to-r from-teal-900/30 to-cyan-900/30 rounded-lg p-4 border border-teal-500/30">
           <h5 className="font-semibold text-teal-400 mb-2 flex items-center gap-2">
             <Target className="w-4 h-4" />

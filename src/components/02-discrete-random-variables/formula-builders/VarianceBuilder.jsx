@@ -19,7 +19,6 @@ const VarianceBuilder = React.memo(() => {
     concept: false,
     spread: false,
     squaring: false,
-    // For computational formula
     computational: false,
     efficiency: false
   });

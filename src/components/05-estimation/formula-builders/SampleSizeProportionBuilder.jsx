@@ -51,6 +51,16 @@ const SampleSizeProportionBuilder = React.memo(() => {
           <div className="inline-flex flex-col items-center">
             {/* Numerator */}
             <div className="inline-flex items-center gap-1">
+              {/* Overall squared effect clickable */}
+              <div 
+                className={`cursor-pointer transition-all hover:scale-110 hover:text-white active:scale-90 px-1 ${
+                  understanding.squaredConcept ? 'text-green-400' : 
+                  selectedParts.squared ? 'text-yellow-400' : 'text-neutral-400'
+                }`}
+                onClick={() => handlePartClick('squared', 'squaredConcept')}
+              >
+                <span className="text-lg">( </span>
+              </div>
               <div 
                 className={`cursor-pointer transition-all hover:scale-110 hover:text-white active:scale-90 px-1 ${
                   understanding.zCriticalConcept ? 'text-green-400' : 
@@ -88,6 +98,16 @@ const SampleSizeProportionBuilder = React.memo(() => {
                   <span className="block text-sm">(1-p)</span>
                   <span className="block text-xs">(failure)</span>
                 </div>
+              </div>
+              {/* Closing bracket for squared effect */}
+              <div 
+                className={`cursor-pointer transition-all hover:scale-110 hover:text-white active:scale-90 px-1 ${
+                  understanding.squaredConcept ? 'text-green-400' : 
+                  selectedParts.squared ? 'text-yellow-400' : 'text-neutral-400'
+                }`}
+                onClick={() => handlePartClick('squared', 'squaredConcept')}
+              >
+                <span className="text-lg"> )</span>
               </div>
             </div>
             
@@ -194,6 +214,24 @@ const SampleSizeProportionBuilder = React.memo(() => {
           </div>
         )}
       </div>
+
+      {/* Squared Effects Explanation */}
+      {selectedParts.squared && (
+        <div className="bg-yellow-900/20 rounded-lg p-4 border border-yellow-500/30">
+          <h5 className="font-semibold text-yellow-400 mb-2 flex items-center gap-2">
+            <Zap className="w-4 h-4" />
+            Why Everything is Squared
+          </h5>
+          <p className="text-sm text-neutral-300 mb-2">
+            Notice that both the critical value and margin of error are squared in this formula. This has a profound effect on sample size requirements.
+          </p>
+          <div className="bg-neutral-800/50 p-2 rounded mt-2">
+            <p className="text-xs text-neutral-400">
+              <strong>Impact:</strong> Halving the margin of error quadruples the required sample size! Going from E = 0.03 to E = 0.015 requires 4× more participants.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* The Key Insight */}
       {Object.values(selectedParts).every(Boolean) && (

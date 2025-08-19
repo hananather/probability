@@ -145,7 +145,12 @@ const LeastSquaresInterceptBuilder = React.memo(() => {
             className={`bg-gradient-to-r from-purple-900/30 to-pink-900/30 rounded-lg p-4 border cursor-pointer transition-all ${
               selectedParts.geometric ? 'border-indigo-500/50' : 'border-purple-500/30 hover:border-purple-400/50'
             }`}
-            onClick={() => handlePartClick('geometric', 'yIntercept')}
+            onClick={() => {
+              handlePartClick('geometric', 'yIntercept');
+              if (!understanding.relationship) {
+                setUnderstanding({...understanding, relationship: true});
+              }
+            }}
           >
             <h5 className="font-semibold text-purple-400 mb-2 flex items-center gap-2">
               <Crosshair className="w-4 h-4" />

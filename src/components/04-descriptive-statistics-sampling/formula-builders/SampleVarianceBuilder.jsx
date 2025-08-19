@@ -72,15 +72,25 @@ const SampleVarianceBuilder = React.memo(() => {
               >
                 <span className="block text-xs">sum of</span>
               </div>
-              <div 
-                className={`cursor-pointer transition-all hover:scale-110 hover:text-white active:scale-90 px-1 ${
-                  understanding.squaredDeviationsConcept ? 'text-green-400' : 
-                  selectedParts.squaredDeviations ? 'text-cyan-400' : 'text-neutral-400'
-                }`}
-                onClick={() => handlePartClick('squaredDeviations', 'squaredDeviationsConcept')}
-              >
-                <span className="block text-xs">squared</span>
-                <span className="block text-xs">deviations</span>
+              <div className="flex flex-col items-center">
+                <div 
+                  className={`cursor-pointer transition-all hover:scale-110 hover:text-white active:scale-90 px-1 ${
+                    understanding.deviationsConcept ? 'text-green-400' : 
+                    selectedParts.deviations ? 'text-yellow-400' : 'text-neutral-400'
+                  }`}
+                  onClick={() => handlePartClick('deviations', 'deviationsConcept')}
+                >
+                  <span className="block text-xs">(xi - x̄)</span>
+                </div>
+                <div 
+                  className={`cursor-pointer transition-all hover:scale-110 hover:text-white active:scale-90 px-1 ${
+                    understanding.squaredDeviationsConcept ? 'text-green-400' : 
+                    selectedParts.squaredDeviations ? 'text-cyan-400' : 'text-neutral-400'
+                  }`}
+                  onClick={() => handlePartClick('squaredDeviations', 'squaredDeviationsConcept')}
+                >
+                  <span className="block text-xs">squared</span>
+                </div>
               </div>
             </div>
             
@@ -129,6 +139,23 @@ const SampleVarianceBuilder = React.memo(() => {
             <div className="bg-neutral-800/50 p-2 rounded mt-2">
               <p className="text-xs text-neutral-400">
                 <strong>Example:</strong> Test scores {88, 90, 92} have low variance; {60, 90, 120} have high variance
+              </p>
+            </div>
+          </div>
+        )}
+        
+        {selectedParts.deviations && (
+          <div className="bg-yellow-900/20 rounded-lg p-4 border border-yellow-500/30">
+            <h5 className="font-semibold text-yellow-400 mb-2 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" />
+              Deviations - (xi - x̄)
+            </h5>
+            <p className="text-sm text-neutral-300 mb-2">
+              For each data point, calculate how far it is from the mean. These deviations can be positive (above mean) or negative (below mean).
+            </p>
+            <div className="bg-neutral-800/50 p-2 rounded mt-2">
+              <p className="text-xs text-neutral-400">
+                <strong>Example:</strong> If x̄ = 90, then for xi = 85: deviation = 85-90 = -5 (below mean)
               </p>
             </div>
           </div>
