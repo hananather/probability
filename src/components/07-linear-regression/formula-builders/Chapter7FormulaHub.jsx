@@ -42,13 +42,13 @@ const Chapter7FormulaHub = () => {
     <div className="min-h-screen bg-neutral-950 text-white p-3 sm:p-4 lg:p-6">
       <div className="max-w-full lg:max-w-6xl mx-auto space-y-6 sm:space-y-8">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-6 sm:mb-8 lg:mb-12">
           <div className="flex justify-center items-center gap-3 mb-4">
-            <Sparkles className="w-8 h-8 text-blue-400" />
+            <Sparkles className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-blue-400" />
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
               Chapter 7: Linear Regression Formula Builder
             </h1>
-            <Sparkles className="w-8 h-8 text-indigo-400" />
+            <Sparkles className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-indigo-400" />
           </div>
           <p className="text-xs sm:text-sm text-neutral-400 max-w-3xl mx-auto px-2 sm:px-0">
             Master the fundamental formulas of linear regression by building them step-by-step. 

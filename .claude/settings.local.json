@@ -199,7 +199,8 @@
       "Bash(timeout 90 npm run build)",
       "Bash(head:*)",
       "Bash(do echo \"\")",
-      "Bash(timeout 20 npm run dev)"
+      "Bash(timeout 20 npm run dev)",
+      "Bash(do echo \"Chapter $i:\")"
     ],
     "deny": []
   },

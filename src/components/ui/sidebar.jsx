@@ -41,6 +41,9 @@ export function Sidebar({ children }) {
         <div 
           className="lg:hidden fixed inset-0 bg-black/50 z-40"
           onClick={toggle}
+          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && toggle()}
+          role="button"
+          tabIndex={0}
           aria-label="Close sidebar"
         />
       )}
