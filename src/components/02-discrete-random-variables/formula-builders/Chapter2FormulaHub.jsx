@@ -26,18 +26,18 @@ const Chapter2FormulaHub = () => {
 
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white p-6">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="min-h-screen bg-neutral-950 text-white p-3 sm:p-4 lg:p-6">
+      <div className="max-w-full lg:max-w-6xl mx-auto space-y-6 sm:space-y-8">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex justify-center items-center gap-3 mb-4">
             <Sparkles className="w-8 h-8 text-purple-400" />
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
               Chapter 2: Interactive Formula Builder
             </h1>
             <Sparkles className="w-8 h-8 text-pink-400" />
           </div>
-          <p className="text-neutral-400 max-w-2xl mx-auto">
+          <p className="text-xs sm:text-sm text-neutral-400 max-w-2xl mx-auto px-2 sm:px-0">
             Master the fundamental formulas of discrete random variables by building them step-by-step.
           </p>
         </div>
@@ -48,15 +48,15 @@ const Chapter2FormulaHub = () => {
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
               onClick={() => toggleSection('binomialDistribution')}
-              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+              className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-emerald-900/30 rounded-lg">
                   <Calculator className="w-6 h-6 text-emerald-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">Binomial Distribution</h2>
-                  <p className="text-sm text-neutral-400 mt-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Binomial Distribution</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
                     Master counting successes in fixed number of trials
                   </p>
                 </div>
@@ -68,7 +68,7 @@ const Chapter2FormulaHub = () => {
             </button>
             
             {expandedSections.binomialDistribution && (
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <BinomialDistributionBuilder />
               </div>
             )}
@@ -78,15 +78,15 @@ const Chapter2FormulaHub = () => {
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
               onClick={() => toggleSection('poissonDistribution')}
-              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+              className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-indigo-900/30 rounded-lg">
                   <Clock className="w-6 h-6 text-indigo-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">Poisson Distribution</h2>
-                  <p className="text-sm text-neutral-400 mt-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Poisson Distribution</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
                     Model rare events occurring over time or space
                   </p>
                 </div>
@@ -98,7 +98,7 @@ const Chapter2FormulaHub = () => {
             </button>
             
             {expandedSections.poissonDistribution && (
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <PoissonDistributionBuilder />
               </div>
             )}
@@ -108,15 +108,15 @@ const Chapter2FormulaHub = () => {
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
               onClick={() => toggleSection('geometricDistribution')}
-              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+              className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-rose-900/30 rounded-lg">
                   <Repeat className="w-6 h-6 text-rose-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">Geometric Distribution</h2>
-                  <p className="text-sm text-neutral-400 mt-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Geometric Distribution</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
                     Calculate waiting time until first success
                   </p>
                 </div>
@@ -128,7 +128,7 @@ const Chapter2FormulaHub = () => {
             </button>
             
             {expandedSections.geometricDistribution && (
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <GeometricDistributionBuilder />
               </div>
             )}
@@ -138,15 +138,15 @@ const Chapter2FormulaHub = () => {
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
               onClick={() => toggleSection('expectedValue')}
-              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+              className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-blue-900/30 rounded-lg">
                   <BarChart3 className="w-6 h-6 text-blue-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">Expected Value</h2>
-                  <p className="text-sm text-neutral-400 mt-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Expected Value</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
                     Understand the theoretical average of a random variable
                   </p>
                 </div>
@@ -158,7 +158,7 @@ const Chapter2FormulaHub = () => {
             </button>
             
             {expandedSections.expectedValue && (
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <ExpectedValueBuilder />
               </div>
             )}
@@ -168,15 +168,15 @@ const Chapter2FormulaHub = () => {
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
               onClick={() => toggleSection('variance')}
-              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+              className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-emerald-900/30 rounded-lg">
                   <TrendingUp className="w-6 h-6 text-emerald-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">Variance</h2>
-                  <p className="text-sm text-neutral-400 mt-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Variance</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
                     Learn how to measure the spread around the mean
                   </p>
                 </div>
@@ -188,7 +188,7 @@ const Chapter2FormulaHub = () => {
             </button>
             
             {expandedSections.variance && (
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <VarianceBuilder />
               </div>
             )}

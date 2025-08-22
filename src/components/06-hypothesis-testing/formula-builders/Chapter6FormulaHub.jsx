@@ -30,18 +30,18 @@ const Chapter6FormulaHub = () => {
 
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white p-6">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="min-h-screen bg-neutral-950 text-white p-3 sm:p-4 lg:p-6">
+      <div className="max-w-full lg:max-w-6xl mx-auto space-y-6 sm:space-y-8">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex justify-center items-center gap-3 mb-4">
             <Sparkles className="w-8 h-8 text-purple-400" />
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
               Chapter 6: Interactive Formula Builder
             </h1>
             <Sparkles className="w-8 h-8 text-pink-400" />
           </div>
-          <p className="text-neutral-400 max-w-2xl mx-auto">
+          <p className="text-xs sm:text-sm text-neutral-400 max-w-2xl mx-auto px-2 sm:px-0">
             Master the fundamental formulas of hypothesis testing by building them step-by-step.
           </p>
         </div>
@@ -52,15 +52,15 @@ const Chapter6FormulaHub = () => {
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
               onClick={() => toggleSection('tTestStatistic')}
-              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+              className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-red-900/30 rounded-lg">
                   <TestTube className="w-6 h-6 text-red-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">T-Test Statistic</h2>
-                  <p className="text-sm text-neutral-400 mt-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">T-Test Statistic</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
                     Learn the foundation of hypothesis testing with unknown σ
                   </p>
                 </div>
@@ -72,7 +72,7 @@ const Chapter6FormulaHub = () => {
             </button>
             
             {expandedSections.tTestStatistic && (
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <TTestStatisticBuilder />
               </div>
             )}
@@ -82,15 +82,15 @@ const Chapter6FormulaHub = () => {
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
               onClick={() => toggleSection('zTestStatistic')}
-              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+              className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-blue-900/30 rounded-lg">
                   <Target className="w-6 h-6 text-blue-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">Z-Test Statistic</h2>
-                  <p className="text-sm text-neutral-400 mt-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Z-Test Statistic</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
                     Hypothesis testing when population standard deviation is known
                   </p>
                 </div>
@@ -102,7 +102,7 @@ const Chapter6FormulaHub = () => {
             </button>
             
             {expandedSections.zTestStatistic && (
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <ZTestStatisticBuilder />
               </div>
             )}
@@ -112,15 +112,15 @@ const Chapter6FormulaHub = () => {
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
               onClick={() => toggleSection('proportionTest')}
-              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+              className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-green-900/30 rounded-lg">
                   <Percent className="w-6 h-6 text-green-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">Proportion Test Statistic</h2>
-                  <p className="text-sm text-neutral-400 mt-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Proportion Test Statistic</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
                     Testing hypotheses about population proportions
                   </p>
                 </div>
@@ -132,7 +132,7 @@ const Chapter6FormulaHub = () => {
             </button>
             
             {expandedSections.proportionTest && (
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <ProportionTestBuilder />
               </div>
             )}
@@ -142,15 +142,15 @@ const Chapter6FormulaHub = () => {
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
               onClick={() => toggleSection('twoSampleTTest')}
-              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+              className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-purple-900/30 rounded-lg">
                   <Users className="w-6 h-6 text-purple-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">Two-Sample T-Test</h2>
-                  <p className="text-sm text-neutral-400 mt-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Two-Sample T-Test</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
                     Comparing means between two independent groups
                   </p>
                 </div>
@@ -162,7 +162,7 @@ const Chapter6FormulaHub = () => {
             </button>
             
             {expandedSections.twoSampleTTest && (
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <TwoSampleTTestBuilder />
               </div>
             )}
@@ -172,15 +172,15 @@ const Chapter6FormulaHub = () => {
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
               onClick={() => toggleSection('pooledStandardDeviation')}
-              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+              className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-amber-900/30 rounded-lg">
                   <Calculator className="w-6 h-6 text-amber-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">Pooled Standard Deviation</h2>
-                  <p className="text-sm text-neutral-400 mt-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Pooled Standard Deviation</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
                     Combining variance estimates from two samples
                   </p>
                 </div>
@@ -192,7 +192,7 @@ const Chapter6FormulaHub = () => {
             </button>
             
             {expandedSections.pooledStandardDeviation && (
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <PooledStandardDeviationBuilder />
               </div>
             )}
@@ -202,15 +202,15 @@ const Chapter6FormulaHub = () => {
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
               onClick={() => toggleSection('pairedTTest')}
-              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+              className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-rose-900/30 rounded-lg">
                   <Link className="w-6 h-6 text-rose-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">Paired T-Test</h2>
-                  <p className="text-sm text-neutral-400 mt-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Paired T-Test</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
                     Testing differences within paired observations
                   </p>
                 </div>
@@ -222,7 +222,7 @@ const Chapter6FormulaHub = () => {
             </button>
             
             {expandedSections.pairedTTest && (
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <PairedTTestBuilder />
               </div>
             )}
@@ -232,15 +232,15 @@ const Chapter6FormulaHub = () => {
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
               onClick={() => toggleSection('effectSize')}
-              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+              className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-violet-900/30 rounded-lg">
                   <Zap className="w-6 h-6 text-violet-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">Effect Size (Cohen's d)</h2>
-                  <p className="text-sm text-neutral-400 mt-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Effect Size (Cohen's d)</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
                     Measuring practical significance of differences
                   </p>
                 </div>
@@ -252,7 +252,7 @@ const Chapter6FormulaHub = () => {
             </button>
             
             {expandedSections.effectSize && (
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <EffectSizeBuilder />
               </div>
             )}

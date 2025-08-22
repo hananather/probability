@@ -26,18 +26,18 @@ const Chapter4FormulaHub = () => {
 
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white p-6">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="min-h-screen bg-neutral-950 text-white p-3 sm:p-4 lg:p-6">
+      <div className="max-w-full lg:max-w-6xl mx-auto space-y-6 sm:space-y-8">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex justify-center items-center gap-3 mb-4">
             <Sparkles className="w-8 h-8 text-purple-400" />
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
               Chapter 4: Interactive Formula Builder
             </h1>
             <Sparkles className="w-8 h-8 text-pink-400" />
           </div>
-          <p className="text-neutral-400 max-w-2xl mx-auto">
+          <p className="text-xs sm:text-sm text-neutral-400 max-w-2xl mx-auto px-2 sm:px-0">
             Master the fundamental formulas of sampling and data analysis by building them step-by-step. Learn sample statistics, variability measures, and the t-distribution.
           </p>
         </div>
@@ -48,15 +48,15 @@ const Chapter4FormulaHub = () => {
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
               onClick={() => toggleSection('sampleMean')}
-              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+              className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-teal-900/30 rounded-lg">
                   <Target className="w-6 h-6 text-teal-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">Sample Mean</h2>
-                  <p className="text-sm text-neutral-400 mt-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Sample Mean</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
                     Build the foundation: x̄ = (1/n) Σ xi
                   </p>
                 </div>
@@ -68,7 +68,7 @@ const Chapter4FormulaHub = () => {
             </button>
             
             {expandedSections.sampleMean && (
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <SampleMeanBuilder />
               </div>
             )}
@@ -78,15 +78,15 @@ const Chapter4FormulaHub = () => {
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
               onClick={() => toggleSection('sampleVariance')}
-              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+              className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-purple-900/30 rounded-lg">
                   <TrendingUp className="w-6 h-6 text-purple-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">Sample Variance</h2>
-                  <p className="text-sm text-neutral-400 mt-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Sample Variance</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
                     Learn Bessel's correction: s² = (1/(n-1)) Σ (xi - x̄)²
                   </p>
                 </div>
@@ -98,7 +98,7 @@ const Chapter4FormulaHub = () => {
             </button>
             
             {expandedSections.sampleVariance && (
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <SampleVarianceBuilder />
               </div>
             )}
@@ -108,15 +108,15 @@ const Chapter4FormulaHub = () => {
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
               onClick={() => toggleSection('standardError')}
-              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+              className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-emerald-900/30 rounded-lg">
                   <Activity className="w-6 h-6 text-emerald-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">Standard Error</h2>
-                  <p className="text-sm text-neutral-400 mt-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Standard Error</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
                     Understand precision: SE(X̄) = σ/√n
                   </p>
                 </div>
@@ -128,7 +128,7 @@ const Chapter4FormulaHub = () => {
             </button>
             
             {expandedSections.standardError && (
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <StandardErrorBuilder />
               </div>
             )}
@@ -138,15 +138,15 @@ const Chapter4FormulaHub = () => {
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
               onClick={() => toggleSection('tDistribution')}
-              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+              className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-rose-900/30 rounded-lg">
                   <Calculator className="w-6 h-6 text-rose-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">t-Distribution</h2>
-                  <p className="text-sm text-neutral-400 mt-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">t-Distribution</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
                     When σ is unknown: t = (x̄ - μ)/(s/√n)
                   </p>
                 </div>
@@ -158,7 +158,7 @@ const Chapter4FormulaHub = () => {
             </button>
             
             {expandedSections.tDistribution && (
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <TDistributionBuilder />
               </div>
             )}
@@ -168,15 +168,15 @@ const Chapter4FormulaHub = () => {
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
               onClick={() => toggleSection('centralLimitTheorem')}
-              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+              className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-violet-900/30 rounded-lg">
                   <BarChart className="w-6 h-6 text-violet-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">Central Limit Theorem</h2>
-                  <p className="text-sm text-neutral-400 mt-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Central Limit Theorem</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
                     The foundation of sampling distributions
                   </p>
                 </div>
@@ -188,7 +188,7 @@ const Chapter4FormulaHub = () => {
             </button>
             
             {expandedSections.centralLimitTheorem && (
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <CentralLimitTheoremBuilder />
               </div>
             )}

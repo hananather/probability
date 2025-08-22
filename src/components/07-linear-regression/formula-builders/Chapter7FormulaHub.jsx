@@ -39,18 +39,18 @@ const Chapter7FormulaHub = () => {
 
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white p-6">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="min-h-screen bg-neutral-950 text-white p-3 sm:p-4 lg:p-6">
+      <div className="max-w-full lg:max-w-6xl mx-auto space-y-6 sm:space-y-8">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex justify-center items-center gap-3 mb-4">
             <Sparkles className="w-8 h-8 text-blue-400" />
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
               Chapter 7: Linear Regression Formula Builder
             </h1>
             <Sparkles className="w-8 h-8 text-indigo-400" />
           </div>
-          <p className="text-neutral-400 max-w-3xl mx-auto">
+          <p className="text-xs sm:text-sm text-neutral-400 max-w-3xl mx-auto px-2 sm:px-0">
             Master the fundamental formulas of linear regression by building them step-by-step. 
             From correlation to prediction intervals, understand why each formula works and when to use it.
           </p>
@@ -68,15 +68,15 @@ const Chapter7FormulaHub = () => {
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
               onClick={() => toggleSection('correlationCoefficient')}
-              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+              className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-blue-900/30 rounded-lg">
                   <BarChart3 className="w-6 h-6 text-blue-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">Correlation Coefficient Formula</h2>
-                  <p className="text-sm text-neutral-400 mt-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Correlation Coefficient Formula</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
                     Measure the strength and direction of linear relationship: r = Cov(X,Y)/(σₓσᵧ)
                   </p>
                   <div className="text-xs text-blue-400 mt-2">
@@ -91,7 +91,7 @@ const Chapter7FormulaHub = () => {
             </button>
             
             {expandedSections.correlationCoefficient && (
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <CorrelationCoefficientBuilder />
               </div>
             )}
@@ -101,15 +101,15 @@ const Chapter7FormulaHub = () => {
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
               onClick={() => toggleSection('leastSquaresSlope')}
-              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+              className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-teal-900/30 rounded-lg">
                   <TrendingUp className="w-6 h-6 text-teal-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">Least Squares Slope Formula</h2>
-                  <p className="text-sm text-neutral-400 mt-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Least Squares Slope Formula</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
                     Find the best-fit line slope: b₁ = Σ(x-x̄)(y-ȳ)/Σ(x-x̄)² = r×(sᵧ/sₓ)
                   </p>
                   <div className="text-xs text-teal-400 mt-2">
@@ -124,7 +124,7 @@ const Chapter7FormulaHub = () => {
             </button>
             
             {expandedSections.leastSquaresSlope && (
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <LeastSquaresSlopeBuilder />
               </div>
             )}
@@ -134,15 +134,15 @@ const Chapter7FormulaHub = () => {
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
               onClick={() => toggleSection('linearRegressionSlope')}
-              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+              className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-indigo-900/30 rounded-lg">
                   <TrendingUp className="w-6 h-6 text-indigo-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">Linear Regression Slope (Correlation Method)</h2>
-                  <p className="text-sm text-neutral-400 mt-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Linear Regression Slope (Correlation Method)</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
                     Alternative approach: Understanding slope through correlation b₁ = r × (sᵧ/sₓ)
                   </p>
                   <div className="text-xs text-indigo-400 mt-2">
@@ -157,7 +157,7 @@ const Chapter7FormulaHub = () => {
             </button>
             
             {expandedSections.linearRegressionSlope && (
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <LinearRegressionBuilder />
               </div>
             )}
@@ -167,15 +167,15 @@ const Chapter7FormulaHub = () => {
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
               onClick={() => toggleSection('leastSquaresIntercept')}
-              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+              className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-purple-900/30 rounded-lg">
                   <Crosshair className="w-6 h-6 text-purple-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">Least Squares Intercept Formula</h2>
-                  <p className="text-sm text-neutral-400 mt-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Least Squares Intercept Formula</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
                     Where the line crosses the y-axis: b₀ = ȳ - b₁x̄
                   </p>
                   <div className="text-xs text-purple-400 mt-2">
@@ -190,7 +190,7 @@ const Chapter7FormulaHub = () => {
             </button>
             
             {expandedSections.leastSquaresIntercept && (
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <LeastSquaresInterceptBuilder />
               </div>
             )}
@@ -200,15 +200,15 @@ const Chapter7FormulaHub = () => {
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
               onClick={() => toggleSection('rSquared')}
-              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+              className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-emerald-900/30 rounded-lg">
                   <PieChart className="w-6 h-6 text-emerald-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">R-Squared Formula</h2>
-                  <p className="text-sm text-neutral-400 mt-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">R-Squared Formula</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
                     Coefficient of determination: R² = SSR/SST = 1 - SSE/SST = r²
                   </p>
                   <div className="text-xs text-emerald-400 mt-2">
@@ -223,7 +223,7 @@ const Chapter7FormulaHub = () => {
             </button>
             
             {expandedSections.rSquared && (
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <RSquaredBuilder />
               </div>
             )}
@@ -233,15 +233,15 @@ const Chapter7FormulaHub = () => {
           <div className="rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800">
             <button
               onClick={() => toggleSection('residualStandardError')}
-              className="w-full p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+              className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-orange-900/30 rounded-lg">
                   <Activity className="w-6 h-6 text-orange-400" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-xl font-bold text-white">Residual Standard Error Formula</h2>
-                  <p className="text-sm text-neutral-400 mt-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Residual Standard Error Formula</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
                     Typical prediction error size: s = √[SSE/(n-2)]
                   </p>
                   <div className="text-xs text-orange-400 mt-2">
@@ -256,7 +256,7 @@ const Chapter7FormulaHub = () => {
             </button>
             
             {expandedSections.residualStandardError && (
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <ResidualStandardErrorBuilder />
               </div>
             )}
