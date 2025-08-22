@@ -8,8 +8,7 @@ import { useMathJax } from '@/hooks/useMathJax'
 
 // Memoized formula component
 const HypothesesFormula = React.memo(function HypothesesFormula({ nullProportion, testType }) {
-  const ref = useRef(null)
-  useMathJax(ref, [nullProportion, testType])
+  const ref = useMathJax([nullProportion, testType])
   
   return (
     <div ref={ref}>

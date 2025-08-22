@@ -41,9 +41,6 @@ const SpatialRandomVariable = () => {
   const samplingIntervalRef = useRef(null);
   const animationsRef = useRef(new Set());
   
-  // Use MathJax hook for formula rendering
-  useMathJax();
-  
   // State - using original color scheme
   const [availableColors] = useState([
     '#14b8a6', '#eab308', '#3b82f6', '#ef4444', '#8b5cf6', 

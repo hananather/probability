@@ -24,8 +24,6 @@ const Chapter1FormulaHub = () => {
     }));
   };
 
-  useMathJax();
-
   return (
     <div className="min-h-screen bg-neutral-950 text-white p-6">
       <div className="max-w-6xl mx-auto space-y-8">

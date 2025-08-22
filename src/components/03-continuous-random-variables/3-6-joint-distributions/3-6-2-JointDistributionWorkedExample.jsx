@@ -29,9 +29,8 @@ const LaTeXFormula = React.memo(function LaTeXFormula({ formula, isBlock = false
 export const JointDistributionWorkedExample = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
-  const contentRef = useRef(null);
   
-  useMathJax(contentRef, [currentStep, showAnswer]);
+  const contentRef = useMathJax([currentStep, showAnswer]);
 
   const examples = [
     {

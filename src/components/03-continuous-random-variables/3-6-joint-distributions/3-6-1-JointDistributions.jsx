@@ -28,10 +28,8 @@ const LaTeXFormula = React.memo(function LaTeXFormula({ formula, isBlock = false
 const JointDistributions = () => {
   const [distribution, setDistribution] = useState('bivariate-normal');
   
-  const contentRef = useRef(null);
-  
   // Use safe MathJax processing
-  useMathJax(contentRef, [distribution]);
+  const contentRef = useMathJax([distribution]);
 
 
   return (

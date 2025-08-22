@@ -586,7 +586,6 @@ const FDistributionAdvanced = () => {
   // Refs
   const animationRef = useRef(null);
   const localSamplesRef = useRef([]);
-  const contentRef = useRef(null);
   
   // Calculate degrees of freedom
   const df1 = Math.max(1, df1Input - 1);
@@ -596,7 +595,7 @@ const FDistributionAdvanced = () => {
   const stage = learningStages[currentStage];
   
   // Use safe MathJax processing
-  useMathJax(contentRef, [currentStage]);
+  const contentRef = useMathJax([currentStage]);
   
   // Generate F-statistic
   const generateFStatistic = useCallback(() => {

@@ -38,9 +38,8 @@ export const JointProbabilityCalculator = () => {
   const [showIntegration, setShowIntegration] = useState(false);
   
   const svgRef = useRef(null);
-  const contentRef = useRef(null);
   
-  useMathJax(contentRef, [distribution, probability]);
+  const contentRef = useMathJax([distribution, probability]);
 
   // PDF functions
   const bivariateNormalPDF = (x, y, rho) => {

@@ -31,7 +31,6 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
   
   // Refs for D3 visualization
   const svgRef = useRef(null);
-  const contentRef = useRef(null);
   
   // Calculate Normal parameters
   const mu = n * p;
@@ -319,7 +318,7 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
   }, [n, p, k, mu, sigma, showCC, highlightedConcept, distributionData]);
   
   // Use safe MathJax processing with error handling
-  useMathJax(contentRef, [n, p, k, mu, sigma, probType, showCC, currentStep]);
+  const contentRef = useMathJax([n, p, k, mu, sigma, probType, showCC, currentStep]);
   
   // Get dynamic insight based on current state
   const getDynamicInsight = () => {
@@ -372,10 +371,8 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
   
   // Memoized Step 2 Component to prevent LaTeX re-rendering
   const Step2NormalParameters = React.memo(function Step2NormalParameters({ n, p, mu, variance, sigma }) {
-    const stepRef = useRef(null);
-    
     // Use safe MathJax processing with error handling
-    useMathJax(stepRef, [n, p, mu, variance, sigma]);
+    const stepRef = useMathJax([n, p, mu, variance, sigma]);
     
     return (
       <div ref={stepRef} className="space-y-3">
@@ -408,10 +405,8 @@ const NormalApproxBinomialWorkedExample = React.memo(function NormalApproxBinomi
   
   // Memoized Z-Score Calculation Component
   const ZScoreCalculation = React.memo(function ZScoreCalculation({ probType, showCC, k, mu, sigma }) {
-    const stepRef = useRef(null);
-    
     // Use safe MathJax processing with error handling
-    useMathJax(stepRef, [probType, showCC, k, mu, sigma]);
+    const stepRef = useMathJax([probType, showCC, k, mu, sigma]);
     
     return (
       <div ref={stepRef}>

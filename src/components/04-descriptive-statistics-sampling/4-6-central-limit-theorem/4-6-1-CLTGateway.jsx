@@ -8,8 +8,7 @@ import { QuizBreak } from '../../mdx/QuizBreak';
 import { ComparisonTable, SimpleComparisonTable } from '../../ui/patterns/ComparisonTable';
 
 const CLTGateway = () => {
-  const contentRef = useRef(null);
-  useMathJax(contentRef);
+  const contentRef = useMathJax([]);
 
   return (
     <VisualizationSection>

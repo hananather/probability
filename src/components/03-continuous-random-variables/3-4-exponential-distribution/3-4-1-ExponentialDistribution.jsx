@@ -38,10 +38,8 @@ const learningStages = [
 
 // Memoized component for LaTeX formulas to prevent re-rendering
 const MemorylessFormula = React.memo(function MemorylessFormula() {
-  const ref = useRef(null);
-  
   // Use safe MathJax processing with error handling
-  useMathJax(ref, []);
+  const ref = useMathJax([]);
   
   return (
     <p ref={ref} className="text-xs text-neutral-300 mt-2 font-mono">
@@ -52,10 +50,8 @@ const MemorylessFormula = React.memo(function MemorylessFormula() {
 
 // Memoized component for stage content
 const StageContent = React.memo(function StageContent({ stage, lambda }) {
-  const contentRef = useRef(null);
-  
   // Use safe MathJax processing with error handling
-  useMathJax(contentRef, [stage, lambda]);
+  const contentRef = useMathJax([stage, lambda]);
   
   if (stage === 1) {
     return (

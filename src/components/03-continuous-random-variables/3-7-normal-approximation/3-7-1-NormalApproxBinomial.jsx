@@ -97,7 +97,6 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
   
   // Refs for D3 and content
   const svgRef = useRef(null);
-  const contentRef = useRef(null);
   
   // Inject custom slider styles
   useEffect(() => {
@@ -135,7 +134,7 @@ const NormalApproxBinomial = React.memo(function NormalApproxBinomial() {
   }, [n, k]);
   
   // Use safe MathJax processing with error handling
-  useMathJax(contentRef, [n, p, k, probType, showCC, stage]);
+  const contentRef = useMathJax([n, p, k, probType, showCC, stage]);
   
   // Calculate probabilities
   const calculateProbabilities = () => {

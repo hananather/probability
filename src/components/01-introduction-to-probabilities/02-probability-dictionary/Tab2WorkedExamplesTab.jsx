@@ -11,8 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Visual Symbol Introduction
 const VisualSymbolsSection = () => {
-  const contentRef = useRef(null);
-  useMathJax(contentRef);
+  const contentRef = useMathJax([]);
   
   return (
     <div ref={contentRef} className="space-y-6">
@@ -142,8 +141,7 @@ const VisualSymbolsSection = () => {
 
 // Pattern Recognition Section
 const PatternRecognitionSection = () => {
-  const contentRef = useRef(null);
-  useMathJax(contentRef);
+  const contentRef = useMathJax([]);
   
   const patterns = [
     {
@@ -219,8 +217,7 @@ const PatternRecognitionSection = () => {
 const BuildUpPracticeSection = () => {
   const [currentLevel, setCurrentLevel] = useState(0);
   const [answers, setAnswers] = useState({});
-  const contentRef = useRef(null);
-  useMathJax(contentRef);
+  const contentRef = useMathJax([currentLevel]);
   
   const levels = [
     {
@@ -398,9 +395,8 @@ const BuildUpPracticeSection = () => {
 
 // Real Context Practice
 const RealContextSection = () => {
-  const contentRef = useRef(null);
-  useMathJax(contentRef);
   const [selectedContext, setSelectedContext] = useState(0);
+  const contentRef = useMathJax([selectedContext]);
   
   const contexts = [
     {

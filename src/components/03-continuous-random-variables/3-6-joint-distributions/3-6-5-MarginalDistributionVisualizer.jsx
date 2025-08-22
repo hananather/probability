@@ -36,11 +36,10 @@ const MarginalDistributionVisualizer = () => {
   const [mousePosition, setMousePosition] = useState(null);
   const [cursorDensity, setCursorDensity] = useState(null)
   
-  const contentRef = useRef(null);
   const svgRef = useRef(null);
   
   // Use safe MathJax processing
-  useMathJax(contentRef, [distribution, correlation, lambda1, lambda2]);
+  const contentRef = useMathJax([distribution, correlation, lambda1, lambda2]);
 
   // PDF calculation functions
   const bivariateNormalPDF = (x, y, rho) => {

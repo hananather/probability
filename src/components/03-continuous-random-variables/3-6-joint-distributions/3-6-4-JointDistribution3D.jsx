@@ -44,10 +44,8 @@ const JointDistribution3D = () => {
     xMin: -1, xMax: 1, yMin: -1, yMax: 1
   });
   
-  const contentRef = useRef(null);
-  
   // Use safe MathJax processing
-  useMathJax(contentRef, [distribution, correlation, lambda1, lambda2]);
+  const contentRef = useMathJax([distribution, correlation, lambda1, lambda2]);
 
   // Handle keyboard navigation for region adjustment
   const handleKeyDown = useCallback((e) => {

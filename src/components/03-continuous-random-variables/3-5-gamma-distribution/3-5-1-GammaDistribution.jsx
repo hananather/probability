@@ -21,7 +21,6 @@ const GammaDistribution = React.memo(function GammaDistribution() {
   
   // Refs
   const mainSvgRef = useRef(null);
-  const contentRef = useRef(null);
   
   // Color scheme - memoized to prevent unnecessary re-renders
   const colors = useMemo(() => createColorScheme('probability'), []);
@@ -68,7 +67,7 @@ const GammaDistribution = React.memo(function GammaDistribution() {
     }
   ];
   
-  useMathJax(contentRef, [shape, rate, stage]);
+  const contentRef = useMathJax([shape, rate, stage]);
   
   // Main visualization
   useEffect(() => {

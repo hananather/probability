@@ -26,7 +26,6 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
   
   // Refs for D3 visualization
   const svgRef = useRef(null);
-  const contentRef = useRef(null);
   
   // Derived values
   const scale = 1 / rate;
@@ -254,7 +253,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
   }, [distributionData, shape, mean, mode, colorScheme]);
   
   // Use safe MathJax processing with error handling
-  useMathJax(contentRef, [shape, rate, scale, mean, variance, mode]);
+  const contentRef = useMathJax([shape, rate, scale, mean, variance, mode]);
   
   // Engineering context based on parameters
   const getEngineeringContext = () => {
@@ -293,10 +292,8 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
   
   // Wrap formula sections in React.memo to prevent re-renders
   const FormulaSection = React.memo(({ children, expanded }) => {
-    const ref = useRef(null);
-    
     // Use safe MathJax processing with error handling
-    useMathJax(ref, [expanded]);
+    const ref = useMathJax([expanded]);
     
     return <div ref={ref}>{children}</div>;
   });

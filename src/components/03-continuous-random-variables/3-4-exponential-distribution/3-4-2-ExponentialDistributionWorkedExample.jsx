@@ -8,8 +8,6 @@ const ExponentialDistributionWorkedExample = React.memo(function ExponentialDist
   t = 1,
   className = ""
 }) {
-  const contentRef = useRef(null);
-  
   // Calculate values
   const pdfValue = lambda * Math.exp(-lambda * t);
   const cdfValue = 1 - Math.exp(-lambda * t);
@@ -19,7 +17,7 @@ const ExponentialDistributionWorkedExample = React.memo(function ExponentialDist
   const survivalProb = Math.exp(-lambda * t);
   
   // Use safe MathJax processing with error handling
-  useMathJax(contentRef, [lambda, t]);
+  const contentRef = useMathJax([lambda, t]);
   
   return (
     <div
