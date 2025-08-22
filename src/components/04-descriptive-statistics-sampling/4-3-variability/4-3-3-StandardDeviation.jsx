@@ -4,6 +4,7 @@ import { VisualizationContainer, VisualizationSection } from "@/components/ui/Vi
 import { Button } from "@/components/ui/button";
 import { createColorScheme } from '@/lib/design-system';
 import { TrendingUp, ChevronDown, ChevronUp, Ruler, Bell } from 'lucide-react';
+import { useMathJax } from "@/hooks/useMathJax";
 import * as d3 from 'd3';
 
 // Chapter 4 color scheme
@@ -21,8 +22,6 @@ const StandardDeviation = () => {
   const [sdMultiplier, setSdMultiplier] = useState(1);
   
   const svgRef = useRef(null);
-  const mathRef = useRef(null);
-  const bellRef = useRef(null);
   
   // Get current dataset
   const currentData = selectedDataset === 'heights' ? HEIGHTS_DATA : TEST_SCORES;
@@ -35,15 +34,9 @@ const StandardDeviation = () => {
   const variance = currentData.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / (n - 1);
   const standardDeviation = Math.sqrt(variance);
   
-  // Process MathJax
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.MathJax?.typesetPromise) {
-      const refs = [mathRef.current, bellRef.current].filter(Boolean);
-      if (refs.length > 0) {
-        window.MathJax.typesetPromise(refs).catch(() => {});
-      }
-    }
-  }, [showEmpiricalRule, showWorkedExample, showInterpretation]);
+  // Process MathJax with retry logic
+  const mathRef = useMathJax([showEmpiricalRule, showWorkedExample, showInterpretation]);
+  const bellRef = useMathJax([showEmpiricalRule, showWorkedExample, showInterpretation]);
 
   // Main visualization
   useEffect(() => {

@@ -4,6 +4,7 @@ import { VisualizationContainer, VisualizationSection } from "@/components/ui/Vi
 import { Button } from "@/components/ui/button";
 import { createColorScheme } from '@/lib/design-system';
 import { TrendingUp, ChevronDown, ChevronUp, AlertTriangle, Scale, DollarSign, Activity } from 'lucide-react';
+import { useMathJax } from "@/hooks/useMathJax";
 import * as d3 from 'd3';
 
 // Chapter 4 color scheme
@@ -33,7 +34,6 @@ const CoefficientOfVariation = () => {
   const [hoveredBar, setHoveredBar] = useState(null);
   
   const svgRef = useRef(null);
-  const mathRef = useRef(null);
   
   // Get current datasets
   const currentComparison = DATASETS[selectedComparison];
@@ -53,12 +53,8 @@ const CoefficientOfVariation = () => {
   const statsA = calculateStats(datasetA.data);
   const statsB = calculateStats(datasetB.data);
   
-  // Process MathJax
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.MathJax?.typesetPromise && mathRef.current) {
-      window.MathJax.typesetPromise([mathRef.current]).catch(() => {});
-    }
-  }, [showFormula, showWorkedExample]);
+  // Process MathJax with retry logic
+  const mathRef = useMathJax([showFormula, showWorkedExample]);
 
   // D3 Visualization
   useEffect(() => {

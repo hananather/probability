@@ -4,6 +4,7 @@ import { VisualizationContainer, VisualizationSection } from "@/components/ui/Vi
 import { Button } from "@/components/ui/button";
 import { createColorScheme } from '@/lib/design-system';
 import { ArrowRight, TrendingUp, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { useMathJax } from "@/hooks/useMathJax";
 import * as d3 from 'd3';
 
 // Chapter 4 color scheme
@@ -20,7 +21,6 @@ const RangeAndIQR = () => {
   const [showOutlier, setShowOutlier] = useState(false);
   const [showWorkedExample, setShowWorkedExample] = useState(false);
   const svgRef = useRef(null);
-  const mathRef = useRef(null);
 
   // Current dataset based on outlier state
   const currentData = showOutlier ? EXTENDED_DATA : INITIAL_DATA;
@@ -41,12 +41,8 @@ const RangeAndIQR = () => {
   const q3 = sortedData[q3Index];
   const iqr = q3 - q1;
 
-  // Process MathJax
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.MathJax?.typesetPromise && mathRef.current) {
-      window.MathJax.typesetPromise([mathRef.current]).catch(() => {});
-    }
-  }, [stage, showIQR, showWorkedExample]);
+  // Process MathJax with retry logic
+  const mathRef = useMathJax([stage, showIQR, showWorkedExample]);
 
   // D3 Visualization
   useEffect(() => {

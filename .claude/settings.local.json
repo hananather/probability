@@ -198,7 +198,8 @@
       "Bash(open http://localhost:3004/chapter7/formula-builder)",
       "Bash(timeout 90 npm run build)",
       "Bash(head:*)",
-      "Bash(do echo \"\")"
+      "Bash(do echo \"\")",
+      "Bash(timeout 20 npm run dev)"
     ],
     "deny": []
   },

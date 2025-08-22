@@ -4,6 +4,7 @@ import { VisualizationContainer, VisualizationSection } from "@/components/ui/Vi
 import { Button } from "@/components/ui/button";
 import { createColorScheme } from '@/lib/design-system';
 import { ArrowRight, AlertCircle, TrendingUp, ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { useMathJax } from "@/hooks/useMathJax";
 import * as d3 from 'd3';
 
 // Chapter 4 color scheme
@@ -30,7 +31,6 @@ const VarianceIntroduction = () => {
   });
   
   const svgRef = useRef(null);
-  const mathRef = useRef(null);
   
   // Get current dataset
   const currentData = selectedDataset === 'A' ? DATASET_A : 
@@ -44,12 +44,8 @@ const VarianceIntroduction = () => {
   const populationVariance = sumSquaredDev / currentData.length;
   const sampleVariance = sumSquaredDev / (currentData.length - 1);
 
-  // Process MathJax
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.MathJax?.typesetPromise && mathRef.current) {
-      window.MathJax.typesetPromise([mathRef.current]).catch(() => {});
-    }
-  }, [stage, showSquared, showAverage, showWorkedExample]);
+  // Process MathJax with retry logic
+  const mathRef = useMathJax([stage, showSquared, showAverage, showWorkedExample]);
 
   // D3 Visualization
   useEffect(() => {

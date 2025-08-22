@@ -352,7 +352,7 @@ KeyConceptsCard.displayName = 'KeyConceptsCard';
 const CHAPTER_4_SECTIONS = [
   {
     id: 'formula-builder',
-    title: '4.0 Interactive Formula Builder',
+    title: 'Interactive Formula Builder',
     subtitle: 'Build formulas step-by-step',
     description: 'Build descriptive statistics formulas interactively. Click on each part to understand why it\'s there and how it works.',
     icon: Sparkles,
