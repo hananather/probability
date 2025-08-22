@@ -2596,7 +2596,7 @@ export default function StatisticalInference() {
                 explanation: "Standard error follows the formula SE = σ/√n. When n increases by a factor of 4 (from 25 to 100), SE decreases by a factor of 2 (since √4 = 2). So SE goes from 2 to 1."
               }
             ]}
-            onComplete={() => console.log('Quiz completed')}
+            onComplete={() => {}}
           />
         </div>
         

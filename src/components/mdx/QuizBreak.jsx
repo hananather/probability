@@ -9,12 +9,10 @@ function QuizQuestion({ question, options, correctIndex, explanation, onAnswer, 
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [isAnswered, setIsAnswered] = useState(false);
-  const questionRef = useRef(null);
-  const optionsRef = useRef(null);
   
   // Use safe MathJax processing
-  useMathJax(questionRef, [question]);
-  useMathJax(optionsRef, [options]);
+  const questionRef = useMathJax([question]);
+  const optionsRef = useMathJax(options);
   
   const handleAnswerSelect = (index) => {
     if (isAnswered) return;
@@ -412,12 +410,10 @@ export function MultipleChoiceQuestion({
 }) {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [isAnswered, setIsAnswered] = useState(false);
-  const questionRef = useRef(null);
-  const optionsRef = useRef(null);
   
   // Use safe MathJax processing
-  useMathJax(questionRef, [question]);
-  useMathJax(optionsRef, [options]);
+  const questionRef = useMathJax([question]);
+  const optionsRef = useMathJax(options);
   
   const handleSubmit = () => {
     if (selectedAnswer === null) return;

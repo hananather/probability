@@ -188,15 +188,4 @@ export const chapters = [
       { title: 'Execute Program Style Reference', url: '' },
     ]
   },
-  {
-    title: '📦 Legacy Components',
-    path: '/legacy-components',
-    sections: [
-      { title: 'Bayesian Inference', url: '#bayesian-inference' },
-      { title: 'Point Estimation', url: '#point-estimation' },
-      { title: 'Confidence Intervals', url: '#confidence-intervals' },
-      { title: 'Bootstrapping', url: '#bootstrapping' },
-      { title: 'Central Limit Theorem', url: '#central-limit-theorem' },
-    ]
-  },
 ];

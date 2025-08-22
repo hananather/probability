@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+Ultrathink.
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
@@ -87,18 +89,6 @@ npm run clean-build            # Clean build (removes .next directory)
 5. **Build failures**: Fix TypeScript errors, missing imports
 6. **SVG/Chart spacing overlaps**: Elements below charts often overlap due to insufficient margins. Fix by using large explicit margins (e.g., `style={{ marginTop: '200px' }}`) instead of Tailwind classes like `mt-6`. This is especially common with D3.js SVGs where the height might not be properly accounted for in the layout flow.
 
-## File Structure
-```
-/src/app/               # Next.js App Router pages
-/src/components/        # All React components
-  ├── 01-07-*/         # Chapter components
-  ├── learn/           # Gold standard showcase
-  ├── shared/          # Common components
-  └── ui/              # Reusable UI components
-/src/hooks/            # Custom React hooks
-/src/utils/            # Utility functions
-/docs/                 # Development guides
-```
 
 ## Key Dependencies
 - **Framework**: Next.js 15, React 19
@@ -126,3 +116,6 @@ Don't guess about:
 - `/docs/mathJax-racecondition-fixes.md` - MathJax timing issues
 - `/docs/tabbed-learning-migration.md` - Tabbed component patterns
 - `/src/components/learn/GoldStandardShowcase.jsx` - UI reference implementation
+
+
+Ultrathink.
