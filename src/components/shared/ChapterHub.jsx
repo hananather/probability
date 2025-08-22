@@ -292,7 +292,7 @@ export default function ChapterHub({
         <VisualizationContainer title={selectedComponent.title}>
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div 
-              className="p-6 rounded-full mb-6"
+              className="p-4 sm:p-6 rounded-full mb-4 sm:mb-6"
               style={{ backgroundColor: `${selectedComponent.color}20` }}
             >
               {React.createElement(selectedComponent.icon, { 
@@ -300,14 +300,14 @@ export default function ChapterHub({
                 style: { color: selectedComponent.color }
               })}
             </div>
-            <h2 className="text-2xl font-bold text-white mb-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">
               {selectedComponent.title}
             </h2>
-            <p className="text-neutral-400 mb-6 max-w-md">
+            <p className="text-sm sm:text-base text-neutral-400 mb-4 sm:mb-6 max-w-md">
               {selectedComponent.description}
             </p>
-            <div className="bg-neutral-800 rounded-lg p-6 max-w-2xl">
-              <h3 className="text-lg font-semibold text-white mb-4">
+            <div className="bg-neutral-800 rounded-lg p-4 sm:p-6 max-w-full sm:max-w-2xl">
+              <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">
                 This section is coming soon!
               </h3>
               <div className="text-left space-y-3">
@@ -347,13 +347,13 @@ export default function ChapterHub({
       <div className={styles.progressContainer}>
         <div className={styles.progressHeader}>
           <div>
-            <h2 className="text-2xl font-bold text-white mb-2">
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
               Master {chapterTitle}
             </h2>
-            <p className="text-neutral-400">
+            <p className="text-sm sm:text-base text-neutral-400">
               {chapterSubtitle}
             </p>
-            <p className="text-sm text-neutral-500 mt-2">
+            <p className="text-xs sm:text-sm text-neutral-500 mt-2">
               All sections are accessible - follow the numbered sequence for the best learning experience
             </p>
           </div>
@@ -373,7 +373,7 @@ export default function ChapterHub({
       
       {/* Learning paths */}
       <VisualizationSection title="Choose Your Learning Path">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           {sections.map((component, index) => {
             // Determine if this is the next recommended component
             const isCompleted = completedComponents.includes(component.id);
@@ -397,7 +397,7 @@ export default function ChapterHub({
       
       {/* Learning tips */}
       <VisualizationSection title="Learning Tips" className="mt-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
           <div className={styles.tipCard}>
             <BookOpen className={cn(styles.tipIcon, "text-blue-400")} size={24} />
             <h4 className={styles.tipTitle}>Build Intuition First</h4>
