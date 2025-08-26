@@ -177,7 +177,7 @@ const ChapterCard = React.memo(({ chapter, index, visualization: Visualization, 
         </div>
         
         {/* Progress Bar Overlay */}
-        {!loading && mounted && (progressPercentage > 0 || isInProgress || isCompleted) && (
+        {!loading && mounted && (
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-neutral-900/50 backdrop-blur-sm">
             <div 
               className={`h-full ${colorClasses.progressBg} transition-all duration-500`}
@@ -205,36 +205,37 @@ const ChapterCard = React.memo(({ chapter, index, visualization: Visualization, 
           {chapter.description}
         </p>
         
-        {/* Progress Info */}
-        {!loading && mounted && (progressPercentage > 0 || isInProgress || isCompleted || chapterProgress.completedSections?.length > 0) && (
+        {/* Progress Section */}
+        {!loading && mounted && (
           <div className="mt-3 pt-3 border-t border-neutral-700/50">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-neutral-400">
-                {isCompleted ? 'Completed' : `${progressPercentage}% Complete`}
-              </span>
-              {chapterProgress.lastVisited && (
-                <span className="text-neutral-500">
-                  {formatLastVisited()}
+            {/* Progress Info Text - conditional */}
+            {(progressPercentage > 0 || isInProgress || isCompleted || chapterProgress.completedSections?.length > 0) && (
+              <div className="flex items-center justify-between text-xs mb-2">
+                <span className="text-neutral-400">
+                  {isCompleted ? 'Completed' : `${progressPercentage}% Complete`}
                 </span>
-              )}
-            </div>
-            
-            {/* Detailed Progress Bar */}
-            {(progressPercentage > 0 || isInProgress) && (
-              <div className="mt-2">
-                <div className={`h-1.5 ${colorClasses.progressTrack} rounded-full overflow-hidden`}>
-                  <div 
-                    className={`h-full ${colorClasses.progressBg} rounded-full transition-all duration-500`}
-                    style={{ width: `${progressPercentage}%` }}
-                  />
-                </div>
-                {chapterProgress.completedSections && chapterProgress.completedSections.length > 0 && (
-                  <p className="text-xs text-neutral-500 mt-1">
-                    {chapterProgress.completedSections.length} sections completed
-                  </p>
+                {chapterProgress.lastVisited && (
+                  <span className="text-neutral-500">
+                    {formatLastVisited()}
+                  </span>
                 )}
               </div>
             )}
+            
+            {/* Detailed Progress Bar - always visible */}
+            <div>
+              <div className={`h-1.5 ${colorClasses.progressTrack} rounded-full overflow-hidden`}>
+                <div 
+                  className={`h-full ${colorClasses.progressBg} rounded-full transition-all duration-500`}
+                  style={{ width: `${progressPercentage}%` }}
+                />
+              </div>
+              {chapterProgress.completedSections && chapterProgress.completedSections.length > 0 && (
+                <p className="text-xs text-neutral-500 mt-1">
+                  {chapterProgress.completedSections.length} sections completed
+                </p>
+              )}
+            </div>
           </div>
         )}
         

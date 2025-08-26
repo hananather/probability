@@ -143,8 +143,7 @@ class ProgressService {
       'chapter-4': 14,
       'chapter-5': 16,
       'chapter-6': 20,
-      'chapter-7': 17,
-      'chapter-8': 10
+      'chapter-7': 17
     };
     
     const totalSections = chapterSectionCounts[chapterId] || 10;
@@ -181,7 +180,7 @@ class ProgressService {
       overallProgress: chapters.length > 0 ? Math.round(totalProgress / chapters.length) : 0,
       completedChapters,
       inProgressChapters,
-      totalChapters: 8,
+      totalChapters: 7,
       totalTimeSpent,
       lastActivity: this.getLastActivity(progress)
     };

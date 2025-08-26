@@ -25,16 +25,31 @@ const colors = createColorScheme('probability');
 const SamplingAnimation = React.memo(() => {
   const [sampleIndex, setSampleIndex] = useState(0);
   const [histogramData, setHistogramData] = useState(Array(11).fill(2));
+  const [isClient, setIsClient] = useState(false);
   
   const CYCLE_DURATION = 2500;
   
+  // Deterministic pseudo-random function for consistent values
+  const seededRandom = (seed) => {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  };
+  
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+  
+  useEffect(() => {
+    if (!isClient) return;
+    
+    let seedCounter = 0;
     const interval = setInterval(() => {
       setSampleIndex(prev => (prev + 1) % 3);
       
       setHistogramData(prev => {
         const newData = [...prev];
-        const sampleMean = 5 + (Math.random() - 0.5) * 2;
+        seedCounter++;
+        const sampleMean = 5 + (seededRandom(seedCounter * 1.7) - 0.5) * 2;
         const binIndex = Math.round(sampleMean);
         
         if (binIndex >= 0 && binIndex < 11) {
@@ -49,7 +64,7 @@ const SamplingAnimation = React.memo(() => {
     }, CYCLE_DURATION);
     
     return () => clearInterval(interval);
-  }, []);
+  }, [isClient]);
   
   const samplePatterns = [
     [0, 45, 90, 180, 270],
@@ -70,6 +85,19 @@ const SamplingAnimation = React.memo(() => {
   });
   
   const sampleMean = samplePoints.reduce((sum, p) => sum + p.value, 0) / sampleSize;
+  
+  // Generate population points with deterministic positions
+  const populationPoints = React.useMemo(() => {
+    return [...Array(25)].map((_, i) => {
+      const angle = (i / 25) * 2 * Math.PI;
+      const baseRadius = 25 + (i % 3) * 15;
+      return {
+        x: Math.cos(angle) * baseRadius,
+        y: Math.sin(angle) * baseRadius,
+        id: i
+      };
+    });
+  }, []);
   
   const normalCurve = (() => {
     const points = [];
@@ -105,36 +133,29 @@ const SamplingAnimation = React.memo(() => {
         </text>
         
         {/* Population points */}
-        {[...Array(25)].map((_, i) => {
-          const angle = (i / 25) * 2 * Math.PI;
-          const baseRadius = 25 + (i % 3) * 15;
-          const x = Math.cos(angle) * baseRadius;
-          const y = Math.sin(angle) * baseRadius;
-          
-          return (
-            <motion.circle
-              key={`pop-${i}`}
-              cx={x}
-              cy={y}
-              r="2.5"
-              fill="#3B82F6"
-              initial={{ opacity: 0.2 }}
-              animate={{ 
-                opacity: [0.2, 0.4, 0.2],
-                scale: [1, 1.1, 1]
-              }}
-              transition={{ 
-                duration: 3,
-                delay: i * 0.1,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            />
-          );
-        })}
+        {populationPoints.map((point) => (
+          <motion.circle
+            key={`pop-${point.id}`}
+            cx={point.x}
+            cy={point.y}
+            r="2.5"
+            fill="#3B82F6"
+            initial={{ opacity: 0.2 }}
+            animate={isClient ? { 
+              opacity: [0.2, 0.4, 0.2],
+              scale: [1, 1.1, 1]
+            } : { opacity: 0.2 }}
+            transition={isClient ? { 
+              duration: 3,
+              delay: point.id * 0.1,
+              repeat: Infinity,
+              ease: "easeInOut"
+            } : undefined}
+          />
+        ))}
         
         {/* Animated sample points */}
-        {samplePoints.map((point, i) => (
+        {isClient && samplePoints.map((point, i) => (
           <motion.g key={`sample-${sampleIndex}-${i}`}>
             <motion.circle
               cx={point.x}
@@ -182,13 +203,13 @@ const SamplingAnimation = React.memo(() => {
           strokeWidth="2"
           strokeDasharray="4 4"
           initial={{ pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ 
+          animate={isClient ? { pathLength: 1 } : { pathLength: 0 }}
+          transition={isClient ? { 
             duration: 0.5,
             delay: 0.8,
             repeat: Infinity,
             repeatDelay: 2
-          }}
+          } : undefined}
         />
         <motion.text
           x="20"
@@ -196,8 +217,8 @@ const SamplingAnimation = React.memo(() => {
           textAnchor="middle"
           className="fill-gray-500 text-xs"
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
+          animate={isClient ? { opacity: 1 } : { opacity: 0 }}
+          transition={isClient ? { delay: 0.5 } : undefined}
         >
           x̄ = {sampleMean.toFixed(1)}
         </motion.text>
@@ -223,16 +244,20 @@ const SamplingAnimation = React.memo(() => {
               x={x}
               width={barWidth - 2}
               fill="#8B5CF6"
-              animate={{
+              animate={isClient ? {
                 y: -normalizedHeight,
                 height: normalizedHeight,
                 opacity: height > 0.5 ? 0.8 : 0.3
+              } : {
+                y: 0,
+                height: 0,
+                opacity: 0
               }}
-              transition={{ 
+              transition={isClient ? { 
                 type: "spring",
                 stiffness: 300,
                 damping: 30
-              }}
+              } : undefined}
               style={{ transformOrigin: 'bottom' }}
             />
           );
@@ -245,8 +270,8 @@ const SamplingAnimation = React.memo(() => {
           stroke="#10B981"
           strokeWidth="2.5"
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.8 }}
-          transition={{ duration: 1, delay: 1 }}
+          animate={isClient ? { opacity: 0.8 } : { opacity: 0 }}
+          transition={isClient ? { duration: 1, delay: 1 } : undefined}
         />
         
         {/* Grid lines */}
@@ -279,8 +304,8 @@ const SamplingAnimation = React.memo(() => {
           strokeWidth="1"
           strokeDasharray="3 3"
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.5 }}
-          transition={{ delay: 0.3 }}
+          animate={isClient ? { opacity: 0.5 } : { opacity: 0 }}
+          transition={isClient ? { delay: 0.3 } : undefined}
         />
         <motion.line
           x1="340"
@@ -291,8 +316,8 @@ const SamplingAnimation = React.memo(() => {
           strokeWidth="1"
           strokeDasharray="3 3"
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.5 }}
-          transition={{ delay: 0.6 }}
+          animate={isClient ? { opacity: 0.5 } : { opacity: 0 }}
+          transition={isClient ? { delay: 0.6 } : undefined}
         />
       </motion.g>
     </svg>

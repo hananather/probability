@@ -1,0 +1,320 @@
+'use client';
+
+import React from 'react';
+import { 
+  Brain, 
+  Eye, 
+  Hand, 
+  Lightbulb,
+  Target,
+  Users,
+  BookOpen,
+  TrendingUp,
+  Sparkles,
+  Award,
+  Zap,
+  Layers,
+  Compass,
+  Heart,
+  Code2,
+  GraduationCap
+} from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '../../components/ui/button';
+
+const principles = [
+  {
+    icon: Eye,
+    title: "Visual First",
+    description: "Abstract concepts become concrete through interactive visualizations. See probability distributions change in real-time as you adjust parameters.",
+    color: "from-blue-500 to-cyan-500"
+  },
+  {
+    icon: Hand,
+    title: "Learn by Doing",
+    description: "No passive watching. Every concept includes hands-on activities where you manipulate variables and observe outcomes immediately.",
+    color: "from-purple-500 to-pink-500"
+  },
+  {
+    icon: Brain,
+    title: "Build Intuition",
+    description: "Move beyond memorization. Our approach helps you develop deep intuition for why formulas work, not just how to use them.",
+    color: "from-orange-500 to-red-500"
+  },
+  {
+    icon: Target,
+    title: "Focused Practice",
+    description: "Targeted exercises that adapt to your understanding. Get more practice where you need it, move quickly through concepts you've mastered.",
+    color: "from-green-500 to-emerald-500"
+  }
+];
+
+const features = [
+  {
+    icon: Lightbulb,
+    title: "Multiple Representations",
+    description: "Visual, numerical, and symbolic views of every concept",
+    highlight: "yellow"
+  },
+  {
+    icon: TrendingUp,
+    title: "Immediate Feedback",
+    description: "Learn from mistakes instantly with real-time results",
+    highlight: "green"
+  },
+  {
+    icon: Users,
+    title: "Self-Paced Learning",
+    description: "Go as fast or slow as you need, review anytime",
+    highlight: "blue"
+  },
+  {
+    icon: Zap,
+    title: "Interactive Simulations",
+    description: "Run thousands of experiments with a single click",
+    highlight: "purple"
+  },
+  {
+    icon: Layers,
+    title: "Layered Complexity",
+    description: "Start simple, add complexity as understanding grows",
+    highlight: "pink"
+  },
+  {
+    icon: Compass,
+    title: "Guided Exploration",
+    description: "Structured activities that encourage discovery",
+    highlight: "cyan"
+  }
+];
+
+const stats = [
+  { value: "100+", label: "Interactive Visualizations" },
+  { value: "7", label: "Core Chapters" },
+  { value: "50+", label: "Worked Examples" },
+  { value: "∞", label: "Practice Problems" }
+];
+
+export default function AboutPage() {
+  return (
+    <div className="min-h-screen bg-neutral-900 text-white">
+      {/* Hero Section - Enhanced */}
+      <section className="relative py-24 px-4 overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-teal-900/30 via-blue-900/20 to-purple-900/20" />
+          <div className="absolute top-0 left-0 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
+        </div>
+        
+        <div className="relative max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-teal-500/10 border border-teal-500/30 rounded-full mb-6">
+              <Sparkles className="h-4 w-4 text-teal-400" />
+              <span className="text-sm text-teal-300">Interactive Learning Platform</span>
+            </div>
+            
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-blue-400 to-purple-400">
+                Probability Lab
+              </span>
+            </h1>
+            
+            <p className="text-xl md:text-2xl text-neutral-300 leading-relaxed max-w-3xl mx-auto">
+              Where abstract statistics becomes tangible understanding through 
+              <span className="text-teal-400 font-semibold"> interactive exploration</span> and 
+              <span className="text-blue-400 font-semibold"> visual discovery</span>
+            </p>
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16">
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-400">
+                  {stat.value}
+                </div>
+                <div className="text-sm text-neutral-400 mt-1">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Philosophy Section - Redesigned */}
+      <section className="py-20 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-6">
+              A New Way to Learn Statistics
+            </h2>
+            <p className="text-lg text-neutral-400 max-w-3xl mx-auto">
+              Traditional education relies on passive consumption. We believe in active construction 
+              of knowledge through exploration, experimentation, and immediate feedback.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {principles.map((principle, index) => {
+              const Icon = principle.icon;
+              return (
+                <div 
+                  key={index} 
+                  className="group relative bg-neutral-800/50 backdrop-blur rounded-xl p-6 border border-neutral-700/50 hover:border-neutral-600 transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div className={`absolute inset-0 bg-gradient-to-br ${principle.color} opacity-0 group-hover:opacity-5 rounded-xl transition-opacity`} />
+                  
+                  <div className="relative">
+                    <div className={`w-14 h-14 bg-gradient-to-br ${principle.color} rounded-xl flex items-center justify-center mb-4`}>
+                      <Icon className="h-7 w-7 text-white" />
+                    </div>
+                    
+                    <h3 className="text-xl font-semibold mb-3">{principle.title}</h3>
+                    <p className="text-neutral-300 text-sm leading-relaxed">
+                      {principle.description}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Why It Works - Grid Layout */}
+      <section className="py-20 px-4 bg-neutral-950/50">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-6">
+              Why This Approach Works
+            </h2>
+            <p className="text-lg text-neutral-400 max-w-2xl mx-auto">
+              Research-backed methods that transform how you understand probability
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              const colorMap = {
+                yellow: "text-yellow-400 bg-yellow-400/10",
+                green: "text-green-400 bg-green-400/10",
+                blue: "text-blue-400 bg-blue-400/10",
+                purple: "text-purple-400 bg-purple-400/10",
+                pink: "text-pink-400 bg-pink-400/10",
+                cyan: "text-cyan-400 bg-cyan-400/10"
+              };
+              const colors = colorMap[feature.highlight];
+              
+              return (
+                <div key={index} className="flex items-start space-x-4">
+                  <div className={`flex-shrink-0 w-12 h-12 ${colors.split(' ')[1]} rounded-lg flex items-center justify-center`}>
+                    <Icon className={`h-6 w-6 ${colors.split(' ')[0]}`} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
+                    <p className="text-neutral-400 text-sm leading-relaxed">
+                      {feature.description}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Built by Students Section - Enhanced */}
+      <section className="py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-500/10 border border-purple-500/30 rounded-full mb-6">
+                <Heart className="h-4 w-4 text-purple-400" />
+                <span className="text-sm text-purple-300">Our Story</span>
+              </div>
+              
+              <h2 className="text-4xl font-bold mb-6">
+                Built by Students,
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400"> For Students</span>
+              </h2>
+              
+              <div className="space-y-4 text-neutral-300">
+                <p className="leading-relaxed">
+                  We&apos;re engineering students who struggled with traditional statistics education. 
+                  The disconnect between abstract formulas and real understanding frustrated us deeply.
+                </p>
+                
+                <p className="leading-relaxed">
+                  After discovering how interactive visualizations transformed our own learning, 
+                  we knew we had to share this approach. Every feature you see was born from a 
+                  moment of confusion that became clarity.
+                </p>
+                
+                <p className="leading-relaxed font-medium text-white">
+                  We built the resource we wished we had when we started learning statistics.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-6">
+                <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-xl p-6 border border-purple-700/30">
+                  <Code2 className="h-8 w-8 text-purple-400 mb-3" />
+                  <h4 className="font-semibold mb-2">Open Source</h4>
+                  <p className="text-sm text-neutral-400">Built transparently, improved by community</p>
+                </div>
+                
+                <div className="bg-gradient-to-br from-blue-900/20 to-cyan-900/20 rounded-xl p-6 border border-blue-700/30">
+                  <Award className="h-8 w-8 text-blue-400 mb-3" />
+                  <h4 className="font-semibold mb-2">Research-Based</h4>
+                  <p className="text-sm text-neutral-400">Grounded in learning science principles</p>
+                </div>
+              </div>
+              
+              <div className="space-y-6 mt-12">
+                <div className="bg-gradient-to-br from-green-900/20 to-emerald-900/20 rounded-xl p-6 border border-green-700/30">
+                  <GraduationCap className="h-8 w-8 text-green-400 mb-3" />
+                  <h4 className="font-semibold mb-2">Student-Tested</h4>
+                  <p className="text-sm text-neutral-400">Refined through real classroom use</p>
+                </div>
+                
+                <div className="bg-gradient-to-br from-orange-900/20 to-yellow-900/20 rounded-xl p-6 border border-orange-700/30">
+                  <BookOpen className="h-8 w-8 text-orange-400 mb-3" />
+                  <h4 className="font-semibold mb-2">Always Free</h4>
+                  <p className="text-sm text-neutral-400">Education should be accessible to all</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Mission Statement */}
+      <section className="py-20 px-4 bg-neutral-950/50">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="bg-gradient-to-r from-teal-900/20 via-blue-900/20 to-purple-900/20 rounded-2xl p-12 border border-neutral-700/50">
+            <Sparkles className="h-12 w-12 text-teal-400 mx-auto mb-6" />
+            <h2 className="text-3xl font-bold mb-6">Our Mission</h2>
+            <p className="text-lg text-neutral-300 leading-relaxed mb-8">
+              To make probability and statistics accessible, engaging, and deeply understood 
+              by every student. We believe that with the right tools, anyone can master these 
+              fundamental concepts that shape our understanding of the world.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/chapter1">
+                <Button size="lg" className="bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white border-0">
+                  Start Your Journey
+                </Button>
+              </Link>
+              <Link href="/prerequisites">
+                <Button size="lg" variant="outline" className="border-neutral-600 hover:bg-neutral-800">
+                  View Prerequisites
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

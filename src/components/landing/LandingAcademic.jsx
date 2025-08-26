@@ -14,11 +14,22 @@ const HeroSection = dynamic(() => import('./components/HeroSection'));
 const ChapterGrid = dynamic(() => import('./components/ChapterGrid'));
 const CourseStats = dynamic(() => import('./components/CourseStats'));
 const ConceptFlowchart = dynamic(() => import('../shared/ConceptFlowchart'));
+const FAQSection = dynamic(() => import('./sections/FAQSection'), {
+  ssr: false
+});
+const TestimonialsSection = dynamic(() => import('./sections/TestimonialsSection'), {
+  ssr: false
+});
 
 export default function LandingAcademic() {
+  // Toggle to show/hide testimonials section - set to true to show student success stories
+  const SHOW_TESTIMONIALS = false;
+  
   const [currentSection, setCurrentSection] = useState(-1);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [showNavigation, setShowNavigation] = useState(true);
   const sectionRefs = useRef([]);
+  const testimonialsRef = useRef(null);
   
   useEffect(() => {
     // Combine scroll listener with IntersectionObserver for better tracking
@@ -65,6 +76,17 @@ export default function LandingAcademic() {
       // Only update if we found a section and it's reasonably close to viewport
       if (closestSection !== -1 && closestDistance < windowHeight) {
         setCurrentSection(closestSection);
+      }
+      
+      // Check if we've scrolled past the chapters to the testimonials (only if testimonials are shown)
+      if (SHOW_TESTIMONIALS && testimonialsRef.current) {
+        const testimonialsRect = testimonialsRef.current.getBoundingClientRect();
+        // Hide navigation when testimonials section is at or above viewport center
+        if (testimonialsRect.top <= windowHeight / 2) {
+          setShowNavigation(false);
+        } else {
+          setShowNavigation(true);
+        }
       }
     };
     
@@ -124,12 +146,14 @@ export default function LandingAcademic() {
       {/* Floating mathematical symbols background */}
       <FloatingSymbols />
       
-      {/* Journey Progress Indicator */}
-      <div className="fixed left-8 top-1/2 -translate-y-1/2 z-40 hidden lg:block">
-        <div className="w-20 h-[500px]">
-          <JourneyPath currentSection={currentSection} scrollProgress={scrollProgress} />
+      {/* Journey Progress Indicator - Only show until testimonials */}
+      {showNavigation && (
+        <div className="fixed left-8 top-1/2 -translate-y-1/2 z-40 hidden lg:block transition-opacity duration-300">
+          <div className="w-20 h-[500px]">
+            <JourneyPath currentSection={currentSection} scrollProgress={scrollProgress} />
+          </div>
         </div>
-      </div>
+      )}
       
       {/* Hero Section */}
       <HeroSection />
@@ -143,6 +167,16 @@ export default function LandingAcademic() {
       
       {/* Chapter Grid */}
       <ChapterGrid onSectionRef={handleSectionRef} />
+      
+      {/* Testimonials Section - Hidden when SHOW_TESTIMONIALS is false */}
+      {SHOW_TESTIMONIALS && (
+        <div ref={testimonialsRef}>
+          <TestimonialsSection />
+        </div>
+      )}
+      
+      {/* FAQ Section */}
+      <FAQSection />
       
       {/* Course Stats */}
       <CourseStats />

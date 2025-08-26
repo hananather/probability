@@ -15,11 +15,16 @@ const Ch7Regression = React.memo(({ isActive }) => {
     const height = 200;
     svg.attr('viewBox', `0 0 ${width} ${height}`);
     
-    // Generate correlated data
+    // Generate correlated data with deterministic pseudo-random values
+    const seededRandom = (seed) => {
+      const x = Math.sin(seed) * 10000;
+      return x - Math.floor(x);
+    };
+    
     const n = 20;
-    const data = d3.range(n).map(() => {
-      const x = Math.random() * 200 + 50;
-      const y = 0.5 * x + (Math.random() - 0.5) * 40 + 50;
+    const data = d3.range(n).map((_, i) => {
+      const x = seededRandom(i * 1.7) * 200 + 50;
+      const y = 0.5 * x + (seededRandom(i * 2.9) - 0.5) * 40 + 50;
       return { x, y };
     });
     

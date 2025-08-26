@@ -32,7 +32,7 @@ const Ch3Normal = React.memo(({ isActive }) => {
       .range([height - margin.bottom, margin.top]);
     
     // Gradient with animated colors
-    const gradientId = 'normal-gradient-' + Date.now();
+    const gradientId = 'normal-gradient-landing';
     const gradient = svg.append('defs')
       .append('linearGradient')
       .attr('id', gradientId)

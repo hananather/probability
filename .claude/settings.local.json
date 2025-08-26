@@ -200,7 +200,17 @@
       "Bash(head:*)",
       "Bash(do echo \"\")",
       "Bash(timeout 20 npm run dev)",
-      "Bash(do echo \"Chapter $i:\")"
+      "Bash(do echo \"Chapter $i:\")",
+      "Read(//var/folders/ry/1ct1kks556s6ffsdyjq1grdh0000gn/T/TemporaryItems/NSIRD_screencaptureui_aRzzKr/**)",
+      "Read(//Users/hananather/Desktop/**)",
+      "Read(//var/folders/ry/1ct1kks556s6ffsdyjq1grdh0000gn/T/TemporaryItems/NSIRD_screencaptureui_hESHuH/**)",
+      "Read(//var/folders/ry/1ct1kks556s6ffsdyjq1grdh0000gn/T/TemporaryItems/NSIRD_screencaptureui_mm1n6f/**)",
+      "Read(//var/folders/ry/1ct1kks556s6ffsdyjq1grdh0000gn/T/TemporaryItems/NSIRD_screencaptureui_yQminJ/**)",
+      "Read(//var/folders/ry/1ct1kks556s6ffsdyjq1grdh0000gn/T/TemporaryItems/NSIRD_screencaptureui_Nazxi6/**)",
+      "Read(//var/folders/ry/1ct1kks556s6ffsdyjq1grdh0000gn/T/TemporaryItems/NSIRD_screencaptureui_yqBy8z/**)",
+      "Read(//var/folders/ry/1ct1kks556s6ffsdyjq1grdh0000gn/T/TemporaryItems/NSIRD_screencaptureui_VtzSSF/**)",
+      "Read(//var/folders/ry/1ct1kks556s6ffsdyjq1grdh0000gn/T/TemporaryItems/NSIRD_screencaptureui_Szo0MA/**)",
+      "Read(//var/folders/ry/1ct1kks556s6ffsdyjq1grdh0000gn/T/TemporaryItems/NSIRD_screencaptureui_mm9k8x/**)"
     ],
     "deny": []
   },

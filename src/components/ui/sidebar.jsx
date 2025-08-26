@@ -11,13 +11,28 @@ export function SidebarProvider({ children }) {
   // Set initial state based on screen size
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsOpen(window.innerWidth >= 1024); // lg breakpoint
+      // Desktop: check localStorage for saved state
+      if (window.innerWidth >= 1024) {
+        const savedOpen = localStorage.getItem('sidebarOpen');
+        setIsOpen(savedOpen !== null ? savedOpen === 'true' : true);
+      } else {
+        // Mobile: default closed
+        setIsOpen(false);
+      }
     };
     checkScreenSize();
     // Only check on mount, not on resize to respect user choice
   }, []);
   
-  const toggle = () => setIsOpen(prev => !prev);
+  const toggle = () => {
+    setIsOpen(prev => {
+      const newState = !prev;
+      // Save preference to localStorage
+      localStorage.setItem('sidebarOpen', String(newState));
+      return newState;
+    });
+  };
+  
   return (
     <SidebarContext.Provider value={{ isOpen, toggle }}>
       {children}
@@ -50,7 +65,9 @@ export function Sidebar({ children }) {
       
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-full bg-neutral-900 text-white w-64 sm:w-72 transform transition-transform duration-200 ${isOpen ? 'translate-x-0' : '-translate-x-full'} z-50`}
+        className={`fixed top-16 left-0 h-[calc(100vh-4rem)] bg-neutral-900 text-white w-64 sm:w-72 transform transition-transform duration-200 z-50 ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
       >
         {children}
       </aside>
@@ -74,7 +91,7 @@ export function SidebarContent({ children }) {
   }, [isOpen]);
 
   return (
-    <div ref={contentRef} className="pt-16 px-4 pb-4 space-y-2 overflow-y-auto h-full">
+    <div ref={contentRef} className="pt-4 px-4 pb-4 space-y-2 overflow-y-auto h-full">
       {children}
     </div>
   );
@@ -85,13 +102,11 @@ export function SidebarTrigger() {
   return (
     <button
       onClick={toggle}
-      className={`fixed top-3 left-3 sm:top-4 sm:left-4 z-[60] p-2 sm:p-2.5 bg-neutral-900 text-white rounded-lg hover:bg-neutral-700 focus:outline-none transition-all ${
-        isOpen ? 'lg:opacity-0 lg:pointer-events-none' : ''
-      }`}
+      className="fixed top-3 left-3 sm:top-4 sm:left-4 z-[60] p-2 sm:p-2.5 bg-neutral-900 text-white rounded-lg hover:bg-neutral-700 focus:outline-none transition-all"
       aria-label="Toggle Sidebar"
     >
       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+        <path strokeLinecap="round" strokeLinejoin="round" d={isOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
       </svg>
     </button>
   );

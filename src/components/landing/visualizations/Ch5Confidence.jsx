@@ -16,9 +16,15 @@ const Ch5Confidence = React.memo(({ isActive }) => {
     
     // Confidence interval visualization
     const trueValue = 150;
+    // Use deterministic pseudo-random values
+    const seededRandom = (seed) => {
+      const x = Math.sin(seed) * 10000;
+      return x - Math.floor(x);
+    };
+    
     const intervals = d3.range(5).map((_, i) => {
-      const mean = trueValue + (Math.random() - 0.5) * 40;
-      const margin = 20 + Math.random() * 10;
+      const mean = trueValue + (seededRandom(i * 2.1) - 0.5) * 40;
+      const margin = 20 + seededRandom(i * 3.5) * 10;
       return {
         y: 40 + i * 30,
         lower: mean - margin,

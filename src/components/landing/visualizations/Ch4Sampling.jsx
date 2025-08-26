@@ -15,11 +15,16 @@ const Ch4Sampling = React.memo(({ isActive }) => {
     const height = 200;
     svg.attr('viewBox', `0 0 ${width} ${height}`);
     
-    // Generate population
+    // Generate population with deterministic pseudo-random values
+    const seededRandom = (seed) => {
+      const x = Math.sin(seed) * 10000;
+      return x - Math.floor(x);
+    };
+    
     const population = d3.range(50).map((_, i) => ({
-      x: Math.random() * (width - 40) + 20,
-      y: Math.random() * (height - 40) + 20,
-      value: Math.random(),
+      x: seededRandom(i * 1.1) * (width - 40) + 20,
+      y: seededRandom(i * 2.3) * (height - 40) + 20,
+      value: seededRandom(i * 3.7),
       id: i
     }));
     
