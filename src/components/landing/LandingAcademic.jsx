@@ -159,7 +159,7 @@ export default function LandingAcademic() {
       <HeroSection />
       
       {/* Course Map */}
-      <section className="py-12 px-4 lg:pl-32">
+      <section className="py-8 px-4 lg:pl-32">
         <div className="max-w-6xl mx-auto">
           <ConceptFlowchart />
         </div>

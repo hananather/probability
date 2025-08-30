@@ -94,8 +94,16 @@ const ChapterCard = React.memo(({ chapter, index, visualization: Visualization, 
   
   // Handle chapter start when clicking the button
   const handleBeginLearning = async (e) => {
+    e.stopPropagation(); // Prevent event bubbling
     if (isNotStarted) {
       await start();
+    }
+  };
+  
+  // Navigate to chapter
+  const navigateToChapter = () => {
+    if (!isLocked) {
+      window.location.href = `/chapter${index + 1}`;
     }
   };
   
@@ -157,13 +165,24 @@ const ChapterCard = React.memo(({ chapter, index, visualization: Visualization, 
   };
   
   return (
-    <div
-      className={`bg-neutral-800 rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] group ${
-        isLocked ? 'opacity-75' : ''
-      }`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+    <Link 
+      href={isLocked ? '#' : `/chapter${index + 1}`}
+      className={`block ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+      onClick={(e) => {
+        if (isLocked) {
+          e.preventDefault();
+        } else if (isNotStarted) {
+          start();
+        }
+      }}
     >
+      <div
+        className={`bg-neutral-800 rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] group ${
+          isLocked ? 'opacity-75' : ''
+        }`}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
       <div className="h-48 bg-gradient-to-br from-neutral-900 to-neutral-800 relative overflow-hidden">
         <ErrorBoundary fallbackType="visualization">
           <Suspense fallback={<div className="w-full h-full bg-neutral-900" />}>
@@ -240,30 +259,35 @@ const ChapterCard = React.memo(({ chapter, index, visualization: Visualization, 
         )}
         
         <div className="mt-4 pt-4 border-t border-neutral-700">
-          <Link href={isLocked ? '#' : `/chapter${index + 1}`}>
-            <Button 
-              variant="primary" 
-              size="sm" 
-              className={`w-full ${
-                isLocked 
-                  ? 'bg-neutral-600 hover:bg-neutral-600 cursor-not-allowed' 
-                  : `${colorClasses.bg} ${colorClasses.bgHover}`
-              } group`}
-              onClick={handleBeginLearning}
-              disabled={isLocked}
-            >
-              {getButtonText()}
-              {!isLocked && (
-                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              )}
-              {isLocked && (
-                <Lock className="ml-2 h-4 w-4" />
-              )}
-            </Button>
-          </Link>
+          <Button 
+            variant="primary" 
+            size="sm" 
+            className={`w-full ${
+              isLocked 
+                ? 'bg-neutral-600 hover:bg-neutral-600 cursor-not-allowed' 
+                : `${colorClasses.bg} ${colorClasses.bgHover}`
+            } group`}
+            onClick={(e) => {
+              e.preventDefault(); // Prevent Link navigation
+              e.stopPropagation(); // Stop event bubbling
+              if (!isLocked) {
+                handleBeginLearning(e);
+              }
+            }}
+            disabled={isLocked}
+          >
+            {getButtonText()}
+            {!isLocked && (
+              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            )}
+            {isLocked && (
+              <Lock className="ml-2 h-4 w-4" />
+            )}
+          </Button>
         </div>
       </div>
     </div>
+    </Link>
   );
 });
 

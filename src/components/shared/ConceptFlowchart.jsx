@@ -2,8 +2,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { Card } from '../ui/card';
-import { Info, BookOpen, Calculator, BarChart, Target, Brain, FlaskConical, TrendingUp } from 'lucide-react';
+import { Info, BookOpen, Calculator, BarChart, Target, Brain, FlaskConical, TrendingUp, ArrowRight } from 'lucide-react';
 import { useMathJax } from '../../hooks/useMathJax';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Button } from '../ui/button';
 
 /**
  * Interactive flowchart showing relationships between all course concepts
@@ -16,6 +19,13 @@ function ConceptFlowchart() {
   const [focusedChapterIndex, setFocusedChapterIndex] = useState(0);
   const svgRef = useRef(null);
   const contentRef = useMathJax([hoveredNode]);
+  const router = useRouter();
+  
+  // Function to navigate to a chapter
+  const navigateToChapter = (chapterId) => {
+    const chapterNum = chapterId.replace('ch', '');
+    router.push(`/chapter${chapterNum}`);
+  };
 
   // Define the complete concept hierarchy
   const conceptHierarchy = {
@@ -309,36 +319,10 @@ function ConceptFlowchart() {
 
       // Interaction effects (hover for desktop, click/tap for mobile)
       if (isMobile) {
-        // Mobile: Use click/tap events
+        // Mobile: Use click/tap events to navigate directly
         node.on('click', function() {
-          // Reset previous selection
-          nodeGroup.selectAll('.node').each(function(d) {
-            d3.select(this).select('circle:nth-child(2)')
-              .attr('r', nodeRadius)
-              .attr('fill', d ? `${d.color}20` : '#37415120');
-          });
-          
-          // Highlight selected node
-          d3.select(this).select('circle:nth-child(2)')
-            .attr('r', nodeRadius + 3)
-            .attr('fill', `${chapter.color}40`);
-          
-          setHoveredNode(chapter);
-          setSelectedChapter(chapter.id);
-
-          // Highlight connected paths
-          connections.forEach(conn => {
-            if (conn.source === chapter.id || conn.target === chapter.id) {
-              linkGroup.selectAll('.link-group')
-                .style('opacity', d => {
-                  const matchesConn = connections.find(c => 
-                    (c.source === conn.source && c.target === conn.target) ||
-                    (c.source === conn.target && c.target === conn.source)
-                  );
-                  return matchesConn ? 0.8 : 0.1;
-                });
-            }
-          });
+          // Navigate to chapter on click
+          navigateToChapter(chapter.id);
         });
       } else {
         // Desktop: Use hover events
@@ -371,6 +355,11 @@ function ConceptFlowchart() {
             .attr('fill', `${chapter.color}20`);
           
           linkGroup.selectAll('.link-group').style('opacity', 0.2);
+        });
+        
+        // Add click handler for navigation on desktop
+        node.on('click', function() {
+          navigateToChapter(chapter.id);
         });
       }
     });
@@ -473,6 +462,20 @@ function ConceptFlowchart() {
                       </div>
                     ))}
                   </div>
+                </div>
+                
+                {/* Add Start Chapter button */}
+                <div className="mt-4">
+                  <Link href={`/chapter${hoveredNode.id.replace('ch', '')}`}>
+                    <Button 
+                      size="sm" 
+                      className="w-full group"
+                      style={{ backgroundColor: hoveredNode.color }}
+                    >
+                      Start {hoveredNode.shortName}
+                      <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </Link>
                 </div>
               </div>
             ) : (
