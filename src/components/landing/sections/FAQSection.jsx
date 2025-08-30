@@ -35,7 +35,7 @@ const faqs = [
   },
   {
     question: "What if I get stuck on a problem?",
-    answer: "Each problem includes hints that guide you toward the solution without giving it away. Worked examples show step-by-step solutions to similar problems. If you're still stuck, the Help section connects you with additional resources and office hours information."
+    answer: "Each problem includes hints that guide you toward the solution without giving it away. Worked examples show step-by-step solutions to similar problems. The platform also includes comprehensive review materials and practice problems to help reinforce your understanding."
   }
 ];
 
@@ -100,27 +100,6 @@ export default function FAQSection() {
               onToggle={() => handleToggle(index)}
             />
           ))}
-        </div>
-
-        {/* Additional Help */}
-        <div className="mt-8 text-center">
-          <p className="text-neutral-400 mb-4">
-            Still have questions?
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a 
-              href="mailto:support@problab.com" 
-              className="inline-flex items-center justify-center px-6 py-2 border border-neutral-600 rounded-lg text-white hover:bg-neutral-800 transition-colors"
-            >
-              Contact Support
-            </a>
-            <a 
-              href="/prerequisites" 
-              className="inline-flex items-center justify-center px-6 py-2 bg-teal-600 rounded-lg text-white hover:bg-teal-700 transition-colors"
-            >
-              Check Prerequisites
-            </a>
-          </div>
         </div>
       </div>
     </section>

@@ -221,19 +221,6 @@ const ChapterGrid = forwardRef(({ onSectionRef }, ref) => {
             </div>
           ))}
         </div>
-        
-        {/* Keyboard navigation help text */}
-        <div className="mt-8 text-center text-sm text-neutral-500">
-          <p>
-            <kbd className="px-2 py-1 bg-neutral-800 rounded text-xs">↑</kbd>{' '}
-            <kbd className="px-2 py-1 bg-neutral-800 rounded text-xs">↓</kbd>{' '}
-            <kbd className="px-2 py-1 bg-neutral-800 rounded text-xs">←</kbd>{' '}
-            <kbd className="px-2 py-1 bg-neutral-800 rounded text-xs">→</kbd>{' '}
-            to navigate • 
-            <kbd className="px-2 py-1 bg-neutral-800 rounded text-xs ml-2">Enter</kbd>{' '}
-            to select
-          </p>
-        </div>
       </div>
     </section>
   );

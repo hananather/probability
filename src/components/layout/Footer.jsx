@@ -7,9 +7,6 @@ import {
   FileText, 
   BookOpen, 
   Calculator,
-  HelpCircle,
-  Mail,
-  Clock,
   AlertCircle,
   GraduationCap
 } from 'lucide-react';
@@ -25,7 +22,7 @@ export function Footer() {
   return (
     <footer className="mt-auto border-t border-neutral-800 bg-neutral-900">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Academic Resources */}
           <div>
             <h3 className="flex items-center space-x-2 text-lg font-semibold text-white mb-4">
@@ -55,38 +52,6 @@ export function Footer() {
                 <Link href="/resources/study-tips" className="flex items-center space-x-2 text-neutral-400 hover:text-white transition-colors">
                   <GraduationCap className="h-4 w-4" />
                   <span className="text-sm">Study Tips</span>
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Help & Support */}
-          <div>
-            <h3 className="flex items-center space-x-2 text-lg font-semibold text-white mb-4">
-              <HelpCircle className="h-5 w-5 text-teal-400" />
-              <span>Help & Support</span>
-            </h3>
-            <ul className="space-y-3">
-              <li>
-                <Link href="/help/faq" className="text-sm text-neutral-400 hover:text-white transition-colors">
-                  Frequently Asked Questions
-                </Link>
-              </li>
-              <li>
-                <a href="mailto:support@problab.com" className="flex items-center space-x-2 text-neutral-400 hover:text-white transition-colors">
-                  <Mail className="h-4 w-4" />
-                  <span className="text-sm">Contact Support</span>
-                </a>
-              </li>
-              <li>
-                <Link href="/help/office-hours" className="flex items-center space-x-2 text-neutral-400 hover:text-white transition-colors">
-                  <Clock className="h-4 w-4" />
-                  <span className="text-sm">Office Hours</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/help/getting-started" className="text-sm text-neutral-400 hover:text-white transition-colors">
-                  Getting Started Guide
                 </Link>
               </li>
             </ul>
