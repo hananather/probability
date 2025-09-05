@@ -92,11 +92,16 @@ const ChapterCard = React.memo(({ chapter, index, visualization: Visualization, 
   const colorKey = colorKeys[index];
   const colorClasses = colorStyles[colorKey];
   
-  // Handle chapter start when clicking the button
+  // Handle chapter start and navigate when clicking the button
   const handleBeginLearning = async (e) => {
-    e.stopPropagation(); // Prevent event bubbling
-    if (isNotStarted) {
-      await start();
+    e.stopPropagation(); // Prevent bubbling to outer Link
+    try {
+      if (isNotStarted) {
+        await start();
+      }
+    } finally {
+      // Always navigate to the same destination as the card
+      navigateToChapter();
     }
   };
   
@@ -271,6 +276,7 @@ const ChapterCard = React.memo(({ chapter, index, visualization: Visualization, 
               e.preventDefault(); // Prevent Link navigation
               e.stopPropagation(); // Stop event bubbling
               if (!isLocked) {
+                // Begin tracking and then navigate to the chapter
                 handleBeginLearning(e);
               }
             }}
