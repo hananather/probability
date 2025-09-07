@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
+import { Footer } from '@/components/layout/Footer';
 
 // Dynamically import components for better performance
 const FloatingSymbols = dynamic(() => import('./components/FloatingSymbols'), {
@@ -181,6 +182,8 @@ export default function LandingAcademic() {
       {/* Course Stats */}
       <CourseStats />
       
+      {/* Global Footer */}
+      <Footer />
     </div>
   );
 }
