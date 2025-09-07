@@ -174,18 +174,4 @@ export const chapters = [
       { title: '📝 End of Chapter Quiz', url: '/chapter/7/quiz' }
     ]
   },
-  {
-    title: '🧪 Learning Sandbox',
-    path: '/learn',
-    sections: [
-      { title: 'React Experiments', url: '' },
-    ]
-  },
-  {
-    title: '📚 Lesson-Based Approach',
-    path: '/lesson-based-approach',
-    sections: [
-      { title: 'Execute Program Style Reference', url: '' },
-    ]
-  },
 ];
