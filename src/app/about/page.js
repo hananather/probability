@@ -20,7 +20,10 @@ import {
   GraduationCap
 } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '../../components/ui/button';
+import { Button } from '@/components/ui/button';
+import TeamSection from '@/components/about/TeamSection';
+import HananImage from './Hanan.jpg';
+import PatrickImage from './Patrick.png';
 
 const principles = [
   {
@@ -88,32 +91,37 @@ const features = [
   }
 ];
 
-const stats = [
-  { value: "100+", label: "Interactive Visualizations" },
-  { value: "7", label: "Core Chapters" },
-  { value: "50+", label: "Worked Examples" },
-  { value: "∞", label: "Practice Problems" }
+// Stats removed per request
+
+const teamMembers = [
+  {
+    name: 'Hanan Ather',
+    image: HananImage,
+    website: 'https://hananather.com/',
+    bio: 'AI Engineer at the Center of Artificial Intelligence Research and Excellence (CAIRE), Statistics Canada, translating advanced research into practical systems for federal agencies. Holds an M.Sc. in Mathematics & Statistics from the University of Ottawa, with research in deep reinforcement learning and function optimization.',
+  },
+  {
+    name: 'Patrick Boily',
+    image: PatrickImage,
+    website: 'https://www.idlewyldanalytics.com/',
+    bio: "Assistant Professor, Department of Mathematics & Statistics, University of Ottawa. Ph.D. in Mathematics (2006) and author of several textbooks in mathematics, statistics, and data science. Work spans academia, public service, and applied analytics; led Carleton University's CQADS, co-founded the Data Action Lab, and consulted for organizations including PHAC, CATSA, and DND. Expertise includes operations research, predictive analytics, stochastic modelling, and simulation.",
+  },
 ];
 
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-neutral-900 text-white">
       {/* Hero Section - Enhanced */}
-      <section className="relative py-24 px-4 overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-teal-900/30 via-blue-900/20 to-purple-900/20" />
-          <div className="absolute top-0 left-0 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
-        </div>
+      <section className="relative py-16 px-4 overflow-hidden">
         
         <div className="relative max-w-5xl mx-auto">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-teal-500/10 border border-teal-500/30 rounded-full mb-6">
               <Sparkles className="h-4 w-4 text-teal-400" />
               <span className="text-sm text-teal-300">Interactive Learning Platform</span>
             </div>
             
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-blue-400 to-purple-400">
                 Probability Lab
               </span>
@@ -125,28 +133,89 @@ export default function AboutPage() {
               <span className="text-blue-400 font-semibold"> visual discovery</span>
             </p>
           </div>
+        </div>
+      </section>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-400">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-neutral-400 mt-1">{stat.label}</div>
+      
+
+      {/* Our Story - moved up */}
+      <section id="story" className="py-16 px-4 scroll-mt-24">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-10 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-500/10 border border-purple-500/30 rounded-full mb-6">
+                <Heart className="h-4 w-4 text-purple-400" />
+                <span className="text-sm text-purple-300">Our Story</span>
               </div>
-            ))}
+              
+              <h2 className="text-4xl font-bold mb-6">
+                Built by Learners & Educators,
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400"> For Students</span>
+              </h2>
+              
+              <div className="space-y-4 text-neutral-300">
+                <p className="leading-relaxed">
+                  We&apos;ve experienced both sides of the classroom—Hanan as a mathematics & statistics student turned AI engineer, and Patrick as a professor of mathematics and statistics. We saw firsthand how abstract formulas can feel disconnected from real understanding.
+                </p>
+                
+                <p className="leading-relaxed">
+                  Interactive, visual explorations changed how we learned and taught. That insight shaped Probability Lab: hands-on activities that turn confusion into clarity.
+                </p>
+                
+                <p className="leading-relaxed font-medium text-white">
+                  We built the resource we wished we had when we started learning statistics.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-5">
+              <div className="space-y-5">
+                <div className="bg-neutral-900/60 rounded-xl p-6 border border-neutral-800 hover:border-neutral-700 transition-colors">
+                  <Code2 className="h-8 w-8 text-purple-400 mb-3" />
+                  <h4 className="font-semibold mb-2">Interactive Tools</h4>
+                  <p className="text-sm text-neutral-400">Hands-on visual explorers that make ideas stick.</p>
+                </div>
+                
+                <div className="bg-neutral-900/60 rounded-xl p-6 border border-neutral-800 hover:border-neutral-700 transition-colors">
+                  <Eye className="h-8 w-8 text-blue-300 mb-3" />
+                  <h4 className="font-semibold mb-2">Visual First</h4>
+                  <p className="text-sm text-neutral-400">See distributions and ideas evolve in real time.</p>
+                </div>
+
+                <div className="bg-neutral-900/60 rounded-xl p-6 border border-neutral-800 hover:border-neutral-700 transition-colors">
+                  <Zap className="h-8 w-8 text-teal-300 mb-3" />
+                  <h4 className="font-semibold mb-2">Immediate Feedback</h4>
+                  <p className="text-sm text-neutral-400">Learn faster with results and corrections on the spot.</p>
+                </div>
+              </div>
+              
+              <div className="space-y-5 mt-10">
+                <div className="bg-neutral-900/60 rounded-xl p-6 border border-neutral-800 hover:border-neutral-700 transition-colors">
+                  <GraduationCap className="h-8 w-8 text-green-300 mb-3" />
+                  <h4 className="font-semibold mb-2">Instructor‑Approved</h4>
+                  <p className="text-sm text-neutral-400">Crafted and reviewed by university educators.</p>
+                </div>
+                
+                <div className="bg-neutral-900/60 rounded-xl p-6 border border-neutral-800 hover:border-neutral-700 transition-colors">
+                  <BookOpen className="h-8 w-8 text-orange-300 mb-3" />
+                  <h4 className="font-semibold mb-2">Exam‑Ready Notes</h4>
+                  <p className="text-sm text-neutral-400">Clear summaries that bridge concepts to problems.</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
+      {/* Team Section - moved up */}
+      <TeamSection id="team" members={teamMembers} />
+
       {/* Philosophy Section - Redesigned */}
-      <section className="py-20 px-4">
+      <section id="philosophy" className="py-16 px-4 scroll-mt-24">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-6">
-              A New Way to Learn Statistics
-            </h2>
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-teal-500/10 border border-teal-500/30 rounded-full mb-6 text-teal-300 text-sm">Our Approach</div>
+            <h2 className="text-4xl font-bold mb-4">A New Way to Learn Statistics</h2>
             <p className="text-lg text-neutral-400 max-w-3xl mx-auto">
               Traditional education relies on passive consumption. We believe in active construction 
               of knowledge through exploration, experimentation, and immediate feedback.
@@ -159,13 +228,11 @@ export default function AboutPage() {
               return (
                 <div 
                   key={index} 
-                  className="group relative bg-neutral-800/50 backdrop-blur rounded-xl p-6 border border-neutral-700/50 hover:border-neutral-600 transition-all duration-300 hover:-translate-y-1"
+                  className="group relative bg-neutral-900/60 rounded-xl p-6 border border-neutral-800 hover:border-neutral-700 transition-all duration-300 hover:-translate-y-1"
                 >
-                  <div className={`absolute inset-0 bg-gradient-to-br ${principle.color} opacity-0 group-hover:opacity-5 rounded-xl transition-opacity`} />
-                  
                   <div className="relative">
-                    <div className={`w-14 h-14 bg-gradient-to-br ${principle.color} rounded-xl flex items-center justify-center mb-4`}>
-                      <Icon className="h-7 w-7 text-white" />
+                    <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-4 bg-neutral-800 border border-neutral-700">
+                      <Icon className="h-7 w-7 text-neutral-200" />
                     </div>
                     
                     <h3 className="text-xl font-semibold mb-3">{principle.title}</h3>
@@ -181,7 +248,7 @@ export default function AboutPage() {
       </section>
 
       {/* Why It Works - Grid Layout */}
-      <section className="py-20 px-4 bg-neutral-950/50">
+      <section id="why" className="py-16 px-4 bg-neutral-950/50 scroll-mt-24">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-6">
@@ -192,7 +259,7 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, index) => {
               const Icon = feature.icon;
               const colorMap = {
@@ -223,76 +290,12 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Built by Students Section - Enhanced */}
-      <section className="py-20 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-500/10 border border-purple-500/30 rounded-full mb-6">
-                <Heart className="h-4 w-4 text-purple-400" />
-                <span className="text-sm text-purple-300">Our Story</span>
-              </div>
-              
-              <h2 className="text-4xl font-bold mb-6">
-                Built by Students,
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400"> For Students</span>
-              </h2>
-              
-              <div className="space-y-4 text-neutral-300">
-                <p className="leading-relaxed">
-                  We&apos;re engineering students who struggled with traditional statistics education. 
-                  The disconnect between abstract formulas and real understanding frustrated us deeply.
-                </p>
-                
-                <p className="leading-relaxed">
-                  After discovering how interactive visualizations transformed our own learning, 
-                  we knew we had to share this approach. Every feature you see was born from a 
-                  moment of confusion that became clarity.
-                </p>
-                
-                <p className="leading-relaxed font-medium text-white">
-                  We built the resource we wished we had when we started learning statistics.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-6">
-                <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-xl p-6 border border-purple-700/30">
-                  <Code2 className="h-8 w-8 text-purple-400 mb-3" />
-                  <h4 className="font-semibold mb-2">Open Source</h4>
-                  <p className="text-sm text-neutral-400">Built transparently, improved by community</p>
-                </div>
-                
-                <div className="bg-gradient-to-br from-blue-900/20 to-cyan-900/20 rounded-xl p-6 border border-blue-700/30">
-                  <Award className="h-8 w-8 text-blue-400 mb-3" />
-                  <h4 className="font-semibold mb-2">Research-Based</h4>
-                  <p className="text-sm text-neutral-400">Grounded in learning science principles</p>
-                </div>
-              </div>
-              
-              <div className="space-y-6 mt-12">
-                <div className="bg-gradient-to-br from-green-900/20 to-emerald-900/20 rounded-xl p-6 border border-green-700/30">
-                  <GraduationCap className="h-8 w-8 text-green-400 mb-3" />
-                  <h4 className="font-semibold mb-2">Student-Tested</h4>
-                  <p className="text-sm text-neutral-400">Refined through real classroom use</p>
-                </div>
-                
-                <div className="bg-gradient-to-br from-orange-900/20 to-yellow-900/20 rounded-xl p-6 border border-orange-700/30">
-                  <BookOpen className="h-8 w-8 text-orange-400 mb-3" />
-                  <h4 className="font-semibold mb-2">Always Free</h4>
-                  <p className="text-sm text-neutral-400">Education should be accessible to all</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Mission Statement */}
-      <section className="py-20 px-4 bg-neutral-950/50">
+      <section id="mission" className="py-16 px-4 bg-neutral-950/50 scroll-mt-24">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="bg-gradient-to-r from-teal-900/20 via-blue-900/20 to-purple-900/20 rounded-2xl p-12 border border-neutral-700/50">
+          <div className="bg-neutral-900/70 rounded-2xl p-10 border border-neutral-800">
             <Sparkles className="h-12 w-12 text-teal-400 mx-auto mb-6" />
             <h2 className="text-3xl font-bold mb-6">Our Mission</h2>
             <p className="text-lg text-neutral-300 leading-relaxed mb-8">
