@@ -303,15 +303,13 @@ export default function AboutPage() {
               by every student. We believe that with the right tools, anyone can master these 
               fundamental concepts that shape our understanding of the world.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex justify-center">
               <Link href="/chapter1">
-                <Button size="lg" className="bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white border-0">
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white border-0 shadow-sm"
+                >
                   Start Your Journey
-                </Button>
-              </Link>
-              <Link href="/prerequisites">
-                <Button size="lg" variant="outline" className="border-neutral-600 hover:bg-neutral-800">
-                  View Prerequisites
                 </Button>
               </Link>
             </div>
