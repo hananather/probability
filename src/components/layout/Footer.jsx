@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { 
   FileText, 
   BookOpen, 
@@ -12,12 +11,6 @@ import {
 } from 'lucide-react';
 
 export function Footer() {
-  const pathname = usePathname();
-  
-  // Don't show footer on landing page (it has its own footer section)
-  if (pathname === '/') {
-    return null;
-  }
 
   return (
     <footer className="mt-auto border-t border-neutral-800 bg-neutral-900">
@@ -64,11 +57,6 @@ export function Footer() {
               <li>
                 <Link href="/about" className="text-sm text-neutral-400 hover:text-white transition-colors">
                   About This Platform
-                </Link>
-              </li>
-              <li>
-                <Link href="/learn" className="text-sm text-neutral-400 hover:text-white transition-colors">
-                  Learning Sandbox
                 </Link>
               </li>
               <li>
