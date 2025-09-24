@@ -202,7 +202,7 @@ const VariationsSection = React.memo(function VariationsSection() {
           <div className="bg-neutral-800/50 p-4 rounded-lg">
             <p>Initial: Patient has 1% chance of disease</p>
             <p>Test 1 positive: Updates to 16.7%</p>
-            <p>Test 2 positive: Updates to 78.5%</p>
+            <p>Test 2 positive: Updates to 79.8%</p>
             <p>Test 3 positive: Updates to 98.7%</p>
           </div>
           <div className="mt-3" dangerouslySetInnerHTML={{ 
@@ -309,9 +309,9 @@ const PracticeSection = React.memo(function PracticeSection() {
   const problems = [
     {
       question: "A coin is either fair (50% heads) or biased (70% heads). You believe there's a 40% chance it's biased. You flip it once and get heads. What's the probability the coin is biased?",
-      options: ["40%", "46.7%", "53.8%", "70%"],
+      options: ["40%", "46.7%", "48.3%", "70%"],
       correct: 2,
-      solution: "P(Biased|Heads) = (0.7 × 0.4) / (0.7 × 0.4 + 0.5 × 0.6) = 0.28 / 0.58 ≈ 53.8%"
+      solution: "P(Biased|Heads) = (0.7 × 0.4) / (0.7 × 0.4 + 0.5 × 0.6) = 0.28 / 0.58 ≈ 48.3%"
     },
     {
       question: "1% of people have a certain gene. A test for the gene is 95% accurate (both sensitivity and specificity). Someone tests positive. What's the probability they have the gene?",
@@ -321,9 +321,9 @@ const PracticeSection = React.memo(function PracticeSection() {
     },
     {
       question: "An AI model classifies images as cats or dogs. On cat images, it says 'cat' 90% of the time. On dog images, it says 'cat' 20% of the time. In your dataset, 30% are cats. The model says 'cat'. What's P(actually cat)?",
-      options: ["30%", "60%", "63.2%", "90%"],
+      options: ["30%", "60%", "65.9%", "90%"],
       correct: 2,
-      solution: "P(Cat|'cat') = (0.9 × 0.3) / (0.9 × 0.3 + 0.2 × 0.7) = 0.27 / 0.41 ≈ 63.2%"
+      solution: "P(Cat|'cat') = (0.9 × 0.3) / (0.9 × 0.3 + 0.2 × 0.7) = 0.27 / 0.41 ≈ 65.9%"
     },
     {
       question: "Three identical-looking coins: one always heads, one always tails, one fair. You pick one randomly and flip it twice, getting two heads. What's the probability you have the always-heads coin?",

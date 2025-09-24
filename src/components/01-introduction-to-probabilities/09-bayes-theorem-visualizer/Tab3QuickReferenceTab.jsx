@@ -229,9 +229,9 @@ const CommonMistakesSection = React.memo(function CommonMistakesSection() {
 // Section 4: Speed Tips
 const SpeedTipsSection = React.memo(function SpeedTipsSection() {
   const contentRef = useMathJax([
-    'P(H|D) \\approx \\frac{P(D|H) \\times P(H)}{P(D|\\neg H) \\times P(\\neg H)}',
-    'P(\\neg H) \\approx 1',
-    'P(\\text{Evidence})'
+    'o_{post} = \\text{LR} \\cdot o_{prior}',
+    'P(H|D) = \\frac{o_{post}}{1 + o_{post}}',
+    'P(H|D) \\approx \\text{LR} \\cdot P(H) \\ \text{ when } \\text{LR}\\cdot P(H) \\ll 1'
   ]);
 
   return (
@@ -259,7 +259,10 @@ const SpeedTipsSection = React.memo(function SpeedTipsSection() {
           <div className="bg-neutral-800/50 p-4 rounded border border-neutral-600/30">
             <h4 className="font-semibold text-purple-400 mb-2">Approximation Tricks</h4>
             <p className="text-sm text-neutral-300">
-              For rare events, <span dangerouslySetInnerHTML={{ __html: '\\(P(H|D) \\approx \\frac{P(D|H) \\times P(H)}{P(D|\\neg H) \\times P(\\neg H)}\\)' }} /> when <span dangerouslySetInnerHTML={{ __html: '\\(P(\\neg H) \\approx 1\\)' }} />
+              For rare events, <span dangerouslySetInnerHTML={{ __html: '\\(P(H|D) \\approx \\text{LR} \\cdot P(H)\\)' }} />
+              with <span dangerouslySetInnerHTML={{ __html: '\\(\\text{LR} = \\tfrac{P(D|H)}{P(D|\\neg H)}\\)' }} /> when <span dangerouslySetInnerHTML={{ __html: '\\(\\text{LR} \\cdot P(H) \\ll 1\\)' }} />.
+              Exactly: <span dangerouslySetInnerHTML={{ __html: '\\(o_{post} = \\text{LR} \\cdot o_{prior}\\)' }} /> and
+              <span dangerouslySetInnerHTML={{ __html: '\\(P(H|D) = \\tfrac{o_{post}}{1 + o_{post}}\\)' }} />.
             </p>
           </div>
 
