@@ -171,19 +171,25 @@ export default function AboutPage() {
             <div className="grid grid-cols-2 gap-5">
               <div className="space-y-5">
                 <div className="bg-neutral-900/60 rounded-xl p-6 border border-neutral-800 hover:border-neutral-700 transition-colors">
-                  <Code2 className="h-8 w-8 text-purple-400 mb-3" />
+                  <div className="w-12 h-12 rounded-lg mb-3 flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 shadow-sm">
+                    <Code2 className="h-6 w-6 text-white" />
+                  </div>
                   <h4 className="font-semibold mb-2">Interactive Tools</h4>
                   <p className="text-sm text-neutral-400">Hands-on visual explorers that make ideas stick.</p>
                 </div>
                 
                 <div className="bg-neutral-900/60 rounded-xl p-6 border border-neutral-800 hover:border-neutral-700 transition-colors">
-                  <Eye className="h-8 w-8 text-blue-300 mb-3" />
+                  <div className="w-12 h-12 rounded-lg mb-3 flex items-center justify-center bg-gradient-to-br from-blue-500 to-cyan-500 shadow-sm">
+                    <Eye className="h-6 w-6 text-white" />
+                  </div>
                   <h4 className="font-semibold mb-2">Visual First</h4>
                   <p className="text-sm text-neutral-400">See distributions and ideas evolve in real time.</p>
                 </div>
 
                 <div className="bg-neutral-900/60 rounded-xl p-6 border border-neutral-800 hover:border-neutral-700 transition-colors">
-                  <Zap className="h-8 w-8 text-teal-300 mb-3" />
+                  <div className="w-12 h-12 rounded-lg mb-3 flex items-center justify-center bg-gradient-to-br from-teal-500 to-emerald-500 shadow-sm">
+                    <Zap className="h-6 w-6 text-white" />
+                  </div>
                   <h4 className="font-semibold mb-2">Immediate Feedback</h4>
                   <p className="text-sm text-neutral-400">Learn faster with results and corrections on the spot.</p>
                 </div>
@@ -191,13 +197,17 @@ export default function AboutPage() {
               
               <div className="space-y-5 mt-10">
                 <div className="bg-neutral-900/60 rounded-xl p-6 border border-neutral-800 hover:border-neutral-700 transition-colors">
-                  <GraduationCap className="h-8 w-8 text-green-300 mb-3" />
+                  <div className="w-12 h-12 rounded-lg mb-3 flex items-center justify-center bg-gradient-to-br from-green-500 to-emerald-500 shadow-sm">
+                    <GraduationCap className="h-6 w-6 text-white" />
+                  </div>
                   <h4 className="font-semibold mb-2">Instructor‑Approved</h4>
                   <p className="text-sm text-neutral-400">Crafted and reviewed by university educators.</p>
                 </div>
                 
                 <div className="bg-neutral-900/60 rounded-xl p-6 border border-neutral-800 hover:border-neutral-700 transition-colors">
-                  <BookOpen className="h-8 w-8 text-orange-300 mb-3" />
+                  <div className="w-12 h-12 rounded-lg mb-3 flex items-center justify-center bg-gradient-to-br from-orange-500 to-amber-500 shadow-sm">
+                    <BookOpen className="h-6 w-6 text-white" />
+                  </div>
                   <h4 className="font-semibold mb-2">Exam‑Ready Notes</h4>
                   <p className="text-sm text-neutral-400">Clear summaries that bridge concepts to problems.</p>
                 </div>
@@ -230,9 +240,10 @@ export default function AboutPage() {
                   key={index} 
                   className="group relative bg-neutral-900/60 rounded-xl p-6 border border-neutral-800 hover:border-neutral-700 transition-all duration-300 hover:-translate-y-1"
                 >
+                  <div className={`pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-br ${principle.color} opacity-10 group-hover:opacity-20 transition-opacity`} />
                   <div className="relative">
-                    <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-4 bg-neutral-800 border border-neutral-700">
-                      <Icon className="h-7 w-7 text-neutral-200" />
+                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-4 bg-gradient-to-br ${principle.color} shadow-sm ring-1 ring-white/10`}>
+                      <Icon className="h-7 w-7 text-white drop-shadow" />
                     </div>
                     
                     <h3 className="text-xl font-semibold mb-3">{principle.title}</h3>
