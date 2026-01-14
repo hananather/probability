@@ -4,7 +4,9 @@
 - App routes: `src/app` (Next.js 15 App Router, `layout.js`, chapter pages).
 - UI components: `src/components` grouped by chapter (e.g., `06-hypothesis-testing/6-1-4-PValueMeaning.jsx`).
 - Hooks/Utils/Lib: `src/hooks`, `src/utils`, `src/lib` (design system, quiz helpers).
-- Content & assets: `src/content` for MD/MDX; `public/` for static. Docs in `docs/`, tasks in `tasks/`, scripts in `scripts/`.
+- Content & assets: `src/content` for MD/MDX; `public/` for static. Docs in `docs/`; course materials in `course-materials/`.
+- Config/Contexts/Services: `src/config`, `src/contexts`, `src/services`.
+- Templates & tutorials: `src/templates`, `src/tutorials`.
 - Path aliases: prefer `@/...` per `jsconfig.json` (e.g., `import X from '@/components/shared/X'`).
 
 ## Build, Test, and Development Commands
@@ -36,4 +38,3 @@
 
 ## Architecture Overview
 - Next.js 15 App Router + MDX, Tailwind for styling, and path aliases via `jsconfig.json`. Shared design system and quiz helpers live under `src/lib` and `src/utils`.
-
