@@ -2,15 +2,12 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { 
-  FileText, 
-  Calculator, 
-  BookOpen, 
+import {
+  FileText,
+  BookOpen,
   GraduationCap,
-  ArrowRight,
-  ClipboardList
+  ArrowRight
 } from 'lucide-react';
-import { Button } from '../../components/ui/button';
 
 const resources = [
   {
@@ -23,10 +20,10 @@ const resources = [
   },
   {
     icon: BookOpen,
-    title: 'Prerequisite Review',
-    description: 'Review essential math concepts needed for this course.',
-    link: '/resources/prerequisite-review',
-    features: ['Algebra review', 'Set theory basics', 'Function notation'],
+    title: 'Prerequisites',
+    description: 'What you should know before starting the course.',
+    link: '/prerequisites',
+    features: ['Algebra essentials', 'Set notation', 'Summation notation'],
     color: 'text-teal-400'
   }
 ];
@@ -87,42 +84,6 @@ export default function ResourcesPage() {
                 </Link>
               );
             })}
-          </div>
-        </div>
-      </section>
-
-      {/* Quick Access Section */}
-      <section className="py-12 px-4 bg-neutral-950">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold mb-6">Quick Links</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Link href="/resources/practice" className="group">
-              <div className="bg-neutral-800 rounded-lg p-6 border border-neutral-700 hover:border-neutral-600 transition-colors">
-                <div className="flex items-center space-x-3">
-                  <ClipboardList className="h-6 w-6 text-green-400" />
-                  <div>
-                    <h3 className="font-semibold text-white group-hover:text-teal-400 transition-colors mb-1">
-                      Practice Problems
-                    </h3>
-                    <p className="text-sm text-neutral-400">Access chapter quizzes</p>
-                  </div>
-                </div>
-              </div>
-            </Link>
-            
-            <Link href="/resources/formulas/chapter-1" className="group">
-              <div className="bg-neutral-800 rounded-lg p-6 border border-neutral-700 hover:border-neutral-600 transition-colors">
-                <div className="flex items-center space-x-3">
-                  <Calculator className="h-6 w-6 text-blue-400" />
-                  <div>
-                    <h3 className="font-semibold text-white group-hover:text-teal-400 transition-colors mb-1">
-                      Formula Sheets
-                    </h3>
-                    <p className="text-sm text-neutral-400">Complete formula reference</p>
-                  </div>
-                </div>
-              </div>
-            </Link>
           </div>
         </div>
       </section>
