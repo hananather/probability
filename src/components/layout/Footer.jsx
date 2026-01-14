@@ -3,11 +3,13 @@
 import React from 'react';
 import Link from 'next/link';
 import { 
-  FileText, 
-  BookOpen, 
-  Calculator,
   AlertCircle,
-  GraduationCap
+  BookOpen,
+  Calculator,
+  FileText,
+  GraduationCap,
+  Info,
+  Shield
 } from 'lucide-react';
 
 export function Footer() {
@@ -16,25 +18,28 @@ export function Footer() {
     <footer className="mt-auto border-t border-neutral-800 bg-neutral-900">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Academic Resources */}
+          {/* About */}
           <div>
             <h3 className="flex items-center space-x-2 text-lg font-semibold text-white mb-4">
-              <BookOpen className="h-5 w-5 text-teal-400" />
-              <span>Academic Resources</span>
+              <Info className="h-5 w-5 text-teal-400" />
+              <span>About</span>
             </h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/resources/formulas" className="flex items-center space-x-2 text-neutral-400 hover:text-white transition-colors">
-                  <Calculator className="h-4 w-4" />
-                  <span className="text-sm">Formula Reference</span>
+                <Link href="/about" className="text-sm text-neutral-400 hover:text-white transition-colors">
+                  About This Platform
                 </Link>
               </li>
-              <li>
-                <Link href="/resources/practice" className="flex items-center space-x-2 text-neutral-400 hover:text-white transition-colors">
-                  <FileText className="h-4 w-4" />
-                  <span className="text-sm">Practice Problems</span>
-                </Link>
-              </li>
+            </ul>
+          </div>
+
+          {/* Resources */}
+          <div>
+            <h3 className="flex items-center space-x-2 text-lg font-semibold text-white mb-4">
+              <BookOpen className="h-5 w-5 text-teal-400" />
+              <span>Resources</span>
+            </h3>
+            <ul className="space-y-3">
               <li>
                 <Link href="/prerequisites" className="flex items-center space-x-2 text-neutral-400 hover:text-white transition-colors">
                   <AlertCircle className="h-4 w-4" />
@@ -50,47 +55,26 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Quick Links */}
+          {/* Legal */}
           <div>
-            <h3 className="text-lg font-semibold text-white mb-4">Quick Links</h3>
+            <h3 className="flex items-center space-x-2 text-lg font-semibold text-white mb-4">
+              <Shield className="h-5 w-5 text-teal-400" />
+              <span>Legal</span>
+            </h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/about" className="text-sm text-neutral-400 hover:text-white transition-colors">
-                  About This Platform
+                <Link href="/terms" className="flex items-center space-x-2 text-neutral-400 hover:text-white transition-colors">
+                  <FileText className="h-4 w-4" />
+                  <span className="text-sm">Terms of Use</span>
                 </Link>
               </li>
               <li>
-                <Link href="/overview" className="text-sm text-neutral-400 hover:text-white transition-colors">
-                  Course Overview
-                </Link>
-              </li>
-              <li>
-                <Link href="/chapter1" className="text-sm text-neutral-400 hover:text-white transition-colors">
-                  Start Chapter 1
+                <Link href="/academic-integrity" className="flex items-center space-x-2 text-neutral-400 hover:text-white transition-colors">
+                  <Shield className="h-4 w-4" />
+                  <span className="text-sm">Academic Integrity</span>
                 </Link>
               </li>
             </ul>
-          </div>
-
-          {/* Course Info */}
-          <div>
-            <h3 className="text-lg font-semibold text-white mb-4">Course Information</h3>
-            <div className="space-y-3 text-sm text-neutral-400">
-              <p>MAT 2377 - Probability & Statistics</p>
-              <p>For Engineering Students</p>
-              <p className="pt-2">
-                Built with interactive visualizations to help you understand complex concepts through hands-on learning.
-              </p>
-              <div className="pt-4 text-xs">
-                <Link href="/terms" className="hover:text-white transition-colors">
-                  Terms of Use
-                </Link>
-                <span className="mx-2">•</span>
-                <Link href="/academic-integrity" className="hover:text-white transition-colors">
-                  Academic Integrity
-                </Link>
-              </div>
-            </div>
           </div>
         </div>
 
