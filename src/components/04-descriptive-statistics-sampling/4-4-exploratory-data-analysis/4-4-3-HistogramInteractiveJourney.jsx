@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import * as d3 from "@/utils/d3-utils";
-import { jStat } from "jstat";
+import jStat from "jstat";
 import { 
   VisualizationContainer, 
   GraphContainer, 

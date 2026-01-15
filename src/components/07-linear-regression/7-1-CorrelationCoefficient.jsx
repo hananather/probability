@@ -12,7 +12,7 @@ import { colors, createColorScheme } from '../../lib/design-system';
 import BackToHub from '../ui/BackToHub';
 import { TrendingUp, TrendingDown, Activity, Info } from 'lucide-react';
 import { Chapter7ReferenceSheet } from '../reference-sheets/Chapter7ReferenceSheet';
-import { jStat } from 'jstat';
+import jStat from 'jstat';
 
 // Get Chapter 7 color scheme
 const chapterColors = createColorScheme('regression');

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import * as d3 from "@/utils/d3-utils";
-import { jStat } from "jstat";
+import jStat from "jstat";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   VisualizationContainer, 

@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import * as d3 from "@/utils/d3-utils";
 import { createColorScheme, typography, cn } from "../../../lib/design-system";
 import { useMathJax } from '@/hooks/useMathJax';
-import { jStat } from "jstat";
+import jStat from "jstat";
 import NormalApproxBinomialWorkedExample from "./3-7-2-NormalApproxBinomialWorkedExample";
 import { ProgressBar, ProgressNavigation } from "../../ui/ProgressBar";
 import { Button } from "../../ui/button";

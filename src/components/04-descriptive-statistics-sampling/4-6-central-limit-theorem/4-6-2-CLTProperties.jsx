@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
-import { jStat } from 'jstat';
+import jStat from 'jstat';
 import { ArrowRight, TrendingUp, Activity, TrendingDown, Calculator, BarChart3, BookOpen, ChevronRight } from 'lucide-react';
 import { Button } from '../../ui/button';
 import { Card, CardContent } from '../../ui/card';

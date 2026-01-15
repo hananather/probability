@@ -6,7 +6,7 @@ import { Button } from "../../ui/button";
 import { ProgressBar, ProgressNavigation } from "../../ui/ProgressBar";
 import { useMathJax } from '@/hooks/useMathJax';
 import { createColorScheme, typography } from "../../../lib/design-system";
-import { jStat } from "jstat";
+import jStat from "jstat";
 import { Tutorial } from "../../ui/Tutorial";
 import { Clock, Zap, ChartBar, Target } from "lucide-react";
 import { tutorial_3_5_1 } from '@/tutorials/chapter3';
