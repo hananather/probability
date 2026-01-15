@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import * as d3 from 'd3';
+import { jStat } from 'jstat';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   VisualizationContainer,
@@ -120,7 +121,8 @@ export default function PairedTwoSampleTest() {
     // Unpaired test statistics
     const pooledVar = ((n - 1) * beforeVar + (n - 1) * afterVar) / (2 * n - 2);
     const unpairedTestStat = (beforeMean - afterMean) / Math.sqrt(pooledVar * (2/n));
-    const unpairedPValue = 0.107;
+    const unpairedDf = 2 * n - 2;
+    const unpairedPValue = 2 * (1 - jStat.studentt.cdf(Math.abs(unpairedTestStat), unpairedDf));
     
     return {
       beforeMean,

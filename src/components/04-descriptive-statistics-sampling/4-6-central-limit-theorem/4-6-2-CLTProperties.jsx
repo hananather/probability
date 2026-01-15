@@ -88,7 +88,7 @@ const CLTPropertiesMerged = () => {
       .attr('text-anchor', 'middle')
       .style('fill', '#94a3b8')
       .style('font-size', '14px')
-      .text('Standardized Sample Mean');
+      .text('Sample Mean');
 
     // Generate normal curve based on sample size
     const standardError = 1 / Math.sqrt(sampleSize);

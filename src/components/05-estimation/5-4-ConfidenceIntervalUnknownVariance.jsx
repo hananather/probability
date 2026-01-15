@@ -303,7 +303,8 @@ const OzoneExample = React.memo(function OzoneExample({ onInsight }) {
   const data = [5.4, 4.7, 4.7, 4.5, 4.5, 4.9];
   const n = 6;
   const xBar = 4.783333; // Exact calculation
-  const s = 0.370;
+  // Correct sample standard deviation computed from data
+  const s = 0.337; 
   const df = n - 1;
   const tCrit = 2.571; // t_{0.025,5}
   const se = s / Math.sqrt(n);

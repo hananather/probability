@@ -231,7 +231,7 @@ const SpatialRandomVariable = () => {
       .attr("x", -HEIGHT_DIST / 2)
       .style("fill", "#f3f4f6")
       .style("font-size", "11px")
-      .text("Frequency");
+      .text("Count");
     
     // Create bars group
     mainGroup.append("g")

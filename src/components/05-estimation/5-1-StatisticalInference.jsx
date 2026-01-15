@@ -222,7 +222,7 @@ const BayesianInferenceIntro = React.memo(function BayesianInferenceIntro({ isAc
               <div className="bg-neutral-800 rounded p-3">
                 <p className="text-xs text-neutral-400 mb-2">Mathematical Update:</p>
                 <div className="text-xs" dangerouslySetInnerHTML={{ 
-                  __html: `\\[p(\\theta|data) \\propto \\theta^{${evidence.heads}}(1-\\theta)^{${evidence.tails}} \\times Beta(${(priorBelief * 10).toFixed(1)}, ${((1-priorBelief) * 10).toFixed(1)})\\]` 
+                  __html: `\\[p(\\theta|data) \\propto \\theta^{${evidence.heads}}(1-\\theta)^{${evidence.tails}} \\times Beta(${(priorBelief * 10 + 1).toFixed(1)}, ${((1-priorBelief) * 10 + 1).toFixed(1)})\\]` 
                 }} />
               </div>
             </div>
@@ -820,7 +820,7 @@ const InteractiveInsights = React.memo(() => {
       shortDesc: 'Drawing conclusions about the population',
       fullDesc: 'Statistical inference uses sample data to make probabilistic statements about population parameters.',
       example: 'Estimating election outcome, determining product quality',
-      formula: 'P(θ̂ - θ < ε) = confidence level'
+      formula: 'P(|θ̂ − θ| < ε) = 1 − α'
     }
   ];
   

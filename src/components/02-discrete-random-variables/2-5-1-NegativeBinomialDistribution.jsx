@@ -142,6 +142,8 @@ export default function NegativeBinomialDistribution() {
   const expectedValue = r / validP;
   const variance = (r * (1 - validP)) / (validP * validP);
   const stdDev = Math.sqrt(variance);
+  // Mode for number of trials to r-th success: floor((r-1)(1-p)/p) + r
+  const modeTrials = Math.floor(((r - 1) * (1 - validP)) / validP) + r;
   
   // Calculate PMF values
   const calculatePMF = useCallback(() => {
@@ -564,7 +566,7 @@ export default function NegativeBinomialDistribution() {
                   },
                   { 
                     label: "Mode", 
-                    value: r.toString()
+                    value: modeTrials.toString()
                   }
                 ]}
               />

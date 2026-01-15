@@ -160,10 +160,10 @@ const PracticeSection = () => {
     },
     {
       question: "3-digit numbers using 0-9, no repeat?",
-      answer: "720",
-      solution: "P(10,3) = 10!/(10-3)! = 10!/7! = 10 × 9 × 8 = 720",
-      formula: "P(n,r) without replacement",
-      explanation: "First digit: 10 choices, second: 9, third: 8"
+      answer: "648",
+      solution: "9 × 9 × 8 = 648 (first digit cannot be 0)",
+      formula: "Without replacement with first-digit constraint",
+      explanation: "First digit: 1–9 (9 choices); second: 9 remaining digits; third: 8"
     }
   ];
   

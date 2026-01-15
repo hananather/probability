@@ -734,7 +734,7 @@ function WhatAreSamplingDistributionsTheoryFirst() {
                     {counts.length >= 30 && (
                       <div className="mt-2 pt-2 border-t border-neutral-700">
                         <p className="text-xs text-green-400">
-                          With {counts.length} samples, the Central Limit Theorem is in effect!
+                          With {counts.length} sample means collected, the histogram pattern is clearer.
                         </p>
                       </div>
                     )}

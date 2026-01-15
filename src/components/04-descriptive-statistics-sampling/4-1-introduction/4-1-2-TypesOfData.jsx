@@ -748,7 +748,7 @@ const TypesOfData = () => {
                   { data: "Coffee temperature: 165.3°F", answer: "Numerical-Continuous (measured precisely)" },
                   { data: "T-shirt size: Medium", answer: "Categorical-Ordinal (S < M < L < XL)" },
                   { data: "ZIP code: 90210", answer: "Categorical-Nominal (numbers used as labels, not for math)" },
-                  { data: "Movie rating: 4.5 stars", answer: "Numerical-Continuous (though displayed discretely)" },
+                  { data: "Movie rating: 4.5 stars", answer: "Categorical-Ordinal (ordered rating scale; intervals not guaranteed equal)" },
                   { data: "Political party: Democrat", answer: "Categorical-Nominal (no inherent order)" },
                   { data: "Pain level: 7/10", answer: "Categorical-Ordinal (ordered but intervals not equal)" },
                   { data: "Bank balance: $1,523.47", answer: "Numerical-Continuous (can have any decimal value)" },

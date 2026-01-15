@@ -114,6 +114,11 @@ function ProbabilityEvent() {
   const autoRunRef = useRef(null);
   const trialsRef = useRef(0);
   
+  // Derived statistics for messaging
+  const pHat = trials > 0 ? successes / trials : 0;
+  const se = trials > 0 ? Math.sqrt(pHat * (1 - pHat) / trials) : 0;
+  const ci95 = 1.96 * se;
+  
   // Define dice events
   const diceEvents = {
     even: { name: "Even Number", check: (n) => n % 2 === 0, theoretical: 1/2, values: [2, 4, 6] },
@@ -689,7 +694,7 @@ function ProbabilityEvent() {
               {trials >= 1000 && (
                 <div className="text-green-400">
                   <p className="font-medium">Statistical Insight:</p>
-                  <p className="text-xs mt-1">With {trials} trials, the error margin is consistently below 0.01!</p>
+                  <p className="text-xs mt-1">p-hat = {pHat.toFixed(3)}, SE ≈ {se.toFixed(3)}, 95% CI ±{ci95.toFixed(3)}</p>
                 </div>
               )}
               

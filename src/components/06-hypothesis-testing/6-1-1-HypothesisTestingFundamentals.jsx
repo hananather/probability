@@ -334,7 +334,7 @@ export default function HypothesisTestingFundamentals() {
       .attr("fill", "#e5e7eb")
       .attr("font-size", "16px")
       .attr("font-weight", "600")
-      .text("Probability");
+      .text("Probability (PMF)");
     
     // Add p-value annotation with animation
     if (smallSampleFlips.length === 10) {
@@ -490,7 +490,7 @@ export default function HypothesisTestingFundamentals() {
       .attr("fill", "#e5e7eb")
       .attr("font-size", "16px")
       .attr("font-weight", "600")
-      .text("Probability");
+      .text("Probability / Density");
     
     // Add p-value annotation
     const pValueText = g.append("text")
@@ -635,7 +635,7 @@ export default function HypothesisTestingFundamentals() {
       .attr("fill", "#e5e7eb")
       .attr("font-size", "16px")
       .attr("font-weight", "600")
-      .text("Probability");
+      .text("Probability / Density");
     
     // p-value label
     const pValue = calculatePValue(100, explorerHeads);
@@ -686,7 +686,7 @@ export default function HypothesisTestingFundamentals() {
             <SemanticGradientCard
               title="2. Statistical Evidence"
               description="Quantify evidence against the null"
-              formula={`\\[\\text{p-value} = P(\\text{data} | H_0)\\]`}
+              formula={`\\[\\text{p-value} = P(\\text{statistic as or more extreme than observed} \\mid H_0)\\]`}
               note="Interpret p-values correctly without common misconceptions"
               theme="teal"
             />

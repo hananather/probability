@@ -12,6 +12,7 @@ import { colors, createColorScheme } from '../../lib/design-system';
 import BackToHub from '../ui/BackToHub';
 import { TrendingUp, TrendingDown, Activity, Info } from 'lucide-react';
 import { Chapter7ReferenceSheet } from '../reference-sheets/Chapter7ReferenceSheet';
+import { jStat } from 'jstat';
 
 // Get Chapter 7 color scheme
 const chapterColors = createColorScheme('regression');
@@ -582,12 +583,11 @@ const StatisticalSignificance = React.memo(function StatisticalSignificance({ co
   const tStat = correlation * Math.sqrt((sampleSize - 2) / (1 - correlation * correlation));
   const df = sampleSize - 2;
   
-  // Critical values for common significance levels
-  const criticalValues = {
-    0.10: 1.734,  // t(18, 0.05) for two-tailed
-    0.05: 2.101,  // t(18, 0.025) for two-tailed
-    0.01: 2.878   // t(18, 0.005) for two-tailed
-  };
+  // Critical values for common significance levels (two-tailed), computed dynamically
+  const alphaLevels = [0.10, 0.05, 0.01];
+  const criticalValues = Object.fromEntries(
+    alphaLevels.map((alpha) => [alpha, jStat.studentt.inv(1 - alpha / 2, df)])
+  );
   
   // Determine significance
   const isSignificant = {

@@ -713,7 +713,7 @@ function CLTSimulation() {
                     <div>
                       <p>🎯 Ready to explore the Central Limit Theorem?</p>
                       <p className="text-purple-300 mt-1">
-                        Click "Drop Samples" to begin your journey to 30 samples — where the magic of CLT reveals itself! 🌟
+                        Click "Drop Samples" to begin collecting sample means — watch the sampling distribution emerge! 🌟
                       </p>
                     </div>
                   )}
@@ -725,8 +725,8 @@ function CLTSimulation() {
                         <p>📊 The sampling distribution is starting to take shape. Notice how it clusters around the theoretical mean.</p>
                         <div className="mt-2 p-2 bg-purple-900/20 border border-purple-600/30 rounded">
                           <div className="text-xs text-purple-300">
-                            🎯 Goal: Collect {30 - counts.length} more sample{30 - counts.length !== 1 ? 's' : ''} to reach n=30 
-                            <span className="text-purple-400 font-semibold"> — a statistical milestone!</span>
+                            🎯 Goal: Collect {30 - counts.length} more sample mean{30 - counts.length !== 1 ? 's' : ''} to reach 30 means 
+                            <span className="text-purple-400 font-semibold"> — for a clear visual pattern!</span>
                           </div>
                           <div className="mt-1.5">
                             <div className="w-full bg-purple-900/30 rounded-full h-1.5">

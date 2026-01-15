@@ -186,7 +186,7 @@ const SampleSizeMeanBuilder = React.memo(() => {
             </p>
             <div className="bg-neutral-800/50 p-2 rounded mt-2">
               <p className="text-xs text-neutral-400">
-                <strong>Key insight:</strong> Halving the margin of error requires 4 times the sample size. Doubling confidence multiplies n by about 4.
+                <strong>Key insight:</strong> Halving the margin of error requires 4× the sample size. Increasing confidence increases n by the square of the z‑ratio (e.g., 95% → 99% multiplies n by ≈ (2.576/1.96)² ≈ 1.73).
               </p>
             </div>
           </div>

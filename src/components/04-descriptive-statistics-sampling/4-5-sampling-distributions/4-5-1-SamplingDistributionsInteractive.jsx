@@ -548,7 +548,7 @@ const SamplingDistributionsInteractive = ({ onComplete }) => {
             {samplesCollected >= 15 && (
               <div className="bg-gradient-to-br from-yellow-900/20 to-orange-900/20 rounded-lg p-4 space-y-3 animate-fade-in border border-yellow-600/30">
                 <p className={cn(typography.label, "text-yellow-400")}>
-                  The Central Limit Theorem at Work! (15+ samples)
+                  Pattern Emerging (15+ sample means)
                 </p>
                 <div className="space-y-2">
                   <p className={typography.description}>

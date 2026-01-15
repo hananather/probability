@@ -585,7 +585,7 @@ export const tutorial_1_5_1 = [
           </div>
         </div>
         <p className="text-sm text-neutral-300 mt-3">
-          🎯 <strong>Try it:</strong> Run 1000+ trials to see perfect convergence!
+          🎯 <strong>Try it:</strong> Run 1000+ trials to see clear convergence!
         </p>
       </div>
     )
