@@ -157,7 +157,7 @@ export function NestedCalculation({ label, children }) {
  * @param {string} props.formula - LaTeX formula string (without delimiters)
  * @param {string} props.className - Additional CSS classes
  */
-export function FormulaDisplay({ formula, className }) {
+export function FormulaDisplay({ formula, className, label = 'Calculation formula' }) {
   const contentRef = useRef(null);
   
   useEffect(() => {
@@ -176,7 +176,13 @@ export function FormulaDisplay({ formula, className }) {
   }, [formula]);
 
   return (
-    <div ref={contentRef} className={cn("text-center my-2", className)}>
+    <div
+      ref={contentRef}
+      role="region"
+      aria-label={label}
+      tabIndex={0}
+      className={cn("min-w-0 max-w-full overflow-x-auto text-center my-2 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400", className)}
+    >
       <span dangerouslySetInnerHTML={{ __html: `\\[${formula}\\]` }} />
     </div>
   );

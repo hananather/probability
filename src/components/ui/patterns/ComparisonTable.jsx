@@ -43,7 +43,13 @@ export function ComparisonTable({
   return (
     <VisualizationSection className={className}>
       {title && <h3 className="text-xl font-bold text-white mb-4">{title}</h3>}
-      <div ref={tableRef} className="overflow-x-auto">
+      <div
+        ref={tableRef}
+        role="region"
+        aria-label={title || 'Comparison table'}
+        tabIndex={0}
+        className="min-w-0 max-w-full overflow-x-auto rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400"
+      >
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-neutral-700">
@@ -61,9 +67,9 @@ export function ComparisonTable({
             {rows.map((row, rowIndex) => (
               <tr key={rowIndex} className={rowIndex < rows.length - 1 ? "border-b border-neutral-700/50" : ""}>
                 {showAspectColumn && (
-                  <td className="py-2 px-3 text-neutral-300 font-semibold">
+                  <th scope="row" className="text-left py-2 px-3 text-neutral-300 font-semibold">
                     <span dangerouslySetInnerHTML={{ __html: row.aspect }} />
-                  </td>
+                  </th>
                 )}
                 {columns.map((col, colIndex) => (
                   <td key={colIndex} className="text-center py-2 px-3">
@@ -172,7 +178,13 @@ export function SimpleComparisonTable({ title, data, headers, colors, className,
   return (
     <div className={cn("bg-neutral-900/50 rounded-lg p-4", className)}>
       {title && <h4 className="font-bold text-white mb-3">{title}</h4>}
-      <div ref={tableRef} className="overflow-x-auto">
+      <div
+        ref={tableRef}
+        role="region"
+        aria-label={title || 'Comparison table'}
+        tabIndex={0}
+        className="min-w-0 max-w-full overflow-x-auto rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400"
+      >
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-neutral-700">
@@ -191,9 +203,9 @@ export function SimpleComparisonTable({ title, data, headers, colors, className,
             {data.map((row, index) => (
               <tr key={index} className={index < data.length - 1 ? "border-b border-neutral-700/50" : ""}>
                 {showAspectColumn && (
-                  <td className="py-2 px-3 text-neutral-300 font-medium">
+                  <th scope="row" className="text-left py-2 px-3 text-neutral-300 font-medium">
                     <span dangerouslySetInnerHTML={{ __html: row.aspect }} />
-                  </td>
+                  </th>
                 )}
                 <td className="text-center py-2 px-3">
                   <span dangerouslySetInnerHTML={{ __html: row.left }} />

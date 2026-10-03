@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { StepByStepCalculation, CalculationStep, NestedCalculation, FormulaDisplay } from '@/components/ui/patterns/StepByStepCalculation';
 import { ComparisonTable, SimpleComparisonTable } from '@/components/ui/patterns/ComparisonTable';
 import { InterpretationBox } from '@/components/ui/patterns/InterpretationBox';
 import { SimpleInsightBox, SimpleFormulaCard } from '@/components/ui/patterns/SimpleComponents';
 import { useMathJax } from '@/hooks/useMathJax';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { RefreshCw, Calculator, PlayCircle } from 'lucide-react';
 import SharedNavigation from '../shared/SharedNavigation';
 
@@ -15,6 +16,10 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
   const [selectedBag, setSelectedBag] = useState('bag-a');
   const [currentStep, setCurrentStep] = useState(0);
   const [isCalculating, setIsCalculating] = useState(false);
+  const calculationRef = useRef(null);
+  const startButtonRef = useRef(null);
+  const navigationIntentRef = useRef(null);
+  const reducedMotion = useReducedMotion();
   
   const contentRef = useMathJax([currentScenario, selectedBag, currentStep, isCalculating]);
 
@@ -72,23 +77,49 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
   };
 
   const currentBag = scenarios[currentScenario].bags[selectedBag];
+  const totalSteps = currentScenario === 'equal-mass' ? 5 : currentScenario === 'weighted-mass' ? 6 : 7;
+  const isFinalStep = currentStep === totalSteps - 1;
+
+  useEffect(() => {
+    const intent = navigationIntentRef.current;
+    if (!intent) return;
+    navigationIntentRef.current = null;
+    if (intent === 'start') {
+      startButtonRef.current?.focus({ preventScroll: true });
+      return;
+    }
+    if (!isCalculating) return;
+    const heading = [...(calculationRef.current?.querySelectorAll('h4') || [])]
+      .find(element => element.textContent.startsWith(`Step ${currentStep + 1}:`));
+    if (!heading) return;
+    heading.tabIndex = -1;
+    heading.classList.add('scroll-mt-24');
+    heading.focus({ preventScroll: true });
+    heading.scrollIntoView({ behavior: reducedMotion ? 'instant' : 'smooth', block: 'start' });
+  }, [currentStep, isCalculating, currentScenario, selectedBag, reducedMotion]);
 
   const startCalculation = () => {
+    navigationIntentRef.current = 'step';
     setIsCalculating(true);
     setCurrentStep(0);
   };
 
-  const nextStep = () => {
-    const maxSteps = currentScenario === 'equal-mass' ? 4 : 
-                   currentScenario === 'weighted-mass' ? 5 : 6;
-    if (currentStep < maxSteps) {
-      setCurrentStep(currentStep + 1);
-    }
+  const navigateToStep = (step) => {
+    if (!Number.isInteger(step) || step < 0 || step >= totalSteps || step === currentStep) return;
+    navigationIntentRef.current = 'step';
+    setCurrentStep(step);
   };
 
-  const resetCalculation = () => {
+  const resetCalculation = (focusStart = false) => {
+    navigationIntentRef.current = focusStart ? 'start' : null;
     setIsCalculating(false);
     setCurrentStep(0);
+  };
+
+  const finishCalculation = () => {
+    if (!isCalculating || !isFinalStep) return;
+    resetCalculation(true);
+    onComplete?.();
   };
 
   const renderEqualMassCalculation = () => {
@@ -404,6 +435,7 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
           <CalculationStep title="Step 5: Compare with Uniform Selection" variant="highlight">
             <SimpleComparisonTable
               title="Uniform vs Weighted Selection"
+              showAspectColumn
               headers={{ left: "Uniform Selection", right: "Weighted Selection" }}
               colors={{ left: "text-blue-400", right: "text-purple-400" }}
               data={[
@@ -626,6 +658,7 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
           <CalculationStep title="Step 6: With vs Without Replacement" variant="highlight">
             <SimpleComparisonTable
               title="Replacement Effects on Probability"
+              showAspectColumn
               headers={{ left: "With Replacement", right: "Without Replacement" }}
               colors={{ left: "text-blue-400", right: "text-green-400" }}
               data={[
@@ -769,10 +802,11 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
         </div>
       )}
 
-      {/* Action Buttons and Navigation */}
-      {!isCalculating ? (
+      {/* Start Calculation */}
+      {!isCalculating && (
         <div className="flex justify-center">
-          <Button 
+          <Button
+            ref={startButtonRef}
             onClick={startCalculation}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
           >
@@ -780,30 +814,31 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
             Start Step-by-Step Calculation
           </Button>
         </div>
-      ) : (
+      )}
+
+      {/* Calculation Content */}
+      <div ref={calculationRef}>
+        {currentScenario === 'equal-mass' && renderEqualMassCalculation()}
+        {currentScenario === 'weighted-mass' && renderWeightedMassCalculation()}
+        {currentScenario === 'multiple-picks' && renderMultiplePicksCalculation()}
+      </div>
+
+      {/* Navigation follows the reasoning for the current step. */}
+      {isCalculating && (
         <div className="space-y-4">
           <SharedNavigation
             currentStep={currentStep}
-            totalSteps={currentScenario === 'equal-mass' ? 5 : 
-                        currentScenario === 'weighted-mass' ? 6 : 7}
-            onNavigate={(step) => setCurrentStep(step)}
-            onComplete={() => {
-              if (currentStep >= (currentScenario === 'equal-mass' ? 4 : 
-                                 currentScenario === 'weighted-mass' ? 5 : 6)) {
-                resetCalculation();
-                onComplete?.();
-              } else {
-                nextStep();
-              }
-            }}
+            totalSteps={totalSteps}
+            onNavigate={navigateToStep}
+            onComplete={finishCalculation}
             showProgress={true}
-            nextLabel="Next Step"
+            nextLabel={isFinalStep ? (onComplete ? 'Mark as Complete' : 'Finish Calculation') : 'Next Step'}
             previousLabel="Previous Step"
             disabled={false}
           />
           <div className="text-center">
             <Button 
-              onClick={resetCalculation}
+              onClick={() => resetCalculation(true)}
               variant="outline"
               size="sm"
             >
@@ -814,28 +849,14 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
         </div>
       )}
 
-      {/* Calculation Content */}
-      {currentScenario === 'equal-mass' && renderEqualMassCalculation()}
-      {currentScenario === 'weighted-mass' && renderWeightedMassCalculation()}
-      {currentScenario === 'multiple-picks' && renderMultiplePicksCalculation()}
-
       {/* Completion Message */}
-      {isCalculating && currentStep >= (currentScenario === 'equal-mass' ? 4 : 
-                                       currentScenario === 'weighted-mass' ? 5 : 6) && (
+      {isCalculating && isFinalStep && (
         <div className="bg-gradient-to-br from-green-900/20 to-emerald-800/20 border border-green-600/30 rounded-lg p-6 text-center">
           <h3 className="text-xl font-bold text-green-400 mb-3">🎉 Calculation Complete!</h3>
           <p className="text-neutral-200 mb-4">
             You've completed this calculation. Try another scenario
             or move on to the next topic to continue building your probability foundation.
           </p>
-          {onComplete && (
-            <Button 
-              onClick={onComplete}
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-2"
-            >
-              Mark as Complete
-            </Button>
-          )}
         </div>
       )}
     </div>

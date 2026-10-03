@@ -39,9 +39,9 @@ export function InteractiveJourneyNavigation({
     const handleKeyPress = (e) => {
       const target = e.target;
       if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey ||
-          (target instanceof Element && target.closest(
-            'input, textarea, select, button, a, summary, details, [tabindex]:not([tabindex="-1"]), [role="button"], [role="tab"], [role="checkbox"], [role="radio"], [role="switch"], [role="link"], [role="menuitem"], [contenteditable]:not([contenteditable="false"]), [role="slider"], [role="textbox"], [role="combobox"]'
-          ))) {
+          (target instanceof Element && (target.matches('[tabindex]:not([tabindex="-1"])') || target.closest(
+            'input, textarea, select, button, a, summary, details, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], [role="switch"], [role="link"], [role="menuitem"], [contenteditable]:not([contenteditable="false"]), [role="slider"], [role="textbox"], [role="combobox"]'
+          )))) {
         return;
       }
       if (e.key === 'ArrowLeft' && currentSection > 0) {

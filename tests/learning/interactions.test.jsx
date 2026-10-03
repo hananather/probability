@@ -30,7 +30,7 @@ describe('lesson keyboard navigation', () => {
     render(<>
       <input aria-label="Probability" type="range" />
       <textarea aria-label="Answer" />
-      <h3 tabIndex={-1} data-testid="lesson-heading">Lesson heading</h3>
+      <div role="tabpanel" tabIndex={0}><h3 tabIndex={-1} data-testid="lesson-heading">Lesson heading</h3></div>
       <div contentEditable suppressContentEditableWarning data-testid="editable">Notes</div>
       <InteractiveJourneyNavigation currentSection={0} totalSections={2} onNavigate={navigate} onComplete={complete} />
     </>);

@@ -167,7 +167,7 @@ export default function TabbedLearningPage({
                 onClick={() => setActiveTab(id)}
                 onKeyDown={event => handleTabKeyDown(event, index)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap",
+                  "relative flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap",
                   activeTab === id
                     ? 'bg-neutral-700 text-white border-b-2'
                     : 'text-neutral-400 hover:text-white hover:bg-neutral-800'

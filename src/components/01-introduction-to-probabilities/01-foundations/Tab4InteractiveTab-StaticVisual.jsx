@@ -416,7 +416,7 @@ const ConceptualSection = () => {
         <SemanticGradientCard
           title="Sample Space"
           description="The complete set of all possible outcomes"
-          formula="\\[S = \\{\\text{all possible pebbles}\\}\\]"
+          formula="\[S = \{\text{all possible pebbles}\}\]"
           note="In our bag, this is every single pebble regardless of color"
           theme="teal"
         />
@@ -424,7 +424,7 @@ const ConceptualSection = () => {
         <SemanticGradientCard
           title="Event"
           description="A subset of the sample space"
-          formula="\\[A = \\{\\text{red pebbles}\\} \\subseteq S\\]"
+          formula="\[A = \{\text{red pebbles}\} \subseteq S\]"
           note="An event is any collection of outcomes we're interested in"
           theme="green"
         />
@@ -432,15 +432,15 @@ const ConceptualSection = () => {
         <SemanticGradientCard
           title="Probability Function"
           description="For finite, equally likely outcomes, probability is the fraction belonging to the event"
-          formula="\\[P(A) = \\frac{\\text{favorable outcomes}}{\\text{total outcomes}}\\]"
-          note="Must satisfy: \\(P(S) = 1\\) and \\(P(A) \\geq 0\\) for all events \\(A\\)"
+          formula="\[P(A) = \frac{\text{favorable outcomes}}{\text{total outcomes}}\]"
+          note="Must satisfy: \(P(S) = 1\) and \(P(A) \geq 0\) for all events \(A\)"
           theme="purple"
         />
         
         <SemanticGradientCard
           title="Complement Rule"
           description="Probability of 'not A'"
-          formula="\\[P(A^c) = 1 - P(A)\\]"
+          formula="\[P(A^c) = 1 - P(A)\]"
           note="The probability of not getting red equals 1 minus probability of red"
           theme="yellow"
         />

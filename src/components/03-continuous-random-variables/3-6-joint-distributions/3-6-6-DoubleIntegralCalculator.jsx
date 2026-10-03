@@ -529,8 +529,7 @@ export const DoubleIntegralCalculator = () => {
       <SemanticGradientCard
         title="Understanding Integration Methods"
         theme="blue"
-        formula={`\\text{Refine the mesh to check convergence}`}
-        description="Sampling method and grid size affect the approximation"
+        description="Sampling method and grid size affect the approximation. Refine the mesh to check convergence."
         note="For smooth densities, midpoint error usually decreases faster under refinement. Support boundaries and coarse grids can change this comparison."
       />
 
