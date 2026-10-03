@@ -1,6 +1,11 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import SectionBasedContent from '@/components/ui/SectionBasedContent';
+import { createMathJaxRuntime } from '@/lib/mathjax/runtime';
+import { renderer, tick } from '../mathjax/runtime/fixtures';
+
+const shared = vi.hoisted(() => ({ runtime: null }));
+vi.mock('@/lib/mathjax/runtime', async importOriginal => ({ ...(await importOriginal()), getMathJaxRuntime: () => shared.runtime }));
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/test-completion-math' }));
 vi.mock('next/link', () => ({ default: ({ children, ...props }) => <a {...props}>{children}</a> }));
@@ -20,7 +25,7 @@ beforeEach(() => {
   // MathJax replaces TeX DOM with rendered output. A React update can replace
   // that output with the original source even when the formula is unchanged.
   window.MathJax = {
-    typesetClear: vi.fn(),
+    ...renderer(),
     typesetPromise: vi.fn(nodes => {
       for (const node of nodes) for (const span of node.querySelectorAll('span')) {
         if (span.textContent.startsWith('\\[')) span.innerHTML = '<mjx-container>Rendered probability</mjx-container>';
@@ -28,8 +33,9 @@ beforeEach(() => {
       return Promise.resolve();
     }),
   };
+  shared.runtime = createMathJaxRuntime();
 });
-afterEach(() => { delete window.MathJax; vi.useRealTimers(); });
+afterEach(async () => { cleanup(); shared.runtime.dispose(); await tick(); delete window.MathJax; vi.useRealTimers(); });
 
 describe('completion preserves rendered mathematics', () => {
   it('retypesets after the completion prop changes without losing native disclosure behavior', async () => {
@@ -50,6 +56,7 @@ describe('completion preserves rendered mathematics', () => {
     const { container, rerender } = render(<SectionBasedContent title="Calculation" sections={sections} onComplete={() => {}} showBackToHub={false} />);
     await act(async () => { await vi.runAllTimersAsync(); });
     const rendered = container.querySelector('mjx-container');
+    expect(rendered).toBeInTheDocument();
     rerender(<SectionBasedContent title="Calculation" sections={sections} onComplete={() => {}} showBackToHub={false} />);
     await act(async () => { await vi.runAllTimersAsync(); });
     expect(container.querySelector('mjx-container')).toBe(rendered);

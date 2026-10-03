@@ -8,6 +8,11 @@ import progressService from '@/services/progressService';
 import { createProgressStore } from '@/lib/progress/store';
 import { environment, memoryPersistence, storageWith } from '../progress/store/helpers';
 import { SECTION_RAW, withArchivedSection } from '../progress/store/section-fixtures';
+import { createMathJaxRuntime } from '@/lib/mathjax/runtime';
+import { renderer, tick } from '../mathjax/runtime/fixtures';
+
+const shared = vi.hoisted(() => ({ runtime: null }));
+vi.mock('@/lib/mathjax/runtime', async importOriginal => ({ ...(await importOriginal()), getMathJaxRuntime: () => shared.runtime }));
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/chapter1/01-foundations' }));
 
@@ -29,10 +34,14 @@ const originalScroll = Object.getOwnPropertyDescriptor(Element.prototype, 'scrol
 const stores = [];
 
 beforeEach(() => {
+  window.MathJax = renderer();
+  shared.runtime = createMathJaxRuntime();
   Object.defineProperty(Element.prototype, 'scrollIntoView', { configurable: true, value: vi.fn() });
 });
-afterEach(() => {
+afterEach(async () => {
   cleanup();
+  shared.runtime.dispose();
+  await tick();
   stores.splice(0).forEach(store => store.dispose());
   if (originalScroll) Object.defineProperty(Element.prototype, 'scrollIntoView', originalScroll);
   else delete Element.prototype.scrollIntoView;
@@ -228,7 +237,7 @@ describe('canonical section progress', () => {
   });
 
   it('keeps rendered mathematics through canonical completion and unrelated progress notifications', async () => {
-    window.MathJax = { typesetClear: vi.fn(), typesetPromise: vi.fn(nodes => {
+    window.MathJax = { ...renderer(), typesetPromise: vi.fn(nodes => {
       for (const node of nodes) for (const span of node.querySelectorAll('span')) if (span.textContent.startsWith('\\[')) span.innerHTML = '<mjx-container>Rendered probability</mjx-container>';
       return Promise.resolve();
     }) };
