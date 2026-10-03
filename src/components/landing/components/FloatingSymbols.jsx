@@ -1,13 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { usePageVisibility, useReducedMotion } from '@/hooks/useReducedMotion';
 
 const FloatingSymbols = React.memo(() => {
-  const [mounted, setMounted] = useState(false);
-  
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const reducedMotion = useReducedMotion();
+  const pageVisible = usePageVisibility();
   
   // Reduced set of symbols for better performance
   const symbols = [
@@ -33,14 +31,10 @@ const FloatingSymbols = React.memo(() => {
     { symbol: 'β', delay: 4.8, x: 85, y: 15 }
   ];
   
-  if (!mounted) {
-    return <div className="fixed inset-0 overflow-hidden pointer-events-none z-0" />;
-  }
-  
   return (
     <>
       <style>{`
-        @keyframes float {
+        @keyframes probability-symbol-float {
           0% { 
             transform: translate3d(0px, 0px, 0) rotate(0deg) scale(1);
           }
@@ -61,7 +55,7 @@ const FloatingSymbols = React.memo(() => {
           }
         }
       `}</style>
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden="true">
         {symbols.map((item, index) => (
           <div
             key={index}
@@ -69,12 +63,16 @@ const FloatingSymbols = React.memo(() => {
             style={{
               left: `${item.x}%`,
               top: `${item.y}%`,
-              animationDelay: `${item.delay}s`,
               fontSize: index < 6 ? '3rem' : index < 12 ? '2rem' : '1.5rem',
               opacity: index < 6 ? 0.08 : index < 12 ? 0.1 : 0.12,
               color: 'rgb(163, 163, 163)',
-              animation: 'float 25s infinite ease-in-out',
-              willChange: 'transform',
+              animationName: reducedMotion ? 'none' : 'probability-symbol-float',
+              animationDuration: '25s',
+              animationIterationCount: 'infinite',
+              animationTimingFunction: 'ease-in-out',
+              animationDelay: `${item.delay}s`,
+              animationPlayState: pageVisible ? 'running' : 'paused',
+              willChange: !reducedMotion && pageVisible ? 'transform' : 'auto',
               transform: 'translate3d(0, 0, 0)'
             }}
           >

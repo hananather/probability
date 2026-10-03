@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 import { Button } from '../../ui/button';
 import { VisualizationContainer } from '../../ui/VisualizationContainer';
@@ -11,6 +11,7 @@ import * as d3 from "@/utils/d3-utils";
 import { useMathJax } from '../../../hooks/useMathJax';
 import { Play, Pause, RotateCcw, Grid, Eye, EyeOff, Calculator, BookOpen, Lightbulb } from 'lucide-react';
 import BackToHub from '../../ui/BackToHub';
+import { calculateJointIntegral, createJointPDF, validateRectangle, formatCalculationNumber, formatProbabilityResult } from './calculatorMath';
 
 // LaTeX formula component with proper MathJax handling
 const LaTeXFormula = React.memo(function LaTeXFormula({ formula, isBlock = false, className = "" }) {
@@ -53,14 +54,12 @@ export const DoubleIntegralCalculator = () => {
   
   // Region selection and results
   const [region, setRegion] = useState(null);
-  const [integrationResults, setIntegrationResults] = useState(null);
+  const [inputError, setInputError] = useState(null);
   
   // Animation state
   const [animationState, setAnimationState] = useState({
     isRunning: false,
-    currentStep: 0,
-    partialSums: [],
-    rectangles: []
+    currentStep: 0
   });
   
   // Input bounds state
@@ -69,49 +68,39 @@ export const DoubleIntegralCalculator = () => {
   });
   
   const svgRef = useRef(null);
-  const contentRef = useMathJax([distribution, region, integrationResults, animationState.currentStep]);
+  const plotStateRef = useRef(null);
   const animationIntervalRef = useRef(null);
   
-  // PDF functions for different distributions
-  const pdfFunctions = useMemo(() => {
-    const bivariateNormalPDF = (x, y, rho) => {
-      const factor = 1 / (2 * Math.PI * Math.sqrt(1 - rho * rho));
-      const exponent = -1 / (2 * (1 - rho * rho)) * (x * x - 2 * rho * x * y + y * y);
-      return factor * Math.exp(exponent);
-    };
+  const density = useMemo(() => {
+    try {
+      return { pdf: createJointPDF(distribution, parameters), error: null };
+    } catch (error) {
+      return { pdf: () => 0, error: error.message };
+    }
+  }, [distribution, parameters]);
+  const getJointPDF = density.pdf;
+  const calculation = useMemo(() => {
+    if (!region || density.error) return { results: null, error: density.error };
+    try {
+      return {
+        results: calculateJointIntegral({ distribution, parameters, region, method: integrationSettings.method, subdivisions: integrationSettings.nSubdivisions }),
+        error: null
+      };
+    } catch (error) {
+      return { results: null, error: error.message };
+    }
+  }, [distribution, parameters, region, integrationSettings.method, integrationSettings.nSubdivisions, density.error]);
+  const integrationResults = calculation.results;
+  const contentRef = useMathJax([distribution, region, integrationResults]);
 
-    const uniformPDF = (x, y, a, b) => {
-      if (x >= 0 && x <= a && y >= 0 && y <= b) {
-        return 1 / (a * b);
-      }
-      return 0;
-    };
-
-    const exponentialPDF = (x, y, l1, l2) => {
-      if (x >= 0 && y >= 0) {
-        return l1 * l2 * Math.exp(-l1 * x - l2 * y);
-      }
-      return 0;
-    };
-
-    return { bivariateNormalPDF, uniformPDF, exponentialPDF };
-  }, []);
-
-  // Get current PDF function
-  const getJointPDF = useMemo(() => {
-    return (x, y) => {
-      switch (distribution) {
-        case 'bivariate-normal':
-          return pdfFunctions.bivariateNormalPDF(x, y, parameters.correlation);
-        case 'uniform':
-          return pdfFunctions.uniformPDF(x, y, parameters.a, parameters.b);
-        case 'exponential':
-          return pdfFunctions.exponentialPDF(x, y, parameters.lambda1, parameters.lambda2);
-        default:
-          return 0;
-      }
-    };
-  }, [distribution, parameters, pdfFunctions]);
+  useEffect(() => {
+    if (animationIntervalRef.current) {
+      clearInterval(animationIntervalRef.current);
+      animationIntervalRef.current = null;
+    }
+    setAnimationState({ isRunning: false, currentStep: 0 });
+    setIntegrationSettings(prev => ({ ...prev, showAnimation: false }));
+  }, [integrationResults]);
 
   // Get visualization bounds based on distribution
   const getBounds = useMemo(() => {
@@ -125,91 +114,20 @@ export const DoubleIntegralCalculator = () => {
     }
   }, [distribution, parameters]);
 
-  // Calculate probability using different integration methods
-  const calculateProbability = useMemo(() => {
-    return (x1, x2, y1, y2, method = 'midpoint', n = 20) => {
-      const dx = (x2 - x1) / n;
-      const dy = (y2 - y1) / n;
-      let sum = 0;
-      const rectangles = [];
-      const partialSums = [];
-      
-      for (let i = 0; i < n; i++) {
-        for (let j = 0; j < n; j++) {
-          let x, y;
-          
-          // Different integration methods
-          switch (method) {
-            case 'left':
-              x = x1 + i * dx;
-              y = y1 + j * dy;
-              break;
-            case 'right':
-              x = x1 + (i + 1) * dx;
-              y = y1 + (j + 1) * dy;
-              break;
-            case 'midpoint':
-            default:
-              x = x1 + (i + 0.5) * dx;
-              y = y1 + (j + 0.5) * dy;
-              break;
-          }
-          
-          const value = getJointPDF(x, y);
-          sum += value;
-          
-          // Store rectangle data for animation
-          rectangles.push({
-            x: x1 + i * dx,
-            y: y1 + j * dy,
-            width: dx,
-            height: dy,
-            value: value,
-            samplePoint: { x, y },
-            step: i * n + j
-          });
-          
-          // Store running sum for visualization
-          partialSums.push(sum * dx * dy);
-        }
-      }
-      
-      return {
-        probability: sum * dx * dy,
-        rectangles,
-        partialSums,
-        method,
-        subdivisions: { nx: n, ny: n, total: n * n },
-        stepSize: { dx, dy, area: dx * dy }
-      };
-    };
-  }, [getJointPDF]);
-
-  // Handle region selection and calculation
-  const handleRegionUpdate = (newRegion) => {
-    setRegion(newRegion);
-    
-    if (newRegion) {
-      const results = calculateProbability(
-        newRegion.x1, newRegion.x2, newRegion.y1, newRegion.y2,
-        integrationSettings.method,
-        integrationSettings.nSubdivisions
-      );
-      setIntegrationResults(results);
-      
-      // Reset animation
-      setAnimationState({
-        isRunning: false,
-        currentStep: 0,
-        partialSums: results.partialSums,
-        rectangles: results.rectangles
-      });
+  const handleRegionUpdate = useCallback((newRegion) => {
+    try {
+      if (newRegion) validateRectangle(newRegion);
+      setInputError(null);
+      setRegion(newRegion);
+    } catch (error) {
+      setInputError(error.message);
+      setRegion(null);
     }
-  };
+  }, []);
 
   // Animation control
   const toggleAnimation = () => {
-    if (!integrationResults) return;
+    if (!integrationResults?.rectangles.length) return;
     
     if (animationState.isRunning) {
       // Stop animation
@@ -220,6 +138,7 @@ export const DoubleIntegralCalculator = () => {
       setAnimationState(prev => ({ ...prev, isRunning: false }));
     } else {
       // Start animation
+      setIntegrationSettings(prev => ({ ...prev, showAnimation: true }));
       setAnimationState(prev => ({ ...prev, isRunning: true, currentStep: 0 }));
     }
   };
@@ -234,6 +153,7 @@ export const DoubleIntegralCalculator = () => {
       isRunning: false,
       currentStep: 0
     }));
+    setIntegrationSettings(prev => ({ ...prev, showAnimation: false }));
   };
 
   // Animation effect
@@ -266,7 +186,10 @@ export const DoubleIntegralCalculator = () => {
 
   // Handle manual bounds input
   const handleManualBoundsSubmit = () => {
-    handleRegionUpdate(manualBounds);
+    const bounds = Object.fromEntries(Object.entries(manualBounds).map(([key, value]) => [
+      key, typeof value === 'string' && value.trim() === '' ? NaN : Number(value)
+    ]));
+    handleRegionUpdate(bounds);
   };
 
   // D3 Visualization
@@ -281,6 +204,8 @@ export const DoubleIntegralCalculator = () => {
 
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
+    plotStateRef.current = null;
+    if (density.error) return;
 
     svg.attr("width", width).attr("height", height);
 
@@ -349,6 +274,7 @@ export const DoubleIntegralCalculator = () => {
       .domain([0, maxValue]);
 
     g.append("g")
+      .attr("class", "density-contours")
       .selectAll("path")
       .data(contours)
       .enter().append("path")
@@ -374,7 +300,7 @@ export const DoubleIntegralCalculator = () => {
 
     const dragBehavior = d3.drag()
       .on("start", function(event) {
-        const [x, y] = d3.pointer(event);
+        const [x, y] = d3.pointer(event, g.node());
         startPoint = { x, y };
         dragStartX = event.x;
         dragStartY = event.y;
@@ -433,6 +359,8 @@ export const DoubleIntegralCalculator = () => {
           setManualBounds(newRegion);
           handleRegionUpdate(newRegion);
         }
+        selectionRect.remove();
+        selectionRect = null;
       });
 
     // Add invisible rect for drag interaction
@@ -443,60 +371,201 @@ export const DoubleIntegralCalculator = () => {
       .style("cursor", "crosshair")
       .call(dragBehavior);
 
-    // Show selected region and integration rectangles
-    if (region && integrationResults) {
-      const regionGroup = g.append("g").attr("class", "integration-region");
+    const regionGroup = g.append("g").attr("class", "integration-region").attr("pointer-events", "none");
+    plotStateRef.current = { regionGroup, xScale, yScale, maxValue };
+  }, [getBounds, getJointPDF, density.error, handleRegionUpdate]);
 
-      // Highlight the selected region
-      regionGroup.append("rect")
-        .attr("x", xScale(region.x1))
-        .attr("y", yScale(region.y2))
-        .attr("width", xScale(region.x2) - xScale(region.x1))
-        .attr("height", yScale(region.y1) - yScale(region.y2))
-        .attr("fill", "rgba(255, 215, 0, 0.2)")
-        .attr("stroke", "gold")
-        .attr("stroke-width", 3)
-        .attr("stroke-dasharray", "8,4");
+  // Update only the selected-region overlay; axes and contours stay in place.
+  useEffect(() => {
+    if (!plotStateRef.current) return;
+    const { regionGroup, xScale, yScale, maxValue } = plotStateRef.current;
+    const activeRegion = region && integrationResults ? [region] : [];
+    regionGroup.selectAll('rect.region-highlight')
+      .data(activeRegion)
+      .join('rect')
+      .attr('class', 'region-highlight')
+      .attr("x", selected => xScale(selected.x1))
+      .attr("y", selected => yScale(selected.y2))
+      .attr("width", selected => xScale(selected.x2) - xScale(selected.x1))
+      .attr("height", selected => yScale(selected.y1) - yScale(selected.y2))
+      .attr("fill", "rgba(255, 215, 0, 0.2)")
+      .attr("stroke", "gold")
+      .attr("stroke-width", 3)
+      .attr("stroke-dasharray", "8,4");
 
-      // Show integration grid if enabled
-      if (integrationSettings.showGrid) {
-        const visibleRectangles = integrationSettings.showAnimation 
+    const visibleRectangles = region && integrationResults && integrationSettings.showGrid
+      ? integrationSettings.showAnimation
           ? integrationResults.rectangles.slice(0, animationState.currentStep + 1)
-          : integrationResults.rectangles;
+          : integrationResults.rectangles
+      : [];
 
-        const rectangles = regionGroup.selectAll(".integration-rect")
-          .data(visibleRectangles)
-          .enter()
-          .append("g")
-          .attr("class", "integration-rect");
+    const rectangles = regionGroup.selectAll('g.integration-rect')
+      .data(visibleRectangles, rectangle => rectangle.step)
+      .join(enter => {
+        const cell = enter.append('g').attr('class', 'integration-rect');
+        cell.append('rect');
+        cell.append('circle');
+        return cell;
+      });
 
-        // Rectangle backgrounds based on PDF value
-        rectangles.append("rect")
-          .attr("x", d => xScale(d.x))
-          .attr("y", d => yScale(d.y + d.height))
-          .attr("width", d => Math.abs(xScale(d.x + d.width) - xScale(d.x)))
-          .attr("height", d => Math.abs(yScale(d.y) - yScale(d.y + d.height)))
-          .attr("fill", d => {
-            const intensity = Math.min(d.value / maxValue, 1);
-            return `rgba(255, 165, 0, ${0.3 + 0.5 * intensity})`;
-          })
-          .attr("stroke", "#ffa500")
-          .attr("stroke-width", 0.5)
-          .attr("opacity", integrationSettings.showAnimation ? 0.9 : 0.6);
+    // Rectangle backgrounds based on PDF value
+    rectangles.select("rect")
+      .attr("x", d => xScale(d.x))
+      .attr("y", d => yScale(d.y + d.height))
+      .attr("width", d => Math.abs(xScale(d.x + d.width) - xScale(d.x)))
+      .attr("height", d => Math.abs(yScale(d.y) - yScale(d.y + d.height)))
+      .attr("fill", d => {
+        const intensity = Math.min(d.value / maxValue, 1);
+        return `rgba(255, 165, 0, ${0.3 + 0.5 * intensity})`;
+      })
+      .attr("stroke", "#ffa500")
+      .attr("stroke-width", 0.5)
+      .attr("opacity", integrationSettings.showAnimation ? 0.9 : 0.6);
 
-        // Sample points
-        rectangles.append("circle")
-          .attr("cx", d => xScale(d.samplePoint.x))
-          .attr("cy", d => yScale(d.samplePoint.y))
-          .attr("r", 2)
-          .attr("fill", "red")
-          .attr("stroke", "white")
-          .attr("stroke-width", 1)
-          .attr("opacity", integrationSettings.showAnimation ? 1 : 0.7);
-      }
-    }
+    // Sample points
+    rectangles.select("circle")
+      .attr("cx", d => xScale(d.samplePoint.x))
+      .attr("cy", d => yScale(d.samplePoint.y))
+      .attr("r", 2)
+      .attr("fill", "red")
+      .attr("stroke", "white")
+      .attr("stroke-width", 1)
+      .attr("opacity", integrationSettings.showAnimation ? 1 : 0.7);
+  }, [region, integrationResults, integrationSettings.showGrid, integrationSettings.showAnimation, animationState.currentStep, getBounds, getJointPDF]);
 
-  }, [distribution, parameters, region, integrationResults, integrationSettings, animationState.currentStep, getBounds, getJointPDF]);
+  const renderedResults = useMemo(() => {
+    if (!region || !integrationResults) return null;
+    return (
+    <div className="space-y-6" style={{ marginTop: '60px' }}>
+      {/* Main Result */}
+      <InterpretationBox title="Integration Result" theme="green">
+        <div className="space-y-4">
+          <output aria-label="Grid estimate">
+            <LaTeXFormula
+              formula={`\\text{Grid estimate} = ${formatProbabilityResult(integrationResults.estimate, true)}`}
+              isBlock={true}
+              className="text-2xl font-bold text-green-400"
+            />
+          </output>
+          {integrationResults.exactProbability !== null && (
+            <p className="text-sm text-neutral-300">Closed-form probability: <output aria-label="Closed-form probability">{formatProbabilityResult(integrationResults.exactProbability)}</output></p>
+          )}
+          {integrationResults.outsideProbabilityRange && (
+            <p role="status" className="text-sm text-amber-300">This coarse sum exceeds 1. Refine the grid before interpreting it as a probability.</p>
+          )}
+          <p className="text-sm text-neutral-300">
+            Calculated using <span className="text-green-400 font-semibold">{integrationResults.method}</span> method with{' '}
+            <span className="text-blue-400 font-semibold">{integrationResults.subdivisions.total}</span> rectangles.
+          </p>
+          <p className="text-sm text-neutral-400">The grid sum approximates the probability over the selected rectangle. Compare it with the closed-form value when available, and refine the mesh to check accuracy.</p>
+        </div>
+      </InterpretationBox>
+
+      {/* Step-by-Step Explanation */}
+      <StepByStepCalculation title="Double Integration Process" theme="purple">
+        <CalculationStep title="Step 1: Set up the double integral">
+          <LaTeXFormula
+            formula={`P(${formatCalculationNumber(region.x1, true)} \\leq X \\leq ${formatCalculationNumber(region.x2, true)}, ${formatCalculationNumber(region.y1, true)} \\leq Y \\leq ${formatCalculationNumber(region.y2, true)}) = \\iint_R f_{X,Y}(x,y) \\, dx \\, dy`}
+            isBlock={true}
+          />
+          <p className="text-sm text-neutral-300 mt-2">
+            where R is the rectangular region [{formatCalculationNumber(region.x1)}, {formatCalculationNumber(region.x2)}] × [{formatCalculationNumber(region.y1)}, {formatCalculationNumber(region.y2)}]
+          </p>
+        </CalculationStep>
+
+        <CalculationStep title="Step 2: Apply numerical integration">
+          <LaTeXFormula
+            formula={`\\iint_R f_{X,Y}(x,y) \\, dx \\, dy \\approx \\sum_{i=0}^{n-1} \\sum_{j=0}^{n-1} f_{X,Y}(x_i, y_j) \\Delta x \\Delta y`}
+            isBlock={true}
+          />
+          <div className="grid grid-cols-2 gap-4 mt-3 text-sm">
+            <div>
+              <p><LaTeXFormula formula={`\\Delta x = \\frac{${formatCalculationNumber((region.x2 - region.x1), true)}}{${integrationResults.subdivisions.nx}} = ${formatCalculationNumber(integrationResults.stepSize.dx, true)}`} /></p>
+            </div>
+            <div>
+              <p><LaTeXFormula formula={`\\Delta y = \\frac{${formatCalculationNumber((region.y2 - region.y1), true)}}{${integrationResults.subdivisions.ny}} = ${formatCalculationNumber(integrationResults.stepSize.dy, true)}`} /></p>
+            </div>
+          </div>
+        </CalculationStep>
+
+        <CalculationStep title="Step 3: Sample point selection">
+          <p className="text-sm text-neutral-300">
+            Using <strong className="text-purple-400">{integrationResults.method}</strong> rule:
+          </p>
+          <div className="mt-2">
+            {integrationResults.method === 'midpoint' && (
+              <LaTeXFormula
+                formula={`(x_i, y_j) = \\left(x_1 + (i + 0.5)\\Delta x, y_1 + (j + 0.5)\\Delta y\\right)`}
+                isBlock={true}
+              />
+            )}
+            {integrationResults.method === 'left' && (
+              <LaTeXFormula
+                formula={`(x_i, y_j) = \\left(x_1 + i \\cdot \\Delta x, y_1 + j \\cdot \\Delta y\\right)`}
+                isBlock={true}
+              />
+            )}
+            {integrationResults.method === 'right' && (
+              <LaTeXFormula
+                formula={`(x_i, y_j) = \\left(x_1 + (i+1) \\cdot \\Delta x, y_1 + (j+1) \\cdot \\Delta y\\right)`}
+                isBlock={true}
+              />
+            )}
+          </div>
+        </CalculationStep>
+
+        <CalculationStep title="Step 4: Final calculation">
+          <LaTeXFormula
+            formula={`\\text{Grid estimate} = \\sum_{i,j} f_{X,Y}(x_i, y_j) \\cdot ${formatCalculationNumber(integrationResults.stepSize.area, true)} = ${formatProbabilityResult(integrationResults.estimate, true)}`}
+            isBlock={true}
+          />
+          <p className="text-sm text-neutral-400 mt-2">
+            Each rectangle contributes its PDF value multiplied by the area <LaTeXFormula formula={`\\Delta x \\Delta y`} />
+          </p>
+        </CalculationStep>
+      </StepByStepCalculation>
+
+      {/* Method Comparison */}
+      <SemanticGradientCard
+        title="Understanding Integration Methods"
+        theme="blue"
+        formula={`\\text{Refine the mesh to check convergence}`}
+        description="Sampling method and grid size affect the approximation"
+        note="For smooth densities, midpoint error usually decreases faster under refinement. Support boundaries and coarse grids can change this comparison."
+      />
+
+      {/* Educational Insights */}
+      <Card className="bg-gradient-to-br from-yellow-900/20 to-orange-800/20 border-yellow-600/30">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-yellow-400">
+            <Lightbulb className="w-5 h-5" />
+            Key Insights
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          <div className="flex items-start gap-3">
+            <BookOpen className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+            <div>
+              <strong>Geometric Interpretation:</strong> The double integral represents the volume under the surface z = f(x,y) over the region R.
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Grid className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+            <div>
+              <strong>Mesh Refinement:</strong> Increasing subdivisions generally improves accuracy, but with diminishing returns and computational cost.
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Calculator className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+            <div>
+              <strong>Method Selection:</strong> Midpoint is a useful starting rule for smooth densities. Left and right sums bracket the integral when the density is monotone in the same direction in both coordinates throughout the rectangle.
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+    );
+  }, [region, integrationResults]);
 
   // Get distribution formula
   const getDistributionFormula = () => {
@@ -559,8 +628,9 @@ export const DoubleIntegralCalculator = () => {
               <div className="flex flex-wrap gap-6 justify-center">
                 {distribution === 'bivariate-normal' && (
                   <div className="flex items-center gap-3">
-                    <label className="text-sm font-medium">Correlation (ρ):</label>
+                    <label htmlFor="double-correlation" className="text-sm font-medium">Correlation (ρ):</label>
                     <input
+                      id="double-correlation"
                       type="range"
                       min="-0.8"
                       max="0.8"
@@ -576,8 +646,9 @@ export const DoubleIntegralCalculator = () => {
                 {distribution === 'uniform' && (
                   <>
                     <div className="flex items-center gap-3">
-                      <label className="text-sm font-medium">a:</label>
+                      <label htmlFor="double-uniform-a" className="text-sm font-medium">a:</label>
                       <input
+                        id="double-uniform-a"
                         type="range"
                         min="1"
                         max="4"
@@ -589,8 +660,9 @@ export const DoubleIntegralCalculator = () => {
                       <span className="text-sm font-mono w-12">{parameters.a.toFixed(1)}</span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <label className="text-sm font-medium">b:</label>
+                      <label htmlFor="double-uniform-b" className="text-sm font-medium">b:</label>
                       <input
+                        id="double-uniform-b"
                         type="range"
                         min="1"
                         max="4"
@@ -607,8 +679,9 @@ export const DoubleIntegralCalculator = () => {
                 {distribution === 'exponential' && (
                   <>
                     <div className="flex items-center gap-3">
-                      <label className="text-sm font-medium">λ₁:</label>
+                      <label htmlFor="double-lambda1" className="text-sm font-medium">λ₁:</label>
                       <input
+                        id="double-lambda1"
                         type="range"
                         min="0.5"
                         max="3"
@@ -620,8 +693,9 @@ export const DoubleIntegralCalculator = () => {
                       <span className="text-sm font-mono w-12">{parameters.lambda1.toFixed(1)}</span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <label className="text-sm font-medium">λ₂:</label>
+                      <label htmlFor="double-lambda2" className="text-sm font-medium">λ₂:</label>
                       <input
+                        id="double-lambda2"
                         type="range"
                         min="0.5"
                         max="3"
@@ -643,6 +717,7 @@ export const DoubleIntegralCalculator = () => {
                   isBlock={true}
                   className="text-blue-300"
                 />
+                <p className="text-xs text-neutral-400 mt-2">The normal model has standard normal marginals with correlation ρ. The uniform and exponential models use independent coordinates, with positive support widths or rates.</p>
               </div>
             </div>
           </CardContent>
@@ -661,8 +736,9 @@ export const DoubleIntegralCalculator = () => {
               <div className="flex flex-wrap gap-6 justify-center items-center">
                 {/* Integration Method */}
                 <div className="flex items-center gap-3">
-                  <label className="text-sm font-medium">Method:</label>
+                  <label htmlFor="double-method" className="text-sm font-medium">Method:</label>
                   <select
+                    id="double-method"
                     value={integrationSettings.method}
                     onChange={(e) => setIntegrationSettings(prev => ({ ...prev, method: e.target.value }))}
                     className="bg-neutral-800 border border-neutral-600 rounded px-3 py-1 text-sm"
@@ -675,8 +751,9 @@ export const DoubleIntegralCalculator = () => {
 
                 {/* Number of Subdivisions */}
                 <div className="flex items-center gap-3">
-                  <label className="text-sm font-medium">Subdivisions:</label>
+                  <label htmlFor="double-subdivisions" className="text-sm font-medium">Subdivisions:</label>
                   <input
+                    id="double-subdivisions"
                     type="range"
                     min="5"
                     max="30"
@@ -692,8 +769,9 @@ export const DoubleIntegralCalculator = () => {
 
                 {/* Animation Speed */}
                 <div className="flex items-center gap-3">
-                  <label className="text-sm font-medium">Speed:</label>
+                  <label htmlFor="double-speed" className="text-sm font-medium">Speed:</label>
                   <input
+                    id="double-speed"
                     type="range"
                     min="50"
                     max="500"
@@ -721,42 +799,46 @@ export const DoubleIntegralCalculator = () => {
                 <h5 className="text-sm font-semibold mb-3">Manual Region Input</h5>
                 <div className="flex flex-wrap gap-4 items-center justify-center">
                   <div className="flex items-center gap-2">
-                    <label className="text-xs">x₁:</label>
+                    <label htmlFor="double-x1" className="text-xs">x₁:</label>
                     <input
+                      id="double-x1"
                       type="number"
                       step="0.1"
                       value={manualBounds.x1}
-                      onChange={(e) => setManualBounds(prev => ({ ...prev, x1: parseFloat(e.target.value) || 0 }))}
+                      onChange={(e) => setManualBounds(prev => ({ ...prev, x1: e.target.value }))}
                       className="w-20 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs"
                     />
                   </div>
                   <div className="flex items-center gap-2">
-                    <label className="text-xs">x₂:</label>
+                    <label htmlFor="double-x2" className="text-xs">x₂:</label>
                     <input
+                      id="double-x2"
                       type="number"
                       step="0.1"
                       value={manualBounds.x2}
-                      onChange={(e) => setManualBounds(prev => ({ ...prev, x2: parseFloat(e.target.value) || 0 }))}
+                      onChange={(e) => setManualBounds(prev => ({ ...prev, x2: e.target.value }))}
                       className="w-20 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs"
                     />
                   </div>
                   <div className="flex items-center gap-2">
-                    <label className="text-xs">y₁:</label>
+                    <label htmlFor="double-y1" className="text-xs">y₁:</label>
                     <input
+                      id="double-y1"
                       type="number"
                       step="0.1"
                       value={manualBounds.y1}
-                      onChange={(e) => setManualBounds(prev => ({ ...prev, y1: parseFloat(e.target.value) || 0 }))}
+                      onChange={(e) => setManualBounds(prev => ({ ...prev, y1: e.target.value }))}
                       className="w-20 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs"
                     />
                   </div>
                   <div className="flex items-center gap-2">
-                    <label className="text-xs">y₂:</label>
+                    <label htmlFor="double-y2" className="text-xs">y₂:</label>
                     <input
+                      id="double-y2"
                       type="number"
                       step="0.1"
                       value={manualBounds.y2}
-                      onChange={(e) => setManualBounds(prev => ({ ...prev, y2: parseFloat(e.target.value) || 0 }))}
+                      onChange={(e) => setManualBounds(prev => ({ ...prev, y2: e.target.value }))}
                       className="w-20 bg-neutral-800 border border-neutral-600 rounded px-2 py-1 text-xs"
                     />
                   </div>
@@ -764,6 +846,7 @@ export const DoubleIntegralCalculator = () => {
                     Calculate
                   </Button>
                 </div>
+                {(inputError || calculation.error) && <p role="alert" className="text-sm text-red-300 mt-3">{inputError || calculation.error}</p>}
               </div>
             </div>
           </CardContent>
@@ -771,7 +854,7 @@ export const DoubleIntegralCalculator = () => {
 
         {/* Visualization */}
         <div className="flex flex-col items-center space-y-4" style={{ marginTop: '40px' }}>
-          <svg ref={svgRef} style={{ background: '#f3f4f6', borderRadius: '8px' }} />
+          <svg ref={svgRef} aria-label="Select a rectangular integration region" style={{ background: '#f3f4f6', borderRadius: '8px' }} />
           <div className="text-center text-sm text-neutral-400 max-w-2xl">
             <p><strong>Instructions:</strong> Click and drag to select a rectangular region for integration.</p>
             <p>Red dots show sample points, colored rectangles show PDF values at those points.</p>
@@ -780,7 +863,7 @@ export const DoubleIntegralCalculator = () => {
           {/* Animation Controls */}
           {region && integrationResults && (
             <div className="flex items-center gap-3" style={{ marginTop: '30px' }}>
-              <Button onClick={toggleAnimation} size="sm" variant="outline">
+              <Button onClick={toggleAnimation} disabled={!integrationResults.rectangles.length} size="sm" variant="outline">
                 {animationState.isRunning ? (
                   <>
                     <Pause className="w-4 h-4 mr-2" />
@@ -797,12 +880,12 @@ export const DoubleIntegralCalculator = () => {
                 <RotateCcw className="w-4 h-4 mr-2" />
                 Reset
               </Button>
-              {integrationSettings.showAnimation && (
+              {integrationSettings.showAnimation && integrationResults.rectangles.length > 0 && (
                 <div className="text-sm">
                   Step {animationState.currentStep + 1} of {integrationResults?.rectangles.length || 0}
-                  {animationState.partialSums[animationState.currentStep] && (
+                  {integrationResults.partialSums[animationState.currentStep] !== undefined && (
                     <span className="ml-3 text-blue-400">
-                      Running Sum: {animationState.partialSums[animationState.currentStep].toFixed(6)}
+                      Running Sum: {formatProbabilityResult(integrationResults.partialSums[animationState.currentStep])}
                     </span>
                   )}
                 </div>
@@ -812,127 +895,7 @@ export const DoubleIntegralCalculator = () => {
         </div>
 
         {/* Results */}
-        {region && integrationResults && (
-          <div className="space-y-6" style={{ marginTop: '60px' }}>
-            {/* Main Result */}
-            <InterpretationBox title="Integration Result" theme="green">
-              <div className="space-y-4">
-                <LaTeXFormula 
-                  formula={`P(${region.x1.toFixed(2)} \\leq X \\leq ${region.x2.toFixed(2)}, ${region.y1.toFixed(2)} \\leq Y \\leq ${region.y2.toFixed(2)}) = ${integrationResults.probability.toFixed(6)}`}
-                  isBlock={true}
-                  className="text-2xl font-bold text-green-400"
-                />
-                <p className="text-sm text-neutral-300">
-                  Calculated using <span className="text-green-400 font-semibold">{integrationResults.method}</span> method with{' '}
-                  <span className="text-blue-400 font-semibold">{integrationResults.subdivisions.total}</span> rectangles.
-                </p>
-              </div>
-            </InterpretationBox>
-
-            {/* Step-by-Step Explanation */}
-            <StepByStepCalculation title="Double Integration Process" theme="purple">
-              <CalculationStep title="Step 1: Set up the double integral">
-                <LaTeXFormula 
-                  formula={`P(${region.x1.toFixed(2)} \\leq X \\leq ${region.x2.toFixed(2)}, ${region.y1.toFixed(2)} \\leq Y \\leq ${region.y2.toFixed(2)}) = \\iint_R f_{X,Y}(x,y) \\, dx \\, dy`}
-                  isBlock={true}
-                />
-                <p className="text-sm text-neutral-300 mt-2">
-                  where R is the rectangular region [{region.x1.toFixed(2)}, {region.x2.toFixed(2)}] × [{region.y1.toFixed(2)}, {region.y2.toFixed(2)}]
-                </p>
-              </CalculationStep>
-
-              <CalculationStep title="Step 2: Apply numerical integration">
-                <LaTeXFormula 
-                  formula={`\\iint_R f_{X,Y}(x,y) \\, dx \\, dy \\approx \\sum_{i=0}^{n-1} \\sum_{j=0}^{n-1} f_{X,Y}(x_i, y_j) \\Delta x \\Delta y`}
-                  isBlock={true}
-                />
-                <div className="grid grid-cols-2 gap-4 mt-3 text-sm">
-                  <div>
-                    <p><LaTeXFormula formula={`\\Delta x = \\frac{${(region.x2 - region.x1).toFixed(2)}}{${integrationResults.subdivisions.nx}} = ${integrationResults.stepSize.dx.toFixed(4)}`} /></p>
-                  </div>
-                  <div>
-                    <p><LaTeXFormula formula={`\\Delta y = \\frac{${(region.y2 - region.y1).toFixed(2)}}{${integrationResults.subdivisions.ny}} = ${integrationResults.stepSize.dy.toFixed(4)}`} /></p>
-                  </div>
-                </div>
-              </CalculationStep>
-
-              <CalculationStep title="Step 3: Sample point selection">
-                <p className="text-sm text-neutral-300">
-                  Using <strong className="text-purple-400">{integrationResults.method}</strong> rule:
-                </p>
-                <div className="mt-2">
-                  {integrationResults.method === 'midpoint' && (
-                    <LaTeXFormula 
-                      formula={`(x_i, y_j) = \\left(x_1 + (i + 0.5)\\Delta x, y_1 + (j + 0.5)\\Delta y\\right)`}
-                      isBlock={true}
-                    />
-                  )}
-                  {integrationResults.method === 'left' && (
-                    <LaTeXFormula 
-                      formula={`(x_i, y_j) = \\left(x_1 + i \\cdot \\Delta x, y_1 + j \\cdot \\Delta y\\right)`}
-                      isBlock={true}
-                    />
-                  )}
-                  {integrationResults.method === 'right' && (
-                    <LaTeXFormula 
-                      formula={`(x_i, y_j) = \\left(x_1 + (i+1) \\cdot \\Delta x, y_1 + (j+1) \\cdot \\Delta y\\right)`}
-                      isBlock={true}
-                    />
-                  )}
-                </div>
-              </CalculationStep>
-
-              <CalculationStep title="Step 4: Final calculation">
-                <LaTeXFormula 
-                  formula={`\\text{Probability} = \\sum_{i,j} f_{X,Y}(x_i, y_j) \\cdot ${integrationResults.stepSize.area.toFixed(6)} = ${integrationResults.probability.toFixed(6)}`}
-                  isBlock={true}
-                />
-                <p className="text-sm text-neutral-400 mt-2">
-                  Each rectangle contributes its PDF value multiplied by the area <LaTeXFormula formula={`\\Delta x \\Delta y`} />
-                </p>
-              </CalculationStep>
-            </StepByStepCalculation>
-
-            {/* Method Comparison */}
-            <SemanticGradientCard
-              title="Understanding Integration Methods"
-              theme="blue"
-              formula={`\\text{Accuracy: Midpoint} > \\text{Left/Right Riemann}`}
-              description="Different sampling methods affect accuracy"
-              note="Midpoint rule typically provides better approximations for smooth functions"
-            />
-
-            {/* Educational Insights */}
-            <Card className="bg-gradient-to-br from-yellow-900/20 to-orange-800/20 border-yellow-600/30">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-yellow-400">
-                  <Lightbulb className="w-5 h-5" />
-                  Key Insights
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <div className="flex items-start gap-3">
-                  <BookOpen className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <strong>Geometric Interpretation:</strong> The double integral represents the volume under the surface z = f(x,y) over the region R.
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Grid className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <strong>Mesh Refinement:</strong> Increasing subdivisions generally improves accuracy, but with diminishing returns and computational cost.
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Calculator className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <strong>Method Selection:</strong> Midpoint rule is often most accurate for smooth functions, while left/right rules show the bounds of the true value.
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+        {renderedResults}
 
         {/* Instructions */}
         <Card className="bg-neutral-900 border-neutral-700" style={{ marginTop: '60px' }}>

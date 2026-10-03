@@ -2,14 +2,15 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Sparkles } from 'lucide-react';
-import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 const HeroSection = React.memo(() => {
+  const reducedMotion = useReducedMotion();
   const scrollToChapters = () => {
     const chaptersSection = document.getElementById('chapters');
     if (chaptersSection) {
-      chaptersSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      chaptersSection.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
     }
   };
 
@@ -26,7 +27,7 @@ const HeroSection = React.memo(() => {
           </span>
         </h1>
         <p className="text-xl text-neutral-300 mb-8 leading-relaxed">
-          Learn by doing. Explore interactive visualizations that make complex concepts click instantly.
+          Build probability intuition with interactive models, worked examples, and practice questions.
         </p>
         <div className="flex justify-center">
           <Button 

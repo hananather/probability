@@ -56,6 +56,7 @@ const KeyConceptsCard = React.memo(() => {
     </Card>
   );
 });
+KeyConceptsCard.displayName = 'KeyConceptsCard';
 
 // All Chapter 3 sections
 const CHAPTER_3_SECTIONS = [

@@ -11,6 +11,14 @@ import {
 
 const resources = [
   {
+    icon: FileText,
+    title: 'Formula Reference',
+    description: 'Find formulas and interactive builders for each chapter.',
+    link: '/resources/formulas',
+    features: ['Probability distributions', 'Inference and estimation', 'Regression'],
+    color: 'text-blue-400'
+  },
+  {
     icon: GraduationCap,
     title: 'Study Tips',
     description: 'Strategies for learning probability and statistics effectively.',
@@ -39,7 +47,7 @@ export default function ResourcesPage() {
           </div>
           <h1 className="text-4xl font-bold mb-4">Learning Resources</h1>
           <p className="text-xl text-neutral-300">
-            Everything you need to succeed in probability and statistics
+            Formula builders, prerequisites, and strategies for studying probability and statistics
           </p>
         </div>
       </section>

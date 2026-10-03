@@ -144,6 +144,7 @@ const PracticeProblems = React.memo(() => {
     </div>
   );
 });
+PracticeProblems.displayName = 'PracticeProblems';
 
 const SECTIONS = [
   {

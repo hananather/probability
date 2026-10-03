@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePathname } from 'next/navigation';
 import { InteractiveJourneyNavigation } from './InteractiveJourneyNavigation';
 import BackToHub from './BackToHub';
 import { VisualizationSection } from './VisualizationContainer';
 import { cn } from '@/lib/utils';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 /**
  * Generic Section-Based Content Component
@@ -20,6 +22,7 @@ import { cn } from '@/lib/utils';
  * @param {string} props.progressVariant - Progress bar color variant
  * @param {boolean} props.showBackToHub - Whether to show BackToHub button (default: true)
  * @param {boolean} props.showHeader - Whether to show the main header section (default: true)
+ * @param {string} props.storageKey - Optional device-local key for the active section, independent of completion
  * 
  * Section configuration:
  * {
@@ -33,17 +36,61 @@ import { cn } from '@/lib/utils';
 export default function SectionBasedContent({
   title,
   description,
-  sections,
+  sections = [],
   onComplete,
   chapter,
   progressVariant = 'purple',
   showBackToHub = true,
-  showHeader = true
+  showHeader = true,
+  storageKey
 }) {
-  const [currentSection, setCurrentSection] = useState(0);
+  const pathname = usePathname();
+  const reducedMotion = useReducedMotion();
+  const tabId = (title || 'sections').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const resumeKey = storageKey || `probability:resume:section:${pathname || '/'}:${tabId}`;
+  const sectionSignature = JSON.stringify(sections.map(section => section.id));
+  const identity = `${resumeKey}:${sectionSignature}`;
+  const [position, setPosition] = useState({ identity: null, index: 0 });
+  const currentSection = position.identity === identity && Number.isInteger(position.index) && position.index >= 0 && position.index < sections.length
+    ? position.index : 0;
   const [completedSections, setCompletedSections] = useState([]);
   const [hasCompleted, setHasCompleted] = useState(false);
   const contentRef = useRef(null);
+  const headingRef = useRef(null);
+  const focusOnNavigate = useRef(false);
+
+  useEffect(() => {
+    const sectionIds = JSON.parse(sectionSignature);
+    let restoredIndex = 0;
+    try {
+      const saved = JSON.parse(localStorage.getItem(resumeKey) || 'null');
+      const savedIndex = typeof saved === 'number' ? saved : saved?.index;
+      const idIndex = saved?.sectionId ? sectionIds.indexOf(saved.sectionId) : -1;
+      if (idIndex >= 0) restoredIndex = idIndex;
+      else if (Number.isInteger(savedIndex) && savedIndex >= 0 && savedIndex < sectionIds.length) restoredIndex = savedIndex;
+    } catch {
+      // Corrupt or unavailable device storage must not prevent reading a lesson.
+    }
+    setPosition({ identity, index: restoredIndex });
+    setCompletedSections([]);
+    setHasCompleted(false);
+  }, [resumeKey, sectionSignature, identity]);
+
+  useEffect(() => {
+    if (position.identity !== identity || !sections[currentSection]) return;
+    try {
+      localStorage.setItem(resumeKey, JSON.stringify({ index: currentSection, sectionId: sections[currentSection].id }));
+    } catch {
+      // Section navigation remains usable without persisted device state.
+    }
+  }, [position.identity, identity, resumeKey, currentSection, sections]);
+
+  useEffect(() => {
+    if (!focusOnNavigate.current || !headingRef.current) return;
+    focusOnNavigate.current = false;
+    headingRef.current.focus({ preventScroll: true });
+    headingRef.current.scrollIntoView({ behavior: reducedMotion ? 'instant' : 'smooth', block: 'start' });
+  }, [currentSection, reducedMotion]);
 
   // Process MathJax when section changes
   useEffect(() => {
@@ -63,7 +110,9 @@ export default function SectionBasedContent({
 
   // Handle section navigation
   const handleNavigate = (newSection) => {
-    setCurrentSection(newSection);
+    if (!Number.isInteger(newSection) || newSection < 0 || newSection >= sections.length || newSection === currentSection) return;
+    focusOnNavigate.current = true;
+    setPosition({ identity, index: newSection });
     // Mark previous section as completed when navigating forward
     if (newSection > currentSection && !completedSections.includes(currentSection)) {
       setCompletedSections(prev => [...prev, currentSection]);
@@ -90,6 +139,10 @@ export default function SectionBasedContent({
 
   const currentSectionData = sections[currentSection];
 
+  if (!currentSectionData) {
+    return <p role="status" className="text-neutral-400">No sections are available.</p>;
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -113,7 +166,7 @@ export default function SectionBasedContent({
             <span className="text-3xl">{currentSectionData.icon}</span>
           )}
           <div>
-            <h3 className="text-lg font-semibold text-white">
+            <h3 ref={headingRef} tabIndex={-1} className="scroll-mt-24 text-lg font-semibold text-white focus:outline-none">
               Section {currentSection + 1}: {currentSectionData.title}
             </h3>
             <p className="text-sm text-neutral-400">
@@ -127,10 +180,10 @@ export default function SectionBasedContent({
       <motion.div
         ref={contentRef}
         key={currentSection}
-        initial={{ opacity: 0, y: 20 }}
+        initial={reducedMotion ? false : { opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: reducedMotion ? 0 : 0.3 }}
         className="min-h-[400px]"
       >
         <AnimatePresence mode="wait">

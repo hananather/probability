@@ -116,8 +116,8 @@ const ChapterGrid = forwardRef(({ onSectionRef }, ref) => {
         e.preventDefault();
         // Click the button inside the focused card
         if (cards[currentIndex]) {
-          const button = cards[currentIndex].querySelector('button');
-          if (button) button.click();
+          const link = cards[currentIndex].querySelector('a[href]');
+          if (link) link.click();
         }
         break;
         
@@ -144,12 +144,12 @@ const ChapterGrid = forwardRef(({ onSectionRef }, ref) => {
       
       // Focus the card element
       const card = cards[newIndex];
-      const focusableElement = card.querySelector('button, [tabindex="0"]') || card;
+      const focusableElement = card.querySelector('a[href]') || card;
       focusableElement.focus();
       
       // Scroll into view if needed
       card.scrollIntoView({ 
-        behavior: 'smooth', 
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
         block: 'center',
         inline: 'center' 
       });
@@ -193,7 +193,7 @@ const ChapterGrid = forwardRef(({ onSectionRef }, ref) => {
         
         <div 
           className="grid md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8"
-          role="grid"
+          role="list"
           aria-label="Chapter grid"
         >
           {chapters.map((chapter, index) => (
@@ -204,8 +204,7 @@ const ChapterGrid = forwardRef(({ onSectionRef }, ref) => {
                 if (onSectionRef) onSectionRef(index, el);
               }}
               data-index={index}
-              role="gridcell"
-              tabIndex={index === 0 ? 0 : -1}
+              role="listitem"
               onFocus={() => handleCardFocus(index)}
               className={`focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:ring-offset-neutral-900 rounded-xl ${
                 focusedIndex === index ? 'ring-2 ring-teal-500 ring-offset-2 ring-offset-neutral-900' : ''

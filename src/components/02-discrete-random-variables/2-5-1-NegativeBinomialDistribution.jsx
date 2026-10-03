@@ -112,6 +112,7 @@ const NegativeBinomialConceptsCard = React.memo(() => {
     </Card>
   );
 });
+NegativeBinomialConceptsCard.displayName = 'NegativeBinomialConceptsCard';
 
 export default function NegativeBinomialDistribution() {
   // State

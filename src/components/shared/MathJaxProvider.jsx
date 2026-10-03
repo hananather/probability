@@ -29,34 +29,7 @@ export function MathJaxProvider({ children }) {
 
   return (
     <MathJaxContext.Provider value={{ ready: mathJaxReady }}>
-      <Script
-        id="mathjax-config"
-        strategy="beforeInteractive"
-        dangerouslySetInnerHTML={{
-          __html: `
-            window.MathJax = {
-              tex: {
-                inlineMath: [['\\\\(', '\\\\)']],
-                displayMath: [['\\\\[', '\\\\]']],
-              },
-              startup: {
-                typeset: false,
-                ready: () => {
-                  MathJax.startup.defaultReady();
-                  // Dispatch custom event when MathJax is ready
-                  window.dispatchEvent(new Event('MathJaxReady'));
-                }
-              },
-              options: {
-                renderActions: {
-                  addMenu: [],
-                  checkLoading: []
-                }
-              }
-            };
-          `,
-        }}
-      />
+
       <Script
         id="mathjax-script"
         src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"

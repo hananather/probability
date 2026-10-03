@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { SemanticGradientCard, SemanticGradientGrid } from '@/components/ui/patterns/SemanticGradientCard';
 import { SimpleInsightBox } from '@/components/ui/patterns/SimpleComponents';
@@ -8,7 +8,7 @@ import { useMathJax } from '@/hooks/useMathJax';
 import SharedNavigation from '../shared/SharedNavigation';
 
 // Pebble Component - Simple circle with color and size
-const Pebble = ({ color, size = 'normal', isSelected = false, onClick, className = '' }) => {
+const Pebble = ({ color, label, size = 'normal', isSelected = false, onClick, className = '' }) => {
   const sizeClasses = {
     small: 'w-6 h-6',
     normal: 'w-8 h-8', 
@@ -25,7 +25,10 @@ const Pebble = ({ color, size = 'normal', isSelected = false, onClick, className
   };
 
   return (
-    <div
+    <button
+      type="button"
+      aria-label={label}
+      aria-pressed={isSelected}
       className={`
         ${sizeClasses[size]} 
         ${colorClasses[color]}
@@ -41,7 +44,7 @@ const Pebble = ({ color, size = 'normal', isSelected = false, onClick, className
       onClick={onClick}
     >
       {isSelected && <div className="w-2 h-2 bg-yellow-300 rounded-full" />}
-    </div>
+    </button>
   );
 };
 
@@ -58,7 +61,7 @@ const PebbleBag = ({ children, title = "Probability Bag" }) => {
 };
 
 // Probability display component
-const ProbabilityDisplay = ({ title, probability, count, total, color, theme = 'teal' }) => {
+const ProbabilityDisplay = ({ title, probability, count, total, color, selectionWeight = false }) => {
   const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
   
   return (
@@ -68,7 +71,7 @@ const ProbabilityDisplay = ({ title, probability, count, total, color, theme = '
         <span className="text-white font-bold">{probability}</span>
       </div>
       <div className="text-xs text-neutral-400">
-        {count} out of {total} ({percentage}%)
+        {selectionWeight ? `Selection weight ${count} of ${total}` : `${count} out of ${total}`} ({percentage}%)
       </div>
     </div>
   );
@@ -76,10 +79,9 @@ const ProbabilityDisplay = ({ title, probability, count, total, color, theme = '
 
 // Equal Mass Scenario Component
 const EqualMassScenario = () => {
-  const contentRef = useMathJax([]);
-  
   const [selectedPebble, setSelectedPebble] = useState(null);
   const [results, setResults] = useState({ red: 0, blue: 0, green: 0, total: 0 });
+  const contentRef = useMathJax([selectedPebble?.id, results.total]);
 
   const pebbles = [
     { id: 1, color: 'red', type: 'Red' },
@@ -114,18 +116,19 @@ const EqualMassScenario = () => {
   return (
     <div ref={contentRef} className="space-y-6">
       <SemanticGradientCard
-        title="Scenario 1: Equal Mass Pebbles"
-        description="All pebbles have the same size and weight - each is equally likely to be picked"
+        title="Scenario 1: Equal Selection Weights"
+        description="The random selection rule gives each of the six pebbles probability 1/6 on every draw, with replacement."
         theme="teal"
       />
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Visual Display */}
         <div className="space-y-4">
-          <PebbleBag title="Equal Mass Pebbles">
+          <PebbleBag title="Equal Selection Weights">
             {pebbles.map((pebble) => (
               <Pebble
                 key={pebble.id}
+                label={`Inspect ${pebble.type} pebble ${pebble.id}`}
                 color={pebble.color}
                 size="normal"
                 isSelected={selectedPebble?.id === pebble.id}
@@ -143,15 +146,15 @@ const EqualMassScenario = () => {
             </Button>
           </div>
 
-          {selectedPebble && (
-            <SimpleInsightBox title="Last Picked" theme="yellow">
+          <div role="status" aria-live="polite" aria-atomic="true">
+            <SimpleInsightBox title="Selected Pebble" theme="yellow">
               <p>
-                You picked a <strong className={`text-${selectedPebble.color}-400`}>
-                  {selectedPebble.type}
-                </strong> pebble!
+                {selectedPebble ? `Selected: ${selectedPebble.type} pebble.` : 'No pebble selected.'}
+                {' '}Random draws: {results.total}.
               </p>
             </SimpleInsightBox>
-          )}
+          </div>
+          <p className="text-xs text-neutral-400">Select a pebble to inspect it. Use Pick Random Pebble to record a draw.</p>
         </div>
 
         {/* Probability Analysis */}
@@ -161,21 +164,21 @@ const EqualMassScenario = () => {
             <div className="space-y-3">
               <ProbabilityDisplay
                 title="P(Red)"
-                probability={`${redCount}/${totalCount} = ${(redCount/totalCount).toFixed(3)}`}
+                probability={`${redCount}/${totalCount} ≈ ${(redCount/totalCount).toFixed(3)}`}
                 count={redCount}
                 total={totalCount}
                 color="red"
               />
               <ProbabilityDisplay
                 title="P(Blue)"
-                probability={`${blueCount}/${totalCount} = ${(blueCount/totalCount).toFixed(3)}`}
+                probability={`${blueCount}/${totalCount} ≈ ${(blueCount/totalCount).toFixed(3)}`}
                 count={blueCount}
                 total={totalCount}
                 color="blue"
               />
               <ProbabilityDisplay
                 title="P(Green)"
-                probability={`${greenCount}/${totalCount} = ${(greenCount/totalCount).toFixed(3)}`}
+                probability={`${greenCount}/${totalCount} ≈ ${(greenCount/totalCount).toFixed(3)}`}
                 count={greenCount}
                 total={totalCount}
                 color="green"
@@ -213,8 +216,8 @@ const EqualMassScenario = () => {
               {results.total >= 10 && (
                 <div className="mt-3 p-3 bg-blue-900/20 border border-blue-600/30 rounded">
                   <p className="text-blue-300 text-xs">
-                    Notice how your experimental percentages get closer to theoretical probabilities 
-                    as you pick more pebbles (Law of Large Numbers)!
+                    Experimental percentages can fluctuate after each draw. Over many independent
+                    draws, they tend toward the theoretical probabilities (Law of Large Numbers).
                   </p>
                 </div>
               )}
@@ -223,7 +226,7 @@ const EqualMassScenario = () => {
 
           <div className="text-center text-xs text-neutral-400">
             <span dangerouslySetInnerHTML={{ 
-              __html: `\\[P(\\text{any color}) = \\frac{\\text{count of that color}}{\\text{total pebbles}}\\]` 
+              __html: `\\[P(\\text{chosen color}) = \\frac{\\text{count of that color}}{\\text{total pebbles}}\\]`
             }} />
           </div>
         </div>
@@ -234,31 +237,30 @@ const EqualMassScenario = () => {
 
 // Unequal Mass Scenario Component  
 const UnequalMassScenario = () => {
-  const contentRef = useMathJax([]);
-  
   const [selectedPebble, setSelectedPebble] = useState(null);
   const [results, setResults] = useState({ red: 0, blue: 0, green: 0, total: 0 });
+  const contentRef = useMathJax([selectedPebble?.id, results.total]);
 
-  // Different masses: Red=2, Blue=1, Green=0.5
+  // Selection weights per pebble: Red=2, Blue=1, Green=0.5.
   const pebbles = [
-    { id: 1, color: 'red', type: 'Red', mass: 2, size: 'large' },
-    { id: 2, color: 'red', type: 'Red', mass: 2, size: 'large' },
-    { id: 3, color: 'blue', type: 'Blue', mass: 1, size: 'normal' },
-    { id: 4, color: 'blue', type: 'Blue', mass: 1, size: 'normal' },
-    { id: 5, color: 'green', type: 'Green', mass: 0.5, size: 'small' },
-    { id: 6, color: 'green', type: 'Green', mass: 0.5, size: 'small' }
+    { id: 1, color: 'red', type: 'Red', weight: 2, size: 'large' },
+    { id: 2, color: 'red', type: 'Red', weight: 2, size: 'large' },
+    { id: 3, color: 'blue', type: 'Blue', weight: 1, size: 'normal' },
+    { id: 4, color: 'blue', type: 'Blue', weight: 1, size: 'normal' },
+    { id: 5, color: 'green', type: 'Green', weight: 0.5, size: 'small' },
+    { id: 6, color: 'green', type: 'Green', weight: 0.5, size: 'small' }
   ];
 
-  const totalMass = pebbles.reduce((sum, p) => sum + p.mass, 0);
+  const totalWeight = pebbles.reduce((sum, p) => sum + p.weight, 0);
 
   const pickRandomPebble = () => {
-    // Weighted random selection based on mass
-    const random = Math.random() * totalMass;
-    let cumulativeMass = 0;
+    // A uniform draw from the total weight selects a cumulative-weight interval.
+    const random = Math.random() * totalWeight;
+    let cumulativeWeight = 0;
     
     for (const pebble of pebbles) {
-      cumulativeMass += pebble.mass;
-      if (random <= cumulativeMass) {
+      cumulativeWeight += pebble.weight;
+      if (random <= cumulativeWeight) {
         setSelectedPebble(pebble);
         setResults(prev => ({
           ...prev,
@@ -275,25 +277,26 @@ const UnequalMassScenario = () => {
     setSelectedPebble(null);
   };
 
-  const redMass = pebbles.filter(p => p.color === 'red').reduce((sum, p) => sum + p.mass, 0);
-  const blueMass = pebbles.filter(p => p.color === 'blue').reduce((sum, p) => sum + p.mass, 0);
-  const greenMass = pebbles.filter(p => p.color === 'green').reduce((sum, p) => sum + p.mass, 0);
+  const redWeight = pebbles.filter(p => p.color === 'red').reduce((sum, p) => sum + p.weight, 0);
+  const blueWeight = pebbles.filter(p => p.color === 'blue').reduce((sum, p) => sum + p.weight, 0);
+  const greenWeight = pebbles.filter(p => p.color === 'green').reduce((sum, p) => sum + p.weight, 0);
 
   return (
     <div ref={contentRef} className="space-y-6">
       <SemanticGradientCard
-        title="Scenario 2: Unequal Mass Pebbles"
-        description="Pebbles have different masses - larger pebbles are more likely to be picked"
+        title="Scenario 2: Weighted Selection"
+        description="Size encodes a numeric selection weight. This algorithm picks each pebble with probability equal to its weight divided by the total weight, with replacement."
         theme="purple"
       />
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Visual Display */}
         <div className="space-y-4">
-          <PebbleBag title="Unequal Mass Pebbles">
+          <PebbleBag title="Weighted Selection">
             {pebbles.map((pebble) => (
               <Pebble
                 key={pebble.id}
+                label={`Inspect ${pebble.type} pebble ${pebble.id}, selection weight ${pebble.weight}`}
                 color={pebble.color}
                 size={pebble.size}
                 isSelected={selectedPebble?.id === pebble.id}
@@ -303,11 +306,11 @@ const UnequalMassScenario = () => {
           </PebbleBag>
 
           <div className="bg-neutral-800/50 rounded-lg p-3">
-            <h5 className="text-sm font-medium text-white mb-2">Mass Legend</h5>
+            <h5 className="text-sm font-medium text-white mb-2">Selection Weight per Pebble</h5>
             <div className="flex justify-between text-xs">
-              <span className="text-red-400">Red: mass = 2</span>
-              <span className="text-blue-400">Blue: mass = 1</span>
-              <span className="text-green-400">Green: mass = 0.5</span>
+              <span className="text-red-400">Red: weight = 2</span>
+              <span className="text-blue-400">Blue: weight = 1</span>
+              <span className="text-green-400">Green: weight = 0.5</span>
             </div>
           </div>
 
@@ -320,15 +323,15 @@ const UnequalMassScenario = () => {
             </Button>
           </div>
 
-          {selectedPebble && (
-            <SimpleInsightBox title="Last Picked" theme="purple">
+          <div role="status" aria-live="polite" aria-atomic="true">
+            <SimpleInsightBox title="Selected Pebble" theme="purple">
               <p>
-                You picked a <strong className={`text-${selectedPebble.color}-400`}>
-                  {selectedPebble.type}
-                </strong> pebble (mass: {selectedPebble.mass})!
+                {selectedPebble ? `Selected: ${selectedPebble.type} pebble, selection weight ${selectedPebble.weight}.` : 'No pebble selected.'}
+                {' '}Random draws: {results.total}.
               </p>
             </SimpleInsightBox>
-          )}
+          </div>
+          <p className="text-xs text-neutral-400">Select a pebble to inspect it. Use Pick Weighted Random to record a draw. Physical mass alone does not specify a selection probability.</p>
         </div>
 
         {/* Probability Analysis */}
@@ -338,24 +341,27 @@ const UnequalMassScenario = () => {
             <div className="space-y-3">
               <ProbabilityDisplay
                 title="P(Red)"
-                probability={`${redMass}/${totalMass} = ${(redMass/totalMass).toFixed(3)}`}
-                count={redMass}
-                total={totalMass}
+                probability={`${redWeight}/${totalWeight} ≈ ${(redWeight/totalWeight).toFixed(3)}`}
+                count={redWeight}
+                total={totalWeight}
                 color="red"
+                selectionWeight
               />
               <ProbabilityDisplay
                 title="P(Blue)"
-                probability={`${blueMass}/${totalMass} = ${(blueMass/totalMass).toFixed(3)}`}
-                count={blueMass}
-                total={totalMass}
+                probability={`${blueWeight}/${totalWeight} ≈ ${(blueWeight/totalWeight).toFixed(3)}`}
+                count={blueWeight}
+                total={totalWeight}
                 color="blue"
+                selectionWeight
               />
               <ProbabilityDisplay
                 title="P(Green)"
-                probability={`${greenMass}/${totalMass} = ${(greenMass/totalMass).toFixed(3)}`}
-                count={greenMass}
-                total={totalMass}
+                probability={`${greenWeight}/${totalWeight} ≈ ${(greenWeight/totalWeight).toFixed(3)}`}
+                count={greenWeight}
+                total={totalWeight}
                 color="green"
+                selectionWeight
               />
             </div>
           </div>
@@ -391,7 +397,7 @@ const UnequalMassScenario = () => {
 
           <div className="text-center text-xs text-neutral-400">
             <span dangerouslySetInnerHTML={{ 
-              __html: `\\[P(\\text{color}) = \\frac{\\text{total mass of that color}}{\\text{total mass of all pebbles}}\\]` 
+              __html: `\\[P(\\text{color}) = \\frac{\\text{sum of selection weights for that color}}{\\text{sum of all selection weights}}\\]`
             }} />
           </div>
         </div>
@@ -425,7 +431,7 @@ const ConceptualSection = () => {
         
         <SemanticGradientCard
           title="Probability Function"
-          description="Assigns likelihood to each event"
+          description="For finite, equally likely outcomes, probability is the fraction belonging to the event"
           formula="\\[P(A) = \\frac{\\text{favorable outcomes}}{\\text{total outcomes}}\\]"
           note="Must satisfy: \\(P(S) = 1\\) and \\(P(A) \\geq 0\\) for all events \\(A\\)"
           theme="purple"
@@ -446,8 +452,8 @@ const ConceptualSection = () => {
             The pebble model gives us physical intuition for abstract probability concepts:
           </p>
           <ul className="space-y-2 text-sm">
-            <li>• <strong>Equal likelihood:</strong> When pebbles are identical, each has the same chance</li>
-            <li>• <strong>Weighted probability:</strong> Heavier pebbles are more likely to be selected</li>
+            <li>• <strong>Equal likelihood:</strong> The selection rule gives every pebble the same chance</li>
+            <li>• <strong>Weighted selection:</strong> The algorithm assigns each pebble probability w ÷ sum of all weights; displayed size represents w</li>
             <li>• <strong>Sample space:</strong> The bag contains all possible outcomes</li>
             <li>• <strong>Events:</strong> Selecting specific colors represents different events</li>
           </ul>
@@ -471,31 +477,35 @@ export default function Tab4InteractiveTabStaticVisual({ onComplete }) {
         <h2 className="text-2xl font-bold text-white mb-2">Interactive Pebble World</h2>
         <p className="text-neutral-400 max-w-2xl mx-auto">
           Explore probability through visual experiments with colored pebbles. 
-          See how equal and unequal masses affect likelihood.
+          Compare uniform draws with draws proportional to assigned selection weights.
         </p>
       </div>
 
       {/* Scenario Selector */}
-      <div className="flex justify-center gap-4">
+      <div className="flex flex-wrap justify-center gap-4">
         <Button
           onClick={() => setActiveScenario('equal')}
+          aria-pressed={activeScenario === 'equal'}
           variant={activeScenario === 'equal' ? 'primary' : 'neutral'}
         >
-          Equal Mass Scenario
+          Equal Selection Weights
         </Button>
         <Button
           onClick={() => setActiveScenario('unequal')}
+          aria-pressed={activeScenario === 'unequal'}
           variant={activeScenario === 'unequal' ? 'primary' : 'neutral'}
         >
-          Unequal Mass Scenario
+          Weighted Selection
         </Button>
         <Button
           onClick={() => setActiveScenario('concepts')}
+          aria-pressed={activeScenario === 'concepts'}
           variant={activeScenario === 'concepts' ? 'primary' : 'neutral'}
         >
           Key Concepts
         </Button>
       </div>
+      <p className="text-center text-xs text-neutral-400">Changing scenarios starts a new experiment.</p>
 
       {/* Content */}
       <div className="min-h-96">

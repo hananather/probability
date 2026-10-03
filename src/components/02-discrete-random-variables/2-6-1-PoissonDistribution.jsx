@@ -92,6 +92,7 @@ const PoissonConceptsCard = React.memo(() => {
     </Card>
   );
 });
+PoissonConceptsCard.displayName = 'PoissonConceptsCard';
 
 // Main Component
 const PoissonDistribution = React.memo(function PoissonDistribution() {

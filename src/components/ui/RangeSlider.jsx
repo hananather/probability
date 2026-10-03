@@ -1,5 +1,7 @@
 "use client";
 
+import { useId } from 'react';
+
 // Simple, reusable range slider component
 export function RangeSlider({ 
   label, 
@@ -14,16 +16,19 @@ export function RangeSlider({
   id,
   disabled = false
 }) {
+  const generatedId = useId();
+  const inputId = id ?? generatedId;
   return (
     <div className={`flex items-center gap-2 ${className} ${disabled ? 'opacity-50' : ''}`}>
-      {label && <label htmlFor={id} className="text-sm text-foreground">{label}:</label>}
+      {label && <label htmlFor={inputId} className="text-sm text-foreground">{label}:</label>}
       <input
-        id={id}
+        id={inputId}
         type="range"
         min={min}
         max={max}
         step={step}
         value={value ?? min}
+        aria-valuetext={String(formatValue(value ?? min))}
         onChange={(e) => onChange(Number(e.target.value))}
         className="slider flex-1"
         style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}

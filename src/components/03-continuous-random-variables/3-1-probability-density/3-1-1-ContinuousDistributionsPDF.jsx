@@ -610,6 +610,7 @@ const PDFVisualization = memo(({
   
   return <svg ref={svgRef} className="w-full" />;
 });
+PDFVisualization.displayName = 'PDFVisualization';
 
 // Main component
 const ContinuousDistributionsPDF = () => {

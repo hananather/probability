@@ -12,7 +12,7 @@ const SECTIONS = [
   {
     id: 'operations-foundation',
     title: 'The Grammar of Events',
-    content: ({ sectionIndex, isCompleted }) => {
+    content: function OperationsFoundationSection({ sectionIndex, isCompleted }) {
       const contentRef = useMathJax([sectionIndex, isCompleted]);
       
       return (
@@ -43,7 +43,7 @@ const SECTIONS = [
   {
     id: 'fundamental-operations',
     title: 'The Four Fundamental Operations',
-    content: ({ sectionIndex, isCompleted }) => {
+    content: function FundamentalOperationsSection({ sectionIndex, isCompleted }) {
       const contentRef = useMathJax([sectionIndex, isCompleted]);
       
       const operationsData = {
@@ -177,7 +177,7 @@ const SECTIONS = [
   {
     id: 'algebraic-properties',
     title: 'Algebraic Properties and Laws',
-    content: ({ sectionIndex, isCompleted }) => {
+    content: function AlgebraicPropertiesSection({ sectionIndex, isCompleted }) {
       const contentRef = useMathJax([sectionIndex, isCompleted]);
       
       return (
@@ -302,7 +302,7 @@ const SECTIONS = [
   {
     id: 'demorgans-laws',
     title: "De Morgan's Laws: The Master Rules",
-    content: ({ sectionIndex, isCompleted }) => {
+    content: function DeMorgansLawsSection({ sectionIndex, isCompleted }) {
       const contentRef = useMathJax([sectionIndex, isCompleted]);
       
       return (

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Clock, Pause, Play, AlertTriangle } from 'lucide-react';
 
 export function QuizTimer({ 
@@ -8,35 +8,46 @@ export function QuizTimer({
   isPaused = false,
   onPauseToggle,
   showWarning = true,
-  warningTime = 5 // minutes
+  warningTime = 5, // minutes
+  deadline,
+  pausedRemaining,
+  hidden = false
 }) {
-  const [timeRemaining, setTimeRemaining] = useState(timeLimit * 60); // Convert to seconds
-  const [isWarning, setIsWarning] = useState(false);
+  const defaultDeadline = useRef(Date.now() + timeLimit * 60 * 1000);
+  const defaultPausedAt = useRef(null);
+  const effectiveDeadline = deadline ?? defaultDeadline.current;
+  const getRemaining = () => Math.max(0, Math.ceil((effectiveDeadline - Date.now()) / 1000));
+  const [timeRemaining, setTimeRemaining] = useState(getRemaining);
+  const expiryHandled = useRef(false);
+  const onTimeUpRef = useRef(onTimeUp);
+  const isWarning = showWarning && timeRemaining <= warningTime * 60;
+
+  useEffect(() => { onTimeUpRef.current = onTimeUp; }, [onTimeUp]);
   
   useEffect(() => {
-    if (isPaused) return;
-    
-    const timer = setInterval(() => {
-      setTimeRemaining((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          if (onTimeUp) onTimeUp();
-          return 0;
-        }
-        
-        const newTime = prev - 1;
-        
-        // Check for warning threshold
-        if (showWarning && newTime === warningTime * 60) {
-          setIsWarning(true);
-        }
-        
-        return newTime;
-      });
-    }, 1000);
-    
+    if (isPaused) {
+      if (deadline == null && defaultPausedAt.current === null) defaultPausedAt.current = Date.now();
+      if (typeof pausedRemaining === 'number') setTimeRemaining(Math.max(0, pausedRemaining));
+      return;
+    }
+    let runningDeadline = effectiveDeadline;
+    if (deadline == null && defaultPausedAt.current !== null) {
+      defaultDeadline.current += Date.now() - defaultPausedAt.current;
+      runningDeadline = defaultDeadline.current;
+      defaultPausedAt.current = null;
+    }
+    const updateRemaining = () => setTimeRemaining(Math.max(0, Math.ceil((runningDeadline - Date.now()) / 1000)));
+    updateRemaining();
+    const timer = setInterval(updateRemaining, 1000);
     return () => clearInterval(timer);
-  }, [isPaused, onTimeUp, showWarning, warningTime]);
+  }, [effectiveDeadline, deadline, isPaused, pausedRemaining]);
+
+  useEffect(() => {
+    if (timeRemaining === 0 && !isPaused && !expiryHandled.current) {
+      expiryHandled.current = true;
+      onTimeUpRef.current?.();
+    }
+  }, [timeRemaining, isPaused]);
   
   // Format time for display
   const formatTime = useCallback((seconds) => {
@@ -54,6 +65,8 @@ export function QuizTimer({
     if (timeRemaining <= warningTime * 60) return 'text-orange-500';
     return 'text-neutral-400';
   };
+
+  if (hidden) return null;
   
   return (
     <div className="flex items-center gap-4 bg-neutral-900 rounded-lg px-4 py-3 border border-neutral-700">
@@ -89,6 +102,8 @@ export function QuizTimer({
           onClick={onPauseToggle}
           className="p-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition-colors"
           title={isPaused ? "Resume" : "Pause"}
+          aria-label={isPaused ? 'Resume quiz timer' : 'Pause quiz timer'}
+          aria-pressed={isPaused}
         >
           {isPaused ? (
             <Play className="w-4 h-4 text-neutral-400" />

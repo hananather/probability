@@ -6,7 +6,7 @@ export function FooterWrapper({ children }) {
   const { isOpen } = useSidebar();
   
   return (
-    <div className={`transition-all duration-200 ${isOpen ? 'ml-64 sm:ml-72' : 'ml-0'}`}>
+    <div className={`min-w-0 transition-[margin] duration-200 motion-reduce:transition-none ${isOpen ? 'lg:ml-72' : 'ml-0'}`}>
       {children}
     </div>
   );

@@ -80,6 +80,7 @@ const BinomialConceptsCard = React.memo(() => {
     </Card>
   );
 });
+BinomialConceptsCard.displayName = 'BinomialConceptsCard';
 
 // Trial History Component (preserved from original)
 const TrialHistory = ({ trials, n, theme, showRecent = 10 }) => {

@@ -102,7 +102,7 @@ function PurpleContainerPattern() {
       
       {/* Code snippet */}
       <div className="bg-neutral-950 rounded-lg p-4 text-xs text-neutral-300 font-mono">
-        <div className="text-green-400 mb-2">// The exact CSS classes used:</div>
+        <div className="text-green-400 mb-2">{"// The exact CSS classes used:"}</div>
         <div>className="bg-gradient-to-br from-purple-900/20 to-purple-800/20 border border-purple-500/30 rounded-lg p-6"</div>
       </div>
     </div>
@@ -147,7 +147,7 @@ function GreenInterpretationPattern() {
       
       {/* Code snippet */}
       <div className="bg-neutral-950 rounded-lg p-4 text-xs text-neutral-300 font-mono">
-        <div className="text-green-400 mb-2">// Green interpretation pattern:</div>
+        <div className="text-green-400 mb-2">{"// Green interpretation pattern:"}</div>
         <div>className="bg-gradient-to-br from-green-900/20 to-green-800/20 border border-green-500/30 rounded-lg p-4"</div>
       </div>
     </div>
@@ -221,7 +221,7 @@ function ANOVAColorPattern() {
       
       {/* Code snippet */}
       <div className="bg-neutral-950 rounded-lg p-4 text-xs text-neutral-300 font-mono">
-        <div className="text-green-400 mb-2">// Semantic color mapping:</div>
+        <div className="text-green-400 mb-2">{"// Semantic color mapping:"}</div>
         <div className="space-y-1">
           <div>const anovaColors = {`{`}</div>
           <div className="ml-4">total: '#9ca3af',</div>
@@ -290,12 +290,12 @@ function TogglePattern() {
       
       {/* Code snippet */}
       <div className="bg-neutral-950 rounded-lg p-4 text-xs text-neutral-300 font-mono">
-        <div className="text-green-400 mb-2">// Progressive disclosure pattern:</div>
+        <div className="text-green-400 mb-2">{"// Progressive disclosure pattern:"}</div>
         <div className="space-y-1">
           <div>const [showContent, setShowContent] = useState(false);</div>
-          <div>// Button with icon and toggle text</div>
+          <div>{"// Button with icon and toggle text"}</div>
           <div>{`{showContent ? "Hide" : "Show"} Content`}</div>
-          <div>// Conditional rendering</div>
+          <div>{"// Conditional rendering"}</div>
           <div>{`{showContent && <ContentComponent />}`}</div>
         </div>
       </div>

@@ -85,6 +85,7 @@ const GeometricConceptsCard = React.memo(() => {
     </Card>
   );
 });
+GeometricConceptsCard.displayName = 'GeometricConceptsCard';
 
 export default function GeometricDistribution() {
   // State

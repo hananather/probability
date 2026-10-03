@@ -104,13 +104,12 @@ const LearningPathNavigation = React.memo(function LearningPathNavigation({ mode
 
 // Add Bayesian Inference Introduction Component
 const BayesianInferenceIntro = React.memo(function BayesianInferenceIntro({ isActive }) {
-  if (!isActive) return null;
-  
   const contentRef = useRef(null);
   const [priorBelief, setPriorBelief] = useState(0.5);
   const [evidence, setEvidence] = useState({ heads: 0, tails: 0 });
   
   useEffect(() => {
+    if (!isActive) return;
     const processMathJax = () => {
       if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
         if (window.MathJax.typesetClear) {
@@ -122,7 +121,9 @@ const BayesianInferenceIntro = React.memo(function BayesianInferenceIntro({ isAc
     processMathJax();
     const timeoutId = setTimeout(processMathJax, 100);
     return () => clearTimeout(timeoutId);
-  }, [priorBelief, evidence]);
+  }, [isActive, priorBelief, evidence]);
+
+  if (!isActive) return null;
   
   // Calculate posterior using Beta-Binomial model
   const alpha = priorBelief * 10 + evidence.heads + 1;
@@ -790,7 +791,7 @@ const MathematicalFoundations = React.memo(function MathematicalFoundations() {
 });
 
 // Interactive Insights Cards
-const InteractiveInsights = React.memo(() => {
+const InteractiveInsights = React.memo(function InteractiveInsights() {
   const insights = [
     {
       id: 'population',
@@ -889,7 +890,7 @@ const InteractiveInsights = React.memo(() => {
 });
 
 // Gear Wheel Factory Visualization - Updated with Gold Standard styling
-const GearWheelFactory = React.memo(({ isActive }) => {
+const GearWheelFactory = React.memo(function GearWheelFactory({ isActive }) {
   const svgRef = useRef(null);
   const [sampleSize, setSampleSize] = useState(30);
   const [isSampling, setIsSampling] = useState(false);
@@ -1244,7 +1245,7 @@ const GearWheelFactory = React.memo(({ isActive }) => {
 });
 
 // Central Limit Theorem Demonstration - Replacing confusing visualization
-const CentralLimitTheoremDemo = React.memo(({ isActive }) => {
+const CentralLimitTheoremDemo = React.memo(function CentralLimitTheoremDemo({ isActive }) {
   const svgRef = useRef(null);
   const [activeDistribution, setActiveDistribution] = useState('uniform');
   const [sampleSize, setSampleSize] = useState(5);
@@ -1252,6 +1253,7 @@ const CentralLimitTheoremDemo = React.memo(({ isActive }) => {
   const [isInitialized, setIsInitialized] = useState(false);
   
   useEffect(() => {
+    if (!isActive) return;
     const processMathJax = () => {
       if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
         if (window.MathJax.typesetClear) {
@@ -1263,7 +1265,7 @@ const CentralLimitTheoremDemo = React.memo(({ isActive }) => {
     processMathJax();
     const timeoutId = setTimeout(processMathJax, 100);
     return () => clearTimeout(timeoutId);
-  }, []);
+  }, [isActive]);
   
   const distributions = {
     uniform: {
@@ -1565,8 +1567,6 @@ const CentralLimitTheoremDemo = React.memo(({ isActive }) => {
 // Baseball Heights Example
 const BaseballHeights = React.memo(function BaseballHeights({ isActive }) {
   const contentRef = useRef(null);
-  
-  if (!isActive) return null;
   const [showCalculation, setShowCalculation] = useState(true);
   
   // Exact data from examples
@@ -1578,6 +1578,7 @@ const BaseballHeights = React.memo(function BaseballHeights({ isActive }) {
   const se = s / Math.sqrt(n);
   
   useEffect(() => {
+    if (!isActive) return;
     const processMathJax = () => {
       if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
         if (window.MathJax.typesetClear) {
@@ -1589,7 +1590,9 @@ const BaseballHeights = React.memo(function BaseballHeights({ isActive }) {
     processMathJax();
     const timeoutId = setTimeout(processMathJax, 100);
     return () => clearTimeout(timeoutId);
-  }, [showCalculation]);
+  }, [isActive, showCalculation]);
+
+  if (!isActive) return null;
   
   const StatCard = ({ label, value, formula, color }) => {
     const bgClass = color === 'blue' ? 'bg-blue-900/20' : color === 'purple' ? 'bg-purple-900/20' : 'bg-blue-900/20';
@@ -1980,9 +1983,9 @@ const InteractiveCalculator = () => {
 
 // Field-Specific Examples Component
 const FieldSpecificExamples = React.memo(function FieldSpecificExamples({ isActive }) {
-  if (!isActive) return null;
-  
   const [activeTab, setActiveTab] = useState('engineering');
+
+  if (!isActive) return null;
   
   const fields = {
     engineering: {
@@ -2509,8 +2512,8 @@ export default function StatisticalInference() {
         
         {/* Discovery */}
         <div>
-          <CentralLimitTheoremDemo />
-          <BaseballHeights />
+          <CentralLimitTheoremDemo isActive={mode === LEARNING_MODES.EXPLORATION} />
+          <BaseballHeights isActive={mode === LEARNING_MODES.EXPLORATION} />
         </div>
         
         {/* Bayesian Inference */}

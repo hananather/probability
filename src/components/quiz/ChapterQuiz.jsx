@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import * as Dialog from '@radix-ui/react-dialog';
 import { QuizTimer } from './QuizTimer';
 import { QuizProgress } from './QuizProgress';
 import { QuizResults } from './QuizResults';
@@ -11,28 +12,30 @@ import { quizStorage } from '@/lib/quiz/quizStorage';
 import { useMathJax } from '@/hooks/useMathJax';
 
 // Single question component that handles both types
-function QuizQuestionWrapper({ 
+export function QuizQuestionWrapper({
   question, 
   onAnswer, 
   showExplanation = false,
-  disabled = false 
+  disabled = false,
+  savedAnswer
 }) {
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [selectedAnswer, setSelectedAnswer] = useState(savedAnswer?.answer ?? null);
   const [selectedMultiple, setSelectedMultiple] = useState([]);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [isAnswered, setIsAnswered] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(Boolean(savedAnswer) || disabled);
+  const [isAnswered, setIsAnswered] = useState(Boolean(savedAnswer) || disabled);
   const questionRef = useMathJax([question.question]);
   const optionsRef = useMathJax(question.options); // options is already an array
+  const explanationRef = useMathJax([question.explanation]);
   
   const isMultiSelect = question.type === 'multi-select';
   
   // Reset state when question changes
   useEffect(() => {
-    setSelectedAnswer(null);
+    setSelectedAnswer(savedAnswer?.answer ?? null);
     setSelectedMultiple([]);
-    setShowFeedback(false);
-    setIsAnswered(false);
-  }, [question]);
+    setShowFeedback(Boolean(savedAnswer) || disabled);
+    setIsAnswered(Boolean(savedAnswer) || disabled);
+  }, [question, savedAnswer, disabled]);
   
   const handleSingleAnswer = (index) => {
     if (isAnswered || disabled) return;
@@ -40,6 +43,7 @@ function QuizQuestionWrapper({
   };
   
   const handleSubmit = () => {
+    if (isAnswered || disabled) return;
     if (!isMultiSelect && selectedAnswer === null) return;
     if (isMultiSelect && selectedMultiple.length === 0) return;
     
@@ -74,6 +78,7 @@ function QuizQuestionWrapper({
         onAnswer={onAnswer}
         showExplanation={showExplanation}
         disabled={disabled}
+        savedAnswer={savedAnswer}
       />
     );
   }
@@ -89,7 +94,7 @@ function QuizQuestionWrapper({
       </div>
       
       {/* Options */}
-      <div ref={optionsRef} className="space-y-3">
+      <div ref={optionsRef} role="group" aria-label="Answer choices" className="space-y-3">
         {question.options.map((option, index) => {
           const isSelected = selectedAnswer === index;
           const showAsCorrect = showFeedback && index === question.correct;
@@ -100,6 +105,7 @@ function QuizQuestionWrapper({
               key={index}
               onClick={() => handleSingleAnswer(index)}
               disabled={isAnswered || disabled}
+              aria-pressed={isSelected}
               className={`
                 w-full p-4 rounded-lg border text-left transition-all duration-300
                 ${(isAnswered || disabled) ? 'cursor-not-allowed' : 'cursor-pointer hover:scale-[1.02] hover:shadow-lg'}
@@ -144,6 +150,8 @@ function QuizQuestionWrapper({
                   }
                 `}>
                   {option}
+                  {showAsCorrect && <span className="sr-only"> — Correct answer</span>}
+                  {showAsIncorrect && <span className="sr-only"> — Your incorrect answer</span>}
                 </span>
               </div>
             </button>
@@ -164,10 +172,10 @@ function QuizQuestionWrapper({
           </Button>
         ) : (
           <>
-            <span className={`font-medium ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
-              {isCorrect ? 'Correct!' : 'Incorrect'}
+            <span role="status" className={`font-medium ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
+              {isCorrect ? 'Correct!' : selectedAnswer === null ? 'Not answered' : 'Incorrect'}
             </span>
-            {!isCorrect && (
+            {!isCorrect && !disabled && (
               <Button
                 onClick={handleTryAgain}
                 variant="neutral"
@@ -182,7 +190,7 @@ function QuizQuestionWrapper({
       
       {/* Explanation */}
       {showFeedback && showExplanation && question.explanation && (
-        <div className={`
+        <div ref={explanationRef} className={`
           p-3 rounded-lg text-sm
           ${isCorrect ? 'bg-green-500/10 border border-green-500/30 text-green-300' : 'bg-orange-500/10 border border-orange-500/30 text-orange-300'}
         `}>
@@ -205,6 +213,12 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
   const [startTime, setStartTime] = useState(null);
   const [timeSpent, setTimeSpent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [deadline, setDeadline] = useState(null);
+  const [pausedRemaining, setPausedRemaining] = useState(null);
+  const submitted = useRef(false);
+  const finishButtonRef = useRef(null);
+  const [showFinishConfirmation, setShowFinishConfirmation] = useState(false);
+  const [previousBest, setPreviousBest] = useState(null);
   
   // Preferences
   const [preferences, setPreferences] = useState(quizStorage.getPreferences());
@@ -215,24 +229,76 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
     const data = getChapterQuestions(chapterId, version);
     if (data) {
       setQuizData(data);
+      const priorStats = quizStorage.getChapterStats(chapterId);
+      setPreviousBest(priorStats.totalAttempts > 0 ? priorStats.bestScore : null);
       
       // Check for existing session
       const existingSession = quizStorage.getCurrentSession(chapterId);
       if (existingSession && existingSession.version === version) {
         // Resume existing session
-        setCurrentQuestion(existingSession.currentQuestion || 0);
-        setAnswers(existingSession.answers || {});
-        setFlaggedQuestions(existingSession.flaggedQuestions || []);
+        const questionIndex = existingSession.currentQuestion;
+        setCurrentQuestion(Number.isInteger(questionIndex) && questionIndex >= 0 && questionIndex < data.questions.length ? questionIndex : 0);
+        const savedAnswers = existingSession.answers;
+        const validAnswers = {};
+        if (savedAnswers && typeof savedAnswers === 'object' && !Array.isArray(savedAnswers)) {
+          Object.entries(savedAnswers).forEach(([index, saved]) => {
+            const savedQuestion = data.questions[Number(index)];
+            if (!savedQuestion || !saved || typeof saved !== 'object') return;
+            const validIndex = value => Number.isInteger(value) && value >= 0 && value < savedQuestion.options.length;
+            const isMulti = savedQuestion.type === 'multi-select';
+            const valid = isMulti ? Array.isArray(saved.answer) && saved.answer.every(validIndex) : validIndex(saved.answer);
+            if (!valid) return;
+            const answer = isMulti ? [...new Set(saved.answer)] : saved.answer;
+            const isCorrect = isMulti
+              ? answer.length === savedQuestion.correct.length && answer.every(value => savedQuestion.correct.includes(value))
+              : answer === savedQuestion.correct;
+            validAnswers[Number(index)] = { ...saved, answer, isCorrect };
+          });
+        }
+        setAnswers(validAnswers);
+        setFlaggedQuestions(Array.isArray(existingSession.flaggedQuestions)
+          ? existingSession.flaggedQuestions.filter(index => Number.isInteger(index) && index >= 0 && index < data.questions.length)
+          : []);
         setQuizState('quiz');
-        setStartTime(existingSession.startTime);
+        const savedStart = Number.isFinite(existingSession.startTime) && existingSession.startTime > 0 && existingSession.startTime <= Date.now()
+          ? existingSession.startTime : Date.now();
+        setStartTime(savedStart);
+        setDeadline(Number.isFinite(existingSession.deadline) ? existingSession.deadline : savedStart + data.timeLimit * 60 * 1000);
+        const paused = existingSession.isPaused === true && Number.isFinite(existingSession.pausedRemaining);
+        setIsPaused(paused);
+        setPausedRemaining(paused ? Math.max(0, existingSession.pausedRemaining) : null);
+        submitted.current = false;
       }
     }
   }, [chapterId, version]);
+
+  useEffect(() => {
+    if (submitted.current || quizState !== 'quiz' || startTime === null || deadline === null) return;
+    quizStorage.saveCurrentSession(chapterId, {
+      currentQuestion,
+      answers,
+      timeRemaining: isPaused ? pausedRemaining : Math.max(0, Math.ceil((deadline - Date.now()) / 1000)),
+      deadline,
+      isPaused,
+      pausedRemaining,
+      startTime,
+      flaggedQuestions,
+      version
+    });
+  }, [chapterId, version, quizState, currentQuestion, answers, deadline, isPaused, pausedRemaining, startTime, flaggedQuestions]);
   
   // Start quiz
   const handleStartQuiz = () => {
+    const now = Date.now();
+    const priorStats = quizStorage.getChapterStats(chapterId);
+    setPreviousBest(priorStats.totalAttempts > 0 ? priorStats.bestScore : null);
     setQuizState('quiz');
-    setStartTime(Date.now());
+    setStartTime(now);
+    setDeadline(now + quizData.timeLimit * 60 * 1000);
+    setIsPaused(false);
+    setPausedRemaining(null);
+    setShowFinishConfirmation(false);
+    submitted.current = false;
     setCurrentQuestion(0);
     setAnswers({});
     setFlaggedQuestions([]);
@@ -250,16 +316,6 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
       }
     };
     setAnswers(newAnswers);
-    
-    // Save session
-    quizStorage.saveCurrentSession(chapterId, {
-      currentQuestion,
-      answers: newAnswers,
-      timeRemaining: null, // Calculate from timer
-      startTime,
-      flaggedQuestions,
-      version
-    });
     
     // No auto-advance - user must click Next button
   };
@@ -282,6 +338,9 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
   
   // Submit quiz
   const handleSubmitQuiz = () => {
+    if (submitted.current || quizState !== 'quiz') return;
+    submitted.current = true;
+    setShowFinishConfirmation(false);
     const endTime = Date.now();
     const totalTime = Math.floor((endTime - startTime) / 1000);
     setTimeSpent(totalTime);
@@ -289,10 +348,6 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
     // Calculate results
     const correctAnswers = Object.entries(answers)
       .filter(([_, data]) => data.isCorrect)
-      .map(([index]) => parseInt(index));
-    
-    const incorrectAnswers = Object.entries(answers)
-      .filter(([_, data]) => !data.isCorrect)
       .map(([index]) => parseInt(index));
     
     // Save attempt
@@ -311,10 +366,30 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
     
     setQuizState('results');
   };
+
+  const handleRequestFinish = () => {
+    if (submitted.current || quizState !== 'quiz') return;
+    if (quizData.questions.some((_, index) => !answers[index])) {
+      setShowFinishConfirmation(true);
+    } else {
+      handleSubmitQuiz();
+    }
+  };
   
   // Handle timer expiry
   const handleTimeUp = () => {
     handleSubmitQuiz();
+  };
+
+  const handlePauseToggle = () => {
+    if (isPaused) {
+      setDeadline(Date.now() + pausedRemaining * 1000);
+      setIsPaused(false);
+      setPausedRemaining(null);
+    } else {
+      setPausedRemaining(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
+      setIsPaused(true);
+    }
   };
   
   // Retake quiz
@@ -330,7 +405,6 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
   
   // Get quiz statistics
   const stats = quizStorage.getChapterStats(chapterId);
-  const previousBest = stats.bestScore;
   
   if (!quizData) {
     return (
@@ -342,6 +416,11 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
       </div>
     );
   }
+
+  const answeredQuestions = Object.keys(answers).map(index => Number(index));
+  const correctAnswers = answeredQuestions.filter(index => answers[index].isCorrect);
+  const incorrectAnswers = answeredQuestions.filter(index => !answers[index].isCorrect);
+  const unansweredQuestions = quizData.questions.map((_, index) => index).filter(index => !answers[index]);
   
   // Render based on quiz state
   if (quizState === 'intro') {
@@ -372,7 +451,7 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
             <div>
               <p className="text-sm text-neutral-400">Your Best</p>
               <p className="text-2xl font-bold text-white">
-                {previousBest > 0 ? `${previousBest}%` : 'Not attempted'}
+                {stats.totalAttempts > 0 ? `${stats.bestScore}%` : 'Not attempted'}
               </p>
             </div>
           </div>
@@ -424,7 +503,7 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
                   }}
                   className="rounded"
                 />
-                <span className="text-sm text-neutral-300">Show immediate feedback</span>
+                <span className="text-sm text-neutral-300">Show explanations after each answer</span>
               </label>
               
               <div className="pt-2">
@@ -457,14 +536,6 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
   }
   
   if (quizState === 'results') {
-    const correctAnswers = Object.entries(answers)
-      .filter(([_, data]) => data.isCorrect)
-      .map(([index]) => parseInt(index));
-    
-    const incorrectAnswers = Object.entries(answers)
-      .filter(([_, data]) => !data.isCorrect)
-      .map(([index]) => parseInt(index));
-    
     return (
       <QuizResults
         score={correctAnswers.length}
@@ -472,6 +543,7 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
         timeSpent={timeSpent}
         correctAnswers={correctAnswers}
         incorrectAnswers={incorrectAnswers}
+        unansweredQuestions={unansweredQuestions}
         passingScore={quizData.passingScore}
         previousBest={previousBest}
         onRetake={handleRetake}
@@ -484,28 +556,21 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
   
   // Main quiz interface
   const question = quizData.questions[currentQuestion];
-  const answeredQuestions = Object.keys(answers).map(k => parseInt(k));
-  const allAnswered = answeredQuestions.length === quizData.questions.length;
-  
-  const correctAnswers = Object.entries(answers)
-    .filter(([_, data]) => data.isCorrect)
-    .map(([index]) => parseInt(index));
-  
-  const incorrectAnswers = Object.entries(answers)
-    .filter(([_, data]) => !data.isCorrect)
-    .map(([index]) => parseInt(index));
   
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-white">{quizData.title}</h1>
-        {preferences.showTimer && quizState === 'quiz' && (
+        {quizState === 'quiz' && (
           <QuizTimer
             timeLimit={quizData.timeLimit}
             onTimeUp={handleTimeUp}
             isPaused={isPaused}
-            onPauseToggle={() => setIsPaused(!isPaused)}
+            onPauseToggle={handlePauseToggle}
+            deadline={deadline}
+            pausedRemaining={pausedRemaining}
+            hidden={!preferences.showTimer}
           />
         )}
       </div>
@@ -524,7 +589,7 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
       />
       
       {/* Question */}
-      <div className="bg-neutral-900 rounded-lg p-8 border border-neutral-700">
+      <div className="bg-neutral-900 rounded-lg p-4 sm:p-8 border border-neutral-700">
         {/* Topic Badge */}
         <div className="mb-4">
           <span className="inline-block px-3 py-1 bg-teal-500/20 text-teal-400 text-sm rounded-full border border-teal-500/30">
@@ -539,6 +604,7 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
           onAnswer={(isCorrect, answer) => handleAnswer(currentQuestion, isCorrect, answer)}
           showExplanation={preferences.immediateFeeback || quizState === 'review'}
           disabled={quizState === 'review'}
+          savedAnswer={answers[currentQuestion]}
         />
         
         {/* Next Question Button - Shows after answering */}
@@ -557,18 +623,48 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
         )}
       </div>
       
-      {/* Submit Button */}
-      {quizState === 'quiz' && allAnswered && (
-        <div className="flex justify-center">
-          <Button
-            onClick={handleSubmitQuiz}
-            variant="success"
-            size="lg"
-            className="min-w-[200px]"
-          >
-            Submit Quiz
-          </Button>
-        </div>
+      {/* Finish practice */}
+      {quizState === 'quiz' && (
+        <Dialog.Root open={showFinishConfirmation} onOpenChange={setShowFinishConfirmation}>
+          <div className="flex justify-center">
+            <Button
+              ref={finishButtonRef}
+              onClick={handleRequestFinish}
+              variant="success"
+              size="lg"
+              className="min-w-[200px]"
+            >
+              Finish and review
+            </Button>
+          </div>
+          <Dialog.Portal>
+            <Dialog.Overlay className="fixed inset-0 z-[70] bg-black/60" />
+            <Dialog.Content
+              aria-modal="true"
+              className="fixed left-1/2 top-1/2 z-[80] w-[calc(100%_-_2rem)] max-w-lg max-h-[calc(100dvh_-_2rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-neutral-700 bg-neutral-900 p-6 text-white shadow-xl"
+              onCloseAutoFocus={event => {
+                if (finishButtonRef.current) {
+                  event.preventDefault();
+                  finishButtonRef.current.focus();
+                }
+              }}
+            >
+              <Dialog.Title className="text-xl font-semibold">Finish this quiz?</Dialog.Title>
+              <Dialog.Description className="mt-3 text-sm text-neutral-300">
+                {answeredQuestions.length} of {quizData.questions.length} questions answered. Only submitted answers are saved for review. Unanswered questions earn no credit.
+              </Dialog.Description>
+              <p className="mt-3 text-sm text-neutral-400">
+                Unanswered questions: {unansweredQuestions.map(index => index + 1).join(', ')}
+              </p>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <Dialog.Close asChild>
+                  <Button variant="neutral">Keep practicing</Button>
+                </Dialog.Close>
+                <Button variant="success" onClick={handleSubmitQuiz}>Finish and review</Button>
+              </div>
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog.Root>
       )}
       
       {/* Back to Results (in review mode) */}

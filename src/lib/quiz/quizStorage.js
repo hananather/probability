@@ -1,5 +1,10 @@
 // LocalStorage management for quiz tracking
 // Handles quiz attempts, scores, and preferences
+import { CURRICULUM } from '@/lib/curriculum/manifest';
+
+const publishedChapters = CURRICULUM.chapters.filter(chapter => chapter.published && chapter.quiz);
+const passingScores = Object.fromEntries(publishedChapters.map(chapter => [chapter.number, chapter.quiz.passingScore]));
+const isValidScore = value => Number.isFinite(value) && value >= 0 && value <= 100;
 
 const STORAGE_KEYS = {
   ATTEMPTS: 'quiz_attempts',
@@ -61,7 +66,7 @@ export const quizStorage = {
   getAttempts(chapterId) {
     try {
       const allAttempts = this.getAllAttempts();
-      return allAttempts[chapterId] || [];
+      return Array.isArray(allAttempts?.[chapterId]) ? allAttempts[chapterId] : [];
     } catch {
       return [];
     }
@@ -109,38 +114,43 @@ export const quizStorage = {
   // Get best score for a chapter
   getBestScore(chapterId) {
     const bestScores = this.getBestScores();
-    return bestScores[chapterId] || 0;
+    const recordedBest = isValidScore(bestScores?.[chapterId]) ? bestScores[chapterId] : 0;
+    const attempts = this.getAttempts(chapterId);
+    const scores = Array.isArray(attempts) ? attempts.map(attempt => attempt?.percentage).filter(isValidScore) : [];
+    return Math.max(recordedBest, ...scores);
   },
   
   // Check if chapter quiz is passed
-  isChapterPassed(chapterId, passingScore = 50) {
+  isChapterPassed(chapterId, passingScore = passingScores[chapterId] ?? Infinity) {
     return this.getBestScore(chapterId) >= passingScore;
   },
   
   // Get quiz statistics for a chapter
   getChapterStats(chapterId) {
-    const attempts = this.getAttempts(chapterId);
+    const storedAttempts = this.getAttempts(chapterId);
+    const attempts = Array.isArray(storedAttempts) ? storedAttempts.filter(attempt => attempt && typeof attempt === 'object') : [];
+    const bestScore = this.getBestScore(chapterId);
     if (attempts.length === 0) {
       return {
         totalAttempts: 0,
-        bestScore: 0,
+        bestScore,
         averageScore: 0,
         averageTime: 0,
         lastAttemptDate: null,
-        passed: false
+        passed: this.isChapterPassed(chapterId)
       };
     }
     
-    const scores = attempts.map(a => a.percentage);
-    const times = attempts.map(a => a.timeSpent);
+    const scores = attempts.map(a => a.percentage).filter(isValidScore);
+    const times = attempts.map(a => a.timeSpent).filter(time => Number.isFinite(time) && time >= 0);
     
     return {
       totalAttempts: attempts.length,
-      bestScore: Math.max(...scores),
-      averageScore: scores.reduce((a, b) => a + b, 0) / scores.length,
-      averageTime: times.reduce((a, b) => a + b, 0) / times.length,
+      bestScore,
+      averageScore: scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0,
+      averageTime: times.length ? times.reduce((a, b) => a + b, 0) / times.length : 0,
       lastAttemptDate: attempts[attempts.length - 1].date,
-      passed: Math.max(...scores) >= 70
+      passed: this.isChapterPassed(chapterId)
     };
   },
   
@@ -152,6 +162,9 @@ export const quizStorage = {
         currentQuestion: sessionData.currentQuestion,
         answers: sessionData.answers,
         timeRemaining: sessionData.timeRemaining,
+        deadline: sessionData.deadline,
+        isPaused: sessionData.isPaused || false,
+        pausedRemaining: sessionData.pausedRemaining,
         startTime: sessionData.startTime,
         flaggedQuestions: sessionData.flaggedQuestions || [],
         version: sessionData.version
@@ -249,12 +262,14 @@ export const quizStorage = {
 
 // Progress tracking across all chapters
 export function getOverallProgress() {
-  const totalChapters = 7; // Update as chapters are added
+  const totalChapters = publishedChapters.length;
   const bestScores = quizStorage.getBestScores();
-  const passedChapters = Object.values(bestScores).filter(score => score >= 70).length;
+  const attempted = publishedChapters.filter(chapter => isValidScore(bestScores?.[chapter.number]) || quizStorage.getAttempts(chapter.number).length > 0);
+  const passedChapters = attempted.filter(chapter => quizStorage.isChapterPassed(chapter.number)).length;
   
   return {
-    completedChapters: Object.keys(bestScores).length,
+    completedChapters: attempted.length,
+    attemptedChapters: attempted.length,
     passedChapters,
     totalChapters,
     percentageComplete: (passedChapters / totalChapters) * 100,

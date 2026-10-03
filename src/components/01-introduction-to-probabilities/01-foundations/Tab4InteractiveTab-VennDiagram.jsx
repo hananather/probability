@@ -22,8 +22,8 @@ export default function Tab4InteractiveTab({ onComplete }) {
   
   // Set data for two circles (Red and Blue pebbles)
   const setData = [
-    {name: 'R', label: 'Red Pebbles', cx: 0.35, cy: 0.5, r: 0.25},
-    {name: 'B', label: 'Blue Pebbles', cx: 0.65, cy: 0.5, r: 0.25}
+    {name: 'R', label: 'Red Pebbles', cx: 0.3, cy: 0.5, r: 0.23},
+    {name: 'B', label: 'Blue Pebbles', cx: 0.7, cy: 0.5, r: 0.23}
   ];
 
   // Probability operations for two-set foundations
@@ -360,6 +360,8 @@ export default function Tab4InteractiveTab({ onComplete }) {
                 <Button
                   variant="neutral"
                   size="sm"
+                  aria-pressed={showProbabilities}
+                  aria-label="Show probability values in the diagram"
                   onClick={() => setShowProbabilities(!showProbabilities)}
                 >
                   {showProbabilities ? "Hide" : "Show"} Values
@@ -370,6 +372,9 @@ export default function Tab4InteractiveTab({ onComplete }) {
                 {operations.map((op) => (
                   <button
                     key={op.value}
+                    type="button"
+                    aria-pressed={selectedOperation === op.value}
+                    aria-label={`${op.label}: ${op.hint}`}
                     onClick={() => handleOperation(op)}
                     className={`
                       w-full p-3 rounded-lg text-left transition-all duration-200
@@ -433,7 +438,7 @@ export default function Tab4InteractiveTab({ onComplete }) {
           {/* Right Panel - Visualization */}
           <div className="lg:w-2/3">
             <GraphContainer height="300px" className="bg-neutral-950 rounded-lg overflow-hidden border border-neutral-800">
-              <svg ref={svgRef} style={{ width: "100%", height: 300 }} viewBox="0 0 400 300" />
+              <svg ref={svgRef} role="img" aria-label="Disjoint red and blue events in a six-pebble sample space" style={{ width: "100%", height: 300 }} viewBox="0 0 400 300" />
             </GraphContainer>
             
             <div className="mt-4 space-y-4">
@@ -441,6 +446,11 @@ export default function Tab4InteractiveTab({ onComplete }) {
                 <p>
                   Click on regions in the diagram or use the buttons to explore different probability concepts. 
                   This diagram shows how sets represent different colored pebbles in our bag.
+                </p>
+                <p className="mt-2 text-sm">
+                  Each pebble has one color, so R ∩ B = ∅ and P(R ∩ B) = 0.
+                  Circles show membership; their areas do not represent probabilities.
+                  Each of the six pebbles is equally likely to be selected.
                 </p>
                 <p className="mt-2 text-sm opacity-80">
                   • Red circle = red pebbles • Blue circle = blue pebbles • Outside = green pebbles

@@ -15,7 +15,7 @@ import styles from './ChapterHub.module.css';
 // Debounce utility
 function debounce(func, wait) {
   let timeout;
-  return function executedFunction(...args) {
+  const debounced = function executedFunction(...args) {
     const later = () => {
       clearTimeout(timeout);
       func(...args);
@@ -23,6 +23,8 @@ function debounce(func, wait) {
     clearTimeout(timeout);
     timeout = setTimeout(later, wait);
   };
+  debounced.cancel = () => clearTimeout(timeout);
+  return debounced;
 }
 
 // Progress tracking hook with optimizations
@@ -41,7 +43,8 @@ function useProgress(storageKey) {
         ]);
         
         if (progressData) {
-          setCompletedComponents(JSON.parse(progressData));
+          const saved = JSON.parse(progressData);
+          setCompletedComponents(Array.isArray(saved) ? [...new Set(saved.filter(id => typeof id === 'string'))] : []);
         }
         if (devModeData === 'true') {
           setDevMode(true);
@@ -68,10 +71,12 @@ function useProgress(storageKey) {
   
   // Save progress when it changes
   useEffect(() => {
-    if (!isLoading && completedComponents.length > 0) {
+    if (!isLoading) {
       debouncedSave(completedComponents);
     }
   }, [completedComponents, debouncedSave, isLoading]);
+
+  useEffect(() => () => debouncedSave.cancel(), [debouncedSave]);
   
   // Keyboard shortcut for dev mode (Ctrl/Cmd + Shift + D)
   useEffect(() => {
@@ -79,7 +84,11 @@ function useProgress(storageKey) {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'D') {
         setDevMode(prev => {
           const newValue = !prev;
-          localStorage.setItem(`${storageKey}_devMode`, newValue.toString());
+          try {
+            localStorage.setItem(`${storageKey}_devMode`, newValue.toString());
+          } catch {
+            // Navigation remains available when browser storage is disabled.
+          }
           return newValue;
         });
       }
@@ -140,12 +149,22 @@ const ComponentCard = React.memo(({
   
   return (
     <div
+      role="button"
+      tabIndex={0}
+      aria-label={component.title}
       className={cn(
+        'group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-400',
         styles.componentCard,
         isNext && styles.componentCardNext,
         component.type === 'bonus' && styles.componentCardBonus
       )}
       onClick={handleClick}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          handleClick();
+        }
+      }}
     >
       {/* Background gradient */}
       <div className={styles.cardGradient} style={gradientStyle} />
@@ -208,7 +227,7 @@ const ComponentCard = React.memo(({
         </div>
         
         {/* Key topics - CSS hover instead of state */}
-        <div className={styles.learningGoals}>
+        <div className={cn(styles.learningGoals, 'group-focus-visible:max-h-[200px]! group-focus-visible:opacity-100!')}>
           <p className={styles.learningGoalsTitle}>
             Key topics:
           </p>

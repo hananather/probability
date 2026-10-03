@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import * as d3 from 'd3';
 import { Card } from '../ui/card';
 import { Info, BookOpen, Calculator, BarChart, Target, Brain, FlaskConical, TrendingUp, ArrowRight } from 'lucide-react';
@@ -7,6 +7,131 @@ import { useMathJax } from '../../hooks/useMathJax';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '../ui/button';
+
+// Define the complete concept hierarchy
+const conceptHierarchy = {
+  id: 'root',
+  name: 'Probability & Statistics',
+  children: [
+    {
+      id: 'ch1',
+      name: 'Chapter 1: Probability Foundations',
+      shortName: 'Probability',
+      icon: BookOpen,
+      color: '#10b981',
+      concepts: [
+        { name: 'Sample Space', formula: '\\(S = \\{\\text{all outcomes}\\}\\)' },
+        { name: 'Basic Probability', formula: '\\(P(A) = \\frac{n(A)}{n(S)}\\)' },
+        { name: 'Conditional Probability', formula: '\\(P(A|B) = \\frac{P(A \\cap B)}{P(B)}\\)' },
+        { name: 'Bayes Theorem', formula: '\\(P(A|B) = \\frac{P(B|A)P(A)}{P(B)}\\)' },
+        { name: 'Combinatorics', formula: '\\(C(n,r) = \\frac{n!}{r!(n-r)!}\\)' }
+      ],
+      children: []
+    },
+    {
+      id: 'ch2',
+      name: 'Chapter 2: Discrete Random Variables',
+      shortName: 'Discrete RV',
+      icon: Calculator,
+      color: '#3b82f6',
+      concepts: [
+        { name: 'PMF', formula: '\\(P(X = x)\\)' },
+        { name: 'Expected Value', formula: '\\(E[X] = \\sum x \\cdot P(X=x)\\)' },
+        { name: 'Variance', formula: '\\(Var(X) = E[X^2] - (E[X])^2\\)' },
+        { name: 'Binomial', formula: '\\(P(X=k) = C(n,k)p^k(1-p)^{n-k}\\)' },
+        { name: 'Poisson', formula: '\\(P(X=k) = \\frac{\\lambda^k e^{-\\lambda}}{k!}\\)' }
+      ],
+      children: []
+    },
+    {
+      id: 'ch3',
+      name: 'Chapter 3: Continuous Random Variables',
+      shortName: 'Continuous RV',
+      icon: TrendingUp,
+      color: '#8b5cf6',
+      concepts: [
+        { name: 'PDF', formula: '\\(f(x)\\)' },
+        { name: 'Normal Distribution', formula: '\\(N(\\mu, \\sigma^2)\\)' },
+        { name: 'Z-Score', formula: '\\(Z = \\frac{X - \\mu}{\\sigma}\\)' },
+        { name: 'Exponential', formula: '\\(f(x) = \\lambda e^{-\\lambda x}\\)' },
+        { name: 'Central Limit Theorem', formula: '\\(\\bar{X} \\sim N(\\mu, \\frac{\\sigma^2}{n})\\)' }
+      ],
+      children: []
+    },
+    {
+      id: 'ch4',
+      name: 'Chapter 4: Descriptive Statistics',
+      shortName: 'Statistics',
+      icon: BarChart,
+      color: '#f59e0b',
+      concepts: [
+        { name: 'Mean', formula: '\\(\\bar{x} = \\frac{\\sum x_i}{n}\\)' },
+        { name: 'Standard Deviation', formula: '\\(s = \\sqrt{\\frac{\\sum(x_i - \\bar{x})^2}{n-1}}\\)' },
+        { name: 'Sampling Distribution', formula: '\\(\\bar{X} \\sim N(\\mu, \\frac{\\sigma^2}{n})\\)' },
+        { name: 'Standard Error', formula: '\\(SE = \\frac{\\sigma}{\\sqrt{n}}\\)' }
+      ],
+      children: []
+    },
+    {
+      id: 'ch5',
+      name: 'Chapter 5: Estimation',
+      shortName: 'Estimation',
+      icon: Target,
+      color: '#ef4444',
+      concepts: [
+        { name: 'Point Estimate', formula: '\\(\\hat{\\theta}\\)' },
+        { name: 'Confidence Interval', formula: '\\(\\bar{x} \\pm z_{\\alpha/2} \\cdot SE\\)' },
+        { name: 'Margin of Error', formula: '\\(ME = z_{\\alpha/2} \\cdot SE\\)' },
+        { name: 't-Distribution', formula: '\\(t_{n-1}\\)' },
+        { name: 'Sample Size', formula: '\\(n = \\left(\\frac{z_{\\alpha/2} \\cdot \\sigma}{E}\\right)^2\\)' }
+      ],
+      children: []
+    },
+    {
+      id: 'ch6',
+      name: 'Chapter 6: Hypothesis Testing',
+      shortName: 'Hypothesis',
+      icon: FlaskConical,
+      color: '#ec4899',
+      concepts: [
+        { name: 'Null Hypothesis', formula: '\\(H_0\\)' },
+        { name: 'Test Statistic', formula: '\\(z = \\frac{\\bar{x} - \\mu_0}{SE}\\)' },
+        { name: 'p-value', formula: '\\(P(|Z| > |z_{obs}|)\\)' },
+        { name: 'Type I Error', formula: '\\(\\alpha\\)' },
+        { name: 'Power', formula: '\\(1 - \\beta\\)' }
+      ],
+      children: []
+    },
+    {
+      id: 'ch7',
+      name: 'Chapter 7: Linear Regression',
+      shortName: 'Regression',
+      icon: Brain,
+      color: '#06b6d4',
+      concepts: [
+        { name: 'Correlation', formula: '\\(r = \\frac{\\sum(x_i - \\bar{x})(y_i - \\bar{y})}{\\sqrt{\\sum(x_i - \\bar{x})^2\\sum(y_i - \\bar{y})^2}}\\)' },
+        { name: 'Regression Line', formula: '\\(\\hat{y} = b_0 + b_1x\\)' },
+        { name: 'R-squared', formula: '\\(R^2 = \\frac{SSR}{SST}\\)' },
+        { name: 'Residuals', formula: '\\(e_i = y_i - \\hat{y}_i\\)' }
+      ],
+      children: []
+    }
+  ]
+};
+
+// Define connections between chapters
+const connections = [
+  { source: 'ch1', target: 'ch2', label: 'Foundation' },
+  { source: 'ch2', target: 'ch3', label: 'Extends' },
+  { source: 'ch3', target: 'ch4', label: 'Leads to' },
+  { source: 'ch4', target: 'ch5', label: 'Enables' },
+  { source: 'ch5', target: 'ch6', label: 'Connects' },
+  { source: 'ch4', target: 'ch7', label: 'Foundation' },
+  { source: 'ch1', target: 'ch5', label: 'Inference' },
+  { source: 'ch3', target: 'ch5', label: 'Normal CI' },
+  { source: 'ch3', target: 'ch6', label: 'Tests' }
+];
+
 
 /**
  * Interactive flowchart showing relationships between all course concepts
@@ -22,134 +147,10 @@ function ConceptFlowchart() {
   const router = useRouter();
   
   // Function to navigate to a chapter
-  const navigateToChapter = (chapterId) => {
+  const navigateToChapter = useCallback((chapterId) => {
     const chapterNum = chapterId.replace('ch', '');
     router.push(`/chapter${chapterNum}`);
-  };
-
-  // Define the complete concept hierarchy
-  const conceptHierarchy = {
-    id: 'root',
-    name: 'Probability & Statistics',
-    children: [
-      {
-        id: 'ch1',
-        name: 'Chapter 1: Probability Foundations',
-        shortName: 'Probability',
-        icon: BookOpen,
-        color: '#10b981',
-        concepts: [
-          { name: 'Sample Space', formula: '\\(S = \\{\\text{all outcomes}\\}\\)' },
-          { name: 'Basic Probability', formula: '\\(P(A) = \\frac{n(A)}{n(S)}\\)' },
-          { name: 'Conditional Probability', formula: '\\(P(A|B) = \\frac{P(A \\cap B)}{P(B)}\\)' },
-          { name: 'Bayes Theorem', formula: '\\(P(A|B) = \\frac{P(B|A)P(A)}{P(B)}\\)' },
-          { name: 'Combinatorics', formula: '\\(C(n,r) = \\frac{n!}{r!(n-r)!}\\)' }
-        ],
-        children: []
-      },
-      {
-        id: 'ch2',
-        name: 'Chapter 2: Discrete Random Variables',
-        shortName: 'Discrete RV',
-        icon: Calculator,
-        color: '#3b82f6',
-        concepts: [
-          { name: 'PMF', formula: '\\(P(X = x)\\)' },
-          { name: 'Expected Value', formula: '\\(E[X] = \\sum x \\cdot P(X=x)\\)' },
-          { name: 'Variance', formula: '\\(Var(X) = E[X^2] - (E[X])^2\\)' },
-          { name: 'Binomial', formula: '\\(P(X=k) = C(n,k)p^k(1-p)^{n-k}\\)' },
-          { name: 'Poisson', formula: '\\(P(X=k) = \\frac{\\lambda^k e^{-\\lambda}}{k!}\\)' }
-        ],
-        children: []
-      },
-      {
-        id: 'ch3',
-        name: 'Chapter 3: Continuous Random Variables',
-        shortName: 'Continuous RV',
-        icon: TrendingUp,
-        color: '#8b5cf6',
-        concepts: [
-          { name: 'PDF', formula: '\\(f(x)\\)' },
-          { name: 'Normal Distribution', formula: '\\(N(\\mu, \\sigma^2)\\)' },
-          { name: 'Z-Score', formula: '\\(Z = \\frac{X - \\mu}{\\sigma}\\)' },
-          { name: 'Exponential', formula: '\\(f(x) = \\lambda e^{-\\lambda x}\\)' },
-          { name: 'Central Limit Theorem', formula: '\\(\\bar{X} \\sim N(\\mu, \\frac{\\sigma^2}{n})\\)' }
-        ],
-        children: []
-      },
-      {
-        id: 'ch4',
-        name: 'Chapter 4: Descriptive Statistics',
-        shortName: 'Statistics',
-        icon: BarChart,
-        color: '#f59e0b',
-        concepts: [
-          { name: 'Mean', formula: '\\(\\bar{x} = \\frac{\\sum x_i}{n}\\)' },
-          { name: 'Standard Deviation', formula: '\\(s = \\sqrt{\\frac{\\sum(x_i - \\bar{x})^2}{n-1}}\\)' },
-          { name: 'Sampling Distribution', formula: '\\(\\bar{X} \\sim N(\\mu, \\frac{\\sigma^2}{n})\\)' },
-          { name: 'Standard Error', formula: '\\(SE = \\frac{\\sigma}{\\sqrt{n}}\\)' }
-        ],
-        children: []
-      },
-      {
-        id: 'ch5',
-        name: 'Chapter 5: Estimation',
-        shortName: 'Estimation',
-        icon: Target,
-        color: '#ef4444',
-        concepts: [
-          { name: 'Point Estimate', formula: '\\(\\hat{\\theta}\\)' },
-          { name: 'Confidence Interval', formula: '\\(\\bar{x} \\pm z_{\\alpha/2} \\cdot SE\\)' },
-          { name: 'Margin of Error', formula: '\\(ME = z_{\\alpha/2} \\cdot SE\\)' },
-          { name: 't-Distribution', formula: '\\(t_{n-1}\\)' },
-          { name: 'Sample Size', formula: '\\(n = \\left(\\frac{z_{\\alpha/2} \\cdot \\sigma}{E}\\right)^2\\)' }
-        ],
-        children: []
-      },
-      {
-        id: 'ch6',
-        name: 'Chapter 6: Hypothesis Testing',
-        shortName: 'Hypothesis',
-        icon: FlaskConical,
-        color: '#ec4899',
-        concepts: [
-          { name: 'Null Hypothesis', formula: '\\(H_0\\)' },
-          { name: 'Test Statistic', formula: '\\(z = \\frac{\\bar{x} - \\mu_0}{SE}\\)' },
-          { name: 'p-value', formula: '\\(P(|Z| > |z_{obs}|)\\)' },
-          { name: 'Type I Error', formula: '\\(\\alpha\\)' },
-          { name: 'Power', formula: '\\(1 - \\beta\\)' }
-        ],
-        children: []
-      },
-      {
-        id: 'ch7',
-        name: 'Chapter 7: Linear Regression',
-        shortName: 'Regression',
-        icon: Brain,
-        color: '#06b6d4',
-        concepts: [
-          { name: 'Correlation', formula: '\\(r = \\frac{\\sum(x_i - \\bar{x})(y_i - \\bar{y})}{\\sqrt{\\sum(x_i - \\bar{x})^2\\sum(y_i - \\bar{y})^2}}\\)' },
-          { name: 'Regression Line', formula: '\\(\\hat{y} = b_0 + b_1x\\)' },
-          { name: 'R-squared', formula: '\\(R^2 = \\frac{SSR}{SST}\\)' },
-          { name: 'Residuals', formula: '\\(e_i = y_i - \\hat{y}_i\\)' }
-        ],
-        children: []
-      }
-    ]
-  };
-
-  // Define connections between chapters
-  const connections = [
-    { source: 'ch1', target: 'ch2', label: 'Foundation' },
-    { source: 'ch2', target: 'ch3', label: 'Extends' },
-    { source: 'ch3', target: 'ch4', label: 'Leads to' },
-    { source: 'ch4', target: 'ch5', label: 'Enables' },
-    { source: 'ch5', target: 'ch6', label: 'Connects' },
-    { source: 'ch4', target: 'ch7', label: 'Foundation' },
-    { source: 'ch1', target: 'ch5', label: 'Inference' },
-    { source: 'ch3', target: 'ch5', label: 'Normal CI' },
-    { source: 'ch3', target: 'ch6', label: 'Tests' }
-  ];
+  }, [router]);
 
   // Check for mobile viewport
   useEffect(() => {
@@ -163,47 +164,24 @@ function ConceptFlowchart() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Keyboard navigation for accessibility
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (isMobile) return;
-      
-      const chapters = conceptHierarchy.children;
-      let newIndex = focusedChapterIndex;
-      
-      switch(e.key) {
-        case 'ArrowRight':
-          newIndex = (focusedChapterIndex + 1) % chapters.length;
-          break;
-        case 'ArrowLeft':
-          newIndex = (focusedChapterIndex - 1 + chapters.length) % chapters.length;
-          break;
-        case 'Enter':
-        case ' ':
-          e.preventDefault();
-          const chapter = chapters[focusedChapterIndex];
-          setHoveredNode(chapter);
-          setSelectedChapter(chapter.id);
-          break;
-        case 'Escape':
-          setHoveredNode(null);
-          setSelectedChapter(null);
-          break;
-        default:
-          return;
-      }
-      
-      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-        setFocusedChapterIndex(newIndex);
-        const chapter = chapters[newIndex];
-        setHoveredNode(chapter);
-        setSelectedChapter(chapter.id);
-      }
-    };
-    
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [focusedChapterIndex, isMobile]);
+  // Keyboard shortcuts belong to the map, so other controls keep native behavior.
+  const handleMapKeyDown = (event) => {
+    if (isMobile || event.target !== event.currentTarget) return;
+    const chapters = conceptHierarchy.children;
+    let nextIndex = focusedChapterIndex;
+    if (event.key === 'ArrowRight') nextIndex = (focusedChapterIndex + 1) % chapters.length;
+    else if (event.key === 'ArrowLeft') nextIndex = (focusedChapterIndex - 1 + chapters.length) % chapters.length;
+    else if (event.key === 'Escape') {
+      event.preventDefault();
+      setHoveredNode(null);
+      setSelectedChapter(null);
+      return;
+    } else if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    setFocusedChapterIndex(nextIndex);
+    setHoveredNode(chapters[nextIndex]);
+    setSelectedChapter(chapters[nextIndex].id);
+  };
 
   useEffect(() => {
     if (!svgRef.current) return;
@@ -235,7 +213,7 @@ function ConceptFlowchart() {
       .attr('fill', '#6b7280');
 
     // Position chapters in a responsive layout
-    const chapters = conceptHierarchy.children;
+    const chapters = conceptHierarchy.children.map(chapter => ({ ...chapter }));
     const centerX = width / 2;
     const centerY = height / 2;
     const radius = isMobile ? Math.min(width, height) * 0.35 : 140;
@@ -382,7 +360,7 @@ function ConceptFlowchart() {
       .attr('font-weight', 'bold')
       .text('Statistics');
 
-  }, [isMobile, focusedChapterIndex]);
+  }, [isMobile, focusedChapterIndex, navigateToChapter]);
 
   // Generate screen reader description
   const getScreenReaderDescription = () => {
@@ -416,9 +394,11 @@ function ConceptFlowchart() {
           <div className={isMobile ? 'w-full' : 'flex-1 min-w-0'}>
             <svg 
               ref={svgRef}
-              className="w-full h-auto"
+              className="w-full h-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400"
               style={{ maxHeight: isMobile ? '300px' : '400px' }}
-              role="img"
+              role="group"
+              tabIndex={isMobile ? -1 : 0}
+              onKeyDown={handleMapKeyDown}
               aria-label="Course concept flowchart"
               aria-describedby="flowchart-description"
             />

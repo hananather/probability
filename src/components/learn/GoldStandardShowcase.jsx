@@ -239,6 +239,7 @@ const InteractiveFormulaDemo = React.memo(() => {
     </div>
   );
 });
+InteractiveFormulaDemo.displayName = 'InteractiveFormulaDemo';
 
 // Expandable Visual Demo Component
 const ExpandableVisualDemo = React.memo(() => {
@@ -390,6 +391,7 @@ const ExpandableVisualDemo = React.memo(() => {
     </div>
   );
 });
+ExpandableVisualDemo.displayName = 'ExpandableVisualDemo';
 
 // Component showcases
 const componentShowcases = {
@@ -918,6 +920,15 @@ const sections = [
     })
   }
 };
+componentShowcases.semanticCards.component.displayName = 'semanticCardsDemo';
+componentShowcases.interpretationBoxes.component.displayName = 'interpretationBoxesDemo';
+componentShowcases.stepByStepCalculations.component.displayName = 'stepByStepCalculationsDemo';
+componentShowcases.statisticalTests.component.displayName = 'statisticalTestsDemo';
+componentShowcases.multiFormula.component.displayName = 'multiFormulaDemo';
+componentShowcases.sideBySideFormulas.component.displayName = 'sideBySideFormulasDemo';
+componentShowcases.comparisonTables.component.displayName = 'comparisonTablesDemo';
+componentShowcases.quizComponent.component.displayName = 'quizComponentDemo';
+componentShowcases.quickReference.component.displayName = 'quickReferenceDemo';
 
 export function GoldStandardShowcase() {
   const [expandedComponents, setExpandedComponents] = useState({

@@ -518,6 +518,7 @@ const CriticalValuesExplorer = React.memo(({ isActive, onComplete }) => {
   // Only re-render if isActive changes
   return prevProps.isActive === nextProps.isActive;
 });
+CriticalValuesExplorer.displayName = 'CriticalValuesExplorer';
 
 // Calculation Steps Component - Memoized to prevent LaTeX re-rendering
 const CalculationSteps = React.memo(function CalculationSteps({ sigma, n, xBar, standardError, criticalValue, marginOfError, alpha }) {
@@ -751,6 +752,7 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
   // Only re-render if isActive changes
   return prevProps.isActive === nextProps.isActive;
 });
+InteractiveCIBuilder.displayName = 'InteractiveCIBuilder';
 
 // REMOVED: Practice Problems Module - Moved to 5-2-2-ConfidenceIntervalPractice.jsx
 /* const PracticeProblemModule = React.memo(function PracticeProblemModule({ isActive }) {
@@ -2119,6 +2121,7 @@ const ParameterEffectsExplorer = React.memo(({ isActive }) => {
   // Only re-render if isActive changes
   return prevProps.isActive === nextProps.isActive;
 });
+ParameterEffectsExplorer.displayName = 'ParameterEffectsExplorer';
 
 // Main Component with Progressive Learning
 export default function ConfidenceIntervalKnownVariance() {

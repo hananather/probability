@@ -201,13 +201,13 @@ export const chapterQuestions = {
         difficulty: "hard",
         question: "A diagnostic test for defective chips has a 95% sensitivity (detects defects when present) and 98% specificity (correctly identifies good chips). If 2% of chips are defective, what is the probability a chip is actually defective given a positive test?",
         options: [
-          "0.493",
+          "0.492",
           "0.950",
           "0.020",
           "0.980"
         ],
         correct: 0,
-        explanation: "Using Bayes' theorem: P(defective|positive) = (0.95×0.02)/((0.95×0.02)+(0.02×0.98)) ≈ 0.493"
+        explanation: "Using Bayes' theorem: P(defective|positive) = (0.95×0.02)/((0.95×0.02)+(0.02×0.98)) = 0.492227… ≈ 0.492"
       },
       
       // Law of Total Probability
@@ -250,7 +250,7 @@ export const chapterQuestions = {
         type: "multiple-choice",
         topic: "Appendix - Probabilistic Fallacies",
         difficulty: "medium",
-        question: "A fair coin has landed heads 5 times in a row. What is the probability the next flip is heads?",
+        question: "A fair coin is flipped independently and has landed heads 5 times in a row. What is the probability the next flip is heads?",
         options: [
           "Less than 0.5 (due to law of averages)",
           "Exactly 0.5",
@@ -401,7 +401,7 @@ export const chapterQuestions = {
         type: "multiple-choice",
         topic: "2.3 Binomial Distribution Applications",
         difficulty: "medium",
-        question: "A quality control inspector tests electronic components where 5% are defective. If she tests 20 components, what is the probability that exactly 2 are defective?",
+        question: "A quality control inspector independently tests 20 electronic components, each with a 5% probability of being defective. What is the probability that exactly 2 are defective?",
         options: [
           "0.189",
           "0.264",
@@ -418,7 +418,7 @@ export const chapterQuestions = {
         type: "multiple-choice", 
         topic: "2.4 Geometric Distribution",
         difficulty: "medium",
-        question: "In a manufacturing process, each item has a 0.1 probability of being defective. What is the expected number of items that need to be inspected to find the first defective one?",
+        question: "In a manufacturing process, items are independent and each has a 0.1 probability of being defective. What is the expected number of items that need to be inspected to find the first defective one?",
         options: [
           "5",
           "10",
@@ -435,7 +435,7 @@ export const chapterQuestions = {
         type: "multi-select",
         topic: "2.2 Properties of Expectation and Variance", 
         difficulty: "medium",
-        question: "Which of the following properties are true for discrete random variables? (Select all that apply)",
+        question: "Which of the following properties are true for discrete random variables with finite second moments? (Select all that apply)",
         options: [
           "E[X + Y] = E[X] + E[Y]",
           "Var[X + a] = Var[X] for any constant a",
@@ -443,7 +443,7 @@ export const chapterQuestions = {
           "Var[aX] = a²Var[X] for any constant a"
         ],
         correct: [0, 1, 3],
-        explanation: "Properties (a), (b), and (d) are correct. However, E[XY] = E[X]E[Y] only holds when X and Y are independent.",
+        explanation: "Properties (a), (b), and (d) are correct. Independence implies E[XY] = E[X]E[Y], but this equality can also hold for dependent variables with zero covariance. It does not hold for arbitrary X and Y.",
         helpLink: "/chapter2/expectation-variance"
       },
 
@@ -452,7 +452,7 @@ export const chapterQuestions = {
         type: "multiple-choice",
         topic: "2.6 Poisson Applications",
         difficulty: "medium", 
-        question: "A hospital emergency room receives an average of 3 patients per hour. What is the probability of receiving exactly 2 patients in the next hour?",
+        question: "Patients arrive at a hospital emergency room following a Poisson process with rate 3 patients per hour. What is the probability of receiving exactly 2 patients in the next hour?",
         options: [
           "0.224",
           "0.149",
@@ -469,7 +469,7 @@ export const chapterQuestions = {
         type: "multiple-choice",
         topic: "2.5 Negative Binomial Distribution",
         difficulty: "medium",
-        question: "A basketball player makes free throws with probability 0.8. What is the expected number of shots needed to make exactly 3 successful free throws?",
+        question: "A basketball player makes independent free throws, each with probability 0.8. What is the expected number of shots taken through the 3rd successful free throw?",
         options: [
           "3.75", 
           "4.0",
@@ -572,15 +572,15 @@ export const chapterQuestions = {
         type: "multiple-choice",
         topic: "2.5 Negative Binomial Applications",
         difficulty: "hard",
-        question: "In drug development, each trial has a 0.3 probability of success. A pharmaceutical company wants to achieve exactly 4 successful trials. What is the probability that they need exactly 10 trials total?",
+        question: "In drug development, trials are independent and each has a 0.3 probability of success. What is the probability that the 4th successful trial occurs on trial 10?",
         options: [
           "0.090",
           "0.051", 
           "0.123",
-          "0.074"
+          "0.080"
         ],
         correct: 3,
-        explanation: "This follows negative binomial: P(X = 10) = C(9,3) × (0.3)⁴ × (0.7)⁶ = 84 × 0.0081 × 0.1176 ≈ 0.074.",
+        explanation: "The 10th trial must succeed, with exactly 3 successes among the first 9. Thus P(X = 10) = C(9,3) × (0.3)⁴ × (0.7)⁶ = 84 × 0.0081 × 0.117649 = 0.080048… ≈ 0.080.",
         helpLink: "/chapter2/negative-binomial"
       },
 
@@ -589,7 +589,7 @@ export const chapterQuestions = {
         type: "multi-select", 
         topic: "2.6 Poisson vs Other Distributions",
         difficulty: "medium",
-        question: "Which scenarios would be appropriately modeled using a Poisson distribution? (Select all that apply)",
+        question: "Assuming events occur independently at a constant rate, which counts can be modeled using a Poisson distribution? (Select all that apply)",
         options: [
           "Number of email messages received per day",
           "Number of defects in a fixed length of fiber optic cable", 
@@ -597,7 +597,7 @@ export const chapterQuestions = {
           "Number of customers entering a store per hour"
         ],
         correct: [0, 1, 3],
-        explanation: "Poisson distributions model rare events occurring over continuous intervals of time or space. Coin flips follow a binomial distribution.",
+        explanation: "A Poisson process models independent event counts over fixed intervals of time or space at a constant rate. Under these assumptions, emails, defects, and customer arrivals are examples. The number of heads in a fixed number of independent coin flips follows a binomial distribution.",
         helpLink: "/chapter2/poisson-distribution"
       },
 
@@ -606,15 +606,15 @@ export const chapterQuestions = {
         type: "multiple-choice",
         topic: "2.4 Geometric Distribution Applications", 
         difficulty: "medium",
-        question: "In quality control, items are tested sequentially until a defective one is found. If 3% of items are defective, what is the probability that the first defective item is found on the 5th test?",
+        question: "In quality control, independent items are tested sequentially until a defective one is found. Each item has a 3% probability of being defective. What is the probability that the first defective item is found on the 5th test?",
         options: [
-          "0.0267",
+          "0.0266",
           "0.0291",
           "0.0312", 
           "0.0283"
         ],
         correct: 0,
-        explanation: "For geometric distribution: P(X = 5) = (1-p)⁴ × p = (0.97)⁴ × 0.03 = 0.8885 × 0.03 ≈ 0.0267.",
+        explanation: "The first 4 items must be non-defective and the 5th defective: P(X = 5) = (0.97)⁴ × 0.03 = 0.0265588… ≈ 0.0266.",
         helpLink: "/chapter2/geometric-distribution"
       }
     ],
@@ -793,11 +793,11 @@ export const chapterQuestions = {
         options: [
           "Exponential(2)",
           "Poisson(2)",
-          "Gamma(2, 3)",
+          "Gamma(λ=3, r=2)",
           "Gamma(λ=2, r=3)"
         ],
         correct: 3,
-        explanation: "The waiting time until the rth arrival in a Poisson process follows Gamma(λ, r), so Gamma(2, 3).",
+        explanation: "The waiting time until the rth arrival in a Poisson process has gamma shape r and rate λ. Here r = 3 and λ = 2 per minute, so the distribution is Gamma(λ=2, r=3), with mean r/λ = 1.5 minutes.",
         helpLink: "/chapter3/gamma-distribution"
       },
 
@@ -841,15 +841,15 @@ export const chapterQuestions = {
         type: "multi-select",
         topic: "3.6 Independence in Continuous Case",
         difficulty: "hard",
-        question: "For continuous random variables X and Y to be independent, which conditions must hold? (Select all that apply)",
+        question: "For continuous random variables X and Y with finite second moments, which statements hold when X and Y are independent? (Select all that apply)",
         options: [
-          "f(x,y) = f_X(x) · f_Y(y) for all x,y",
+          "The joint density can be written as f(x,y) = f_X(x) · f_Y(y)",
           "P(X ≤ x, Y ≤ y) = P(X ≤ x) · P(Y ≤ y) for all x,y",
-          "The support of the joint PDF must be rectangular",
+          "Zero covariance alone guarantees that any two continuous variables are independent",
           "E[XY] = E[X]E[Y]"
         ],
         correct: [0, 1, 3],
-        explanation: "Independence requires factorization of the joint PDF, CDF, and expectations. Rectangular support is sufficient but not necessary.",
+        explanation: "Independence gives a joint density that factors into the marginal densities and a joint CDF that factors into the marginal CDFs. With finite second moments, it also gives E[XY] = E[X]E[Y]. Zero covariance alone does not imply independence.",
         helpLink: "/chapter3/continuous-independence"
       },
 
@@ -911,10 +911,10 @@ export const chapterQuestions = {
         type: "multi-select",
         topic: "3.4 Exponential Properties",
         difficulty: "hard",
-        question: "Which statements about exponential distributions are true? (Select all that apply)",
+        question: "For an exponential distribution with rate λ > 0, which statements are true? (Select all that apply)",
         options: [
           "The exponential distribution has the memoryless property",
-          "If X ~ Exp(λ), then P(X > t) = e^(-λt)",
+          "If X ~ Exp(λ), then P(X > t) = e^(-λt) for t ≥ 0",
           "The median equals the mean",
           "The mode is always zero"
         ],
@@ -951,12 +951,12 @@ export const chapterQuestions = {
         question: "In medical research, what does it mean that P(Height = 170.0cm) = 0 for a continuous height distribution?",
         options: [
           "No one is exactly 170cm tall",
-          "The probability of any exact height is zero due to infinite precision",
+          "In the continuous model, any single exact height has probability zero",
           "The measurement is incorrect", 
           "170cm is outside the normal range"
         ],
         correct: 1,
-        explanation: "For continuous variables like height, the probability of any exact value is zero because there are infinitely many possible values.",
+        explanation: "Under a continuous-density model, an exact height corresponds to a zero-width interval, so its probability is zero. Recorded heights are rounded measurements: a recorded value such as 170.0 cm represents an interval and can have positive probability.",
         helpLink: "/chapter3/continuous-probability"
       },
 
@@ -972,8 +972,8 @@ export const chapterQuestions = {
           "99.7%",
           "Cannot determine"
         ],
-        correct: 1,
-        explanation: "This range is 120 ± 2(20) = 120 ± 40, which is μ ± 2σ, containing approximately 95% of values.",
+        correct: 0,
+        explanation: "The standard deviation is √400 = 20 mmHg. The range 100 to 140 is 120 ± 20, which is μ ± σ, containing approximately 68.3% of values.",
         helpLink: "/chapter3/normal-medical"
       },
 
@@ -982,7 +982,7 @@ export const chapterQuestions = {
         type: "multiple-choice",
         topic: "3.4 Exponential in Survival Analysis", 
         difficulty: "medium",
-        question: "Time until disease recurrence follows Exp(0.05) in years. What is the median time to recurrence?",
+        question: "Time until disease recurrence is exponential with rate 0.05 per year. What is the median time to recurrence?",
         options: [
           "ln(2)/0.05 ≈ 13.9 years",
           "1/0.05 = 20 years",
@@ -1010,7 +1010,7 @@ export const chapterQuestions = {
           "There's an error in the measurement"
         ],
         correct: 2,
-        explanation: "For any continuous random variable, the probability of any single exact value is zero due to the infinite precision of real numbers.",
+        explanation: "Under a continuous-density model, a single exact value has probability zero because the integral over a zero-width interval is zero. A rounded or discretized score represents a range of underlying values and can have positive probability.",
         helpLink: "/chapter3/continuous-social"
       },
 
@@ -1129,15 +1129,15 @@ export const chapterQuestions = {
         type: "multiple-choice",
         topic: "4.2 Skewness Detection",
         difficulty: "easy",
-        question: "In a boxplot, if Q₃ - Q₂ > Q₂ - Q₁, the distribution is:",
+        question: "In a boxplot, if Q₃ - Q₂ > Q₂ - Q₁, which conclusion is supported?",
         options: [
-          "Symmetric",
-          "Skewed to the left",
-          "Skewed to the right",
-          "Cannot determine from this information"
+          "The entire distribution must be symmetric",
+          "The lower half of the middle 50% is more spread out",
+          "The upper half of the middle 50% is more spread out",
+          "The quartiles determine the shape of both tails"
         ],
         correct: 2,
-        explanation: "When Q₃ - Q₂ > Q₂ - Q₁, the upper quartile is farther from the median than the lower quartile, indicating right skewness.",
+        explanation: "The upper half of the middle 50% spans Q₂ to Q₃ and is wider than the lower half, Q₁ to Q₂. This suggests right asymmetry in the central data, but quartiles alone do not determine the tails or the entire distribution's skewness.",
         helpLink: "/chapter4/exploratory-data-analysis"
       },
 
@@ -1146,7 +1146,7 @@ export const chapterQuestions = {
         type: "multiple-choice",
         topic: "4.2 Histogram Construction",
         difficulty: "medium",
-        question: "For a dataset with 64 observations and range = 32, what would be appropriate bin specifications for a histogram?",
+        question: "Using the square-root rule for a histogram, what bin specifications would you choose for 64 observations with range = 32?",
         options: [
           "8 bins with width 4",
           "16 bins with width 2", 
@@ -1197,7 +1197,7 @@ export const chapterQuestions = {
         type: "multiple-choice",
         topic: "4.4 Central Limit Theorem",
         difficulty: "easy",
-        question: "The Central Limit Theorem states that as sample size increases, the distribution of sample means approaches:",
+        question: "For independent identically distributed observations with finite, nonzero variance, the Central Limit Theorem says the standardized sample mean approaches which distribution as sample size increases?",
         options: [
           "The population distribution",
           "An exponential distribution", 
@@ -1205,7 +1205,7 @@ export const chapterQuestions = {
           "A uniform distribution"
         ],
         correct: 2,
-        explanation: "The Central Limit Theorem states that the sampling distribution of the sample mean approaches a normal distribution as n increases.",
+        explanation: "For independent identically distributed observations with finite variance σ² > 0, √n(X̄-μ)/σ converges in distribution to a standard normal as n increases. This supports a normal approximation to X̄ with mean μ and variance σ²/n; accuracy at a particular n depends on the population shape.",
         helpLink: "/chapter4/central-limit-theorem"
       },
 
@@ -1214,7 +1214,7 @@ export const chapterQuestions = {
         type: "multiple-choice",
         topic: "4.4 CLT Application",
         difficulty: "medium", 
-        question: "Component lifetimes have mean 100 hours and standard deviation 20 hours. For a sample of 25 components, what is P(X̄ > 105)?",
+        question: "Component lifetimes are independent and normally distributed with mean 100 hours and standard deviation 20 hours. For a sample of 25 components, what is P(X̄ > 105)?",
         options: [
           "P(Z > 1.25)",
           "P(Z > 0.25)",
@@ -1222,7 +1222,7 @@ export const chapterQuestions = {
           "Cannot determine without population distribution"
         ],
         correct: 0,
-        explanation: "By CLT, X̄ ~ N(100, 20²/25) = N(100, 16). Standardizing: Z = (105-100)/4 = 1.25, so P(X̄ > 105) = P(Z > 1.25).",
+        explanation: "Because the observations are independent and normal, X̄ ~ N(100, 20²/25) = N(100, 16). Standardizing gives Z = (105-100)/4 = 1.25, so P(X̄ > 105) = P(Z > 1.25).",
         helpLink: "/chapter4/central-limit-theorem"
       },
 
@@ -1231,7 +1231,7 @@ export const chapterQuestions = {
         type: "multiple-choice",
         topic: "4.4 CLT with Population Variance Unknown",
         difficulty: "hard",
-        question: "A sample of 36 patients gives X̄ = 125 and S = 15. What distribution does (X̄ - μ)/(S/√n) follow?",
+        question: "An independent random sample of 36 patients from a normal population gives X̄ = 125 and S = 15. What distribution does (X̄ - μ)/(S/√n) follow?",
         options: [
           "Standard normal N(0,1)",
           "t-distribution with 35 degrees of freedom",
@@ -1239,7 +1239,7 @@ export const chapterQuestions = {
           "Chi-square with 35 degrees of freedom"
         ],
         correct: 1,
-        explanation: "When population variance is unknown and estimated by sample variance S, (X̄ - μ)/(S/√n) follows t-distribution with n-1 = 35 degrees of freedom.",
+        explanation: "For independent observations from a normal population, replacing σ with the sample standard deviation S gives (X̄ - μ)/(S/√n) a t-distribution with n-1 = 35 degrees of freedom.",
         helpLink: "/chapter4/central-limit-theorem"
       },
 
@@ -1248,15 +1248,15 @@ export const chapterQuestions = {
         type: "multiple-choice",
         topic: "4.5 Difference Between Two Sample Means",
         difficulty: "medium",
-        question: "Two production lines have identical variance σ² = 4. Samples of n₁ = 25 and n₂ = 36 are taken. If the true means are equal, what is the standard deviation of X̄₁ - X̄₂?",
+        question: "Two production lines have identical variance σ² = 4. Independent random samples of n₁ = 25 and n₂ = 36 are taken. If the true means are equal, what is the standard deviation of X̄₁ - X̄₂?",
         options: [
-          "√(4/25 + 4/36) ≈ 0.493",
+          "√(4/25 + 4/36) ≈ 0.521",
           "√(4×25 + 4×36) = 15.62",
           "√(4/61) ≈ 0.256",
           "4"
         ],
         correct: 0,
-        explanation: "For difference of sample means: SD(X̄₁ - X̄₂) = √(σ₁²/n₁ + σ₂²/n₂) = √(4/25 + 4/36) ≈ 0.493.",
+        explanation: "For independent sample means: SD(X̄₁ - X̄₂) = √(σ₁²/n₁ + σ₂²/n₂) = √(4/25 + 4/36) = 0.520683… ≈ 0.521. Equal population means affect the mean of the difference, not this standard deviation.",
         helpLink: "/chapter4/sampling-distributions"
       },
 
@@ -1316,7 +1316,7 @@ export const chapterQuestions = {
         type: "multiple-choice",
         topic: "4.4 CLT Practical Application",
         difficulty: "hard",
-        question: "Failures follow an unknown distribution with mean 2.5 per month and variance 1.44. For 36 boards monitored over a month, what is P(average failures per board > 3)?",
+        question: "Failures per board have mean 2.5 per month and variance 1.44. Using a normal approximation for 36 independent boards, what is P(average failures per board > 3)?",
         options: [
           "Approximately 0.0062",
           "Approximately 0.0228", 
@@ -1324,7 +1324,7 @@ export const chapterQuestions = {
           "Cannot determine without knowing the distribution"
         ],
         correct: 0,
-        explanation: "By CLT, X̄ ~ N(2.5, 1.44/36) = N(2.5, 0.04). P(X̄ > 3) = P(Z > (3-2.5)/0.2) = P(Z > 2.5) ≈ 0.0062.",
+        explanation: "The normal approximation uses mean 2.5 and variance 1.44/36 = 0.04. Thus P(X̄ > 3) ≈ P(Z > (3-2.5)/0.2) = P(Z > 2.5) ≈ 0.0062. Its accuracy depends on the population shape; sample size 36 alone does not guarantee an accurate tail approximation.",
         helpLink: "/chapter4/central-limit-theorem"
       },
 
@@ -1350,7 +1350,7 @@ export const chapterQuestions = {
         type: "multiple-choice", 
         topic: "4.3 Sampling Distribution Theory",
         difficulty: "hard",
-        question: "A manufacturing process has unknown population distribution with μ = 50 and σ = 8. If we take all possible samples of size 16, approximately what percentage of sample means will fall within 2 units of the population mean?",
+        question: "A manufacturing process has a normal population distribution with μ = 50 and σ = 8. For independent random samples of size 16, approximately what percentage of sample means fall within 2 units of the population mean?",
         options: [
           "68%",
           "95%",
@@ -1358,7 +1358,7 @@ export const chapterQuestions = {
           "Cannot determine without population distribution"
         ],
         correct: 0,
-        explanation: "By CLT, X̄ ~ N(50, 8²/16) = N(50, 4). SD(X̄) = 2. Within 2 units means within 1 standard deviation, which is approximately 68%.",
+        explanation: "Independent normal observations give X̄ ~ N(50, 8²/16) = N(50, 4). SD(X̄) = 2, so within 2 units is within 1 standard deviation, containing approximately 68.3% of sample means. Normality makes this sampling distribution exact even at n = 16.",
         helpLink: "/chapter4/sampling-distributions"
       }
     ],
@@ -1408,7 +1408,7 @@ export const chapterQuestions = {
         type: "multiple-choice",
         topic: "5.1 Standard Error",
         difficulty: "medium",
-        question: "For a sample of size n from a population with known variance σ², the standard error of the sample mean is:",
+        question: "For an independent random sample of size n from a population with known variance σ², the standard error of the sample mean is:",
         options: [
           "σ²/n",
           "σ/√n",
@@ -1459,12 +1459,12 @@ export const chapterQuestions = {
         question: "According to the 68-95-99.7 rule, approximately what percentage of values fall within 2 standard deviations of the mean in a normal distribution?",
         options: [
           "68.3%",
-          "95.5%",
+          "95.45%",
           "99.7%",
           "90.0%"
         ],
         correct: 1,
-        explanation: "The 68-95-99.7 rule states that approximately 95.5% of values fall within 2 standard deviations of the mean.",
+        explanation: "For a normal distribution, P(|Z| ≤ 2) ≈ 0.9544997, or 95.45%. This is the approximately 95% part of the 68-95-99.7 rule.",
         helpLink: "/chapter5/bonus/empirical-rule"
       },
       {
@@ -1490,7 +1490,7 @@ export const chapterQuestions = {
         difficulty: "hard",
         question: "A sample of 64 observations from a normal population with σ = 72 yields X̄ = 375.2. What is the 95% confidence interval for μ?",
         options: [
-          "(357.6, 392.8)",
+          "(355.6, 394.8)",
           "(366.6, 383.8)",
           "(357.56, 392.84)",
           "(348.2, 402.2)"
@@ -1528,7 +1528,7 @@ export const chapterQuestions = {
           "n ≥ 664"
         ],
         correct: 0,
-        explanation: "Using n > (z_{α/2}σ/E)², we get n > (1.96 × 100/10)² = (19.6)² = 384.16, so n ≥ 385.",
+        explanation: "Require z*σ/√n ≤ E, so n ≥ (z*σ/E)² = (1.96 × 100/10)² = 384.16. Rounding up gives a minimum of 385 observations.",
         helpLink: "/chapter5/sample-size"
       },
       {
@@ -1552,7 +1552,7 @@ export const chapterQuestions = {
         type: "multiple-choice",
         topic: "5.4 Confidence Intervals - Unknown σ",
         difficulty: "medium",
-        question: "When the population variance is unknown and we use the sample variance S², the appropriate distribution for constructing confidence intervals is:",
+        question: "For an independent sample from a normal population, when the population variance is unknown and we use the sample variance S², the appropriate distribution for constructing a confidence interval for the mean is:",
         options: [
           "Standard normal distribution",
           "Student t-distribution with n degrees of freedom",
@@ -1560,7 +1560,7 @@ export const chapterQuestions = {
           "Chi-square distribution"
         ],
         correct: 2,
-        explanation: "When σ is unknown and estimated by S, the statistic (X̄ - μ)/(S/√n) follows a t-distribution with (n-1) degrees of freedom.",
+        explanation: "For independent normal observations, when σ is unknown and estimated by S, the statistic (X̄ - μ)/(S/√n) follows a t-distribution with (n-1) degrees of freedom.",
         helpLink: "/chapter5/confidence-intervals-unknown"
       },
       {
@@ -1584,7 +1584,7 @@ export const chapterQuestions = {
         type: "multiple-choice",
         topic: "5.4 Confidence Intervals - Unknown σ",
         difficulty: "hard",
-        question: "For data with n = 9, X̄ = 5.01, and S = 0.97, what is the 95% confidence interval for μ when σ is unknown?",
+        question: "An independent sample from a normal population has n = 9, X̄ = 5.01, and S = 0.97. What is the 95% confidence interval for μ when σ is unknown?",
         options: [
           "(4.29, 5.73)",
           "(4.26, 5.76)",
@@ -1600,15 +1600,15 @@ export const chapterQuestions = {
         type: "multi-select",
         topic: "5.4 Known vs Unknown Variance",
         difficulty: "medium",
-        question: "When comparing confidence intervals for the same data, which statements are true? (Select all that apply)",
+        question: "At a fixed confidence level, which statements about t and z confidence intervals are true? (Select all that apply)",
         options: [
-          "Intervals are wider when σ is unknown than when σ is known",
+          "For the same standard error, a t interval is wider than a z interval",
           "t-critical values are larger than z-critical values for the same confidence level",
-          "The difference between t and z intervals decreases as sample size increases",
+          "As degrees of freedom increase, t-critical values approach z-critical values",
           "Unknown variance always leads to narrower intervals"
         ],
         correct: [0, 1, 2],
-        explanation: "When σ is unknown: intervals are wider, t-critical values are larger than z-critical values, and as n increases, t-distribution approaches standard normal.",
+        explanation: "At the same confidence level and standard error, the larger t-critical value makes the t interval wider. As degrees of freedom increase, t-critical values approach z-critical values. If the standard errors differ, an interval using an estimated σ need not be wider than one using the true σ.",
         helpLink: "/chapter5/confidence-intervals-unknown"
       },
       {
@@ -1648,15 +1648,15 @@ export const chapterQuestions = {
         type: "multiple-choice",
         topic: "5.5 Interpreting Proportion Intervals",
         difficulty: "hard",
-        question: "Two candidates have poll results: A: 52% ± 3.1%, B: 48% ± 3.1%. A newspaper headline reads 'Candidate A Leads!' Is this warranted?",
+        question: "In the same two-candidate poll with no undecided voters, A has 52% support with a 95% margin of error of 3.1 percentage points, and B has 48%. Do these results establish that A leads in the population at the 95% confidence level?",
         options: [
           "Yes, A clearly leads by 4 percentage points",
-          "No, the confidence intervals overlap significantly",
+          "No, A's confidence interval includes 50% support",
           "Yes, the margin of error is small enough",
           "No, but only because the sample size was too small"
         ],
         correct: 1,
-        explanation: "A's interval: (48.9%, 55.1%) and B's interval: (44.9%, 51.1%) overlap substantially (48.9% to 51.1%), suggesting the race could be much closer.",
+        explanation: "A leads in this sample, but the population lead remains uncertain. A's interval is (48.9%, 55.1%), which includes 50%. Since B's support is 1-p_A, the interval for A's lead 2p_A-1 is (-2.2%, 10.2%), which includes zero. Overlap of separate intervals is not a general significance test.",
         helpLink: "/chapter5/bonus/ci-interpretation"
       }
     ],
@@ -1678,7 +1678,7 @@ export const chapterQuestions = {
         question: "A pharmaceutical company claims their new drug is more effective than the current standard treatment. What should be the null hypothesis for testing this claim?",
         options: [
           "H₀: The new drug is more effective than standard treatment",
-          "H₀: The new drug is equally effective as standard treatment",
+          "H₀: The new drug is twice as effective as standard treatment",
           "H₀: The new drug is less effective than standard treatment",
           "H₀: There is no difference in effectiveness between treatments"
         ],
@@ -1777,7 +1777,7 @@ export const chapterQuestions = {
         type: "multiple-choice",
         topic: "6.5 T-test for Mean (Unknown Variance)", 
         difficulty: "medium",
-        question: "A sample of 16 measurements has mean 25.3 and standard deviation 3.2. Testing H₀: μ = 24 vs H₁: μ > 24, which distribution should be used?",
+        question: "An independent random sample of 16 measurements from a normal population has mean 25.3 and standard deviation 3.2. Testing H₀: μ = 24 vs H₁: μ > 24, which distribution should be used?",
         options: [
           "Standard normal (Z)",
           "t-distribution with 15 degrees of freedom",
@@ -1794,15 +1794,15 @@ export const chapterQuestions = {
         type: "multi-select",
         topic: "6.6 Test for Proportions",
         difficulty: "medium",
-        question: "A survey claims 60% of engineers prefer remote work. In a sample of 200 engineers, 135 prefer remote work. Which conditions must be met for a valid proportion test? (Select all that apply)",
+        question: "A survey tests the claim that 60% of engineers prefer remote work. Of 200 sampled engineers, 135 prefer it. For sampling without replacement, which checks support the usual proportion z-test without a finite population correction? (Select all that apply)",
         options: [
-          "np₀ ≥ 5 and n(1-p₀) ≥ 5",
+          "np₀ ≥ 10 and n(1-p₀) ≥ 10",
           "Sample size n ≥ 30",
           "Population is at least 10 times larger than sample",
-          "Sample proportion p̂ = 135/200 = 0.675"
+          "The sample is selected randomly from the population"
         ],
         correct: [0, 2, 3], 
-        explanation: "For proportion tests: (1) np₀ ≥ 5 and n(1-p₀) ≥ 5 for normal approximation, (2) population should be ≥10n for independence, (3) p̂ = 135/200 = 0.675 is correct. The n ≥ 30 rule applies to means, not proportions.",
+        explanation: "The expected counts under H₀ are 200(0.6) = 120 and 200(0.4) = 80, both at least 10. A random sample supports inference to the population. When sampling without replacement, a sample no larger than 10% of the population supports treating observations as approximately independent. A fixed n ≥ 30 rule does not check the success and failure counts.",
         helpLink: "/chapter6/proportion-test"
       },
 
@@ -1828,7 +1828,7 @@ export const chapterQuestions = {
         type: "multiple-choice",
         topic: "6.8 Two-Sample Test (Independent Groups)",
         difficulty: "hard",
-        question: "Comparing mean salaries between two companies: Company A (n₁=50, x̄₁=75000, s₁=8000) and Company B (n₂=45, x̄₂=72000, s₂=7500). Both sample sizes are large. What test statistic should be calculated?",
+        question: "Comparing independent samples of salaries from two companies: Company A (n₁=50, x̄₁=75000, s₁=8000) and Company B (n₂=45, x̄₂=72000, s₂=7500). Which formula gives the usual large-sample normal approximation statistic for testing equal means?",
         options: [
           "z = (x̄₁ - x̄₂)/√(s₁²/n₁ + s₂²/n₂)",
           "t = (x̄₁ - x̄₂)/sp√(1/n₁ + 1/n₂)", 
@@ -1836,7 +1836,7 @@ export const chapterQuestions = {
           "t = (x̄₁ - x̄₂)/(s₁ - s₂)"
         ],
         correct: 0,
-        explanation: "For large samples with unknown but potentially unequal variances, use z = (x̄₁ - x̄₂)/√(s₁²/n₁ + s₂²/n₂). The normal approximation applies due to large sample sizes.",
+        explanation: "The large-sample statistic is (x̄₁ - x̄₂)/√(s₁²/n₁ + s₂²/n₂). Welch's t-test uses this same statistic with an estimated degrees of freedom. A normal reference is an approximation whose accuracy depends on the population distributions.",
         helpLink: "/chapter6/two-sample-test"
       },
 
@@ -1886,8 +1886,8 @@ export const chapterQuestions = {
           "Confidence level (1 - α)",
           "Effect size (difference from H₀)"
         ],
-        correct: [0, 1, 3],
-        explanation: "Statements 1, 2, and 4 affect power. Statement 3 is redundant with statement 2 (confidence level = 1 - α), and stating it this way is misleading since higher confidence means lower α, which decreases power.",
+        correct: [0, 1, 2, 3],
+        explanation: "All four affect power. Confidence level 1-α and significance level α describe the same threshold from opposite directions, so they are not independent factors. With the test, sample size, and effect fixed, increasing confidence lowers α and generally reduces power.",
         helpLink: "/chapter6/power-factors"
       },
 
@@ -1947,7 +1947,7 @@ export const chapterQuestions = {
         type: "multi-select",
         topic: "6.8 Assumptions for T-tests", 
         difficulty: "hard",
-        question: "Which assumptions are required for a two-sample t-test? (Select all that apply)",
+        question: "Which assumptions support small-sample two-sample t procedures? (Select all that apply)",
         options: [
           "Both populations are normally distributed",
           "Both samples are independent", 
@@ -1955,7 +1955,7 @@ export const chapterQuestions = {
           "Sample sizes are equal"
         ],
         correct: [0, 1],
-        explanation: "T-tests require normality and independence. Population variances are unknown (that's why we use t instead of z), and sample sizes don't need to be equal.",
+        explanation: "Independent observations and approximately normal populations support small-sample t procedures. The pooled t-test additionally assumes equal population variances; Welch's procedure allows unequal variances. Known variances and equal sample sizes are not required.",
         helpLink: "/chapter6/t-test-assumptions"
       },
 
@@ -1988,7 +1988,7 @@ export const chapterQuestions = {
         type: "multiple-choice",
         topic: "7.1 Correlation Coefficient",
         difficulty: "easy",
-        question: "The sample correlation coefficient ρXY measures:",
+        question: "The sample correlation coefficient rXY measures:",
         options: [
           "Only the strength of a linear relationship between X and Y",
           "The strength and direction of a linear relationship between X and Y", 
@@ -1996,7 +1996,7 @@ export const chapterQuestions = {
           "Only positive relationships between X and Y"
         ],
         correct: 1,
-        explanation: "The correlation coefficient ρXY measures both the strength and direction of the linear relationship between two variables.",
+        explanation: "The sample correlation coefficient rXY measures both the strength and direction of the linear relationship between two variables; ρXY denotes the population correlation.",
         helpLink: "/chapter7/correlation-coefficient"
       },
 
@@ -2030,7 +2030,7 @@ export const chapterQuestions = {
           "It becomes negative"
         ],
         correct: 2,
-        explanation: "The correlation coefficient is unaffected by changes of scale or origin. Multiplying variables by constants changes both numerator and denominator equally, leaving ρXY unchanged.",
+        explanation: "Multiplying heights by the positive constant 0.394 changes covariance and standard deviation by the same factor, so correlation is unchanged. Shifts and positive rescaling preserve correlation; multiplying just one variable by a negative constant reverses its sign.",
         helpLink: "/chapter7/correlation-coefficient"
       },
 
@@ -2042,7 +2042,7 @@ export const chapterQuestions = {
         question: "Which statements about correlation are correct? (Select all that apply)",
         options: [
           "High correlation implies causation",
-          "Correlation can detect non-linear relationships effectively",
+          "Correlation completely describes every non-linear relationship",
           "ρXY = ρYX (correlation is symmetric)",
           "Strong non-linear relationships may show weak correlation"
         ],
@@ -2064,7 +2064,7 @@ export const chapterQuestions = {
           "The correlation coefficient"
         ],
         correct: 1,
-        explanation: "In the linear regression model, β₁ is the slope parameter, representing the change in Y for a one-unit increase in X. β₀ is the intercept.",
+        explanation: "In the linear regression model with E[ε|X] = 0, β₁ is the slope of the mean response: a one-unit increase in X changes E[Y|X] by β₁. β₀ is the intercept.",
         helpLink: "/chapter7/simple-linear-regression"
       },
 
@@ -2078,7 +2078,7 @@ export const chapterQuestions = {
           "The sum of residuals Σ(yi - ŷi)",
           "The sum of squared residuals Σ(yi - ŷi)²", 
           "The correlation coefficient",
-          "The mean squared error only"
+          "The largest absolute residual only"
         ],
         correct: 1,
         explanation: "The least squares method finds estimators by minimizing the Sum of Squared Errors (SSE) = Σ(yi - ŷi)², where ŷi are the fitted values.",
@@ -2124,7 +2124,7 @@ export const chapterQuestions = {
         type: "multiple-choice",
         topic: "7.3 Hypothesis Testing in Regression",
         difficulty: "medium",
-        question: "To test the significance of regression (H₀: β₁ = 0 vs H₁: β₁ ≠ 0), we use a test statistic that follows:",
+        question: "In simple linear regression with independent normal errors of constant variance, the slope t-statistic for H₀: β₁ = 0 vs H₁: β₁ ≠ 0 follows which distribution under H₀?",
         options: [
           "Normal distribution N(0,1)",
           "Chi-square distribution with 1 df", 
@@ -2141,15 +2141,15 @@ export const chapterQuestions = {
         type: "multi-select", 
         topic: "7.3 Hypothesis Testing in Regression",
         difficulty: "hard",
-        question: "In hypothesis testing for linear regression, which tests can be performed? (Select all that apply)",
+        question: "In simple linear regression with independent normal errors of constant variance, which tests can be performed? (Select all that apply)",
         options: [
           "Test if the intercept β₀ equals a specific value",
           "Test if the slope β₁ equals a specific value", 
           "Test the significance of regression (β₁ = 0)",
           "Test if the error variance σ² equals a specific value"
         ],
-        correct: [0, 1, 2],
-        explanation: "We can test hypotheses about the intercept, slope, and significance of regression. While we estimate σ², testing specific values for error variance is not typically covered in simple linear regression.",
+        correct: [0, 1, 2, 3],
+        explanation: "All four tests can be performed under the stated model. Intercept and slope tests use t-statistics, and the slope-zero test also has an equivalent F-test. For H₀: σ² = σ₀², SSE/σ₀² follows a chi-square distribution with n-2 degrees of freedom under H₀.",
         helpLink: "/chapter7/hypothesis-testing-regression"
       },
 
@@ -2158,7 +2158,7 @@ export const chapterQuestions = {
         type: "multiple-choice",
         topic: "7.4 Confidence and Prediction Intervals", 
         difficulty: "medium",
-        question: "What is the main difference between a confidence interval for the mean response and a prediction interval for a new observation?",
+        question: "At the same predictor value and confidence level, what is the main difference between a confidence interval for the mean response and a prediction interval for a new observation?",
         options: [
           "They use different confidence levels",
           "Prediction intervals are wider because they account for individual variation",
@@ -2209,7 +2209,7 @@ export const chapterQuestions = {
         type: "multiple-choice", 
         topic: "7.5 Analysis of Variance (ANOVA)",
         difficulty: "hard",
-        question: "In ANOVA for regression, the F-statistic F* = MSR/MSE follows which distribution under H₀: β₁ = 0?",
+        question: "In simple linear regression with independent normal errors of constant variance, the ANOVA statistic F* = MSR/MSE follows which distribution under H₀: β₁ = 0?",
         options: [
           "F(1, n-1)",
           "F(1, n-2)",
@@ -2260,7 +2260,7 @@ export const chapterQuestions = {
         type: "multi-select",
         topic: "7.6 Coefficient of Determination",
         difficulty: "medium", 
-        question: "What are important considerations about R²? (Select all that apply)",
+        question: "For the training data in least-squares regression with an intercept and nonzero total sum of squares, what are important considerations about R²? (Select all that apply)",
         options: [
           "R² always lies between 0 and 1",
           "Higher R² always means a better model",
@@ -2268,7 +2268,7 @@ export const chapterQuestions = {
           "R² = 1 indicates perfect fit"
         ],
         correct: [0, 2, 3],
-        explanation: "R² ranges from 0 to 1, can be affected by factors like sample size, and R² = 1 indicates perfect fit. However, higher R² doesn't always mean a better model due to overfitting.",
+        explanation: "For this in-sample fit with an intercept, R² ranges from 0 to 1 and R² = 1 means every training response is fitted exactly. Sample size can affect the estimate. A higher training R² need not mean better predictions on new data; out-of-sample R² can be negative.",
         helpLink: "/chapter7/coefficient-of-determination"
       },
 

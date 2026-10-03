@@ -9,6 +9,18 @@ const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
-const eslintConfig = [...compat.extends("next/core-web-vitals")];
+const eslintConfig = [
+  { ignores: ['.next/**', '.codex/**', 'node_modules/**', 'coverage/**'] },
+  ...compat.extends('next/core-web-vitals').map(config => ({
+    ...config,
+    files: ['**/*.{js,jsx,mjs,cjs}'],
+  })),
+  {
+    files: ['**/*.{js,jsx,mjs,cjs}'],
+    rules: {
+      'react/no-unescaped-entities': ['error', { forbid: ['>', '}'] }],
+    },
+  },
+];
 
 export default eslintConfig;

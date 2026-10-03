@@ -1,121 +1,53 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
-import { BookOpen, Activity, PenTool, Clock } from 'lucide-react';
+import React from 'react';
+import { BookOpen, Activity, PenTool, Calculator } from 'lucide-react';
+import { CURRICULUM_METADATA as counts } from '@/lib/curriculum/metadata';
 import { useProgress } from '@/hooks/useProgress';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 const CourseStats = React.memo(() => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [counters, setCounters] = useState({ chapters: 0, widgets: 0, exercises: 0, hours: 0 });
-  const statsRef = useRef(null);
+  const reducedMotion = useReducedMotion();
   const { overallStats } = useProgress();
   
   const stats = [
     { 
-      value: '7', 
+      value: String(counts.publishedChapters),
       label: 'Chapters',
       icon: BookOpen,
       color: 'text-teal-400',
       bgColor: 'bg-teal-900/20',
-      description: `${overallStats?.completedChapters || 0} completed`,
-      targetValue: 7
+      description: `${overallStats?.completedChapters || 0} completed`
     },
     { 
-      value: '147', 
-      label: 'Interactive Widgets',
+      value: String(counts.primaryHubLessons + counts.chapterSixBonusLessons),
+      label: 'Learning Modules',
       icon: Activity,
       color: 'text-blue-400',
       bgColor: 'bg-blue-900/20',
-      description: 'Hands-on learning',
-      targetValue: 147
+      description: `${counts.primaryHubLessons} primary, ${counts.chapterSixBonusLessons} bonus`
     },
     { 
-      value: '400+', 
-      label: 'Exercises',
+      value: String(counts.engineeringQuizQuestions + counts.alternateQuizQuestions),
+      label: 'Chapter Quiz Questions',
       icon: PenTool,
       color: 'text-purple-400',
       bgColor: 'bg-purple-900/20',
-      description: 'Practice problems',
-      targetValue: 400
+      description: `${counts.engineeringQuizQuestions} engineering, ${counts.alternateQuizQuestions} alternate`
     },
     { 
-      value: '24', 
-      label: 'Hours of Content',
-      icon: Clock,
+      value: String(counts.formulaBuilders),
+      label: 'Formula Builders',
+      icon: Calculator,
       color: 'text-orange-400',
       bgColor: 'bg-orange-900/20',
-      description: 'Comprehensive coverage',
-      targetValue: 24
+      description: 'Build formulas step by step'
     }
   ];
-  
-  // Intersection Observer for animation trigger
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !isVisible) {
-          setIsVisible(true);
-        }
-      },
-      { threshold: 0.1 }
-    );
-    
-    if (statsRef.current) {
-      observer.observe(statsRef.current);
-    }
-    
-    return () => {
-      if (statsRef.current) {
-        observer.unobserve(statsRef.current);
-      }
-    };
-  }, [isVisible]);
-  
-  // Animated counter effect
-  useEffect(() => {
-    if (!isVisible) return;
-    
-    const duration = 2000; // 2 seconds
-    const steps = 60;
-    const interval = duration / steps;
-    
-    let currentStep = 0;
-    const timer = setInterval(() => {
-      currentStep++;
-      
-      setCounters({
-        chapters: Math.floor((7 * currentStep) / steps),
-        widgets: Math.floor((147 * currentStep) / steps),
-        exercises: Math.floor((400 * currentStep) / steps),
-        hours: Math.floor((24 * currentStep) / steps)
-      });
-      
-      if (currentStep >= steps) {
-        clearInterval(timer);
-        setCounters({
-          chapters: 7,
-          widgets: 147,
-          exercises: 400,
-          hours: 24
-        });
-      }
-    }, interval);
-    
-    return () => clearInterval(timer);
-  }, [isVisible]);
-  
-  // Format counter value based on stat type
-  const formatValue = (stat, counterValue) => {
-    if (stat.label === 'Exercises') {
-      return `${counterValue}+`;
-    }
-    return counterValue.toString();
-  };
   
   return (
     <section 
       className="py-16 px-4 lg:pl-32 border-t border-neutral-800"
-      ref={statsRef}
       role="region"
       aria-label="Course statistics"
     >
@@ -125,16 +57,6 @@ const CourseStats = React.memo(() => {
         <dl className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {stats.map((stat, index) => {
             const Icon = stat.icon;
-            // Special handling for "Interactive Widgets" to map to "widgets" counter
-            let counterKey;
-            if (stat.label === 'Interactive Widgets') {
-              counterKey = 'widgets';
-            } else if (stat.label === 'Hours of Content') {
-              counterKey = 'hours';
-            } else {
-              counterKey = stat.label.toLowerCase().split(' ')[0];
-            }
-            const currentValue = counters[counterKey] || 0;
             
             return (
               <div 
@@ -153,13 +75,11 @@ const CourseStats = React.memo(() => {
                     <Icon className={`w-8 h-8 ${stat.color}`} />
                   </div>
                   
-                  {/* Animated counter */}
+                  {/* Verified curriculum total */}
                   <dd 
                     className={`text-4xl font-bold ${stat.color} mb-2 transition-all duration-300`}
-                    aria-live="polite"
-                    aria-atomic="true"
                   >
-                    {isVisible ? formatValue(stat, currentValue) : '0'}
+                    {stat.value}
                   </dd>
                   
                   {/* Label */}
@@ -185,8 +105,8 @@ const CourseStats = React.memo(() => {
                         <div 
                           className="h-full bg-teal-500 transition-all duration-1000"
                           style={{ 
-                            width: `${(overallStats.completedChapters / 7) * 100}%`,
-                            transitionDelay: '1s'
+                            width: `${(overallStats.completedChapters / counts.publishedChapters) * 100}%`,
+                            transitionDuration: reducedMotion ? '0ms' : '1000ms'
                           }}
                         />
                       </div>
@@ -210,7 +130,7 @@ const CourseStats = React.memo(() => {
                   <div className="h-2 bg-neutral-800 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-gradient-to-r from-teal-500 to-blue-500 transition-all duration-1000"
-                      style={{ width: `${overallStats.totalProgress}%` }}
+                      style={{ width: `${overallStats.totalProgress}%`, transitionDuration: reducedMotion ? '0ms' : '1000ms' }}
                     />
                   </div>
                 </div>

@@ -11,22 +11,24 @@ export function MultiSelectQuestion({
   explanation,
   onAnswer,
   showExplanation = false,
-  disabled = false
+  disabled = false,
+  savedAnswer
 }) {
-  const [selectedAnswers, setSelectedAnswers] = useState(new Set());
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [isAnswered, setIsAnswered] = useState(false);
+  const [selectedAnswers, setSelectedAnswers] = useState(new Set(savedAnswer?.answer || []));
+  const [showFeedback, setShowFeedback] = useState(Boolean(savedAnswer) || disabled);
+  const [isAnswered, setIsAnswered] = useState(Boolean(savedAnswer) || disabled);
   
   // Use safe MathJax processing - useMathJax returns a ref
   const questionRef = useMathJax([question]);
   const optionsRef = useMathJax(options); // options is already an array
+  const explanationRef = useMathJax([explanation]);
   
   // Reset state when question changes
   useEffect(() => {
-    setSelectedAnswers(new Set());
-    setShowFeedback(false);
-    setIsAnswered(false);
-  }, [question, options]);
+    setSelectedAnswers(new Set(savedAnswer?.answer || []));
+    setShowFeedback(Boolean(savedAnswer) || disabled);
+    setIsAnswered(Boolean(savedAnswer) || disabled);
+  }, [question, options, savedAnswer, disabled]);
   
   const handleToggleOption = (index) => {
     if (isAnswered || disabled) return;
@@ -41,6 +43,7 @@ export function MultiSelectQuestion({
   };
   
   const handleSubmit = () => {
+    if (isAnswered || disabled) return;
     if (selectedAnswers.size === 0) return;
     
     setShowFeedback(true);
@@ -78,7 +81,7 @@ export function MultiSelectQuestion({
       </div>
       
       {/* Options */}
-      <div ref={optionsRef} className="space-y-3">
+      <div ref={optionsRef} role="group" aria-label="Answer choices; select all that apply" className="space-y-3">
         {options.map((option, index) => {
           const isSelected = selectedAnswers.has(index);
           const isCorrectOption = correctSet.has(index);
@@ -91,6 +94,7 @@ export function MultiSelectQuestion({
               key={index}
               onClick={() => handleToggleOption(index)}
               disabled={isAnswered || disabled}
+              aria-pressed={isSelected}
               className={`
                 w-full p-4 rounded-lg border text-left transition-all duration-300
                 ${(isAnswered || disabled) ? 'cursor-not-allowed' : 'cursor-pointer hover:scale-[1.02] hover:shadow-lg'}
@@ -192,23 +196,23 @@ export function MultiSelectQuestion({
           ) : (
             <>
               {isCorrect ? (
-                <div className="flex items-center gap-2 text-green-400 animate-pulse">
+                <div role="status" className="flex items-center gap-2 text-green-400 animate-pulse">
                   <CheckCircle className="w-5 h-5" />
                   <span className="font-medium">All correct!</span>
                 </div>
               ) : (
                 <>
-                  <div className="flex items-center gap-2 text-red-400">
+                  <div role="status" className="flex items-center gap-2 text-red-400">
                     <XCircle className="w-5 h-5" />
-                    <span className="font-medium">Not quite right</span>
+                    <span className="font-medium">{savedAnswer || !disabled ? 'Not quite right' : 'Not answered'}</span>
                   </div>
-                  <Button
+                  {!disabled && <Button
                     onClick={handleTryAgain}
                     variant="neutral"
                     size="sm"
                   >
                     Try Again
-                  </Button>
+                  </Button>}
                 </>
               )}
             </>
@@ -218,6 +222,7 @@ export function MultiSelectQuestion({
         {/* Explanation */}
         {showFeedback && showExplanation && explanation && (
           <div
+            ref={explanationRef}
             className={`
               p-3 rounded-lg text-sm transition-all duration-500 animate-in slide-in-from-top-2
               ${

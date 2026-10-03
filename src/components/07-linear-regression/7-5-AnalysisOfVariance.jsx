@@ -477,6 +477,7 @@ const VarianceDecomposition = React.memo(({ data, regression }) => {
     </div>
   );
 });
+VarianceDecomposition.displayName = 'VarianceDecomposition';
 
 // ANOVA Table Component
 const ANOVATable = React.memo(({ sst, ssr, sse, n }) => {
@@ -532,6 +533,7 @@ const ANOVATable = React.memo(({ sst, ssr, sse, n }) => {
     </div>
   );
 });
+ANOVATable.displayName = 'ANOVATable';
 
 // Variation Bars Component
 const VariationBars = React.memo(({ sst, ssr, sse }) => {
@@ -577,6 +579,7 @@ const VariationBars = React.memo(({ sst, ssr, sse }) => {
     </div>
   );
 });
+VariationBars.displayName = 'VariationBars';
 
 // Worked Example Component
 const WorkedExample = React.memo(function WorkedExample({ data, regression }) {

@@ -37,11 +37,21 @@ export function InteractiveJourneyNavigation({
     if (!allowKeyboardNav) return;
 
     const handleKeyPress = (e) => {
+      const target = e.target;
+      if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey ||
+          (target instanceof Element && target.closest(
+            'input, textarea, select, button, a, summary, details, [tabindex]:not([tabindex="-1"]), [role="button"], [role="tab"], [role="checkbox"], [role="radio"], [role="switch"], [role="link"], [role="menuitem"], [contenteditable]:not([contenteditable="false"]), [role="slider"], [role="textbox"], [role="combobox"]'
+          ))) {
+        return;
+      }
       if (e.key === 'ArrowLeft' && currentSection > 0) {
+        e.preventDefault();
         onNavigate(currentSection - 1);
       } else if (e.key === 'ArrowRight' && currentSection < totalSections - 1) {
+        e.preventDefault();
         onNavigate(currentSection + 1);
       } else if (e.key === 'Enter' && currentSection === totalSections - 1 && onComplete) {
+        e.preventDefault();
         onComplete();
       }
     };

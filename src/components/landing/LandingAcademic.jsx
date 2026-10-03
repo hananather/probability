@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { Footer } from '@/components/layout/Footer';
+import { usePageVisibility } from '@/hooks/useReducedMotion';
 
 // Dynamically import components for better performance
 const FloatingSymbols = dynamic(() => import('./components/FloatingSymbols'), {
@@ -32,116 +33,71 @@ export default function LandingAcademic() {
   const sectionRefs = useRef([]);
   const testimonialsRef = useRef(null);
   
+  const pageVisible = usePageVisibility();
+  const scheduleUpdateRef = useRef(() => {});
+
   useEffect(() => {
-    // Combine scroll listener with IntersectionObserver for better tracking
-    const handleScroll = () => {
-      // Get scroll position as percentage of page
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    if (!pageVisible) return;
+
+    let frameId = null;
+    const updateScroll = () => {
+      frameId = null;
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
       const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-      const scrollableHeight = documentHeight - windowHeight;
-      
-      // Calculate scroll progress as percentage (0 to 1)
+      const scrollableHeight = document.documentElement.scrollHeight - windowHeight;
       const progress = scrollableHeight > 0 ? Math.min(1, Math.max(0, scrollTop / scrollableHeight)) : 0;
-      setScrollProgress(progress);
-      
-      // If at the very top of the page, reset to -1
-      if (scrollTop < 50) {
-        setCurrentSection(-1);
-        return;
-      }
-      
-      // Find which section is currently most visible
-      const refs = sectionRefs.current.filter(Boolean);
-      if (refs.length === 0) return;
-      
-      // Get the center of the viewport
-      const viewportCenter = scrollTop + windowHeight / 2;
-      
-      // Find the section closest to viewport center
+      const viewportCenter = windowHeight / 2;
       let closestSection = -1;
       let closestDistance = Infinity;
-      
-      refs.forEach((ref, index) => {
-        const rect = ref.getBoundingClientRect();
-        const elementTop = rect.top + scrollTop;
-        const elementCenter = elementTop + rect.height / 2;
-        const distance = Math.abs(viewportCenter - elementCenter);
-        
+
+      // Keep original chapter indices when dynamically loaded sections register.
+      sectionRefs.current.forEach((section, index) => {
+        if (!section) return;
+        const rect = section.getBoundingClientRect();
+        const distance = Math.abs(viewportCenter - (rect.top + rect.height / 2));
         if (distance < closestDistance) {
           closestDistance = distance;
           closestSection = index;
         }
       });
-      
-      // Only update if we found a section and it's reasonably close to viewport
-      if (closestSection !== -1 && closestDistance < windowHeight) {
+
+      const navigationVisible = !SHOW_TESTIMONIALS || !testimonialsRef.current ||
+        testimonialsRef.current.getBoundingClientRect().top > viewportCenter;
+
+      // Read layout first, then publish changes once per rendered frame.
+      setScrollProgress(progress);
+      if (scrollTop < 50) {
+        setCurrentSection(-1);
+      } else if (closestSection !== -1 && closestDistance < windowHeight) {
         setCurrentSection(closestSection);
       }
-      
-      // Check if we've scrolled past the chapters to the testimonials (only if testimonials are shown)
-      if (SHOW_TESTIMONIALS && testimonialsRef.current) {
-        const testimonialsRect = testimonialsRef.current.getBoundingClientRect();
-        // Hide navigation when testimonials section is at or above viewport center
-        if (testimonialsRect.top <= windowHeight / 2) {
-          setShowNavigation(false);
-        } else {
-          setShowNavigation(true);
-        }
-      }
+      setShowNavigation(navigationVisible);
     };
-    
-    // Also use IntersectionObserver as a fallback
-    const observerOptions = {
-      root: null,
-      rootMargin: '-30% 0px',
-      threshold: [0, 0.1, 0.5, 0.9, 1.0] // Multiple thresholds for smoother tracking
+
+    const scheduleUpdate = () => {
+      if (frameId === null) frameId = window.requestAnimationFrame(updateScroll);
     };
-    
-    const observer = new IntersectionObserver((entries) => {
-      // Only use observer when not scrolling
-      if (window.scrollY > 50) {
-        entries.forEach(entry => {
-          if (entry.intersectionRatio > 0.5) {
-            const index = parseInt(entry.target.dataset.index);
-            setCurrentSection(prevSection => {
-              // Only update if scroll handler hasn't already set it
-              return prevSection === -1 ? index : prevSection;
-            });
-          }
-        });
-      }
-    }, observerOptions);
-    
-    // Observe section refs
-    const refs = sectionRefs.current.filter(Boolean);
-    refs.forEach(ref => observer.observe(ref));
-    
-    // Add scroll listener with throttling for performance
-    let scrollTimeout;
-    const throttledScroll = () => {
-      if (scrollTimeout) return;
-      scrollTimeout = setTimeout(() => {
-        handleScroll();
-        scrollTimeout = null;
-      }, 50); // Throttle to 20fps
-    };
-    
-    window.addEventListener('scroll', throttledScroll);
-    handleScroll(); // Initial check
-    
+    scheduleUpdateRef.current = scheduleUpdate;
+    window.addEventListener('scroll', scheduleUpdate, { passive: true });
+    window.addEventListener('resize', scheduleUpdate);
+    const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(scheduleUpdate) : null;
+    observer?.observe(document.body);
+    scheduleUpdate();
+
     return () => {
-      window.removeEventListener('scroll', throttledScroll);
-      refs.forEach(ref => observer.unobserve(ref));
-      observer.disconnect();
-      if (scrollTimeout) clearTimeout(scrollTimeout);
+      scheduleUpdateRef.current = () => {};
+      window.removeEventListener('scroll', scheduleUpdate);
+      window.removeEventListener('resize', scheduleUpdate);
+      observer?.disconnect();
+      if (frameId !== null) window.cancelAnimationFrame(frameId);
     };
+  }, [pageVisible]);
+
+  const handleSectionRef = useCallback((index, element) => {
+    sectionRefs.current[index] = element;
+    scheduleUpdateRef.current();
   }, []);
-  
-  const handleSectionRef = (index, el) => {
-    sectionRefs.current[index] = el;
-  };
-  
+
   return (
     <div className="min-h-screen bg-neutral-900 text-white">
       {/* Floating mathematical symbols background */}

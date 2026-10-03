@@ -491,6 +491,7 @@ const NormalVisualization = memo(({
   
   return <svg ref={svgRef} style={{ width: "100%", height: 800 }} />;
 });
+NormalVisualization.displayName = 'NormalVisualization';
 
 const NormalZScoreExplorer = () => {
   const colorScheme = createColorScheme('probability');

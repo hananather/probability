@@ -15,7 +15,7 @@ const chapterTitles = {
 // Generate metadata dynamically based on chapter
 export async function generateMetadata({ params }) {
   const { chapterId } = await params;
-  const chapterNum = parseInt(chapterId);
+  const chapterNum = Number(chapterId);
   
   if (!chapterTitles[chapterNum]) {
     return {
@@ -40,10 +40,10 @@ export default async function DynamicQuizPage({ params, searchParams }) {
   const version = search?.version || 'engineering';
   
   // Convert string to number and validate
-  const chapterNum = parseInt(chapterId);
+  const chapterNum = Number(chapterId);
   
   // Validate chapter number (1-7 are valid)
-  if (isNaN(chapterNum) || chapterNum < 1 || chapterNum > 7) {
+  if (!Number.isInteger(chapterNum) || chapterNum < 1 || chapterNum > 7) {
     notFound();
   }
   
