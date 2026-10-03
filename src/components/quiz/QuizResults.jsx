@@ -16,7 +16,8 @@ export function QuizResults({
   onRetake,
   onReview,
   chapterId,
-  chapterTitle
+  chapterTitle,
+  headingRef
 }) {
   const percentage = Math.round((score / totalQuestions) * 100);
   const passed = percentage >= passingScore;
@@ -28,7 +29,7 @@ export function QuizResults({
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold text-white">
+        <h2 ref={headingRef} tabIndex={-1} className="scroll-mt-24 text-3xl font-bold text-white">
           Quiz Complete
         </h2>
         <p className="text-neutral-400">

@@ -1,5 +1,5 @@
 import React, { StrictMode } from 'react';
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ChapterQuiz } from '@/components/quiz/ChapterQuiz';
 import { quizStorage } from '@/lib/quiz/quizStorage';
@@ -217,14 +217,15 @@ describe('canonical quiz writer integration', () => {
       const startButton = screen.getByRole('button', { name: 'Start Quiz' }); startButton.focus();
       await click(startButton);
       const heading = screen.getByRole('heading', { name: 'Choose A' });
-      expect(document.activeElement).not.toBe(heading);
+      expect(heading).toHaveFocus();
       await click(screen.getByRole('button', { name: 'A' })); await click(screen.getByRole('button', { name: 'Submit' }));
       const next = screen.getByRole('button', { name: 'Next Question' }); next.focus();
       await click(next);
       expect(screen.getByRole('heading', { name: 'Choose C and D' })).toHaveFocus();
-      expect(scroll).toHaveBeenCalledExactlyOnceWith({ behavior: reducedMotion ? 'instant' : 'smooth', block: 'start' });
+      expect(scroll).toHaveBeenCalledTimes(2);
+      expect(scroll).toHaveBeenLastCalledWith({ behavior: reducedMotion ? 'instant' : 'smooth', block: 'start' });
       await click(screen.getByRole('button', { name: 'Flag for Review' }));
-      expect(scroll).toHaveBeenCalledTimes(1);
+      expect(scroll).toHaveBeenCalledTimes(2);
       view.unmount();
       render(<MotionPreferenceContext.Provider value={{ reducedMotion }}><ChapterQuiz /></MotionPreferenceContext.Provider>); await flush();
       expect(screen.getByRole('heading', { name: 'Choose C and D' })).not.toHaveFocus();
@@ -232,6 +233,70 @@ describe('canonical quiz writer integration', () => {
       if (originalScroll) Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', originalScroll);
       else delete HTMLElement.prototype.scrollIntoView;
     }
+  });
+
+  it('focuses completed results and saved review after explicit actions without focusing background reloads', async () => {
+    const view = await start();
+    await click(screen.getByRole('button', { name: 'A' }));
+    await click(screen.getByRole('button', { name: 'Submit' }));
+    await partialFinish();
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Quiz Complete' })).toHaveFocus());
+    await click(screen.getByRole('button', { name: 'Review Answers' }));
+    expect(screen.getByRole('heading', { name: 'Choose A' })).toHaveFocus();
+    await click(screen.getByRole('button', { name: 'Back to Results' }));
+    expect(screen.getByRole('heading', { name: 'Quiz Complete' })).toHaveFocus();
+    view.unmount();
+    render(<ChapterQuiz />); await flush();
+    expect(screen.getByRole('button', { name: 'Start Quiz' })).not.toHaveFocus();
+    await click(screen.getByRole('button', { name: 'Review latest saved attempt' }));
+    expect(screen.getByRole('heading', { name: 'Choose A' })).toHaveFocus();
+  });
+
+  it('returns focus to the finishing control when the student keeps practicing', async () => {
+    await start();
+    const finish = screen.getByRole('button', { name: 'Finish and review' }); finish.focus();
+    await click(finish);
+    await click(screen.getByRole('button', { name: 'Keep practicing' }));
+    await waitFor(() => expect(finish).toHaveFocus());
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(store.getSnapshot().data.quizAttempts).toEqual({});
+  });
+
+  it('preserves the new chapter heading when an older dialog finishes closing', async () => {
+    vi.useFakeTimers();
+    const view = await start();
+    await click(screen.getByRole('button', { name: 'Finish and review' }));
+    view.rerender(<ChapterQuiz chapterId={2} />); await flush();
+    await click(screen.getByRole('button', { name: 'Start Quiz' }));
+    expect(screen.getByRole('heading', { name: 'Choose A' })).toHaveFocus();
+    await act(async () => { await vi.advanceTimersByTimeAsync(1); }); await flush();
+    expect(screen.getByRole('heading', { name: 'Choose A' })).toHaveFocus();
+  });
+
+  it('preserves deliberate navigation after cancelling a finish dialog', async () => {
+    vi.useFakeTimers(); await start();
+    await click(screen.getByRole('button', { name: 'Finish and review' }));
+    await click(screen.getByRole('button', { name: 'Keep practicing' }));
+    await click(screen.getByRole('button', { name: 'Next' }));
+    expect(screen.getByRole('heading', { name: 'Choose C and D' })).toHaveFocus();
+    await act(async () => { await vi.advanceTimersByTimeAsync(1); }); await flush();
+    expect(screen.getByRole('heading', { name: 'Choose C and D' })).toHaveFocus();
+  });
+
+  it('discards a rejected Start focus request before a background session appears', async () => {
+    render(<ChapterQuiz />); await flush();
+    vi.spyOn(store, 'beginQuizSession').mockRejectedValueOnce(new Error('Start rejected'));
+    const startButton = screen.getByRole('button', { name: 'Start Quiz' }); startButton.focus();
+    await click(startButton);
+    expect(startButton).toHaveFocus();
+    const now = Date.now();
+    await act(async () => { await store.beginQuizSession(1, {
+      sessionId: 'background-session', chapterId: 'chapter-1',
+      bank: { revision: 'bank-test-1', requestedVersion: 'engineering', effectiveVersion: 'engineering', questions },
+      currentQuestionId: questions[0].id, answersByQuestionId: {}, flaggedQuestionIds: [],
+      startTime: now, deadline: now + 60000, isPaused: false, pausedRemaining: null,
+    }, { context: store.captureWriteContext('chapter-1:quiz') }); }); await flush();
+    expect(screen.getByRole('heading', { name: 'Choose A' })).not.toHaveFocus();
   });
 
   it('archives old indexed answers without resuming or mapping them to current questions', async () => {

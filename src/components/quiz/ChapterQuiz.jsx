@@ -257,7 +257,10 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
   const [busy, setBusy] = useState(false);
   const finishButtonRef = useRef(null);
   const questionHeadingRef = useRef(null);
+  const resultsHeadingRef = useRef(null);
   const navigationFocus = useRef(null);
+  const resultsFocus = useRef(false);
+  const finishReturnFocus = useRef(null);
   const reducedMotion = useReducedMotion();
   const work = useRef(null);
   const mounted = useRef(false);
@@ -286,6 +289,8 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
   useEffect(() => {
     work.current = null;
     navigationFocus.current = null;
+    resultsFocus.current = false;
+    finishReturnFocus.current = null;
     setActiveSession(null); setResultAttempt(null); setQuizState('intro'); setReviewIndex(0); setActionError(null);
     setBusy(false); setShowFinishConfirmation(false); setShowSettings(false); setPreviousBest(null);
   }, [scope]);
@@ -296,6 +301,12 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
     questionHeadingRef.current?.focus({ preventScroll: true });
     questionHeadingRef.current?.scrollIntoView?.({ behavior: reducedMotion ? 'instant' : 'smooth', block: 'start' });
   }, [currentQuestionId, quizState, scope, reducedMotion]);
+  useEffect(() => {
+    if (quizState !== 'results' || !resultsFocus.current) return;
+    resultsFocus.current = false;
+    resultsHeadingRef.current?.focus({ preventScroll: true });
+    resultsHeadingRef.current?.scrollIntoView?.({ behavior: reducedMotion ? 'instant' : 'smooth', block: 'start' });
+  }, [quizState, reducedMotion]);
   useEffect(() => {
     if (loading || !store || !freshData) return;
     if (savedSession) {
@@ -324,6 +335,8 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
       startTime: now, deadline: now + freshData.timeLimit * 60000, isPaused: false, pausedRemaining: null,
     };
     work.current = captured;
+    finishReturnFocus.current = null;
+    navigationFocus.current = { scope, questionId: freshData.questions[0].id };
     setPreviousBest(stats.attempted ? stats.bestScore : null); setActionError(null); setBusy(true); setShowFinishConfirmation(false);
     try {
       const result = await store.beginQuizSession(chapterId, session, { context: captured.context });
@@ -331,11 +344,18 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
       if (!result.applied) {
         setActionError('The saved quiz changed or was reset. Start a new attempt.');
         setActiveSession(null); setResultAttempt(null); setQuizState('intro'); work.current = null;
+        navigationFocus.current = null;
         return;
       }
       setActiveSession(store.getSnapshot().data.resumeByDevice[store.getSnapshot().data.deviceId]?.[quizId]?.session || session);
       setResultAttempt(null); setQuizState('quiz');
-    } catch (error) { if (mounted.current && scopeRef.current === captured.scope) setActionError(error.message); }
+    } catch (error) {
+      if (mounted.current && scopeRef.current === captured.scope && work.current === captured) {
+        navigationFocus.current = null;
+        work.current = null;
+        setActionError(error.message);
+      }
+    }
     finally { captured.starting = false; if (mounted.current && scopeRef.current === captured.scope) setBusy(false); }
   };
 
@@ -355,6 +375,7 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
   };
   const handleNavigate = index => {
     if (index < 0 || index >= quizData.questions.length) return;
+    finishReturnFocus.current = null;
     if (index !== currentQuestion) navigationFocus.current = { scope, questionId: quizData.questions[index].id };
     if (quizState === 'review') setReviewIndex(index);
     else void persistPatch({ currentQuestionId: quizData.questions[index].id });
@@ -373,6 +394,8 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
       const result = await store.finishQuizAttempt(chapterId, { sessionId: captured.sessionId, attemptId: captured.attemptId, answersByQuestionId: activeSession.answersByQuestionId }, { context: captured.context });
       if (!mounted.current || work.current !== captured || scopeRef.current !== captured.scope) return;
       if (!result.applied || !result.attempt) { setActionError('This quiz changed or was reset. No new attempt was recorded.'); setQuizState('intro'); setActiveSession(null); return; }
+      resultsFocus.current = true;
+      finishReturnFocus.current = null;
       setResultAttempt(result.attempt); setQuizState('results');
     } catch (error) { if (mounted.current && work.current === captured) setActionError(error.message); }
     finally { captured.finishing = false; if (mounted.current && scopeRef.current === captured.scope) setBusy(false); }
@@ -387,15 +410,26 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
   }, [busy, quizState, activeSession, scope, handleSubmitQuiz]);
   const handleRequestFinish = () => {
     if (busy || quizState !== 'quiz') return;
-    if (quizData.questions.some(question => !answerMap[question.id])) setShowFinishConfirmation(true);
+    if (quizData.questions.some(question => !answerMap[question.id])) {
+      finishReturnFocus.current = { scope, target: finishButtonRef.current };
+      setShowFinishConfirmation(true);
+    }
     else void handleSubmitQuiz();
   };
   const handlePauseToggle = () => {
     void persistPatch(isPaused ? { deadline: Date.now() + pausedRemaining * 1000, isPaused: false, pausedRemaining: null }
       : { pausedRemaining: Math.max(0, Math.ceil((deadline - Date.now()) / 1000)), isPaused: true });
   };
-  const handleReview = () => { setQuizState('review'); setReviewIndex(0); };
-  const handleSavedReview = () => { setResultAttempt(latestPinned); setPreviousBest(null); setQuizState('review'); setReviewIndex(0); };
+  const handleReview = () => {
+    finishReturnFocus.current = null;
+    navigationFocus.current = { scope, questionId: resultAttempt.bank.questions[0].id };
+    setQuizState('review'); setReviewIndex(0);
+  };
+  const handleSavedReview = () => {
+    finishReturnFocus.current = null;
+    navigationFocus.current = { scope, questionId: latestPinned.bank.questions[0].id };
+    setResultAttempt(latestPinned); setPreviousBest(null); setQuizState('review'); setReviewIndex(0);
+  };
   const savePreference = async patch => {
     try { await store.setQuizPreferences(patch, { context: store.captureWriteContext() }); }
     catch (error) { if (mounted.current) setActionError(error.message); }
@@ -557,6 +591,7 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
         onReview={handleReview}
         chapterId={chapterId}
         chapterTitle={quizData.title}
+        headingRef={resultsHeadingRef}
       /></div>
     );
   }
@@ -656,9 +691,13 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
               aria-modal="true"
               className="fixed left-1/2 top-1/2 z-[80] w-[calc(100%_-_2rem)] max-w-lg max-h-[calc(100dvh_-_2rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-neutral-700 bg-neutral-900 p-6 text-white shadow-xl"
               onCloseAutoFocus={event => {
-                if (finishButtonRef.current) {
-                  event.preventDefault();
-                  finishButtonRef.current.focus();
+                event.preventDefault();
+                const restore = finishReturnFocus.current;
+                finishReturnFocus.current = null;
+                const focused = document.activeElement;
+                const focusWasRemoved = !focused?.isConnected || focused === document.body || event.target?.contains(focused);
+                if (restore?.scope === scopeRef.current && restore.target?.isConnected && focusWasRemoved) {
+                  restore.target.focus();
                 }
               }}
             >
@@ -684,7 +723,7 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
       {quizState === 'review' && (
         <div className="flex justify-center">
           <Button
-            onClick={() => setQuizState('results')}
+            onClick={() => { resultsFocus.current = true; setQuizState('results'); }}
             variant="neutral"
             size="default"
           >
