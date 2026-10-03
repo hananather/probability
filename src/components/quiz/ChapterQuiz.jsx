@@ -296,7 +296,8 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
   }, [scope]);
   useEffect(() => {
     const requested = navigationFocus.current;
-    if (!requested || requested.scope !== scope || requested.questionId !== currentQuestionId) return;
+    if (!requested || requested.scope !== scope || requested.questionId !== currentQuestionId
+      || (quizState !== 'quiz' && quizState !== 'review') || !questionHeadingRef.current?.isConnected) return;
     navigationFocus.current = null;
     questionHeadingRef.current?.focus({ preventScroll: true });
     questionHeadingRef.current?.scrollIntoView?.({ behavior: reducedMotion ? 'instant' : 'smooth', block: 'start' });
@@ -644,7 +645,7 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
         
         {/* Question Content */}
         <QuizQuestionWrapper
-          key={`${resultAttempt?.id || activeSession?.sessionId}:${question.id}`} // Force remount when question changes
+          key={`${quizState === 'review' ? resultAttempt?.id : activeSession?.sessionId}:${question.id}`}
           question={question}
           onAnswer={(isCorrect, answer) => handleAnswer(currentQuestion, isCorrect, answer)}
           showExplanation={preferences.immediateFeedback || quizState === 'review'}

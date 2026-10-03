@@ -245,6 +245,9 @@ describe('canonical quiz writer integration', () => {
     expect(screen.getByRole('heading', { name: 'Choose A' })).toHaveFocus();
     await click(screen.getByRole('button', { name: 'Back to Results' }));
     expect(screen.getByRole('heading', { name: 'Quiz Complete' })).toHaveFocus();
+    await click(screen.getByRole('button', { name: 'Retake Quiz' }));
+    expect(screen.getByRole('heading', { name: 'Choose A' })).toHaveFocus();
+    await partialFinish();
     view.unmount();
     render(<ChapterQuiz />); await flush();
     expect(screen.getByRole('button', { name: 'Start Quiz' })).not.toHaveFocus();
