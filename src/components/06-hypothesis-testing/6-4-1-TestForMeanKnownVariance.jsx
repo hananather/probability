@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useMathJax } from '@/hooks/useMathJax';
 import * as d3 from "@/utils/d3-utils";
 import jStat from "jstat";
 import { motion, AnimatePresence } from "framer-motion";
@@ -29,20 +30,7 @@ const SAMPLE_DATA = [
 const HypothesisDisplay = React.memo(function HypothesisDisplay({ hypothesisType }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [hypothesisType]);
+  useMathJax(contentRef, [hypothesisType]);
   
   const getAlternative = () => {
     switch(hypothesisType) {
@@ -81,20 +69,7 @@ const HypothesisDisplay = React.memo(function HypothesisDisplay({ hypothesisType
 const MathematicalFramework = React.memo(function MathematicalFramework() {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">
@@ -258,20 +233,7 @@ const WorkedExample = React.memo(function WorkedExample({
   
   const rejectH0 = makeDecision();
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [alpha, hypothesisType]);
+  useMathJax(contentRef, [sampleData, mu0, sigma, alpha, hypothesisType]);
   
   return (
     <VisualizationSection className="bg-gradient-to-br from-neutral-800/50 to-neutral-900/50 rounded-lg p-6 border border-neutral-700/50">

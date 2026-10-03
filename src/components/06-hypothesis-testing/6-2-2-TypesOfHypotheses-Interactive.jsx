@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useMathJax } from '@/hooks/useMathJax';
 import * as d3 from "@/utils/d3-utils";
 import jStat from "jstat";
 import { motion, AnimatePresence } from "framer-motion";
@@ -19,20 +20,7 @@ const colorScheme = createColorScheme('hypothesis');
 const LaTeXContent = React.memo(({ content }) => {
   const ref = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && ref.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([ref.current]);
-        }
-        window.MathJax.typesetPromise([ref.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [content]);
+  useMathJax(ref, [content]);
   
   return <span ref={ref} dangerouslySetInnerHTML={{ __html: content }} />;
 });
@@ -44,20 +32,7 @@ const ZScoreCalculation = React.memo(({ sampleMean, mu0, sigma = 2.5, n = 30 }) 
   const ref = useRef(null);
   const zScore = (sampleMean - mu0) / (sigma / Math.sqrt(n));
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && ref.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([ref.current]);
-        }
-        window.MathJax.typesetPromise([ref.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [sampleMean, mu0, sigma, n, zScore]);
+  useMathJax(ref, [sampleMean, mu0, sigma, n, zScore]);
   
   return (
     <motion.div 
@@ -101,20 +76,7 @@ ZScoreCalculation.displayName = 'ZScoreCalculation';
 const ProgressiveInsight = React.memo(({ step, investigator, testStatistic, pValue, alpha, onNext, onBack }) => {
   const ref = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && ref.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([ref.current]);
-        }
-        window.MathJax.typesetPromise([ref.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [step]);
+  useMathJax(ref, [step, investigator.hypothesis.type, testStatistic, pValue, alpha]);
   
   const steps = [
     {
@@ -319,26 +281,99 @@ const ProgressiveInsight = React.memo(({ step, investigator, testStatistic, pVal
 
 ProgressiveInsight.displayName = 'ProgressiveInsight';
 
+const MathematicalDetailsContent = React.memo(function MathematicalDetailsContent({
+  nullHypothesis, alternativeHypothesis, hypothesisType, criticalValue, rejectRegion, alpha
+}) {
+  const ref = useMathJax([nullHypothesis, alternativeHypothesis, hypothesisType, criticalValue, rejectRegion, alpha]);
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ height: 0, opacity: 0 }}
+      animate={{ height: "auto", opacity: 1 }}
+      exit={{ height: 0, opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="px-4 pb-4"
+    >
+      <div className="space-y-4 pt-2">
+        <div>
+          <h5 className="text-sm font-semibold text-purple-300 mb-2">Hypothesis Formulation</h5>
+          <div className="bg-neutral-900/50 p-3 rounded-lg space-y-2">
+            <div className="text-white">
+              Null: <span dangerouslySetInnerHTML={{ __html: nullHypothesis }} />
+            </div>
+            <div className="text-white">
+              Alternative: <span dangerouslySetInnerHTML={{ __html: alternativeHypothesis }} />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h5 className="text-sm font-semibold text-purple-300 mb-2">Critical Value Calculation</h5>
+          <div className="bg-neutral-900/50 p-3 rounded-lg">
+            {hypothesisType === 'right-tailed' && (
+              <div className="text-white">
+                <span dangerouslySetInnerHTML={{ __html: `For \\(\\alpha = ${alpha}\\), critical value \\(z_{\\alpha} = ${criticalValue}\\)` }} />
+              </div>
+            )}
+            {hypothesisType === 'left-tailed' && (
+              <div className="text-white">
+                <span dangerouslySetInnerHTML={{ __html: `For \\(\\alpha = ${alpha}\\), critical value \\(z_{\\alpha} = ${criticalValue}\\)` }} />
+              </div>
+            )}
+            {hypothesisType === 'two-tailed' && (
+              <div className="text-white">
+                <span dangerouslySetInnerHTML={{ __html: `For \\(\\alpha = ${alpha}\\), critical value \\(z_{\\alpha/2} = \\pm${criticalValue}\\)` }} />
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <h5 className="text-sm font-semibold text-purple-300 mb-2">Rejection Region</h5>
+          <div className="bg-neutral-900/50 p-3 rounded-lg">
+            <p className="font-mono text-yellow-400">{rejectRegion}</p>
+          </div>
+        </div>
+
+        <div>
+          <h5 className="text-sm font-semibold text-purple-300 mb-2">Common Critical Values</h5>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-purple-500/30">
+                <th className="text-left py-2 text-purple-300">α</th>
+                <th className="text-center py-2 text-purple-300">One-tailed</th>
+                <th className="text-center py-2 text-purple-300">Two-tailed</th>
+              </tr>
+            </thead>
+            <tbody className="text-white">
+              <tr className="border-b border-neutral-700">
+                <td className="py-2">0.10</td>
+                <td className="text-center font-mono">1.282</td>
+                <td className="text-center font-mono">±1.645</td>
+              </tr>
+              <tr className="border-b border-neutral-700">
+                <td className="py-2">0.05</td>
+                <td className="text-center font-mono">1.645</td>
+                <td className="text-center font-mono">±1.960</td>
+              </tr>
+              <tr>
+                <td className="py-2">0.01</td>
+                <td className="text-center font-mono">2.326</td>
+                <td className="text-center font-mono">±2.576</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </motion.div>
+  );
+});
+
+
 // Mathematical Details Panel Component
 const MathematicalDetails = React.memo(({ investigator, alpha }) => {
-  const ref = useRef(null);
   const [isExpanded, setIsExpanded] = useState(false);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && ref.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([ref.current]);
-        }
-        window.MathJax.typesetPromise([ref.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [isExpanded]);
-  
+
   return (
     <motion.div 
       className="bg-gradient-to-r from-neutral-900/80 to-neutral-800/80 backdrop-blur-md rounded-xl border border-purple-500/20 overflow-hidden"
@@ -363,86 +398,14 @@ const MathematicalDetails = React.memo(({ investigator, alpha }) => {
       
       <AnimatePresence>
         {isExpanded && (
-          <motion.div
-            ref={ref}
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="px-4 pb-4"
-          >
-            <div className="space-y-4 pt-2">
-              <div>
-                <h5 className="text-sm font-semibold text-purple-300 mb-2">Hypothesis Formulation</h5>
-                <div className="bg-neutral-900/50 p-3 rounded-lg space-y-2">
-                  <div className="text-white">
-                    Null: <span dangerouslySetInnerHTML={{ __html: investigator.hypothesis.null }} />
-                  </div>
-                  <div className="text-white">
-                    Alternative: <span dangerouslySetInnerHTML={{ __html: investigator.hypothesis.alternative }} />
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <h5 className="text-sm font-semibold text-purple-300 mb-2">Critical Value Calculation</h5>
-                <div className="bg-neutral-900/50 p-3 rounded-lg">
-                  {investigator.hypothesis.type === 'right-tailed' && (
-                    <div className="text-white">
-                      <span dangerouslySetInnerHTML={{ __html: `For \\(\\alpha = ${alpha}\\), critical value \\(z_{\\alpha} = ${investigator.hypothesis.criticalValue}\\)` }} />
-                    </div>
-                  )}
-                  {investigator.hypothesis.type === 'left-tailed' && (
-                    <div className="text-white">
-                      <span dangerouslySetInnerHTML={{ __html: `For \\(\\alpha = ${alpha}\\), critical value \\(z_{\\alpha} = ${investigator.hypothesis.criticalValue}\\)` }} />
-                    </div>
-                  )}
-                  {investigator.hypothesis.type === 'two-tailed' && (
-                    <div className="text-white">
-                      <span dangerouslySetInnerHTML={{ __html: `For \\(\\alpha = ${alpha}\\), critical value \\(z_{\\alpha/2} = \\pm${investigator.hypothesis.criticalValue}\\)` }} />
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              <div>
-                <h5 className="text-sm font-semibold text-purple-300 mb-2">Rejection Region</h5>
-                <div className="bg-neutral-900/50 p-3 rounded-lg">
-                  <p className="font-mono text-yellow-400">{investigator.hypothesis.rejectRegion}</p>
-                </div>
-              </div>
-              
-              <div>
-                <h5 className="text-sm font-semibold text-purple-300 mb-2">Common Critical Values</h5>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-purple-500/30">
-                      <th className="text-left py-2 text-purple-300">α</th>
-                      <th className="text-center py-2 text-purple-300">One-tailed</th>
-                      <th className="text-center py-2 text-purple-300">Two-tailed</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-white">
-                    <tr className="border-b border-neutral-700">
-                      <td className="py-2">0.10</td>
-                      <td className="text-center font-mono">1.282</td>
-                      <td className="text-center font-mono">±1.645</td>
-                    </tr>
-                    <tr className="border-b border-neutral-700">
-                      <td className="py-2">0.05</td>
-                      <td className="text-center font-mono">1.645</td>
-                      <td className="text-center font-mono">±1.960</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2">0.01</td>
-                      <td className="text-center font-mono">2.326</td>
-                      <td className="text-center font-mono">±2.576</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </motion.div>
+          <MathematicalDetailsContent
+            nullHypothesis={investigator.hypothesis.null}
+            alternativeHypothesis={investigator.hypothesis.alternative}
+            hypothesisType={investigator.hypothesis.type}
+            criticalValue={investigator.hypothesis.criticalValue}
+            rejectRegion={investigator.hypothesis.rejectRegion}
+            alpha={alpha}
+          />
         )}
       </AnimatePresence>
     </motion.div>

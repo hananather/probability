@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useMathJax } from '@/hooks/useMathJax';
 import * as d3 from 'd3';
 import jStat from 'jstat';
 import { twoSidedTTest } from '@/utils/stats';
@@ -926,20 +927,7 @@ export default function PairedTwoSampleTest() {
 function ChallengeSection({ onNext }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <motion.div 
@@ -1393,20 +1381,7 @@ function DiscoverSection({ scatterRef, showScatterInsight, setShowScatterInsight
 function TransformSection({ transformRef, animationPhase, setAnimationPhase, transformationComplete, onNext }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [transformationComplete]);
+  useMathJax(contentRef, [transformationComplete]);
   
   return (
     <div ref={contentRef} className="space-y-6">
@@ -1482,20 +1457,7 @@ function TransformSection({ transformRef, animationPhase, setAnimationPhase, tra
 function ResultsSection({ stats, showFinalResult, setShowFinalResult }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [showFinalResult]);
+  useMathJax(contentRef, [stats, showFinalResult]);
   
   return (
     <div ref={contentRef} className="space-y-6">

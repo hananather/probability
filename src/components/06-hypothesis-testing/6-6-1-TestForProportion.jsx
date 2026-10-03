@@ -1,30 +1,24 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
+import { useMathJax } from '@/hooks/useMathJax';
 import * as d3 from 'd3'
 import { Button } from '../ui/button'
 import BackToHub from '../ui/BackToHub'
 import ProgressBar from '../ui/ProgressBar'
 import { TrendingUp, TrendingDown, Activity } from 'lucide-react'
 
+const FormulaText = React.memo(function FormulaText({ html, as: Tag = 'span' }) {
+  const ref = useMathJax([html]);
+  return <Tag ref={ref} dangerouslySetInnerHTML={{ __html: html }} />;
+});
+
 
 // Memoized formula sections to prevent re-renders
 const ObservedProportionFormula = React.memo(function ObservedProportionFormula({ observedCount, sampleSize, observedProportion }) {
   const ref = useRef(null)
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && ref.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([ref.current])
-        }
-        window.MathJax.typesetPromise([ref.current]).catch(() => {})
-      }
-    }
-    processMathJax()
-    const timeoutId = setTimeout(processMathJax, 100)
-    return () => clearTimeout(timeoutId)
-  }, [observedCount, sampleSize, observedProportion])
+  useMathJax(ref, [observedCount, sampleSize, observedProportion])
   
   return (
     <div ref={ref} className="text-center">
@@ -38,19 +32,7 @@ const ObservedProportionFormula = React.memo(function ObservedProportionFormula(
 const ContinuityCorrectionFormula = React.memo(function ContinuityCorrectionFormula() {
   const ref = useRef(null)
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && ref.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([ref.current])
-        }
-        window.MathJax.typesetPromise([ref.current]).catch(() => {})
-      }
-    }
-    processMathJax()
-    const timeoutId = setTimeout(processMathJax, 100)
-    return () => clearTimeout(timeoutId)
-  }, [])
+  useMathJax(ref, [])
   
   return (
     <div ref={ref}>
@@ -64,19 +46,7 @@ const ContinuityCorrectionFormula = React.memo(function ContinuityCorrectionForm
 const TestStatisticFormulas = React.memo(function TestStatisticFormulas({ zStatistic, showContinuity, observedProportion, nullProportion, sampleSize, standardError }) {
   const ref = useRef(null)
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && ref.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([ref.current])
-        }
-        window.MathJax.typesetPromise([ref.current]).catch(() => {})
-      }
-    }
-    processMathJax()
-    const timeoutId = setTimeout(processMathJax, 100)
-    return () => clearTimeout(timeoutId)
-  }, [zStatistic, showContinuity, observedProportion, nullProportion, sampleSize, standardError])
+  useMathJax(ref, [zStatistic, showContinuity, observedProportion, nullProportion, sampleSize, standardError])
   
   return (
     <div ref={ref} className="text-sm">
@@ -99,19 +69,7 @@ const TestStatisticFormulas = React.memo(function TestStatisticFormulas({ zStati
 const HypothesesFormula = React.memo(function HypothesesFormula({ nullProportion, testType }) {
   const ref = useRef(null)
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && ref.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([ref.current])
-        }
-        window.MathJax.typesetPromise([ref.current]).catch(() => {})
-      }
-    }
-    processMathJax()
-    const timeoutId = setTimeout(processMathJax, 100)
-    return () => clearTimeout(timeoutId)
-  }, [nullProportion, testType])
+  useMathJax(ref, [nullProportion, testType])
   
   return (
     <div ref={ref}>
@@ -129,20 +87,7 @@ const HypothesesFormula = React.memo(function HypothesesFormula({ nullProportion
 const WorkedExample = React.memo(function WorkedExample() {
   const contentRef = useRef(null)
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current])
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {})
-      }
-    }
-    
-    processMathJax()
-    const timeoutId = setTimeout(processMathJax, 100)
-    return () => clearTimeout(timeoutId)
-  }, [])
+  useMathJax(contentRef, [])
   
   return (
     <div className="bg-neutral-800 rounded-lg p-6">
@@ -258,19 +203,7 @@ const WorkedExample = React.memo(function WorkedExample() {
 const BinomialFoundationCompletion = React.memo(function BinomialFoundationCompletion() {
   const contentRef = useRef(null)
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current])
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {})
-      }
-    }
-    processMathJax()
-    const timeoutId = setTimeout(processMathJax, 100)
-    return () => clearTimeout(timeoutId)
-  }, [])
+  useMathJax(contentRef, [])
   
   return (
     <div
@@ -305,19 +238,7 @@ const BinomialFoundationCompletion = React.memo(function BinomialFoundationCompl
 const ContinuityCorrectionCompletion = React.memo(function ContinuityCorrectionCompletion() {
   const contentRef = useRef(null)
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current])
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {})
-      }
-    }
-    processMathJax()
-    const timeoutId = setTimeout(processMathJax, 100)
-    return () => clearTimeout(timeoutId)
-  }, [])
+  useMathJax(contentRef, [])
   
   return (
     <div
@@ -352,19 +273,7 @@ const ContinuityCorrectionCompletion = React.memo(function ContinuityCorrectionC
 const LargeCountsConditionCompletion = React.memo(function LargeCountsConditionCompletion() {
   const contentRef = useRef(null)
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current])
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {})
-      }
-    }
-    processMathJax()
-    const timeoutId = setTimeout(processMathJax, 100)
-    return () => clearTimeout(timeoutId)
-  }, [])
+  useMathJax(contentRef, [])
   
   return (
     <div
@@ -399,19 +308,7 @@ const LargeCountsConditionCompletion = React.memo(function LargeCountsConditionC
 const SampleSizeEffectsCompletion = React.memo(function SampleSizeEffectsCompletion() {
   const contentRef = useRef(null)
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current])
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {})
-      }
-    }
-    processMathJax()
-    const timeoutId = setTimeout(processMathJax, 100)
-    return () => clearTimeout(timeoutId)
-  }, [])
+  useMathJax(contentRef, [])
   
   return (
     <div
@@ -935,18 +832,18 @@ export default function TestForProportion() {
               <div className="bg-neutral-900/50 p-6 rounded-lg">
                 <h3 className="font-semibold mb-3 text-blue-300 text-lg">Normal Approximation Principle</h3>
                 <p className="text-blue-200 mb-4">
-                  When <span dangerouslySetInnerHTML={{ __html: `\\(n\\)` }} /> is large, the binomial distribution 
-                  <span dangerouslySetInnerHTML={{ __html: ` \\(B(n, p)\\)` }} /> approximates a normal distribution:
+                  When <FormulaText html={`\\(n\\)`} /> is large, the binomial distribution
+                  <FormulaText html={` \\(B(n, p)\\)`} /> approximates a normal distribution:
                 </p>
                 <div className="bg-neutral-800/50 p-4 rounded-lg text-center">
                   <p className="text-blue-100">
-                    Mean: <span dangerouslySetInnerHTML={{ __html: `\\(\\mu = np = ${sampleSize} \\times ${nullProportion.toFixed(2)} = ${(sampleSize * nullProportion).toFixed(1)}\\)` }} />
+                    Mean: <FormulaText html={`\\(\\mu = np = ${sampleSize} \\times ${nullProportion.toFixed(2)} = ${(sampleSize * nullProportion).toFixed(1)}\\)`} />
                   </p>
                   <p className="text-blue-100 mt-2">
-                    Variance: <span dangerouslySetInnerHTML={{ __html: `\\(\\sigma^2 = np(1-p) = ${(sampleSize * nullProportion * (1 - nullProportion)).toFixed(1)}\\)` }} />
+                    Variance: <FormulaText html={`\\(\\sigma^2 = np(1-p) = ${(sampleSize * nullProportion * (1 - nullProportion)).toFixed(1)}\\)`} />
                   </p>
                   <p className="text-blue-100 mt-2">
-                    Std Dev: <span dangerouslySetInnerHTML={{ __html: `\\(\\sigma = ${Math.sqrt(sampleSize * nullProportion * (1 - nullProportion)).toFixed(2)}\\)` }} />
+                    Std Dev: <FormulaText html={`\\(\\sigma = ${Math.sqrt(sampleSize * nullProportion * (1 - nullProportion)).toFixed(2)}\\)`} />
                   </p>
                 </div>
               </div>
@@ -964,7 +861,7 @@ export default function TestForProportion() {
                   </li>
                   <li className="flex items-start">
                     <span className="text-purple-400 mr-2">→</span>
-                    <span>Works well when both <span dangerouslySetInnerHTML={{ __html: `\(np \geq 10\)` }} /> and <span dangerouslySetInnerHTML={{ __html: `\(n(1-p) \geq 10\)` }} /></span>
+                    <span>Works well when both <FormulaText html={`\\(np \\geq 10\\)`} /> and <FormulaText html={`\\(n(1-p) \\geq 10\\)`} /></span>
                   </li>
                 </ul>
               </div>
@@ -1186,9 +1083,7 @@ export default function TestForProportion() {
                   For the normal approximation to be valid, both conditions must be satisfied:
                 </p>
                 <div className="bg-neutral-800/50 p-4 rounded-lg text-center">
-                  <div dangerouslySetInnerHTML={{ 
-                    __html: `\\[np_0 \\geq 10 \\text{ and } n(1-p_0) \\geq 10\\]` 
-                  }} />
+                  <FormulaText as="div" html={`\\[np_0 \\geq 10 \\text{ and } n(1-p_0) \\geq 10\\]`} />
                 </div>
                 <p className="text-sm mt-4 text-purple-200">
                   This ensures the distribution isn't too skewed and has enough data in both tails for the normal curve to be a good approximation.
@@ -1248,7 +1143,7 @@ export default function TestForProportion() {
           
           <div className="mb-4">
             <p className="text-gray-400">
-              Testing <span dangerouslySetInnerHTML={{ __html: `\\(H_0: p = 0.5\\)` }} /> vs <span dangerouslySetInnerHTML={{ __html: `\\(H_1: p \\neq 0.5\\)` }} /> with observed proportion <span dangerouslySetInnerHTML={{ __html: `\\(\\hat{p} = 0.6\\)` }} />
+              Testing <FormulaText html={`\\(H_0: p = 0.5\\)`} /> vs <FormulaText html={`\\(H_1: p \\neq 0.5\\)`} /> with observed proportion <FormulaText html={`\\(\\hat{p} = 0.6\\)`} />
             </p>
           </div>
           
@@ -1379,7 +1274,7 @@ export default function TestForProportion() {
                 : 'bg-neutral-900/50'
             }`}>
               <p className={`font-semibold ${pValue < 0.05 ? 'text-red-400' : 'text-neutral-300'}`}>
-                Decision at <span dangerouslySetInnerHTML={{ __html: `\\\\(\\\\alpha = 0.05\\\\)` }} />: {pValue < 0.05 ? <>Reject <span dangerouslySetInnerHTML={{ __html: `\\\\(H_0\\\\)` }} /></> : <>Fail to reject <span dangerouslySetInnerHTML={{ __html: `\\\\(H_0\\\\)` }} /></>}
+                Decision at <FormulaText html={`\\(\\alpha = 0.05\\)`} />: {pValue < 0.05 ? <>Reject <FormulaText html={`\\(H_0\\)`} /></> : <>Fail to reject <FormulaText html={`\\(H_0\\)`} /></>}
               </p>
               <p className={`text-sm mt-1 ${pValue < 0.05 ? 'text-red-300' : 'text-neutral-400'}`}>
                 {pValue < 0.05 
@@ -1405,7 +1300,7 @@ export default function TestForProportion() {
           <div className="bg-neutral-800/50 rounded p-4">
             <h4 className="font-bold text-white mb-2">Normal Approximation</h4>
             <p className="text-neutral-300">
-              Valid when both <span dangerouslySetInnerHTML={{ __html: `\\(np_0 \\geq 10\\)` }} /> and <span dangerouslySetInnerHTML={{ __html: `\\(n(1-p_0) \\geq 10\\)` }} />. For smaller samples,
+              Valid when both <FormulaText html={`\\(np_0 \\geq 10\\)`} /> and <FormulaText html={`\\(n(1-p_0) \\geq 10\\)`} />. For smaller samples,
               use exact binomial test or Wilson score interval.
             </p>
           </div>
@@ -1422,15 +1317,15 @@ export default function TestForProportion() {
             <h4 className="font-bold text-white mb-2">Sample Size Planning</h4>
             <p className="text-neutral-300">
               To detect difference δ with power 1-β:
-              <span dangerouslySetInnerHTML={{ __html: `\\(n \\approx p(1-p)(z_\\alpha + z_\\beta)^2/\\delta^2\\)` }} />
+              <FormulaText html={`\\(n \\approx p(1-p)(z_\\alpha + z_\\beta)^2/\\delta^2\\)`} />
             </p>
           </div>
           
           <div className="bg-neutral-800/50 rounded p-4">
             <h4 className="font-bold text-white mb-2">Effect of Sample Size</h4>
             <p className="text-neutral-300">
-              Larger samples can detect smaller deviations from <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />. With <span dangerouslySetInnerHTML={{ __html: `\\(n=500\\)` }} />,
-              even a 3% difference from <span dangerouslySetInnerHTML={{ __html: `\\(p_0\\)` }} /> may be statistically significant.
+              Larger samples can detect smaller deviations from <FormulaText html={`\\(H_0\\)`} />. With <FormulaText html={`\\(n=500\\)`} />,
+              even a 3% difference from <FormulaText html={`\\(p_0\\)`} /> may be statistically significant.
             </p>
           </div>
         </div>
