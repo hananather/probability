@@ -217,6 +217,22 @@ describe('actual Next regression pages with scoped real MathJax', () => {
     expectPreservedMath(container, nodes, calls);
   });
 
+  it('squares the entire signed correlation in the displayed negative-scenario denominator', async () => {
+    startup.resolve(); await mount(CorrelationCoefficient);
+    const controls = getByRole(container, 'heading', { name: 'Explore Different Scenarios' }).parentElement;
+    await click('Strong Negative', controls);
+    const source = sourcePasses.findLast(pass => /t = \\frac\{-[\d.]+\\sqrt/.test(pass.text))?.text;
+    expect(source).toBeDefined();
+    const signedR = /t = \\frac\{(-[\d.]+)\\sqrt/.exec(source)[1];
+    expect(source).toContain(`\\sqrt{1-\\left(${signedR}\\right)^2}`);
+    const denominator = /\\times [\d.]+\}\{([\d.]+)\} = -[\d.]+/.exec(source)[1];
+    expect(Number(denominator)).toBeCloseTo(Math.sqrt(1 - Number(signedR) ** 2), 3);
+    const calculation = getByRole(container, 'region', { name: 'Correlation test statistic calculation' });
+    expect(calculation.querySelector('mjx-container')).not.toBeNull();
+    expect(calculation.querySelector('mjx-merror')).toBeNull();
+    expect(raw(calculation)).toEqual([]);
+  });
+
   it('reveals simple regression calculations and preserves them across line and residual changes', async () => {
     startup.resolve(); await mount(SimpleLinearRegression);
     await click('Show Comparison'); await click('Show Calculations');

@@ -550,7 +550,7 @@ const StatisticalSignificance = React.memo(function StatisticalSignificance({ co
             </FormulaScroll>
             <p>For our data:</p>
             <FormulaScroll className="text-center my-3" label="Correlation test statistic calculation">
-              <span dangerouslySetInnerHTML={{ __html: `\\[t = \\frac{${correlation.toFixed(4)}\\sqrt{${sampleSize}-2}}{\\sqrt{1-${correlation.toFixed(4)}^2}} = \\frac{${correlation.toFixed(4)} \\times ${Math.sqrt(sampleSize-2).toFixed(4)}}{${Math.sqrt(1-correlation*correlation).toFixed(4)}} = ${tStat.toFixed(3)}\\]` }} />
+              <span dangerouslySetInnerHTML={{ __html: `\\[t = \\frac{${correlation.toFixed(4)}\\sqrt{${sampleSize}-2}}{\\sqrt{1-\\left(${correlation.toFixed(4)}\\right)^2}} = \\frac{${correlation.toFixed(4)} \\times ${Math.sqrt(sampleSize-2).toFixed(4)}}{${Math.sqrt(1-correlation*correlation).toFixed(4)}} = ${tStat.toFixed(3)}\\]` }} />
             </FormulaScroll>
             <p className="text-xs text-neutral-400">
               with df = n - 2 = {df} degrees of freedom
