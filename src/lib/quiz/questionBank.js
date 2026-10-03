@@ -2294,9 +2294,19 @@ export const chapterQuestions = {
   }
 };
 
-// Helper function to get questions for a specific chapter and version
+export const QUIZ_VERSIONS = Object.freeze(['engineering', 'biostats', 'social']);
+export const QUIZ_BANK_REVISION = '2026-10-03.1';
+
+export function isQuizVersion(version) {
+  return typeof version === 'string' && QUIZ_VERSIONS.includes(version);
+}
+
+// Bank metadata records the actual content selected when a session is pinned.
 export function getChapterQuestions(chapter, version = 'engineering') {
-  const chapterData = chapterQuestions[chapter];
+  if (!isQuizVersion(version)) return null;
+  const number = Number(chapter);
+  if (!Number.isInteger(number) || number < 1 || number > 7) return null;
+  const chapterData = chapterQuestions[number];
   if (!chapterData) return null;
   
   // Get the questions for the requested version
@@ -2310,7 +2320,10 @@ export function getChapterQuestions(chapter, version = 'engineering') {
   
   return {
     ...chapterData,
-    questions
+    questions,
+    bankRevision: QUIZ_BANK_REVISION,
+    requestedVersion: version,
+    effectiveVersion: versionQuestions?.length > 0 ? version : 'engineering',
   };
 }
 

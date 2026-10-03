@@ -245,16 +245,17 @@ describe('reset, legacy writers and import isolation', () => {
     expect((await left.exportProgress()).recovery).toContainEqual(expect.objectContaining({ reason: 'write-predates-reset', operation: expect.objectContaining({ activityId: first }) }));
   });
 
-  it('imports only new legacy attempts and preserves historical best scores after reset', async () => {
+  it('archives newly observed legacy attempts after reset without restoring their quiz projection', async () => {
     const db = memoryPersistence(); const legacyStorage = storageWith({ quiz_attempts: JSON.stringify({ 1: [ATTEMPT_FIXTURE] }), quiz_best_scores: '{"1":90}' });
     const subject = store(environment(db, { legacyStorage })); await subject.hydrate();
     expect(selectQuizProgress(subject.getSnapshot().data, 1).bestScore).toBe(90);
     await subject.resetChapter(1);
     legacyStorage.setItem('quiz_attempts', JSON.stringify({ 1: [ATTEMPT_FIXTURE, { ...ATTEMPT_FIXTURE, id: 'new', percentage: 50 }] }));
     await subject.refreshLegacy();
-    expect(Object.values(subject.getSnapshot().data.quizAttempts)).toHaveLength(1);
-    expect(selectQuizProgress(subject.getSnapshot().data, 1).bestScore).toBe(50);
+    expect(Object.values(subject.getSnapshot().data.quizAttempts)).toHaveLength(0);
+    expect(selectQuizProgress(subject.getSnapshot().data, 1).attempted).toBe(false);
     expect(subject.getSnapshot().data.legacyBestScores['chapter-1']).toBeUndefined();
+    expect(subject.getSnapshot().data.migration.sources.quiz_attempts.raw).toContain('"id":"new"');
   });
 
   it('preserves invalid JSON for recovery while ingesting later corrected legacy input', async () => {

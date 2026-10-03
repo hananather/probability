@@ -66,12 +66,12 @@ export function QuizTimer({
     return 'text-neutral-400';
   };
 
-  if (hidden) return null;
+  if (hidden && !onPauseToggle) return null;
   
   return (
     <div className="flex items-center gap-4 bg-neutral-900 rounded-lg px-4 py-3 border border-neutral-700">
       {/* Timer Display */}
-      <div className="flex items-center gap-2">
+      {!hidden && <div className="flex items-center gap-2">
         {isWarning ? (
           <AlertTriangle className="w-5 h-5 text-orange-500 animate-pulse" />
         ) : (
@@ -80,10 +80,11 @@ export function QuizTimer({
         <span className={`text-lg font-mono font-semibold ${getTimerColor()}`}>
           {formatTime(timeRemaining)}
         </span>
-      </div>
+      </div>}
+      {hidden && <span className="text-sm text-neutral-400">Timer hidden · {isPaused ? 'Paused' : 'Running'}</span>}
       
       {/* Progress Bar */}
-      <div className="flex-1 max-w-[200px]">
+      {!hidden && <div className="flex-1 max-w-[200px]">
         <div className="h-2 bg-neutral-800 rounded-full overflow-hidden">
           <div 
             className={`h-full transition-all duration-1000 ease-linear ${
@@ -94,13 +95,13 @@ export function QuizTimer({
             style={{ width: `${100 - progressPercentage}%` }}
           />
         </div>
-      </div>
+      </div>}
       
       {/* Pause/Play Button */}
       {onPauseToggle && (
         <button
           onClick={onPauseToggle}
-          className="p-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition-colors"
+          className="inline-flex items-center p-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition-colors"
           title={isPaused ? "Resume" : "Pause"}
           aria-label={isPaused ? 'Resume quiz timer' : 'Pause quiz timer'}
           aria-pressed={isPaused}
@@ -110,18 +111,19 @@ export function QuizTimer({
           ) : (
             <Pause className="w-4 h-4 text-neutral-400" />
           )}
+          {hidden && <span className="ml-2 text-sm text-neutral-300">{isPaused ? 'Resume' : 'Pause'}</span>}
         </button>
       )}
       
       {/* Warning Message */}
-      {isWarning && timeRemaining > 60 && (
+      {!hidden && isWarning && timeRemaining > 60 && (
         <span className="text-xs text-orange-500 animate-pulse">
           {Math.ceil(timeRemaining / 60)} min remaining
         </span>
       )}
       
       {/* Critical Warning */}
-      {timeRemaining <= 60 && timeRemaining > 0 && (
+      {!hidden && timeRemaining <= 60 && timeRemaining > 0 && (
         <span className="text-xs text-red-500 font-semibold animate-pulse">
           Last minute!
         </span>

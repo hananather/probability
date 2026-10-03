@@ -1,4 +1,5 @@
 import { ChapterQuiz } from '@/components/quiz/ChapterQuiz';
+import { isQuizVersion } from '@/lib/quiz/questionBank';
 import { notFound } from 'next/navigation';
 
 // Chapter titles for metadata
@@ -37,7 +38,8 @@ export default async function DynamicQuizPage({ params, searchParams }) {
   const search = await searchParams;
   
   // Get version from URL params, default to engineering
-  const version = search?.version || 'engineering';
+  const version = search?.version ?? 'engineering';
+  if (!isQuizVersion(version)) notFound();
   
   // Convert string to number and validate
   const chapterNum = Number(chapterId);

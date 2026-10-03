@@ -12,26 +12,32 @@ export function MultiSelectQuestion({
   onAnswer,
   showExplanation = false,
   disabled = false,
+  reviewMode = false,
+  questionId,
+  questionHeadingRef,
   savedAnswer
 }) {
   const [selectedAnswers, setSelectedAnswers] = useState(new Set(savedAnswer?.answer || []));
-  const [showFeedback, setShowFeedback] = useState(Boolean(savedAnswer) || disabled);
-  const [isAnswered, setIsAnswered] = useState(Boolean(savedAnswer) || disabled);
+  const [showFeedback, setShowFeedback] = useState(Boolean(savedAnswer) || reviewMode);
+  const [isAnswered, setIsAnswered] = useState(Boolean(savedAnswer) || reviewMode);
+  const questionIdentity = questionId ?? JSON.stringify([question, options, correctIndices]);
+  const savedAnswerIdentity = JSON.stringify([Boolean(savedAnswer), savedAnswer?.answer ?? null, savedAnswer?.timestamp ?? null, savedAnswer?.isCorrect ?? null]);
   
   // Use safe MathJax processing - useMathJax returns a ref
   const questionRef = useMathJax([question]);
   const optionsRef = useMathJax(options); // options is already an array
   const explanationRef = useMathJax([explanation]);
   
-  // Reset state when question changes
+  // Preserve drafts when unrelated session updates clone the pinned options or saved answer.
   useEffect(() => {
-    setSelectedAnswers(new Set(savedAnswer?.answer || []));
-    setShowFeedback(Boolean(savedAnswer) || disabled);
-    setIsAnswered(Boolean(savedAnswer) || disabled);
-  }, [question, options, savedAnswer, disabled]);
+    const [hasSavedAnswer, answer] = JSON.parse(savedAnswerIdentity);
+    setSelectedAnswers(new Set(answer || []));
+    setShowFeedback(hasSavedAnswer || reviewMode);
+    setIsAnswered(hasSavedAnswer || reviewMode);
+  }, [questionIdentity, savedAnswerIdentity, reviewMode]);
   
   const handleToggleOption = (index) => {
-    if (isAnswered || disabled) return;
+    if (isAnswered || disabled || reviewMode) return;
     
     const newSelected = new Set(selectedAnswers);
     if (newSelected.has(index)) {
@@ -43,7 +49,7 @@ export function MultiSelectQuestion({
   };
   
   const handleSubmit = () => {
-    if (isAnswered || disabled) return;
+    if (isAnswered || disabled || reviewMode) return;
     if (selectedAnswers.size === 0) return;
     
     setShowFeedback(true);
@@ -76,7 +82,7 @@ export function MultiSelectQuestion({
     <div className="space-y-4">
       {/* Question */}
       <div ref={questionRef}>
-        <p className="text-base text-neutral-200 font-medium">{question}</p>
+        <h2 ref={questionHeadingRef} tabIndex={-1} className="text-base text-neutral-200 font-medium scroll-mt-24">{question}</h2>
         <p className="text-sm text-teal-400 mt-2">Select all that apply:</p>
       </div>
       
@@ -93,7 +99,7 @@ export function MultiSelectQuestion({
             <button
               key={index}
               onClick={() => handleToggleOption(index)}
-              disabled={isAnswered || disabled}
+              disabled={isAnswered || disabled || reviewMode}
               aria-pressed={isSelected}
               className={`
                 w-full p-4 rounded-lg border text-left transition-all duration-300
@@ -182,7 +188,7 @@ export function MultiSelectQuestion({
             <>
               <Button
                 onClick={handleSubmit}
-                disabled={selectedAnswers.size === 0}
+                disabled={selectedAnswers.size === 0 || disabled || reviewMode}
                 variant="primary"
                 size="default"
                 className="min-w-[120px]"
@@ -204,9 +210,9 @@ export function MultiSelectQuestion({
                 <>
                   <div role="status" className="flex items-center gap-2 text-red-400">
                     <XCircle className="w-5 h-5" />
-                    <span className="font-medium">{savedAnswer || !disabled ? 'Not quite right' : 'Not answered'}</span>
+                    <span className="font-medium">{savedAnswer || !reviewMode ? 'Not quite right' : 'Not answered'}</span>
                   </div>
-                  {!disabled && <Button
+                  {!disabled && !reviewMode && <Button
                     onClick={handleTryAgain}
                     variant="neutral"
                     size="sm"
