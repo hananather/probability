@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useMathJax } from '@/hooks/useMathJax';
+import { calculateVarianceRatioTest } from './varianceRatioTest';
 
 const FDistributionWorkedExample = React.memo(function FDistributionWorkedExample({ 
   n1 = 15, 
@@ -12,11 +13,9 @@ const FDistributionWorkedExample = React.memo(function FDistributionWorkedExampl
 }) {
   const contentRef = useMathJax([n1, n2, s1_squared, s2_squared, alpha]);
   
-  // Calculate values
-  const df1 = n1 - 1;
-  const df2 = n2 - 1;
-  const fStatistic = s1_squared / s2_squared;
-  const criticalValue = 2.35; // F(0.05, 14, 19) from table
+  const result = calculateVarianceRatioTest({ n1, n2, s1_squared, s2_squared, alpha });
+  if (!result.valid) return <div ref={contentRef} role="status" className="rounded-lg bg-gray-800/50 p-6 text-gray-200">{result.error}</div>;
+  const { df1, df2, fStatistic, lowerCriticalValue, upperCriticalValue, rejectNull } = result;
   
   return (
     <div ref={contentRef} className="bg-gray-800/50 p-6 rounded-lg text-gray-200 text-sm leading-relaxed">
@@ -31,6 +30,7 @@ const FDistributionWorkedExample = React.memo(function FDistributionWorkedExampl
           {`Sample variances: \\(s_1^2 = ${s1_squared}\\), \\(s_2^2 = ${s2_squared}\\)`}<br/>
           {`Test if population variances are equal at \\(\\alpha = ${alpha}\\) level.`}
         </p>
+        <p className="ml-4 mt-2 text-gray-300">Assume independent random samples from two normal populations.</p>
       </div>
       
       <div className="mb-4">
@@ -61,27 +61,30 @@ const FDistributionWorkedExample = React.memo(function FDistributionWorkedExampl
       </div>
       
       <div className="mb-4">
-        <p className="mb-1 font-medium text-pink-400">4. Find critical value:</p>
+        <p className="mb-1 font-medium text-pink-400">4. Find both critical values:</p>
         <div className="ml-4">
           <p className="text-pink-200">
-            For a two-tailed test at α = {alpha}, we need Fₐ/₂,ν₁,ν₂:
+            A two-sided test places α/2 = {alpha / 2} in each tail. These cutoffs are cumulative-distribution quantiles for ({df1}, {df2}) degrees of freedom:
           </p>
           <p className="font-mono mt-1">
-            F₀.₀₂₅, {df1}, {df2} = {criticalValue} (from F-table)
+            Lower cutoff (quantile {alpha / 2}): {lowerCriticalValue.toFixed(3)}
           </p>
+          <p className="font-mono mt-1">Upper cutoff (quantile {1 - alpha / 2}): {upperCriticalValue.toFixed(3)}</p>
+          <p className="mt-2 text-gray-300">Reject H₀ when F is below the lower cutoff or above the upper cutoff. Keep sample 1 in the numerator.</p>
+          <p className="mt-2 text-gray-300">Cutoffs are rounded for display; the decision uses unrounded values.</p>
         </div>
       </div>
       
       <div className="mb-4">
         <p className="mb-1 font-medium text-violet-400">5. Make decision:</p>
         <div className={`ml-4 p-3 rounded-lg ${
-          fStatistic > criticalValue 
+          rejectNull
             ? "bg-gradient-to-r from-red-900/30 to-pink-900/30 border border-red-600/30" 
             : "bg-gradient-to-r from-green-900/30 to-emerald-900/30 border border-green-600/30"
         }`}>
-          <p className={fStatistic > criticalValue ? "text-red-300" : "text-green-300"}>
-            Since F = {fStatistic.toFixed(3)} {fStatistic > criticalValue ? '>' : '<'} {criticalValue} (critical value),<br/>
-            we {fStatistic > criticalValue ? 'reject' : 'fail to reject'} H₀ at the {alpha} significance level.
+          <p className={rejectNull ? "text-red-300" : "text-green-300"}>
+            F = {fStatistic.toFixed(3)} is {rejectNull ? 'outside' : 'inside'} the non-rejection interval [{lowerCriticalValue.toFixed(3)}, {upperCriticalValue.toFixed(3)}].<br/>
+            We {rejectNull ? 'reject' : 'fail to reject'} H₀ at the {alpha} significance level.
           </p>
         </div>
       </div>
@@ -93,6 +96,7 @@ const FDistributionWorkedExample = React.memo(function FDistributionWorkedExampl
           the F-statistic follows an F-distribution with (ν₁, ν₂) degrees of freedom. 
           This test is sensitive to the normality assumption of the underlying populations.
         </p>
+        <a href="https://itl.nist.gov/div898/handbook/eda/section3/eda359.htm" className="mt-2 inline-block underline">Reference: NIST F-test for equality of variances</a>
       </div>
     </div>
   );
