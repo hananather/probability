@@ -38,7 +38,7 @@ export function Header() {
           <div className="flex shrink-0 items-center gap-2 sm:gap-4">
             {/* Progress Indicator */}
             {!loading && (
-              <div className="hidden lg:flex items-center space-x-2 text-sm text-neutral-400">
+              <Link href="/progress" aria-label="View your learning progress" className="hidden lg:flex items-center space-x-2 rounded text-sm text-neutral-400 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400">
                 <span>Progress:</span>
                 <div className="w-24 h-2 bg-neutral-700 rounded-full overflow-hidden">
                   <div 
@@ -47,7 +47,7 @@ export function Header() {
                   />
                 </div>
                 <span>{progress.completed}/{progress.total}</span>
-              </div>
+              </Link>
             )}
 
             <MotionPreferenceControl compact />

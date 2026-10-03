@@ -65,6 +65,7 @@ export function useProgress(userId = 'local') {
   }, false), [execute, setSyncing, userId]);
   const retryLocalPersistence = useCallback(() => execute(() => progressService.retryLocalPersistence(userId), false), [execute, userId]);
   return {
+    learningData: state.data,
     progress, loading: state.loading, error: state.error || (Object.hasOwn(actionErrors, userId) ? actionErrors[userId] : null), syncing: Object.hasOwn(syncingProfiles, userId) && syncingProfiles[userId], hasPendingSync: false,
     persistenceStatus: state.persistenceStatus, pendingLocalWrites: state.pendingLocalWrites,
     updateChapterProgress, completeSection, completeChapter, startChapter, getChapterProgress,

@@ -41,6 +41,11 @@ export function Footer() {
             </h3>
             <ul className="space-y-3">
               <li>
+                <Link href="/progress" className="text-sm text-neutral-400 hover:text-white transition-colors">
+                  Your Learning Progress
+                </Link>
+              </li>
+              <li>
                 <Link href="/prerequisites" className="flex items-center space-x-2 text-neutral-400 hover:text-white transition-colors">
                   <AlertCircle className="h-4 w-4" />
                   <span className="text-sm">Prerequisites Guide</span>

@@ -11,6 +11,14 @@ import {
 
 const resources = [
   {
+    icon: BookOpen,
+    title: 'Your Learning Progress',
+    description: 'Review your study records and keep a backup of your progress.',
+    link: '/progress',
+    features: ['Study completion', 'Recorded quiz results', 'Backup and restore'],
+    color: 'text-teal-400'
+  },
+  {
     icon: FileText,
     title: 'Formula Reference',
     description: 'Find formulas and interactive builders for each chapter.',
