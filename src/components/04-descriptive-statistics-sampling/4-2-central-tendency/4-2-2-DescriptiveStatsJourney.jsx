@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { Button } from '@/components/ui/button';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { InteractiveJourneyNavigation } from '@/components/ui/InteractiveJourneyNavigation';
@@ -7,6 +7,8 @@ import BackToHub from '@/components/ui/BackToHub';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import * as d3 from 'd3';
+import { LEGACY_SOURCE_BY_KEY } from '@/lib/curriculum/manifest';
+import { LearningActivityContext, useLearningActivity } from '@/hooks/useLearningActivity';
 
 const STAGES = [
   {
@@ -566,76 +568,63 @@ function InteractiveDataViz({ data, onDataChange, activeStage }) {
   );
 }
 
-export default function DescriptiveStatsJourney({ onComplete }) {
-  const [currentStage, setCurrentStage] = useState(0);
-  const [completedStages, setCompletedStages] = useState([]);
+const SOURCE = LEGACY_SOURCE_BY_KEY['descriptive-stats-journey-progress'];
+
+function JourneyContent({ learning, onComplete }) {
+  const restored = SOURCE.targetIds.indexOf(learning.resume?.activityId);
+  const currentStage = restored >= 0 ? restored : 0;
+  const completedStages = STAGES.map((_, index) => index).filter(index => learning.isCompleted(SOURCE.targetIds[index]));
   const [showStageSelect, setShowStageSelect] = useState(false);
   const [data, setData] = useState([5, 7, 8, 9, 10, 11, 12, 14, 15, 18]);
-  const [interactionCount, setInteractionCount] = useState(0);
-  const [showKnowledgeCheck, setShowKnowledgeCheck] = useState(false);
-  
-  // Load progress from localStorage
+  const interactionRef = useRef(0);
+  useEffect(() => { interactionRef.current = 0; }, [currentStage]);
+  const contexts = useRef({});
+  const notification = useRef(null);
+  const stageGeneration = learning.getResetGeneration(SOURCE.targetIds[currentStage], learning.writeCheckpoint);
+  const contextKey = `${currentStage}:${stageGeneration}`;
+  if (!contexts.current[contextKey]) contexts.current[contextKey] = learning.captureWriteContext(SOURCE.containerId);
+  const context = contexts.current[contextKey];
+  const currentContext = (index, captured) => learning.getResetGeneration(SOURCE.targetIds[index], learning.captureWriteContext(SOURCE.targetIds[index])) === learning.getResetGeneration(SOURCE.targetIds[index], captured);
+  const completeStage = (index = currentStage, captured = context) => {
+    if (!currentContext(index, captured)) return;
+    notification.current = captured;
+    void learning.completeActivity(SOURCE.targetIds[index], { sourceKey: 'descriptive-journey-stage-study', context: captured });
+  };
   useEffect(() => {
-    const savedProgress = localStorage.getItem('descriptive-stats-journey-progress');
-    if (savedProgress) {
-      const { stage, completed } = JSON.parse(savedProgress);
-      setCurrentStage(stage);
-      setCompletedStages(completed);
+    if (completedStages.length === STAGES.length && notification.current) {
+      notification.current = null;
+      onComplete?.();
     }
-  }, []);
-  
-  // Save progress
-  useEffect(() => {
-    localStorage.setItem('descriptive-stats-journey-progress', JSON.stringify({
-      stage: currentStage,
-      completed: completedStages
-    }));
-  }, [currentStage, completedStages]);
-  
-  const handleDataChange = (newData) => {
+  }, [completedStages.length, onComplete]);
+
+  const handleDataChange = newData => {
+    if (!currentContext(currentStage, context)) return;
     setData(newData);
-    setInteractionCount(prev => prev + 1);
-    
-    // Mark stage as complete after sufficient interaction
-    if (interactionCount >= 3 && !completedStages.includes(currentStage)) {
-      setCompletedStages([...completedStages, currentStage]);
-    }
+    interactionRef.current += 1;
+    if (interactionRef.current >= 4 && !completedStages.includes(currentStage)) completeStage();
   };
-  
-  const handleStageComplete = () => {
-    if (!completedStages.includes(currentStage)) {
-      setCompletedStages([...completedStages, currentStage]);
-    }
-    if (currentStage < STAGES.length - 1) {
-      setCurrentStage(currentStage + 1);
-      setInteractionCount(0);
-    } else {
-      // All stages completed - call onComplete
-      if (onComplete) {
-        onComplete();
-      }
-    }
-  };
-  
-  const handleStageSelect = (index) => {
-    setCurrentStage(index);
+  const handleStageComplete = () => completeStage();
+  const handleStageSelect = index => {
+    if (!Number.isInteger(index) || index < 0 || index >= STAGES.length) return;
+    void learning.setResume(SOURCE.containerId, { activityId: SOURCE.targetIds[index], kind: 'stage' }, { context: learning.writeContext });
     setShowStageSelect(false);
-    setInteractionCount(0);
+    interactionRef.current = 0;
   };
-  
+
   const addOutlier = () => {
     const outlierValue = Math.random() > 0.5 ? 25 + Math.random() * 5 : Math.random() * 3;
     setData([...data, outlierValue]);
-    setInteractionCount(prev => prev + 1);
+    interactionRef.current += 1;
   };
   
   const resetData = () => {
     setData([5, 7, 8, 9, 10, 11, 12, 14, 15, 18]);
-    setInteractionCount(0);
+    interactionRef.current = 0;
   };
   
   return (
     <div className="space-y-6">
+      {completedStages.length === STAGES.length && <p role="status" className="text-green-300">All four journey stages are studied.</p>}
       {/* Journey Header */}
       <div className="bg-neutral-900 border border-purple-600/30 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
@@ -671,6 +660,8 @@ export default function DescriptiveStatsJourney({ onComplete }) {
               {STAGES.map((stage, index) => (
                 <button
                   key={stage.id}
+                  aria-pressed={currentStage === index}
+                  aria-label={`${STAGES[index].title}${completedStages.includes(index) ? ": Studied" : ""}`}
                   onClick={() => handleStageSelect(index)}
                   className={cn(
                     "p-4 rounded-lg border transition-all text-left",
@@ -726,6 +717,9 @@ export default function DescriptiveStatsJourney({ onComplete }) {
         >
           Add Outlier
         </Button>
+        <Button onClick={handleStageComplete} disabled={completedStages.includes(currentStage)}>
+          {completedStages.includes(currentStage) ? '✓ Stage studied' : 'Mark stage as studied'}
+        </Button>
         <Button
           variant="outline"
           size="sm"
@@ -738,7 +732,7 @@ export default function DescriptiveStatsJourney({ onComplete }) {
       {/* Statistical Analysis */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={currentStage}
+          key={contextKey}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
@@ -756,10 +750,7 @@ export default function DescriptiveStatsJourney({ onComplete }) {
       <InteractiveJourneyNavigation
         currentSection={currentStage}
         totalSections={STAGES.length}
-        onNavigate={(newStage) => {
-          setCurrentStage(newStage);
-          setInteractionCount(0);
-        }}
+        onNavigate={handleStageSelect}
         onComplete={handleStageComplete}
         sectionTitles={STAGES.map(s => s.title)}
         showProgress={true}
@@ -773,4 +764,27 @@ export default function DescriptiveStatsJourney({ onComplete }) {
       <BackToHub chapter={4} bottom />
     </div>
   );
+}
+
+function journeyGeneration(learning) {
+  return JSON.stringify([learning.getResetGeneration(SOURCE.containerId, learning.writeCheckpoint),
+    ...SOURCE.targetIds.map(id => learning.getResetGeneration(id, learning.writeCheckpoint))]);
+}
+
+function StandaloneJourney({ onComplete }) {
+  const learning = useLearningActivity(SOURCE.containerId);
+  if (learning.loading) return <p role="status">Loading your journey progress…</p>;
+  return <>
+    {learning.persistenceStatus === 'session-only' && <div role="status" className="mb-4 text-sm text-amber-200">
+      <p>Your recent changes are only kept for this visit. Export a backup from Your progress before closing this page.</p>
+      <button className="min-h-11 underline" onClick={() => learning.retryLocalPersistence()}>Try saving again</button>
+    </div>}
+    <JourneyContent key={journeyGeneration(learning)} learning={learning} onComplete={onComplete} />
+  </>;
+}
+
+export default function DescriptiveStatsJourney({ onComplete }) {
+  const parent = useContext(LearningActivityContext);
+  if (parent?.containerId === SOURCE.containerId) return <JourneyContent key={journeyGeneration(parent)} learning={parent} onComplete={onComplete} />;
+  return <StandaloneJourney onComplete={onComplete} />;
 }

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import MontyHallIntro from './MontyHallIntro';
 import MontyHallInteractive from './MontyHallGame';
 import MontyHallBayesian from './MontyHallBayesProof';
@@ -8,6 +8,9 @@ import { Button } from '../../ui/button';
 import { ProgressBar } from '../../ui/ProgressBar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Chapter1ReferenceSheet } from '../../reference-sheets/Chapter1ReferenceSheet';
+import { LEGACY_SOURCE_BY_KEY } from '@/lib/curriculum/manifest';
+import { LearningActivityContext, useLearningActivity } from '@/hooks/useLearningActivity';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 // Animation timing constants
 const ANIMATION_CONSTANTS = {
@@ -46,64 +49,55 @@ const STAGES = [
   }
 ];
 
-function MontyHallJourney() {
-  const [currentStage, setCurrentStage] = useState(0);
-  const [completedStages, setCompletedStages] = useState([]);
+const SOURCE = LEGACY_SOURCE_BY_KEY['monty-hall-journey-progress'];
+
+function MontyStage({ index, learning, onComplete }) {
+  const [context] = useState(() => learning.captureWriteContext(SOURCE.containerId));
+  const gameCount = useRef(0);
+  const stage = STAGES[index];
+  const Component = stage.component;
+  const complete = () => onComplete(index, context);
+  const activity = {
+    ...learning, containerId: SOURCE.targetIds[index], writeContext: context,
+    resume: learning.getResume(SOURCE.targetIds[index]),
+    completeActivity: (id = SOURCE.targetIds[index], options = {}) => learning.completeActivity(id, { ...options, context: options.context || context }),
+    setResume: (id, locator, options = {}) => learning.setResume(id, locator, { ...options, context: options.context || context }),
+  };
+  return <LearningActivityContext.Provider value={activity}>
+    <Component {...stage.props} onStageComplete={complete} onGameComplete={index === 1 ? () => {
+      gameCount.current += 1;
+      if (gameCount.current === 3) complete();
+    } : undefined} />
+    <div className="mt-4 flex justify-end">
+      <Button onClick={complete} disabled={learning.isCompleted(SOURCE.targetIds[index])}>
+        {learning.isCompleted(SOURCE.targetIds[index]) ? '✓ Stage studied' : 'Mark stage as studied'}
+      </Button>
+    </div>
+  </LearningActivityContext.Provider>;
+}
+
+function JourneyContent({ learning }) {
+  const restored = SOURCE.targetIds.indexOf(learning.resume?.activityId);
+  const currentStage = restored >= 0 ? restored : 0;
+  const currentStageRef = useRef(currentStage);
+  currentStageRef.current = currentStage;
+  const completedStages = STAGES.map((_, index) => index).filter(index => learning.isCompleted(SOURCE.targetIds[index]));
   const [showStageSelect, setShowStageSelect] = useState(false);
-  const [stage2GameCount, setStage2GameCount] = useState(0);
-  
-  const CurrentComponent = STAGES[currentStage].component;
-  const currentStageProps = STAGES[currentStage].props || {};
-  
-  // Load progress from localStorage
-  useEffect(() => {
-    const savedProgress = localStorage.getItem('monty-hall-journey-progress');
-    if (savedProgress) {
-      const { stage, completed } = JSON.parse(savedProgress);
-      setCurrentStage(stage);
-      setCompletedStages(completed);
-    }
-  }, []);
-  
-  // Save progress
-  useEffect(() => {
-    localStorage.setItem('monty-hall-journey-progress', JSON.stringify({
-      stage: currentStage,
-      completed: completedStages
-    }));
-  }, [currentStage, completedStages]);
-  
-  const handleStageComplete = () => {
-    if (!completedStages.includes(currentStage)) {
-      setCompletedStages([...completedStages, currentStage]);
-    }
-    if (currentStage < STAGES.length - 1) {
-      setCurrentStage(currentStage + 1);
-    }
-  };
-  
-  // Handle game completion for Stage 2 (Play & Learn)
-  const handleStage2GameComplete = () => {
-    if (currentStage === 1) { // Stage 2 is at index 1
-      const newCount = stage2GameCount + 1;
-      setStage2GameCount(newCount);
-      
-      // Auto-complete stage after 3 games
-      if (newCount >= 3 && !completedStages.includes(1)) {
-        handleStageComplete();
-      }
-    }
-  };
-  
-  const handleStageSelect = (index) => {
-    setCurrentStage(index);
+  const reducedMotion = useReducedMotion();
+  const handleStageSelect = index => {
+    if (!Number.isInteger(index) || index < 0 || index >= STAGES.length) return;
+    void learning.setResume(SOURCE.containerId, { activityId: SOURCE.targetIds[index], kind: 'stage' }, { context: learning.writeContext });
     setShowStageSelect(false);
-    // Reset stage 2 game count when changing stages
-    if (index !== 1) {
-      setStage2GameCount(0);
+  };
+  const handleStageComplete = async (index, context) => {
+    const currentContext = () => learning.getResetGeneration(SOURCE.targetIds[index], learning.captureWriteContext(SOURCE.targetIds[index])) === learning.getResetGeneration(SOURCE.targetIds[index], context);
+    if (!currentContext()) return;
+    await learning.completeActivity(SOURCE.targetIds[index], { sourceKey: 'monty-hall-stage-study', context });
+    if (currentContext() && currentStageRef.current === index && index < STAGES.length - 1) {
+      await learning.setResume(SOURCE.containerId, { activityId: SOURCE.targetIds[index + 1], kind: 'stage' }, { context });
     }
   };
-  
+
   return (
     <>
       <Chapter1ReferenceSheet mode="floating" />
@@ -174,7 +168,7 @@ function MontyHallJourney() {
       <AnimatePresence>
         {showStageSelect && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
+            initial={reducedMotion ? false : { opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             className="grid md:grid-cols-2 gap-4"
@@ -182,6 +176,7 @@ function MontyHallJourney() {
             {STAGES.map((stage, index) => (
               <button
                 key={stage.id}
+                aria-pressed={currentStage === index}
                 onClick={() => handleStageSelect(index)}
                 className={`p-4 rounded-lg border-2 text-left transition-all ${
                   index === currentStage
@@ -206,17 +201,13 @@ function MontyHallJourney() {
       {/* Current Stage */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={currentStage}
-          initial={{ opacity: 0, x: 20 }}
+          key={`${currentStage}:${learning.getResetGeneration(SOURCE.targetIds[currentStage], learning.writeContext)}`}
+          initial={reducedMotion ? false : { opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: ANIMATION_CONSTANTS.STAGE_TRANSITION_DURATION }}
+          transition={{ duration: reducedMotion ? 0 : ANIMATION_CONSTANTS.STAGE_TRANSITION_DURATION }}
         >
-          <CurrentComponent 
-            {...currentStageProps}
-            onGameComplete={currentStage === 1 ? handleStage2GameComplete : undefined}
-            onStageComplete={handleStageComplete}
-          />
+          <MontyStage index={currentStage} learning={learning} onComplete={handleStageComplete} />
         </motion.div>
       </AnimatePresence>
       
@@ -225,7 +216,7 @@ function MontyHallJourney() {
         <Button
           variant="secondary"
           size="sm"
-          onClick={() => setCurrentStage(Math.max(0, currentStage - 1))}
+          onClick={() => handleStageSelect(Math.max(0, currentStage - 1))}
           disabled={currentStage === 0}
         >
           ← Previous Stage
@@ -239,7 +230,7 @@ function MontyHallJourney() {
           <Button
             variant="primary"
             size="sm"
-            onClick={handleStageComplete}
+            onClick={() => handleStageSelect(currentStage + 1)}
           >
             Next Stage →
           </Button>
@@ -250,4 +241,14 @@ function MontyHallJourney() {
   );
 }
 
-export default MontyHallJourney;
+export default function MontyHallJourney() {
+  const learning = useLearningActivity(SOURCE.containerId);
+  if (learning.loading) return <p role="status">Loading your journey progress…</p>;
+  return <>
+    {learning.persistenceStatus === 'session-only' && <div role="status" className="mb-4 text-sm text-amber-200">
+      <p>Your recent changes are only kept for this visit. Export a backup from Your progress before closing this page.</p>
+      <button className="min-h-11 underline" onClick={() => learning.retryLocalPersistence()}>Try saving again</button>
+    </div>}
+    <JourneyContent key={learning.resetGeneration} learning={learning} />
+  </>;
+}
