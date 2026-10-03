@@ -8,8 +8,8 @@ import { FooterWrapper } from '@/components/shared/FooterWrapper';
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/chapter1' }));
 vi.mock('next/link', () => ({ default: ({ children, ...props }) => <a {...props}>{children}</a> }));
-vi.mock('@/services/progressService', () => ({
-  default: { getOverallProgress: async () => ({ completedChapters: 1, totalChapters: 7 }) }
+vi.mock('@/hooks/useProgress', () => ({
+  useProgress: () => ({ overallStats: { completedChapters: 1, totalChapters: 7 }, loading: false })
 }));
 
 function mockDesktopQuery(initial) {

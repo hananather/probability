@@ -420,3 +420,16 @@ button {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Start static, then follow the effective device or site preference. */
+html[data-reduced-motion="true"] {
+  scroll-behavior: auto !important;
+}
+
+html[data-reduced-motion="true"] *,
+html[data-reduced-motion="true"] *::before,
+html[data-reduced-motion="true"] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
