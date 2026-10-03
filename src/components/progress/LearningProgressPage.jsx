@@ -81,7 +81,7 @@ export default function LearningProgressPage() {
             <Button type="button" disabled={busy} onClick={retrySave} className="min-h-11">Try saving again</Button>
           )}
         </div>
-        <input ref={fileInput} type="file" accept=".json,application/json" aria-label="Choose a progress backup" className="sr-only" tabIndex={-1} onChange={importBackup} />
+        <input ref={fileInput} type="file" accept=".json,application/json" aria-label="Choose a progress backup" className="hidden" onChange={importBackup} />
         {message && <p role={message.error ? 'alert' : 'status'} className={`mt-3 text-sm ${message.error ? 'text-amber-200' : 'text-teal-200'}`}>{message.text}</p>}
       </section>
 

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef, useCallback, memo } from "react";
+import React, { useState, useEffect, useRef, useCallback, useId, memo } from "react";
 import * as d3 from "@/utils/d3-utils";
 import { 
   VisualizationContainer, 
@@ -494,6 +494,7 @@ const NormalVisualization = memo(({
 NormalVisualization.displayName = 'NormalVisualization';
 
 const NormalZScoreExplorer = () => {
+  const parameterId = useId();
   const colorScheme = createColorScheme('probability');
   
   // Parameters
@@ -605,10 +606,11 @@ const NormalZScoreExplorer = () => {
             <ControlGroup>
               <div className="space-y-3">
                 <div>
-                  <label className="text-sm text-gray-300 mb-1 block">
+                  <label htmlFor={`${parameterId}-mean`} className="text-sm text-gray-300 mb-1 block">
                     Mean (μ): {mu}
                   </label>
                   <RangeSlider
+                    id={`${parameterId}-mean`}
                     value={mu}
                     onChange={(v) => setMu(v)}
                     min={50}
@@ -619,10 +621,11 @@ const NormalZScoreExplorer = () => {
                 </div>
                 
                 <div>
-                  <label className="text-sm text-gray-300 mb-1 block">
+                  <label htmlFor={`${parameterId}-deviation`} className="text-sm text-gray-300 mb-1 block">
                     Standard Deviation (σ): {sigma}
                   </label>
                   <RangeSlider
+                    id={`${parameterId}-deviation`}
                     value={sigma}
                     onChange={(v) => setSigma(v)}
                     min={5}
@@ -633,10 +636,11 @@ const NormalZScoreExplorer = () => {
                 </div>
                 
                 <div>
-                  <label className="text-sm text-gray-300 mb-1 block">
+                  <label htmlFor={`${parameterId}-value`} className="text-sm text-gray-300 mb-1 block">
                     x-value: {xValue.toFixed(1)}
                   </label>
                   <RangeSlider
+                    id={`${parameterId}-value`}
                     value={xValue}
                     onChange={(v) => setXValue(v)}
                     min={0}
