@@ -180,6 +180,11 @@ describe('actual Next regression pages with scoped real MathJax', () => {
 
   it('renders correlation scenarios, all formula tabs, and the worked example', async () => {
     startup.resolve(); await mount(CorrelationCoefficient);
+    const causationExamples = [...container.querySelectorAll('li')];
+    expect(causationExamples.find(node => node.textContent.includes('Ice cream sales'))?.textContent)
+      .toBe('• Ice cream sales ↔ Drowning incidents');
+    expect(causationExamples.find(node => node.textContent.includes('Number of firefighters'))?.textContent)
+      .toBe('• Number of firefighters ↔ Fire damage');
     const scenarioControls = getByRole(container, 'heading', { name: 'Explore Different Scenarios' }).parentElement;
     await click('Strong Negative', scenarioControls);
     expect(raw(container)).toEqual([]);
@@ -191,6 +196,9 @@ describe('actual Next regression pages with scoped real MathJax', () => {
       await click(formula); expect(raw(container)).toEqual([]);
     }
     await click('Linear Only'); expect(raw(container)).toEqual([]);
+    expect(container.textContent).toContain('the symmetric, equally weighted x values -2, -1, 0, 1, 2');
+    expect(container.textContent).toContain('uniformly distributed on [0, 2π]');
+    expect(sourcePasses.some(pass => pass.text.includes('\\rho = -\\sqrt{6}/\\pi \\approx -0.780'))).toBe(true);
     await click('Scale Invariant'); expect(raw(container)).toEqual([]);
     expect(container.textContent).toContain('One negative scale factor reverses the sign; two preserve it.');
     expect(sourcePasses.some(pass => pass.text.includes('r(aX+b, cY+d) = \\text{sign}(ac)'))).toBe(true);

@@ -958,9 +958,9 @@ const KeyInsights = React.memo(function KeyInsights() {
             <div className="bg-neutral-900/50 rounded p-3 space-y-2">
               <p className="text-sm font-semibold text-white">Classic Examples:</p>
               <ul className="text-sm text-neutral-300 space-y-1">
-                <li>• Ice cream sales ↔ Drowning incidents (r ≈ 0.8)</li>
+                <li>• Ice cream sales ↔ Drowning incidents</li>
                 <li className="text-xs text-neutral-400 ml-4">Hidden variable: Temperature/Summer</li>
-                <li>• Number of firefighters ↔ Fire damage (r ≈ 0.9)</li>
+                <li>• Number of firefighters ↔ Fire damage</li>
                 <li className="text-xs text-neutral-400 ml-4">Reverse causation: Bigger fires → More firefighters</li>
               </ul>
             </div>
@@ -976,9 +976,9 @@ const KeyInsights = React.memo(function KeyInsights() {
             <div className="bg-neutral-900/50 rounded p-3 space-y-2">
               <p className="text-sm font-semibold text-white">Non-linear Examples:</p>
               <ul className="text-sm text-neutral-300 space-y-1">
-                <li>• <span dangerouslySetInnerHTML={{ __html: `\\(y = x^2\\)` }} /> (parabola): r ≈ 0 near origin</li>
-                <li>• <span dangerouslySetInnerHTML={{ __html: `\\(y = \\sin(x)\\)` }} /> over full period: r = 0</li>
-                <li>• U-shaped relationships: Often r ≈ 0</li>
+                <li>• <span dangerouslySetInnerHTML={{ __html: `\\(y = x^2\\)` }} /> (parabola): r = 0 for the symmetric, equally weighted x values -2, -1, 0, 1, 2</li>
+                <li>• <span dangerouslySetInnerHTML={{ __html: `\\(y = \\sin(x)\\)` }} /> with x uniformly distributed on [0, 2π]: <span dangerouslySetInnerHTML={{ __html: `\\(\\rho = -\\sqrt{6}/\\pi \\approx -0.780\\)` }} /></li>
+                <li>• Symmetric U-shaped patterns can have r = 0 even when y is determined by x</li>
               </ul>
               <p className="text-xs text-yellow-400 mt-2">
                 Always plot your data! Visual inspection reveals patterns correlation might miss.
