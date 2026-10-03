@@ -453,15 +453,14 @@ const EmpiricalRule = () => {
       <BackToHub />
       <div className="w-full" ref={containerRef}>
         <Card className="overflow-hidden">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center justify-between">
-              <span className="text-xl">Interactive Visualization</span>
-            <div className="flex gap-2">
+          <CardHeader className="pb-2 space-y-0 gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+            <CardTitle className="min-w-0 text-xl leading-tight">Interactive Visualization</CardTitle>
+            <div className="flex min-w-0 flex-wrap gap-2">
               <Button
                 onClick={() => setShowHistogram(!showHistogram)}
                 variant="outline"
                 size="sm"
-                className="gap-2"
+                className="gap-2 min-h-11 sm:min-h-8"
               >
                 <BarChart className="w-4 h-4" />
                 {showHistogram ? 'Hide' : 'Show'} Histogram
@@ -470,7 +469,7 @@ const EmpiricalRule = () => {
                 onClick={toggleGeneration}
                 variant={isGenerating ? "destructive" : "default"}
                 size="sm"
-                className="gap-2"
+                className="gap-2 min-h-11 sm:min-h-8"
               >
                 {isGenerating ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                 {isGenerating ? 'Pause' : 'Generate'}
@@ -479,14 +478,13 @@ const EmpiricalRule = () => {
                 onClick={handleReset}
                 variant="outline"
                 size="sm"
-                className="gap-2"
+                className="gap-2 min-h-11 sm:min-h-8"
               >
                 <RotateCcw className="w-4 h-4" />
                 Reset
               </Button>
             </div>
-          </CardTitle>
-        </CardHeader>
+          </CardHeader>
         <CardContent className="p-3">
           {/* Main visualization area */}
           <div className="w-full mb-4">
