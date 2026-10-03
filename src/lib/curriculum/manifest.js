@@ -298,6 +298,7 @@ function freeze(value) {
 
 export const CURRICULUM = freeze({ revision: CURRICULUM_REVISION, chapters, resources: [lessonBasedApproach] });
 export const ACTIVITY_BY_ID = freeze(Object.fromEntries(activities.map(activity => [activity.id, activity])));
+export const QUIZ_BY_ID = freeze(Object.fromEntries(chapters.filter(chapter => chapter.quiz).map(chapter => [chapter.quiz.id, chapter.quiz])));
 export const LEGACY_PROGRESS_SOURCES = freeze(sources);
 export const LEGACY_SOURCE_BY_KEY = freeze(Object.fromEntries(sources.map(source => [source.key, source])));
 export const LEGACY_STORAGE_KEYS = freeze([

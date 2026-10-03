@@ -1,7 +1,8 @@
-import { ACTIVITY_BY_ID, CURRICULUM, LEGACY_STORAGE_KEYS, isLegacyStorageKey, resolveActivityId, resolveChapterId } from '@/lib/curriculum/manifest';
+import { ACTIVITY_BY_ID, CURRICULUM, QUIZ_BY_ID, LEGACY_STORAGE_KEYS, isLegacyStorageKey, resolveActivityId, resolveChapterId } from '@/lib/curriculum/manifest';
 import { createEmptyProgress, isFiniteNumber, isOwnerScope, isRecord, isSafeId, validTimestamp, validateProgressSnapshot } from './schema';
 import { migrateLegacyProgress } from './legacyMigration';
 import { createIndexedDbPersistence, createProgressId } from './persistence';
+import { createPinnedQuizAttempt, mergeQuizSession, normalizeQuizSession } from './quizContract';
 
 const copy = value => JSON.parse(JSON.stringify(value));
 const same = (left, right) => JSON.stringify(left) === JSON.stringify(right);
@@ -23,7 +24,7 @@ function freeze(value) {
   return value;
 }
 function newRecord(identity) {
-  return { version: 1, ...identity, revision: 0, epoch: 0, chapterEpochs: {}, data: createEmptyProgress(identity), legacyObserved: {}, appliedOperations: {}, recovery: [] };
+  return { version: 1, ...identity, revision: 0, epoch: 0, chapterEpochs: {}, containerEpochs: {}, closedQuizSessions: {}, data: createEmptyProgress(identity), legacyObserved: {}, appliedOperations: {}, recovery: [] };
 }
 function safeRecord(value, identity, { allowRecovery = true } = {}) {
   if (value === undefined) {
@@ -33,7 +34,7 @@ function safeRecord(value, identity, { allowRecovery = true } = {}) {
   if (isRecord(value) && ((Object.hasOwn(value, 'ownerScope') && value.ownerScope !== identity.ownerScope) || (Object.hasOwn(value, 'deviceId') && value.deviceId !== identity.deviceId))) throw new Error('Stored progress belongs to another owner or device');
   if (isRecord(value?.data) && ((Object.hasOwn(value.data, 'ownerScope') && value.data.ownerScope !== identity.ownerScope) || (Object.hasOwn(value.data, 'deviceId') && value.data.deviceId !== identity.deviceId))) throw new Error('Stored progress belongs to another owner or device');
   if (!isJsonValue(value)) throw new Error('Stored progress has unsupported data; its original record was preserved');
-  if (isRecord(value) && value.version === 1 && validateProgressSnapshot(value.data).valid && value.data.ownerScope === identity.ownerScope && value.data.deviceId === identity.deviceId && Number.isSafeInteger(value.revision) && value.revision >= 0 && Number.isSafeInteger(value.epoch) && value.epoch >= 0 && isRecord(value.chapterEpochs) && Object.entries(value.chapterEpochs).every(([id, epoch]) => resolveChapterId(id) === id && Number.isSafeInteger(epoch) && epoch >= 0) && isRecord(value.legacyObserved) && Object.values(value.legacyObserved).every(raw => raw === null || typeof raw === 'string') && isRecord(value.appliedOperations) && Object.keys(value.appliedOperations).every(isSafeId) && Array.isArray(value.recovery)) return copy(value);
+  if (isRecord(value) && value.version === 1 && validateProgressSnapshot(value.data).valid && value.data.ownerScope === identity.ownerScope && value.data.deviceId === identity.deviceId && Number.isSafeInteger(value.revision) && value.revision >= 0 && Number.isSafeInteger(value.epoch) && value.epoch >= 0 && isRecord(value.chapterEpochs) && Object.entries(value.chapterEpochs).every(([id, epoch]) => resolveChapterId(id) === id && Number.isSafeInteger(epoch) && epoch >= 0) && validContainerEpochs(value.containerEpochs ?? {}) && validClosedSessions(value.closedQuizSessions ?? {}) && isRecord(value.legacyObserved) && Object.values(value.legacyObserved).every(raw => raw === null || typeof raw === 'string') && isRecord(value.appliedOperations) && Object.keys(value.appliedOperations).every(isSafeId) && Array.isArray(value.recovery)) return { ...copy(value), containerEpochs: copy(value.containerEpochs ?? {}), closedQuizSessions: copy(value.closedQuizSessions ?? {}) };
   if (!allowRecovery) throw new Error('Progress write could not be verified');
   const recovered = newRecord(identity);
   const raw = JSON.stringify(value);
@@ -42,6 +43,21 @@ function safeRecord(value, identity, { allowRecovery = true } = {}) {
   return recovered;
 }
 function chapterOf(activityId) { return /^chapter-[1-8](?=:|$)/.exec(activityId)?.[0] || null; }
+function knownContainer(id) { return resolveChapterId(id) === id || Object.hasOwn(ACTIVITY_BY_ID, id) || Object.hasOwn(QUIZ_BY_ID, id); }
+function validContainerEpochs(value) { return isRecord(value) && Object.entries(value).every(([id, epoch]) => knownContainer(id) && Number.isSafeInteger(epoch) && epoch >= 0); }
+function validClosedSessions(value) { return isRecord(value) && Object.entries(value).every(([id, item]) => isSafeId(id) && isRecord(item) && /^chapter-[1-7]$/.test(item.chapterId) && isSafeId(item.operationId) && ['finished', 'replaced', 'cleared', 'reset'].includes(item.reason) && (item.attemptId === undefined || isSafeId(item.attemptId))); }
+function ancestorsOf(id) {
+  const result = [];
+  let current = id;
+  while (current) { result.push(current); current = ACTIVITY_BY_ID[current]?.parentId || null; }
+  return result;
+}
+function reject(record, operation, reason) { record.recovery.push({ reason, operation: copy(operation) }); }
+function closeSession(record, session, operation, reason, attemptId) {
+  if (session) put(record.closedQuizSessions, session.sessionId, { chapterId: session.chapterId, operationId: operation.id, reason, ...(attemptId ? { attemptId } : {}) });
+}
+function currentQuizSession(record, chapterId) { return own(record.data.resumeByDevice, record.deviceId)?.[`${chapterId}:quiz`]?.session; }
+function sessionWasFinished(record, sessionId) { return Object.values(record.data.quizAttempts).some(attempt => attempt.legacy === false && attempt.sessionId === sessionId); }
 function evidenceKey(evidence) { return JSON.stringify(evidence); }
 function mergeActivities(target, incoming, before = {}) {
   for (const [id, activity] of Object.entries(incoming)) {
@@ -98,19 +114,35 @@ function ingest(record, rawByKey) {
     put(record.legacyObserved, key, raw);
   }
 }
-function reset(record, chapterId) {
+function reset(record, chapterId, operation) {
   const match = id => !chapterId || chapterOf(id) === chapterId;
   for (const group of ['activities', 'chaptersLegacy', 'quizAttempts', 'legacyBestScores']) {
     for (const [id, item] of Object.entries(record.data[group])) if (match(group === 'quizAttempts' ? item.chapterId : id)) delete record.data[group][id];
   }
-  for (const locators of Object.values(record.data.resumeByDevice)) for (const id of Object.keys(locators)) if (match(id)) delete locators[id];
+  for (const locators of Object.values(record.data.resumeByDevice)) for (const id of Object.keys(locators)) if (match(id)) { closeSession(record, locators[id].session, operation, 'reset'); delete locators[id]; }
   if (chapterId) record.chapterEpochs[chapterId] = (record.chapterEpochs[chapterId] || 0) + 1;
   else record.epoch++;
 }
+function resetActivity(record, containerId) {
+  const contains = id => id === containerId || id.startsWith(`${containerId}:`);
+  for (const id of Object.keys(record.data.activities)) if (contains(id)) delete record.data.activities[id];
+  // An explicit aggregate completion cannot keep a reset child completed.
+  for (const ancestor of ancestorsOf(containerId).slice(1)) delete record.data.activities[ancestor];
+  for (const locators of Object.values(record.data.resumeByDevice)) for (const id of Object.keys(locators)) if (contains(id)) delete locators[id];
+  put(record.containerEpochs, containerId, (own(record.containerEpochs, containerId) || 0) + 1);
+}
+function changedContainerCheckpoint(record, operation) {
+  const targets = operation.guardContainerId ? [operation.guardContainerId] : operation.type === 'chapter' ? operation.activityIds : [];
+  return targets.some(target => {
+    const relevant = new Set(ancestorsOf(target));
+    if (operation.type === 'complete' || operation.type === 'chapter') for (const id of [...Object.keys(record.containerEpochs), ...Object.keys(operation.containerEpochs || {})]) if (id.startsWith(`${target}:`)) relevant.add(id);
+    return [...relevant].some(id => (operation.containerEpochs?.[id] || 0) !== (own(record.containerEpochs, id) || 0));
+  });
+}
 function applyOperation(record, operation) {
   if (Object.hasOwn(record.appliedOperations, operation.id)) return record;
-  if (operation.type !== 'legacy' && (operation.epoch !== record.epoch || (operation.chapterId && operation.chapterEpoch !== (record.chapterEpochs[operation.chapterId] || 0)))) {
-    record.recovery.push({ reason: 'write-predates-reset', operation: copy(operation) });
+  if (operation.type !== 'legacy' && (operation.epoch !== record.epoch || (operation.chapterId && operation.chapterEpoch !== (record.chapterEpochs[operation.chapterId] || 0)) || changedContainerCheckpoint(record, operation))) {
+    reject(record, operation, 'write-predates-reset');
   } else if (operation.type === 'complete') {
     const previous = own(record.data.activities, operation.activityId);
     if (!previous?.evidence.some(item => item.kind === operation.evidence.kind && item.sourceKey === operation.evidence.sourceKey)) mergeActivities(record.data.activities, { [operation.activityId]: { evidence: [operation.evidence] } });
@@ -121,7 +153,45 @@ function applyOperation(record, operation) {
     const device = record.deviceId;
     if (!Object.hasOwn(record.data.resumeByDevice, device)) put(record.data.resumeByDevice, device, {});
     put(record.data.resumeByDevice[device], operation.containerId, copy(operation.locator));
-  } else if (operation.type === 'reset') reset(record, operation.chapterId);
+  } else if (operation.type === 'clear-resume') {
+    const locators = own(record.data.resumeByDevice, record.deviceId);
+    closeSession(record, own(locators || {}, operation.containerId)?.session, operation, 'cleared');
+    if (locators) delete locators[operation.containerId];
+  } else if (operation.type === 'reset-activity') resetActivity(record, operation.containerId);
+  else if (operation.type === 'quiz-begin') {
+    const existing = currentQuizSession(record, operation.chapterId);
+    if (Object.hasOwn(record.closedQuizSessions, operation.session.sessionId) || sessionWasFinished(record, operation.session.sessionId)) reject(record, operation, 'quiz-session-closed');
+    else if (existing?.sessionId === operation.session.sessionId) {
+      if (!same(existing, operation.session)) reject(record, operation, 'quiz-session-id-conflict');
+    } else {
+      closeSession(record, existing, operation, 'replaced');
+      if (!Object.hasOwn(record.data.resumeByDevice, record.deviceId)) put(record.data.resumeByDevice, record.deviceId, {});
+      put(record.data.resumeByDevice[record.deviceId], `${operation.chapterId}:quiz`, { containerId: `${operation.chapterId}:quiz`, activityId: null, kind: 'quiz-session', session: copy(operation.session) });
+    }
+  } else if (operation.type === 'quiz-update' || operation.type === 'quiz-finish' || operation.type === 'quiz-clear') {
+    const existing = currentQuizSession(record, operation.chapterId);
+    const finished = own(record.closedQuizSessions, operation.sessionId);
+    const savedAttempt = own(record.data.quizAttempts, operation.attemptId);
+    if (operation.type === 'quiz-finish' && finished?.reason === 'finished' && finished.chapterId === operation.chapterId && finished.attemptId === operation.attemptId && savedAttempt?.chapterId === operation.chapterId && savedAttempt.sessionId === operation.sessionId) {
+      // A repeated finish is successful without changing the immutable attempt.
+    } else if (!existing || existing.sessionId !== operation.sessionId) reject(record, operation, 'quiz-session-mismatch');
+    else if (operation.type === 'quiz-update') put(record.data.resumeByDevice[record.deviceId][`${operation.chapterId}:quiz`], 'session', mergeQuizSession(existing, operation.patch));
+    else if (operation.type === 'quiz-clear') {
+      closeSession(record, existing, operation, 'cleared');
+      delete record.data.resumeByDevice[record.deviceId][`${operation.chapterId}:quiz`];
+    } else if (Object.hasOwn(record.data.quizAttempts, operation.attemptId)) reject(record, operation, 'quiz-attempt-id-conflict');
+    else {
+      const session = mergeQuizSession(existing, operation.patch);
+      const attempt = createPinnedQuizAttempt(session, { attemptId: operation.attemptId, date: operation.timestamp });
+      put(record.data.quizAttempts, operation.attemptId, attempt);
+      closeSession(record, session, operation, 'finished', operation.attemptId);
+      delete record.data.resumeByDevice[record.deviceId][`${operation.chapterId}:quiz`];
+    }
+  } else if (operation.type === 'quiz-preferences') Object.assign(record.data.preferences.quiz, operation.patch);
+  else if (operation.type === 'device-preference') {
+    if (operation.value === null) delete record.data.preferences.device[operation.key];
+    else put(record.data.preferences.device, operation.key, operation.value);
+  } else if (operation.type === 'reset') reset(record, operation.chapterId, operation);
   else if (operation.type === 'legacy') ingest(record, operation.rawByKey);
   else if (operation.type === 'import') {
     const incoming = copy(operation.incoming);
@@ -132,7 +202,19 @@ function applyOperation(record, operation) {
       for (const locators of Object.values(incoming.resumeByDevice)) for (const id of Object.keys(locators)) if (stale(id)) delete locators[id];
       record.recovery.push({ reason: 'import-predates-chapter-reset', operationId: operation.id, chapterIds: staleChapters });
     }
+    const staleContainers = [...new Set([...Object.keys(record.containerEpochs), ...Object.keys(operation.containerEpochs || {})])].filter(id => (operation.containerEpochs?.[id] || 0) !== (own(record.containerEpochs, id) || 0));
+    if (staleContainers.length) {
+      const withinReset = id => staleContainers.some(container => id === container || id.startsWith(`${container}:`));
+      const aggregateOfReset = id => staleContainers.some(container => container.startsWith(`${id}:`));
+      for (const id of Object.keys(incoming.activities)) if (withinReset(id) || aggregateOfReset(id)) delete incoming.activities[id];
+      for (const locators of Object.values(incoming.resumeByDevice)) for (const id of Object.keys(locators)) if (withinReset(id)) delete locators[id];
+      record.recovery.push({ reason: 'import-predates-activity-reset', operationId: operation.id, containerIds: staleContainers });
+    }
+    for (const [sessionId, closed] of Object.entries(operation.closedQuizSessions || {})) {
+      if (!staleChapters.includes(closed.chapterId) && !Object.hasOwn(record.closedQuizSessions, sessionId)) put(record.closedQuizSessions, sessionId, copy(closed));
+    }
     mergeFacts(record.data, incoming);
+    for (const locators of Object.values(record.data.resumeByDevice)) for (const [id, locator] of Object.entries(locators)) if (locator.session && (Object.hasOwn(record.closedQuizSessions, locator.session.sessionId) || sessionWasFinished(record, locator.session.sessionId))) delete locators[id];
     const archive = migrateLegacyProgress(Object.fromEntries(Object.entries(operation.incoming.migration.sources).map(([key, source]) => [key, source.raw])), { existing: record.data });
     record.data.migration = archive.migration;
     for (const [key, source] of Object.entries(operation.incoming.migration.sources)) {
@@ -164,10 +246,10 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
   let channel;
   let listening = false;
   const listeners = new Set();
-  const serverSnapshot = freeze({ data: createEmptyProgress({ ownerScope: 'guest:loading', deviceId: 'loading' }), loading: true, error: null, persistenceStatus: 'loading', revision: 0, pendingLocalWrites: 0 });
+  const serverSnapshot = freeze({ data: createEmptyProgress({ ownerScope: 'guest:loading', deviceId: 'loading' }), loading: true, error: null, persistenceStatus: 'loading', revision: 0, pendingLocalWrites: 0, writeContext: { ownerScope: 'guest:loading', deviceId: 'loading', epoch: 0, chapterEpochs: {}, containerEpochs: {} } });
   let snapshot = serverSnapshot;
-  function publish({ error = null, status = pending.length ? 'pending' : 'persisted', loading = false } = {}) {
-    const next = { data: record.data, loading, error, persistenceStatus: status, revision: record.revision, pendingLocalWrites: pending.length };
+  function publish({ error = null, status = !hydrated ? 'loading' : pending.length ? 'pending' : 'persisted', loading = !hydrated } = {}) {
+    const next = { data: record.data, loading, error, persistenceStatus: status, revision: record.revision, pendingLocalWrites: pending.length, writeContext: { ownerScope: record.ownerScope, deviceId: record.deviceId, epoch: record.epoch, chapterEpochs: record.chapterEpochs, containerEpochs: record.containerEpochs } };
     if (same(snapshot, next)) return;
     snapshot = freeze(copy(next));
     listeners.forEach(listener => listener());
@@ -205,8 +287,9 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
     notifyTabs();
   }
   function queue(operation) {
+    const optimistic = applyOperation(copy(record), operation);
     pending.push(operation);
-    record = applyOperation(copy(record), operation);
+    record = optimistic;
     publish();
     working = working.catch(() => {}).then(async () => {
       try { await flush(); return true; }
@@ -214,10 +297,20 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
     });
     return working;
   }
-  function makeOperation(type, extra = {}) {
+  function validateContext(context, targetId) {
+    if (context === undefined) return;
+    if (!isRecord(context) || context.ownerScope !== identity.ownerScope || context.deviceId !== identity.deviceId) throw new TypeError('Write context belongs to another owner or device');
+    if (!Number.isSafeInteger(context.epoch) || context.epoch < 0 || !isRecord(context.chapterEpochs) || !Object.entries(context.chapterEpochs).every(([id, epoch]) => resolveChapterId(id) === id && Number.isSafeInteger(epoch) && epoch >= 0) || !validContainerEpochs(context.containerEpochs)) throw new TypeError('Invalid write context checkpoints');
+    if (context.containerId !== null && !knownContainer(context.containerId)) throw new TypeError('Invalid write context container');
+    if (targetId && context.containerId !== null && targetId !== context.containerId && !targetId.startsWith(`${context.containerId}:`)) throw new TypeError('Write context does not contain this activity');
+  }
+  function makeOperation(type, extra = {}, context) {
+    const targetId = extra.guardContainerId || extra.activityId || extra.containerId || extra.chapterId || null;
+    validateContext(context, targetId);
     const id = createId();
     if (!isSafeId(id)) throw new TypeError('Invalid generated progress operation ID');
-    return { id, type, epoch: record.epoch, chapterEpoch: extra.chapterId ? record.chapterEpochs[extra.chapterId] || 0 : null, ...extra };
+    const checkpoints = context || record;
+    return { id, type, epoch: checkpoints.epoch, chapterEpoch: extra.chapterId ? checkpoints.chapterEpochs[extra.chapterId] || 0 : null, containerEpochs: copy(checkpoints.containerEpochs), ...extra };
   }
   async function refreshLegacy() {
     await hydrate();
@@ -304,7 +397,25 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
     })();
     return hydration;
   }
-  async function mutate(type, extra) { await hydrate(); if (disposed) throw new Error('Progress store has been disposed'); return queue(makeOperation(type, extra)); }
+  function rejectedReason(operationId) { return record.recovery.find(item => item.operation?.id === operationId)?.reason || null; }
+  async function mutate(type, extra, context) {
+    await hydrate(); if (disposed) throw new Error('Progress store has been disposed');
+    const operation = makeOperation(type, extra, context);
+    const persisted = await queue(operation);
+    return persisted && !rejectedReason(operation.id);
+  }
+  async function mutateTyped(type, extra, context) {
+    await hydrate(); if (disposed) throw new Error('Progress store has been disposed');
+    const operation = makeOperation(type, extra, context);
+    const persisted = await queue(operation);
+    const reason = rejectedReason(operation.id);
+    return { applied: !reason, persisted, reason };
+  }
+  function quizChapter(value) {
+    const id = resolveChapterId(value);
+    if (!id || !Object.hasOwn(QUIZ_BY_ID, `${id}:quiz`)) throw new TypeError('Invalid quiz chapter');
+    return id;
+  }
   return {
     getSnapshot: () => snapshot,
     getServerSnapshot: () => serverSnapshot,
@@ -314,10 +425,15 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
       return () => { listeners.delete(listener); if (!listeners.size) stopListening(); };
     },
     hydrate, refresh, refreshLegacy,
-    async completeActivity(activityId, { kind = 'study-completed', sourceKey = 'explicit-study-action' } = {}) {
+    captureWriteContext(containerId = null) {
+      if (!hydrated || snapshot.loading) throw new Error('Progress must hydrate before capturing a write context');
+      if (containerId !== null && !knownContainer(containerId)) throw new TypeError('Invalid write context container');
+      return freeze(copy({ ...snapshot.writeContext, containerId }));
+    },
+    async completeActivity(activityId, { kind = 'study-completed', sourceKey = 'explicit-study-action', context } = {}) {
       if (!Object.hasOwn(ACTIVITY_BY_ID, activityId) || !['study-completed', 'knowledge-check-completed'].includes(kind) || typeof sourceKey !== 'string') throw new TypeError('Invalid activity completion');
       if (kind === 'knowledge-check-completed' && ACTIVITY_BY_ID[activityId].completionPolicy !== 'knowledge-check-completion') throw new TypeError('Activity is not a knowledge check');
-      return mutate('complete', { chapterId: chapterOf(activityId), activityId, evidence: { kind, sourceKey, completedAt: now() } });
+      return mutate('complete', { chapterId: chapterOf(activityId), guardContainerId: activityId, activityId, evidence: { kind, sourceKey, completedAt: now() } }, context);
     },
     async updateChapter(chapterId, patch) {
       const id = resolveChapterId(chapterId);
@@ -336,32 +452,95 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
       if (activityIds.some(activity => !activity)) throw new TypeError('Unrecognized completed section');
       return mutate('chapter', { chapterId: id, patch: normalized, activityIds, timestamp: now() });
     },
-    async setResume(containerId, locator) {
-      const quizIds = CURRICULUM.chapters.flatMap(chapter => chapter.quiz ? [chapter.quiz.id] : []);
-      if ((!Object.hasOwn(ACTIVITY_BY_ID, containerId) && !quizIds.includes(containerId)) || !isRecord(locator)) throw new TypeError('Invalid resume container');
-      const normalized = { containerId, activityId: locator.activityId ?? null, kind: locator.kind, ...(locator.legacyIndex === undefined ? {} : { legacyIndex: locator.legacyIndex }) };
+    async setResume(containerId, locator, { context } = {}) {
+      if (!Object.hasOwn(ACTIVITY_BY_ID, containerId) || !isRecord(locator)) throw new TypeError('Invalid resume container; quiz sessions require the typed quiz API');
+      if (locator.session !== undefined) throw new TypeError('Use the typed quiz session API');
+      const normalized = { containerId, activityId: locator.activityId ?? null, kind: locator.kind, ...(locator.legacyIndex === undefined ? {} : { legacyIndex: locator.legacyIndex }), ...(locator.positionId === undefined ? {} : { positionId: locator.positionId }) };
       const candidate = createEmptyProgress(identity || { ownerScope: 'guest:loading', deviceId: 'loading' });
       candidate.resumeByDevice[candidate.deviceId] = { [containerId]: normalized };
       if (!validateProgressSnapshot(candidate).valid) throw new TypeError('Invalid resume locator');
-      return mutate('resume', { chapterId: chapterOf(containerId), containerId, locator: normalized });
+      return mutate('resume', { chapterId: chapterOf(containerId), guardContainerId: containerId, containerId, locator: normalized }, context);
+    },
+    async clearResume(containerId, { context } = {}) {
+      if (!Object.hasOwn(ACTIVITY_BY_ID, containerId)) throw new TypeError('Invalid resume container; quiz sessions require a matching session ID');
+      return mutateTyped('clear-resume', { chapterId: chapterOf(containerId), guardContainerId: containerId, containerId }, context);
+    },
+    async resetActivity(containerId, { context } = {}) {
+      if (!Object.hasOwn(ACTIVITY_BY_ID, containerId)) throw new TypeError('Invalid activity reset');
+      await refreshLegacy();
+      return mutateTyped('reset-activity', { chapterId: chapterOf(containerId), guardContainerId: containerId, containerId }, context);
+    },
+    async beginQuizSession(chapterId, session, { context } = {}) {
+      const chapter = quizChapter(chapterId);
+      if (context === undefined) throw new TypeError('Capture a write context before beginning a quiz session');
+      if (!isJsonValue(session)) throw new TypeError('Quiz session must contain only JSON values');
+      if (session?.chapterId !== chapter) throw new TypeError('Quiz session belongs to another chapter');
+      const normalized = normalizeQuizSession(session);
+      return mutateTyped('quiz-begin', { chapterId: chapter, guardContainerId: `${chapter}:quiz`, session: normalized }, context);
+    },
+    async updateQuizSession(chapterId, sessionId, patch, { context } = {}) {
+      const chapter = quizChapter(chapterId);
+      if (!isSafeId(sessionId) || !isRecord(patch) || !isJsonValue(patch)) throw new TypeError('Invalid quiz session update');
+      await hydrate();
+      const session = currentQuizSession(record, chapter);
+      if (session?.sessionId === sessionId) mergeQuizSession(session, patch);
+      return mutateTyped('quiz-update', { chapterId: chapter, guardContainerId: `${chapter}:quiz`, sessionId, patch: copy(patch) }, context);
+    },
+    async finishQuizAttempt(chapterId, { sessionId, attemptId, answersByQuestionId } = {}, { context } = {}) {
+      const chapter = quizChapter(chapterId);
+      if (!isSafeId(sessionId) || !isSafeId(attemptId)) throw new TypeError('Invalid quiz finish identity');
+      const patch = answersByQuestionId === undefined ? {} : { answersByQuestionId };
+      if (!isJsonValue(patch)) throw new TypeError('Invalid quiz finish answers');
+      await hydrate();
+      const session = currentQuizSession(record, chapter);
+      if (session?.sessionId === sessionId) createPinnedQuizAttempt(mergeQuizSession(session, patch), { attemptId, date: now() });
+      const result = await mutateTyped('quiz-finish', { chapterId: chapter, guardContainerId: `${chapter}:quiz`, sessionId, attemptId, patch: copy(patch), timestamp: now() }, context);
+      return { ...result, attempt: result.applied ? copy(own(record.data.quizAttempts, attemptId) || null) : null };
+    },
+    async clearQuizSession(chapterId, sessionId, { context } = {}) {
+      const chapter = quizChapter(chapterId);
+      if (!isSafeId(sessionId)) throw new TypeError('Invalid quiz session identity');
+      return mutateTyped('quiz-clear', { chapterId: chapter, guardContainerId: `${chapter}:quiz`, sessionId }, context);
+    },
+    async setQuizPreferences(patch, { context } = {}) {
+      if (!isRecord(patch) || !isJsonValue(patch)) throw new TypeError('Invalid quiz preferences');
+      const normalized = copy(patch);
+      if (Object.hasOwn(normalized, 'immediateFeeback')) {
+        if (Object.hasOwn(normalized, 'immediateFeedback') && normalized.immediateFeedback !== normalized.immediateFeeback) throw new TypeError('Conflicting quiz feedback preferences');
+        normalized.immediateFeedback = normalized.immediateFeeback; delete normalized.immediateFeeback;
+      }
+      const candidate = createEmptyProgress(); candidate.preferences.quiz = normalized;
+      if (!validateProgressSnapshot(candidate).valid) throw new TypeError('Invalid quiz preferences');
+      return mutateTyped('quiz-preferences', { patch: normalized }, context);
+    },
+    async setDevicePreference(key, value, { context } = {}) {
+      const tutorial = typeof key === 'string' && /^tutorial-.+-completed$/.test(key) && key.length <= 1000;
+      const recognized = key === 'sidebarOpen' || (typeof key === 'string' && key.endsWith('_devMode') && LEGACY_STORAGE_KEYS.includes(key));
+      if ((!tutorial && !recognized) || (value !== null && (tutorial ? !['true', 'skipped'].includes(value) : typeof value !== 'boolean'))) throw new TypeError('Invalid device preference');
+      return mutateTyped('device-preference', { key, value }, context);
     },
     async resetChapter(chapterId) { const id = resolveChapterId(chapterId); if (!id) throw new TypeError('Invalid chapter reset'); await refreshLegacy(); return mutate('reset', { chapterId: id }); },
     async resetAll() { await refreshLegacy(); return mutate('reset', { chapterId: null }); },
     async exportProgress() {
       await hydrate();
-      return copy({ meta: { version: '2.0.0', exportDate: now() }, snapshot: record.data, checkpoint: { epoch: record.epoch, chapterEpochs: record.chapterEpochs, legacyObserved: record.legacyObserved }, recovery: record.recovery, pendingLocalOperations: pending });
+      return copy({ meta: { version: '2.0.0', exportDate: now() }, snapshot: record.data, checkpoint: { epoch: record.epoch, chapterEpochs: record.chapterEpochs, containerEpochs: record.containerEpochs, closedQuizSessions: record.closedQuizSessions, legacyObserved: record.legacyObserved }, recovery: record.recovery, pendingLocalOperations: pending });
     },
     async importProgress(input, { allowGuestTransfer = false } = {}) {
       await hydrate();
       if (!isJsonValue(input)) throw new TypeError('Imported progress must contain only JSON values');
       const raw = JSON.stringify(input);
       let incoming;
+      let closedQuizSessions = {};
       if (isRecord(input) && isRecord(input.snapshot)) {
         if (!validateProgressSnapshot(input.snapshot).valid) throw new TypeError('Invalid imported progress snapshot');
         if (input.snapshot.ownerScope !== identity.ownerScope || input.snapshot.deviceId !== identity.deviceId) {
           if (!allowGuestTransfer || !input.snapshot.ownerScope.startsWith('guest:') || !identity.ownerScope.startsWith('guest:')) throw new Error('Cannot import progress across owners or devices');
         }
         incoming = copy(input.snapshot);
+        if (input.checkpoint?.closedQuizSessions !== undefined) {
+          if (!validClosedSessions(input.checkpoint.closedQuizSessions)) throw new TypeError('Invalid imported quiz session checkpoints');
+          closedQuizSessions = copy(input.checkpoint.closedQuizSessions);
+        }
         const originalDevice = incoming.deviceId;
         incoming.ownerScope = identity.ownerScope; incoming.deviceId = identity.deviceId;
         if (originalDevice !== identity.deviceId && incoming.resumeByDevice[originalDevice]) { incoming.resumeByDevice[identity.deviceId] = incoming.resumeByDevice[originalDevice]; delete incoming.resumeByDevice[originalDevice]; }
@@ -369,7 +548,7 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
         if (!identity.ownerScope.startsWith('guest:')) throw new Error('Legacy files can only be imported into guest progress');
         incoming = migrateLegacyProgress({ probLabProgress: JSON.stringify(input.progress), probLabProgressMeta: JSON.stringify(input.meta || {}) }, identity);
       } else throw new TypeError('Invalid imported progress format');
-      return mutate('import', { incoming, raw, chapterEpochs: { ...record.chapterEpochs } });
+      return mutate('import', { incoming, raw, closedQuizSessions, chapterEpochs: { ...record.chapterEpochs } });
     },
     async retryPersistence() {
       await hydrate();

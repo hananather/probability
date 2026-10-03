@@ -1,4 +1,5 @@
 import { ACTIVITY_BY_ID, CURRICULUM, CURRICULUM_REVISION, resolveChapterId } from '@/lib/curriculum/manifest';
+import { validatePinnedQuizAttempt, validateQuizSession } from './quizContract';
 
 export const PROGRESS_SCHEMA_VERSION = 2;
 
@@ -92,6 +93,7 @@ export function validateProgressSnapshot(value) {
     }
     if (attempt?.date !== null && !validTimestamp(attempt?.date)) errors.push(`quizAttempts:${id}:date`);
     if (attempt?.legacy === true && (!isRecord(attempt.answersByIndex) || attempt.bankRevision !== null || attempt.effectiveVersion !== null)) errors.push(`quizAttempts:${id}:legacy-identity`);
+    if (attempt?.legacy !== true && !validatePinnedQuizAttempt(attempt).valid) errors.push(`quizAttempts:${id}:pinned-identity`);
     for (const [index, answer] of Object.entries(isRecord(attempt?.answersByIndex) ? attempt.answersByIndex : {})) {
       if (!/^\d{1,4}$/.test(index) || !isRecord(answer) || !isLegacyAnswerValue(answer.answer) || (answer.isCorrect !== null && typeof answer.isCorrect !== 'boolean') || (answer.timestamp !== null && !isFiniteNumber(answer.timestamp))) errors.push(`quizAttempts:${id}:answer:${index}`);
     }
@@ -107,6 +109,9 @@ export function validateProgressSnapshot(value) {
       if (locator?.activityId !== null && (!Object.hasOwn(ACTIVITY_BY_ID, locator?.activityId) || !locator.activityId.startsWith(`${containerId}:`))) errors.push(`resumeByDevice:${deviceId}:${containerId}:activityId`);
       if (locator?.legacyIndex !== undefined && (!Number.isInteger(locator.legacyIndex) || locator.legacyIndex < 0 || locator.legacyIndex >= 10000)) errors.push(`resumeByDevice:${deviceId}:${containerId}:legacyIndex`);
       if (!['tab', 'stage', 'section', 'quiz-session'].includes(locator?.kind)) errors.push(`resumeByDevice:${deviceId}:${containerId}:kind`);
+      if (locator?.positionId !== undefined && !isSafeId(locator.positionId)) errors.push(`resumeByDevice:${deviceId}:${containerId}:positionId`);
+      if (locator?.session !== undefined && (locator.kind !== 'quiz-session' || containerId !== `${locator.session?.chapterId}:quiz` || locator.activityId !== null || !validateQuizSession(locator.session).valid)) errors.push(`resumeByDevice:${deviceId}:${containerId}:session`);
+      if (locator?.session !== undefined && Object.values(isRecord(locator.session?.answersByQuestionId) ? locator.session.answersByQuestionId : {}).some(answer => typeof answer?.isCorrect !== 'boolean')) errors.push(`resumeByDevice:${deviceId}:${containerId}:session-grade`);
     }
   }
   if (!isRecord(value.migration?.sources) || !Array.isArray(value.migration?.issues)) errors.push('migration:structure');
