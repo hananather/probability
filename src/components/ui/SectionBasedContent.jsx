@@ -9,6 +9,12 @@ import { VisualizationSection } from './VisualizationContainer';
 import { cn } from '@/lib/utils';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
+const SectionRenderer = React.memo(function SectionRenderer({ content, sectionIndex, isCompleted }) {
+  return React.isValidElement(content)
+    ? content
+    : React.createElement(content, { sectionIndex, isCompleted });
+});
+
 /**
  * Generic Section-Based Content Component
  * Provides a consistent structure for multi-section learning content
@@ -58,6 +64,8 @@ export default function SectionBasedContent({
   const contentRef = useRef(null);
   const headingRef = useRef(null);
   const focusOnNavigate = useRef(false);
+  const isCurrentSectionCompleted = completedSections.includes(currentSection) ||
+    (currentSection === sections.length - 1 && hasCompleted);
 
   useEffect(() => {
     const sectionIds = JSON.parse(sectionSignature);
@@ -106,7 +114,7 @@ export default function SectionBasedContent({
     processMathJax();
     const timeoutId = setTimeout(processMathJax, 100);
     return () => clearTimeout(timeoutId);
-  }, [currentSection]);
+  }, [currentSection, isCurrentSectionCompleted, reducedMotion]);
 
   // Handle section navigation
   const handleNavigate = (newSection) => {
@@ -132,10 +140,6 @@ export default function SectionBasedContent({
       }
     }
   };
-
-  // Check if current section is completed
-  const isCurrentSectionCompleted = completedSections.includes(currentSection) || 
-                                   (currentSection === sections.length - 1 && hasCompleted);
 
   const currentSectionData = sections[currentSection];
 
@@ -187,13 +191,11 @@ export default function SectionBasedContent({
         className="min-h-[400px]"
       >
         <AnimatePresence mode="wait">
-          {React.isValidElement(currentSectionData.content) 
-            ? currentSectionData.content
-            : React.createElement(currentSectionData.content, {
-                sectionIndex: currentSection,
-                isCompleted: isCurrentSectionCompleted
-              })
-          }
+          <SectionRenderer
+            content={currentSectionData.content}
+            sectionIndex={currentSection}
+            isCompleted={isCurrentSectionCompleted}
+          />
         </AnimatePresence>
       </motion.div>
 
