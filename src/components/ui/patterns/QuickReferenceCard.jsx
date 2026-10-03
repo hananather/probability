@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useEffect, useRef, useId } from "react";
+import React, { useState, useRef, useId } from "react";
+import { useMathJax } from '@/hooks/useMathJax';
 import { X, StickyNote, ChevronRight, BookOpen } from 'lucide-react';
 
 /**
@@ -33,21 +34,7 @@ export const QuickReferenceCard = ({
   };
 
   // Process MathJax when content changes
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    if (isOpen || mode === 'embedded') {
-      processMathJax();
-      const timeoutId = setTimeout(processMathJax, 100);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [isOpen, sections, mode]);
+  useMathJax(contentRef, [isOpen, sections, mode]);
 
   // Render the content
   const renderContent = () => (

@@ -1,5 +1,6 @@
 "use client";
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { useMathJax } from '@/hooks/useMathJax';
 
 /**
  * Unified WorkedExampleContainer with IntegralWorkedExample styling and anti-flash
@@ -21,40 +22,7 @@ export const WorkedExampleContainer = ({
   const [displayContent, setDisplayContent] = useState(children);
   const updateTimerRef = useRef(null);
   const contentRef = useRef(null);
-  const processingRef = useRef(false);
-  
-  // Helper to process MathJax reliably
-  const processMathJax = useCallback(() => {
-    if (!contentRef.current || processingRef.current) return;
-    
-    // Check if MathJax is available
-    if (typeof window !== 'undefined' && window.MathJax && window.MathJax.typesetPromise) {
-      processingRef.current = true;
-      
-      // Clear any existing processed math
-      if (window.MathJax.typesetClear) {
-        window.MathJax.typesetClear([contentRef.current]);
-      }
-      
-      // Process the math
-      window.MathJax.typesetPromise([contentRef.current])
-        .then(() => {
-          processingRef.current = false;
-        })
-        .catch((err) => {
-          // Silent error: MathJax processing error
-          processingRef.current = false;
-        });
-    } else {
-      // If MathJax isn't ready, try again soon
-      setTimeout(processMathJax, 100);
-    }
-  }, []);
-
-  // Process MathJax on initial mount
-  useEffect(() => {
-    processMathJax();
-  }, [processMathJax]);
+  useMathJax(contentRef, [displayContent]);
 
   // Handle content updates
   useEffect(() => {
@@ -73,11 +41,7 @@ export const WorkedExampleContainer = ({
       
       // Show content immediately
       setIsStable(true);
-      
-      // Process MathJax after React has rendered
-      requestAnimationFrame(() => {
-        processMathJax();
-      });
+
     }, 150); // Short delay to batch rapid updates
     
     return () => {
@@ -85,7 +49,7 @@ export const WorkedExampleContainer = ({
         clearTimeout(updateTimerRef.current);
       }
     };
-  }, [children, processMathJax]);
+  }, [children]);
   
   return (
     <div

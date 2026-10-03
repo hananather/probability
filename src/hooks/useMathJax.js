@@ -1,9 +1,11 @@
-import { useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { getMathJaxRuntime } from '@/lib/mathjax/runtime';
 
 function useRenderingEffect(containerRef, dependencies, onStart, onFinish) {
   const runtime = getMathJaxRuntime();
-  const { retryVersion } = useSyncExternalStore(runtime.subscribe, runtime.getSnapshot, runtime.getServerSnapshot);
+  const getRetryVersion = useCallback(() => runtime.getSnapshot().retryVersion, [runtime]);
+  const getServerRetryVersion = useCallback(() => runtime.getServerSnapshot().retryVersion, [runtime]);
+  const retryVersion = useSyncExternalStore(runtime.subscribe, getRetryVersion, getServerRetryVersion);
   useLayoutEffect(() => {
     let element = containerRef.current;
     let request;

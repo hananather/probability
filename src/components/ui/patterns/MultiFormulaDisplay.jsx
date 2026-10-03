@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
+import { useMathJax } from '@/hooks/useMathJax';
 import { cn } from '../../../lib/design-system';
 import { VisualizationSection } from '../VisualizationContainer';
 
@@ -31,20 +32,7 @@ export function MultiFormulaDisplay({
   );
   
   // MathJax processing
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [activeFormula]);
+  useMathJax(contentRef, [activeFormula, formulas[activeFormula].name, formulas[activeFormula].formula, formulas[activeFormula].description, formulas[activeFormula].notes]);
 
   // Theme configurations - exact gradients from Chapter 7.1
   const themes = {
@@ -203,20 +191,7 @@ export function SimpleFormulaSelector({ formulas, defaultFormula, theme = 'purpl
     defaultFormula || Object.keys(formulas)[0]
   );
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [activeFormula]);
+  useMathJax(contentRef, [activeFormula, formulas[activeFormula].formula]);
 
   const themeColors = {
     purple: 'bg-purple-600',

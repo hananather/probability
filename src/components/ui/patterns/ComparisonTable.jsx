@@ -1,5 +1,6 @@
 "use client";
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
+import { useMathJax } from '@/hooks/useMathJax';
 import { cn } from '../../../lib/design-system';
 import { VisualizationSection } from '../VisualizationContainer';
 
@@ -25,20 +26,7 @@ export function ComparisonTable({
   const tableRef = useRef(null);
   
   // MathJax processing - exact pattern from Chapter 7.4
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && tableRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([tableRef.current]);
-        }
-        window.MathJax.typesetPromise([tableRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [rows]);
+  useMathJax(tableRef, [rows, columns, showAspectColumn]);
 
   return (
     <VisualizationSection className={className}>
@@ -160,20 +148,7 @@ export const createCIPIComparison = () => ({
 export function SimpleComparisonTable({ title, data, headers, colors, className, showAspectColumn = false }) {
   const tableRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && tableRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([tableRef.current]);
-        }
-        window.MathJax.typesetPromise([tableRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [data]);
+  useMathJax(tableRef, [data, headers?.left, headers?.right, showAspectColumn]);
 
   return (
     <div className={cn("bg-neutral-900/50 rounded-lg p-4", className)}>

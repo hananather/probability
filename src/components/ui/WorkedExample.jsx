@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { colors, typography } from '@/lib/design-system';
 import { useMathJax } from '@/hooks/useMathJax';
@@ -19,7 +19,7 @@ export function WorkedExample({
   dependencies = [],
   variant = "default"
 }) {
-  const mathJaxRef = useMathJax(dependencies);
+  const mathJaxRef = useMathJax([children, ...dependencies]);
   
   const variants = {
     default: {
@@ -79,20 +79,7 @@ export function ExampleSection({ title, children, className }) {
 export function Formula({ children, latex, className, inline = false }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [children, latex]);
+  useMathJax(contentRef, [children, latex, inline]);
   
   // If latex prop is provided, render it properly with delimiters
   if (latex) {
@@ -148,20 +135,7 @@ export function InsightBox({ children, icon = "💡", variant = "default", class
 export function CalculationSteps({ steps, className }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [steps]);
+  useMathJax(contentRef, [steps]);
   
   return (
     <div ref={contentRef} className={cn("space-y-3", className)}>

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
+import { useMathJax } from '@/hooks/useMathJax';
 
 /**
  * MathJax Section Component - Handles MathJax processing with proper hook usage
@@ -9,20 +10,7 @@ import React, { useEffect, useRef } from 'react';
 export default function MathJaxSection({ children, className = "" }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, [children]);
   
   return (
     <div ref={contentRef} className={className}>
