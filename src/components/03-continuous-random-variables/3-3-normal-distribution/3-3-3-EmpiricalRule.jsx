@@ -30,6 +30,8 @@ const SigmaButton = memo(function SigmaButton({ sd, isSelected, onSelect }) {
   return (
     <Button
       onClick={() => onSelect(sd)}
+      aria-label={`Highlight within ${sd} standard deviation${sd === 1 ? '' : 's'} of the mean`}
+      aria-pressed={isSelected}
       variant={isSelected ? "default" : "outline"}
       size="sm"
       className="flex-1"
@@ -86,7 +88,6 @@ const EmpiricalRule = () => {
   
   const svgRef = useRef(null);
   const containerRef = useRef(null);
-  const intervalRef = useRef(null);
   const [dimensions, setDimensions] = useState({ width: 900, height: 500 });
   
   // State
@@ -96,49 +97,27 @@ const EmpiricalRule = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showHistogram, setShowHistogram] = useState(false);
   const [selectedRule, setSelectedRule] = useState(1); // 1, 2, or 3 for σ ranges
-  const [counts, setCounts] = useState({
-    within1SD: 0,
-    within2SD: 0,
-    within3SD: 0,
-    total: 0
-  });
+  const counts = useMemo(() => ({
+    within1SD: samples.filter(x => Math.abs(x - mu) <= sigma).length,
+    within2SD: samples.filter(x => Math.abs(x - mu) <= 2 * sigma).length,
+    within3SD: samples.filter(x => Math.abs(x - mu) <= 3 * sigma).length,
+    total: samples.length
+  }), [samples, mu, sigma]);
   const ruleRanges = useMemo(() => [1, 2, 3].map(sd => [mu - sd * sigma, mu + sd * sigma]), [mu, sigma]);
   
-  // Generate samples
-  const generateSample = () => {
-    const newSample = jStat.normal.sample(mu, sigma);
-    setSamples(prev => {
-      const updated = [...prev, newSample];
-      // Keep only last 1000 samples
-      return updated.slice(-1000);
-    });
-  };
-  
-  // Start/stop generation
-  const toggleGeneration = () => {
-    if (isGenerating) {
-      clearInterval(intervalRef.current);
-    } else {
-      intervalRef.current = setInterval(generateSample, 50);
-    }
-    setIsGenerating(!isGenerating);
-  };
-  
-  // Reset
-  const handleReset = () => {
-    setSamples([]);
-    setIsGenerating(false);
-    clearInterval(intervalRef.current);
-  };
-  
-  // Cleanup interval on unmount
   useEffect(() => {
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, []);
+    if (!isGenerating) return;
+    const interval = setInterval(() => {
+      const newSample = jStat.normal.sample(mu, sigma);
+      setSamples(previous => [...previous, newSample].slice(-1000));
+    }, 50);
+    return () => clearInterval(interval);
+  }, [isGenerating, mu, sigma]);
+
+  const toggleGeneration = () => setIsGenerating(previous => !previous);
+  const handleReset = () => { setSamples([]); setIsGenerating(false); };
+  const changeMean = value => { setMu(value); setSamples([]); };
+  const changeSigma = value => { setSigma(value); setSamples([]); };
 
   // Handle responsive sizing
   useEffect(() => {
@@ -156,20 +135,6 @@ const EmpiricalRule = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-  
-  // Calculate counts when samples change
-  useEffect(() => {
-    const within1SD = samples.filter(x => Math.abs(x - mu) <= sigma).length;
-    const within2SD = samples.filter(x => Math.abs(x - mu) <= 2 * sigma).length;
-    const within3SD = samples.filter(x => Math.abs(x - mu) <= 3 * sigma).length;
-    
-    setCounts({
-      within1SD,
-      within2SD,
-      within3SD,
-      total: samples.length
-    });
-  }, [samples, mu, sigma]);
   
   // D3 Visualization
   useEffect(() => {
@@ -362,7 +327,36 @@ const EmpiricalRule = () => {
       .attr("stroke-width", 2)
       .attr("opacity", 0.5);
     
-    // If showing histogram, overlay sample data with vibrant colors
+    g.append('g').attr('class', 'sample-layer');
+    // Create gradient for histogram bars
+    const histGradient = defs.append("linearGradient")
+      .attr("id", "histGradient")
+      .attr("x1", "0%")
+      .attr("y1", "0%")
+      .attr("x2", "0%")
+      .attr("y2", "100%");
+
+    histGradient.append("stop")
+      .attr("offset", "0%")
+      .attr("style", `stop-color:${colors.histogram};stop-opacity:0.9`);
+
+    histGradient.append("stop")
+      .attr("offset", "100%")
+      .attr("style", `stop-color:${colors.histogram};stop-opacity:0.6`);
+
+  }, [mu, sigma, selectedRule, colors, dimensions]);
+
+  useEffect(() => {
+    if (!svgRef.current) return;
+    const g = d3.select(svgRef.current).select('.sample-layer');
+    if (g.empty()) return;
+    if (samples.length === 0) { g.selectAll('*').remove(); return; }
+    const width = dimensions.width;
+    const height = dimensions.height;
+    const margin = { top: 30, right: 30, bottom: 50, left: 50 };
+    const xScale = d3.scaleLinear().domain([mu - 4 * sigma, mu + 4 * sigma]).range([margin.left, width - margin.right]);
+    g.selectAll(showHistogram ? '.sample-point' : '.bar').remove();
+    // Update only the sample overlay; the density curve and axes stay mounted.
     if (showHistogram && samples.length > 0) {
       const bins = d3.histogram()
         .domain(xScale.domain())
@@ -373,25 +367,9 @@ const EmpiricalRule = () => {
         .domain([0, d3.max(bins, d => d.length)])
         .range([height - margin.bottom, margin.top]);
       
-      // Create gradient for histogram bars
-      const histGradient = defs.append("linearGradient")
-        .attr("id", "histGradient")
-        .attr("x1", "0%")
-        .attr("y1", "0%")
-        .attr("x2", "0%")
-        .attr("y2", "100%");
-      
-      histGradient.append("stop")
-        .attr("offset", "0%")
-        .attr("style", `stop-color:${colors.histogram};stop-opacity:0.9`);
-      
-      histGradient.append("stop")
-        .attr("offset", "100%")
-        .attr("style", `stop-color:${colors.histogram};stop-opacity:0.6`);
-      
       g.selectAll(".bar")
         .data(bins)
-        .enter().append("rect")
+        .join("rect")
         .attr("class", "bar")
         .attr("x", d => xScale(d.x0) + 1)
         .attr("y", d => yHistScale(d.length))
@@ -409,7 +387,7 @@ const EmpiricalRule = () => {
       
       g.selectAll(".sample-point")
         .data(recentSamples)
-        .enter().append("circle")
+        .join("circle")
         .attr("class", "sample-point")
         .attr("cx", d => xScale(d))
         .attr("cy", height - margin.bottom - 5)
@@ -514,10 +492,11 @@ const EmpiricalRule = () => {
                   </label>
                   <input
                     type="range"
+                    aria-label="Mean"
                     min="50"
                     max="150"
                     value={mu}
-                    onChange={(e) => setMu(Number(e.target.value))}
+                    onChange={(e) => changeMean(Number(e.target.value))}
                     className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer transition-all duration-200 hover:bg-gray-600"
                   />
                 </div>
@@ -529,15 +508,18 @@ const EmpiricalRule = () => {
                   </label>
                   <input
                     type="range"
+                    aria-label="Standard deviation"
                     min="5"
                     max="30"
                     value={sigma}
-                    onChange={(e) => setSigma(Number(e.target.value))}
+                    onChange={(e) => changeSigma(Number(e.target.value))}
                     className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer transition-all duration-200 hover:bg-gray-600"
                   />
                 </div>
               </div>
               
+              <p className="text-xs text-neutral-400">Changing either parameter starts a new sample set.</p>
+
               <div className="flex gap-2">
                 {[1, 2, 3].map(sd => (
                   <SigmaButton
