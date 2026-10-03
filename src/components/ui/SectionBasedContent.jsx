@@ -11,6 +11,7 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { LearningActivityContext } from '@/hooks/useLearningActivity';
 import { ACTIVITY_BY_ID } from '@/lib/curriculum/manifest';
 import { isSafeId } from '@/lib/progress/schema';
+import { useMathJax } from '@/hooks/useMathJax';
 
 const SectionRenderer = React.memo(function SectionRenderer({ content, sectionIndex, isCompleted }) {
   return React.isValidElement(content)
@@ -75,6 +76,7 @@ export default function SectionBasedContent({
   const headingRef = useRef(null);
   const focusOnNavigate = useRef(false);
   const isCurrentSectionCompleted = hasCompleted;
+  useMathJax(contentRef, [currentSection, isCurrentSectionCompleted, reducedMotion, identity, loading]);
 
   useEffect(() => {
     if (!focusOnNavigate.current || !headingRef.current) return;
@@ -82,22 +84,6 @@ export default function SectionBasedContent({
     headingRef.current.focus({ preventScroll: true });
     headingRef.current.scrollIntoView({ behavior: reducedMotion ? 'instant' : 'smooth', block: 'start' });
   }, [currentSection, reducedMotion]);
-
-  // Process MathJax when section changes
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [currentSection, isCurrentSectionCompleted, reducedMotion]);
 
   // Handle section navigation
   const handleNavigate = (newSection) => {

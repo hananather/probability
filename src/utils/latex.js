@@ -1,56 +1,28 @@
 // Utility functions for LaTeX rendering in React components
-import { useEffect } from 'react';
+import { useMathJax as useSharedMathJax } from '@/hooks/useMathJax';
+import { getMathJaxRuntime } from '@/lib/mathjax/runtime';
 
 /**
  * Process MathJax for a given element
  * @param {HTMLElement} element - The DOM element containing LaTeX
- * @param {number} delay - Optional delay before processing (default: 100ms)
+ * @param {number} delay - Retained compatibility argument; readiness is shared
  * @returns {Promise} - Resolves when MathJax processing is complete
  */
 export const processMathJax = (element, delay = 100) => {
-  return new Promise((resolve) => {
-    const process = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && element) {
-        // Clear previous rendering
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([element]);
-        }
-        
-        // Process the element
-        window.MathJax.typesetPromise([element])
-          .then(() => resolve())
-          .catch((err) => {
-            // Silent error: MathJax processing error
-            resolve();
-          });
-      } else {
-        resolve();
-      }
-    };
-    
-    // Try immediately
-    process();
-    
-    // Also try after delay to handle race conditions
-    if (delay > 0) {
-      setTimeout(process, delay);
-    }
-  });
+  void delay;
+  if (!element || typeof window === 'undefined') return Promise.resolve({ status: 'cancelled' });
+  return getMathJaxRuntime().enqueue(element).promise;
 };
 
 /**
  * React hook for processing MathJax
  * @param {React.RefObject} ref - React ref to the element containing LaTeX
  * @param {Array} deps - Dependencies array for re-processing
- * @param {number} delay - Optional delay before processing
+ * @param {number} delay - Retained compatibility argument; readiness is shared
  */
 export const useMathJax = (ref, deps = [], delay = 100) => {
-  useEffect(() => {
-    if (ref.current) {
-      processMathJax(ref.current, delay);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
+  void delay;
+  return useSharedMathJax(ref, deps);
 };
 
 /**
