@@ -41,7 +41,7 @@ export const JointDistributionWorkedExamples = React.memo(function JointDistribu
           <p className="mb-2">Given the joint PDF:</p>
           <LaTeXFormula 
             formula={`f_{X,Y}(x,y) = \\begin{cases} 
-              6xy & 0 \\leq x \\leq 1, 0 \\leq y \\leq 1-x \\\\
+              24xy & 0 \\leq x \\leq 1, 0 \\leq y \\leq 1-x \\\\
               0 & \\text{otherwise}
             \\end{cases}`} 
             isBlock={true}
@@ -55,7 +55,7 @@ export const JointDistributionWorkedExamples = React.memo(function JointDistribu
             <p className="font-semibold text-blue-400 mb-2">Finding <LaTeXFormula formula={`f_X(x)`} />:</p>
             <p>For <LaTeXFormula formula={`0 \\leq x \\leq 1`} />:</p>
             <LaTeXFormula 
-              formula={`f_X(x) = \\int_{0}^{1-x} 6xy \\, dy = 6x \\left[\\frac{y^2}{2}\\right]_0^{1-x} = 3x(1-x)^2`} 
+              formula={`f_X(x) = \\int_{0}^{1-x} 24xy \\, dy = 24x \\left[\\frac{y^2}{2}\\right]_0^{1-x} = 12x(1-x)^2`}
               isBlock={true}
             />
           </div>
@@ -63,10 +63,11 @@ export const JointDistributionWorkedExamples = React.memo(function JointDistribu
             <p className="font-semibold text-green-400 mb-2">Finding <LaTeXFormula formula={`f_Y(y)`} />:</p>
             <p>For <LaTeXFormula formula={`0 \\leq y \\leq 1`} />:</p>
             <LaTeXFormula 
-              formula={`f_Y(y) = \\int_{0}^{1-y} 6xy \\, dx = 6y \\left[\\frac{x^2}{2}\\right]_0^{1-y} = 3y(1-y)^2`} 
+              formula={`f_Y(y) = \\int_{0}^{1-y} 24xy \\, dx = 24y \\left[\\frac{x^2}{2}\\right]_0^{1-y} = 12y(1-y)^2`}
               isBlock={true}
             />
           </div>
+          <p className="text-sm text-neutral-400">Both marginal densities are zero outside [0, 1]. Each integrates to 1.</p>
           <div className="p-3 bg-neutral-800 rounded">
             <p className="text-yellow-400 text-sm">Key insight:</p>
             <p className="text-xs">The integration limits depend on the region where the joint PDF is non-zero!</p>
@@ -110,6 +111,7 @@ export const JointDistributionWorkedExamples = React.memo(function JointDistribu
               </div>
             </div>
           </div>
+          <p className="text-sm text-neutral-400">The marginal densities are zero outside [0, 1]. Their product equals the joint density on the whole plane.</p>
           <div>
             <p className="font-semibold mb-2">Step 2: Check if <LaTeXFormula formula={`f_{X,Y}(x,y) = f_X(x) \\cdot f_Y(y)`} /></p>
             <LaTeXFormula 
@@ -127,7 +129,7 @@ export const JointDistributionWorkedExamples = React.memo(function JointDistribu
         <div>
           <p className="mb-2">Given the joint PDF from Example 1:</p>
           <LaTeXFormula 
-            formula={`f_{X,Y}(x,y) = 6xy \\text{ for } 0 \\leq x \\leq 1, 0 \\leq y \\leq 1-x`} 
+            formula={`f_{X,Y}(x,y) = 24xy \\text{ for } 0 \\leq x \\leq 1, 0 \\leq y \\leq 1-x; \\quad 0 \\text{ otherwise}`}
             isBlock={true}
           />
           <p className="mt-2">Find <LaTeXFormula formula={`P(Y > 0.5 | X = 0.3)`} />.</p>
@@ -137,21 +139,22 @@ export const JointDistributionWorkedExamples = React.memo(function JointDistribu
         <div className="space-y-4">
           <div>
             <p className="font-semibold mb-2">Step 1: Find the conditional PDF <LaTeXFormula formula={`f_{Y|X}(y|x=0.3)`} /></p>
-            <p>We already found <LaTeXFormula formula={`f_X(0.3) = 3(0.3)(1-0.3)^2 = 0.441`} /></p>
+            <p>We already found <LaTeXFormula formula={`f_X(0.3) = 12(0.3)(1-0.3)^2 = 1.764`} /></p>
+            <p className="text-sm text-neutral-400">Conditioning on this continuous value uses the conditional density, defined here because <LaTeXFormula formula={`f_X(0.3) > 0`} />.</p>
             <LaTeXFormula 
-              formula={`f_{Y|X}(y|0.3) = \\frac{f_{X,Y}(0.3,y)}{f_X(0.3)} = \\frac{6(0.3)y}{0.441} = \\frac{1.8y}{0.441}`} 
+              formula={`f_{Y|X}(y|0.3) = \\frac{f_{X,Y}(0.3,y)}{f_X(0.3)} = \\frac{24(0.3)y}{1.764} = \\frac{7.2y}{1.764}`}
               isBlock={true}
             />
-            <p className="text-sm text-neutral-400">for <LaTeXFormula formula={`0 \\leq y \\leq 0.7`} /></p>
+            <p className="text-sm text-neutral-400">for <LaTeXFormula formula={`0 \\leq y \\leq 0.7`} />, and zero otherwise.</p>
           </div>
           <div>
             <p className="font-semibold mb-2">Step 2: Calculate the probability</p>
             <LaTeXFormula 
-              formula={`P(Y > 0.5 | X = 0.3) = \\int_{0.5}^{0.7} \\frac{1.8y}{0.441} \\, dy`} 
+              formula={`P(Y > 0.5 | X = 0.3) = \\int_{0.5}^{0.7} \\frac{7.2y}{1.764} \\, dy`}
               isBlock={true}
             />
             <LaTeXFormula 
-              formula={`= \\frac{1.8}{0.441} \\left[\\frac{y^2}{2}\\right]_{0.5}^{0.7} = \\frac{1.8}{0.441} \\cdot \\frac{0.49 - 0.25}{2} = 0.490`} 
+              formula={`= \\frac{7.2}{1.764} \\left[\\frac{y^2}{2}\\right]_{0.5}^{0.7} = \\frac{7.2}{1.764} \\cdot \\frac{0.49 - 0.25}{2} = \\frac{24}{49} \\approx 0.490`}
               isBlock={true}
             />
           </div>

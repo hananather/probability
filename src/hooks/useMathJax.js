@@ -2,11 +2,22 @@ import { useEffect, useRef, useState } from 'react';
 
 /**
  * Custom hook for MathJax rendering with proper cleanup and error handling
- * @param {Array} dependencies - Array of dependencies that should trigger re-rendering
+ * Accepts a dependency array, or an existing object ref followed by dependencies.
+ * @param {Array|Object} refOrDependencies - Dependencies or an object ref
+ * @param {Array} [suppliedDependencies] - Dependencies for an existing ref
  * @returns {Object} ref - Ref to attach to the container element
  */
-export function useMathJax(dependencies = []) {
-  const containerRef = useRef(null);
+export function useMathJax(refOrDependencies = [], suppliedDependencies = []) {
+  const ownRef = useRef(null);
+  const hasSuppliedRef = !Array.isArray(refOrDependencies);
+  if (hasSuppliedRef && (!refOrDependencies || typeof refOrDependencies !== 'object' || !('current' in refOrDependencies))) {
+    throw new TypeError('useMathJax expects a dependency array or an object ref');
+  }
+  const containerRef = hasSuppliedRef ? refOrDependencies : ownRef;
+  const dependencies = hasSuppliedRef ? suppliedDependencies : refOrDependencies;
+  if (!Array.isArray(dependencies)) {
+    throw new TypeError('useMathJax dependencies must be an array');
+  }
   
   useEffect(() => {
     let mounted = true;
@@ -31,6 +42,7 @@ export function useMathJax(dependencies = []) {
           timeoutIds.forEach(id => clearTimeout(id));
           timeoutIds = [];
         } catch (err) {
+          if (!mounted) return;
           if (retryCount < maxRetries) {
             retryCount++;
             const delay = Math.min(100 * Math.pow(1.5, retryCount), 1000);
@@ -61,7 +73,7 @@ export function useMathJax(dependencies = []) {
       timeoutIds.forEach(id => clearTimeout(id));
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [...dependencies]);
+  }, [containerRef, ...dependencies]);
   
   return containerRef;
 }
@@ -108,6 +120,7 @@ export function useMathJaxWithState(dependencies = [], options = {}) {
           timeoutIds.forEach(id => clearTimeout(id));
           timeoutIds = [];
         } catch (err) {
+          if (!mounted) return;
           if (retryCount < maxRetries) {
             retryCount++;
             const delay = Math.min(100 * Math.pow(1.5, retryCount), 1000);
