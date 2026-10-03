@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { useMathJax } from '@/hooks/useMathJax';
 
 const NormalZScoreWorkedExample = React.memo(function NormalZScoreWorkedExample({ 
@@ -97,4 +97,5 @@ const NormalZScoreWorkedExample = React.memo(function NormalZScoreWorkedExample(
   );
 });
 
+export { NormalZScoreWorkedExample };
 export default NormalZScoreWorkedExample;
