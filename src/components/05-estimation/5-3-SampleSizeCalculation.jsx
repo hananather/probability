@@ -146,6 +146,11 @@ const LearningPathNavigation = React.memo(function LearningPathNavigation({ mode
             <strong className="text-blue-400"> confidence level (1-α)</strong>, 
             and <strong className="text-purple-400"> population variance (σ²)</strong>.
           </p>
+          <p>
+            This formula plans an interval for a population mean using independent observations from the same population
+            and a known population standard deviation σ. Coverage is exact for a normal population; otherwise,
+            it uses an appropriate normal approximation for the sample mean.
+          </p>
           
           <div className="bg-gray-800/50 rounded p-3 text-center">
             <span dangerouslySetInnerHTML={{ __html: `\\[n = \\left(\\frac{z_{\\alpha/2} \\cdot \\sigma}{E}\\right)^2\\]` }} />
@@ -247,7 +252,7 @@ const MathematicalFoundation = React.memo(function MathematicalFoundation() {
     {
       title: "The margin of error E is half the CI width",
       content: `\\[E = z_{\\alpha/2} \\frac{\\sigma}{\\sqrt{n}}\\]`,
-      explanation: "We want to control this maximum error"
+      explanation: "Choose the interval half-width before sampling"
     },
     {
       title: "Solve for n by rearranging",
@@ -273,14 +278,16 @@ const MathematicalFoundation = React.memo(function MathematicalFoundation() {
           <div className="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700/50">
             <h4 className={`${typography.h3} mb-3`}>Key Insight</h4>
             <p className="text-sm text-neutral-300 mb-3">
-              The margin of error E represents the maximum distance between our sample mean and the true population mean (with specified confidence). 
-              <span className="text-yellow-400 font-semibold"> Think of it as the "plus-or-minus" in poll results.</span>
+              The margin of error E is the planned half-width of the confidence interval for the population mean.
+              <span className="text-yellow-400 font-semibold"> Think of it as the "plus-or-minus" in an interval estimate.</span>
             </p>
             <div className="bg-purple-900/20 rounded p-3 text-center">
               <p className="text-sm text-purple-300">If we want E = 2 with 95% confidence:</p>
               <p className="text-xs text-neutral-400 mt-1">
-                We're 95% sure the true mean is within ±2 of our sample mean
+                Under these assumptions, if we repeatedly take independent samples and build intervals using this method,
+                about 95% of those intervals cover the fixed population mean.
               </p>
+              <p className="text-xs text-neutral-400 mt-1">A particular interval can miss the mean.</p>
               <p className="text-xs text-yellow-400 mt-2 italic">
                 Smaller E = More precision = Larger sample needed
               </p>
@@ -374,9 +381,11 @@ const MathematicalFoundation = React.memo(function MathematicalFoundation() {
 });
 
 // Visual Exploration Component
-const VisualExploration = React.memo(function VisualExploration({ onComplete }) {
+export const VisualExploration = React.memo(function VisualExploration({ onComplete }) {
   const [activeRelationship, setActiveRelationship] = useState('n-E');
   const svgRef = useRef(null);
+  const exploredRelationships = useRef(new Set());
+  const completionReported = useRef(false);
   const [hoveredPoint, setHoveredPoint] = useState(null);
   const [animating, setAnimating] = useState(false);
   
@@ -691,16 +700,14 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
     
   }, [activeRelationship]);
   
-  // Mark as complete after exploring all relationships
-  useEffect(() => {
-    const explored = new Set(['n-E', 'n-sigma', 'n-confidence']);
-    if (explored.has(activeRelationship)) {
-      explored.delete(activeRelationship);
+  const selectRelationship = (relationship) => {
+    setActiveRelationship(relationship);
+    exploredRelationships.current.add(relationship);
+    if (exploredRelationships.current.size === 3 && !completionReported.current) {
+      completionReported.current = true;
+      onComplete?.('visual-exploration');
     }
-    if (explored.size === 0 && onComplete) {
-      onComplete('visual-exploration');
-    }
-  }, [activeRelationship, onComplete]);
+  };
   
   return (
     <div className="space-y-6">
@@ -718,7 +725,8 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
         {Object.entries(relationships).map(([key, rel]) => (
           <button
             key={key}
-            onClick={() => setActiveRelationship(key)}
+            onClick={() => selectRelationship(key)}
+            aria-pressed={activeRelationship === key}
             className={`px-6 py-3 rounded-lg font-medium transition-all ${
               activeRelationship === key
                 ? 'text-white shadow-lg'
@@ -1577,7 +1585,7 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
                 step="0.1"
               />
               <p className="text-xs text-neutral-500 mt-1">
-                Maximum acceptable error
+                Desired interval half-width
               </p>
             </ControlGroup>
             
@@ -2783,15 +2791,15 @@ export default function SampleSizeCalculation() {
               <li className="flex items-start gap-2">
                 <span className="text-teal-400">1.</span>
                 <div>
-                  <span className="font-semibold">Precision (E):</span> How close do we need to be to the truth? 
+                  <span className="font-semibold">Precision (E):</span> How narrow should the interval be?
                   A political poll with ±10% is less useful than one with ±3%.
                 </div>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-teal-400">2.</span>
                 <div>
-                  <span className="font-semibold">Confidence (1-α):</span> How sure do we want to be? 
-                  95% confidence is standard, but critical decisions might need 99%.
+                  <span className="font-semibold">Confidence (1-α):</span> What coverage should the method achieve across repeated samples?
+                  95% is a common choice; 99% coverage requires a larger sample under the same assumptions.
                 </div>
               </li>
               <li className="flex items-start gap-2">
@@ -2830,8 +2838,7 @@ export default function SampleSizeCalculation() {
         <RealWorldScenarios onComplete={handleActivityComplete} />
       </div>
       
-      {/* Section Complete - Standardized Component */}
-      <SectionComplete chapter={5} />
+      <SectionComplete chapter={5} status="navigation" />
       </VisualizationContainer>
     </>
   );

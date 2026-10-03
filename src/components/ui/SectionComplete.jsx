@@ -3,7 +3,9 @@ import { motion } from 'framer-motion';
 import { CheckCircle, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
-const SectionComplete = ({ chapter = 5 }) => {
+const SectionComplete = ({ chapter = 5, status = 'complete' }) => {
+  const isNavigation = status === 'navigation';
+  const Icon = isNavigation ? ArrowRight : CheckCircle;
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -17,14 +19,14 @@ const SectionComplete = ({ chapter = 5 }) => {
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 200, damping: 10 }}
           >
-            <CheckCircle className="w-8 h-8 text-emerald-400" />
+            <Icon className="w-8 h-8 text-emerald-400" />
           </motion.div>
           <div>
             <h3 className="text-lg font-semibold text-emerald-400">
-              Section Complete!
+              {isNavigation ? 'Continue learning' : 'Section Complete!'}
             </h3>
             <p className="text-sm text-neutral-300">
-              Great work! Ready to continue learning?
+              {isNavigation ? 'Choose another lesson from this chapter.' : 'Great work! Ready to continue learning?'}
             </p>
           </div>
         </div>
