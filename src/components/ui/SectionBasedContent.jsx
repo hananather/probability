@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useContext, useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from 'next/navigation';
 import { InteractiveJourneyNavigation } from './InteractiveJourneyNavigation';
@@ -8,6 +8,9 @@ import BackToHub from './BackToHub';
 import { VisualizationSection } from './VisualizationContainer';
 import { cn } from '@/lib/utils';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { LearningActivityContext } from '@/hooks/useLearningActivity';
+import { ACTIVITY_BY_ID } from '@/lib/curriculum/manifest';
+import { isSafeId } from '@/lib/progress/schema';
 
 const SectionRenderer = React.memo(function SectionRenderer({ content, sectionIndex, isCompleted }) {
   return React.isValidElement(content)
@@ -28,7 +31,7 @@ const SectionRenderer = React.memo(function SectionRenderer({ content, sectionIn
  * @param {string} props.progressVariant - Progress bar color variant
  * @param {boolean} props.showBackToHub - Whether to show BackToHub button (default: true)
  * @param {boolean} props.showHeader - Whether to show the main header section (default: true)
- * @param {string} props.storageKey - Optional device-local key for the active section, independent of completion
+ * @param {string} props.storageKey - Optional section-renderer identity; progress uses the enclosing registered activity
  * 
  * Section configuration:
  * {
@@ -52,46 +55,26 @@ export default function SectionBasedContent({
 }) {
   const pathname = usePathname();
   const reducedMotion = useReducedMotion();
+  const learning = useContext(LearningActivityContext);
+  const containerId = learning?.containerId;
+  const registered = !!learning?.supported && Object.hasOwn(ACTIVITY_BY_ID, containerId);
+  const loading = registered && learning.loading;
   const tabId = (title || 'sections').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  const resumeKey = storageKey || `probability:resume:section:${pathname || '/'}:${tabId}`;
-  const sectionSignature = JSON.stringify(sections.map(section => section.id));
-  const identity = `${resumeKey}:${sectionSignature}`;
-  const [position, setPosition] = useState({ identity: null, index: 0 });
-  const currentSection = position.identity === identity && Number.isInteger(position.index) && position.index >= 0 && position.index < sections.length
-    ? position.index : 0;
-  const [completedSections, setCompletedSections] = useState([]);
-  const [hasCompleted, setHasCompleted] = useState(false);
+  const identity = JSON.stringify([containerId || null, pathname, storageKey || tabId, registered ? learning.resetGeneration : 'session']);
+  const [position, setPosition] = useState(null);
+  const [completionIdentity, setCompletionIdentity] = useState(null);
+  const savedPosition = registered && !loading ? learning.getResume(containerId) : null;
+  const legacyPosition = registered && !loading ? learning.getLegacySectionResume?.(containerId) : null;
+  const locator = position?.identity === identity ? position : savedPosition;
+  const idIndex = locator?.positionId ? sections.findIndex(section => section.id === locator.positionId) : -1;
+  const currentSection = idIndex >= 0 ? idIndex
+    : Number.isInteger(locator?.legacyIndex) && locator.legacyIndex >= 0 && locator.legacyIndex < sections.length
+      ? locator.legacyIndex : 0;
+  const hasCompleted = completionIdentity === identity || (registered && !loading && learning.isCompleted(containerId));
   const contentRef = useRef(null);
   const headingRef = useRef(null);
   const focusOnNavigate = useRef(false);
-  const isCurrentSectionCompleted = completedSections.includes(currentSection) ||
-    (currentSection === sections.length - 1 && hasCompleted);
-
-  useEffect(() => {
-    const sectionIds = JSON.parse(sectionSignature);
-    let restoredIndex = 0;
-    try {
-      const saved = JSON.parse(localStorage.getItem(resumeKey) || 'null');
-      const savedIndex = typeof saved === 'number' ? saved : saved?.index;
-      const idIndex = saved?.sectionId ? sectionIds.indexOf(saved.sectionId) : -1;
-      if (idIndex >= 0) restoredIndex = idIndex;
-      else if (Number.isInteger(savedIndex) && savedIndex >= 0 && savedIndex < sectionIds.length) restoredIndex = savedIndex;
-    } catch {
-      // Corrupt or unavailable device storage must not prevent reading a lesson.
-    }
-    setPosition({ identity, index: restoredIndex });
-    setCompletedSections([]);
-    setHasCompleted(false);
-  }, [resumeKey, sectionSignature, identity]);
-
-  useEffect(() => {
-    if (position.identity !== identity || !sections[currentSection]) return;
-    try {
-      localStorage.setItem(resumeKey, JSON.stringify({ index: currentSection, sectionId: sections[currentSection].id }));
-    } catch {
-      // Section navigation remains usable without persisted device state.
-    }
-  }, [position.identity, identity, resumeKey, currentSection, sections]);
+  const isCurrentSectionCompleted = hasCompleted;
 
   useEffect(() => {
     if (!focusOnNavigate.current || !headingRef.current) return;
@@ -120,21 +103,25 @@ export default function SectionBasedContent({
   const handleNavigate = (newSection) => {
     if (!Number.isInteger(newSection) || newSection < 0 || newSection >= sections.length || newSection === currentSection) return;
     focusOnNavigate.current = true;
-    setPosition({ identity, index: newSection });
-    // Mark previous section as completed when navigating forward
-    if (newSection > currentSection && !completedSections.includes(currentSection)) {
-      setCompletedSections(prev => [...prev, currentSection]);
+    const nextPosition = { identity, legacyIndex: newSection, positionId: sections[newSection].id };
+    setPosition(nextPosition);
+    if (registered && !loading) {
+      const nextLocator = {
+        activityId: null,
+        kind: 'section',
+        legacyIndex: newSection,
+        ...(isSafeId(nextPosition.positionId) ? { positionId: nextPosition.positionId } : {}),
+      };
+      void learning.setResume(containerId, nextLocator, { context: learning.writeContext }).finally(() => {
+        setPosition(previous => previous === nextPosition ? null : previous);
+      });
     }
   };
 
   // Handle completion
   const handleComplete = () => {
-    if (!hasCompleted) {
-      // Mark last section as completed
-      if (!completedSections.includes(sections.length - 1)) {
-        setCompletedSections(prev => [...prev, sections.length - 1]);
-      }
-      setHasCompleted(true);
+    if (!hasCompleted && !loading) {
+      setCompletionIdentity(identity);
       if (onComplete) {
         onComplete();
       }
@@ -176,6 +163,29 @@ export default function SectionBasedContent({
             <p className="text-sm text-neutral-400">
               {currentSection + 1} of {sections.length} sections
             </p>
+            <p role="status" className="text-xs text-neutral-400 mt-1">
+              {!registered ? 'Your section position is kept only while this lesson is open.'
+                : loading ? 'Loading your saved section position…'
+                  : learning.persistenceStatus === 'session-only' ? 'Your section position is only kept for this visit.'
+                    : learning.pendingLocalWrites > 0 ? 'Saving your section position…'
+                      : savedPosition ? 'Your section position is saved in this browser.'
+                        : 'Your section position will be saved as you move.'}
+            </p>
+            {legacyPosition && (
+              <div className="mt-2 text-xs text-neutral-400">
+                <p>A position from an older version of this lesson is available.</p>
+                <button
+                  type="button"
+                  className="min-h-11 text-sm text-teal-300 underline underline-offset-4"
+                  onClick={() => {
+                    focusOnNavigate.current = true;
+                    void learning.restoreLegacySectionResume(containerId, legacyPosition.sourceKey, { context: learning.writeContext }).then(result => {
+                      if (!result?.applied) focusOnNavigate.current = false;
+                    });
+                  }}
+                >Restore saved position</button>
+              </div>
+            )}
           </div>
         </div>
       </VisualizationSection>

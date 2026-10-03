@@ -10,7 +10,13 @@ import VennDiagram from '@/components/01-introduction-to-probabilities/01-founda
 import MathematicalAnalysis from '@/components/01-introduction-to-probabilities/01-foundations/Tab4InteractiveTab-StepByStep';
 import progressService from '@/services/progressService';
 import { createProgressStore } from '@/lib/progress/store';
+import { LearningActivityContext, useLearningActivity } from '@/hooks/useLearningActivity';
+import { createMathJaxRuntime } from '@/lib/mathjax/runtime';
+import { renderer } from '../mathjax/runtime/fixtures';
 import { environment, memoryPersistence } from '../progress/store/helpers';
+
+const sharedMath = vi.hoisted(() => ({ runtime: null }));
+vi.mock('@/lib/mathjax/runtime', async importOriginal => ({ ...(await importOriginal()), getMathJaxRuntime: () => sharedMath.runtime }));
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/chapter1/01-foundations' }));
 vi.mock('next/dynamic', async () => {
@@ -21,24 +27,39 @@ vi.mock('@/components/reference-sheets/Chapter1ReferenceSheet', () => ({ Chapter
 
 const originalScroll = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollIntoView');
 let typeset;
+const sectionStores = [];
 
 beforeEach(() => {
   vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn(), addListener: vi.fn(), removeListener: vi.fn() }));
   Object.defineProperty(Element.prototype, 'scrollIntoView', { configurable: true, value: vi.fn() });
   typeset = vi.fn().mockResolvedValue(undefined);
-  window.MathJax = { typesetPromise: typeset, typesetClear: vi.fn() };
+  window.MathJax = { ...renderer(), typesetPromise: typeset };
+  sharedMath.runtime = createMathJaxRuntime();
 });
 
 afterEach(() => {
+  sharedMath.runtime.dispose();
+  sectionStores.splice(0).forEach(store => store.dispose());
   delete window.MathJax;
   vi.unstubAllGlobals();
   if (originalScroll) Object.defineProperty(Element.prototype, 'scrollIntoView', originalScroll);
   else delete Element.prototype.scrollIntoView;
 });
 
-function resumeSection(title, index, sectionId) {
-  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  localStorage.setItem(`probability:resume:section:/chapter1/01-foundations:${slug}`, JSON.stringify({ index, sectionId }));
+async function renderResumedSection(Component, child, index, positionId, props = {}) {
+  const containerId = `chapter-1:foundations:${child}`;
+  const store = createProgressStore(environment(memoryPersistence()));
+  sectionStores.push(store);
+  await store.hydrate();
+  await store.setResume(containerId, { activityId: null, kind: 'section', positionId, legacyIndex: index });
+  vi.spyOn(progressService, 'getStore').mockReturnValue(store);
+  function Activity() {
+    const learning = useLearningActivity(containerId);
+    return <LearningActivityContext.Provider value={learning}><Component {...props} /></LearningActivityContext.Provider>;
+  }
+  const view = render(<Activity />);
+  await screen.findByRole('heading', { name: /^Section 4:/ });
+  return view;
 }
 
 describe('foundation sampling models', () => {
@@ -151,9 +172,8 @@ describe('foundation event geometry and calculations', () => {
 
 describe('prediction before explanation', () => {
   it('hides all six quick practice solutions until individually revealed and keeps completion explicit', async () => {
-    resumeSection('Quick Reference', 3, 'practice-problems');
     const complete = vi.fn();
-    const { container } = render(<QuickReference onComplete={complete} />);
+    const { container } = await renderResumedSection(QuickReference, 'quick-reference', 3, 'practice-problems', { onComplete: complete });
     const disclosures = [...container.querySelectorAll('details')];
     expect(disclosures).toHaveLength(6);
     for (const details of disclosures) {
@@ -173,9 +193,8 @@ describe('prediction before explanation', () => {
   });
 
   it('retains the fourth worked section identity and reveals exact die and weighted transfer reasoning', async () => {
-    resumeSection('Worked Examples', 3, 'why-cards-matter');
     const complete = vi.fn();
-    const { container } = render(<WorkedExamples onComplete={complete} />);
+    const { container } = await renderResumedSection(WorkedExamples, 'worked-examples', 3, 'why-cards-matter', { onComplete: complete });
     expect(screen.getByRole('heading', { name: 'Section 4: Try a New Sample Space' })).toBeVisible();
     const die = screen.getByText(/A ∩ B = \{4, 6\}, so P\(A ∩ B\) = 2\/6 = 1\/3/);
     const weighted = screen.getByText(/P\(red\) = 2\/4 = 1\/2/);
@@ -193,8 +212,7 @@ describe('prediction before explanation', () => {
   });
 
   it('states fair independent coin assumptions before assigning four equal outcome probabilities', async () => {
-    resumeSection('Foundations', 3, 'complete-example');
-    render(<FoundationsTab />);
+    await renderResumedSection(FoundationsTab, 'foundations', 3, 'complete-example');
     await waitFor(() => expect(screen.getByText(/two independent flips of a fair coin/)).toBeVisible());
     expect(screen.getByText(/H means heads and T means tails/)).toBeVisible();
     expect(screen.getByText(/S = \\{HH, HT, TH, TT\\}/)).toBeVisible();

@@ -1,4 +1,5 @@
 // Stable learning IDs and source-derived counts. Keep question text outside this module.
+import { SECTION_RESUME_SOURCES } from './sectionResumeSources';
 export const CURRICULUM_REVISION = '2026-10-03.1';
 export { CURRICULUM_METADATA } from './metadata';
 
@@ -248,6 +249,8 @@ for (const [legacyId, key, hasInteractive] of tabDefinitions) {
   sources.push({ key: `${key}:active-tab`, kind: 'active-tab', containerId: parent.id, targetIds: parent.children.map(child => child.id) });
 }
 
+sources.push(...SECTION_RESUME_SOURCES.map(source => ({ ...source, kind: 'section-resume' })));
+
 const montyHall = activities.find(activity => activity.id === 'chapter-1:monty-hall-masterclass');
 addChildren(montyHall, ['intro', 'play', 'proof', 'simulation'], 'stage');
 sources.push({ key: 'monty-hall-journey-progress', kind: 'journey', containerId: montyHall.id, targetIds: montyHall.children.map(child => child.id) });
@@ -301,6 +304,7 @@ export const ACTIVITY_BY_ID = freeze(Object.fromEntries(activities.map(activity 
 export const QUIZ_BY_ID = freeze(Object.fromEntries(chapters.filter(chapter => chapter.quiz).map(chapter => [chapter.quiz.id, chapter.quiz])));
 export const LEGACY_PROGRESS_SOURCES = freeze(sources);
 export const LEGACY_SOURCE_BY_KEY = freeze(Object.fromEntries(sources.map(source => [source.key, source])));
+export const LEGACY_SECTION_SOURCE_BY_CONTAINER = freeze(Object.fromEntries(sources.filter(source => source.kind === 'section-resume').map(source => [source.containerId, source])));
 export const LEGACY_STORAGE_KEYS = freeze([
   'probLabProgress', 'probLabProgressMeta',
   ...sources.map(source => source.key),

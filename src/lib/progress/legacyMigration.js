@@ -53,6 +53,31 @@ function resume(snapshot, containerId, data) {
   setOwn(snapshot.resumeByDevice, snapshot.deviceId, device);
 }
 
+/** Resolve only a registered historical renderer position; this creates no attainment. */
+export function readLegacySectionResume(key, raw) {
+  const source = own(LEGACY_SOURCE_BY_KEY, key);
+  if (source?.kind !== 'section-resume' || typeof raw !== 'string') return null;
+  let data;
+  try { data = JSON.parse(raw); } catch { return null; }
+  const savedIndex = typeof data === 'number' ? data : isRecord(data) ? data.index : null;
+  const idIndex = isRecord(data) && typeof data.sectionId === 'string' ? source.positionIds.indexOf(data.sectionId) : -1;
+  const index = idIndex >= 0 ? idIndex : savedIndex;
+  if (!Number.isInteger(index) || index < 0 || index >= source.positionIds.length) return null;
+  return { containerId: source.containerId, activityId: null, kind: 'section', positionId: source.positionIds[index], legacyIndex: index, sourceKey: key };
+}
+
+function sectionResume(snapshot, key, raw, source) {
+  const locator = readLegacySectionResume(key, raw);
+  if (!locator) return issue(snapshot, key, 'invalid-section-position');
+  const checkpoints = snapshot.legacySectionResumeByDevice ||= {};
+  const device = own(checkpoints, snapshot.deviceId) || {};
+  if (!own(device, key)) {
+    if (!own(snapshot.resumeByDevice, snapshot.deviceId)?.[source.containerId]) resume(snapshot, source.containerId, locator);
+    setOwn(device, key, { containerId: source.containerId, status: 'adopted', fingerprint: snapshot.migration.sources[key].fingerprint });
+    setOwn(checkpoints, snapshot.deviceId, device);
+  }
+}
+
 function completionArray(snapshot, key, data, source) {
   if (!Array.isArray(data)) return issue(snapshot, key, 'expected-completion-array');
   for (const legacyId of data) {
@@ -274,7 +299,8 @@ export function migrateLegacyProgress(rawByKey, options = {}) {
     }
     let data;
     try { data = JSON.parse(raw); } catch { issue(snapshot, key, 'malformed-json'); continue; }
-    if (source?.kind === 'completion-array') completionArray(snapshot, key, data, source);
+    if (source?.kind === 'section-resume') sectionResume(snapshot, key, raw, source);
+    else if (source?.kind === 'completion-array') completionArray(snapshot, key, data, source);
     else if (source?.kind === 'journey') journey(snapshot, key, data, source);
     else if (source?.kind === 'progressive-content') progressiveContent(snapshot, key, data, source);
     else if (key === 'probLabProgress') centralProgress(snapshot, key, data);

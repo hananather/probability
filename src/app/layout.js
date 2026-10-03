@@ -3,6 +3,7 @@ import Script from 'next/script';
 import { MathJaxProvider } from '../components/shared/MathJaxProvider';
 import { LayoutWrapper } from '../components/shared/LayoutWrapper';
 import { MotionPreferenceProvider } from '../components/shared/MotionPreferenceProvider';
+import { MATHJAX_CONFIG_SCRIPT } from '@/lib/mathjax/config';
 
 export const metadata = {
   title: 'Probability Lab - MAT 2377',
@@ -22,28 +23,7 @@ export default function RootLayout({ children }) {
         id="mathjax-config"
         strategy="beforeInteractive"
         dangerouslySetInnerHTML={{
-          __html: `
-            window.MathJax = {
-              tex: {
-                inlineMath: [['\\\\(', '\\\\)']],
-                displayMath: [['\\\\[', '\\\\]']],
-              },
-              startup: {
-                typeset: false,
-                ready: () => {
-                  MathJax.startup.defaultReady();
-                  // Dispatch custom event when MathJax is ready
-                  window.dispatchEvent(new Event('MathJaxReady'));
-                }
-              },
-              options: {
-                renderActions: {
-                  addMenu: [],
-                  checkLoading: []
-                }
-              }
-            };
-          `,
+          __html: MATHJAX_CONFIG_SCRIPT,
         }}
       />
         <MotionPreferenceProvider>

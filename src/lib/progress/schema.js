@@ -1,4 +1,4 @@
-import { ACTIVITY_BY_ID, CURRICULUM, CURRICULUM_REVISION, resolveChapterId } from '@/lib/curriculum/manifest';
+import { ACTIVITY_BY_ID, CURRICULUM, CURRICULUM_REVISION, LEGACY_SOURCE_BY_KEY, resolveChapterId } from '@/lib/curriculum/manifest';
 import { validatePinnedQuizAttempt, validateQuizSession } from './quizContract';
 
 export const PROGRESS_SCHEMA_VERSION = 2;
@@ -50,6 +50,7 @@ export function createEmptyProgress({ ownerScope = 'guest:local', deviceId = 'lo
     preferences: { quiz: {}, device: {} },
     unattributedLegacy: {},
     migration: { sources: {}, issues: [] },
+    legacySectionResumeByDevice: {},
     sync: { status: 'local', pendingMutationIds: [] },
   };
 }
@@ -122,6 +123,16 @@ export function validateProgressSnapshot(value) {
   for (const issue of Array.isArray(value.migration?.issues) ? value.migration.issues : []) if (!isRecord(issue) || typeof issue.key !== 'string' || typeof issue.code !== 'string') errors.push('migration:issue');
   for (const [key, record] of Object.entries(isRecord(value.unattributedLegacy) ? value.unattributedLegacy : {})) {
     if (!isRecord(record) || typeof record.raw !== 'string' || !Array.isArray(record.issues) || record.issues.some(code => typeof code !== 'string')) errors.push(`unattributedLegacy:${key}`);
+  }
+  if (value.legacySectionResumeByDevice !== undefined) {
+    if (!isRecord(value.legacySectionResumeByDevice)) errors.push('legacySectionResumeByDevice:object');
+    for (const [deviceId, checkpoints] of Object.entries(isRecord(value.legacySectionResumeByDevice) ? value.legacySectionResumeByDevice : {})) {
+      if (!isSafeId(deviceId) || !isRecord(checkpoints)) { errors.push(`legacySectionResumeByDevice:${deviceId}`); continue; }
+      for (const [key, checkpoint] of Object.entries(checkpoints)) {
+        const source = Object.hasOwn(LEGACY_SOURCE_BY_KEY, key) ? LEGACY_SOURCE_BY_KEY[key] : null;
+        if (source?.kind !== 'section-resume' || !isRecord(checkpoint) || checkpoint.containerId !== source.containerId || !['adopted', 'cleared'].includes(checkpoint.status) || (checkpoint.fingerprint !== null && (typeof checkpoint.fingerprint !== 'string' || !/^[a-f0-9]{16}$/.test(checkpoint.fingerprint))) || (checkpoint.status === 'adopted' && checkpoint.fingerprint === null)) errors.push(`legacySectionResumeByDevice:${deviceId}:${key}`);
+      }
+    }
   }
   if (!isRecord(value.preferences?.quiz) || !isRecord(value.preferences?.device)) errors.push('preferences:structure');
   for (const [key, preference] of Object.entries(isRecord(value.preferences?.quiz) ? value.preferences.quiz : {})) {

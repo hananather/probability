@@ -2,7 +2,12 @@ import { useRef } from 'react';
 import { act, fireEvent, render, renderHook, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useMathJax, useMathJaxWithState } from '@/hooks/useMathJax';
+import { createMathJaxRuntime } from '@/lib/mathjax/runtime';
+import { deferred, renderer, tick } from '../runtime/fixtures';
 import { JointDistributionWorkedExamples } from '@/components/ui/patterns/JointDistributionExamples';
+
+const shared = vi.hoisted(() => ({ runtime: null }));
+vi.mock('@/lib/mathjax/runtime', async importOriginal => ({ ...(await importOriginal()), getMathJaxRuntime: () => shared.runtime }));
 
 function DependencyFormula({ formula }) {
   const ref = useMathJax([formula]);
@@ -25,13 +30,18 @@ function StaticRefFormula({ formula }) {
 describe('MathJax existing call signatures', () => {
   let typesetPromise;
   let typesetClear;
+  let download;
   beforeEach(() => {
     vi.useFakeTimers();
     typesetPromise = vi.fn(() => Promise.resolve());
     typesetClear = vi.fn();
-    window.MathJax = { typesetPromise, typesetClear };
+    window.MathJax = { ...renderer(), typesetPromise, typesetClear };
+    download = deferred();
+    shared.runtime = createMathJaxRuntime({ loadScript: () => ({ promise: download.promise, remove() { download.reject(new Error('retired')); } }) });
   });
-  afterEach(() => {
+  afterEach(async () => {
+    shared.runtime.dispose();
+    await tick();
     delete window.MathJax;
     vi.useRealTimers();
   });
@@ -39,12 +49,14 @@ describe('MathJax existing call signatures', () => {
   it.each([DependencyFormula, ExistingRefFormula])('typesets the attached current DOM for both supported forms (%#)', async Formula => {
     const { rerender, unmount } = render(<Formula formula={'\\(x\\)'}>{'\\(x\\)'}</Formula>);
     const node = screen.getByTestId('formula');
-    expect(typesetClear).toHaveBeenCalledWith([node]);
+    await act(async () => { await tick(); });
     expect(typesetPromise).toHaveBeenCalledWith([node]);
     if (Formula === ExistingRefFormula) expect(node).toHaveAttribute('data-same-ref', 'true');
     await act(async () => {});
     typesetPromise.mockClear();
     rerender(<Formula formula={'\\(y\\)'}>{'\\(y\\)'}</Formula>);
+    await act(async () => { await tick(); });
+    expect(typesetClear).toHaveBeenCalledWith([node]);
     expect(typesetPromise).toHaveBeenCalledTimes(1);
     expect(typesetPromise).toHaveBeenLastCalledWith([node]);
     expect(node).toHaveTextContent('\\(y\\)');
@@ -66,21 +78,27 @@ describe('MathJax existing call signatures', () => {
     delete window.MathJax;
     const oldNode = document.createElement('span');
     const newNode = document.createElement('span');
+    document.body.append(oldNode, newNode);
     const firstRef = { current: oldNode };
     const secondRef = { current: newNode };
     const { rerender, unmount } = renderHook(({ ref }) => useMathJax(ref, []), { initialProps: { ref: firstRef } });
     rerender({ ref: secondRef });
-    window.MathJax = { typesetPromise, typesetClear };
-    await act(async () => { await vi.runAllTimersAsync(); });
+    await act(async () => { await tick(); });
+    window.MathJax = { ...renderer(), typesetPromise, typesetClear };
+    download.resolve();
+    await act(async () => { await tick(); });
     expect(typesetPromise).toHaveBeenCalledTimes(1);
     expect(typesetPromise).toHaveBeenLastCalledWith([newNode]);
     unmount();
+    oldNode.remove();
+    newNode.remove();
   });
 
   it('does not schedule retries when an in-flight render rejects after unmount', async () => {
     let reject;
     typesetPromise.mockImplementation(() => new Promise((resolve, rejectPromise) => { reject = rejectPromise; }));
     const { unmount } = render(<ExistingRefFormula>\\(x\\)</ExistingRefFormula>);
+    await act(async () => { await tick(); });
     unmount();
     await act(async () => { reject(new Error('late failure')); });
     expect(vi.getTimerCount()).toBe(0);
@@ -91,10 +109,12 @@ describe('MathJax existing call signatures', () => {
   it('mounts the actual mixed-signature worked example and renders changed examples', async () => {
     const { container, unmount } = render(<JointDistributionWorkedExamples />);
     const parent = container.firstElementChild;
+    await act(async () => { await tick(); });
     expect(typesetPromise.mock.calls.some(([nodes]) => nodes[0] === parent)).toBe(true);
     await act(async () => {});
     typesetPromise.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'Example 2' }));
+    await act(async () => { await tick(); });
     expect(screen.getByText('Example 2: Checking Independence')).toBeInTheDocument();
     expect(typesetPromise.mock.calls.some(([nodes]) => nodes[0] === parent)).toBe(true);
     fireEvent.click(screen.getByRole('button', { name: 'Show Solution' }));
@@ -128,6 +148,7 @@ describe('MathJax existing call signatures', () => {
       return <span ref={ref}>\\(x\\)</span>;
     }
     const { unmount } = render(<PendingFormula />);
+    await act(async () => { await tick(); });
     unmount();
     await act(async () => { reject(new Error('late loading-state failure')); });
     expect(vi.getTimerCount()).toBe(0);

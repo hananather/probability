@@ -1,12 +1,41 @@
-import { useEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { getMathJaxRuntime } from '@/lib/mathjax/runtime';
 
-/**
- * Custom hook for MathJax rendering with proper cleanup and error handling
- * Accepts a dependency array, or an existing object ref followed by dependencies.
- * @param {Array|Object} refOrDependencies - Dependencies or an object ref
- * @param {Array} [suppliedDependencies] - Dependencies for an existing ref
- * @returns {Object} ref - Ref to attach to the container element
- */
+function useRenderingEffect(containerRef, dependencies, onStart, onFinish) {
+  const runtime = getMathJaxRuntime();
+  const { retryVersion } = useSyncExternalStore(runtime.subscribe, runtime.getSnapshot, runtime.getServerSnapshot);
+  useLayoutEffect(() => {
+    let element = containerRef.current;
+    let request;
+    let mounted = true;
+    onStart?.();
+    // A loading-state caller may have replaced its container with an error
+    // message. Allow the explicit retry's state reset to attach the new ref.
+    queueMicrotask(() => {
+      if (!mounted) return;
+      element = containerRef.current;
+      if (!element) return;
+      request = runtime.enqueue(element);
+      request.promise.then(
+        result => { if (mounted && result.status !== 'cancelled') onFinish?.(null); },
+        error => {
+          runtime.retire(element, undefined, { retainFailure: true }).catch(() => {}).finally(() => { if (mounted) onFinish?.(error); });
+        },
+      );
+    });
+    return () => {
+      mounted = false;
+      request?.cancel();
+      runtime.retire(element).catch(() => {});
+    };
+    // Explicit dependencies control existing lesson call sites; changing a ref's
+    // contents alone does not request new typesetting.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runtime, containerRef, retryVersion, ...dependencies]);
+  return runtime;
+}
+
+/** Accepts dependencies, or an existing object ref followed by dependencies. */
 export function useMathJax(refOrDependencies = [], suppliedDependencies = []) {
   const ownRef = useRef(null);
   const hasSuppliedRef = !Array.isArray(refOrDependencies);
@@ -15,169 +44,30 @@ export function useMathJax(refOrDependencies = [], suppliedDependencies = []) {
   }
   const containerRef = hasSuppliedRef ? refOrDependencies : ownRef;
   const dependencies = hasSuppliedRef ? suppliedDependencies : refOrDependencies;
-  if (!Array.isArray(dependencies)) {
-    throw new TypeError('useMathJax dependencies must be an array');
-  }
-  
-  useEffect(() => {
-    let mounted = true;
-    let retryCount = 0;
-    const maxRetries = 5;
-    let timeoutIds = [];
-    
-    const processMathJax = async () => {
-      if (!mounted || !containerRef.current) return;
-      
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise) {
-        try {
-          // Clear previous typesetting
-          if (window.MathJax.typesetClear) {
-            window.MathJax.typesetClear([containerRef.current]);
-          }
-          
-          // Process new content
-          await window.MathJax.typesetPromise([containerRef.current]);
-          
-          // Clear timeouts on success
-          timeoutIds.forEach(id => clearTimeout(id));
-          timeoutIds = [];
-        } catch (err) {
-          if (!mounted) return;
-          if (retryCount < maxRetries) {
-            retryCount++;
-            const delay = Math.min(100 * Math.pow(1.5, retryCount), 1000);
-            const timeoutId = setTimeout(processMathJax, delay);
-            timeoutIds.push(timeoutId);
-          } else {
-            console.error('MathJax rendering error after retries:', err);
-          }
-        }
-      } else if (retryCount < maxRetries) {
-        // MathJax not ready, retry
-        retryCount++;
-        const delay = Math.min(100 * Math.pow(1.5, retryCount), 1000);
-        const timeoutId = setTimeout(processMathJax, delay);
-        timeoutIds.push(timeoutId);
-      }
-    };
-    
-    // Process immediately
-    processMathJax();
-    
-    // Also process after a short delay to handle race conditions
-    const timeoutId = setTimeout(processMathJax, 100);
-    timeoutIds.push(timeoutId);
-    
-    return () => {
-      mounted = false;
-      timeoutIds.forEach(id => clearTimeout(id));
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [containerRef, ...dependencies]);
-  
+  if (!Array.isArray(dependencies)) throw new TypeError('useMathJax dependencies must be an array');
+  useRenderingEffect(containerRef, dependencies);
   return containerRef;
 }
 
-/**
- * Enhanced MathJax hook with loading state
- * @param {Array} dependencies - Array of dependencies that should trigger re-rendering
- * @param {Object} options - Configuration options
- * @returns {Object} { ref, isLoading, error }
- */
+/** Loading/error result is retained; retries are now shared and explicit. */
 export function useMathJaxWithState(dependencies = [], options = {}) {
+  if (!Array.isArray(dependencies)) throw new TypeError('useMathJax dependencies must be an array');
+  const containerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const containerRef = useRef(null);
-  
-  useEffect(() => {
-    let mounted = true;
-    let retryCount = 0;
-    const maxRetries = options.maxRetries || 5;
-    let timeoutIds = [];
-    
-    setIsLoading(true);
-    setError(null);
-    
-    const processMathJax = async () => {
-      if (!mounted || !containerRef.current) return;
-      
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise) {
-        try {
-          // Clear previous typesetting
-          if (window.MathJax.typesetClear) {
-            window.MathJax.typesetClear([containerRef.current]);
-          }
-          
-          // Process new content
-          await window.MathJax.typesetPromise([containerRef.current]);
-          
-          if (mounted) {
-            setIsLoading(false);
-            setError(null);
-          }
-          
-          // Clear timeouts on success
-          timeoutIds.forEach(id => clearTimeout(id));
-          timeoutIds = [];
-        } catch (err) {
-          if (!mounted) return;
-          if (retryCount < maxRetries) {
-            retryCount++;
-            const delay = Math.min(100 * Math.pow(1.5, retryCount), 1000);
-            const timeoutId = setTimeout(processMathJax, delay);
-            timeoutIds.push(timeoutId);
-          } else {
-            if (mounted) {
-              setError(err);
-              setIsLoading(false);
-            }
-            console.error('MathJax rendering error after retries:', err);
-          }
-        }
-      } else if (retryCount < maxRetries) {
-        // MathJax not ready, retry
-        retryCount++;
-        const delay = Math.min(100 * Math.pow(1.5, retryCount), 1000);
-        const timeoutId = setTimeout(processMathJax, delay);
-        timeoutIds.push(timeoutId);
-      } else {
-        if (mounted) {
-          setError(new Error('MathJax not available'));
-          setIsLoading(false);
-        }
-      }
-    };
-    
-    // Process immediately
-    processMathJax();
-    
-    // Also process after a short delay to handle race conditions
-    const timeoutId = setTimeout(processMathJax, 100);
-    timeoutIds.push(timeoutId);
-    
-    return () => {
-      mounted = false;
-      timeoutIds.forEach(id => clearTimeout(id));
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [...dependencies]);
-  
-  return { ref: containerRef, isLoading, error };
+  const runtime = useRenderingEffect(containerRef, dependencies,
+    () => { setIsLoading(true); setError(null); },
+    failure => { setIsLoading(false); setError(failure); },
+  );
+  // maxRetries is accepted for old callers. There are no automatic retry loops.
+  void options;
+  return { ref: containerRef, isLoading, error, retry: runtime.retry };
 }
 
-/**
- * Render LaTeX string safely
- * @param {string} latex - LaTeX string to render
- * @param {boolean} inline - Whether to render inline or display mode
- * @returns {Object} Props to spread on the element
- */
+/** Encode text before supplying the legacy inner-HTML props. TeX is filtered by ui/safe. */
 export function useLatexString(latex, inline = false) {
   const delimiter = inline ? '\\(' : '\\[';
   const endDelimiter = inline ? '\\)' : '\\]';
-  
-  return {
-    dangerouslySetInnerHTML: { 
-      __html: `${delimiter}${latex}${endDelimiter}` 
-    }
-  };
+  const escaped = String(latex).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
+  return { dangerouslySetInnerHTML: { __html: `${delimiter}${escaped}${endDelimiter}` } };
 }

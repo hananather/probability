@@ -88,7 +88,7 @@ describe('legacy migration preserves facts and recovery data', () => {
   });
 
   it('recovers the new section-resume family without guessing title-derived activity identities', () => {
-    const key = 'probability:resume:section:/chapter1/01-foundations:foundations';
+    const key = 'probability:resume:section:/chapter1/01-foundations:unregistered-foundations';
     const raw = JSON.stringify({ index: 2, sectionId: 'probability-models' });
     const snapshot = migrateLegacyProgress({ [key]: raw });
     expect(snapshot.unattributedLegacy[key]).toEqual({ raw, issues: ['unattributed-source'] });

@@ -1,6 +1,6 @@
-import { ACTIVITY_BY_ID, CURRICULUM, QUIZ_BY_ID, LEGACY_STORAGE_KEYS, isLegacyStorageKey, resolveActivityId, resolveChapterId } from '@/lib/curriculum/manifest';
+import { ACTIVITY_BY_ID, CURRICULUM, QUIZ_BY_ID, LEGACY_SECTION_SOURCE_BY_CONTAINER, LEGACY_SOURCE_BY_KEY, LEGACY_STORAGE_KEYS, isLegacyStorageKey, resolveActivityId, resolveChapterId } from '@/lib/curriculum/manifest';
 import { createEmptyProgress, isFiniteNumber, isOwnerScope, isRecord, isSafeId, validTimestamp, validateProgressSnapshot } from './schema';
-import { migrateLegacyProgress } from './legacyMigration';
+import { migrateLegacyProgress, readLegacySectionResume } from './legacyMigration';
 import { createIndexedDbPersistence, createProgressId } from './persistence';
 import { createPinnedQuizAttempt, mergeQuizSession, normalizeQuizSession } from './quizContract';
 
@@ -59,6 +59,21 @@ function closeSession(record, session, operation, reason, attemptId) {
 function currentQuizSession(record, chapterId) { return own(record.data.resumeByDevice, record.deviceId)?.[`${chapterId}:quiz`]?.session; }
 function sessionWasFinished(record, sessionId) { return Object.values(record.data.quizAttempts).some(attempt => attempt.legacy === false && attempt.sessionId === sessionId); }
 function evidenceKey(evidence) { return JSON.stringify(evidence); }
+function sectionCheckpoint(data, deviceId, key) { return own(data.legacySectionResumeByDevice || {}, deviceId)?.[key]; }
+function putSectionCheckpoint(data, deviceId, key, checkpoint) {
+  data.legacySectionResumeByDevice ||= {};
+  if (!Object.hasOwn(data.legacySectionResumeByDevice, deviceId)) put(data.legacySectionResumeByDevice, deviceId, {});
+  put(data.legacySectionResumeByDevice[deviceId], key, checkpoint);
+}
+function clearSectionRecovery(record, matches) {
+  const devices = new Set([record.deviceId, ...Object.keys(record.data.resumeByDevice), ...Object.keys(record.data.legacySectionResumeByDevice || {})]);
+  for (const source of Object.values(LEGACY_SECTION_SOURCE_BY_CONTAINER)) if (matches(source.containerId)) {
+    for (const deviceId of devices) putSectionCheckpoint(record.data, deviceId, source.key, { containerId: source.containerId, status: 'cleared', fingerprint: own(record.data.migration.sources, source.key)?.fingerprint || null });
+  }
+}
+function sectionWasReset(record, containerId) {
+  return record.epoch > 0 || (record.chapterEpochs[chapterOf(containerId)] || 0) > 0 || ancestorsOf(containerId).some(id => (own(record.containerEpochs, id) || 0) > 0);
+}
 function mergeActivities(target, incoming, before = {}) {
   for (const [id, activity] of Object.entries(incoming)) {
     const existing = own(target, id);
@@ -93,9 +108,15 @@ function mergeFacts(data, incoming, before = createEmptyProgress(data)) {
   for (const [id, best] of Object.entries(incoming.legacyBestScores)) if (!same(best, own(before.legacyBestScores, id))) put(data.legacyBestScores, id, { ...best, percentage: Math.max(own(data.legacyBestScores, id)?.percentage || 0, best.percentage) });
   for (const [device, locators] of Object.entries(incoming.resumeByDevice)) {
     for (const [container, locator] of Object.entries(locators)) if (!same(locator, own(before.resumeByDevice, device)?.[container])) {
+      const source = own(LEGACY_SECTION_SOURCE_BY_CONTAINER, container);
+      if (source && (own(data.resumeByDevice, device)?.[container] || sectionCheckpoint(data, device, source.key)?.status === 'cleared')) continue;
       if (!Object.hasOwn(data.resumeByDevice, device)) put(data.resumeByDevice, device, {});
       put(data.resumeByDevice[device], container, copy(locator));
     }
+  }
+  for (const [device, checkpoints] of Object.entries(incoming.legacySectionResumeByDevice || {})) for (const [key, checkpoint] of Object.entries(checkpoints)) {
+    const previous = sectionCheckpoint(data, device, key);
+    if (!previous || (checkpoint.status === 'cleared' && previous.status !== 'cleared')) putSectionCheckpoint(data, device, key, copy(checkpoint));
   }
   for (const group of ['quiz', 'device']) for (const [key, value] of Object.entries(incoming.preferences[group])) if (!same(value, own(before.preferences[group], key))) put(data.preferences[group], key, copy(value));
 }
@@ -103,9 +124,17 @@ function ingest(record, rawByKey) {
   const identity = { ownerScope: record.ownerScope, deviceId: record.deviceId };
   for (const [key, raw] of Object.entries(rawByKey)) {
     if (own(record.legacyObserved, key) === raw) continue;
+    const sectionSource = own(LEGACY_SOURCE_BY_KEY, key);
+    if (sectionSource?.kind === 'section-resume' && sectionWasReset(record, sectionSource.containerId)) clearSectionRecovery(record, id => id === sectionSource.containerId);
     const beforeRaw = own(record.legacyObserved, key);
     const before = migrateLegacyProgress(beforeRaw == null ? {} : { [key]: beforeRaw }, identity);
     const after = migrateLegacyProgress(raw == null ? {} : { [key]: raw }, identity);
+    // Previously observed archives may have been deliberately cleared before
+    // section mappings existed. Only an explicit restoration may attribute them.
+    if (sectionSource?.kind === 'section-resume' && typeof beforeRaw === 'string' && !sectionCheckpoint(record.data, record.deviceId, key)) {
+      if (after.resumeByDevice[record.deviceId]) delete after.resumeByDevice[record.deviceId][sectionSource.containerId];
+      if (after.legacySectionResumeByDevice?.[record.deviceId]) delete after.legacySectionResumeByDevice[record.deviceId][key];
+    }
     // Keep the complete recovery archive while applying only newly observed facts.
     const archive = migrateLegacyProgress(raw == null ? {} : { [key]: raw }, { ...identity, existing: record.data });
     record.data.migration = archive.migration;
@@ -120,6 +149,7 @@ function reset(record, chapterId, operation) {
     for (const [id, item] of Object.entries(record.data[group])) if (match(group === 'quizAttempts' ? item.chapterId : id)) delete record.data[group][id];
   }
   for (const locators of Object.values(record.data.resumeByDevice)) for (const id of Object.keys(locators)) if (match(id)) { closeSession(record, locators[id].session, operation, 'reset'); delete locators[id]; }
+  clearSectionRecovery(record, match);
   if (chapterId) record.chapterEpochs[chapterId] = (record.chapterEpochs[chapterId] || 0) + 1;
   else record.epoch++;
 }
@@ -129,6 +159,7 @@ function resetActivity(record, containerId) {
   // An explicit aggregate completion cannot keep a reset child completed.
   for (const ancestor of ancestorsOf(containerId).slice(1)) delete record.data.activities[ancestor];
   for (const locators of Object.values(record.data.resumeByDevice)) for (const id of Object.keys(locators)) if (contains(id)) delete locators[id];
+  clearSectionRecovery(record, contains);
   put(record.containerEpochs, containerId, (own(record.containerEpochs, containerId) || 0) + 1);
 }
 function changedContainerCheckpoint(record, operation) {
@@ -157,6 +188,19 @@ function applyOperation(record, operation) {
     const locators = own(record.data.resumeByDevice, record.deviceId);
     closeSession(record, own(locators || {}, operation.containerId)?.session, operation, 'cleared');
     if (locators) delete locators[operation.containerId];
+    clearSectionRecovery(record, id => id === operation.containerId);
+  } else if (operation.type === 'restore-section-resume') {
+    const source = own(LEGACY_SECTION_SOURCE_BY_CONTAINER, operation.containerId);
+    const archived = own(record.data.migration.sources, operation.sourceKey);
+    const locator = readLegacySectionResume(operation.sourceKey, archived?.raw);
+    if (!source || source.key !== operation.sourceKey || !locator || archived.raw !== operation.raw || archived.fingerprint !== operation.fingerprint) reject(record, operation, 'section-resume-source-changed');
+    else if (sectionCheckpoint(record.data, record.deviceId, source.key) || sectionWasReset(record, source.containerId)) reject(record, operation, 'section-resume-already-consumed');
+    else if (own(record.data.resumeByDevice, record.deviceId)?.[source.containerId]) reject(record, operation, 'canonical-section-position-exists');
+    else {
+      if (!Object.hasOwn(record.data.resumeByDevice, record.deviceId)) put(record.data.resumeByDevice, record.deviceId, {});
+      put(record.data.resumeByDevice[record.deviceId], source.containerId, locator);
+      putSectionCheckpoint(record.data, record.deviceId, source.key, { containerId: source.containerId, status: 'adopted', fingerprint: archived.fingerprint });
+    }
   } else if (operation.type === 'reset-activity') resetActivity(record, operation.containerId);
   else if (operation.type === 'quiz-begin') {
     const existing = currentQuizSession(record, operation.chapterId);
@@ -465,6 +509,21 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
       if (!Object.hasOwn(ACTIVITY_BY_ID, containerId)) throw new TypeError('Invalid resume container; quiz sessions require a matching session ID');
       return mutateTyped('clear-resume', { chapterId: chapterOf(containerId), guardContainerId: containerId, containerId }, context);
     },
+    getLegacySectionResume(containerId) {
+      const source = own(LEGACY_SECTION_SOURCE_BY_CONTAINER, containerId);
+      if (!hydrated || !source || sectionCheckpoint(record.data, record.deviceId, source.key) || sectionWasReset(record, containerId) || own(record.data.resumeByDevice, record.deviceId)?.[containerId]) return null;
+      const locator = readLegacySectionResume(source.key, own(record.data.migration.sources, source.key)?.raw);
+      return locator ? freeze(copy(locator)) : null;
+    },
+    async restoreLegacySectionResume(containerId, sourceKey, { context } = {}) {
+      if (context === undefined) throw new TypeError('Capture a write context before restoring a section');
+      const source = own(LEGACY_SECTION_SOURCE_BY_CONTAINER, containerId);
+      if (!source || source.key !== sourceKey) throw new TypeError('Invalid legacy section resume source');
+      await hydrate();
+      const archived = own(record.data.migration.sources, sourceKey);
+      if (!readLegacySectionResume(sourceKey, archived?.raw)) throw new TypeError('No valid archived section position');
+      return mutateTyped('restore-section-resume', { chapterId: chapterOf(containerId), guardContainerId: containerId, containerId, sourceKey, raw: archived.raw, fingerprint: archived.fingerprint }, context);
+    },
     async resetActivity(containerId, { context } = {}) {
       if (!Object.hasOwn(ACTIVITY_BY_ID, containerId)) throw new TypeError('Invalid activity reset');
       await refreshLegacy();
@@ -544,6 +603,7 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
         const originalDevice = incoming.deviceId;
         incoming.ownerScope = identity.ownerScope; incoming.deviceId = identity.deviceId;
         if (originalDevice !== identity.deviceId && incoming.resumeByDevice[originalDevice]) { incoming.resumeByDevice[identity.deviceId] = incoming.resumeByDevice[originalDevice]; delete incoming.resumeByDevice[originalDevice]; }
+        if (originalDevice !== identity.deviceId && incoming.legacySectionResumeByDevice?.[originalDevice]) { incoming.legacySectionResumeByDevice[identity.deviceId] = incoming.legacySectionResumeByDevice[originalDevice]; delete incoming.legacySectionResumeByDevice[originalDevice]; }
       } else if (isRecord(input) && isRecord(input.progress)) {
         if (!identity.ownerScope.startsWith('guest:')) throw new Error('Legacy files can only be imported into guest progress');
         incoming = migrateLegacyProgress({ probLabProgress: JSON.stringify(input.progress), probLabProgressMeta: JSON.stringify(input.meta || {}) }, identity);

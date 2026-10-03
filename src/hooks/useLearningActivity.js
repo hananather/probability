@@ -62,6 +62,10 @@ export function useLearningActivity(containerId, { userId = 'local' } = {}) {
   const clearResume = useCallback((id = containerId, options = {}) => execute(() => store.clearResume(id, {
     ...options, context: options.context || writeContext,
   })), [execute, store, containerId, writeContext]);
+  const getLegacySectionResume = useCallback(id => progress.loading ? null : store?.getLegacySectionResume(id) || null, [store, progress.loading]);
+  const restoreLegacySectionResume = useCallback((id, sourceKey, options = {}) => execute(() => store.restoreLegacySectionResume(id, sourceKey, {
+    ...options, context: options.context || writeContext,
+  })), [execute, store, writeContext]);
   const setDevicePreference = useCallback((key, value, options = {}) => execute(() => store.setDevicePreference(key, value, {
     ...options, context: options.context || writeContext,
   })), [execute, store, writeContext]);
@@ -74,6 +78,7 @@ export function useLearningActivity(containerId, { userId = 'local' } = {}) {
     getResetGeneration: generationFor, captureWriteContext,
     isCompleted, getResume, resume: getResume(containerId),
     completeActivity, setResume, clearResume, resetActivity, setDevicePreference,
+    getLegacySectionResume, restoreLegacySectionResume,
     persistenceStatus: supported ? progress.persistenceStatus : 'session-only',
     pendingLocalWrites: progress.pendingLocalWrites,
     error: progress.error || (Object.hasOwn(actionErrors, errorScope) ? actionErrors[errorScope] : null),
