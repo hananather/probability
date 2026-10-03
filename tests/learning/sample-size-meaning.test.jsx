@@ -172,6 +172,27 @@ afterAll(() => {
 });
 
 describe('sample-size planning meaning and learner-driven local exploration', () => {
+  it('uses the requested confidence for every plotted point and quantifies the fixed-precision comparison', async () => {
+    startup.resolve();
+    await mount(VisualExploration);
+    await chooseRelationship('Confidence Level');
+    const data = [...container.querySelectorAll('circle[cx]')].map(point => point.__data__);
+    expect(data.map(point => point.x)).toEqual([90, 92, 94, 95, 96, 97, 98, 99]);
+    for (let index = 0; index < data.length; index++) {
+      const point = data[index];
+      // Integrate the normal density independently of the lesson's inverse CDF.
+      expect(coverage(2, point.y, 15)).toBeCloseTo(point.x / 100, 4);
+      if (index) expect(point.y).toBeGreaterThan(data[index - 1].y);
+    }
+    const sampleSize = confidence => data.find(point => point.x === confidence).y;
+    // Reference values independently computed with Python's NormalDist.inv_cdf.
+    expect((sampleSize(95) / sampleSize(90) - 1) * 100).toBeCloseTo(41.984739327666844, 10);
+    expect((sampleSize(99) / sampleSize(95) - 1) * 100).toBeCloseTo(72.71814981534372, 10);
+    expect(getByText(container, '90% → 95% confidence: n increases by about 42%')).toBeVisible();
+    expect(getByText(container, '95% → 99% confidence: n increases by about 73%')).toBeVisible();
+    expect(getByText(container, 'These comparisons hold σ and E fixed, before rounding n up.')).toBeVisible();
+  });
+
   it('explains half-width and repeated coverage while preserving the complete rendered derivation', async () => {
     startup.resolve();
     await mount();

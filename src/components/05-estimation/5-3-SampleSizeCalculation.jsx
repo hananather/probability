@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import * as d3 from '@/utils/d3-utils';
+import { jStat } from 'jstat';
 import { 
   Compass, 
   Calculator, 
@@ -417,15 +418,7 @@ export const VisualExploration = React.memo(function VisualExploration({ onCompl
   };
   
   // Calculate z-value based on confidence
-  const getZ = (confidence) => {
-    const zValues = {
-      90: 1.645,
-      95: 1.960,
-      98: 2.326,
-      99: 2.576
-    };
-    return zValues[confidence] || 1.960;
-  };
+  const getZ = (confidence) => jStat.normal.inv((1 + confidence / 100) / 2, 0, 1);
   
   useEffect(() => {
     if (!svgRef.current) return;
@@ -810,15 +803,15 @@ export const VisualExploration = React.memo(function VisualExploration({ onCompl
             <div className="space-y-2 text-sm">
               <p className="flex items-start gap-2">
                 <span className="text-emerald-400">•</span>
-                <span>90% → 95% confidence: n increases by 35%</span>
+                <span>90% → 95% confidence: n increases by about 42%</span>
               </p>
               <p className="flex items-start gap-2">
                 <span className="text-emerald-400">•</span>
-                <span>95% → 99% confidence: n increases by 73%</span>
+                <span>95% → 99% confidence: n increases by about 73%</span>
               </p>
               <p className="flex items-start gap-2">
                 <span className="text-emerald-400">•</span>
-                <span>Common choice: 95% balances confidence and cost</span>
+                <span>These comparisons hold σ and E fixed, before rounding n up.</span>
               </p>
             </div>
           )}
