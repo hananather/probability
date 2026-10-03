@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef, useContext } from "react";
+import { useMathJax } from '@/hooks/useMathJax';
 import { Button } from '@/components/ui/button';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { InteractiveJourneyNavigation } from '@/components/ui/InteractiveJourneyNavigation';
@@ -183,24 +184,8 @@ export function calculateDescriptiveStatistics(data, outlierMultiplier = 1.5) {
 export const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
   data, activeStage, outlierMultiplier = 1.5
 }) {
-  const contentRef = useRef(null);
+  const contentRef = useMathJax([data, activeStage, outlierMultiplier]);
   const stats = React.useMemo(() => calculateDescriptiveStatistics(data, outlierMultiplier), [data, outlierMultiplier]);
-  
-  useEffect(() => {
-    // MathJax processing
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [data, activeStage]);
   
   if (!stats) return null;
   

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React from "react";
+import { useMathJax } from '@/hooks/useMathJax';
 
 const FDistributionWorkedExample = React.memo(function FDistributionWorkedExample({ 
   n1 = 15, 
@@ -9,31 +10,13 @@ const FDistributionWorkedExample = React.memo(function FDistributionWorkedExampl
   s2_squared = 1.8,
   alpha = 0.05 
 }) {
-  const contentRef = useRef(null);
+  const contentRef = useMathJax([n1, n2, s1_squared, s2_squared, alpha]);
   
   // Calculate values
   const df1 = n1 - 1;
   const df2 = n2 - 1;
   const fStatistic = s1_squared / s2_squared;
   const criticalValue = 2.35; // F(0.05, 14, 19) from table
-  
-  useEffect(() => {
-    // REQUIRED: MathJax timeout pattern to handle race conditions
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          // Silent error: MathJax error
-        });
-      }
-    };
-    
-    processMathJax(); // Try immediately
-    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
-    return () => clearTimeout(timeoutId);
-  }, [n1, n2, s1_squared, s2_squared, alpha]);
   
   return (
     <div ref={contentRef} className="bg-gray-800/50 p-6 rounded-lg text-gray-200 text-sm leading-relaxed">

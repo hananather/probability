@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { useMathJax } from '@/hooks/useMathJax';
 import * as d3 from "@/utils/d3-utils";
 import { 
   VisualizationContainer, 
@@ -45,22 +46,7 @@ const SECTIONS = [
 
 // Section 1: Mathematical Foundations
 const FoundationsSection = React.memo(function FoundationsSection() {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  const contentRef = useMathJax([]);
   
   return (
     <div ref={contentRef}>
@@ -129,28 +115,12 @@ const FoundationsSection = React.memo(function FoundationsSection() {
 const MeanSection = React.memo(function MeanSection() {
   const [data, setData] = useState([3, 5, 7, 9, 11]);
   const [newValue, setNewValue] = useState(6);
-  const contentRef = useRef(null);
+  const contentRef = useMathJax([data]);
   
   const mean = useMemo(() => 
     data.length > 0 ? data.reduce((a, b) => a + b, 0) / data.length : 0,
     [data]
   );
-  
-  // MathJax processing
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [data]);
   
   // D3 visualization for running mean
   const svgRef = useRef(null);
@@ -332,7 +302,7 @@ const MeanSection = React.memo(function MeanSection() {
 const MedianSection = React.memo(function MedianSection() {
   const [data, setData] = useState([3, 1, 4, 1, 5, 9, 2, 6, 5]);
   const [animating, setAnimating] = useState(false);
-  const contentRef = useRef(null);
+  const contentRef = useMathJax([data]);
   const sortedData = useMemo(() => [...data].sort((a, b) => a - b), [data]);
   
   const median = useMemo(() => {
@@ -342,22 +312,6 @@ const MedianSection = React.memo(function MedianSection() {
       ? (sortedData[mid - 1] + sortedData[mid]) / 2
       : sortedData[mid];
   }, [sortedData]);
-  
-  // MathJax processing
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [data]);
   
   // D3 visualization for sorting animation
   const svgRef = useRef(null);
@@ -526,7 +480,7 @@ const MedianSection = React.memo(function MedianSection() {
 // Section 4: Mode
 const ModeSection = React.memo(function ModeSection() {
   const [data, setData] = useState([1, 2, 2, 3, 3, 3, 4, 4, 5]);
-  const contentRef = useRef(null);
+  const contentRef = useMathJax([data]);
   
   const frequency = useMemo(() => {
     const freq = {};
@@ -542,22 +496,6 @@ const ModeSection = React.memo(function ModeSection() {
       .filter(key => frequency[key] === maxFreq)
       .map(Number);
   }, [frequency]);
-  
-  // MathJax processing
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [data]);
   
   // D3 visualization for frequency histogram
   const svgRef = useRef(null);
@@ -723,23 +661,7 @@ const ModeSection = React.memo(function ModeSection() {
 // Section 5: Comparative Analysis
 const ComparisonSection = React.memo(function ComparisonSection() {
   const [skewness, setSkewness] = useState(0); // -1 to 1
-  const contentRef = useRef(null);
-  
-  // MathJax processing
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [skewness]);
+  const contentRef = useMathJax([skewness]);
   
   // Generate distribution based on skewness
   const generateData = useCallback((skew) => {
@@ -931,7 +853,7 @@ const ComparisonSection = React.memo(function ComparisonSection() {
 // Section 6: Other Means
 const OtherMeansSection = React.memo(function OtherMeansSection() {
   const [values, setValues] = useState([2, 4, 8, 16, 32]);
-  const contentRef = useRef(null);
+  const contentRef = useMathJax([]);
   
   const means = useMemo(() => {
     const n = values.length;
@@ -953,22 +875,6 @@ const OtherMeansSection = React.memo(function OtherMeansSection() {
     
     return { arithmetic, geometric, harmonic, quadratic };
   }, [values]);
-  
-  // MathJax processing
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
   
   return (
     <div ref={contentRef}>
@@ -1037,7 +943,7 @@ const OtherMeansSection = React.memo(function OtherMeansSection() {
 const PropertiesSection = React.memo(function PropertiesSection() {
   const [data] = useState([2, 4, 5, 7, 9, 12]);
   const [c, setC] = useState(6);
-  const contentRef = useRef(null);
+  const contentRef = useMathJax([c]);
   
   const calculations = useMemo(() => {
     const mean = data.reduce((a, b) => a + b, 0) / data.length;
@@ -1054,22 +960,6 @@ const PropertiesSection = React.memo(function PropertiesSection() {
     
     return { mean, median, sumSquared, sumSquaredFromMean, sumAbsolute, sumAbsoluteFromMedian };
   }, [data, c]);
-  
-  // MathJax processing
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [c]);
   
   // D3 visualization
   const svgRef = useRef(null);
@@ -1243,22 +1133,7 @@ const PropertiesSection = React.memo(function PropertiesSection() {
 
 // Focused Learning Component
 const FocusedContent = React.memo(function FocusedContent({ section }) {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [section]);
+  const contentRef = useMathJax([section]);
   
   const essentials = {
     'mean': {
@@ -1468,7 +1343,7 @@ function MathematicalFoundations({ onComplete }) {
             <Button
               variant={focusMode ? "primary" : "secondary"}
               size="sm"
-              onClick={() => setSpeedMode(!focusMode)}
+              onClick={() => setFocusMode(!focusMode)}
             >
               {focusMode ? "Exit Focus Mode" : "Enable Focus"}
             </Button>
