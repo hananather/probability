@@ -227,11 +227,13 @@ describe('actual Next distribution formulas and unchanged-math rendering budgets
     const nodes = mathNodes(container); const calls = countCalls();
     const buttons = [...container.querySelectorAll('button')].filter(button => button.querySelector('mjx-container'));
     expect(buttons).toHaveLength(3);
-    expect(container.querySelector('.region-2').style.opacity).toBe('0.3');
+    expect(Number(container.querySelector('.region-2 .density-region').getAttribute('opacity'))).toBeCloseTo(0.075);
     await act(async () => fireEvent.click(buttons[1])); await settle();
     expect(buttons[1].className).toContain('bg-primary');
-    expect(container.querySelector('.region-2').style.opacity).toBe('1');
-    expect(container.querySelector('.region-3').style.opacity).toBe('0.3');
+    expect(Number(container.querySelector('.region-2 .density-region').getAttribute('opacity'))).toBeCloseTo(0.25);
+    expect(Number(container.querySelector('.region-3 .density-region').getAttribute('opacity'))).toBeCloseTo(0.06);
+    // Dim the region fill, retaining readable labels for every sigma range.
+    expect(container.querySelector('.region-3').style.opacity).toBe('');
     expectPreservedMath(container, nodes, calls);
   });
 

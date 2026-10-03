@@ -81,12 +81,13 @@ const EmpiricalRule = () => {
       accent: '#ef4444', // Red for 99.7%
       curve: '#8b5cf6', // Violet for the normal curve
       histogram: '#06b6d4', // Cyan for histogram
-      text: baseColors.text,
+      text: '#f3f4f6',
       background: baseColors.background
     };
   }, []);
   
   const svgRef = useRef(null);
+  const chartRef = useRef(null);
   const containerRef = useRef(null);
   const [dimensions, setDimensions] = useState({ width: 900, height: 500 });
   
@@ -212,14 +213,14 @@ const EmpiricalRule = () => {
       );
       
       const regionGroup = g.append("g")
-        .attr("class", `region-${region.sd}`)
-        .style("opacity", selectedRule >= region.sd ? 1 : 0.3);
+        .attr("class", `region-${region.sd}`);
       
       regionGroup.append("path")
         .datum(regionData)
+        .attr('class', 'density-region')
         .attr("d", area)
         .attr("fill", region.color)
-        .attr("opacity", region.opacity);
+        .attr("opacity", region.opacity * (selectedRule >= region.sd ? 1 : 0.3));
       
       // Boundary lines
       [-1, 1].forEach(side => {
@@ -232,7 +233,7 @@ const EmpiricalRule = () => {
           .attr("stroke", region.color)
           .attr("stroke-width", 2)
           .attr("stroke-dasharray", "5,5")
-          .attr("opacity", 0.7);
+          .attr("opacity", selectedRule >= region.sd ? 0.7 : 0.35);
           
         // Labels
         regionGroup.append("text")
@@ -247,11 +248,11 @@ const EmpiricalRule = () => {
       // Percentage label with better positioning
       regionGroup.append("text")
         .attr("x", xScale(mu))
-        .attr("y", yScale(normalPDF(mu)) + (region.sd * 40))
+        .attr("y", margin.top + region.sd * 28)
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
         .style("font-weight", "700")
-        .style("fill", region.color)
+        .style("fill", region.sd === 3 ? '#fca5a5' : region.color)
         .style("filter", "drop-shadow(0 1px 2px rgba(0,0,0,0.5))")
         .text(region.label);
     });
@@ -278,6 +279,7 @@ const EmpiricalRule = () => {
       
     g.append("path")
       .datum(curveData)
+      .attr('class', 'density-curve')
       .attr("d", line)
       .attr("stroke", colors.curve)
       .attr("stroke-width", 4)
@@ -301,11 +303,16 @@ const EmpiricalRule = () => {
       .selectAll("text")
       .attr("fill", "#f3f4f6");
       
-    g.append("g")
+    const densityAxis = g.append("g")
       .attr("transform", `translate(${margin.left},0)`)
-      .call(yAxis)
-      .selectAll("text")
-      .attr("fill", "#f3f4f6");
+      .call(yAxis);
+    densityAxis.selectAll('text').attr('fill', '#f3f4f6');
+    g.append('text')
+      .attr('transform', `translate(12,${(margin.top + height - margin.bottom) / 2}) rotate(-90)`)
+      .attr('text-anchor', 'middle')
+      .attr('fill', colors.text)
+      .attr('font-size', 12)
+      .text('Probability density');
     
     // Distribution info in top corner
     g.append("text")
@@ -328,6 +335,7 @@ const EmpiricalRule = () => {
       .attr("opacity", 0.5);
     
     g.append('g').attr('class', 'sample-layer');
+    chartRef.current = { g, xScale, yScale, densityAxis, curveData, margin, height };
     // Create gradient for histogram bars
     const histGradient = defs.append("linearGradient")
       .attr("id", "histGradient")
@@ -348,37 +356,48 @@ const EmpiricalRule = () => {
 
   useEffect(() => {
     if (!svgRef.current) return;
-    const g = d3.select(svgRef.current).select('.sample-layer');
+    const chart = chartRef.current;
+    if (!chart) return;
+    const g = chart.g.select('.sample-layer');
     if (g.empty()) return;
+    const { height, margin, xScale, yScale } = chart;
+    const [domainLow, domainHigh] = xScale.domain();
+    // Interior thresholds keep both domain endpoints in positive-width bins.
+    const thresholds = xScale.ticks(25).filter(value => value > domainLow && value < domainHigh);
+    const bins = showHistogram && samples.length > 0
+      ? d3.histogram().domain([domainLow, domainHigh]).thresholds(thresholds)(samples)
+        .map(bin => ({ x0: bin.x0, x1: bin.x1, density: bin.length / (samples.length * (bin.x1 - bin.x0)) }))
+      : [];
+    const curveCeiling = 0.4 / sigma;
+    const step = curveCeiling / 2;
+    // A sparse sample can have a taller density than the theoretical curve.
+    // Coarse ceiling steps fit both without rescaling at every new draw.
+    const peak = d3.max(bins, bin => bin.density) || 0;
+    const ceiling = peak > curveCeiling ? Math.ceil(peak / step + 0.05) * step : curveCeiling;
+    if (yScale.domain()[1] !== ceiling) {
+      yScale.domain([0, ceiling]);
+      chart.densityAxis.call(d3.axisLeft(yScale).ticks(5));
+      chart.densityAxis.selectAll('text').attr('fill', colors.text);
+      const area = d3.area().x(d => xScale(d.x)).y0(height - margin.bottom).y1(d => yScale(d.y)).curve(d3.curveBasis);
+      chart.g.selectAll('.density-region').attr('d', area);
+      chart.g.select('.density-curve').attr('d', d3.line().x(d => xScale(d.x)).y(d => yScale(d.y)).curve(d3.curveBasis));
+    }
     if (samples.length === 0) { g.selectAll('*').remove(); return; }
-    const width = dimensions.width;
-    const height = dimensions.height;
-    const margin = { top: 30, right: 30, bottom: 50, left: 50 };
-    const xScale = d3.scaleLinear().domain([mu - 4 * sigma, mu + 4 * sigma]).range([margin.left, width - margin.right]);
     g.selectAll(showHistogram ? '.sample-point' : '.bar').remove();
     // Update only the sample overlay; the density curve and axes stay mounted.
     if (showHistogram && samples.length > 0) {
-      const bins = d3.histogram()
-        .domain(xScale.domain())
-        .thresholds(xScale.ticks(25))
-        (samples);
-      
-      const yHistScale = d3.scaleLinear()
-        .domain([0, d3.max(bins, d => d.length)])
-        .range([height - margin.bottom, margin.top]);
-      
       g.selectAll(".bar")
         .data(bins)
         .join("rect")
         .attr("class", "bar")
-        .attr("x", d => xScale(d.x0) + 1)
-        .attr("y", d => yHistScale(d.length))
-        .attr("width", d => Math.max(0, xScale(d.x1) - xScale(d.x0) - 2))
-        .attr("height", d => height - margin.bottom - yHistScale(d.length))
+        .attr("x", d => xScale(d.x0))
+        .attr("y", d => yScale(d.density))
+        .attr("width", d => Math.max(0, xScale(d.x1) - xScale(d.x0)))
+        .attr("height", d => height - margin.bottom - yScale(d.density))
         .attr("fill", "url(#histGradient)")
         .attr("stroke", colors.histogram)
         .attr("stroke-width", 0.5)
-        .attr("rx", 2);
+        .attr("rx", 0);
     }
     
     // Sample points (last 100)
@@ -473,11 +492,20 @@ const EmpiricalRule = () => {
           <div className="w-full mb-4">
             <svg 
               ref={svgRef} 
+              role="img"
+              aria-label={`Normal probability density with mean ${mu} and standard deviation ${sigma}${showHistogram ? ', with the sample density histogram' : ''}`}
               width={dimensions.width} 
               height={dimensions.height}
               className="w-full"
             />
           </div>
+          {showHistogram && (
+            <p className="mb-4 text-sm leading-relaxed text-neutral-300">
+              Bar height is count ÷ (total samples × bin width), so bar area gives the sample proportion.
+              The bars and curve share the density axis; small samples can make tall bars.
+              All retained samples, including points outside the plot, contribute to the total.
+            </p>
+          )}
           
           {/* Controls in a horizontal layout below */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
