@@ -122,65 +122,69 @@ const KnowledgeCheck = React.memo(function KnowledgeCheck({ stage, onComplete })
   );
 });
 
-const StatisticalAnalysis = React.memo(function StatisticalAnalysis({ 
-  data, activeStage, outlierMultiplier = 1.5 
+export function calculateDescriptiveStatistics(data, outlierMultiplier = 1.5) {
+  if (data.length === 0) return null;
+
+  const sorted = [...data].sort((a, b) => a - b);
+  const n = sorted.length;
+
+  // Mean
+  const mean = data.reduce((sum, val) => sum + val, 0) / n;
+
+  // Median
+  const mid = Math.floor(n / 2);
+  const median = n % 2 === 0
+    ? (sorted[mid - 1] + sorted[mid]) / 2
+    : sorted[mid];
+
+  // Mode
+  const frequency = {};
+  data.forEach(val => {
+    frequency[val] = (frequency[val] || 0) + 1;
+  });
+  const maxFreq = Math.max(...Object.values(frequency));
+  const mode = maxFreq > 1
+    ? Object.keys(frequency)
+        .filter(key => frequency[key] === maxFreq)
+        .map(Number)
+    : [];
+
+  // Inverse empirical CDF, averaging at discontinuities (quantile type 2).
+  const q1Index = Math.floor(n / 4);
+  const q3Index = Math.floor(3 * n / 4);
+  const q1 = n % 4 === 0
+    ? (sorted[q1Index - 1] + sorted[q1Index]) / 2
+    : sorted[q1Index];
+  const q3 = n % 4 === 0
+    ? (sorted[q3Index - 1] + sorted[q3Index]) / 2
+    : sorted[q3Index];
+  const iqr = q3 - q1;
+
+  // Standard deviation
+  const variance = data.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / n;
+  const stdDev = Math.sqrt(variance);
+  // Keep numerically equal decimal endpoints inside the inclusive interval.
+  const endpointTolerance = 8 * Number.EPSILON * stdDev;
+  const withinOneStdDev = data.filter(value => Math.abs(value - mean) <= stdDev + endpointTolerance).length;
+
+  // Outliers
+  const lowerBound = q1 - outlierMultiplier * iqr;
+  const upperBound = q3 + outlierMultiplier * iqr;
+  const outliers = data.filter(x => x < lowerBound || x > upperBound);
+
+  return {
+    mean, median, mode, q1, q3, iqr, stdDev, variance,
+    count: n, withinOneStdDev, withinOneStdDevFraction: withinOneStdDev / n,
+    min: sorted[0], max: sorted[n - 1],
+    lowerBound, upperBound, outliers
+  };
+}
+
+export const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
+  data, activeStage, outlierMultiplier = 1.5
 }) {
   const contentRef = useRef(null);
-  
-  // Calculate all statistics
-  const stats = React.useMemo(() => {
-    if (data.length === 0) return null;
-    
-    const sorted = [...data].sort((a, b) => a - b);
-    const n = sorted.length;
-    
-    // Mean
-    const mean = data.reduce((sum, val) => sum + val, 0) / n;
-    
-    // Median
-    const mid = Math.floor(n / 2);
-    const median = n % 2 === 0 
-      ? (sorted[mid - 1] + sorted[mid]) / 2 
-      : sorted[mid];
-    
-    // Mode
-    const frequency = {};
-    data.forEach(val => {
-      frequency[val] = (frequency[val] || 0) + 1;
-    });
-    const maxFreq = Math.max(...Object.values(frequency));
-    const mode = maxFreq > 1 
-      ? Object.keys(frequency)
-          .filter(key => frequency[key] === maxFreq)
-          .map(Number)
-      : [];
-    
-    // Quartiles
-    const q1Index = Math.floor(n / 4);
-    const q3Index = Math.floor(3 * n / 4);
-    const q1 = n % 4 === 0 
-      ? (sorted[q1Index - 1] + sorted[q1Index]) / 2 
-      : sorted[q1Index];
-    const q3 = n % 4 === 0 
-      ? (sorted[q3Index - 1] + sorted[q3Index]) / 2 
-      : sorted[q3Index];
-    const iqr = q3 - q1;
-    
-    // Standard deviation
-    const variance = data.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / n;
-    const stdDev = Math.sqrt(variance);
-    
-    // Outliers
-    const lowerBound = q1 - outlierMultiplier * iqr;
-    const upperBound = q3 + outlierMultiplier * iqr;
-    const outliers = data.filter(x => x < lowerBound || x > upperBound);
-    
-    return {
-      mean, median, mode, q1, q3, iqr, stdDev, variance,
-      min: sorted[0], max: sorted[n - 1],
-      lowerBound, upperBound, outliers
-    };
-  }, [data, outlierMultiplier]);
+  const stats = React.useMemo(() => calculateDescriptiveStatistics(data, outlierMultiplier), [data, outlierMultiplier]);
   
   useEffect(() => {
     // MathJax processing
@@ -251,11 +255,12 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
               <div className="mt-4 bg-purple-900/20 p-3 rounded-lg border border-purple-600/30">
                 <strong className="text-indigo-300 text-sm">Key Insight:</strong>
                 <div className="mt-1 text-xs text-indigo-200">
-                  {Math.abs(stats.mean - stats.median) < stats.stdDev * 0.2 
-                    ? "Mean ≈ Median: Your data is roughly symmetric"
-                    : stats.mean > stats.median 
-                      ? "Mean > Median: Your data is right-skewed (tail on right)"
-                      : "Mean < Median: Your data is left-skewed (tail on left)"}
+                  {stats.mean.toFixed(2) === stats.median.toFixed(2)
+                    ? 'Mean and median match at the displayed precision.'
+                    : stats.mean > stats.median
+                      ? 'The mean is greater than the median for these values.'
+                      : 'The mean is less than the median for these values.'}
+                  <p className="mt-2">The mean–median gap can suggest asymmetry. Inspect the plot as well; these two summaries alone cannot establish symmetry or a normal model.</p>
                 </div>
               </div>
             </div>
@@ -303,7 +308,7 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
                     </div>
                   </div>
                   <div className="mt-2 text-xs text-blue-300">
-                    Typical distance from the mean
+                    Root mean square distance from the mean, in the original units
                   </div>
                 </div>
               </div>
@@ -311,8 +316,10 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
               <div className="mt-4 bg-blue-900/20 p-3 rounded-lg border border-blue-600/30">
                 <strong className="text-teal-300 text-sm">Interpretation:</strong>
                 <div className="mt-1 text-xs text-teal-200">
-                  About 68% of your data falls within {stats.mean.toFixed(1)} ± {stats.stdDev.toFixed(1)} 
-                  = [{(stats.mean - stats.stdDev).toFixed(1)}, {(stats.mean + stats.stdDev).toFixed(1)}]
+                  <p>{stats.withinOneStdDev} of {stats.count} displayed values ({(100 * stats.withinOneStdDevFraction).toFixed(1)}%) fall within the mean ± one descriptive standard deviation,
+                    {' '}[{(stats.mean - stats.stdDev).toFixed(1)}, {(stats.mean + stats.stdDev).toFixed(1)}], including the endpoints.</p>
+                  <p className="mt-2">Under a normal population model, about 68.27% of the population lies within its mean ± one population standard deviation. A finite dataset can have a different observed fraction.</p>
+                  <p className="mt-2">These summaries describe the displayed values using divisor n. Estimating a population variance from a sample commonly uses n − 1 instead.</p>
                 </div>
               </div>
             </div>
@@ -360,15 +367,16 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
                   </div>
                 </div>
                 <div className="mt-2 text-xs text-teal-300">
-                  The middle 50% of your data spans {stats.iqr.toFixed(2)} units
+                  The span between the 25th and 75th percentile cut points is {stats.iqr.toFixed(2)} units
                 </div>
               </div>
               
               <div className="mt-4 bg-green-900/20 p-3 rounded-lg border border-green-600/30">
                 <strong className="text-green-300 text-sm">Why IQR Matters:</strong>
                 <div className="mt-1 text-xs text-green-200">
-                  IQR is robust to outliers - it only looks at the middle 50% of data, 
-                  making it more reliable than range for understanding typical spread.
+                  IQR summarizes the central spread and is less sensitive to extreme values than the full range.
+                  <p className="mt-2">Quartile convention: use ranks n/4 and 3n/4 in the sorted data, counting from 1. Round a non-integer rank up; for an integer rank, average that value and the next. Other conventions may give different quartiles.</p>
+                  <p className="mt-2">With ties or small datasets, the fraction of observations between these cut points need not be exactly 50%.</p>
                 </div>
               </div>
             </div>
@@ -407,8 +415,8 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
                     stats.outliers.length > 0 ? "text-amber-300" : "text-emerald-300"
                   )}>
                     {stats.outliers.length > 0 
-                      ? `Outliers detected: ${stats.outliers.map(x => x.toFixed(2)).join(', ')}`
-                      : 'No outliers detected'}
+                      ? `Potential outliers beyond the fences: ${stats.outliers.map(x => x.toFixed(2)).join(', ')}`
+                      : 'No values beyond these IQR fences'}
                   </div>
                 </div>
               </div>
@@ -416,9 +424,10 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
               <div className="mt-4 bg-amber-900/20 p-3 rounded-lg border border-amber-600/30">
                 <strong className="text-rose-300 text-sm">Robustness Analysis:</strong>
                 <div className="mt-1 space-y-1 text-xs text-rose-200">
-                  <div>• Mean is {Math.abs(stats.mean - stats.median) > stats.stdDev * 0.5 ? 'significantly' : 'slightly'} affected by outliers</div>
-                  <div>• Median remains stable (robust measure)</div>
-                  <div>• IQR is unaffected by extreme values</div>
+                  <div>• The mean uses every value, so moving an extreme value changes it.</div>
+                  <div>• The median depends on the middle ranks and is less sensitive to extreme values.</div>
+                  <div>• IQR uses quartile ranks, so extreme changes beyond those ranks often leave it unchanged.</div>
+                  <div>• Investigate a flagged value before deciding whether to remove it.</div>
                 </div>
               </div>
             </div>
