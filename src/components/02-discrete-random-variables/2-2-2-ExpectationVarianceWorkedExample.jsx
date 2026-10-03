@@ -1,5 +1,6 @@
 "use client";
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
+import { useMathJax } from '@/hooks/useMathJax';
 
 const ExpectationVarianceWorkedExample = React.memo(function ExpectationVarianceWorkedExample({
   probs = Array(6).fill(1/6) // Default to fair die if probs is undefined
@@ -11,28 +12,7 @@ const ExpectationVarianceWorkedExample = React.memo(function ExpectationVariance
   const e2 = probs.reduce((sum, p, i) => sum + p * Math.pow(i + 1, 2), 0);
   const variance = e2 - Math.pow(expectation, 2);
 
-  useEffect(() => {
-    // Process MathJax when component mounts or updates
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        // Clear and re-process MathJax
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-          // Silent error: MathJax error in ExpectationVarianceWorkedExample
-        });
-      }
-    };
-    
-    // Try to process immediately
-    processMathJax();
-    
-    // Also try after a small delay in case MathJax isn't ready
-    const timeoutId = setTimeout(processMathJax, 100);
-    
-    return () => clearTimeout(timeoutId);
-  }, [probs, expectation, e2, variance]); // Retypeset when any relevant value changes
+  useMathJax(contentRef, [probs, expectation, e2, variance]);
 
   return (
     <div

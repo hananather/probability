@@ -11,89 +11,38 @@ import { VisualizationContainer } from "../../ui/VisualizationContainer";
 import { tutorial_3_3_3 } from '@/tutorials/chapter3';
 import BackToHub from '../../ui/BackToHub';
 
-// LaTeX-containing components wrapped in React.memo to prevent re-renders
+const InlineFormula = memo(function InlineFormula({ latex }) {
+  const formulaRef = useMathJax([latex]);
+  return <span ref={formulaRef} dangerouslySetInnerHTML={{ __html: `\\(${latex}\\)` }} />;
+});
+
 const ParameterLabel = memo(function ParameterLabel({ label, symbol }) {
-  const labelRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && labelRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([labelRef.current]);
-        }
-        window.MathJax.typesetPromise([labelRef.current]).catch(() => {});
-      }
-    };
-    
-    // Process immediately
-    processMathJax();
-    // Process again after a delay to catch any timing issues
-    const timeoutId = setTimeout(processMathJax, 500);
-    
-    return () => clearTimeout(timeoutId);
-  }, [symbol]);
   
   return (
-    <span ref={labelRef}>
-      {label} <span dangerouslySetInnerHTML={{ __html: `\\(${symbol}\\)` }} />:
+    <span>
+      {label} <InlineFormula latex={symbol} />:
     </span>
   );
 });
 
-const SigmaButton = memo(function SigmaButton({ sd, isSelected, onClick }) {
-  const buttonRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && buttonRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([buttonRef.current]);
-        }
-        window.MathJax.typesetPromise([buttonRef.current]).catch(() => {});
-      }
-    };
-    
-    // Process immediately
-    processMathJax();
-    // Process again after a delay to catch any timing issues
-    const timeoutId = setTimeout(processMathJax, 500);
-    
-    return () => clearTimeout(timeoutId);
-  }, [sd]);
+const SigmaButton = memo(function SigmaButton({ sd, isSelected, onSelect }) {
   
   return (
     <Button
-      onClick={onClick}
+      onClick={() => onSelect(sd)}
       variant={isSelected ? "default" : "outline"}
       size="sm"
       className="flex-1"
     >
-      <span ref={buttonRef} dangerouslySetInnerHTML={{ __html: `\\(\\pm${sd}\\sigma\\)` }} />
+      <InlineFormula latex={`\\pm${sd}\\sigma`} />
     </Button>
   );
 });
 
 const StatisticRow = memo(function StatisticRow({ label, sigmaRange, count, percentage, color }) {
-  const rowRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && rowRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([rowRef.current]);
-        }
-        window.MathJax.typesetPromise([rowRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [sigmaRange]);
-  
   return (
-    <div className="flex justify-between" ref={rowRef}>
-      <span>Within <span dangerouslySetInnerHTML={{ __html: `\\(\\pm ${sigmaRange}\\sigma\\)` }} />:</span>
+    <div className="flex justify-between">
+      <span>Within <InlineFormula latex={`\\pm ${sigmaRange}\\sigma`} />:</span>
       <span className={`font-mono ${color}`}>
         {count} ({percentage}%)
       </span>
@@ -102,32 +51,14 @@ const StatisticRow = memo(function StatisticRow({ label, sigmaRange, count, perc
 });
 
 const RuleExplanation = memo(function RuleExplanation({ rule, sigmaRange, percentage, color, isSelected, range }) {
-  const ruleRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && ruleRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([ruleRef.current]);
-        }
-        window.MathJax.typesetPromise([ruleRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [sigmaRange]);
-  
   return (
     <div 
-      ref={ruleRef}
       className={`p-2 rounded transition-all duration-200 cursor-pointer hover:scale-105 ${
         isSelected ? `${color}/20 border border-${color}/30` : 'opacity-50'
       }`}
     >
       <p className={`font-semibold ${color}`}>
-        {percentage}% Rule <span dangerouslySetInnerHTML={{ __html: `\\((\\pm ${sigmaRange}\\sigma)\\)` }} />
+        {percentage}% Rule <InlineFormula latex={`(\\pm ${sigmaRange}\\sigma)`} />
       </p>
       <p>≈{percentage}% of data within {rule} standard deviation{sigmaRange > 1 ? 's' : ''}</p>
       <p className="text-xs opacity-80 mt-1 font-mono">
@@ -171,6 +102,7 @@ const EmpiricalRule = () => {
     within3SD: 0,
     total: 0
   });
+  const ruleRanges = useMemo(() => [1, 2, 3].map(sd => [mu - sd * sigma, mu + sd * sigma]), [mu, sigma]);
   
   // Generate samples
   const generateSample = () => {
@@ -188,12 +120,6 @@ const EmpiricalRule = () => {
       clearInterval(intervalRef.current);
     } else {
       intervalRef.current = setInterval(generateSample, 50);
-      // Force MathJax re-render when starting simulation
-      setTimeout(() => {
-        if (typeof window !== "undefined" && window.MathJax?.typesetPromise) {
-          window.MathJax.typesetPromise().catch(() => {});
-        }
-      }, 100);
     }
     setIsGenerating(!isGenerating);
   };
@@ -213,20 +139,6 @@ const EmpiricalRule = () => {
       }
     };
   }, []);
-
-  // Ensure MathJax is processed on key state changes
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise) {
-        window.MathJax.typesetPromise().catch(() => {});
-      }
-    };
-    
-    // Process after a short delay to ensure DOM is updated
-    const timeoutId = setTimeout(processMathJax, 100);
-    
-    return () => clearTimeout(timeoutId);
-  }, [isGenerating, selectedRule, showHistogram]);
 
   // Handle responsive sizing
   useEffect(() => {
@@ -597,7 +509,7 @@ const EmpiricalRule = () => {
               <div className="space-y-2">
                 <div>
                   <label className="flex items-center justify-between text-sm">
-                    <ParameterLabel label="Mean" symbol="\\mu" />
+                    <ParameterLabel label="Mean" symbol={'\\mu'} />
                     <span className="font-mono text-sm">{mu}</span>
                   </label>
                   <input
@@ -612,7 +524,7 @@ const EmpiricalRule = () => {
                 
                 <div>
                   <label className="flex items-center justify-between text-sm">
-                    <ParameterLabel label="Std Dev" symbol="\\sigma" />
+                    <ParameterLabel label="Std Dev" symbol={'\\sigma'} />
                     <span className="font-mono text-sm">{sigma}</span>
                   </label>
                   <input
@@ -632,7 +544,7 @@ const EmpiricalRule = () => {
                     key={sd}
                     sd={sd}
                     isSelected={selectedRule === sd}
-                    onClick={() => setSelectedRule(sd)}
+                    onSelect={setSelectedRule}
                   />
                 ))}
               </div>
@@ -690,7 +602,7 @@ const EmpiricalRule = () => {
                   percentage="68"
                   color="bg-emerald-500"
                   isSelected={selectedRule >= 1}
-                  range={[mu - sigma, mu + sigma]}
+                  range={ruleRanges[0]}
                 />
                 
                 <RuleExplanation
@@ -699,7 +611,7 @@ const EmpiricalRule = () => {
                   percentage="95"
                   color="bg-amber-500"
                   isSelected={selectedRule >= 2}
-                  range={[mu - 2*sigma, mu + 2*sigma]}
+                  range={ruleRanges[1]}
                 />
                 
                 <RuleExplanation
@@ -708,7 +620,7 @@ const EmpiricalRule = () => {
                   percentage="99.7"
                   color="bg-red-500"
                   isSelected={selectedRule >= 3}
-                  range={[mu - 3*sigma, mu + 3*sigma]}
+                  range={ruleRanges[2]}
                 />
               </div>
             </div>
