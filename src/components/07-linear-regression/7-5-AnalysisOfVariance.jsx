@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import { useMathJax } from '@/hooks/useMathJax';
 import * as d3 from "@/utils/d3-utils";
 import jStat from "jstat";
 import { motion, AnimatePresence } from "framer-motion";
@@ -28,20 +29,7 @@ const anovaColors = {
 const ANOVAIntroduction = React.memo(function ANOVAIntroduction() {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <VisualizationSection className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-lg p-6 border border-blue-700/50">
@@ -75,20 +63,7 @@ const ANOVAIntroduction = React.memo(function ANOVAIntroduction() {
 const MathematicalFramework = React.memo(function MathematicalFramework() {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <VisualizationSection className="bg-gray-800/30 rounded-lg p-6">
@@ -585,20 +560,7 @@ VariationBars.displayName = 'VariationBars';
 const WorkedExample = React.memo(function WorkedExample({ data, regression }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, [data, regression.slope, regression.intercept]);
   
   if (!data || !regression) return null;
   
@@ -685,20 +647,7 @@ const WorkedExample = React.memo(function WorkedExample({ data, regression }) {
 const FTestConnection = React.memo(function FTestConnection({ f, t }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, [f, t]);
   
   return (
     <div ref={contentRef} className="bg-gradient-to-br from-orange-900/20 to-red-900/20 rounded-lg p-6 border border-orange-700/50">
@@ -735,6 +684,8 @@ export default function AnalysisOfVariance() {
   const [animationStep, setAnimationStep] = useState('initial');
   const [showCalculations, setShowCalculations] = useState(false);
   const [highlightedSS, setHighlightedSS] = useState(null);
+  const proofRef = useRef(null);
+  useMathJax(proofRef, []);
   
   // Generate sample data (fuel economy dataset)
   const generateData = () => {
@@ -849,7 +800,7 @@ export default function AnalysisOfVariance() {
           
           <div className="grid md:grid-cols-2 gap-6">
             {/* Variance Proof */}
-            <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-lg p-6 border border-blue-700/50">
+            <div ref={proofRef} className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-lg p-6 border border-blue-700/50">
               <h4 className="text-lg font-bold text-blue-400 mb-4 flex items-center gap-2">
                 <Activity className="w-5 h-5" />
                 Why SST = SSR + SSE?
@@ -870,9 +821,10 @@ export default function AnalysisOfVariance() {
                 </div>
                 
                 <p>
-                  <strong>The Key Insight:</strong> These deviations form a right triangle! 
-                  The regression line is chosen specifically to minimize SSE, which makes 
-                  the explained and unexplained components perpendicular.
+                  <strong>The Key Insight:</strong> For ordinary least squares with an intercept, collect
+                  the centered fitted deviations and residuals across all n observations into two vectors.
+                  These n-dimensional vectors are orthogonal: their dot product is zero.
+                  Each data point's two scalar deviations can have a nonzero product.
                 </p>
                 
                 <div className="bg-gray-800/50 rounded-lg p-3">
@@ -880,16 +832,18 @@ export default function AnalysisOfVariance() {
                     (y - ȳ) = (y - ŷ) + (ŷ - ȳ)
                   </p>
                   <p className="text-center text-xs text-gray-400 mt-1">
-                    Square both sides and sum over all points...
+                    Square both sides and sum over all points. The cross-products cancel:
                   </p>
+                  <div className="text-center my-3">
+                    <span dangerouslySetInnerHTML={{ __html: `\\[\\sum_{i=1}^{n}(\\hat{y}_i - \\bar{y})(y_i - \\hat{y}_i) = 0\\]` }} />
+                  </div>
                   <p className="text-center font-mono text-sm mt-2 text-yellow-400">
                     SST = SSE + SSR
                   </p>
                 </div>
                 
                 <p className="text-xs italic">
-                  This orthogonality is why least squares regression is so powerful - it naturally 
-                  partitions variation into independent components!
+                  This orthogonality partitions total variation into explained and unexplained sums of squares.
                 </p>
               </div>
             </div>

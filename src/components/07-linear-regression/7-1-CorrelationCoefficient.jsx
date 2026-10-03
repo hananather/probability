@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import { useMathJax } from '@/hooks/useMathJax';
 import * as d3 from "@/utils/d3-utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -13,6 +14,7 @@ import BackToHub from '../ui/BackToHub';
 import { TrendingUp, TrendingDown, Activity, Info } from 'lucide-react';
 import { Chapter7ReferenceSheet } from '../reference-sheets/Chapter7ReferenceSheet';
 import jStat from 'jstat';
+import { CORRELATION_EXAMPLE_STATISTICS } from '@/lib/statistics/correlationExample';
 
 // Get Chapter 7 color scheme
 const chapterColors = createColorScheme('regression');
@@ -21,20 +23,7 @@ const chapterColors = createColorScheme('regression');
 const CorrelationIntroduction = React.memo(function CorrelationIntroduction() {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <div ref={contentRef} className="bg-neutral-800 rounded-lg p-4 max-w-2xl mx-auto">
@@ -60,20 +49,7 @@ const CorrelationIntroduction = React.memo(function CorrelationIntroduction() {
 const MathematicalFramework = React.memo(function MathematicalFramework() {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">
@@ -128,20 +104,7 @@ const MathematicalFramework = React.memo(function MathematicalFramework() {
 const MathematicalProperties = React.memo(function MathematicalProperties() {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">
@@ -208,6 +171,7 @@ const MathematicalProperties = React.memo(function MathematicalProperties() {
 // Relationship to Regression Component
 const RelationshipToRegression = React.memo(function RelationshipToRegression({ correlation, data }) {
   const contentRef = useRef(null);
+  const insightsRef = useRef(null);
   
   // Calculate standard deviations
   const n = data.length;
@@ -217,20 +181,8 @@ const RelationshipToRegression = React.memo(function RelationshipToRegression({ 
   const Sy = Math.sqrt(data.reduce((sum, d) => sum + Math.pow(d.y - meanY, 2), 0) / (n - 1));
   const slope = correlation * (Sy / Sx);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [correlation]);
+  useMathJax(contentRef, [correlation]);
+  useMathJax(insightsRef, []);
   
   return (
     <VisualizationSection className="bg-gradient-to-br from-purple-900/20 to-purple-800/20 border border-purple-500/30 rounded-lg p-6">
@@ -285,7 +237,7 @@ const RelationshipToRegression = React.memo(function RelationshipToRegression({ 
 
       <div className="mt-6 bg-neutral-900/50 rounded-lg p-4">
         <h4 className="font-bold text-white mb-3">Key Insights</h4>
-        <div ref={contentRef} className="text-sm text-neutral-300 space-y-2">
+        <div ref={insightsRef} className="text-sm text-neutral-300 space-y-2">
           <p>• When <span dangerouslySetInnerHTML={{ __html: `\\(r = 0\\)` }} />, then <span dangerouslySetInnerHTML={{ __html: `\\(b_1 = 0\\)` }} /> (horizontal regression line)</p>
           <p>• The sign of the slope matches the sign of the correlation</p>
           <p>• Standardizing both variables (z-scores) makes <span dangerouslySetInnerHTML={{ __html: `\\(S_x = S_y = 1\\)` }} />, so <span dangerouslySetInnerHTML={{ __html: `\\(b_1 = r\\)` }} /></p>
@@ -354,69 +306,9 @@ const CorrelationStrengthBar = ({ value }) => {
 const WorkedExample = React.memo(function WorkedExample() {
   const contentRef = useRef(null);
   
-  const fuelData = [
-    { x: 0.99, y: 90.01 },
-    { x: 1.02, y: 89.05 },
-    { x: 1.15, y: 91.43 },
-    { x: 1.29, y: 93.74 },
-    { x: 1.46, y: 96.73 },
-    { x: 1.36, y: 94.45 },
-    { x: 0.87, y: 87.59 },
-    { x: 1.23, y: 91.77 },
-    { x: 1.55, y: 99.42 },
-    { x: 1.40, y: 93.65 },
-    { x: 1.19, y: 93.54 },
-    { x: 1.15, y: 92.52 },
-    { x: 0.98, y: 90.56 },
-    { x: 1.01, y: 89.54 },
-    { x: 1.11, y: 89.85 },
-    { x: 1.20, y: 90.39 },
-    { x: 1.26, y: 93.25 },
-    { x: 1.32, y: 93.41 },
-    { x: 1.43, y: 94.98 },
-    { x: 0.95, y: 87.33 }
-  ];
+  const { n, sumX, sumY, sumX2, sumY2, sumXY, meanX, meanY, Sxx, Syy, Sxy, r, sx, sy } = CORRELATION_EXAMPLE_STATISTICS;
   
-  // Calculate statistics
-  const n = fuelData.length;
-  const sumX = fuelData.reduce((sum, d) => sum + d.x, 0);
-  const sumY = fuelData.reduce((sum, d) => sum + d.y, 0);
-  const sumX2 = fuelData.reduce((sum, d) => sum + d.x * d.x, 0);
-  const sumY2 = fuelData.reduce((sum, d) => sum + d.y * d.y, 0);
-  const sumXY = fuelData.reduce((sum, d) => sum + d.x * d.y, 0);
-  
-  const meanX = sumX / n;
-  const meanY = sumY / n;
-  
-  const Sxx = fuelData.reduce((sum, d) => sum + Math.pow(d.x - meanX, 2), 0);
-  const Syy = fuelData.reduce((sum, d) => sum + Math.pow(d.y - meanY, 2), 0);
-  const Sxy = fuelData.reduce((sum, d) => sum + (d.x - meanX) * (d.y - meanY), 0);
-  
-  // Alternative computational formula values
-  const SxxAlt = sumX2 - (sumX * sumX) / n;
-  const SyyAlt = sumY2 - (sumY * sumY) / n;
-  const SxyAlt = sumXY - (sumX * sumY) / n;
-  
-  const r = Sxy / Math.sqrt(Sxx * Syy);
-  
-  // Standard deviations
-  const sx = Math.sqrt(Sxx / (n - 1));
-  const sy = Math.sqrt(Syy / (n - 1));
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <VisualizationSection className="bg-gradient-to-br from-neutral-800/50 to-neutral-900/50 rounded-lg p-6 border border-neutral-700/50">
@@ -596,20 +488,7 @@ const StatisticalSignificance = React.memo(function StatisticalSignificance({ co
     0.01: Math.abs(tStat) > criticalValues[0.01]
   };
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [correlation, sampleSize]);
+  useMathJax(contentRef, [correlation, sampleSize]);
   
   return (
     <VisualizationSection className="bg-gradient-to-br from-blue-900/20 to-blue-800/20 border border-blue-500/30 rounded-lg p-6">
@@ -714,20 +593,7 @@ const EnhancedFormulaDisplay = React.memo(function EnhancedFormulaDisplay() {
   const contentRef = useRef(null);
   const [activeFormula, setActiveFormula] = useState('definition');
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [activeFormula]);
+  useMathJax(contentRef, [activeFormula]);
   
   const formulas = {
     definition: {
@@ -1073,26 +939,13 @@ const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGaller
 });
 
 // Key Insights Component
-const KeyInsights = () => {
+const KeyInsights = React.memo(function KeyInsights() {
   const [activeTab, setActiveTab] = useState('causation');
   
   const TabContent = React.memo(function TabContent({ tab }) {
     const contentRef = useRef(null);
     
-    useEffect(() => {
-      const processMathJax = () => {
-        if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-          if (window.MathJax.typesetClear) {
-            window.MathJax.typesetClear([contentRef.current]);
-          }
-          window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-        }
-      };
-      
-      processMathJax();
-      const timeoutId = setTimeout(processMathJax, 100);
-      return () => clearTimeout(timeoutId);
-    }, [tab]);
+    useMathJax(contentRef, [tab]);
     
     return (
       <div ref={contentRef} className="p-4">
@@ -1138,16 +991,19 @@ const KeyInsights = () => {
           <div className="space-y-4">
             <h4 className="font-bold text-green-400">Scale Invariance</h4>
             <p className="text-sm text-neutral-300">
-              Correlation is unaffected by linear transformations of the data.
+              Changing units preserves the strength of correlation. Reversing one variable's scale reverses its direction.
             </p>
             <div className="bg-neutral-900/50 rounded p-3 space-y-2">
               <p className="text-sm font-semibold text-white">Properties:</p>
               <ul className="text-sm text-neutral-300 space-y-2">
-                <li>• Converting units doesn't change r</li>
+                <li>• Positive unit conversions don't change r</li>
                 <li className="text-xs text-neutral-400 ml-4">
                   Temperature: °C → °F, correlation stays same
                 </li>
-                <li>• Linear transformations: <span dangerouslySetInnerHTML={{ __html: `\\(r(aX+b, cY+d) = r(X,Y)\\)` }} /></li>
+                <li>• Linear transformations: <span dangerouslySetInnerHTML={{ __html: `\\(r(aX+b, cY+d) = \\text{sign}(ac) \\cdot r(X,Y)\\)` }} /></li>
+                <li className="text-xs text-neutral-400 ml-4">
+                  For nonzero a and c, and finite, nonzero standard deviations. One negative scale factor reverses the sign; two preserve it.
+                </li>
                 <li>• Standardized measure: -1 to +1 regardless of units</li>
               </ul>
             </div>
@@ -1187,60 +1043,60 @@ const KeyInsights = () => {
       <TabContent tab={activeTab} />
     </VisualizationSection>
   );
+});
+
+// Deterministic pseudo-random number generator
+const seededRandom = (seed) => {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+};
+
+// Pre-defined scenarios with deterministic data
+const scenarios = {
+  'perfect-positive': {
+    name: 'Perfect Positive',
+    data: Array.from({ length: 20 }, (_, i) => ({
+      x: i,
+      y: 2 * i + 10
+    })),
+    rho: 1.0
+  },
+  'strong-positive': {
+    name: 'Strong Positive',
+    data: Array.from({ length: 20 }, (_, i) => ({
+      x: i + (seededRandom(i * 2) - 0.5) * 2,
+      y: 2 * i + 10 + (seededRandom(i * 3) - 0.5) * 4
+    })),
+    rho: 0.85
+  },
+  'moderate': {
+    name: 'Moderate Positive',
+    data: Array.from({ length: 20 }, (_, i) => ({
+      x: i + (seededRandom(i * 4) - 0.5) * 4,
+      y: 1.5 * i + 10 + (seededRandom(i * 5) - 0.5) * 8
+    })),
+    rho: 0.50
+  },
+  'none': {
+    name: 'No Correlation',
+    data: Array.from({ length: 20 }, (_, i) => ({
+      x: seededRandom(i * 6) * 20,
+      y: seededRandom(i * 7) * 30 + 10
+    })),
+    rho: 0.0
+  },
+  'strong-negative': {
+    name: 'Strong Negative',
+    data: Array.from({ length: 20 }, (_, i) => ({
+      x: i + (seededRandom(i * 8) - 0.5) * 2,
+      y: -2 * i + 40 + (seededRandom(i * 9) - 0.5) * 4
+    })),
+    rho: -0.85
+  }
 };
 
 // Main Component
 export default function CorrelationCoefficient() {
-  // Deterministic pseudo-random number generator
-  const seededRandom = (seed) => {
-    const x = Math.sin(seed) * 10000;
-    return x - Math.floor(x);
-  };
-  
-  // Pre-defined scenarios with deterministic data
-  const scenarios = {
-    'perfect-positive': {
-      name: 'Perfect Positive',
-      data: Array.from({ length: 20 }, (_, i) => ({ 
-        x: i, 
-        y: 2 * i + 10 
-      })),
-      rho: 1.0
-    },
-    'strong-positive': {
-      name: 'Strong Positive',
-      data: Array.from({ length: 20 }, (_, i) => ({ 
-        x: i + (seededRandom(i * 2) - 0.5) * 2, 
-        y: 2 * i + 10 + (seededRandom(i * 3) - 0.5) * 4 
-      })),
-      rho: 0.85
-    },
-    'moderate': {
-      name: 'Moderate Positive',
-      data: Array.from({ length: 20 }, (_, i) => ({ 
-        x: i + (seededRandom(i * 4) - 0.5) * 4, 
-        y: 1.5 * i + 10 + (seededRandom(i * 5) - 0.5) * 8 
-      })),
-      rho: 0.50
-    },
-    'none': {
-      name: 'No Correlation',
-      data: Array.from({ length: 20 }, (_, i) => ({ 
-        x: seededRandom(i * 6) * 20, 
-        y: seededRandom(i * 7) * 30 + 10 
-      })),
-      rho: 0.0
-    },
-    'strong-negative': {
-      name: 'Strong Negative',
-      data: Array.from({ length: 20 }, (_, i) => ({ 
-        x: i + (seededRandom(i * 8) - 0.5) * 2, 
-        y: -2 * i + 40 + (seededRandom(i * 9) - 0.5) * 4 
-      })),
-      rho: -0.85
-    }
-  };
-  
   // State
   const [scenario, setScenario] = useState('strong-positive');
   const [showCalculation, setShowCalculation] = useState(false);
