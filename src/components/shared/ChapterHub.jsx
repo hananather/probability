@@ -11,116 +11,12 @@ import {
   BookOpen, Trophy, Calculator, ChevronRight, Star
 } from 'lucide-react';
 import styles from './ChapterHub.module.css';
-
-// Debounce utility
-function debounce(func, wait) {
-  let timeout;
-  const debounced = function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-  debounced.cancel = () => clearTimeout(timeout);
-  return debounced;
-}
-
-// Progress tracking hook with optimizations
-function useProgress(storageKey) {
-  const [completedComponents, setCompletedComponents] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [devMode, setDevMode] = useState(false);
-  
-  // Load data asynchronously after mount
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [progressData, devModeData] = await Promise.all([
-          localStorage.getItem(storageKey),
-          localStorage.getItem(`${storageKey}_devMode`)
-        ]);
-        
-        if (progressData) {
-          const saved = JSON.parse(progressData);
-          setCompletedComponents(Array.isArray(saved) ? [...new Set(saved.filter(id => typeof id === 'string'))] : []);
-        }
-        if (devModeData === 'true') {
-          setDevMode(true);
-        }
-      } catch (error) {
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadData();
-  }, [storageKey]);
-  
-  // Debounced save to localStorage
-  const debouncedSave = useMemo(
-    () => debounce((data) => {
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(data));
-      } catch (error) {
-      }
-    }, 1000),
-    [storageKey]
-  );
-  
-  // Save progress when it changes
-  useEffect(() => {
-    if (!isLoading) {
-      debouncedSave(completedComponents);
-    }
-  }, [completedComponents, debouncedSave, isLoading]);
-
-  useEffect(() => () => debouncedSave.cancel(), [debouncedSave]);
-  
-  // Keyboard shortcut for dev mode (Ctrl/Cmd + Shift + D)
-  useEffect(() => {
-    const handleKeyPress = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'D') {
-        setDevMode(prev => {
-          const newValue = !prev;
-          try {
-            localStorage.setItem(`${storageKey}_devMode`, newValue.toString());
-          } catch {
-            // Navigation remains available when browser storage is disabled.
-          }
-          return newValue;
-        });
-      }
-    };
-    
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [storageKey]);
-  
-  const markComplete = useCallback((componentId) => {
-    setCompletedComponents(prev => {
-      if (!prev.includes(componentId)) {
-        return [...prev, componentId];
-      }
-      return prev;
-    });
-  }, []);
-  
-  const isUnlocked = useCallback(() => true, []); // All components are accessible
-  
-  const hasPrerequisites = useCallback((component, completedList) => {
-    return component.prerequisites.length > 0 && 
-           !component.prerequisites.every(prereq => completedList.includes(prereq));
-  }, []);
-  
-  return { completedComponents, markComplete, isUnlocked, hasPrerequisites, devMode, isLoading };
-}
+import { ACTIVITY_BY_ID, LEGACY_SOURCE_BY_KEY, resolveActivityId } from '@/lib/curriculum/manifest';
+import { useLearningActivity } from '@/hooks/useLearningActivity';
 
 // Memoized Component Card
 const ComponentCard = React.memo(({ 
   component, 
-  isUnlocked, 
   isCompleted, 
   hasPrerequisites, 
   isNext, 
@@ -151,7 +47,7 @@ const ComponentCard = React.memo(({
     <div
       role="button"
       tabIndex={0}
-      aria-label={component.title}
+      aria-label={`${component.title}${isCompleted ? ": Studied" : ""}`}
       className={cn(
         'group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-400',
         styles.componentCard,
@@ -191,7 +87,8 @@ const ComponentCard = React.memo(({
       
       {isCompleted && (
         <div className={cn(styles.badge, styles.badgeCompleted)}>
-          <Star size={16} fill="currentColor" />
+          <Star size={16} fill="currentColor" aria-hidden="true" />
+          <span className="sr-only">Studied</span>
         </div>
       )}
       
@@ -270,12 +167,40 @@ export default function ChapterHub({
   onSectionClick // Optional callback for when a section is clicked
 }) {
   const [selectedComponent, setSelectedComponent] = useState(null);
-  const { completedComponents, markComplete, isUnlocked, hasPrerequisites, devMode, isLoading } = useProgress(storageKey);
+  const source = Object.hasOwn(LEGACY_SOURCE_BY_KEY, storageKey) ? LEGACY_SOURCE_BY_KEY[storageKey] : null;
+  const registered = source?.kind === 'completion-array';
+  const learning = useLearningActivity(registered ? source.containerId : null);
+  const completedComponents = registered ? sections.filter(section => {
+    const activityId = source.targetIds.find(id => ACTIVITY_BY_ID[id]?.legacyId === section.id);
+    return learning.isCompleted(activityId);
+  }).map(section => section.id) : [];
+  const [sessionDevMode, setSessionDevMode] = useState(false);
+  const preferenceKey = `${storageKey}_devMode`;
+  const devMode = registered ? learning.learningData.preferences.device[preferenceKey] === true : sessionDevMode;
+  const { loading, setDevicePreference, writeContext } = learning;
+  const hasPrerequisites = component => (component.prerequisites || []).some(prerequisite =>
+    !learning.isCompleted(registered ? resolveActivityId(source.containerId, prerequisite) : null));
+
+  useEffect(() => {
+    const onKeyDown = event => {
+      if (event.defaultPrevented || event.altKey || !(event.ctrlKey || event.metaKey) || !event.shiftKey || event.key.toLowerCase() !== 'd') return;
+      const target = event.target;
+      if (target instanceof Element && target.closest('input, textarea, select, [contenteditable="true"], [contenteditable=""]')) return;
+      if (registered) {
+        if (loading) return;
+        void setDevicePreference(preferenceKey, !devMode, { context: writeContext });
+      } else {
+        setSessionDevMode(previous => !previous);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [registered, preferenceKey, devMode, loading, setDevicePreference, writeContext]);
   const [showComponent, setShowComponent] = useState(false);
   
   // Memoize calculations
   const totalProgress = useMemo(() => 
-    Math.round((completedComponents.length / sections.length) * 100),
+    sections.length ? Math.round((completedComponents.length / sections.length) * 100) : 0,
     [completedComponents.length, sections.length]
   );
   
@@ -362,6 +287,14 @@ export default function ChapterHub({
   
   return (
     <VisualizationContainer title={`Chapter ${chapterNumber}: ${chapterTitle} - Learning Hub`}>
+      {!registered ? (
+        <p role="status" className="mb-4 text-sm text-amber-200">Progress for this hub is available only in this session.</p>
+      ) : learning.persistenceStatus === 'session-only' ? (
+        <div role="status" className="mb-4 text-sm text-amber-200">
+          <p>Your recent changes are only kept for this visit. Export a backup from Your progress before closing this page.</p>
+          <button type="button" className="mt-2 min-h-11 underline underline-offset-4" onClick={() => learning.retryLocalPersistence()}>Try saving again</button>
+        </div>
+      ) : null}
       {/* Header with progress */}
       <div className={styles.progressContainer}>
         <div className={styles.progressHeader}>
@@ -403,9 +336,8 @@ export default function ChapterHub({
               <ComponentCard
                 key={component.id}
                 component={component}
-                isUnlocked={isUnlocked(component)}
                 isCompleted={isCompleted}
-                hasPrerequisites={hasPrerequisites(component, completedComponents)}
+                hasPrerequisites={hasPrerequisites(component)}
                 isNext={isNext}
                 onClick={handleComponentClick}
               />

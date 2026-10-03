@@ -1,11 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useId, useRef, Suspense } from "react";
+import React, { useState, useId, useRef, Suspense } from "react";
 import { motion } from "framer-motion";
 import { VisualizationContainer, VisualizationSection } from "@/components/ui/VisualizationContainer";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import BackToHub from '@/components/ui/BackToHub';
+import { ACTIVITY_BY_ID, LEGACY_SOURCE_BY_KEY } from '@/lib/curriculum/manifest';
+import { LearningActivityContext, useLearningActivity } from '@/hooks/useLearningActivity';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 /**
  * Generic Tabbed Learning Page Component
@@ -15,7 +18,7 @@ import BackToHub from '@/components/ui/BackToHub';
  * @param {string} props.subtitle - Page subtitle/description
  * @param {number} props.chapter - Chapter number for BackToHub
  * @param {Array} props.tabs - Array of tab configurations
- * @param {string} props.storageKey - localStorage key for progress tracking
+ * @param {string} props.storageKey - Registered progress source key
  * @param {string} props.colorScheme - Color scheme name from design system
  * 
  * Tab configuration:
@@ -39,73 +42,26 @@ const LoadingComponent = () => (
   </div>
 );
 
-// Progress tracking hook
-function useTabProgress(storageKey, tabIds) {
-  const [completedTabs, setCompletedTabs] = useState([]);
-  const [activeTab, setActiveTab] = useState(tabIds[0] || '');
-  const [isHydrated, setIsHydrated] = useState(false);
-  const [loadedKey, setLoadedKey] = useState(null);
-  const tabSignature = JSON.stringify(tabIds);
-
-  // Load from localStorage after hydration
-  useEffect(() => {
-    const validIds = JSON.parse(tabSignature);
-    let completed = [];
-    let active = validIds[0] || '';
-    try {
-      const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
-      if (Array.isArray(saved)) {
-        completed = [...new Set(saved.filter(id => validIds.includes(id)))];
-      }
-      const savedActive = localStorage.getItem(`${storageKey}:active-tab`);
-      if (validIds.includes(savedActive)) active = savedActive;
-    } catch {
-      // Lessons remain usable when saved data is corrupt or storage is unavailable.
-    }
-    setLoadedKey(storageKey);
-    setCompletedTabs(completed);
-    setActiveTab(active);
-    setIsHydrated(true);
-  }, [storageKey, tabSignature]);
-
-  useEffect(() => {
-    if (isHydrated && loadedKey === storageKey) {
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(completedTabs));
-        localStorage.setItem(`${storageKey}:active-tab`, activeTab);
-      } catch {
-        // Keep this session's progress even when it cannot be persisted.
-      }
-    }
-  }, [completedTabs, activeTab, storageKey, isHydrated, loadedKey]);
-
-  const markTabComplete = (tabId) => {
-    setCompletedTabs(prev => prev.includes(tabId) ? prev : [...prev, tabId]);
+// A callback retains the context captured before this mounted child's work starts.
+const ComponentWrapper = ({ component: Component, activityId, learning, onComplete }) => {
+  const [capturedContext] = useState(() => activityId ? learning.captureWriteContext(activityId) : null);
+  const context = {
+    ...learning,
+    containerId: activityId,
+    writeContext: capturedContext,
+    resume: activityId ? learning.getResume(activityId) : null,
+    resetGeneration: learning.getResetGeneration(activityId, capturedContext),
+    completeActivity: (id = activityId, options = {}) => learning.completeActivity(id, { ...options, context: capturedContext }),
+    setResume: (id, locator, options = {}) => learning.setResume(id, locator, { ...options, context: capturedContext }),
+    clearResume: (id = activityId, options = {}) => learning.clearResume(id, { ...options, context: capturedContext }),
+    resetActivity: (id = activityId, options = {}) => learning.resetActivity(id, { ...options, context: capturedContext }),
   };
-
-  const resetProgress = () => {
-    setCompletedTabs([]);
-  };
-
-  return { completedTabs, activeTab, setActiveTab, markTabComplete, resetProgress, isHydrated };
-}
-
-// Component wrapper to standardize interfaces
-const ComponentWrapper = ({ component: Component, tabId, onComplete, isActive }) => {
-  const handleComplete = () => {
-    if (onComplete) {
-      onComplete(tabId);
-    }
-  };
-
-  if (!isActive) {
-    return null;
-  }
-
   return (
-    <div className="w-full">
-      <Component onComplete={handleComplete} />
-    </div>
+    <LearningActivityContext.Provider value={context}>
+      <div className="w-full">
+        <Component onComplete={() => onComplete(capturedContext)} />
+      </div>
+    </LearningActivityContext.Provider>
   );
 };
 
@@ -117,11 +73,34 @@ export default function TabbedLearningPage({
   storageKey,
   colorScheme = 'purple'
 }) {
-  const { completedTabs, activeTab, setActiveTab, markTabComplete, isHydrated } = useTabProgress(storageKey, tabs.map(tab => tab.id));
+  const source = Object.hasOwn(LEGACY_SOURCE_BY_KEY, storageKey) ? LEGACY_SOURCE_BY_KEY[storageKey] : null;
+  const registered = source?.kind === 'completion-array' && ACTIVITY_BY_ID[source.containerId]?.kind === 'lesson';
+  const learning = useLearningActivity(registered ? source.containerId : null);
+  const reducedMotion = useReducedMotion();
+  const activityForTab = id => registered ? source.targetIds.find(activityId => ACTIVITY_BY_ID[activityId]?.legacyId === id) : null;
+  const [selection, setSelection] = useState(null);
+  const [sessionCompletion, setSessionCompletion] = useState({ key: storageKey, ids: [] });
+  const selectionScope = `${storageKey}:${learning.resetGeneration}`;
+  const restoredTab = registered && tabs.find(tab => activityForTab(tab.id) === learning.resume?.activityId)?.id;
+  const activeTab = selection?.scope === selectionScope && tabs.some(tab => tab.id === selection.id)
+    ? selection.id : restoredTab || tabs[0]?.id || '';
+  const completedTabs = registered
+    ? tabs.filter(tab => learning.isCompleted(activityForTab(tab.id))).map(tab => tab.id)
+    : sessionCompletion.key === storageKey ? sessionCompletion.ids : [];
+  const isHydrated = !registered || !learning.loading;
+  const setActiveTab = id => {
+    if (!tabs.some(tab => tab.id === id) || !isHydrated) return;
+    setSelection({ scope: selectionScope, id });
+    if (registered) {
+      void learning.setResume(source.containerId, { activityId: activityForTab(id), kind: 'tab' }, { context: learning.writeContext })
+        .finally(() => setSelection(previous => previous?.scope === selectionScope && previous.id === id ? null : previous));
+    }
+  };
   const navigationId = useId();
   const tabButtons = useRef([]);
 
   const handleTabKeyDown = (event, index) => {
+    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
     let nextIndex;
     if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabs.length;
     if (event.key === 'ArrowLeft') nextIndex = (index - 1 + tabs.length) % tabs.length;
@@ -133,8 +112,12 @@ export default function TabbedLearningPage({
     tabButtons.current[nextIndex]?.focus();
   };
 
-  const handleTabComplete = (tabId) => {
-    markTabComplete(tabId);
+  const handleTabComplete = (tabId, context) => {
+    if (registered) {
+      void learning.completeActivity(activityForTab(tabId), { context });
+    } else {
+      setSessionCompletion(previous => ({ key: storageKey, ids: [...new Set([...(previous.key === storageKey ? previous.ids : []), tabId])] }));
+    }
   };
 
   const activeTabData = tabs.find(tab => tab.id === activeTab);
@@ -161,6 +144,7 @@ export default function TabbedLearningPage({
                 ref={element => { tabButtons.current[index] = element; }}
                 id={`${navigationId}-tab-${id}`}
                 role="tab"
+                disabled={!isHydrated}
                 aria-selected={activeTab === id}
                 aria-controls={`${navigationId}-panel-${id}`}
                 tabIndex={activeTab === id ? 0 : -1}
@@ -211,26 +195,36 @@ export default function TabbedLearningPage({
         )}
       </VisualizationSection>
 
+      {!registered ? (
+        <p role="status" className="mb-4 text-sm text-amber-200">Progress for this lesson is available only in this session.</p>
+      ) : learning.persistenceStatus === 'session-only' ? (
+        <div className="mb-4 text-sm text-amber-200" role="status">
+          <p>Your recent changes are only kept for this visit. Export a backup from Your progress before closing this page.</p>
+          <button type="button" className="mt-2 min-h-11 underline underline-offset-4" onClick={() => learning.retryLocalPersistence()}>Try saving again</button>
+        </div>
+      ) : null}
+
       {/* Tab Content */}
       <motion.div
         id={`${navigationId}-panel-${activeTab}`}
         role="tabpanel"
+        aria-busy={!isHydrated}
         aria-labelledby={`${navigationId}-tab-${activeTab}`}
         tabIndex={0}
-        key={activeTab}
-        initial={{ opacity: 0, y: 20 }}
+        key={`${activeTab}:${learning.getResetGeneration(activityForTab(activeTab), learning.writeContext)}:${storageKey}`}
+        initial={reducedMotion ? false : { opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
         className="max-w-6xl mx-auto"
       >
         <Suspense fallback={<LoadingComponent />}>
-          {tabs.map(tab => (
+          {!isHydrated ? <LoadingComponent /> : tabs.filter(tab => tab.id === activeTab).map(tab => (
             <ComponentWrapper
               key={tab.id}
               component={tab.component}
-              tabId={tab.id}
-              onComplete={handleTabComplete}
-              isActive={activeTab === tab.id}
+              activityId={activityForTab(tab.id)}
+              learning={learning}
+              onComplete={context => handleTabComplete(tab.id, context)}
             />
           ))}
         </Suspense>

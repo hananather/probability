@@ -1,6 +1,6 @@
 import React, { StrictMode } from 'react';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BookOpen } from 'lucide-react';
 import { InteractiveJourneyNavigation } from '@/components/ui/InteractiveJourneyNavigation';
 import TabbedLearningPage from '@/components/ui/TabbedLearningPage';
@@ -8,6 +8,9 @@ import ChapterHub from '@/components/shared/ChapterHub';
 import { ChapterQuiz, QuizQuestionWrapper } from '@/components/quiz/ChapterQuiz';
 import { QuizTimer } from '@/components/quiz/QuizTimer';
 import { quizStorage } from '@/lib/quiz/quizStorage';
+import progressService from '@/services/progressService';
+import { createProgressStore } from '@/lib/progress/store';
+import { environment, memoryPersistence } from '../progress/store/helpers';
 
 vi.mock('@/hooks/useMathJax', () => ({ useMathJax: () => React.useRef(null) }));
 vi.mock('@/lib/quiz/questionBank', () => ({
@@ -79,14 +82,21 @@ describe('lesson keyboard navigation', () => {
 });
 
 const tabs = [
-  { id: 'first', label: 'First', icon: BookOpen, color: '#14b8a6', component: () => <p>First content</p> },
-  { id: 'second', label: 'Second', icon: BookOpen, color: '#3b82f6', component: () => <p>Second content</p> }
+  { id: 'foundations', label: 'First', icon: BookOpen, color: '#14b8a6', component: () => <p>First content</p> },
+  { id: 'worked-examples', label: 'Second', icon: BookOpen, color: '#3b82f6', component: () => <p>Second content</p> }
 ];
-const renderTabs = () => render(<TabbedLearningPage title="Lesson" chapter={1} tabs={tabs} storageKey="lesson-progress" />);
+const renderTabs = () => render(<TabbedLearningPage title="Lesson" chapter={1} tabs={tabs} storageKey="chapter1-foundations-progress" />);
 
 describe('lesson tabs and saved progress', () => {
-  it('exposes tab semantics and wraps keyboard navigation', () => {
-    renderTabs();
+  let store;
+  beforeEach(() => {
+    store = createProgressStore(environment(memoryPersistence(), { legacyStorage: window.localStorage }));
+    vi.spyOn(progressService, 'getStore').mockReturnValue(store);
+  });
+  afterEach(() => store.dispose());
+  const ready = () => waitFor(() => expect(screen.getByRole('tab', { name: /^First/ })).toBeEnabled());
+  it('exposes tab semantics and wraps keyboard navigation', async () => {
+    renderTabs(); await ready();
     const first = screen.getByRole('tab', { name: 'First' });
     first.focus();
     fireEvent.keyDown(first, { key: 'ArrowRight' });
@@ -98,36 +108,36 @@ describe('lesson tabs and saved progress', () => {
     expect(first).toHaveFocus();
   });
 
-  it('resumes the last tab and accepts only known unique completion IDs', () => {
-    localStorage.setItem('lesson-progress', '["first","first","removed"]');
-    localStorage.setItem('lesson-progress:active-tab', 'second');
-    renderTabs();
+  it('imports the last tab and known unique completion IDs without replacing legacy input', async () => {
+    localStorage.setItem('chapter1-foundations-progress', '["foundations","foundations","removed"]');
+    localStorage.setItem('chapter1-foundations-progress:active-tab', 'worked-examples');
+    renderTabs(); await ready();
     expect(screen.getByRole('tab', { name: 'Second' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByText('1/2 (50%)')).toBeInTheDocument();
   });
 
-  it.each(['{broken', '{}', 'null'])('keeps the lesson usable with invalid saved progress %s', saved => {
-    localStorage.setItem('lesson-progress', saved);
-    renderTabs();
+  it.each(['{broken', '{}', 'null'])('keeps the lesson usable with invalid saved progress %s', async saved => {
+    localStorage.setItem('chapter1-foundations-progress', saved);
+    renderTabs(); await ready();
     expect(screen.getByRole('tab', { name: 'First' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByText('0/2 (0%)')).toBeInTheDocument();
   });
 
-  it('keeps tab switching usable when browser storage is blocked', () => {
+  it('keeps tab switching usable when browser storage is blocked', async () => {
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new DOMException('Blocked', 'SecurityError'); });
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new DOMException('Blocked', 'SecurityError'); });
-    renderTabs();
+    renderTabs(); await ready();
     fireEvent.click(screen.getByRole('tab', { name: 'Second' }));
     expect(screen.getByText('Second content')).toBeInTheDocument();
   });
 
-  it('does not overwrite another lesson when its storage key changes', () => {
-    localStorage.setItem('other-lesson', '["second"]');
-    localStorage.setItem('other-lesson:active-tab', 'second');
-    const view = renderTabs();
-    view.rerender(<TabbedLearningPage title="Other lesson" chapter={1} tabs={tabs} storageKey="other-lesson" />);
+  it('does not overwrite retained input when its registered source key changes', async () => {
+    localStorage.setItem('chapter1-probability-dictionary-progress', '["worked-examples"]');
+    localStorage.setItem('chapter1-probability-dictionary-progress:active-tab', 'worked-examples');
+    const view = renderTabs(); await ready();
+    view.rerender(<TabbedLearningPage title="Other lesson" chapter={1} tabs={tabs} storageKey="chapter1-probability-dictionary-progress" />);
     expect(screen.getByRole('tab', { name: 'Second Completed' })).toHaveAttribute('aria-selected', 'true');
-    expect(JSON.parse(localStorage.getItem('other-lesson'))).toEqual(['second']);
+    expect(JSON.parse(localStorage.getItem('chapter1-probability-dictionary-progress'))).toEqual(['worked-examples']);
   });
 });
 

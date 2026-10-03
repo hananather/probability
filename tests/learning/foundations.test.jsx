@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import FoundationsPage from '@/app/chapter1/01-foundations/page';
 import FoundationsTab from '@/components/01-introduction-to-probabilities/01-foundations/Tab1FoundationsTab';
@@ -8,6 +8,9 @@ import QuickReference from '@/components/01-introduction-to-probabilities/01-fou
 import VisualExperiments from '@/components/01-introduction-to-probabilities/01-foundations/Tab4InteractiveTab-StaticVisual';
 import VennDiagram from '@/components/01-introduction-to-probabilities/01-foundations/Tab4InteractiveTab-VennDiagram';
 import MathematicalAnalysis from '@/components/01-introduction-to-probabilities/01-foundations/Tab4InteractiveTab-StepByStep';
+import progressService from '@/services/progressService';
+import { createProgressStore } from '@/lib/progress/store';
+import { environment, memoryPersistence } from '../progress/store/helpers';
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/chapter1/01-foundations' }));
 vi.mock('next/dynamic', async () => {
@@ -199,8 +202,17 @@ describe('prediction before explanation', () => {
 });
 
 describe('foundation route integration', () => {
+  let store;
+  beforeEach(() => {
+    store = createProgressStore(environment(memoryPersistence()));
+    vi.spyOn(progressService, 'getStore').mockReturnValue(store);
+  });
+  afterEach(() => { cleanup(); store.dispose(); });
+  const hydrated = () => waitFor(() => expect(screen.getByRole('tab', { name: 'Foundations' })).toBeEnabled());
+
   it('loads all four real tabs and complementary explorers without marking them complete', async () => {
     render(<Suspense fallback={<p>Loading foundation test</p>}><FoundationsPage /></Suspense>);
+    await hydrated();
     await waitFor(() => expect(screen.getByRole('heading', { name: 'Section 1: Physical Intuition' })).toBeVisible());
     expect(screen.getAllByRole('tab')).toHaveLength(4);
     fireEvent.click(screen.getByRole('tab', { name: 'Worked Examples' }));
@@ -219,20 +231,31 @@ describe('foundation route integration', () => {
     expect(await screen.findByRole('heading', { name: 'Interactive Step-by-Step Calculations' })).toBeVisible();
     expect(screen.getByRole('button', { name: /Mathematical Analysis:/ })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByText('0/4 (0%)')).toBeVisible();
-    expect(JSON.parse(localStorage.getItem('chapter1-foundations-progress'))).toEqual([]);
+    await waitFor(() => expect(store.getSnapshot().pendingLocalWrites).toBe(0));
+    expect(store.getSnapshot().data.activities).toEqual({});
+    expect(store.getSnapshot().data.resumeByDevice[store.getSnapshot().data.deviceId]['chapter-1:foundations']).toMatchObject({ activityId: 'chapter-1:foundations:interactive', kind: 'tab' });
+    expect(localStorage.getItem('chapter1-foundations-progress')).toBeNull();
+    expect(localStorage.getItem('chapter1-foundations-progress:active-tab')).toBeNull();
   });
 
   it('keeps explorer navigation separate from keyboard tab navigation', async () => {
-    localStorage.setItem('chapter1-foundations-progress:active-tab', 'interactive');
+    await store.hydrate();
+    await store.setResume('chapter-1:foundations', { activityId: 'chapter-1:foundations:interactive', kind: 'tab' }, { context: store.captureWriteContext('chapter-1:foundations') });
     render(<Suspense fallback={<p>Loading foundation test</p>}><FoundationsPage /></Suspense>);
+    await hydrated();
     await waitFor(() => expect(screen.getByRole('heading', { name: 'Interactive Pebble World' })).toBeVisible());
     fireEvent.click(screen.getByRole('button', { name: 'Key Concepts' }));
     const interactive = screen.getByRole('tab', { name: 'Interactive Explorer' });
     interactive.focus();
     fireEvent.keyDown(interactive, { key: 'ArrowRight' });
     expect(screen.getByRole('tab', { name: 'Foundations' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'Foundations' })).toHaveFocus();
     await waitFor(() => expect(screen.getByRole('heading', { name: 'Section 1: Physical Intuition' })).toBeVisible());
-    expect(JSON.parse(localStorage.getItem('chapter1-foundations-progress'))).toEqual([]);
+    await waitFor(() => expect(store.getSnapshot().pendingLocalWrites).toBe(0));
+    expect(store.getSnapshot().data.activities).toEqual({});
+    expect(store.getSnapshot().data.resumeByDevice[store.getSnapshot().data.deviceId]['chapter-1:foundations']).toMatchObject({ activityId: 'chapter-1:foundations:foundations', kind: 'tab' });
+    expect(localStorage.getItem('chapter1-foundations-progress')).toBeNull();
+    expect(localStorage.getItem('chapter1-foundations-progress:active-tab')).toBeNull();
     expect(screen.getByText('0/4 (0%)')).toBeVisible();
   });
 });
