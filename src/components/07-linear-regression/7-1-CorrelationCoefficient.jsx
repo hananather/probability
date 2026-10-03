@@ -12,12 +12,45 @@ import {
 import { colors, createColorScheme } from '../../lib/design-system';
 import BackToHub from '../ui/BackToHub';
 import { TrendingUp, TrendingDown, Activity, Info } from 'lucide-react';
-import { Chapter7ReferenceSheet } from '../reference-sheets/Chapter7ReferenceSheet';
 import jStat from 'jstat';
 import { CORRELATION_EXAMPLE_STATISTICS } from '@/lib/statistics/correlationExample';
 
 // Get Chapter 7 color scheme
 const chapterColors = createColorScheme('regression');
+
+function useChartWidth(ref) {
+  const [width, setWidth] = useState(0);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+    const measure = () => {
+      const nextWidth = Math.floor(element.getBoundingClientRect().width);
+      if (nextWidth > 0) setWidth(previous => previous === nextWidth ? previous : nextWidth);
+    };
+    measure();
+    if (typeof ResizeObserver !== 'undefined') {
+      const observer = new ResizeObserver(measure);
+      observer.observe(element);
+      return () => observer.disconnect();
+    }
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [ref]);
+
+  return width;
+}
+
+function FormulaScroll({ children, className = '', label }) {
+  return (
+    <div
+      className={`min-w-0 max-w-full overflow-x-auto rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 ${className}`}
+      {...(label ? { role: 'region', 'aria-label': label, tabIndex: 0 } : {})}
+    >
+      {children}
+    </div>
+  );
+}
 
 // Correlation Introduction Component
 const CorrelationIntroduction = React.memo(function CorrelationIntroduction() {
@@ -34,9 +67,9 @@ const CorrelationIntroduction = React.memo(function CorrelationIntroduction() {
         <p>
           The <strong className="text-teal-400">correlation coefficient</strong> measures the strength and direction of a linear relationship:
         </p>
-        <div className="text-center my-4">
+        <FormulaScroll className="text-center my-4" label="Correlation definition formula">
           <span dangerouslySetInnerHTML={{ __html: `\\[r = \\frac{\\sum_{i=1}^{n}(x_i - \\bar{x})(y_i - \\bar{y})}{\\sqrt{\\sum_{i=1}^{n}(x_i - \\bar{x})^2 \\sum_{i=1}^{n}(y_i - \\bar{y})^2}}\\]` }} />
-        </div>
+        </FormulaScroll>
         <p className="text-xs text-neutral-400 mt-2">
           where <span dangerouslySetInnerHTML={{ __html: `\\(-1 \\leq r \\leq 1\\)` }} />
         </p>
@@ -55,14 +88,14 @@ const MathematicalFramework = React.memo(function MathematicalFramework() {
     <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">
       <h3 className="text-xl font-bold text-teal-400 mb-6">Mathematical Framework</h3>
       
-      <div ref={contentRef} className="grid md:grid-cols-3 gap-6">
+      <div ref={contentRef} className="grid md:grid-cols-3 gap-6 min-w-0 [&>*]:min-w-0">
         <div className="bg-neutral-900/50 rounded-lg p-4">
           <h4 className="font-bold text-white mb-3">Population Correlation</h4>
           <div className="text-sm text-neutral-300">
             <p className="mb-2">Theoretical correlation:</p>
-            <div className="text-center text-teal-400 my-3">
+            <FormulaScroll className="text-center text-teal-400 my-3">
               <span dangerouslySetInnerHTML={{ __html: `\\[\\rho = \\frac{\\text{Cov}(X,Y)}{\\sigma_X \\cdot \\sigma_Y}\\]` }} />
-            </div>
+            </FormulaScroll>
             <p className="text-xs text-neutral-400">Population parameter</p>
           </div>
         </div>
@@ -71,9 +104,9 @@ const MathematicalFramework = React.memo(function MathematicalFramework() {
           <h4 className="font-bold text-white mb-3">Sample Correlation</h4>
           <div className="text-sm text-neutral-300">
             <p className="mb-2">Calculated from data:</p>
-            <div className="text-center text-blue-400 my-3">
+            <FormulaScroll className="text-center text-blue-400 my-3">
               <span dangerouslySetInnerHTML={{ __html: `\\[r = \\frac{S_{xy}}{\\sqrt{S_{xx} \\cdot S_{yy}}}\\]` }} />
-            </div>
+            </FormulaScroll>
             <p className="text-xs text-neutral-400">Sample statistic</p>
           </div>
         </div>
@@ -110,14 +143,14 @@ const MathematicalProperties = React.memo(function MathematicalProperties() {
     <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">
       <h3 className="text-xl font-bold text-teal-400 mb-6">Mathematical Properties of Correlation</h3>
       
-      <div ref={contentRef} className="grid md:grid-cols-2 gap-6">
+      <div ref={contentRef} className="grid md:grid-cols-2 gap-6 min-w-0 [&>*]:min-w-0">
         <div className="bg-neutral-900/50 rounded-lg p-4">
           <h4 className="font-bold text-white mb-3">1. Symmetry Property</h4>
           <div className="text-sm text-neutral-300">
             <p className="mb-2">Correlation is symmetric:</p>
-            <div className="text-center text-teal-400 my-3">
+            <FormulaScroll className="text-center text-teal-400 my-3">
               <span dangerouslySetInnerHTML={{ __html: `\\[\\rho_{\\text{XY}} = \\rho_{\\text{YX}}\\]` }} />
-            </div>
+            </FormulaScroll>
             <p className="text-xs text-neutral-400">
               The correlation between X and Y equals the correlation between Y and X
             </p>
@@ -128,11 +161,11 @@ const MathematicalProperties = React.memo(function MathematicalProperties() {
           <h4 className="font-bold text-white mb-3">2. Bounded Values</h4>
           <div className="text-sm text-neutral-300">
             <p className="mb-2">Correlation is always bounded:</p>
-            <div className="text-center text-blue-400 my-3">
+            <FormulaScroll className="text-center text-blue-400 my-3">
               <span dangerouslySetInnerHTML={{ __html: `\\[-1 \\leq \\rho \\leq 1\\]` }} />
-            </div>
+            </FormulaScroll>
             <p className="text-xs text-neutral-400">
-              By Cauchy-Schwarz inequality: <span dangerouslySetInnerHTML={{ __html: `\\(|\\text{Cov}(X,Y)| \\leq \\sigma_X \\sigma_Y\\)` }} />
+              By Cauchy-Schwarz inequality: <span className="inline-block max-w-full overflow-x-auto align-middle" dangerouslySetInnerHTML={{ __html: `\\(|\\text{Cov}(X,Y)| \\leq \\sigma_X \\sigma_Y\\)` }} />
             </p>
           </div>
         </div>
@@ -141,9 +174,9 @@ const MathematicalProperties = React.memo(function MathematicalProperties() {
           <h4 className="font-bold text-white mb-3">3. Scale Invariance</h4>
           <div className="text-sm text-neutral-300">
             <p className="mb-2">Linear transformations preserve correlation:</p>
-            <div className="text-center text-yellow-400 my-3">
+            <FormulaScroll className="text-center text-yellow-400 my-3" label="Scale invariance formula">
               <span dangerouslySetInnerHTML={{ __html: `\\[\\rho(aX+b, cY+d) = \\text{sign}(ac) \\cdot \\rho(X,Y)\\]` }} />
-            </div>
+            </FormulaScroll>
             <p className="text-xs text-neutral-400">
               for constants <span dangerouslySetInnerHTML={{ __html: `\\(a, b, c, d\\)` }} /> where <span dangerouslySetInnerHTML={{ __html: `\\(a \\neq 0, c \\neq 0\\)` }} />
             </p>
@@ -154,9 +187,9 @@ const MathematicalProperties = React.memo(function MathematicalProperties() {
           <h4 className="font-bold text-white mb-3">4. Perfect Correlation</h4>
           <div className="text-sm text-neutral-300">
             <p className="mb-2">When <span dangerouslySetInnerHTML={{ __html: `\\(|\\rho| = 1\\)` }} />:</p>
-            <div className="text-center text-green-400 my-3">
+            <FormulaScroll className="text-center text-green-400 my-3">
               <span dangerouslySetInnerHTML={{ __html: `\\[Y = aX + b\\]` }} />
-            </div>
+            </FormulaScroll>
             <p className="text-xs text-neutral-400">
               Perfect linear relationship: <span dangerouslySetInnerHTML={{ __html: `\\(\\rho = 1\\)` }} /> if <span dangerouslySetInnerHTML={{ __html: `\\(a > 0\\)` }} />, 
               <span dangerouslySetInnerHTML={{ __html: `\\(\\rho = -1\\)` }} /> if <span dangerouslySetInnerHTML={{ __html: `\\(a < 0\\)` }} />
@@ -188,14 +221,14 @@ const RelationshipToRegression = React.memo(function RelationshipToRegression({ 
     <VisualizationSection className="bg-gradient-to-br from-purple-900/20 to-purple-800/20 border border-purple-500/30 rounded-lg p-6">
       <h3 className="text-xl font-bold text-purple-400 mb-6">Connection to Linear Regression</h3>
       
-      <div ref={contentRef} className="grid md:grid-cols-2 gap-6">
+      <div ref={contentRef} className="grid md:grid-cols-2 gap-6 min-w-0 [&>*]:min-w-0">
         <div className="bg-neutral-900/50 rounded-lg p-4">
           <h4 className="font-bold text-white mb-3">Regression Slope Formula</h4>
           <div className="text-sm text-neutral-300">
             <p className="mb-3">The slope of the least squares regression line is:</p>
-            <div className="text-center text-purple-400 my-4">
+            <FormulaScroll className="text-center text-purple-400 my-4">
               <span dangerouslySetInnerHTML={{ __html: `\\[b_1 = r \\cdot \\frac{S_y}{S_x}\\]` }} />
-            </div>
+            </FormulaScroll>
             <p className="text-xs text-neutral-400 mb-2">where:</p>
             <ul className="text-xs text-neutral-400 space-y-1">
               <li>• <span dangerouslySetInnerHTML={{ __html: `\\(r\\)` }} /> = correlation coefficient</li>
@@ -208,7 +241,7 @@ const RelationshipToRegression = React.memo(function RelationshipToRegression({ 
         <div className="bg-neutral-900/50 rounded-lg p-4">
           <h4 className="font-bold text-white mb-3">Current Data Values</h4>
           <div className="text-sm text-neutral-300 space-y-3">
-            <div className="grid grid-cols-2 gap-4 font-mono">
+            <div className="grid grid-cols-2 gap-4 font-mono min-w-0 [&>*]:min-w-0">
               <div>
                 <p className="text-xs text-neutral-400 mb-1">Correlation (r)</p>
                 <p className={`text-lg font-bold ${correlation > 0 ? 'text-blue-400' : 'text-red-400'}`}>
@@ -270,7 +303,7 @@ const CorrelationStrengthBar = ({ value }) => {
 
   return (
     <div className="space-y-2">
-      <div className="flex justify-between text-sm">
+      <div className="flex flex-wrap justify-between gap-1 text-sm">
         <span className="text-neutral-400">Correlation Strength:</span>
         <span className="font-bold" style={{ color: barColor }}>{strengthLabel}</span>
       </div>
@@ -332,18 +365,18 @@ const WorkedExample = React.memo(function WorkedExample() {
         <div className="bg-neutral-900/50 rounded-lg p-4">
           <h4 className="font-bold text-white mb-3">Step 1: Calculate Basic Sums</h4>
           <div className="text-sm text-neutral-300 space-y-2">
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-4 min-w-0 [&>*]:min-w-0">
               <div>
                 <p className="mb-2">Sum of X values:</p>
-                <div className="text-center">
+                <FormulaScroll className="text-center">
                   <span dangerouslySetInnerHTML={{ __html: `\\[\\sum x_i = ${sumX.toFixed(2)}\\]` }} />
-                </div>
+                </FormulaScroll>
               </div>
               <div>
                 <p className="mb-2">Sum of Y values:</p>
-                <div className="text-center">
+                <FormulaScroll className="text-center">
                   <span dangerouslySetInnerHTML={{ __html: `\\[\\sum y_i = ${sumY.toFixed(2)}\\]` }} />
-                </div>
+                </FormulaScroll>
               </div>
             </div>
           </div>
@@ -353,12 +386,12 @@ const WorkedExample = React.memo(function WorkedExample() {
         <div className="bg-neutral-900/50 rounded-lg p-4">
           <h4 className="font-bold text-white mb-3">Step 2: Calculate Sample Means</h4>
           <div className="text-sm text-neutral-300 space-y-2">
-            <div className="text-center my-3">
+            <FormulaScroll className="text-center my-3" label="Mean of X calculation">
               <span dangerouslySetInnerHTML={{ __html: `\\[\\bar{x} = \\frac{1}{n}\\sum_{i=1}^{n} x_i = \\frac{${sumX.toFixed(2)}}{20} = ${meanX.toFixed(4)}\\]` }} />
-            </div>
-            <div className="text-center my-3">
+            </FormulaScroll>
+            <FormulaScroll className="text-center my-3" label="Mean of Y calculation">
               <span dangerouslySetInnerHTML={{ __html: `\\[\\bar{y} = \\frac{1}{n}\\sum_{i=1}^{n} y_i = \\frac{${sumY.toFixed(2)}}{20} = ${meanY.toFixed(4)}\\]` }} />
-            </div>
+            </FormulaScroll>
           </div>
         </div>
 
@@ -370,32 +403,32 @@ const WorkedExample = React.memo(function WorkedExample() {
             
             <div className="bg-neutral-800/50 rounded p-3 mb-4">
               <p className="font-semibold mb-2">For X:</p>
-              <div className="text-center my-2">
+              <FormulaScroll className="text-center my-2" label="Computational sum of squares for X">
                 <span dangerouslySetInnerHTML={{ __html: `\\[S_{xx} = \\sum x_i^2 - \\frac{(\\sum x_i)^2}{n} = ${sumX2.toFixed(4)} - \\frac{(${sumX.toFixed(2)})^2}{20}\\]` }} />
-              </div>
-              <div className="text-center">
+              </FormulaScroll>
+              <FormulaScroll className="text-center">
                 <span dangerouslySetInnerHTML={{ __html: `\\[S_{xx} = ${sumX2.toFixed(4)} - ${((sumX * sumX) / n).toFixed(4)} = ${Sxx.toFixed(4)}\\]` }} />
-              </div>
+              </FormulaScroll>
             </div>
             
             <div className="bg-neutral-800/50 rounded p-3 mb-4">
               <p className="font-semibold mb-2">For Y:</p>
-              <div className="text-center my-2">
+              <FormulaScroll className="text-center my-2" label="Computational sum of squares for Y">
                 <span dangerouslySetInnerHTML={{ __html: `\\[S_{yy} = \\sum y_i^2 - \\frac{(\\sum y_i)^2}{n} = ${sumY2.toFixed(2)} - \\frac{(${sumY.toFixed(2)})^2}{20}\\]` }} />
-              </div>
-              <div className="text-center">
+              </FormulaScroll>
+              <FormulaScroll className="text-center">
                 <span dangerouslySetInnerHTML={{ __html: `\\[S_{yy} = ${sumY2.toFixed(2)} - ${((sumY * sumY) / n).toFixed(2)} = ${Syy.toFixed(4)}\\]` }} />
-              </div>
+              </FormulaScroll>
             </div>
             
             <div className="bg-neutral-800/50 rounded p-3">
               <p className="font-semibold mb-2">Cross Product:</p>
-              <div className="text-center my-2">
+              <FormulaScroll className="text-center my-2" label="Computational cross product">
                 <span dangerouslySetInnerHTML={{ __html: `\\[S_{xy} = \\sum x_i y_i - \\frac{(\\sum x_i)(\\sum y_i)}{n} = ${sumXY.toFixed(2)} - \\frac{(${sumX.toFixed(2)})(${sumY.toFixed(2)})}{20}\\]` }} />
-              </div>
-              <div className="text-center">
+              </FormulaScroll>
+              <FormulaScroll className="text-center">
                 <span dangerouslySetInnerHTML={{ __html: `\\[S_{xy} = ${sumXY.toFixed(2)} - ${((sumX * sumY) / n).toFixed(2)} = ${Sxy.toFixed(4)}\\]` }} />
-              </div>
+              </FormulaScroll>
             </div>
           </div>
         </div>
@@ -405,12 +438,12 @@ const WorkedExample = React.memo(function WorkedExample() {
           <h4 className="font-bold text-white mb-3">Step 4: Calculate Correlation Coefficient</h4>
           <div className="text-sm text-neutral-300 space-y-2">
             <p>Apply the formula:</p>
-            <div className="text-center my-3">
+            <FormulaScroll className="text-center my-3" label="Correlation coefficient calculation">
               <span dangerouslySetInnerHTML={{ __html: `\\[r = \\frac{S_{xy}}{\\sqrt{S_{xx} \\cdot S_{yy}}} = \\frac{${Sxy.toFixed(4)}}{\\sqrt{${Sxx.toFixed(4)} \\times ${Syy.toFixed(4)}}}\\]` }} />
-            </div>
-            <div className="text-center my-3">
+            </FormulaScroll>
+            <FormulaScroll className="text-center my-3">
               <span dangerouslySetInnerHTML={{ __html: `\\[r = \\frac{${Sxy.toFixed(4)}}{${(Math.sqrt(Sxx * Syy)).toFixed(4)}} = ${r.toFixed(4)}\\]` }} />
-            </div>
+            </FormulaScroll>
           </div>
         </div>
 
@@ -419,28 +452,28 @@ const WorkedExample = React.memo(function WorkedExample() {
           <h4 className="font-bold text-white mb-3">Step 5: Alternative Calculation Using Standard Deviations</h4>
           <div className="text-sm text-neutral-300 space-y-2">
             <p>We can also express correlation using standard deviations:</p>
-            <div className="grid md:grid-cols-2 gap-4 my-3">
+            <div className="grid md:grid-cols-2 gap-4 my-3 min-w-0 [&>*]:min-w-0">
               <div>
                 <p className="text-xs text-neutral-400 mb-1">Standard deviation of X:</p>
-                <div className="text-center">
+                <FormulaScroll className="text-center" label="Standard deviation of X calculation">
                   <span dangerouslySetInnerHTML={{ __html: `\\[s_x = \\sqrt{\\frac{S_{xx}}{n-1}} = \\sqrt{\\frac{${Sxx.toFixed(4)}}{19}} = ${sx.toFixed(4)}\\]` }} />
-                </div>
+                </FormulaScroll>
               </div>
               <div>
                 <p className="text-xs text-neutral-400 mb-1">Standard deviation of Y:</p>
-                <div className="text-center">
+                <FormulaScroll className="text-center" label="Standard deviation of Y calculation">
                   <span dangerouslySetInnerHTML={{ __html: `\\[s_y = \\sqrt{\\frac{S_{yy}}{n-1}} = \\sqrt{\\frac{${Syy.toFixed(4)}}{19}} = ${sy.toFixed(4)}\\]` }} />
-                </div>
+                </FormulaScroll>
               </div>
             </div>
             <p>Sample covariance:</p>
-            <div className="text-center my-2">
+            <FormulaScroll className="text-center my-2">
               <span dangerouslySetInnerHTML={{ __html: `\\[s_{xy} = \\frac{S_{xy}}{n-1} = \\frac{${Sxy.toFixed(4)}}{19} = ${(Sxy/(n-1)).toFixed(4)}\\]` }} />
-            </div>
+            </FormulaScroll>
             <p>Therefore:</p>
-            <div className="text-center my-2">
+            <FormulaScroll className="text-center my-2">
               <span dangerouslySetInnerHTML={{ __html: `\\[r = \\frac{s_{xy}}{s_x \\cdot s_y} = \\frac{${(Sxy/(n-1)).toFixed(4)}}{${sx.toFixed(4)} \\times ${sy.toFixed(4)}} = ${r.toFixed(4)}\\]` }} />
-            </div>
+            </FormulaScroll>
           </div>
         </div>
 
@@ -512,13 +545,13 @@ const StatisticalSignificance = React.memo(function StatisticalSignificance({ co
           <h4 className="font-bold text-white mb-3">Test Statistic</h4>
           <div className="text-sm text-neutral-300 space-y-3">
             <p>Under <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />, the test statistic follows a t-distribution:</p>
-            <div className="text-center text-blue-400 my-4">
+            <FormulaScroll className="text-center text-blue-400 my-4" label="Correlation test statistic formula">
               <span dangerouslySetInnerHTML={{ __html: `\\[t = \\frac{r\\sqrt{n-2}}{\\sqrt{1-r^2}} \\sim t(n-2)\\]` }} />
-            </div>
+            </FormulaScroll>
             <p>For our data:</p>
-            <div className="text-center my-3">
+            <FormulaScroll className="text-center my-3" label="Correlation test statistic calculation">
               <span dangerouslySetInnerHTML={{ __html: `\\[t = \\frac{${correlation.toFixed(4)}\\sqrt{${sampleSize}-2}}{\\sqrt{1-${correlation.toFixed(4)}^2}} = \\frac{${correlation.toFixed(4)} \\times ${Math.sqrt(sampleSize-2).toFixed(4)}}{${Math.sqrt(1-correlation*correlation).toFixed(4)}} = ${tStat.toFixed(3)}\\]` }} />
-            </div>
+            </FormulaScroll>
             <p className="text-xs text-neutral-400">
               with df = n - 2 = {df} degrees of freedom
             </p>
@@ -532,7 +565,7 @@ const StatisticalSignificance = React.memo(function StatisticalSignificance({ co
             <div className="space-y-3">
               {Object.entries(criticalValues).map(([alpha, critical]) => (
                 <div key={alpha} className={`p-3 rounded ${isSignificant[alpha] ? 'bg-green-900/30 border border-green-500/30' : 'bg-neutral-800/50'}`}>
-                  <div className="flex justify-between items-center">
+                  <div className="flex flex-wrap justify-between items-center gap-2">
                     <div>
                       <p className="font-semibold">α = {alpha}</p>
                       <p className="text-xs text-neutral-400">Critical value: ±{critical.toFixed(3)}</p>
@@ -649,9 +682,9 @@ const EnhancedFormulaDisplay = React.memo(function EnhancedFormulaDisplay() {
           <h4 className="font-bold text-white mb-2">{formulas[activeFormula].name}</h4>
           <p className="text-sm text-neutral-400 mb-4">{formulas[activeFormula].description}</p>
           
-          <div className="my-6 text-center">
+          <FormulaScroll className="my-6 text-center" label="Selected correlation formula">
             <span dangerouslySetInnerHTML={{ __html: formulas[activeFormula].formula }} />
-          </div>
+          </FormulaScroll>
           
           <p className="text-sm text-purple-300 mt-4">
             <strong>Key insight:</strong> {formulas[activeFormula].notes}
@@ -674,6 +707,7 @@ const EnhancedFormulaDisplay = React.memo(function EnhancedFormulaDisplay() {
 const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGallery() {
   const [selectedPattern, setSelectedPattern] = useState('perfect-positive');
   const svgRef = useRef(null);
+  const chartWidth = useChartWidth(svgRef);
   
   // Deterministic pseudo-random number generator
   const seededRandom = (seed) => {
@@ -751,26 +785,28 @@ const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGaller
   };
   
   useEffect(() => {
-    if (!svgRef.current) return;
+    if (!svgRef.current || !chartWidth) return;
     
     const svg = d3.select(svgRef.current);
     
     // Clear previous content with proper cleanup
     svg.selectAll("g.main-group").remove();
     
-    const width = svgRef.current.clientWidth;
+    const width = chartWidth;
     const height = 300;
     const margin = { top: 20, right: 20, bottom: 40, left: 40 };
     
     const g = svg
-      .attr("width", width)
+      .attr("width", "100%")
       .attr("height", height)
+      .attr("viewBox", `0 0 ${width} ${height}`)
       .append("g")
       .attr("class", "main-group")
       .attr("transform", `translate(${margin.left},${margin.top})`);
     
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
+    const horizontalTicks = Math.min(5, Math.max(2, Math.floor(innerWidth / 60)));
     
     const pattern = patterns[selectedPattern];
     const data = pattern.data;
@@ -790,7 +826,7 @@ const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGaller
     // Add axes
     g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(x).ticks(5))
+      .call(d3.axisBottom(x).ticks(horizontalTicks))
       .style("font-size", "10px")
       .style("color", "#9ca3af");
     
@@ -804,6 +840,7 @@ const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGaller
       .attr("class", "grid")
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(x)
+        .ticks(horizontalTicks)
         .tickSize(-innerHeight)
         .tickFormat("")
       )
@@ -892,7 +929,7 @@ const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGaller
         svg.selectAll(".main-group").remove();
       }
     };
-  }, [selectedPattern]);
+  }, [selectedPattern, chartWidth]);
   
   return (
     <VisualizationSection className="bg-gradient-to-br from-indigo-900/20 to-indigo-800/20 border border-indigo-500/30 rounded-lg p-6">
@@ -900,7 +937,7 @@ const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGaller
       
       <div className="space-y-6">
         {/* Pattern Selector */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 min-w-0 [&>*]:min-w-0">
           {Object.entries(patterns).map(([key, { name }]) => (
             <button
               key={key}
@@ -918,7 +955,7 @@ const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGaller
         
         {/* Visualization */}
         <div className="bg-neutral-900/50 rounded-lg p-4">
-          <svg ref={svgRef} className="w-full"></svg>
+          <svg ref={svgRef} role="img" aria-label={`${patterns[selectedPattern].name} scatterplot`} className="block w-full max-w-full"></svg>
           <p className="text-sm text-neutral-300 mt-4">
             <strong className="text-indigo-400">Pattern:</strong> {patterns[selectedPattern].description}
           </p>
@@ -1000,7 +1037,7 @@ const KeyInsights = React.memo(function KeyInsights() {
                 <li className="text-xs text-neutral-400 ml-4">
                   Temperature: °C → °F, correlation stays same
                 </li>
-                <li>• Linear transformations: <span dangerouslySetInnerHTML={{ __html: `\\(r(aX+b, cY+d) = \\text{sign}(ac) \\cdot r(X,Y)\\)` }} /></li>
+                <li>• Linear transformations: <FormulaScroll className="text-center my-2" label="Linear transformation correlation formula"><span dangerouslySetInnerHTML={{ __html: `\\(r(aX+b, cY+d) = \\text{sign}(ac) \\cdot r(X,Y)\\)` }} /></FormulaScroll></li>
                 <li className="text-xs text-neutral-400 ml-4">
                   For nonzero a and c, and finite, nonzero standard deviations. One negative scale factor reverses the sign; two preserve it.
                 </li>
@@ -1018,7 +1055,7 @@ const KeyInsights = React.memo(function KeyInsights() {
       <h3 className="text-xl font-bold text-white mb-4 px-6 pt-6">Key Insights</h3>
       
       <div className="border-b border-neutral-700">
-        <div className="flex space-x-1 px-6">
+        <div className="flex flex-wrap gap-1 px-4 sm:px-6">
           {[
             { id: 'causation', label: 'Correlation ≠ Causation', icon: Info },
             { id: 'linearity', label: 'Linear Only', icon: Activity },
@@ -1027,14 +1064,15 @@ const KeyInsights = React.memo(function KeyInsights() {
             <button
               key={id}
               onClick={() => setActiveTab(id)}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
+              aria-pressed={activeTab === id}
+              className={`flex min-w-0 max-w-full items-center gap-2 px-3 py-2 text-sm font-medium rounded-t-lg transition-colors ${
                 activeTab === id
                   ? 'bg-neutral-700 text-white'
                   : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
               }`}
             >
-              <Icon className="w-4 h-4" />
-              {label}
+              <Icon className="w-4 h-4 shrink-0" />
+              <span className="min-w-0 text-left">{label}</span>
             </button>
           ))}
         </div>
@@ -1104,6 +1142,7 @@ export default function CorrelationCoefficient() {
   const [showWorkedExample, setShowWorkedExample] = useState(false);
   
   const svgRef = useRef(null);
+  const chartWidth = useChartWidth(svgRef);
   
   // Get current data
   const currentData = scenarios[scenario].data;
@@ -1129,26 +1168,28 @@ export default function CorrelationCoefficient() {
   
   // Visualization
   useEffect(() => {
-    if (!svgRef.current) return;
+    if (!svgRef.current || !chartWidth) return;
     
     const svg = d3.select(svgRef.current);
     
     // Clear previous content with proper cleanup
     svg.selectAll("g.main-visualization").remove();
     
-    const width = svgRef.current.clientWidth;
+    const width = chartWidth;
     const height = 500;
     const margin = { top: 40, right: 40, bottom: 60, left: 60 };
     
     const g = svg
-      .attr("width", width)
+      .attr("width", "100%")
       .attr("height", height)
+      .attr("viewBox", `0 0 ${width} ${height}`)
       .append("g")
       .attr("class", "main-visualization")
       .attr("transform", `translate(${margin.left},${margin.top})`);
     
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
+    const horizontalTicks = Math.min(10, Math.max(2, Math.floor(innerWidth / 80)));
     
     // Scales
     const xExtent = d3.extent(currentData, d => d.x);
@@ -1165,7 +1206,7 @@ export default function CorrelationCoefficient() {
     // Add axes
     g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(x))
+      .call(d3.axisBottom(x).ticks(horizontalTicks))
       .style("font-size", "12px")
       .style("color", "#9ca3af");
     
@@ -1197,6 +1238,7 @@ export default function CorrelationCoefficient() {
       .attr("class", "grid")
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(x)
+        .ticks(horizontalTicks)
         .tickSize(-innerHeight)
         .tickFormat("")
       )
@@ -1325,12 +1367,11 @@ export default function CorrelationCoefficient() {
         svg.selectAll(".main-visualization").remove();
       }
     };
-  }, [currentData, showDeviations, stats]);
+  }, [currentData, showDeviations, stats, chartWidth]);
   
   return (
-    <>
-      <Chapter7ReferenceSheet mode="floating" />
       <VisualizationContainer
+      className="min-w-0 break-words"
       title="Correlation Coefficient"
       description="Explore the strength and direction of linear relationships between variables."
     >
@@ -1358,7 +1399,7 @@ export default function CorrelationCoefficient() {
             <div>
               <h4 className="text-lg font-bold text-white mb-4">Explore Different Scenarios</h4>
               <ControlGroup label="Correlation Pattern">
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-2 min-w-0 [&>*]:min-w-0">
                   {Object.entries(scenarios).map(([key, { name }]) => (
                     <button
                       key={key}
@@ -1395,8 +1436,8 @@ export default function CorrelationCoefficient() {
             </div>
 
             {/* Chart */}
-            <GraphContainer title="Interactive Correlation Explorer" className="!bg-transparent">
-              <svg ref={svgRef} className="w-full"></svg>
+            <GraphContainer title="Interactive Correlation Explorer" height="auto" className="!bg-transparent min-w-0">
+              <svg ref={svgRef} role="img" aria-label={`${scenarios[scenario].name} correlation scatterplot`} className="block w-full max-w-full"></svg>
             </GraphContainer>
           </div>
         </VisualizationSection>
@@ -1437,7 +1478,7 @@ export default function CorrelationCoefficient() {
         <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">
           <h3 className="text-xl font-bold text-white mb-4">Current Data Summary</h3>
           
-          <div className="grid md:grid-cols-2 gap-6 text-sm">
+          <div className="grid md:grid-cols-2 gap-6 text-sm min-w-0 [&>*]:min-w-0">
             <div className="bg-neutral-900/50 rounded p-4">
               <h4 className="font-bold text-white mb-3">Basic Statistics</h4>
               <div className="space-y-2 font-mono text-neutral-300">
@@ -1479,6 +1520,5 @@ export default function CorrelationCoefficient() {
         </VisualizationSection>
       </div>
     </VisualizationContainer>
-    </>
   );
 }
