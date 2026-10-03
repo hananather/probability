@@ -502,26 +502,26 @@ export const tutorial_1_5_1 = [
     title: "Die Example: Events",
     content: (
       <div className="space-y-3">
-        <p>A fair die has sample space S = {1, 2, 3, 4, 5, 6}</p>
+        <p>A fair die has sample space S = {'{1, 2, 3, 4, 5, 6}'}</p>
         <div className="grid grid-cols-2 gap-3 mt-3">
           <div className="bg-blue-900/20 p-3 rounded border border-blue-500/30">
             <p className="text-blue-400 font-semibold text-sm">Even Numbers</p>
-            <p className="font-mono text-xs mt-1">A = {2, 4, 6}</p>
+            <p className="font-mono text-xs mt-1">A = {'{2, 4, 6}'}</p>
             <p className="text-xs text-neutral-500 mt-1">P(A) = 3/6 = 1/2</p>
           </div>
           <div className="bg-green-900/20 p-3 rounded border border-green-500/30">
             <p className="text-green-400 font-semibold text-sm">Prime Numbers</p>
-            <p className="font-mono text-xs mt-1">B = {2, 3, 5}</p>
+            <p className="font-mono text-xs mt-1">B = {'{2, 3, 5}'}</p>
             <p className="text-xs text-neutral-500 mt-1">P(B) = 3/6 = 1/2</p>
           </div>
           <div className="bg-purple-900/20 p-3 rounded border border-purple-500/30">
             <p className="text-purple-400 font-semibold text-sm">Greater than 4</p>
-            <p className="font-mono text-xs mt-1">C = {5, 6}</p>
+            <p className="font-mono text-xs mt-1">C = {'{5, 6}'}</p>
             <p className="text-xs text-neutral-500 mt-1">P(C) = 2/6 = 1/3</p>
           </div>
           <div className="bg-orange-900/20 p-3 rounded border border-orange-500/30">
             <p className="text-orange-400 font-semibold text-sm">Multiples of 3</p>
-            <p className="font-mono text-xs mt-1">D = {3, 6}</p>
+            <p className="font-mono text-xs mt-1">D = {'{3, 6}'}</p>
             <p className="text-xs text-neutral-500 mt-1">P(D) = 2/6 = 1/3</p>
           </div>
         </div>

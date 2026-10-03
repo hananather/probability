@@ -502,26 +502,16 @@ const NormalZScoreExplorer = () => {
   const [sigma, setSigma] = useState(15);
   const [xValue, setXValue] = useState(115);
   const [interactionCount, setInteractionCount] = useState(0);
-  const [showTransformation, setShowTransformation] = useState(false);
   
   // Calculated values
   const zScore = (xValue - mu) / sigma;
   const probability = jStat.normal.cdf(zScore, 0, 1);
   
-  // Track meaningful interactions only
-  const lastParams = useRef({ mu, sigma });
-  const hasDragged = useRef(false);
-  
-  // Increment interaction count only on meaningful changes
-  useEffect(() => {
-    const paramsChanged = Math.abs(lastParams.current.mu - mu) > 1 || 
-                         Math.abs(lastParams.current.sigma - sigma) > 0.5;
-    
-    if (paramsChanged && interactionCount > 0) {
-      setInteractionCount(prev => prev + 1);
-      lastParams.current = { mu, sigma };
-    }
-  }, [mu, sigma]);
+  const changeParameter = (setter, current, value) => {
+    if (value === current) return;
+    setter(value);
+    setInteractionCount(count => count + 1);
+  };
   
   // Reset function
   const handleReset = () => {
@@ -529,17 +519,11 @@ const NormalZScoreExplorer = () => {
     setSigma(15);
     setXValue(115);
     setInteractionCount(0);
-    setShowTransformation(false);
-    hasDragged.current = false;
-    lastParams.current = { mu: 100, sigma: 15 };
   };
   
   // Drag handlers
   const handleDragStart = useCallback(() => {
-    if (!hasDragged.current) {
-      hasDragged.current = true;
-      setInteractionCount(1);
-    }
+    setInteractionCount(count => count + 1);
   }, []);
   
   const handleDragEnd = useCallback(() => {
@@ -562,7 +546,7 @@ const NormalZScoreExplorer = () => {
       const specialCase1 = Math.abs(xValue - mu) < 0.5 ? 
         <span> Try setting <span dangerouslySetInnerHTML={{ __html: `\\(x=\\mu\\)` }} />. What is the z-score? What is the probability <span dangerouslySetInnerHTML={{ __html: `\\(\\Phi(z)\\)` }} />? (Should be <span dangerouslySetInnerHTML={{ __html: `\\(z=0\\)` }} />, <span dangerouslySetInnerHTML={{ __html: `\\(\\Phi(0)=0.5\\)` }} />)</span> : null;
       
-      const specialCase2 = <span> What happens to <span dangerouslySetInnerHTML={{ __html: `\\(z\\)` }} /> if you increase <span dangerouslySetInnerHTML={{ __html: `\\(\\sigma\\)` }} /> while keeping <span dangerouslySetInnerHTML={{ __html: `\\(x\\)` }} /> and <span dangerouslySetInnerHTML={{ __html: `\\(\\mu\\)` }} /> the same distance apart? (Z gets smaller)</span>;
+      const specialCase2 = <span> What happens to <span dangerouslySetInnerHTML={{ __html: `\\(z\\)` }} /> if you increase <span dangerouslySetInnerHTML={{ __html: `\\(\\sigma\\)` }} /> while keeping <span dangerouslySetInnerHTML={{ __html: `\\(x\\)` }} /> and <span dangerouslySetInnerHTML={{ __html: `\\(\\mu\\)` }} /> the same distance apart? Its magnitude decreases toward zero; a negative z-score becomes less negative.</span>;
       
       return {
         message: <span>The shaded areas represent <span dangerouslySetInnerHTML={{ __html: `\\(P(X\\leq x)\\)` }} /> and <span dangerouslySetInnerHTML={{ __html: `\\(P(Z\\leq z)\\)` }} />. Observe that these probabilities (areas) are always equal! The z-score tells you how many 'standard units' <span dangerouslySetInnerHTML={{ __html: `\\(x\\)` }} /> is away from its mean.{specialCase1}{specialCase2}</span>,
@@ -570,7 +554,7 @@ const NormalZScoreExplorer = () => {
       };
     } else {
       return {
-        message: <span>✨ Standardization Mastered! You've seen that <span dangerouslySetInnerHTML={{ __html: `\\(P(X\\leq x)=\\Phi\\left(\\frac{x-\\mu}{\\sigma}\\right)\\)` }} />. This is powerful because we only need one table (or function) for the Standard Normal CDF, <span dangerouslySetInnerHTML={{ __html: `\\(\\Phi(z)\\)` }} />, to find probabilities for any Normal distribution.</span>,
+        message: <span>Apply standardization to a new example. You've seen that <span dangerouslySetInnerHTML={{ __html: `\\(P(X\\leq x)=\\Phi\\left(\\frac{x-\\mu}{\\sigma}\\right)\\)` }} />. This is powerful because we only need one table (or function) for the Standard Normal CDF, <span dangerouslySetInnerHTML={{ __html: `\\(\\Phi(z)\\)` }} />, to find probabilities for any Normal distribution.</span>,
         stage: 3,
         application: <span>Engineering Application: Imagine testing steel rods. Spec: length = 500±2mm. Your process gives <span dangerouslySetInnerHTML={{ __html: `\\(\\mu=500\\text{mm}\\)` }} />, <span dangerouslySetInnerHTML={{ __html: `\\(\\sigma=0.5\\text{mm}\\)` }} />. A rod at 501mm has <span dangerouslySetInnerHTML={{ __html: `\\(z=\\frac{501-500}{0.5}=+2\\)` }} />. A rod at 498.5mm has <span dangerouslySetInnerHTML={{ __html: `\\(z=\\frac{498.5-500}{0.5}=-3\\)` }} />. This tells you immediately how 'typical' or 'extreme' these rods are relative to your process variation, without needing a new probability curve for every spec!</span>
       };
@@ -612,7 +596,7 @@ const NormalZScoreExplorer = () => {
                   <RangeSlider
                     id={`${parameterId}-mean`}
                     value={mu}
-                    onChange={(v) => setMu(v)}
+                    onChange={value => changeParameter(setMu, mu, value)}
                     min={50}
                     max={150}
                     step={1}
@@ -627,7 +611,7 @@ const NormalZScoreExplorer = () => {
                   <RangeSlider
                     id={`${parameterId}-deviation`}
                     value={sigma}
-                    onChange={(v) => setSigma(v)}
+                    onChange={value => changeParameter(setSigma, sigma, value)}
                     min={5}
                     max={30}
                     step={1}
@@ -642,7 +626,7 @@ const NormalZScoreExplorer = () => {
                   <RangeSlider
                     id={`${parameterId}-value`}
                     value={xValue}
-                    onChange={(v) => setXValue(v)}
+                    onChange={value => changeParameter(setXValue, xValue, value)}
                     min={0}
                     max={200}
                     step={0.1}
@@ -712,7 +696,7 @@ const NormalZScoreExplorer = () => {
                 <div>
                   <p className="text-teal-200"><LatexContent>{insight.message}</LatexContent></p>
                   <div className="mt-2 p-2 bg-cyan-900/30 rounded text-xs">
-                    <p className="text-cyan-300">💡 <strong>Tip:</strong> Try dragging the orange dot on the top plot!</p>
+                    <p className="text-cyan-300">💡 <strong>Tip:</strong> Change a parameter with the sliders or drag the orange dot on the top plot.</p>
                   </div>
                 </div>
               )}
@@ -729,7 +713,7 @@ const NormalZScoreExplorer = () => {
                   {interactionCount > 0 && interactionCount < 15 && (
                     <div className="mt-2 p-2 bg-teal-900/20 border border-teal-600/30 rounded">
                       <div className="text-xs text-teal-300">
-                        🎯 Goal: {15 - interactionCount} more interactions to master standardization!
+                        Explore {15 - interactionCount} more parameter changes to reveal a worked engineering example. This counter records exploration, not understanding.
                       </div>
                       <div className="mt-1.5">
                         <div className="w-full bg-teal-900/30 rounded-full h-1.5">
@@ -759,6 +743,19 @@ const NormalZScoreExplorer = () => {
                   )}
                 </div>
               )}
+            </div>
+            <div className="mt-4 space-y-3 border-t border-teal-700/40 pt-4">
+              <h5 className="font-semibold text-teal-200">Predict before checking</h5>
+              <p className="text-sm text-neutral-300">Keep the mean at 100 and x at 115. If the standard deviation changes from 15 to 30, what happens to the z-score and the probability below x?</p>
+              <details className="rounded border border-teal-700/40 p-3 text-sm">
+                <summary className="min-h-11 cursor-pointer text-teal-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400">Reveal the reasoning</summary>
+                <p className="mt-2 leading-relaxed text-neutral-300">The distance from the mean stays 15. Dividing by a standard deviation of 30 gives z = 0.5 instead of 1. The probability below x decreases from about 0.8413 to 0.6915: x is less unusual relative to the wider distribution. Try it with the controls, then explain the change without looking at the formula.</p>
+              </details>
+              <p className="text-sm text-neutral-300">Now put x below the mean. As the standard deviation increases, does a negative z-score increase or decrease?</p>
+              <details className="rounded border border-teal-700/40 p-3 text-sm">
+                <summary className="min-h-11 cursor-pointer text-teal-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400">Reveal the negative-score explanation</summary>
+                <p className="mt-2 leading-relaxed text-neutral-300">It increases toward zero because its magnitude shrinks. For mean 100 and x = 85, changing the standard deviation from 15 to 30 changes z from −1 to −0.5. The probability below x rises from about 0.1587 to 0.3085. At x equal to the mean, z stays zero and the probability stays 0.5.</p>
+              </details>
             </div>
           </VisualizationSection>
         </div>
