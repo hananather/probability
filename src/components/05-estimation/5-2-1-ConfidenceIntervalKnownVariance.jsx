@@ -14,6 +14,7 @@ import { Target, Activity, BarChart, RefreshCw, ChevronRight, AlertCircle, Check
 import { CIHypothesisTestingBridge } from './5-6-CIHypothesisTestingBridge';
 import { CIInterpretationTrainer } from './5-7-CIInterpretationTrainer';
 import { Chapter5ReferenceSheet } from '../reference-sheets/Chapter5ReferenceSheet';
+import { useMathJax } from '@/hooks/useMathJax';
 
 // Helper function for inverse normal CDF (quantileNormal approximation)
 const quantileNormal = (p) => {
@@ -78,20 +79,7 @@ const MODE_COLORS = {
 const FormulaSection = React.memo(function FormulaSection() {
   const formulaRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && formulaRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([formulaRef.current]);
-        }
-        window.MathJax.typesetPromise([formulaRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(formulaRef, []);
   
   return (
     <div 
@@ -125,20 +113,7 @@ const FormulaSection = React.memo(function FormulaSection() {
 const CIIntroduction = React.memo(function CIIntroduction({ mode, onModeChange }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [mode]); // Add dependencies that affect rendering
+  useMathJax(contentRef, [mode]); // Add dependencies that affect rendering
   
   return (
     <div 
@@ -524,20 +499,7 @@ CriticalValuesExplorer.displayName = 'CriticalValuesExplorer';
 const CalculationSteps = React.memo(function CalculationSteps({ sigma, n, xBar, standardError, criticalValue, marginOfError, alpha }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [sigma, n, standardError, criticalValue, marginOfError, alpha, xBar]);
+  useMathJax(contentRef, [sigma, n, standardError, criticalValue, marginOfError, alpha, xBar]);
   
   return (
     <div ref={contentRef} className="space-y-3 text-sm">
@@ -595,20 +557,7 @@ const InteractiveCIBuilder = React.memo(({ isActive }) => {
   const ciLower = xBar - marginOfError;
   const ciUpper = xBar + marginOfError;
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [sigma, n, standardError, criticalValue, marginOfError, alpha, xBar, confidence]);
+  useMathJax(contentRef, [isActive, sigma, n, standardError, criticalValue, marginOfError, alpha, xBar, confidence]);
   
   if (!isActive) return null;
   
@@ -1797,20 +1746,7 @@ const RealWorldInterpretationModule = React.memo(function RealWorldInterpretatio
   
   const currentScenario = scenarios[scenario];
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [scenario]);
+  useMathJax(contentRef, [isActive, scenario]);
   
   const handleSelection = (index) => {
     setSelectedInterpretation(index);

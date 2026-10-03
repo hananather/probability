@@ -17,6 +17,7 @@ import { createColorScheme, typography } from "@/lib/design-system";
 import { SemanticGradientCard, SemanticGradientGrid } from '../ui/patterns/SemanticGradientCard';
 import { InterpretationBox } from '../ui/patterns/InterpretationBox';
 import { Chapter5ReferenceSheet } from '../reference-sheets/Chapter5ReferenceSheet';
+import { useMathJax } from '@/hooks/useMathJax';
 
 // Use Chapter 7 color scheme for consistency
 const colorScheme = createColorScheme('regression');
@@ -58,19 +59,7 @@ const MathematicalFoundations = React.memo(function MathematicalFoundations() {
   const contentRef = useRef(null);
   const [currentStep, setCurrentStep] = useState(0);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [currentStep]);
+  useMathJax(contentRef, [currentStep]);
   
   const steps = [
     {
@@ -303,19 +292,7 @@ const MathematicalFoundations = React.memo(function MathematicalFoundations() {
 const ProportionIntroduction = React.memo(function ProportionIntroduction() {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <div ref={contentRef} className="bg-neutral-800 rounded-lg p-6 max-w-4xl mx-auto">
@@ -387,19 +364,7 @@ const ElectionStory = React.memo(function ElectionStory({ onComplete }) {
     upper: supportB + moe_B
   };
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [currentStep]);
+  useMathJax(contentRef, [currentStep]);
   
   const steps = [
     {
@@ -569,19 +534,7 @@ const ElectionStory = React.memo(function ElectionStory({ onComplete }) {
 const NormalApproximationTheory = React.memo(function NormalApproximationTheory() {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   // Visual intuition data - no longer needed with direct table
   const conditionsTable = null;
@@ -1016,21 +969,7 @@ const ProportionCIBuilder = React.memo(function ProportionCIBuilder() {
   const waldLower = Math.max(0, pHat - margin);
   const waldUpper = Math.min(1, pHat + margin);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    if (showSteps) {
-      processMathJax();
-      const timeoutId = setTimeout(processMathJax, 100);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [showSteps, inputs]);
+  useMathJax(contentRef, [mode, showSteps, inputs]);
   
   return (
     <VisualizationSection>
@@ -1234,19 +1173,7 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator() {
   });
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [inputs]);
+  useMathJax(contentRef, [inputs]);
   
   // Calculate required sample size
   const z = getZCritical(inputs.confidence);
@@ -1598,19 +1525,7 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems() {
   const [userAnswers, setUserAnswers] = useState({});
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [currentProblem, showSolution]);
+  useMathJax(contentRef, [currentProblem, showSolution]);
   
   const problems = [
     {
@@ -2034,19 +1949,7 @@ const LearningPathNavigation = React.memo(function LearningPathNavigation({ mode
 const KeyTakeaways = React.memo(function KeyTakeaways() {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <div ref={contentRef} className="mt-8 bg-gradient-to-br from-emerald-900/20 to-neutral-800 rounded-lg p-6">

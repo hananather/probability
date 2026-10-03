@@ -17,6 +17,7 @@ import {
   TrendingUp, Users, Dice6, Package, Vote, ChevronRight,
   Play, Pause, RotateCcw, CheckCircle
 } from 'lucide-react';
+import { useMathJax } from '@/hooks/useMathJax';
 
 // Use probability color scheme for consistency with Chapter 2
 const chapterColors = createColorScheme('probability');
@@ -39,20 +40,7 @@ const MODE_COLORS = {
 const LearningPathNavigation = React.memo(function LearningPathNavigation({ mode, onModeChange }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [mode]);
+  useMathJax(contentRef, [mode]);
   
   return (
     <div className="mb-8">
@@ -108,20 +96,7 @@ const BayesianInferenceIntro = React.memo(function BayesianInferenceIntro({ isAc
   const [priorBelief, setPriorBelief] = useState(0.5);
   const [evidence, setEvidence] = useState({ heads: 0, tails: 0 });
   
-  useEffect(() => {
-    if (!isActive) return;
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [isActive, priorBelief, evidence]);
+  useMathJax(contentRef, [isActive, priorBelief, evidence]);
 
   if (!isActive) return null;
   
@@ -280,19 +255,7 @@ const StatisticalInferenceIntroduction = React.memo(function StatisticalInferenc
     question: 'What percentage of the population supports each candidate?'
   };
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [selectedExample]);
+  useMathJax(contentRef, [selectedExample]);
   
   const ExampleCard = ({ icon: Icon, title, description, details, isSelected, onSelect }) => (
     <div
@@ -469,19 +432,7 @@ const EstimatorProperties = React.memo(function EstimatorProperties() {
   const contentRef = useRef(null);
   const [selectedProperty, setSelectedProperty] = useState('unbiased');
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [selectedProperty]);
+  useMathJax(contentRef, [selectedProperty]);
   
   const properties = {
     unbiased: {
@@ -632,19 +583,7 @@ const EstimatorProperties = React.memo(function EstimatorProperties() {
 const MathematicalFoundations = React.memo(function MathematicalFoundations() {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <VisualizationSection>
@@ -1252,20 +1191,7 @@ const CentralLimitTheoremDemo = React.memo(function CentralLimitTheoremDemo({ is
   const contentRef = useRef(null);
   const [isInitialized, setIsInitialized] = useState(false);
   
-  useEffect(() => {
-    if (!isActive) return;
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [isActive]);
+  useMathJax(contentRef, [isActive, activeDistribution, sampleSize, isInitialized]);
   
   const distributions = {
     uniform: {
@@ -1577,20 +1503,7 @@ const BaseballHeights = React.memo(function BaseballHeights({ isActive }) {
   const s = Math.sqrt(s2);
   const se = s / Math.sqrt(n);
   
-  useEffect(() => {
-    if (!isActive) return;
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [isActive, showCalculation]);
+  useMathJax(contentRef, [isActive, showCalculation]);
 
   if (!isActive) return null;
   
@@ -1762,19 +1675,7 @@ const DecisionTreeHelper = React.memo(function DecisionTreeHelper({ onSelect }) 
 const VisualFormulaCard = React.memo(function VisualFormulaCard({ type, values }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [type, values]);
+  useMathJax(contentRef, [type, values]);
   
   const formulas = {
     'ci-known-sigma': {
@@ -1868,19 +1769,7 @@ const InteractiveCalculator = () => {
   });
   const [showDecisionTree, setShowDecisionTree] = useState(true);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [mode, values]);
+  useMathJax(contentRef, [mode, values]);
   
   return (
     <VisualizationSection>
@@ -2145,19 +2034,7 @@ const PracticeProblems = React.memo(function PracticeProblems() {
   const [showSolution, setShowSolution] = useState(false);
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [selectedProblem, showSolution]);
+  useMathJax(contentRef, [selectedProblem, showSolution]);
   
   const problems = [
     {
