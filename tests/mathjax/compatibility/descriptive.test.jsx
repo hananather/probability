@@ -173,8 +173,12 @@ describe('descriptive statistics and coin simulations use the canonical mathemat
     expect(target).toHaveTextContent(heading);
     await advance(1000);
     expect(mathJax.typesetPromise).toHaveBeenCalledOnce();
+    const renderedRoots = [...target.querySelectorAll('mjx-container')];
+    expect(renderedRoots.length).toBeGreaterThan(0);
+    mathJax.typesetClear.mockClear();
     unmount(); await flush();
-    expect(mathJax.typesetClear).toHaveBeenCalledWith([target]);
+    expect(mathJax.typesetClear).toHaveBeenCalledOnce();
+    expect(mathJax.typesetClear).toHaveBeenCalledWith([target, ...renderedRoots]);
   });
 
   it('keeps mathematical navigation and mean calculations while actual Focus controls swap math owners', async () => {

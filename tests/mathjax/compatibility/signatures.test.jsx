@@ -65,11 +65,15 @@ describe('MathJax existing call signatures', () => {
     expect(typesetPromise).toHaveBeenCalledTimes(1);
   });
 
-  it('does not infer dependencies from an existing ref or its changing contents', async () => {
+  it('recovers raw TeX with static ref dependencies while plain ref changes do not queue', async () => {
     const { rerender } = render(<StaticRefFormula formula="\\(x\\)" />);
     await act(async () => {});
     typesetPromise.mockClear();
     rerender(<StaticRefFormula formula="\\(y\\)" />);
+    await act(async () => { await vi.runAllTimersAsync(); });
+    expect(typesetPromise).toHaveBeenCalledOnce();
+    typesetPromise.mockClear();
+    rerender(<StaticRefFormula formula="plain label" />);
     await act(async () => { await vi.runAllTimersAsync(); });
     expect(typesetPromise).not.toHaveBeenCalled();
   });

@@ -65,6 +65,36 @@ export function createMathJaxRuntime({
   const jobs = new Set();
   const failedElements = new Set();
 
+  function rememberRenderedRoots(entry, node) {
+    if (node.nodeType !== 1) return;
+    if (node.localName === 'mjx-container') entry.renderedRoots.add(node);
+    node.querySelectorAll('mjx-container').forEach(root => entry.renderedRoots.add(root));
+  }
+
+  function observeRenderedRoots(element, entry) {
+    rememberRenderedRoots(entry, element);
+    const MutationObserver = element.ownerDocument.defaultView?.MutationObserver;
+    if (!MutationObserver) return () => rememberRenderedRoots(entry, element);
+    const rememberRecords = records => records.forEach(record => {
+      record.addedNodes.forEach(node => rememberRenderedRoots(entry, node));
+    });
+    const observer = new MutationObserver(rememberRecords);
+    observer.observe(element, { childList: true, subtree: true });
+    return () => {
+      rememberRecords(observer.takeRecords());
+      observer.disconnect();
+      rememberRenderedRoots(entry, element);
+    };
+  }
+
+  function clearTrackedMath(mathJax, element, entry) {
+    if (!mathJax) return;
+    // React may have removed old output before effect cleanup. Its MathItems
+    // still point at those detached roots, so clearing only the owner misses them.
+    mathJax.typesetClear([element, ...(entry?.renderedRoots || [])]);
+    entry?.renderedRoots.clear();
+  }
+
   const publish = patch => {
     if (disposed) return;
     snapshot = Object.freeze({ ...snapshot, ...patch });
@@ -143,7 +173,7 @@ export function createMathJaxRuntime({
     }
     let entry = elements.get(element);
     if (!entry) {
-      entry = { current: null, successfulKey: undefined, markup: null };
+      entry = { current: null, successfulKey: undefined, markup: null, renderedRoots: new Set() };
       elements.set(element, entry);
     }
     entry.current?.cancel();
@@ -173,10 +203,11 @@ export function createMathJaxRuntime({
           return job.settle({ status: 'unchanged' });
         }
         if (update) {
-          mathJax.typesetClear([element]);
+          clearTrackedMath(mathJax, element, entry);
           update(element);
         }
         let timeout;
+        const stopObserving = observeRenderedRoots(element, entry);
         try {
           // A v3 render cannot be aborted. Report a stall, but retain its lane
           // until the real promise settles so retry never overlaps that work.
@@ -194,11 +225,12 @@ export function createMathJaxRuntime({
             throw runtimeError('A formula contains unsupported or invalid TeX.', 'render');
           }
         } finally {
+          stopObserving();
           clearTimeout(timeout);
           if (snapshot.stalled) publish({ stalled: false });
         }
         if (job.cancelled || disposed || entry.current !== job || !element.isConnected) {
-          mathJax.typesetClear([element]);
+          clearTrackedMath(mathJax, element, entry);
           return job.cancel();
         }
         entry.successfulKey = key;
@@ -226,7 +258,7 @@ export function createMathJaxRuntime({
     entry?.current?.cancel();
     if (entry) { entry.successfulKey = undefined; entry.markup = null; }
     const clear = () => {
-      renderer?.typesetClear([element]);
+      clearTrackedMath(renderer, element, entry);
       remove?.(element);
       if (!retainFailure) {
         failedElements.delete(element);
