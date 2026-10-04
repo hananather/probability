@@ -304,9 +304,11 @@ describe('sample-size planning meaning and learner-driven local exploration', ()
     await mount(SectionComplete, { chapter: 3 });
     expect(getByRole(container, 'heading', { name: 'Section Complete!' })).toBeVisible();
     expect(getByRole(container, 'link', { name: 'Back to Chapter 3' })).toHaveAttribute('href', '/chapter3');
+    expect(getByRole(container, 'link', { name: 'Back to Chapter 3' }).querySelector('button')).toBeNull();
     await act(async () => root.render(React.createElement(SectionComplete, { chapter: 3, status: 'navigation' })));
     expect(getByRole(container, 'heading', { name: 'Continue learning' })).toBeVisible();
     expect(getByRole(container, 'link', { name: 'Back to Chapter 3' })).toHaveAttribute('href', '/chapter3');
+    expect(getByRole(container, 'link', { name: 'Back to Chapter 3' }).querySelector('button')).toBeNull();
     expect(queryByRole(container, 'heading', { name: 'Section Complete!' })).toBeNull();
     expect(window.localStorage.length).toBe(0);
   });
