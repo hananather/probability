@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 
 function cloudMessage(cloud, state) {
   if (!cloud) return null;
-  if (cloud.blockedMutations) return 'Some account updates exceed sync limits. Their original data remains available in your backup; export it before clearing browser data.';
+  if (cloud.blockedMutations) return 'Some account updates could not be queued for sync. Their original data remains available in your backup; export it before clearing browser data.';
   if (cloud.rejectedMutations) return 'Some updates conflict with a reset. Their original data is retained for export and is not counted as current progress.';
   if (cloud.error && cloud.status !== 'offline') return cloud.error;
   if (cloud.status === 'synced' && !cloud.pendingMutations && !state.pendingLocalWrites && state.persistenceStatus === 'persisted') return 'Account progress synchronized';
@@ -23,12 +23,15 @@ export function AccountProgressPanel({ active }) {
   const headingRef = useRef(null);
   const previewHeadingRef = useRef(null);
   const reviewButtonRef = useRef(null);
+  const syncButtonRef = useRef(null);
+  const retryFocusRef = useRef(false);
   const hadPreviewRef = useRef(false);
   useEffect(() => { if (preview) { hadPreviewRef.current = true; previewHeadingRef.current?.focus(); } }, [preview]);
   useEffect(() => {
     if (!preview && !busy && hadPreviewRef.current) { hadPreviewRef.current = false; reviewButtonRef.current?.focus(); }
   }, [preview, busy]);
   useEffect(() => { if (active.signingOut) headingRef.current?.focus(); }, [active.signingOut]);
+  useEffect(() => { if (!busy && retryFocusRef.current) { retryFocusRef.current = false; syncButtonRef.current?.focus(); } }, [busy]);
   const account = active.account;
   const selectedStore = active.store;
   const selectedGeneration = active.generation;
@@ -52,6 +55,11 @@ export function AccountProgressPanel({ active }) {
     if (current()) setPreview(null);
     return result;
   }, 'Guest records were saved to this account in this browser. Check the account sync status for cloud acknowledgement.');
+  const retryRetained = () => run(async () => {
+    const result = await active.retryRetainedQuizUpdates();
+    if (current()) retryFocusRef.current = true;
+    return result;
+  }, 'Retained quiz updates were queued with their original identity. Check the account sync status for acknowledgement or conflicts; the original backup is preserved.');
 
   return <section aria-labelledby="account-progress-heading" className="rounded-xl border border-neutral-700 bg-neutral-800/40 p-4 sm:p-6">
     <h2 ref={headingRef} tabIndex={-1} id="account-progress-heading" className="mb-2 text-lg font-semibold text-white">Progress destination</h2>
@@ -60,7 +68,8 @@ export function AccountProgressPanel({ active }) {
       <p role="status" className="mt-3 text-sm text-teal-200">{cloudMessage(active.state.cloud, active.state)}</p>
       <p className="mt-2 text-sm leading-relaxed text-neutral-300">Completed study, quiz history and quiz preferences can sync with this account. Your current reading position and unfinished quiz stay on this device. Keep a backup of changes that have not synchronized.</p>
       <div className="mt-4 flex flex-wrap gap-3">
-        <Button type="button" variant="secondary" className="min-h-11" disabled={busy} onClick={() => run(active.sync, 'The account synchronization check finished. Check the status above for pending or conflicting records.')}>Retry account sync</Button>
+        <Button ref={syncButtonRef} type="button" variant="secondary" className="min-h-11" disabled={busy} onClick={() => run(active.sync, 'The account synchronization check finished. Check the status above for pending or conflicting records.')}>Retry account sync</Button>
+        {!!active.state.cloud?.retryableQuizUpdates && <Button type="button" variant="secondary" className="min-h-11" disabled={busy} onClick={retryRetained}>Retry retained quiz updates</Button>}
         <Button ref={reviewButtonRef} type="button" variant="secondary" className="min-h-11" disabled={busy || active.state.loading} onClick={reviewTransfer}>Review guest progress</Button>
         <Button type="button" variant="neutral" className="min-h-11" disabled={busy} onClick={() => run(active.signOut, 'Signed out on this device.')}>Sign out</Button>
       </div>

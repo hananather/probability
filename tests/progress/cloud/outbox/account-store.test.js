@@ -239,13 +239,14 @@ describe('atomic account learning and cloud outbox', () => {
     await subject.acceptCloudResponse(response(remote, 1)); expect(subject.getSnapshot().data.quizAttempts['large-attempt']).toBeUndefined(); expect(subject.getSnapshot().data.activities[ACTIVITY]).toBeDefined();
     expect((await subject.exportProgress()).accountBlocked[0].snapshot.quizAttempts['large-attempt'].bank).toEqual(bank); expect(subject.getSnapshot().cloud.blockedMutations).toBe(1);
   });
-  it('replays independent blocked operation differences in order without replacing remote evidence on the same activity', async () => {
+  it('keeps a blocked grade beside independent pending valid writes without replacing remote evidence on the same activity', async () => {
     const db = memoryPersistence(); const subject = store(db); const bank = await finishOversized(subject);
     await subject.completeActivity(ACTIVITY); await subject.setQuizPreferences({ showTimer: false });
     let remote = createEmptyCloudDocument({ ownerScope: ACCOUNT_A }); remote = reduce(remote, complete(remote, ACTIVITY)).document; remote = reduce(remote, complete(remote, OTHER_ACTIVITY)).document;
     await subject.acceptCloudResponse(response(remote, 1)); const restarted = store(db); await restarted.hydrate(); const data = restarted.getSnapshot().data;
     expect(data.quizAttempts['large-attempt'].bank).toEqual(bank); expect(data.activities[ACTIVITY].evidence).toHaveLength(2); expect(data.activities[OTHER_ACTIVITY]).toBeDefined(); expect(data.preferences.quiz.showTimer).toBe(false);
-    expect((await restarted.exportProgress()).accountBlocked).toHaveLength(3);
+    expect((await restarted.exportProgress()).accountBlocked).toHaveLength(1);
+    expect((await restarted.getCloudBatch()).map(item => item.type)).toEqual(['complete', 'quiz-preferences']);
   });
   it('a canonical session closure defeats a blocked finished grade while its exact original stays exportable', async () => {
     const subject = store(); const bank = await finishOversized(subject); let remote = createEmptyCloudDocument({ ownerScope: ACCOUNT_A });
@@ -270,7 +271,7 @@ describe('atomic account learning and cloud outbox', () => {
   });
   it('rejects corrupt recovery overlay pointers without rewriting their original durable record', async () => {
     const db = memoryPersistence(); const subject = store(db); await finishOversized(subject); await subject.completeActivity(ACTIVITY);
-    const saved = copy(db.records.get(ACCOUNT_A)); saved.accountBlocked[1].changes.activities.put[ACTIVITY] = [999]; db.records.set(ACCOUNT_A, saved);
+    const saved = copy(db.records.get(ACCOUNT_A)); saved.accountBlocked[0].changes.activities.put[ACTIVITY] = [999]; db.records.set(ACCOUNT_A, saved);
     const restarted = store(db); await restarted.hydrate(); expect(restarted.getSnapshot().persistenceStatus).toBe('session-only'); expect(db.records.get(ACCOUNT_A)).toEqual(saved);
     expect(await restarted.completeActivity(OTHER_ACTIVITY)).toBe(false); expect(db.records.get(ACCOUNT_A)).toEqual(saved);
   });

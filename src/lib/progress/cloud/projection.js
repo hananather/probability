@@ -3,7 +3,8 @@ import { isRecord } from '../schema';
 import { cloneCloudValue, emptyCloudFacts, hashCloudValue, isCloudJson, validateClosedQuizSessions, validateCloudFacts } from './schema';
 
 const pick = (value, keys) => Object.fromEntries(keys.filter(key => Object.hasOwn(value, key)).map(key => [key, value[key]]));
-function projectAttempt(attempt) {
+export function projectCloudQuizAttempt(attempt) {
+  if (!isCloudJson(attempt) || !isRecord(attempt)) throw new TypeError('Quiz projection requires bounded JSON data');
   const result = pick(attempt, ['id', 'chapterId', 'date', 'legacy', 'bankRevision', 'requestedVersion', 'effectiveVersion', 'score', 'percentage', 'timeSpent', 'totalQuestions', 'correctAnswers', ...(attempt.legacy ? ['answersByIndex'] : ['sessionId', 'orderedQuestionIds', 'bank', 'answersByQuestionId'])]);
   if (attempt.legacy) result.answersByIndex = Object.fromEntries(Object.entries(attempt.answersByIndex).map(([id, answer]) => [id, pick(answer, ['answer', 'isCorrect', 'timestamp'])]));
   else {
@@ -29,7 +30,7 @@ export function projectCloudFacts(snapshot, options = {}) {
     facts.activities[id] = { activityId: id, evidence: [...new Map(evidence.map(item => [item.id, item])).values()] };
   }
   for (const [id, chapter] of Object.entries(snapshot.chaptersLegacy)) facts.chaptersLegacy[id] = pick(chapter, ['status', 'progress', 'score', 'timeSpent', 'lastVisited', 'lastUpdated', 'startedAt', 'completedAt']);
-  for (const [id, attempt] of Object.entries(snapshot.quizAttempts)) facts.quizAttempts[id] = projectAttempt(attempt);
+  for (const [id, attempt] of Object.entries(snapshot.quizAttempts)) facts.quizAttempts[id] = projectCloudQuizAttempt(attempt);
   for (const [id, best] of Object.entries(snapshot.legacyBestScores)) facts.legacyBestScores[id] = pick(best, ['percentage', 'sourceKey']);
   facts.quizPreferences = { ...snapshot.preferences.quiz };
   facts.closedQuizSessions = Object.fromEntries(Object.entries(closedQuizSessions).map(([id, closure]) => [id, pick(closure, ['chapterId', 'operationId', 'reason', 'attemptId'])]));

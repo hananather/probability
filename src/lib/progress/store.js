@@ -2,7 +2,7 @@ import { ACTIVITY_BY_ID, CURRICULUM, QUIZ_BY_ID, LEGACY_SECTION_SOURCE_BY_CONTAI
 import { createEmptyProgress, isFiniteNumber, isOwnerScope, isRecord, isSafeId, validTimestamp, validateProgressSnapshot } from './schema';
 import { migrateLegacyProgress, readLegacySectionResume } from './legacyMigration';
 import { createIndexedDbPersistence, createProgressId } from './persistence';
-import { accountView, acceptAccountResponse, appendAccountOperation, createAccountBlockedBranch, createAccountMetadata, createGuestTransferMutations, materializeAccount, previewGuestTransfer, selectCloudBatch, validateAccountBlockedBranch, validateAccountMetadata, validateCloudResponse } from './cloud/sync';
+import { accountView, acceptAccountResponse, appendAccountOperation, createAccountBlockedBranch, createAccountMetadata, createGuestTransferMutations, materializeAccount, onlyAdditiveQuizBlocks, previewGuestTransfer, retryableRetainedQuizzes, retryRetainedAccountQuizzes, selectCloudBatch, validateAccountBlockedBranch, validateAccountMetadata, validateCloudResponse } from './cloud/sync';
 import { captureCloudWriteContext, isAccountScope, isCloudJson, normalizeAccountScope, normalizeCloudMutationId, validateCloudContext } from './cloud/schema';
 import { createPinnedQuizAttempt, mergeQuizSession, normalizeQuizSession } from './quizContract';
 
@@ -340,7 +340,7 @@ function applyOperation(record, operation) {
     try {
       const replacesQuiz = operation.type === 'quiz-begin' && currentQuizSession(before, operation.chapterId) && currentQuizSession(before, operation.chapterId).sessionId !== operation.session.sessionId;
       const cloudWrite = replacesQuiz || ['complete', 'chapter', 'quiz-finish', 'quiz-clear', 'quiz-preferences', 'reset', 'reset-activity', 'quiz-reset', 'account-transfer', 'account-import'].includes(operation.type);
-      if (before.cloud.blocked.length && !locallyRejected && cloudWrite) throw new Error('Account synchronization is blocked; local progress remains exportable');
+      if (before.cloud.blocked.length && !onlyAdditiveQuizBlocks(before) && !locallyRejected && cloudWrite) throw new Error('Account synchronization is blocked; local progress remains exportable');
       appendAccountOperation(record, operation, before, locallyRejected);
     } catch (error) {
       if (operation.type === 'account-transfer' || operation.type === 'account-import') throw error;
@@ -381,8 +381,8 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
   function cloudSummary() {
     if (!record.cloud) return undefined;
     const status = record.cloud.blocked.length ? 'capacity' : ['syncing', 'capacity'].includes(cloudConnection.status) ? cloudConnection.status : record.cloud.rejected.length ? 'conflict' : record.cloud.outbox.length ? cloudConnection.status === 'offline' ? 'offline' : 'pending' : cloudConnection.status;
-    const error = cloudConnection.error || (record.cloud.blocked.length ? 'Some local progress cannot fit account sync limits. Its original data is retained for export.' : record.cloud.rejected.length ? 'Some work was made before a reset. Its original data is retained for export.' : null);
-    return { ...cloudConnection, status, error, ownerScope: record.ownerScope, remoteRevision: record.cloud.base.revision, updatedAt: record.cloud.base.updatedAt, pendingMutations: record.cloud.outbox.length, rejectedMutations: record.cloud.rejected.length, blockedMutations: record.cloud.blocked.length };
+    const error = cloudConnection.error || (record.cloud.blocked.length ? 'Some local progress could not be queued for account sync. Its original data is retained for export.' : record.cloud.rejected.length ? 'Some work was made before a reset. Its original data is retained for export.' : null);
+    return { ...cloudConnection, status, error, ownerScope: record.ownerScope, remoteRevision: record.cloud.base.revision, updatedAt: record.cloud.base.updatedAt, pendingMutations: record.cloud.outbox.length, rejectedMutations: record.cloud.rejected.length, blockedMutations: record.cloud.blocked.length, retryableQuizUpdates: retryableRetainedQuizzes(record), pendingSyncAllowed: !!record.cloud.outbox.length && onlyAdditiveQuizBlocks(record) };
   }
   function publish({ error = null, status = !hydrated ? 'loading' : pending.length ? 'pending' : 'persisted', loading = !hydrated } = {}) {
     const next = { data: record.data, loading, error, persistenceStatus: status, revision: record.revision, pendingLocalWrites: pending.length, writeContext: { ownerScope: record.ownerScope, deviceId: record.deviceId, epoch: record.epoch, chapterEpochs: record.chapterEpochs, containerEpochs: record.containerEpochs, ...(record.cloud ? { cloud: captureCloudWriteContext(accountView(record.cloud, record.ownerScope)) } : {}) }, ...(record.cloud ? { cloud: cloudSummary() } : {}) };
@@ -736,7 +736,7 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
       if (!record.cloud) throw new Error('Guest progress has no cloud outbox');
       if (pending.length) throw new Error('Local progress must be saved before uploading');
       if (!await refresh()) throw new Error('Account progress could not be read for synchronization');
-      return selectCloudBatch(record.cloud, record.ownerScope);
+      return selectCloudBatch(record.cloud, record.ownerScope, { allowBlocked: onlyAdditiveQuizBlocks(record) });
     },
     async acceptCloudResponse(response, { isCurrent = () => true } = {}) {
       await hydrate(); await working.catch(() => {});
@@ -773,6 +773,36 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
       await hydrate();
       working = working.catch(() => {}).then(async () => { try { await flush(); return true; } catch (error) { publish({ error: error.message, status: 'session-only' }); return false; } });
       return working;
+    },
+    async retryRetainedQuizUpdates({ isCurrent } = {}) {
+      if (typeof isCurrent !== 'function') throw new TypeError('Retained quiz retry requires an active account binding');
+      await hydrate();
+      const retry = working.catch(() => {}).then(async () => {
+        if (disposed || !record.cloud || !identityConfirmed || pending.length || !isCurrent()) return { queued: 0, persisted: false };
+        let queued = [];
+        try {
+          await persistence.update(identity.ownerScope, stored => {
+            if (disposed || !isCurrent()) return stored;
+            const next = safeRecord(stored, identity, { allowRecovery: false });
+            queued = retryRetainedAccountQuizzes(next);
+            return next;
+          });
+          if (disposed || !isCurrent()) return { queued: 0, persisted: false };
+          record = safeRecord(await persistence.read(identity.ownerScope), identity, { allowRecovery: false });
+          if (disposed || !isCurrent()) return { queued: 0, persisted: false };
+          if (queued.some(item => {
+            const saved = record.cloud.outbox.find(mutation => mutation.id === item.id) || record.cloud.base.document.receipts[item.id];
+            return saved?.digest !== item.digest || record.cloud.blocked.some(blocked => blocked.operationId === item.id);
+          })) throw new Error('Retained quiz write could not be verified; its original data remains in your backup');
+          publish(); notifyTabs();
+          return { queued: queued.length, persisted: true };
+        } catch (error) {
+          if (!disposed && isCurrent()) publish({ error: error.message, status: 'session-only' });
+          return { queued: 0, persisted: false };
+        }
+      });
+      working = retry;
+      return retry;
     },
     dispose() { disposed = true; stopListening(); listeners.clear(); persistence.close?.(); },
     isHydrated: () => hydrated,

@@ -84,7 +84,7 @@ it('makes a capacity-blocked exact original record exportable without advertisin
   document.facts.activities[ACTIVITY] = { activityId: ACTIVITY, evidence: Array.from({ length: 256 }, (_, index) => ({ id: `retained-${index}`, kind: 'study-completed', sourceKey: 'existing-record', completedAt: null })) };
   f.remote.set(A, { document, revision: 0 }); f.setAccount(A); renderPage(f); await screen.findByText('Account progress synchronized');
   await act(async () => { await f.accounts.get(A).completeActivity(ACTIVITY); });
-  await screen.findByText(/Some account updates exceed sync limits/);
+  await screen.findByText(/Some account updates could not be queued for sync/);
   expect(screen.getByRole('button', { name: 'Export backup' })).toBeEnabled();
   expect(screen.queryByText('Account progress synchronized')).not.toBeInTheDocument();
   const backup = await f.accounts.get(A).exportProgress();

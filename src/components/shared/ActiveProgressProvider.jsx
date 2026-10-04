@@ -14,6 +14,7 @@ export function ActiveProgressProvider({ children, controller: suppliedControlle
   const value = useMemo(() => ({ ...binding,
     isCurrentBinding: controller.isCurrentBinding,
     reconnect: controller.reconnect, signOut: controller.signOut, sync: controller.sync,
+    retryRetainedQuizUpdates: controller.retryRetainedQuizUpdates,
     previewGuestTransfer: controller.previewGuestTransfer, confirmGuestTransfer: controller.confirmGuestTransfer,
   }), [binding, controller]);
   return <ActiveProgressContext.Provider value={value}>{children}</ActiveProgressContext.Provider>;

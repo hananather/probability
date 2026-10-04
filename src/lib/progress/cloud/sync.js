@@ -1,7 +1,7 @@
 import { CURRICULUM, QUIZ_BY_ID } from '@/lib/curriculum/manifest';
 import { isRecord, isSafeId, validTimestamp, validateProgressSnapshot } from '../schema';
 import { applyCloudMutation } from './reducer';
-import { createGuestTransferPayload } from './projection';
+import { createGuestTransferPayload, projectCloudQuizAttempt } from './projection';
 import { CLOUD_LIMITS, ancestorsFor, chapterFor, captureCloudWriteContext, canonicalJson, cloneCloudValue, createCloudMutation, createEmptyCloudDocument, emptyCloudFacts, hashCloudValue, isAccountScope, isCloudJson, normalizeAccountScope, normalizeCloudMutationId, validateCloudContext, validateCloudDocument, validateCloudMutation } from './schema';
 
 const bytes = value => new TextEncoder().encode(canonicalJson(value)).byteLength;
@@ -183,6 +183,60 @@ function derivedId(id, suffix) {
   const hex = hashCloudValue([id, suffix]).slice(0, 32);
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-8${hex.slice(17, 20)}-${hex.slice(20)}`;
 }
+
+const repairedQuizReason = 'Invalid cloud mutation: mutation:payload';
+function retainedQuizMutation(record, branch) {
+  const operation = branch?.operation;
+  const blocked = record.cloud.blocked.find(item => item.operationId === operation?.id);
+  if (blocked?.reason !== repairedQuizReason || operation?.type !== 'quiz-finish' || !Number.isSafeInteger(record.appliedOperations[operation.id]) || record.appliedOperations[operation.id] < 1 || !validateAccountBlockedBranch(branch, record.ownerScope) || branch.snapshot.ownerScope !== record.ownerScope || branch.snapshot.deviceId !== record.deviceId) return null;
+  const attempt = branch.snapshot.quizAttempts[operation.attemptId];
+  const closure = branch.closedQuizSessions[operation.sessionId];
+  if (!attempt || attempt.id !== operation.attemptId || attempt.chapterId !== operation.chapterId || attempt.sessionId !== operation.sessionId || attempt.date !== operation.timestamp || branch.changes.quizAttempts.put[operation.attemptId] !== true || branch.changes.closedQuizSessions.put[operation.sessionId] !== true || closure?.operationId !== operation.id || closure.reason !== 'finished' || closure.attemptId !== attempt.id || closure.chapterId !== attempt.chapterId || branch.context.containerId !== `${attempt.chapterId}:quiz`) return null;
+  const quizId = `${attempt.chapterId}:quiz`;
+  const lineage = context => [context.global, context.chapters[attempt.chapterId] || null, context.containers[quizId] || null];
+  if (operation.guardContainerId !== quizId || !same(lineage(branch.context), lineage(operation.cloudContext))) return null;
+  return createCloudMutation({ id: operation.id, deviceId: record.deviceId, type: 'quiz-finish', payload: { attempt: projectCloudQuizAttempt(attempt) }, context: branch.context });
+}
+export function retryableRetainedQuizzes(record) {
+  return (record.accountBlocked || []).filter(branch => { try { return !!retainedQuizMutation(record, branch); } catch { return false; } }).length;
+}
+/** Explicit recovery from this device's durable operations, never from backup files. */
+export function retryRetainedAccountQuizzes(record) {
+  const queued = [];
+  for (const branch of record.accountBlocked) {
+    let mutation;
+    try { mutation = retainedQuizMutation(record, branch); } catch { continue; }
+    if (!mutation) continue;
+    const existing = record.cloud.outbox.find(item => item.id === mutation.id) || record.cloud.base.document.receipts[mutation.id];
+    if (existing && existing.digest !== mutation.digest) continue;
+    const next = cloneCloudValue(record.cloud);
+    if (!existing) next.outbox.push(mutation);
+    next.blocked = next.blocked.filter(item => item.operationId !== mutation.id);
+    if (!validateAccountMetadata(next, record.ownerScope)) continue;
+    // Preserve the captured reset lineage: stale originals produce rejection
+    // receipts in the current view and are still sent for server acknowledgement.
+    const view = accountView(next, record.ownerScope);
+    record.cloud = next;
+    if (view.receipts[mutation.id]?.status === 'rejected') preserveRejection(record, mutation, view.receipts[mutation.id].reason);
+    record.recovery.push({ reason: 'retained-quiz-requeued', operationId: mutation.id });
+    queued.push({ id: mutation.id, digest: mutation.digest });
+  }
+  if (queued.length) { record.revision++; materializeAccount(record); }
+  return queued;
+}
+
+export function onlyAdditiveQuizBlocks(record) {
+  return record.cloud.blocked.every(item => record.accountBlocked.some(branch => {
+    if (branch.operation.id !== item.operationId || branch.operation.type !== 'quiz-finish' || !validateAccountBlockedBranch(branch, record.ownerScope)) return false;
+    return branchGroups.every(group => {
+      if (Object.keys(branch.changes[group].remove).length) return false;
+      const keys = Object.keys(branch.changes[group].put);
+      if (group === 'quizAttempts') return keys.every(id => id === branch.operation.attemptId);
+      if (group === 'closedQuizSessions') return keys.every(id => id === branch.operation.sessionId);
+      return !keys.length;
+    });
+  }));
+}
 export function appendAccountOperation(record, operation, before, locallyRejected) {
   if (!record.cloud) return;
   if (locallyRejected) return;
@@ -198,7 +252,7 @@ export function appendAccountOperation(record, operation, before, locallyRejecte
     for (const id of operation.activityIds) if (!before.data.activities[id]?.evidence.some(item => item.kind === 'study-completed' && item.sourceKey === 'progress-service')) add('complete', { activityId: id, kind: 'study-completed', sourceKey: 'progress-service', completedAt: operation.timestamp }, `activity:${id}`);
   } else if (operation.type === 'quiz-finish') {
     const attempt = record.data.quizAttempts[operation.attemptId];
-    if (attempt && !before.data.quizAttempts[operation.attemptId]) add('quiz-finish', { attempt }, null, before.cloud.sessionContexts[operation.sessionId] || context);
+    if (attempt && !before.data.quizAttempts[operation.attemptId]) add('quiz-finish', { attempt: projectCloudQuizAttempt(attempt) }, null, before.cloud.sessionContexts[operation.sessionId] || context);
     delete record.cloud.sessionContexts[operation.sessionId];
   } else if (operation.type === 'quiz-clear') { add('quiz-close', { chapterId: operation.chapterId, sessionId: operation.sessionId, reason: 'cleared' }, null, before.cloud.sessionContexts[operation.sessionId] || context); delete record.cloud.sessionContexts[operation.sessionId]; }
   else if (operation.type === 'quiz-begin') {
@@ -264,10 +318,10 @@ export function acceptAccountResponse(record, response) {
   record.revision++;
   return record;
 }
-export function selectCloudBatch(cloud, ownerScope) {
+export function selectCloudBatch(cloud, ownerScope, { allowBlocked = false } = {}) {
   if (!validateAccountMetadata(cloud, ownerScope)) throw new TypeError('Invalid account outbox');
   const mutations = [];
-  if (cloud.blocked.length) return mutations;
+  if (cloud.blocked.length && !allowBlocked) return mutations;
   for (const item of cloud.outbox) {
     const next = [...mutations, item];
     if (next.length > CLOUD_LIMITS.batchMutations || bytes({ expectedAccountId: ownerScope.slice(8), mutations: next }) > CLOUD_LIMITS.batchBytes) break;
@@ -355,7 +409,7 @@ export function createAccountSyncCoordinator({ store, transport, accountId, gene
   }
   function sync({ automatic = false } = {}) { if (automatic && Date.now() < retryAt) return Promise.resolve(false); if (!running) running = run().finally(() => { running = null; }); return running; }
   return {
-    start() { if (!attached) return Promise.resolve(false); if (!unsubscribe) unsubscribe = store.subscribe(() => { if (current() && !store.getSnapshot().loading && store.getSnapshot().cloud?.pendingMutations && !store.getSnapshot().cloud?.blockedMutations && Date.now() >= retryAt && !running) void sync({ automatic: true }); }); return sync(); },
+    start() { if (!attached) return Promise.resolve(false); if (!unsubscribe) unsubscribe = store.subscribe(() => { if (current() && !store.getSnapshot().loading && store.getSnapshot().cloud?.pendingMutations && (!store.getSnapshot().cloud?.blockedMutations || store.getSnapshot().cloud?.pendingSyncAllowed) && Date.now() >= retryAt && !running) void sync({ automatic: true }); }); return sync(); },
     sync, retry: sync,
     detach() { attached = false; controller?.abort(); unsubscribe?.(); unsubscribe = undefined; },
     dispose() { this.detach(); },

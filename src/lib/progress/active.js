@@ -82,7 +82,7 @@ export function createActiveProgressController({
       if (!started || store !== selected) return;
       publish();
       const cloud = selected.getSnapshot().cloud;
-      if (authority && coordinator && !syncFailure && cloud?.pendingMutations && cloud.status === 'pending' && !queuedSync) {
+      if (authority && coordinator && !syncFailure && cloud?.pendingMutations && (cloud.status === 'pending' || cloud.pendingSyncAllowed) && !queuedSync) {
         queuedSync = true;
         queueMicrotask(() => { queuedSync = false; if (started && store === selected) void sync({ automatic: true }); });
       }
@@ -237,6 +237,15 @@ export function createActiveProgressController({
     reconcile,
     async reconnect() { if (signOutPending) return false; localSignOut = false; return reconcile(); },
     sync,
+    async retryRetainedQuizUpdates() {
+      const selected = store; const selectedGeneration = generation;
+      const isCurrent = () => !!snapshot.account && current(selected, selectedGeneration);
+      if (!isCurrent()) return false;
+      const result = await selected.retryRetainedQuizUpdates({ isCurrent });
+      if (!isCurrent() || !result.persisted || !result.queued) return false;
+      void sync();
+      return true;
+    },
     async signOut() {
       const account = snapshot.account;
       if (!account) return false;
