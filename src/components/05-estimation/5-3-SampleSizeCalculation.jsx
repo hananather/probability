@@ -28,6 +28,7 @@ import {
 import { colors, typography, createColorScheme } from '@/lib/design-system';
 import { useMathJax } from '@/hooks/useMathJax';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { planEnrollmentForExpectedLoss, solveBudgetSampleSize } from '@/lib/statistics/sampleSizePlanning';
 
 function useChartWidth(ref) {
   const [width, setWidth] = useState(0);
@@ -1047,7 +1048,7 @@ const QuickReferenceCard = React.memo(function QuickReferenceCard() {
                 <div className="w-6 h-6 rounded-full bg-teal-600 text-white text-xs flex items-center justify-center flex-shrink-0">5</div>
                 <div>
                   <p className="font-medium text-white">Check feasibility</p>
-                  <p className="text-neutral-400">Budget? Time? Add 10-20% for dropouts</p>
+                  <p className="text-neutral-400">Budget? Time? Account for the expected proportion of lost observations</p>
                 </div>
               </div>
             </div>
@@ -1607,7 +1608,7 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
                 step="0.1"
               />
               <p className="text-xs text-neutral-500 mt-1">
-                Known or estimated from pilot study
+                Known σ for the exact normal model; a pilot estimate gives a provisional plan.
               </p>
             </ControlGroup>
             
@@ -1981,7 +1982,11 @@ const MathematicalFramework = React.memo(function MathematicalFramework() {
   return (
     <div ref={contentRef} className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 rounded-lg p-6 mb-6 border border-blue-700/30">
       <h4 className="text-lg font-bold text-white mb-4">Mathematical Framework: Cost-Constrained Optimization</h4>
-      
+      <p className="text-sm text-neutral-300 mb-4">
+        At 95% confidence (z ≈ 1.96), assume independent normal measurements with known σ.
+        E is the half-width in the same response units as σ. The chart range is a viewing window.
+      </p>
+
       <div className="grid md:grid-cols-2 gap-6">
         <div>
           <h5 className="text-emerald-400 font-semibold mb-2">The Optimization Problem</h5>
@@ -2009,7 +2014,7 @@ const MathematicalFramework = React.memo(function MathematicalFramework() {
             <p className="text-sm text-neutral-300 mb-2">Maximum affordable sample size:</p>
             <FormulaScroll label="Maximum affordable sample size">
             <div dangerouslySetInnerHTML={{ 
-              __html: `\\[n_{max} = \\frac{B - F}{c}\\]` 
+              __html: `\\[n_{max} = \\left\\lfloor\\frac{B - F}{c}\\right\\rfloor,\\quad n_{max} \\geq 1\\]`
             }} />
             </FormulaScroll>
             <p className="text-sm text-neutral-300 mt-2 mb-1">Minimum achievable error:</p>
@@ -2024,7 +2029,7 @@ const MathematicalFramework = React.memo(function MathematicalFramework() {
       
       <div className="mt-4 bg-yellow-900/20 rounded p-3 border border-yellow-700/30">
         <p className="text-sm text-yellow-300">
-          <strong>Key Insight:</strong> The relationship E ∝ 1/√n means doubling precision (halving E) requires 4× the sample size and roughly 4× the variable costs.
+          <strong>Key Insight:</strong> Halving the target E multiplies the unrounded sample size and variable costs by 4. Round the planned sample size up to an integer.
         </p>
       </div>
     </div>
@@ -2032,13 +2037,11 @@ const MathematicalFramework = React.memo(function MathematicalFramework() {
 });
 
 // Live Calculations Component
-const LiveCalculations = React.memo(function LiveCalculations({ scenario, optimalPoint }) {
+const LiveCalculations = React.memo(function LiveCalculations({ scenario, budgetSolution }) {
   const contentRef = useRef(null);
   
-  useMathJax(contentRef, [scenario, optimalPoint]);
-  
-  const maxN = Math.floor((scenario.budgetLimit - scenario.fixedCosts) / scenario.costPerSubject);
-  const minE = maxN > 0 ? (1.96 * scenario.sigma) / Math.sqrt(maxN) : Infinity;
+  useMathJax(contentRef, [scenario, budgetSolution]);
+  const optimalPoint = budgetSolution.status === 'feasible' ? budgetSolution : null;
   
   return (
     <div ref={contentRef} className="bg-neutral-800/50 rounded-lg p-4">
@@ -2052,36 +2055,41 @@ const LiveCalculations = React.memo(function LiveCalculations({ scenario, optima
           </div>
           
           <p className="text-neutral-400 mt-3">Maximum sample size:</p>
-          <FormulaScroll className="bg-neutral-900/50 rounded p-2" label="Affordable sample size calculation">
-            <span dangerouslySetInnerHTML={{ 
-              __html: `\\(n_{max} = \\frac{${(scenario.budgetLimit - scenario.fixedCosts).toLocaleString()}}{${scenario.costPerSubject}} = ${maxN}\\)` 
-            }} />
-          </FormulaScroll>
+          {optimalPoint ? (
+            <FormulaScroll className="bg-neutral-900/50 rounded p-2" label="Affordable sample size calculation">
+              <span dangerouslySetInnerHTML={{
+                __html: `\\(n_{max} = \\left\\lfloor\\frac{${(scenario.budgetLimit - scenario.fixedCosts).toLocaleString()}}{${scenario.costPerSubject}}\\right\\rfloor = ${optimalPoint.n}\\)`
+              }} />
+            </FormulaScroll>
+          ) : <p role="status" className="text-amber-300">{budgetSolution.message}</p>}
         </div>
         
         <div className="space-y-2">
           <p className="text-neutral-400">Minimum achievable error:</p>
-          <FormulaScroll className="bg-neutral-900/50 rounded p-2" label="Affordable margin of error calculation">
-            <span dangerouslySetInnerHTML={{ 
-              __html: `\\(E_{min} = \\frac{1.96 \\times ${scenario.sigma}}{\\sqrt{${maxN}}} = ${minE.toFixed(2)}\\)` 
-            }} />
-          </FormulaScroll>
+          {optimalPoint ? (
+            <FormulaScroll className="bg-neutral-900/50 rounded p-2" label="Affordable margin of error calculation">
+              <span dangerouslySetInnerHTML={{
+                __html: `\\(E_{min} = \\frac{1.96 \\times ${scenario.sigma}}{\\sqrt{${optimalPoint.n}}} \\approx ${optimalPoint.E.toFixed(2)}\\)`
+              }} />
+            </FormulaScroll>
+          ) : <p className="text-neutral-300">No finite margin of error is available for this budget.</p>}
           
           {optimalPoint && (
             <>
-              <p className="text-neutral-400 mt-3">Cost efficiency:</p>
+              <p className="text-neutral-400 mt-3">Average cost per subject:</p>
               <div className="font-mono text-emerald-400 bg-neutral-900/50 rounded p-2">
-                ${(optimalPoint.cost / optimalPoint.n).toFixed(2)} per unit precision
+                ${(optimalPoint.cost / optimalPoint.n).toFixed(2)} per subject (including fixed costs)
               </div>
             </>
           )}
         </div>
       </div>
       
-      {maxN < 30 && (
+      {optimalPoint && optimalPoint.n < 30 && (
         <div className="mt-3 bg-red-900/20 rounded p-2 border border-red-700/30">
           <p className="text-xs text-red-300">
-            ⚠️ Sample size {maxN} may be too small for reliable estimates (typically need n ≥ 30)
+            For a nonnormal population, check whether the normal approximation is adequate.
+            A sample size of {optimalPoint.n} does not by itself establish that approximation.
           </p>
         </div>
       )}
@@ -2090,7 +2098,7 @@ const LiveCalculations = React.memo(function LiveCalculations({ scenario, optima
 });
 
 // Cost-Benefit Analysis Component
-const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete }) {
+export const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete }) {
   const reducedMotion = useReducedMotion();
   const [scenario, setScenario] = useState({
     costPerSubject: 100,
@@ -2101,7 +2109,17 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
     maxPrecision: 3
   });
   
-  const [optimalPoint, setOptimalPoint] = useState(null);
+  const budgetSolution = useMemo(() => solveBudgetSampleSize(scenario), [scenario]);
+  const optimalPoint = budgetSolution.status === 'feasible' ? budgetSolution : null;
+  const completionReported = useRef(false);
+  const updateScenario = (key, value) => {
+    if (scenario[key] === value) return;
+    setScenario(previous => ({ ...previous, [key]: value }));
+    if (!completionReported.current) {
+      completionReported.current = true;
+      onComplete?.('cost-benefit-explored');
+    }
+  };
   const svgRef = useRef(null);
   const chartWidth = useChartWidth(svgRef);
   
@@ -2128,7 +2146,13 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
     svg.attr('viewBox', `0 0 ${width} ${height}`);
     
     svg.selectAll("*").remove();
-    
+    if (budgetSolution.status === 'invalid') {
+      svg.append('text').attr('x', width / 2).attr('y', height / 2)
+        .attr('text-anchor', 'middle').attr('fill', '#f3f4f6').attr('font-size', 12)
+        .text('Enter valid planning inputs to draw this chart.');
+      return () => svg.selectAll('*').remove();
+    }
+
     // Generate data points with finer granularity for smooth curve
     const data = [];
     const step = (scenario.maxPrecision - scenario.minPrecision) / 50; // 50 points for smooth curve
@@ -2140,12 +2164,19 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
       }
     }
     
-    // Filter data within budget
-    const affordableData = data.filter(d => d.cost <= scenario.budgetLimit);
-    
+    // Include the exact solution when it lies outside the initial viewing window.
+    let minimumE = Math.min(scenario.minPrecision, optimalPoint?.E ?? scenario.minPrecision);
+    let maximumE = Math.max(scenario.maxPrecision, optimalPoint?.E ?? scenario.maxPrecision);
+    if (optimalPoint) {
+      const markerInset = Math.min(12, plotWidth / 4);
+      const markerX = (optimalPoint.E - minimumE) / (maximumE - minimumE) * plotWidth;
+      if (markerX < markerInset) minimumE = optimalPoint.E - (maximumE - optimalPoint.E) * markerInset / (plotWidth - markerInset);
+      if (plotWidth - markerX < markerInset) maximumE = optimalPoint.E + (optimalPoint.E - minimumE) * markerInset / (plotWidth - markerInset);
+    }
+
     // Scales
     const xScale = d3.scaleLinear()
-      .domain([scenario.minPrecision, scenario.maxPrecision])
+      .domain([minimumE, maximumE])
       .range([margin.left, width - margin.right]);
     
     const yScale = d3.scaleLinear()
@@ -2190,7 +2221,7 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
     const xAxis = g.append("g")
       .attr('class', 'x-axis')
       .attr("transform", `translate(0,${height - margin.bottom})`)
-      .call(d3.axisBottom(xScale).ticks(Math.max(2, Math.floor(plotWidth / 65))).tickSize(-height + margin.top + margin.bottom).tickPadding(10));
+      .call(d3.axisBottom(xScale).tickValues(xScale.ticks(Math.max(2, Math.floor(plotWidth / 65))).filter(value => value > 0)).tickSize(-height + margin.top + margin.bottom).tickPadding(10));
     
     xAxis.selectAll("text")
       .attr("fill", "#f3f4f6");
@@ -2268,10 +2299,9 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
       .attr("d", line)
       .attr("clip-path", "url(#cost-chart-clip)");
     
-    // Find optimal point (smallest E within budget)
-    if (affordableData.length > 0) {
-      const optimal = affordableData[0]; // Smallest E is first
-      setOptimalPoint(optimal);
+    // The integer budget solution is independent of the plotting grid.
+    if (optimalPoint) {
+      const optimal = optimalPoint;
       
       // Highlight optimal point
       const optimalMarker = g.append("circle")
@@ -2289,7 +2319,7 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
         .attr("transform", `translate(${xScale(optimal.E)}, ${yScale(optimal.cost)})`)
         .attr("opacity", reducedMotion ? 1 : 0);
       
-      const annotationText = `Optimal: E=$${optimal.E.toFixed(1)}, n=${optimal.n}`;
+      const annotationText = `Optimal: E=${optimal.E.toFixed(2)}, n=${optimal.n}`;
       const textElement = annotationGroup.append("text")
         .attr("x", 0)
         .attr("y", 0)
@@ -2322,14 +2352,7 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
     }
     
     return () => { svg.selectAll('*').interrupt(); svg.selectAll('*').remove(); };
-  }, [scenario, calculateCost, chartWidth, reducedMotion]);
-  
-  // Mark complete after adjusting parameters
-  useEffect(() => {
-    if (scenario.costPerSubject !== 50 || scenario.budgetLimit !== 25000) {
-      if (onComplete) onComplete('cost-benefit-explored');
-    }
-  }, [scenario, onComplete]);
+  }, [scenario, calculateCost, chartWidth, reducedMotion, optimalPoint, budgetSolution]);
   
   return (
     <VisualizationSection>
@@ -2355,10 +2378,8 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
                 max="500"
                 step="10"
                 value={scenario.costPerSubject}
-                onChange={(e) => setScenario({
-                  ...scenario, 
-                  costPerSubject: Number(e.target.value)
-                })}
+                aria-label="Cost per Subject"
+                onChange={(e) => updateScenario('costPerSubject', Number(e.target.value))}
                 className="min-w-0 flex-1"
               />
               <span className="text-sm font-mono text-white w-16">${scenario.costPerSubject}</span>
@@ -2376,10 +2397,8 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
                 max="20000"
                 step="1000"
                 value={scenario.fixedCosts}
-                onChange={(e) => setScenario({
-                  ...scenario, 
-                  fixedCosts: Number(e.target.value)
-                })}
+                aria-label="Fixed Costs"
+                onChange={(e) => updateScenario('fixedCosts', Number(e.target.value))}
                 className="min-w-0 flex-1"
               />
               <span className="text-sm font-mono text-white w-16">${(scenario.fixedCosts/1000).toFixed(0)}k</span>
@@ -2397,10 +2416,8 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
                 max="200000"
                 step="5000"
                 value={scenario.budgetLimit}
-                onChange={(e) => setScenario({
-                  ...scenario, 
-                  budgetLimit: Number(e.target.value)
-                })}
+                aria-label="Budget Limit"
+                onChange={(e) => updateScenario('budgetLimit', Number(e.target.value))}
                 className="min-w-0 flex-1"
               />
               <span className="text-sm font-mono text-white w-20">${(scenario.budgetLimit/1000).toFixed(0)}k</span>
@@ -2417,10 +2434,8 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
                 min="5"
                 max="30"
                 value={scenario.sigma}
-                onChange={(e) => setScenario({
-                  ...scenario, 
-                  sigma: Number(e.target.value)
-                })}
+                aria-label="Population SD (σ)"
+                onChange={(e) => updateScenario('sigma', Number(e.target.value))}
                 className="min-w-0 flex-1"
               />
               <span className="text-sm font-mono text-white w-8">{scenario.sigma}</span>
@@ -2430,7 +2445,7 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
       </div>
       
       {/* Live Calculations Panel */}
-      <LiveCalculations scenario={scenario} optimalPoint={optimalPoint} />
+      <LiveCalculations scenario={scenario} budgetSolution={budgetSolution} />
       
       {/* Main visualization with full width */}
       <div className="space-y-4 mt-6">
@@ -2457,7 +2472,7 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
                 </div>
                 <div>
                   <span className="text-neutral-400">Margin of Error:</span>
-                  <span className="font-mono text-white ml-2">E = ±{optimalPoint.E.toFixed(2)}</span>
+                  <span className="font-mono text-white ml-2">E = {optimalPoint.E.toFixed(2)} response units</span>
                 </div>
                 <div>
                   <span className="text-neutral-400">Total Cost:</span>
@@ -2480,7 +2495,7 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
                 <div>
                   <span className="font-semibold">Hyperbolic relationship:</span> Cost increases as 1/E²
                   <div className="text-xs text-neutral-400 mt-1">
-                    Halving error from 2 to 1 quadruples sample size (and variable costs)
+                    Halving target error from 2 to 1 quadruples the unrounded sample size and variable costs; round n up.
                   </div>
                 </div>
               </li>
@@ -2498,7 +2513,7 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
                 <div>
                   <span className="font-semibold">Diminishing returns:</span> Each $ buys less precision as E decreases
                   <div className="text-xs text-neutral-400 mt-1">
-                    The curve flattens at high cost, showing inefficient precision gains
+                    At higher cost, the achievable reduction in E per additional dollar becomes smaller.
                   </div>
                 </div>
               </li>
@@ -2506,9 +2521,9 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
                 <li className="flex items-start gap-2">
                   <span className="text-blue-400">•</span>
                   <div>
-                    <span className="font-semibold">Current efficiency:</span> {((1 / optimalPoint.E) / (optimalPoint.cost / 1000)).toFixed(2)} precision per $1K
+                    <span className="font-semibold">Inverse half-width per $1K:</span> {((1 / optimalPoint.E) / (optimalPoint.cost / 1000)).toFixed(2)} per $1K
                     <div className="text-xs text-neutral-400 mt-1">
-                      This measures how much precision you get per thousand dollars spent
+                      This compares 1/E per thousand dollars spent; E is measured in response units.
                     </div>
                   </div>
                 </li>
@@ -2522,26 +2537,26 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
 });
 
 // Real-World Scenarios Component
-const RealWorldScenarios = React.memo(function RealWorldScenarios({ onComplete }) {
+export const RealWorldScenarios = React.memo(function RealWorldScenarios({ onComplete }) {
   const [selectedScenario, setSelectedScenario] = useState('medical');
   const [exploreCount, setExploreCount] = useState(0);
   
   const scenarios = {
     medical: {
       title: 'Clinical Trial',
-      description: 'Testing a new drug\'s effect on blood pressure',
+      description: 'Estimating mean blood pressure after treatment',
       icon: Heart,
       color: '#ef4444',
       parameters: {
         sigma: 12, // mmHg
-        E: 2, // clinically significant difference
+        E: 2, // desired half-width in mmHg
         confidence: 95,
-        context: 'FDA requires 95% confidence, 2 mmHg is clinically meaningful'
+        context: 'Illustrative estimation of a mean: 95% confidence and ±2 mmHg precision under the stated assumptions'
       },
       considerations: [
         'Patient safety is paramount',
         'Recruitment costs are high (~$500/patient)',
-        'Dropout rate must be considered (add 15-20%)',
+        'Illustrative expected loss: 15% of enrolled observations',
         'Ethical review adds fixed costs'
       ]
     },
@@ -2593,7 +2608,8 @@ const RealWorldScenarios = React.memo(function RealWorldScenarios({ onComplete }
   
   const n = Math.ceil(Math.pow((getZ(scenario.parameters.confidence) * 
     scenario.parameters.sigma) / scenario.parameters.E, 2));
-  
+  const enrollmentPlan = planEnrollmentForExpectedLoss(n, 0.15);
+
   // Track exploration
   useEffect(() => {
     setExploreCount(prev => prev + 1);
@@ -2709,11 +2725,15 @@ const RealWorldScenarios = React.memo(function RealWorldScenarios({ onComplete }
                 Sample Size Recommendation
               </p>
               <p className="text-sm">
-                Plan for n = {Math.ceil(n * 1.15)} ({n} + 15% buffer for dropouts/errors)
+                Plan for n = {enrollmentPlan.enrollment} to retain {n} observations in expectation with 15% loss.
+              </p>
+              <p className="text-xs mt-2 text-neutral-400">
+                This expected-retention allowance does not guarantee enough usable observations
+                or remove bias from missing data.
               </p>
               {selectedScenario === 'medical' && (
                 <p className="text-xs mt-2 text-neutral-400">
-                  Estimated cost: ${Math.ceil(n * 1.15 * 500).toLocaleString()} + fixed costs
+                  Estimated cost: ${(enrollmentPlan.enrollment * 500).toLocaleString()} + fixed costs
                 </p>
               )}
             </div>
