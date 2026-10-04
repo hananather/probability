@@ -2,6 +2,8 @@ import { ACTIVITY_BY_ID, CURRICULUM, QUIZ_BY_ID, LEGACY_SECTION_SOURCE_BY_CONTAI
 import { createEmptyProgress, isFiniteNumber, isOwnerScope, isRecord, isSafeId, validTimestamp, validateProgressSnapshot } from './schema';
 import { migrateLegacyProgress, readLegacySectionResume } from './legacyMigration';
 import { createIndexedDbPersistence, createProgressId } from './persistence';
+import { accountView, acceptAccountResponse, appendAccountOperation, createAccountBlockedBranch, createAccountMetadata, createGuestTransferMutations, materializeAccount, previewGuestTransfer, selectCloudBatch, validateAccountBlockedBranch, validateAccountMetadata, validateCloudResponse } from './cloud/sync';
+import { captureCloudWriteContext, isAccountScope, isCloudJson, normalizeAccountScope, normalizeCloudMutationId, validateCloudContext } from './cloud/schema';
 import { createPinnedQuizAttempt, mergeQuizSession, normalizeQuizSession } from './quizContract';
 
 const copy = value => JSON.parse(JSON.stringify(value));
@@ -9,13 +11,18 @@ const same = (left, right) => JSON.stringify(left) === JSON.stringify(right);
 const own = (value, key) => Object.hasOwn(value, key) ? value[key] : undefined;
 function put(value, key, item) { Object.defineProperty(value, key, { value: item, writable: true, configurable: true, enumerable: true }); }
 function isJsonValue(value, ancestors = new Set(), depth = 0) {
-  if (value === null || typeof value === 'string' || typeof value === 'boolean') return true;
-  if (typeof value === 'number') return Number.isFinite(value);
-  if ((!Array.isArray(value) && !isRecord(value)) || ancestors.has(value) || depth > 100) return false;
-  if (Object.getOwnPropertySymbols(value).length || (Array.isArray(value) && Object.keys(value).length !== value.length)) return false;
-  const next = new Set(ancestors).add(value);
-  return Object.values(value).every(item => isJsonValue(item, next, depth + 1));
+  try {
+    if (value === null || typeof value === 'string' || typeof value === 'boolean') return true;
+    if (typeof value === 'number') return Number.isFinite(value);
+    if ((!Array.isArray(value) && !isRecord(value)) || ancestors.has(value) || depth > 100) return false;
+    if (Object.getOwnPropertySymbols(value).length || (Array.isArray(value) && (Object.getPrototypeOf(value) !== Array.prototype || Object.keys(value).length !== value.length))) return false;
+    const descriptors = Object.getOwnPropertyDescriptors(value);
+    if (Object.entries(descriptors).some(([key, descriptor]) => !(Array.isArray(value) && key === 'length') && (!descriptor.enumerable || !Object.hasOwn(descriptor, 'value')))) return false;
+    const next = new Set(ancestors).add(value);
+    return Object.keys(value).every(key => Object.hasOwn(descriptors[key], 'value') && isJsonValue(descriptors[key].value, next, depth + 1));
+  } catch { return false; }
 }
+
 function freeze(value) {
   if (value && typeof value === 'object' && !Object.isFrozen(value)) {
     Object.values(value).forEach(freeze);
@@ -24,17 +31,21 @@ function freeze(value) {
   return value;
 }
 function newRecord(identity) {
-  return { version: 1, ...identity, revision: 0, epoch: 0, chapterEpochs: {}, containerEpochs: {}, closedQuizSessions: {}, data: createEmptyProgress(identity), legacyObserved: {}, appliedOperations: {}, recovery: [] };
+  return { ...(isAccountScope(identity.ownerScope) ? { cloud: createAccountMetadata(identity.ownerScope), accountBlocked: [] } : {}), version: 1, ...identity, revision: 0, epoch: 0, chapterEpochs: {}, containerEpochs: {}, closedQuizSessions: {}, data: createEmptyProgress(identity), legacyObserved: {}, appliedOperations: {}, recovery: [] };
 }
 function safeRecord(value, identity, { allowRecovery = true } = {}) {
   if (value === undefined) {
     if (!allowRecovery) throw new Error('Progress write could not be verified');
     return newRecord(identity);
   }
+  if (isAccountScope(identity.ownerScope) && !isJsonValue(value)) throw new Error('Stored account progress has unsupported data; its original record was preserved');
   if (isRecord(value) && ((Object.hasOwn(value, 'ownerScope') && value.ownerScope !== identity.ownerScope) || (Object.hasOwn(value, 'deviceId') && value.deviceId !== identity.deviceId))) throw new Error('Stored progress belongs to another owner or device');
   if (isRecord(value?.data) && ((Object.hasOwn(value.data, 'ownerScope') && value.data.ownerScope !== identity.ownerScope) || (Object.hasOwn(value.data, 'deviceId') && value.data.deviceId !== identity.deviceId))) throw new Error('Stored progress belongs to another owner or device');
+  if (isAccountScope(identity.ownerScope) && (!validateAccountMetadata(value?.cloud, identity.ownerScope) || !Array.isArray(value?.accountBlocked) || value.accountBlocked.some(branch => !isRecord(branch) || !validateProgressSnapshot(branch.snapshot).valid || branch.snapshot.ownerScope !== identity.ownerScope || branch.snapshot.deviceId !== identity.deviceId || !validClosedSessions(branch.closedQuizSessions) || !validateAccountBlockedBranch(branch, identity.ownerScope)))) throw new Error('Account sync metadata is invalid; its original record was preserved');
+  if (isAccountScope(identity.ownerScope) && Object.values(value.data?.resumeByDevice || {}).some(locators => Object.values(locators).some(locator => locator.session && !validateCloudContext(value.cloud.sessionContexts[locator.session.sessionId])))) throw new Error('Account quiz session has no original cloud context; its record was preserved');
   if (!isJsonValue(value)) throw new Error('Stored progress has unsupported data; its original record was preserved');
-  if (isRecord(value) && value.version === 1 && validateProgressSnapshot(value.data).valid && value.data.ownerScope === identity.ownerScope && value.data.deviceId === identity.deviceId && Number.isSafeInteger(value.revision) && value.revision >= 0 && Number.isSafeInteger(value.epoch) && value.epoch >= 0 && isRecord(value.chapterEpochs) && Object.entries(value.chapterEpochs).every(([id, epoch]) => resolveChapterId(id) === id && Number.isSafeInteger(epoch) && epoch >= 0) && validContainerEpochs(value.containerEpochs ?? {}) && validClosedSessions(value.closedQuizSessions ?? {}) && isRecord(value.legacyObserved) && Object.values(value.legacyObserved).every(raw => raw === null || typeof raw === 'string') && isRecord(value.appliedOperations) && Object.keys(value.appliedOperations).every(isSafeId) && Array.isArray(value.recovery)) return { ...copy(value), containerEpochs: copy(value.containerEpochs ?? {}), closedQuizSessions: copy(value.closedQuizSessions ?? {}) };
+  if (isRecord(value) && value.version === 1 && validateProgressSnapshot(value.data).valid && value.data.ownerScope === identity.ownerScope && value.data.deviceId === identity.deviceId && Number.isSafeInteger(value.revision) && value.revision >= 0 && Number.isSafeInteger(value.epoch) && value.epoch >= 0 && isRecord(value.chapterEpochs) && Object.entries(value.chapterEpochs).every(([id, epoch]) => resolveChapterId(id) === id && Number.isSafeInteger(epoch) && epoch >= 0) && validContainerEpochs(value.containerEpochs ?? {}) && validClosedSessions(value.closedQuizSessions ?? {}) && isRecord(value.legacyObserved) && Object.values(value.legacyObserved).every(raw => raw === null || typeof raw === 'string') && isRecord(value.appliedOperations) && Object.keys(value.appliedOperations).every(isSafeId) && Array.isArray(value.recovery)) { const result = { ...copy(value), containerEpochs: copy(value.containerEpochs ?? {}), closedQuizSessions: copy(value.closedQuizSessions ?? {}) }; if (result.cloud) materializeAccount(result); return result; }
+  if (isAccountScope(identity.ownerScope)) throw new Error('Stored account progress is invalid; its original record was preserved');
   if (!allowRecovery) throw new Error('Progress write could not be verified');
   const recovered = newRecord(identity);
   const raw = JSON.stringify(value);
@@ -201,7 +212,7 @@ function changedContainerCheckpoint(record, operation) {
     return [...relevant].some(id => (operation.containerEpochs?.[id] || 0) !== (own(record.containerEpochs, id) || 0));
   });
 }
-function applyOperation(record, operation) {
+function applyLocalOperation(record, operation) {
   if (Object.hasOwn(record.appliedOperations, operation.id)) return record;
   if (operation.type !== 'legacy' && (operation.epoch !== record.epoch || (operation.chapterId && operation.chapterEpoch !== (record.chapterEpochs[operation.chapterId] || 0)) || changedContainerCheckpoint(record, operation))) {
     reject(record, operation, 'write-predates-reset');
@@ -312,17 +323,47 @@ function applyOperation(record, operation) {
     for (const sources of [archive.unattributedLegacy, operation.incoming.unattributedLegacy]) for (const [key, value] of Object.entries(sources)) put(record.data.unattributedLegacy, key, copy(value));
     record.recovery.push({ reason: 'imported-file', raw: operation.raw });
   }
+  if (operation.type === 'account-import') record.recovery.push({ reason: 'imported-account-file', raw: operation.raw });
   if (!validateProgressSnapshot(record.data).valid) throw new Error('Progress operation produced an invalid snapshot');
   record.revision++;
   put(record.appliedOperations, operation.id, record.revision);
   return record;
 }
 
+
+function applyOperation(record, operation) {
+  if (Object.hasOwn(record.appliedOperations, operation.id)) return record;
+  const before = record.cloud ? copy(record) : null;
+  applyLocalOperation(record, operation);
+  if (before) {
+    const locallyRejected = record.recovery.some(item => item.operation?.id === operation.id);
+    try {
+      const replacesQuiz = operation.type === 'quiz-begin' && currentQuizSession(before, operation.chapterId) && currentQuizSession(before, operation.chapterId).sessionId !== operation.session.sessionId;
+      const cloudWrite = replacesQuiz || ['complete', 'chapter', 'quiz-finish', 'quiz-clear', 'quiz-preferences', 'reset', 'reset-activity', 'quiz-reset', 'account-transfer', 'account-import'].includes(operation.type);
+      if (before.cloud.blocked.length && !locallyRejected && cloudWrite) throw new Error('Account synchronization is blocked; local progress remains exportable');
+      appendAccountOperation(record, operation, before, locallyRejected);
+    } catch (error) {
+      if (operation.type === 'account-transfer' || operation.type === 'account-import') throw error;
+      // Local learning has wider content bounds than the cloud document. Keep
+      // its exact bank and grade when the bounded cloud contract cannot fit it.
+      record.cloud = before.cloud;
+      if (!record.cloud.blocked.some(item => item.operationId === operation.id)) record.cloud.blocked.push({ operationId: operation.id, reason: error.message });
+      const branch = createAccountBlockedBranch(record, before, operation);
+      record.accountBlocked.push(branch);
+      record.recovery.push({ reason: 'account-unsyncable', operationId: operation.id, branchIndex: record.accountBlocked.length - 1, message: error.message });
+      record.data.sync = { status: 'capacity', pendingMutationIds: record.cloud.outbox.map(item => item.id) };
+    }
+  }
+  return record;
+}
+
 /** One owner-scoped store. Persistence reducers run in atomic read/write transactions. */
-export function createProgressStore({ persistence = createIndexedDbPersistence(), ownerScope, deviceId, importLegacy = true, legacyStorage, eventTarget, document: page, broadcastFactory, createId = createProgressId, now = () => new Date().toISOString(), pollInterval = 2000 } = {}) {
+export function createProgressStore({ persistence = createIndexedDbPersistence(), ownerScope, deviceId, importLegacy = true, legacyStorage, eventTarget, document: page, broadcastFactory, createId = createProgressId, now = () => new Date().toISOString(), pollInterval = 2000, accountOwnerScope } = {}) {
   if ((ownerScope === undefined) !== (deviceId === undefined) || (ownerScope !== undefined && (!isOwnerScope(ownerScope) || !isSafeId(deviceId)))) throw new TypeError('Progress owner and device must be supplied together');
+  if (ownerScope?.startsWith('account:')) ownerScope = normalizeAccountScope(ownerScope);
+  if (accountOwnerScope !== undefined) accountOwnerScope = normalizeAccountScope(accountOwnerScope);
   let identity = ownerScope ? { ownerScope, deviceId } : null;
-  let record = newRecord(identity || { ownerScope: 'guest:loading', deviceId: 'loading' });
+  let record = newRecord(identity || { ownerScope: accountOwnerScope || 'guest:loading', deviceId: 'loading' });
   let pending = [];
   let hydration;
   let hydrated = false;
@@ -336,8 +377,15 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
   const listeners = new Set();
   const serverSnapshot = freeze({ data: createEmptyProgress({ ownerScope: 'guest:loading', deviceId: 'loading' }), loading: true, error: null, persistenceStatus: 'loading', revision: 0, pendingLocalWrites: 0, writeContext: { ownerScope: 'guest:loading', deviceId: 'loading', epoch: 0, chapterEpochs: {}, containerEpochs: {} } });
   let snapshot = serverSnapshot;
+  let cloudConnection = { status: 'local', error: null };
+  function cloudSummary() {
+    if (!record.cloud) return undefined;
+    const status = record.cloud.blocked.length ? 'capacity' : ['syncing', 'capacity'].includes(cloudConnection.status) ? cloudConnection.status : record.cloud.rejected.length ? 'conflict' : record.cloud.outbox.length ? cloudConnection.status === 'offline' ? 'offline' : 'pending' : cloudConnection.status;
+    const error = cloudConnection.error || (record.cloud.blocked.length ? 'Some local progress cannot fit account sync limits. Its original data is retained for export.' : record.cloud.rejected.length ? 'Some work was made before a reset. Its original data is retained for export.' : null);
+    return { ...cloudConnection, status, error, ownerScope: record.ownerScope, remoteRevision: record.cloud.base.revision, updatedAt: record.cloud.base.updatedAt, pendingMutations: record.cloud.outbox.length, rejectedMutations: record.cloud.rejected.length, blockedMutations: record.cloud.blocked.length };
+  }
   function publish({ error = null, status = !hydrated ? 'loading' : pending.length ? 'pending' : 'persisted', loading = !hydrated } = {}) {
-    const next = { data: record.data, loading, error, persistenceStatus: status, revision: record.revision, pendingLocalWrites: pending.length, writeContext: { ownerScope: record.ownerScope, deviceId: record.deviceId, epoch: record.epoch, chapterEpochs: record.chapterEpochs, containerEpochs: record.containerEpochs } };
+    const next = { data: record.data, loading, error, persistenceStatus: status, revision: record.revision, pendingLocalWrites: pending.length, writeContext: { ownerScope: record.ownerScope, deviceId: record.deviceId, epoch: record.epoch, chapterEpochs: record.chapterEpochs, containerEpochs: record.containerEpochs, ...(record.cloud ? { cloud: captureCloudWriteContext(accountView(record.cloud, record.ownerScope)) } : {}) }, ...(record.cloud ? { cloud: cloudSummary() } : {}) };
     if (same(snapshot, next)) return;
     snapshot = freeze(copy(next));
     listeners.forEach(listener => listener());
@@ -387,6 +435,7 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
   }
   function validateContext(context, targetId) {
     if (context === undefined) return;
+    if (record.cloud && (!isCloudJson(context) || !validateCloudContext(context.cloud) || context.cloud.ownerScope !== record.ownerScope)) throw new TypeError('Account write context requires its captured cloud lineage');
     if (!isRecord(context) || context.ownerScope !== identity.ownerScope || context.deviceId !== identity.deviceId) throw new TypeError('Write context belongs to another owner or device');
     if (!Number.isSafeInteger(context.epoch) || context.epoch < 0 || !isRecord(context.chapterEpochs) || !Object.entries(context.chapterEpochs).every(([id, epoch]) => resolveChapterId(id) === id && Number.isSafeInteger(epoch) && epoch >= 0) || !validContainerEpochs(context.containerEpochs)) throw new TypeError('Invalid write context checkpoints');
     if (context.containerId !== null && !knownContainer(context.containerId)) throw new TypeError('Invalid write context container');
@@ -395,10 +444,10 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
   function makeOperation(type, extra = {}, context) {
     const targetId = extra.guardContainerId || extra.activityId || extra.containerId || extra.chapterId || null;
     validateContext(context, targetId);
-    const id = createId();
+    const id = record.cloud ? normalizeCloudMutationId(createId()) : createId();
     if (!isSafeId(id)) throw new TypeError('Invalid generated progress operation ID');
     const checkpoints = context || record;
-    return { id, type, epoch: checkpoints.epoch, chapterEpoch: extra.chapterId ? checkpoints.chapterEpochs[extra.chapterId] || 0 : null, containerEpochs: copy(checkpoints.containerEpochs), ...extra };
+    return { id, type, ...(record.cloud ? { cloudContext: copy(context?.cloud || captureCloudWriteContext(accountView(record.cloud, record.ownerScope), targetId)) } : {}), epoch: checkpoints.epoch, chapterEpoch: extra.chapterId ? checkpoints.chapterEpochs[extra.chapterId] || 0 : null, containerEpochs: copy(checkpoints.containerEpochs), ...extra };
   }
   async function refreshLegacy() {
     await hydrate();
@@ -411,7 +460,7 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
   }
   async function refresh() {
     await hydrate();
-    await working;
+    await working.catch(() => {});
     if (disposed || !identityConfirmed) return false;
     try {
       record = replay(safeRecord(await persistence.read(identity.ownerScope), identity));
@@ -457,6 +506,7 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
         if (!identity) {
           const candidate = await persistence.getIdentity();
           if (!isRecord(candidate) || !isOwnerScope(candidate.ownerScope) || !isSafeId(candidate.deviceId)) throw new Error('Invalid stored progress identity');
+          if (accountOwnerScope && candidate.ownerScope !== accountOwnerScope) throw new Error('Account persistence identity belongs to another owner');
           identity = { ownerScope: candidate.ownerScope, deviceId: candidate.deviceId }; identityConfirmed = true;
         }
         record = newRecord(identity);
@@ -474,7 +524,7 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
         hydrated = true; publish();
       } catch (error) {
         if (!identity) {
-          const id = createId(); identity = { ownerScope: `guest:${id}`, deviceId: id }; identityConfirmed = false;
+          const id = createId(); identity = { ownerScope: accountOwnerScope || `guest:${id}`, deviceId: accountOwnerScope ? `unverified-${id}` : id }; identityConfirmed = false;
           record = newRecord(identity);
         }
         hydrated = true;
@@ -485,7 +535,7 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
     })();
     return hydration;
   }
-  function rejectedReason(operationId) { return record.recovery.find(item => item.operation?.id === operationId)?.reason || null; }
+  function rejectedReason(operationId) { return record.recovery.find(item => item.reason !== 'account-unsyncable' && item.operation?.id === operationId)?.reason || null; }
   async function mutate(type, extra, context) {
     await hydrate(); if (disposed) throw new Error('Progress store has been disposed');
     const operation = makeOperation(type, extra, context);
@@ -516,14 +566,14 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
     captureWriteContext(containerId = null) {
       if (!hydrated || snapshot.loading) throw new Error('Progress must hydrate before capturing a write context');
       if (containerId !== null && !knownContainer(containerId)) throw new TypeError('Invalid write context container');
-      return freeze(copy({ ...snapshot.writeContext, containerId }));
+      return freeze(copy({ ...snapshot.writeContext, containerId, ...(record.cloud ? { cloud: captureCloudWriteContext(accountView(record.cloud, record.ownerScope), containerId) } : {}) }));
     },
     async completeActivity(activityId, { kind = 'study-completed', sourceKey = 'explicit-study-action', context } = {}) {
       if (!Object.hasOwn(ACTIVITY_BY_ID, activityId) || !['study-completed', 'knowledge-check-completed'].includes(kind) || typeof sourceKey !== 'string') throw new TypeError('Invalid activity completion');
       if (kind === 'knowledge-check-completed' && ACTIVITY_BY_ID[activityId].completionPolicy !== 'knowledge-check-completion') throw new TypeError('Activity is not a knowledge check');
       return mutate('complete', { chapterId: chapterOf(activityId), guardContainerId: activityId, activityId, evidence: { kind, sourceKey, completedAt: now() } }, context);
     },
-    async updateChapter(chapterId, patch) {
+    async updateChapter(chapterId, patch, { context } = {}) {
       const id = resolveChapterId(chapterId);
       if (!id || !isRecord(patch)) throw new TypeError('Invalid chapter update');
       const normalized = {};
@@ -538,7 +588,7 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
       if (!Array.isArray(sections)) throw new TypeError('Invalid completed sections');
       const activityIds = sections.map(section => resolveActivityId(id, section));
       if (activityIds.some(activity => !activity)) throw new TypeError('Unrecognized completed section');
-      return mutate('chapter', { chapterId: id, patch: normalized, activityIds, timestamp: now() });
+      return mutate('chapter', { chapterId: id, patch: normalized, activityIds, timestamp: now() }, context);
     },
     async setResume(containerId, locator, { context } = {}) {
       if (!Object.hasOwn(ACTIVITY_BY_ID, containerId) || !isRecord(locator)) throw new TypeError('Invalid resume container; quiz sessions require the typed quiz API');
@@ -616,7 +666,7 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
       await refreshLegacy();
       return mutateTyped('quiz-reset', { chapterId: chapter, guardContainerId: `${chapter}:quiz` }, context);
     },
-    async resetAllQuizzes() { await refreshLegacy(); return mutate('quiz-reset', { chapterId: null }); },
+    async resetAllQuizzes({ context } = {}) { await refreshLegacy(); return mutate('quiz-reset', { chapterId: null }, context); },
     async setQuizPreferences(patch, { context } = {}) {
       if (!isRecord(patch) || !isJsonValue(patch)) throw new TypeError('Invalid quiz preferences');
       const normalized = copy(patch);
@@ -634,16 +684,24 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
       if ((!tutorial && !recognized) || (value !== null && (tutorial ? !['true', 'skipped'].includes(value) : typeof value !== 'boolean'))) throw new TypeError('Invalid device preference');
       return mutateTyped('device-preference', { key, value }, context);
     },
-    async resetChapter(chapterId) { const id = resolveChapterId(chapterId); if (!id) throw new TypeError('Invalid chapter reset'); await refreshLegacy(); return mutate('reset', { chapterId: id }); },
-    async resetAll() { await refreshLegacy(); return mutate('reset', { chapterId: null }); },
+    async resetChapter(chapterId, { context } = {}) { const id = resolveChapterId(chapterId); if (!id) throw new TypeError('Invalid chapter reset'); await refreshLegacy(); return mutate('reset', { chapterId: id }, context); },
+    async resetAll({ context } = {}) { await refreshLegacy(); return mutate('reset', { chapterId: null }, context); },
     async exportProgress() {
       await hydrate();
-      return copy({ meta: { version: '2.0.0', exportDate: now() }, snapshot: record.data, checkpoint: { epoch: record.epoch, chapterEpochs: record.chapterEpochs, containerEpochs: record.containerEpochs, closedQuizSessions: record.closedQuizSessions, legacyObserved: record.legacyObserved }, recovery: record.recovery, pendingLocalOperations: pending });
+      return copy({ meta: { version: '2.0.0', exportDate: now() }, snapshot: record.data, checkpoint: { epoch: record.epoch, chapterEpochs: record.chapterEpochs, containerEpochs: record.containerEpochs, closedQuizSessions: record.closedQuizSessions, legacyObserved: record.legacyObserved }, recovery: record.recovery, pendingLocalOperations: pending, ...(record.cloud ? { cloud: record.cloud, accountBlocked: record.accountBlocked } : {}) });
     },
     async importProgress(input, { allowGuestTransfer = false, context } = {}) {
       await hydrate();
       if (!isJsonValue(input)) throw new TypeError('Imported progress must contain only JSON values');
       const raw = JSON.stringify(input);
+      if (record.cloud) {
+        if (!isRecord(input.snapshot) || input.snapshot.ownerScope !== record.ownerScope || input.snapshot.deviceId !== record.deviceId || !validateProgressSnapshot(input.snapshot).valid || !validateAccountMetadata(input.cloud, record.ownerScope)) throw new TypeError('Account backups must retain the same owner, device and original sync metadata');
+        for (const mutation of input.cloud.outbox) {
+          const known = record.cloud.outbox.find(item => item.id === mutation.id) || record.cloud.base.document.receipts[mutation.id];
+          if (known && known.digest !== mutation.digest) throw new TypeError('Account backup cannot rebind a mutation ID');
+        }
+        return mutate('account-import', { cloudMutations: copy(input.cloud.outbox), raw }, context);
+      }
       let incoming;
       let closedQuizSessions = {};
       if (isRecord(input) && isRecord(input.snapshot)) {
@@ -668,6 +726,48 @@ export function createProgressStore({ persistence = createIndexedDbPersistence()
         chapterEpochs: { ...(context?.chapterEpochs || record.chapterEpochs) },
         ...(context?.containerId ? { guardContainerId: context.containerId, chapterId: chapterOf(context.containerId) } : {}),
       }, context);
+    },
+    setCloudSyncState(state) {
+      if (!record.cloud || !isRecord(state) || !['local', 'syncing', 'synced', 'offline', 'conflict', 'capacity'].includes(state.status) || (state.error !== null && typeof state.error !== 'string')) throw new TypeError('Invalid account sync state');
+      cloudConnection = copy(state); publish();
+    },
+    async getCloudBatch() {
+      await hydrate(); await working.catch(() => {});
+      if (!record.cloud) throw new Error('Guest progress has no cloud outbox');
+      if (pending.length) throw new Error('Local progress must be saved before uploading');
+      if (!await refresh()) throw new Error('Account progress could not be read for synchronization');
+      return selectCloudBatch(record.cloud, record.ownerScope);
+    },
+    async acceptCloudResponse(response, { isCurrent = () => true } = {}) {
+      await hydrate(); await working.catch(() => {});
+      if (!record.cloud || !validateCloudResponse(response, record.ownerScope)) throw new TypeError('Invalid account server response');
+      if (!isCurrent() || disposed) return false;
+      const result = working.catch(() => {}).then(async () => {
+        const written = await persistence.update(identity.ownerScope, stored => {
+          if (!isCurrent() || disposed) return stored;
+          return acceptAccountResponse(safeRecord(stored, identity), response);
+        });
+        if (!written || !isCurrent() || disposed) return false;
+        const readback = safeRecord(await persistence.read(identity.ownerScope), identity, { allowRecovery: false });
+        if (readback.revision < written.revision || readback.cloud.base.revision < written.cloud.base.revision) throw new Error('Account acknowledgment could not be verified locally');
+        if (!isCurrent() || disposed) return false;
+        record = replay(readback); publish(); notifyTabs(); return true;
+      });
+      working = result;
+      return result;
+    },
+    async previewGuestTransfer(input) {
+      await hydrate();
+      if (!record.cloud || !isJsonValue(input)) throw new TypeError('Guest transfer requires an account store and JSON progress');
+      return previewGuestTransfer(input);
+    },
+    async queueGuestTransfer(input, { expectedDigest, context } = {}) {
+      await hydrate();
+      if (!record.cloud || context === undefined) throw new TypeError('Capture account context before confirming a guest transfer');
+      validateContext(context, null);
+      const transfer = createGuestTransferMutations(input, { expectedDigest, context: context.cloud, deviceId: record.deviceId, createId });
+      const result = await mutateTyped('account-transfer', { cloudMutations: transfer.mutations }, context);
+      return { ...result, digest: transfer.digest, mutations: transfer.mutations.length };
     },
     async retryPersistence() {
       await hydrate();
@@ -704,3 +804,11 @@ export function getLocalProgressStore(userId = 'local') {
   return browserStores.get(userId);
 }
 export const getGuestProgressStore = () => getLocalProgressStore();
+
+/** Account identity is supplied by the verified auth provider, never by local profile names. */
+export function createAccountProgressStore({ accountId, persistence = createIndexedDbPersistence(), deviceId, ...options } = {}) {
+  const ownerScope = normalizeAccountScope(`account:${accountId}`);
+  if (deviceId !== undefined) return createProgressStore({ ...options, persistence, ownerScope, deviceId, importLegacy: false });
+  const scoped = { ...persistence, async getIdentity() { const guestIdentity = await persistence.getIdentity(); return { ownerScope, deviceId: guestIdentity.deviceId }; } };
+  return createProgressStore({ ...options, persistence: scoped, importLegacy: false, accountOwnerScope: ownerScope });
+}
