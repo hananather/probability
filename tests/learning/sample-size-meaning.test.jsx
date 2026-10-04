@@ -56,6 +56,8 @@ let sourcePasses;
 let originalActEnvironment;
 let originalGetBBox;
 let originalGetTotalLength;
+let originalBounds;
+let originalClientWidth;
 
 async function settle() {
   await act(async () => { for (let index = 0; index < 8; index++) await tick(); });
@@ -103,6 +105,12 @@ beforeAll(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   originalGetBBox = SVGElement.prototype.getBBox;
   originalGetTotalLength = SVGElement.prototype.getTotalLength;
+  originalBounds = SVGElement.prototype.getBoundingClientRect;
+  originalClientWidth = Object.getOwnPropertyDescriptor(SVGElement.prototype, 'clientWidth');
+  // jsdom does not lay out SVGs; supply a visible chart boundary while
+  // keeping the real D3 data, scales, joins and controls under test.
+  SVGElement.prototype.getBoundingClientRect = () => ({ width: 700, height: 500 });
+  Object.defineProperty(SVGElement.prototype, 'clientWidth', { configurable: true, get: () => 700 });
   SVGElement.prototype.getBBox = () => ({ x: 0, y: 0, width: 100, height: 20 });
   SVGElement.prototype.getTotalLength = () => 100;
 });
@@ -163,6 +171,9 @@ afterEach(async () => {
 });
 
 afterAll(() => {
+  SVGElement.prototype.getBoundingClientRect = originalBounds;
+  if (originalClientWidth) Object.defineProperty(SVGElement.prototype, 'clientWidth', originalClientWidth);
+  else delete SVGElement.prototype.clientWidth;
   if (originalActEnvironment === undefined) delete globalThis.IS_REACT_ACT_ENVIRONMENT;
   else globalThis.IS_REACT_ACT_ENVIRONMENT = originalActEnvironment;
   if (originalGetBBox === undefined) delete SVGElement.prototype.getBBox;
