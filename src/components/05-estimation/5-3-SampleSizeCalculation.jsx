@@ -27,6 +27,7 @@ import {
 } from '../ui/VisualizationContainer';
 import { colors, typography, createColorScheme } from '@/lib/design-system';
 import { useMathJax } from '@/hooks/useMathJax';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 function useChartWidth(ref) {
   const [width, setWidth] = useState(0);
@@ -341,7 +342,7 @@ const MathematicalFoundation = React.memo(function MathematicalFoundation() {
           <div className="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700/50">
             <h4 className={`${typography.h3} mb-3`}>Central Limit Theorem Connection</h4>
             <p className="text-sm text-neutral-300 mb-3">
-              By the CLT, <span dangerouslySetInnerHTML={{ __html: `\\(\\bar{X} \\sim N(\\mu, \\sigma^2/n)\\)` }} />
+              For a normal population, <span dangerouslySetInnerHTML={{ __html: `\\(\\bar{X} \\sim N(\\mu, \\sigma^2/n)\\)` }} /> exactly. For independent observations from the same population with finite variance, the CLT gives this normal approximation as n grows.
             </p>
             <p className="text-sm text-neutral-300">
               As n increases:
@@ -425,13 +426,13 @@ const MathematicalFoundation = React.memo(function MathematicalFoundation() {
 
 // Visual Exploration Component
 export const VisualExploration = React.memo(function VisualExploration({ onComplete }) {
+  const reducedMotion = useReducedMotion();
   const [activeRelationship, setActiveRelationship] = useState('n-E');
   const svgRef = useRef(null);
   const chartWidth = useChartWidth(svgRef);
   const exploredRelationships = useRef(new Set());
   const completionReported = useRef(false);
   const [hoveredPoint, setHoveredPoint] = useState(null);
-  const [animating, setAnimating] = useState(false);
   
   const relationships = {
     'n-E': {
@@ -610,16 +611,15 @@ export const VisualExploration = React.memo(function VisualExploration({ onCompl
       .attr("d", line)
       .attr("clip-path", "url(#chart-area-clip)");
     
-    // Animate path drawing
-    setAnimating(true);
-    const totalLength = path.node().getTotalLength();
-    path
-      .attr("stroke-dasharray", totalLength)
-      .attr("stroke-dashoffset", totalLength)
-      .transition()
-      .duration(1500)
-      .attr("stroke-dashoffset", 0)
-      .on("end", () => setAnimating(false));
+    if (!reducedMotion) {
+      const totalLength = path.node().getTotalLength();
+      path
+        .attr('stroke-dasharray', totalLength)
+        .attr('stroke-dashoffset', totalLength)
+        .transition()
+        .duration(400)
+        .attr('stroke-dashoffset', 0);
+    }
     
     // Add data points with clipping
     const pointsGroup = g.append("g")
@@ -635,10 +635,6 @@ export const VisualExploration = React.memo(function VisualExploration({ onCompl
       .attr("fill", relationships[activeRelationship].color)
       .attr("stroke", "#f3f4f6")
       .attr("stroke-width", 1)
-      .attr("opacity", 0)
-      .transition()
-      .delay((d, i) => 1500 + i * 50)
-      .duration(300)
       .attr("opacity", 0.8);
     
     // Add interactive hover effects
@@ -735,7 +731,7 @@ export const VisualExploration = React.memo(function VisualExploration({ onCompl
     }
     
     return () => { svg.selectAll('*').interrupt(); svg.selectAll('*').remove(); };
-  }, [activeRelationship, chartWidth]);
+  }, [activeRelationship, chartWidth, reducedMotion]);
   
   const selectRelationship = (relationship) => {
     setActiveRelationship(relationship);
@@ -772,7 +768,6 @@ export const VisualExploration = React.memo(function VisualExploration({ onCompl
             style={{
               backgroundColor: activeRelationship === key ? rel.color : undefined
             }}
-            disabled={animating}
           >
             {rel.title.split(' vs. ')[1]}
           </button>
@@ -2096,6 +2091,7 @@ const LiveCalculations = React.memo(function LiveCalculations({ scenario, optima
 
 // Cost-Benefit Analysis Component
 const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete }) {
+  const reducedMotion = useReducedMotion();
   const [scenario, setScenario] = useState({
     costPerSubject: 100,
     fixedCosts: 5000,
@@ -2278,23 +2274,20 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
       setOptimalPoint(optimal);
       
       // Highlight optimal point
-      g.append("circle")
+      const optimalMarker = g.append("circle")
         .attr("cx", xScale(optimal.E))
         .attr("cy", yScale(optimal.cost))
-        .attr("r", 0)
+        .attr("r", reducedMotion ? 8 : 0)
         .attr("fill", "#10b981")
         .attr("stroke", "white")
-        .attr("stroke-width", 2)
-        .transition()
-        .duration(1000)
-        .delay(500)
-        .attr("r", 8);
+        .attr("stroke-width", 2);
+      if (!reducedMotion) optimalMarker.transition().duration(400).attr('r', 8);
       
       // Annotation with background
       const annotationGroup = g.append("g")
         .attr('class', 'optimal-annotation')
         .attr("transform", `translate(${xScale(optimal.E)}, ${yScale(optimal.cost)})`)
-        .attr("opacity", 0);
+        .attr("opacity", reducedMotion ? 1 : 0);
       
       const annotationText = `Optimal: E=$${optimal.E.toFixed(1)}, n=${optimal.n}`;
       const textElement = annotationGroup.append("text")
@@ -2324,15 +2317,12 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
       const annotationY = Math.max(4 - bbox.y, yScale(optimal.cost) - 20);
       
       annotationGroup
-        .attr("transform", `translate(${annotationX}, ${annotationY})`)
-        .transition()
-        .duration(500)
-        .delay(1500)
-        .attr("opacity", 1);
+        .attr("transform", `translate(${annotationX}, ${annotationY})`);
+      if (!reducedMotion) annotationGroup.transition().duration(200).attr('opacity', 1);
     }
     
     return () => { svg.selectAll('*').interrupt(); svg.selectAll('*').remove(); };
-  }, [scenario, calculateCost, chartWidth]);
+  }, [scenario, calculateCost, chartWidth, reducedMotion]);
   
   // Mark complete after adjusting parameters
   useEffect(() => {

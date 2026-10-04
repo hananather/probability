@@ -20,7 +20,8 @@ import { deferred, tick } from '../mathjax/runtime/fixtures';
 vi.mock('react', () => import('next/dist/compiled/react'));
 vi.mock('react/jsx-runtime', () => import('next/dist/compiled/react/jsx-runtime'));
 vi.mock('react/jsx-dev-runtime', () => import('next/dist/compiled/react/jsx-dev-runtime'));
-const shared = vi.hoisted(() => ({ runtime: null }));
+const shared = vi.hoisted(() => ({ runtime: null, reducedMotion: true }));
+vi.mock('@/hooks/useReducedMotion', () => ({ useReducedMotion: () => shared.reducedMotion }));
 vi.mock('@/lib/mathjax/runtime', async importOriginal => ({
   ...(await importOriginal()), getMathJaxRuntime: () => shared.runtime,
 }));
@@ -116,6 +117,7 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
+  shared.reducedMotion = true;
   vi.useFakeTimers();
   // D3 retains its module-level animation clock across fake-timer cases.
   // Settle decorative drawing transitions; retain real joins, SVG geometry,
@@ -183,6 +185,58 @@ afterAll(() => {
 });
 
 describe('sample-size planning meaning and learner-driven local exploration', () => {
+  it('shows every point immediately without decorative transitions when motion is reduced', async () => {
+    startup.resolve();
+    const length = vi.spyOn(SVGElement.prototype, 'getTotalLength');
+    await mount(VisualExploration);
+    expect(selection.prototype.transition).not.toHaveBeenCalled();
+    expect(length).not.toHaveBeenCalled();
+    const points = [...container.querySelectorAll('circle[cx]')];
+    expect(points).toHaveLength(41);
+    for (const point of points) expect(point.getAttribute('opacity')).toBe('0.8');
+    await chooseRelationship('Confidence Level');
+    expect(selection.prototype.transition).not.toHaveBeenCalled();
+    expect([...container.querySelectorAll('circle[cx]')]).toHaveLength(8);
+  });
+
+  it('keeps keyboard focus and all relationship controls usable while motion is running', async () => {
+    shared.reducedMotion = false;
+    startup.resolve();
+    // Keep drawing pending: selector access must not depend on an animation's end.
+    selection.prototype.transition.mockImplementation(function () {
+      const pending = {
+        duration() { return pending; },
+        attr() { return pending; },
+        on() { return pending; },
+      };
+      return pending;
+    });
+    const onComplete = vi.fn();
+    await mount(VisualExploration, { onComplete });
+    for (const name of ['Population Variability', 'Confidence Level', 'Margin of Error']) {
+      const button = getByRole(container, 'button', { name });
+      button.focus();
+      await chooseRelationship(name);
+      expect(button).toHaveFocus();
+      expect(button).toHaveAttribute('aria-pressed', 'true');
+      for (const control of getAllByRole(container, 'button')) expect(control).not.toBeDisabled();
+    }
+    expect(selection.prototype.transition).toHaveBeenCalled();
+    expect(onComplete).toHaveBeenCalledTimes(1);
+    await chooseRelationship('Confidence Level');
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the budget marker and annotation immediately with reduced motion', async () => {
+    startup.resolve();
+    await mount();
+    await click('Applications Real-world scenarios');
+    const svg = getByRole(container, 'img', { name: 'Sample size budget chart' });
+    expect(svg.querySelector('circle[cx]').getAttribute('r')).toBe('8');
+    expect(svg.querySelector('.optimal-annotation').getAttribute('opacity')).toBe('1');
+    expect(selection.prototype.transition).not.toHaveBeenCalled();
+  });
+
   it('uses the requested confidence for every plotted point and quantifies the fixed-precision comparison', async () => {
     startup.resolve();
     await mount(VisualExploration);
@@ -208,7 +262,9 @@ describe('sample-size planning meaning and learner-driven local exploration', ()
     startup.resolve();
     await mount();
     expect(getByText(container, /planned half-width/)).toBeVisible();
-    expect(getByText(container, /independent observations from the same population/)).toBeVisible();
+    expect(getByText(container, /^This formula plans an interval.*independent observations from the same population/)).toBeVisible();
+    expect(getByText(container, /For a normal population,/)).toBeVisible();
+    expect(getByText(container, /finite variance.*normal approximation as n grows/)).toBeVisible();
     expect(getByText(container, /known population standard deviation/)).toBeVisible();
     expect(getByText(container, /about 95% of those intervals/)).toBeVisible();
     expect(getByText(container, /A particular interval can miss/)).toBeVisible();
