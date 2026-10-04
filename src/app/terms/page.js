@@ -54,8 +54,18 @@ export default function TermsPage() {
             <section>
               <h2 className="text-xl font-semibold text-white mb-3">4. Privacy</h2>
               <p>
-                Your progress data is stored locally in your browser. We do not collect personal information 
-                unless explicitly provided through contact forms.
+                You can use the lessons without an account, and guest progress stays in this browser.
+                If email sign-in is available and you choose to use it, the authentication provider receives
+                your email address and sign-in information. Completed study records, quiz history and quiz
+                preferences can be saved to your account and synchronized across devices; check the progress
+                page for pending or failed synchronization. Reading positions and unfinished quizzes stay
+                in this browser and are not included in account synchronization.
+              </p>
+              <p>
+                Adding guest records to an account requires your explicit choice. Signing out does not
+                delete saved account progress or the guest copy in this browser. Clearing browser data can
+                remove guest records, device-only details and account updates that have not synchronized.
+                Backups may contain your progress and account identifiers, so keep them confidential.
               </p>
             </section>
 
@@ -76,7 +86,7 @@ export default function TermsPage() {
             </section>
 
             <div className="pt-8 mt-8 border-t border-neutral-700 text-sm text-neutral-400">
-              <p>Last updated: January 2024</p>
+              <p>Last updated: October 3, 2026</p>
               <p>For questions about these terms, please <a href="mailto:support@problab.com" className="text-teal-400 hover:text-teal-300">contact us</a>.</p>
             </div>
           </div>
