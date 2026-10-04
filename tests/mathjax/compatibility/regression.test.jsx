@@ -1,4 +1,4 @@
-import CorrelationCoefficient from '@/components/07-linear-regression/7-1-CorrelationCoefficient';
+import CorrelationCoefficient, { StatisticalSignificance } from '@/components/07-linear-regression/7-1-CorrelationCoefficient';
 import SimpleLinearRegression from '@/components/07-linear-regression/7-2-SimpleLinearRegression';
 import HypothesisTestingRegression from '@/components/07-linear-regression/7-3-HypothesisTestingRegression';
 import ConfidencePredictionIntervals from '@/components/07-linear-regression/7-4-ConfidencePredictionIntervals';
@@ -21,6 +21,7 @@ import { MathJaxProvider } from '@/components/shared/MathJaxProvider';
 import { createMathJaxConfig } from '@/lib/mathjax/config';
 import { createMathJaxRuntime } from '@/lib/mathjax/runtime';
 import { deferred, tick } from '../runtime/fixtures';
+import jStat from 'jstat';
 
 // App Router's bundled React can replace rendered inner HTML during a parent
 // render. Use that renderer, together with the real mathematics engine.
@@ -231,6 +232,96 @@ describe('actual Next regression pages with scoped real MathJax', () => {
     expect(calculation.querySelector('mjx-container')).not.toBeNull();
     expect(calculation.querySelector('mjx-merror')).toBeNull();
     expect(raw(calculation)).toEqual([]);
+  });
+
+  it('keeps the sample covariance identity distinct from population correlation', async () => {
+    startup.resolve(); await mount(CorrelationCoefficient);
+    await click('Covariance Form');
+    const formula = sourcePasses.findLast(pass => pass.text.includes('Normalized covariance'))?.text;
+    expect(formula).toContain('r = \\frac{s_{xy}}{s_x \\cdot s_y}');
+    expect(formula).not.toContain('r = \\frac{\\text{Cov}(X,Y)}');
+    expect(container.textContent).toContain('Both sample variances must be nonzero');
+    expect(raw(container)).toEqual([]);
+    expect(container.querySelector('mjx-merror')).toBeNull();
+  });
+
+  it('explains the selectable perfect alignment without ordinary division-by-zero arithmetic', async () => {
+    startup.resolve(); await mount(CorrelationCoefficient);
+    const controls = getByRole(container, 'heading', { name: 'Explore Different Scenarios' }).parentElement;
+    await click('Perfect Positive', controls);
+    const statistic = getByRole(container, 'heading', { name: 'Testing Statistical Significance' }).parentElement;
+    expect(statistic.textContent).toContain('independent pairs from the same bivariate normal population');
+    expect(statistic.textContent).toContain('The denominator is zero');
+    expect(statistic.textContent).toContain('no finite t value');
+    expect(statistic.textContent).not.toMatch(/Infinity|NaN/);
+    expect(statistic.querySelector('[aria-label="Correlation test statistic calculation"]')).toBeNull();
+    expect(getByRole(statistic, 'region', { name: 'Correlation test boundary formula' }).querySelector('mjx-container')).not.toBeNull();
+    expect(sourcePasses.some(pass => pass.text.includes('\\lim_{r\\to 1^-} t = +\\infty'))).toBe(true);
+    expect(raw(statistic)).toEqual([]);
+    expect(statistic.querySelector('mjx-merror')).toBeNull();
+    await click('Strong Negative', controls);
+    expect(statistic.textContent).toContain('Selected synthetic example: Strong Negative');
+    expect(getByRole(statistic, 'region', { name: 'Correlation test statistic calculation' })).toBeVisible();
+    expect(statistic.textContent).not.toContain('Perfect linear alignment');
+    expect(raw(statistic)).toEqual([]);
+  });
+
+  it.each([-1e-7, 0, 1e-7])('does not print a false strict numerical inequality within %s of a critical boundary', async delta => {
+    const critical = jStat.studentt.inv(0.975, 18);
+    const statistic = critical + delta;
+    const correlation = statistic / Math.sqrt(18 + statistic * statistic);
+    startup.resolve(); await mount(() => React.createElement(StatisticalSignificance, { correlation, sampleSize: 20 }));
+    const printed = critical.toFixed(3);
+    expect(container.textContent).toContain(`|t| ≈ ${printed}; critical ≈ ${printed}.`);
+    expect(container.textContent).not.toMatch(new RegExp(`${printed} [<>] ${printed}`));
+    const alpha = [...container.querySelectorAll('p')].find(p => p.textContent === 'α = 0.05');
+    const result = alpha.parentElement.parentElement.textContent;
+    if (delta < 0) expect(result).toContain('Unrounded |t| is at or below the critical value.');
+    if (delta > 0) expect(result).toContain('Unrounded |t| is above the critical value.');
+    expect(raw(container)).toEqual([]);
+    expect(container.querySelector('mjx-merror')).toBeNull();
+  });
+
+  it('labels every gallery with its actual correlation while preserving all plotted pairs', async () => {
+    startup.resolve(); await mount(CorrelationCoefficient);
+    const gallery = getByRole(container, 'heading', { name: 'Correlation Patterns Gallery' }).parentElement;
+    // Reference correlations independently computed from the unchanged literals in Python.
+    const labels = ['Perfect Positive (r = 1.000)', 'Strong Positive (r = 0.996)',
+      'Moderate Positive (r = 0.692)', 'Random Scatter (r = -0.308)',
+      'Strong Negative (r = -0.994)', 'Non-linear (r = -0.144)'];
+    for (const label of labels) {
+      await click(label, gallery);
+      const plot = getByRole(gallery, 'img', { name: `${label} scatterplot` });
+      expect(plot.querySelectorAll('circle.dot')).toHaveLength(20);
+      const value = label.match(/r = ([\d.-]+)/)[1];
+      expect(plot.textContent).toContain(`r = ${value}`);
+    }
+    const controls = getByRole(container, 'heading', { name: 'Explore Different Scenarios' }).parentElement;
+    expect(getByRole(controls, 'button', { name: 'Positive with More Scatter' })).toBeVisible();
+    expect(getByRole(controls, 'button', { name: 'Random Scatter' })).toBeVisible();
+    expect(container.textContent).toContain('thresholds vary by subject');
+  });
+
+  it('makes the separate fixed fuel inputs reproducible without changing the selected example', async () => {
+    startup.resolve(); await mount(CorrelationCoefficient);
+    const controls = getByRole(container, 'heading', { name: 'Explore Different Scenarios' }).parentElement;
+    await click('Strong Negative', controls);
+    await click('Show Worked Example: Fuel Quality Analysis');
+    const fuel = getByRole(container, 'heading', { name: 'Step-by-Step Calculation: Fuel Quality Example' }).parentElement;
+    const rows = [...fuel.querySelectorAll('tbody tr')];
+    expect(rows).toHaveLength(20);
+    expect(rows.map(row => [...row.querySelectorAll('td')].map(cell => Number(cell.textContent))))
+      .toEqual(CORRELATION_EXAMPLE_DATA.map(pair => [pair.x, pair.y]));
+    expect(fuel.querySelector('details')).not.toHaveAttribute('open');
+    expect(fuel.querySelector('summary').textContent).toBe('View the 20 paired fuel observations');
+    expect(fuel.textContent).toContain('separate from the synthetic points selected above');
+    expect(fuel.textContent).toContain('least-squares line with an intercept accounts for 87.7%');
+    const summary = getByRole(container, 'heading', { name: 'Current Data Summary' }).parentElement;
+    expect(summary.textContent).toContain('Selected synthetic example: Strong Negative');
+    expect(sourcePasses.some(pass => pass.text.includes('\\frac{-0.9912'))).toBe(true);
+    expect(sourcePasses.some(pass => pass.text.includes('10.1774') && pass.text.includes('0.9367'))).toBe(true);
+    expect(raw(container)).toEqual([]);
+    expect(container.querySelector('mjx-merror')).toBeNull();
   });
 
   it('reveals simple regression calculations and preserves them across line and residual changes', async () => {

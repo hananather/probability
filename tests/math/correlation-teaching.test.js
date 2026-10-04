@@ -2,6 +2,18 @@ import { describe, expect, it } from 'vitest';
 import { calculateCorrelationStatistics } from '@/lib/statistics/correlationExample';
 
 describe('the correlation lesson’s nonlinear examples', () => {
+  it('distinguishes a population correlation from the covariance-normalized statistic of one sample', () => {
+    const population = [{ x: -1, y: -1 }, { x: -1, y: 1 }, { x: 1, y: -1 }, { x: 1, y: 1 }];
+    const populationCovariance = population.reduce((total, pair) => total + pair.x * pair.y, 0) / 4;
+    expect(populationCovariance).toBe(0); // Both population variances are one.
+    const sample = [population[0], population[1], population[3]];
+    const result = calculateCorrelationStatistics(sample);
+    expect(result.r).toBeCloseTo(0.5, 14);
+    const sampleCovariance = result.Sxy / (result.n - 1);
+    expect(sampleCovariance / (result.sx * result.sy)).toBeCloseTo(result.r, 14);
+    expect(result.r).not.toBe(populationCovariance);
+  });
+
   it('has zero correlation for the displayed five symmetric quadratic pairs', () => {
     const pairs = [-2, -1, 0, 1, 2].map(x => ({ x, y: x * x }));
     const result = calculateCorrelationStatistics(pairs);

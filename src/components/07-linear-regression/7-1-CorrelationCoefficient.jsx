@@ -13,7 +13,7 @@ import { colors, createColorScheme } from '../../lib/design-system';
 import BackToHub from '../ui/BackToHub';
 import { TrendingUp, TrendingDown, Activity, Info } from 'lucide-react';
 import jStat from 'jstat';
-import { CORRELATION_EXAMPLE_STATISTICS } from '@/lib/statistics/correlationExample';
+import { CORRELATION_EXAMPLE_DATA, CORRELATION_EXAMPLE_STATISTICS } from '@/lib/statistics/correlationExample';
 
 // Get Chapter 7 color scheme
 const chapterColors = createColorScheme('regression');
@@ -331,6 +331,7 @@ const CorrelationStrengthBar = ({ value }) => {
         <span>0.0</span>
         <span>+1.0</span>
       </div>
+      <p className="text-xs text-neutral-400">Strength labels use this lesson&apos;s teaching scale; thresholds vary by subject.</p>
     </div>
   );
 };
@@ -353,12 +354,25 @@ const WorkedExample = React.memo(function WorkedExample() {
         {/* Given Information */}
         <div className="bg-neutral-900/50 rounded-lg p-4">
           <h4 className="font-bold text-white mb-3">Given Information</h4>
+          <p className="text-sm text-neutral-300 mb-3">This worked example uses its own fixed 20 fuel pairs, separate from the synthetic points selected above.</p>
           <ul className="space-y-2 text-sm text-neutral-300">
             <li>• Sample size: <span dangerouslySetInnerHTML={{ __html: `\\(n = 20\\)` }} /> fuel samples</li>
             <li>• X = Specific gravity of fuel</li>
             <li>• Y = Heating value (Btu)</li>
             <li>• Question: Is there a linear relationship between specific gravity and heating value?</li>
           </ul>
+          <details className="mt-4">
+            <summary className="cursor-pointer text-sm text-teal-300 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400">View the 20 paired fuel observations</summary>
+            <div className="mt-3 min-w-0 max-w-full overflow-x-auto rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400" role="region" aria-label="Fuel example data table" tabIndex={0}>
+              <table className="w-full text-sm text-left text-neutral-300">
+                <caption className="text-left text-neutral-400 pb-2">Fixed input pairs for the calculations below</caption>
+                <thead><tr><th scope="col" className="pr-3 py-2">Pair</th><th scope="col" className="pr-3 py-2">X: specific gravity</th><th scope="col" className="py-2">Y: heating value (Btu)</th></tr></thead>
+                <tbody>{CORRELATION_EXAMPLE_DATA.map((pair, index) => (
+                  <tr key={index} className="border-t border-neutral-700"><th scope="row" className="pr-3 py-2 font-normal">{index + 1}</th><td className="pr-3 py-2 font-mono">{pair.x.toFixed(2)}</td><td className="py-2 font-mono">{pair.y.toFixed(2)}</td></tr>
+                ))}</tbody>
+              </table>
+            </div>
+          </details>
         </div>
 
         {/* Step 1: Calculate Basic Sums */}
@@ -488,7 +502,7 @@ const WorkedExample = React.memo(function WorkedExample() {
               This means: As specific gravity increases, the heating value tends to increase in a nearly linear fashion.
             </p>
             <p className="text-xs text-neutral-400 mt-3">
-              <strong>Coefficient of Determination:</strong> <span dangerouslySetInnerHTML={{ __html: `\\(r^2 = ${(r*r).toFixed(4)}\\)` }} /> means {(r*r*100).toFixed(1)}% of the variation in heating value can be explained by specific gravity.
+              <strong>Coefficient of Determination:</strong> <span dangerouslySetInnerHTML={{ __html: `\\(r^2 = ${(r*r).toFixed(4)}\\)` }} /> means the least-squares line with an intercept accounts for {(r*r*100).toFixed(1)}% of the heating-value variation in this sample.
             </p>
             <p className="text-yellow-400 mt-3">
               <strong>Note:</strong> This strong correlation does not imply causation!
@@ -501,11 +515,12 @@ const WorkedExample = React.memo(function WorkedExample() {
 });
 
 // Statistical Significance Testing Component
-const StatisticalSignificance = React.memo(function StatisticalSignificance({ correlation, sampleSize }) {
+export const StatisticalSignificance = React.memo(function StatisticalSignificance({ correlation, sampleSize, selectedExample = 'Selected synthetic example' }) {
   const contentRef = useRef(null);
   
   // Calculate test statistic
-  const tStat = correlation * Math.sqrt((sampleSize - 2) / (1 - correlation * correlation));
+  const isPerfect = Math.abs(correlation) === 1;
+  const tStat = isPerfect ? null : correlation * Math.sqrt((sampleSize - 2) / (1 - correlation * correlation));
   const df = sampleSize - 2;
   
   // Critical values for common significance levels (two-tailed), computed dynamically
@@ -516,9 +531,9 @@ const StatisticalSignificance = React.memo(function StatisticalSignificance({ co
   
   // Determine significance
   const isSignificant = {
-    0.10: Math.abs(tStat) > criticalValues[0.10],
-    0.05: Math.abs(tStat) > criticalValues[0.05],
-    0.01: Math.abs(tStat) > criticalValues[0.01]
+    0.10: !isPerfect && Math.abs(tStat) > criticalValues[0.10],
+    0.05: !isPerfect && Math.abs(tStat) > criticalValues[0.05],
+    0.01: !isPerfect && Math.abs(tStat) > criticalValues[0.01]
   };
   
   useMathJax(contentRef, [correlation, sampleSize]);
@@ -526,6 +541,7 @@ const StatisticalSignificance = React.memo(function StatisticalSignificance({ co
   return (
     <VisualizationSection className="bg-gradient-to-br from-blue-900/20 to-blue-800/20 border border-blue-500/30 rounded-lg p-6">
       <h3 className="text-xl font-bold text-blue-400 mb-6">Testing Statistical Significance</h3>
+      <p className="text-sm text-neutral-300 mb-4">Selected synthetic example: {selectedExample}. These deterministic points illustrate the test; they are not a verified random sample.</p>
       
       <div ref={contentRef} className="space-y-6">
         {/* Hypothesis Test Setup */}
@@ -533,6 +549,7 @@ const StatisticalSignificance = React.memo(function StatisticalSignificance({ co
           <h4 className="font-bold text-white mb-3">Hypothesis Test for Correlation</h4>
           <div className="text-sm text-neutral-300 space-y-2">
             <p className="mb-3">Testing whether the population correlation is significantly different from zero:</p>
+            <p>The exact test assumes independent pairs from the same bivariate normal population, with nonzero variances and at least three observations. Descriptive sample correlation can be calculated without normality.</p>
             <div className="bg-neutral-800/50 rounded p-3 space-y-2">
               <p><strong className="text-blue-400">Null hypothesis:</strong> <span dangerouslySetInnerHTML={{ __html: `\\(H_0: \\rho = 0\\)` }} /> (no linear relationship)</p>
               <p><strong className="text-blue-400">Alternative hypothesis:</strong> <span dangerouslySetInnerHTML={{ __html: `\\(H_1: \\rho \\neq 0\\)` }} /> (linear relationship exists)</p>
@@ -544,17 +561,28 @@ const StatisticalSignificance = React.memo(function StatisticalSignificance({ co
         <div className="bg-neutral-900/50 rounded-lg p-4">
           <h4 className="font-bold text-white mb-3">Test Statistic</h4>
           <div className="text-sm text-neutral-300 space-y-3">
-            <p>Under <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} />, the test statistic follows a t-distribution:</p>
+            <p>Under <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /> and the stated sampling model, for <span dangerouslySetInnerHTML={{ __html: `\\(|r| &lt; 1\\)` }} />, the test statistic follows a t-distribution:</p>
             <FormulaScroll className="text-center text-blue-400 my-4" label="Correlation test statistic formula">
               <span dangerouslySetInnerHTML={{ __html: `\\[t = \\frac{r\\sqrt{n-2}}{\\sqrt{1-r^2}} \\sim t(n-2)\\]` }} />
             </FormulaScroll>
-            <p>For our data:</p>
+            {isPerfect ? (
+              <div className="space-y-3">
+                <h5 className="font-semibold text-blue-300">Perfect linear alignment</h5>
+                <p>Here |r| = 1: all selected points lie exactly on a line. The denominator is zero, so this expression has no finite t value.</p>
+                <FormulaScroll label="Correlation test boundary formula" className="text-center">
+                  <span dangerouslySetInnerHTML={{ __html: `\\[\\lim_{r\\to 1^-} t = +\\infty, \\qquad \\lim_{r\\to -1^+} t = -\\infty\\]` }} />
+                </FormulaScroll>
+                <p>As correlation approaches either endpoint from inside its range, the statistic grows without bound in magnitude.</p>
+              </div>
+            ) : (<>
+            <p>For the selected synthetic points:</p>
             <FormulaScroll className="text-center my-3" label="Correlation test statistic calculation">
               <span dangerouslySetInnerHTML={{ __html: `\\[t = \\frac{${correlation.toFixed(4)}\\sqrt{${sampleSize}-2}}{\\sqrt{1-\\left(${correlation.toFixed(4)}\\right)^2}} = \\frac{${correlation.toFixed(4)} \\times ${Math.sqrt(sampleSize-2).toFixed(4)}}{${Math.sqrt(1-correlation*correlation).toFixed(4)}} = ${tStat.toFixed(3)}\\]` }} />
             </FormulaScroll>
             <p className="text-xs text-neutral-400">
               with df = n - 2 = {df} degrees of freedom
             </p>
+            </>)}
           </div>
         </div>
 
@@ -562,7 +590,7 @@ const StatisticalSignificance = React.memo(function StatisticalSignificance({ co
         <div className="bg-neutral-900/50 rounded-lg p-4">
           <h4 className="font-bold text-white mb-3">Test Results</h4>
           <div className="text-sm text-neutral-300">
-            <div className="space-y-3">
+            {isPerfect ? <p>The finite-value calculation is unavailable at this endpoint. The selected pattern demonstrates perfect descriptive correlation.</p> : <div className="space-y-3">
               {Object.entries(criticalValues).map(([alpha, critical]) => (
                 <div key={alpha} className={`p-3 rounded ${isSignificant[alpha] ? 'bg-green-900/30 border border-green-500/30' : 'bg-neutral-800/50'}`}>
                   <div className="flex flex-wrap justify-between items-center gap-2">
@@ -575,13 +603,14 @@ const StatisticalSignificance = React.memo(function StatisticalSignificance({ co
                         {isSignificant[alpha] ? '✓ Significant' : 'Not Significant'}
                       </p>
                       <p className="text-xs text-neutral-400">
-                        |t| = {Math.abs(tStat).toFixed(3)} {isSignificant[alpha] ? '>' : '<'} {critical.toFixed(3)}
+                        |t| ≈ {Math.abs(tStat).toFixed(3)}; critical ≈ {critical.toFixed(3)}.
                       </p>
+                      <p className="text-xs text-neutral-400">Unrounded |t| is {isSignificant[alpha] ? 'above' : 'at or below'} the critical value.</p>
                     </div>
                   </div>
                 </div>
               ))}
-            </div>
+            </div>}
           </div>
         </div>
 
@@ -589,7 +618,7 @@ const StatisticalSignificance = React.memo(function StatisticalSignificance({ co
         <div className="bg-gradient-to-br from-yellow-900/20 to-yellow-800/20 border border-yellow-500/30 rounded-lg p-4">
           <h4 className="font-bold text-yellow-400 mb-3">Conclusion</h4>
           <div className="text-sm text-neutral-300">
-            {isSignificant[0.01] ? (
+            {isPerfect ? <p>The synthetic points have perfect linear alignment. Interpret the limiting statistic alongside the sampling assumptions; this constructed example alone does not establish a population relationship.</p> : isSignificant[0.01] ? (
               <p>
                 We reject <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /> at the 0.01 significance level. 
                 There is <strong className="text-yellow-400">very strong evidence</strong> of a linear relationship 
@@ -611,7 +640,7 @@ const StatisticalSignificance = React.memo(function StatisticalSignificance({ co
               <p>
                 We fail to reject <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /> at the 0.10 significance level. 
                 There is <strong className="text-yellow-400">insufficient evidence</strong> of a linear relationship 
-                between the variables (p {'>'} 0.10).
+                between the variables (p {'≥'} 0.10).
               </p>
             )}
           </div>
@@ -650,8 +679,8 @@ const EnhancedFormulaDisplay = React.memo(function EnhancedFormulaDisplay() {
     covariance: {
       name: 'Covariance Form',
       description: 'Normalized covariance',
-      formula: `\\[r = \\frac{\\text{Cov}(X,Y)}{\\sigma_X \\cdot \\sigma_Y} = \\frac{S_{xy}}{\\sqrt{S_{xx} \\cdot S_{yy}}}\\]`,
-      notes: 'Shows r as standardized covariance'
+      formula: `\\[r = \\frac{s_{xy}}{s_x \\cdot s_y} = \\frac{S_{xy}}{\\sqrt{S_{xx} \\cdot S_{yy}}}\\]`,
+      notes: 'Sample covariance sxy = Sxy/(n−1), divided by sample standard deviations sx and sy. Both sample variances must be nonzero; population correlation uses ρ.'
     }
   };
   
@@ -717,13 +746,13 @@ const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGaller
   
   const patterns = {
     'perfect-positive': {
-      name: 'Perfect Positive (r = 1.0)',
+      name: 'Perfect Positive',
       data: Array.from({ length: 20 }, (_, i) => ({ x: i, y: 2 * i + 5 })),
       description: 'All points lie exactly on an upward sloping line',
       color: '#10b981'
     },
     'strong-positive': {
-      name: 'Strong Positive (r ≈ 0.9)',
+      name: 'Strong Positive',
       data: Array.from({ length: 20 }, (_, i) => ({ 
         x: i, 
         y: 2 * i + 5 + (seededRandom(i * 11) - 0.5) * 4 
@@ -732,7 +761,7 @@ const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGaller
       color: '#3b82f6'
     },
     'moderate-positive': {
-      name: 'Moderate Positive (r ≈ 0.5)',
+      name: 'Moderate Positive',
       data: Array.from({ length: 20 }, (_, i) => ({ 
         x: i, 
         y: i + 15 + (seededRandom(i * 13) - 0.5) * 15 
@@ -741,16 +770,16 @@ const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGaller
       color: '#06b6d4'
     },
     'no-correlation': {
-      name: 'No Correlation (r ≈ 0.0)',
+      name: 'Random Scatter',
       data: Array.from({ length: 20 }, (_, i) => ({ 
         x: seededRandom(i * 17) * 20, 
         y: seededRandom(i * 19) * 40 + 10 
       })),
-      description: 'No linear relationship between variables',
+      description: 'Random-looking scatter with a nonzero observed sample correlation',
       color: '#9ca3af'
     },
     'strong-negative': {
-      name: 'Strong Negative (r ≈ -0.9)',
+      name: 'Strong Negative',
       data: Array.from({ length: 20 }, (_, i) => ({ 
         x: i, 
         y: -2 * i + 45 + (seededRandom(i * 23) - 0.5) * 4 
@@ -759,7 +788,7 @@ const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGaller
       color: '#ef4444'
     },
     'non-linear': {
-      name: 'Non-linear (r ≈ 0.0)',
+      name: 'Non-linear',
       data: Array.from({ length: 20 }, (_, i) => ({ 
         x: i - 10, 
         y: Math.pow(i - 10, 2) / 10 + 10 + (seededRandom(i * 29) - 0.5) * 2 
@@ -783,6 +812,7 @@ const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGaller
     
     return Sxy / Math.sqrt(Sxx * Syy);
   };
+  const patternLabel = (pattern) => `${pattern.name} (r = ${calculateR(pattern.data).toFixed(3)})`;
   
   useEffect(() => {
     if (!svgRef.current || !chartWidth) return;
@@ -938,7 +968,7 @@ const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGaller
       <div className="space-y-6">
         {/* Pattern Selector */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 min-w-0 [&>*]:min-w-0">
-          {Object.entries(patterns).map(([key, { name }]) => (
+          {Object.entries(patterns).map(([key, pattern]) => (
             <button
               key={key}
               onClick={() => setSelectedPattern(key)}
@@ -948,14 +978,14 @@ const CorrelationPatternsGallery = React.memo(function CorrelationPatternsGaller
                   : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 hover:text-white'
               }`}
             >
-              {name}
+              {patternLabel(pattern)}
             </button>
           ))}
         </div>
         
         {/* Visualization */}
         <div className="bg-neutral-900/50 rounded-lg p-4">
-          <svg ref={svgRef} role="img" aria-label={`${patterns[selectedPattern].name} scatterplot`} className="block w-full max-w-full"></svg>
+          <svg ref={svgRef} role="img" aria-label={`${patternLabel(patterns[selectedPattern])} scatterplot`} className="block w-full max-w-full"></svg>
           <p className="text-sm text-neutral-300 mt-4">
             <strong className="text-indigo-400">Pattern:</strong> {patterns[selectedPattern].description}
           </p>
@@ -1108,7 +1138,7 @@ const scenarios = {
     rho: 0.85
   },
   'moderate': {
-    name: 'Moderate Positive',
+    name: 'Positive with More Scatter',
     data: Array.from({ length: 20 }, (_, i) => ({
       x: i + (seededRandom(i * 4) - 0.5) * 4,
       y: 1.5 * i + 10 + (seededRandom(i * 5) - 0.5) * 8
@@ -1116,7 +1146,7 @@ const scenarios = {
     rho: 0.50
   },
   'none': {
-    name: 'No Correlation',
+    name: 'Random Scatter',
     data: Array.from({ length: 20 }, (_, i) => ({
       x: seededRandom(i * 6) * 20,
       y: seededRandom(i * 7) * 30 + 10
@@ -1398,6 +1428,7 @@ export default function CorrelationCoefficient() {
             {/* Interactive Controls */}
             <div>
               <h4 className="text-lg font-bold text-white mb-4">Explore Different Scenarios</h4>
+              <p className="text-sm text-neutral-300 mb-4">Choose a synthetic example, then show the deviations to see each pair&apos;s contribution. The chart, regression values, test illustration and summary use this selection.</p>
               <ControlGroup label="Correlation Pattern">
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-2 min-w-0 [&>*]:min-w-0">
                   {Object.entries(scenarios).map(([key, { name }]) => (
@@ -1463,7 +1494,7 @@ export default function CorrelationCoefficient() {
         </div>
 
         {/* Statistical Significance Testing */}
-        <StatisticalSignificance correlation={stats.r} sampleSize={currentData.length} />
+        <StatisticalSignificance correlation={stats.r} sampleSize={currentData.length} selectedExample={scenarios[scenario].name} />
 
         {/* Enhanced Formula Display */}
         <EnhancedFormulaDisplay />
@@ -1477,6 +1508,7 @@ export default function CorrelationCoefficient() {
         {/* Summary Statistics */}
         <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">
           <h3 className="text-xl font-bold text-white mb-4">Current Data Summary</h3>
+          <p className="text-sm text-neutral-300 mb-4">Selected synthetic example: {scenarios[scenario].name}.</p>
           
           <div className="grid md:grid-cols-2 gap-6 text-sm min-w-0 [&>*]:min-w-0">
             <div className="bg-neutral-900/50 rounded p-4">

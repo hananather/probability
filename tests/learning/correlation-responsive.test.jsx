@@ -109,7 +109,7 @@ describe('correlation chart responsiveness and retained controls', () => {
     await act(async () => fireEvent.click(getByRole(container, 'button', { name: 'Strong Negative', exact: true })));
     expect(correlation(main())).toMatch(/^r = -/); expectGeometry(main(), 256, 60, 40, 40, 60, 500);
     expect(main().querySelectorAll('.deviation-rect')).toHaveLength(20);
-    await act(async () => fireEvent.click(getByRole(container, 'button', { name: 'Non-linear (r ≈ 0.0)' })));
+    await act(async () => fireEvent.click(getByRole(container, 'button', { name: 'Non-linear (r = -0.144)' })));
     expectGeometry(gallery(), 256, 40, 20, 20, 40, 300);
     expect(container.textContent).toContain('Strong pattern but not linear (parabola)');
     expect(gallery().querySelector('line[stroke="#a855f7"]')).toBeNull();
