@@ -3,7 +3,6 @@
 import { createContext, useCallback, useMemo, useState } from 'react';
 import { ACTIVITY_BY_ID, CURRICULUM, QUIZ_BY_ID } from '@/lib/curriculum/manifest';
 import { isActivityCompleted } from '@/lib/progress/selectors';
-import progressService from '@/services/progressService';
 import { useProgress } from './useProgress';
 
 // Nested lesson renderers reuse their parent's subscription and captured work context.
@@ -29,27 +28,29 @@ function generationFor(containerId, context) {
 }
 
 /** Canonical learning facts and typed actions through the existing progress subscription. */
-export function useLearningActivity(containerId, { userId = 'local' } = {}) {
+export function useLearningActivity(containerId, { userId } = {}) {
   const progress = useProgress(userId);
-  const store = useMemo(() => typeof window === 'undefined' ? null : progressService.getStore(userId), [userId]);
+  const store = progress.store;
+  const isCurrentBinding = progress.isCurrentBinding;
   const supported = isContainer(containerId);
   const [actionErrors, setActionErrors] = useState({});
-  const errorScope = `${progress.learningData.ownerScope}:${containerId || 'unregistered'}`;
+  const errorScope = `${progress.learningData.ownerScope}:${progress.generation}:${containerId || 'unregistered'}`;
   const writeCheckpoint = store?.getSnapshot().writeContext || null;
   const rawContext = supported && !progress.loading ? store?.captureWriteContext(containerId) || null : null;
   const contextSignature = JSON.stringify(rawContext);
   const writeContext = useMemo(() => JSON.parse(contextSignature), [contextSignature]);
+  const getResetGeneration = useCallback((id, context) => JSON.stringify([progress.generation, generationFor(id, context)]), [progress.generation]);
 
   const execute = useCallback(async action => {
-    if (!store || progress.loading || !supported) return false;
+    if (!store || progress.loading || !supported || !isCurrentBinding()) return false;
     setActionErrors(previous => ({ ...previous, [errorScope]: null }));
-    try { return await action(); }
+    try { const result = await action(); return isCurrentBinding() ? result : false; }
     catch (error) {
-      setActionErrors(previous => ({ ...previous, [errorScope]: error.message }));
+      if (isCurrentBinding()) setActionErrors(previous => ({ ...previous, [errorScope]: error.message }));
       return false;
     }
-  }, [store, progress.loading, supported, errorScope]);
-  const captureWriteContext = useCallback(id => !progress.loading && isContainer(id) ? store?.captureWriteContext(id) : null, [store, progress.loading]);
+  }, [store, progress.loading, isCurrentBinding, supported, errorScope]);
+  const captureWriteContext = useCallback(id => !progress.loading && isContainer(id) && isCurrentBinding() ? store?.captureWriteContext(id) : null, [store, progress.loading, isCurrentBinding]);
   const completeActivity = useCallback((id, options = {}) => execute(() => store.completeActivity(id, {
     sourceKey: 'shared-lesson-study', ...options, context: options.context || writeContext,
   })), [execute, store, writeContext]);
@@ -74,8 +75,8 @@ export function useLearningActivity(containerId, { userId = 'local' } = {}) {
 
   return {
     containerId, supported, loading: progress.loading, learningData: progress.learningData,
-    writeCheckpoint, writeContext, resetGeneration: generationFor(containerId, writeContext),
-    getResetGeneration: generationFor, captureWriteContext,
+    writeCheckpoint, writeContext, resetGeneration: getResetGeneration(containerId, writeContext),
+    getResetGeneration, captureWriteContext,
     isCompleted, getResume, resume: getResume(containerId),
     completeActivity, setResume, clearResume, resetActivity, setDevicePreference,
     getLegacySectionResume, restoreLegacySectionResume,

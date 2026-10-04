@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BarChart3, FileText } from 'lucide-react';
+import { BarChart3, FileText, UserRound } from 'lucide-react';
 
 import { useProgress } from '@/hooks/useProgress';
 import { Button } from '../ui/button';
@@ -11,7 +11,7 @@ import { SidebarTrigger } from '../ui/sidebar';
 import { MotionPreferenceControl } from '../shared/MotionPreferenceControl';
 
 export function Header() {
-  const { overallStats, loading } = useProgress();
+  const { overallStats, loading, account, signingOut } = useProgress();
   const pathname = usePathname();
   const progress = {
     completed: overallStats.completedChapters,
@@ -51,6 +51,13 @@ export function Header() {
             )}
 
             <MotionPreferenceControl compact />
+
+            <Button asChild variant="neutral" size="sm" className="h-10 w-10 px-0 sm:h-8 sm:w-auto sm:px-3">
+              <Link href={account || signingOut ? '/progress' : '/auth/sign-in'} aria-label={account || signingOut ? 'View account and progress' : 'Sign in with email'}>
+                <UserRound className="h-4 w-4" aria-hidden="true" />
+                <span className="hidden sm:inline">{account || signingOut ? 'Account' : 'Sign in'}</span>
+              </Link>
+            </Button>
 
             <Button asChild variant="neutral" size="sm" className="h-10 w-10 px-0 sm:h-8 sm:w-auto sm:px-3">
               <Link href="/resources" aria-label="Resources">

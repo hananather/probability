@@ -3,6 +3,7 @@ import Script from 'next/script';
 import { MathJaxProvider } from '../components/shared/MathJaxProvider';
 import { LayoutWrapper } from '../components/shared/LayoutWrapper';
 import { MotionPreferenceProvider } from '../components/shared/MotionPreferenceProvider';
+import { ActiveProgressProvider } from '../components/shared/ActiveProgressProvider';
 import { MATHJAX_CONFIG_SCRIPT } from '@/lib/mathjax/config';
 
 export const metadata = {
@@ -27,11 +28,13 @@ export default function RootLayout({ children }) {
         }}
       />
         <MotionPreferenceProvider>
-          <MathJaxProvider>
-            <LayoutWrapper>
-              {children}
-            </LayoutWrapper>
-          </MathJaxProvider>
+          <ActiveProgressProvider>
+            <MathJaxProvider>
+              <LayoutWrapper>
+                {children}
+              </LayoutWrapper>
+            </MathJaxProvider>
+          </ActiveProgressProvider>
         </MotionPreferenceProvider>
       </body>
     </html>

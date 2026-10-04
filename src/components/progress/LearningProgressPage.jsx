@@ -7,6 +7,9 @@ import { useProgress } from '@/hooks/useProgress';
 import { CURRICULUM } from '@/lib/curriculum/manifest';
 import { selectChapterProgress, selectCourseProgress, selectQuizProgress } from '@/lib/progress/selectors';
 import { Button } from '@/components/ui/button';
+import { useActiveProgress } from '@/contexts/ActiveProgressContext';
+import { AccountProgressPanel } from './AccountProgressPanel';
+import { backupLimitMessage, getProgressBackupLimit, isAccountBackupDestination } from '@/lib/progress/backups';
 
 const saveMessages = {
   loading: 'Loading your saved progress…',
@@ -16,15 +19,23 @@ const saveMessages = {
 };
 
 export default function LearningProgressPage() {
-  const { learningData, loading, persistenceStatus, exportProgress, importProgress, retryLocalPersistence } = useProgress();
+  const progress = useProgress();
+  const active = useActiveProgress();
+  return <LearningProgressBody key={`${progress.learningData.ownerScope}:${progress.generation}`} progress={progress} active={active} />;
+}
+
+function LearningProgressBody({ progress, active }) {
+  const { learningData, loading, persistenceStatus, exportProgress, importProgress, retryLocalPersistence, isCurrentBinding } = progress;
   const [message, setMessage] = useState(null);
   const [busy, setBusy] = useState(false);
   const fileInput = useRef(null);
   const course = selectCourseProgress(learningData);
+  const accountRecovery = isAccountBackupDestination(learningData.ownerScope);
 
   const exportBackup = async () => {
     setBusy(true);
     const success = await exportProgress();
+    if (!isCurrentBinding()) return;
     setMessage({ error: !success, text: success ? 'Your progress backup is ready to download.' : 'We could not create a backup. Try again before closing this page.' });
     setBusy(false);
   };
@@ -33,19 +44,21 @@ export default function LearningProgressPage() {
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
-      setMessage({ error: true, text: 'This file is too large. Choose a progress backup smaller than 10 MB.' });
+    if (file.size > getProgressBackupLimit(learningData.ownerScope)) {
+      setMessage({ error: true, text: backupLimitMessage(learningData.ownerScope) });
       return;
     }
     setBusy(true);
     const success = await importProgress(file);
-    setMessage({ error: !success, text: success ? 'Your backup has been added to your progress in this browser.' : 'We could not finish importing this backup. Check your progress below and try again.' });
+    if (!isCurrentBinding()) return;
+    setMessage({ error: !success, text: success ? accountRecovery ? 'The account backup is retained for recovery export. Its original pending updates are queued under their saved context; account history and reading positions were preserved.' : 'Your backup has been added to your progress in this browser.' : 'We could not finish importing this backup. Check your progress below and try again.' });
     setBusy(false);
   };
 
   const retrySave = async () => {
     setBusy(true);
     const success = await retryLocalPersistence();
+    if (!isCurrentBinding()) return;
     setMessage({ error: !success, text: success ? 'Your progress is saved in this browser.' : 'Saving is still unavailable. Export a backup before closing this page.' });
     setBusy(false);
   };
@@ -59,13 +72,15 @@ export default function LearningProgressPage() {
         </p>
       </div>
 
+      {active && <AccountProgressPanel active={active} />}
+
       <section aria-labelledby="progress-save-heading" className="rounded-xl border border-neutral-700 bg-neutral-800/40 p-4 sm:p-6">
         <h2 id="progress-save-heading" className="mb-2 text-lg font-semibold text-white">Keep your progress</h2>
         <p role="status" className={persistenceStatus === 'session-only' ? 'font-medium text-amber-200' : 'font-medium text-teal-200'}>
           {saveMessages[persistenceStatus] || saveMessages.loading}
         </p>
         <p className="mt-2 text-sm leading-relaxed text-neutral-300">
-          Progress belongs to this browser. Export a backup to keep a copy or move it to another browser. Clearing browser data can remove saved progress. Account sign-in and automatic cross-device saves are not available yet.
+          Export a backup to keep a copy of this progress, including any unsynchronized account records. Clearing browser data can remove locally saved progress. {accountRecovery ? 'Account recovery imports require the same account and device. They recover original pending updates and archive other file content for export; they preserve current account history and reading positions. Archived blocked records do not become current attainment.' : 'A guest backup can be explicitly imported into another guest browser profile.'}
         </p>
         {persistenceStatus === 'session-only' && (
           <p className="mt-2 text-sm text-amber-200">Export a backup before closing this page, then try saving again.</p>
@@ -75,13 +90,14 @@ export default function LearningProgressPage() {
             <Download className="h-4 w-4" aria-hidden="true" />Export backup
           </Button>
           <Button type="button" variant="secondary" disabled={loading || busy} onClick={() => fileInput.current?.click()} className="min-h-11 gap-2">
-            <Upload className="h-4 w-4" aria-hidden="true" />Import backup
+            <Upload className="h-4 w-4" aria-hidden="true" />{accountRecovery ? 'Import account recovery' : 'Import backup'}
           </Button>
           {persistenceStatus === 'session-only' && (
             <Button type="button" disabled={busy} onClick={retrySave} className="min-h-11">Try saving again</Button>
           )}
         </div>
-        <input ref={fileInput} type="file" accept=".json,application/json" aria-label="Choose a progress backup" className="hidden" onChange={importBackup} />
+        <p className="mt-3 text-sm text-neutral-400">{accountRecovery ? 'Recovery import limit: 32 MiB. Keep larger original backup files; this import cannot process them.' : 'Guest import limit: 10 MiB.'}</p>
+        <input ref={fileInput} type="file" accept=".json,application/json" aria-label={accountRecovery ? 'Choose an account recovery backup' : 'Choose a progress backup'} className="hidden" onChange={importBackup} />
         {message && <p role={message.error ? 'alert' : 'status'} className={`mt-3 text-sm ${message.error ? 'text-amber-200' : 'text-teal-200'}`}>{message.text}</p>}
       </section>
 

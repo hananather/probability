@@ -13,8 +13,8 @@ export function createQuizId() {
   return globalThis.crypto?.randomUUID?.() || `quiz-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-function dataOrCurrent(data) {
-  return data || (typeof window === 'undefined' ? createEmptyProgress() : quizStorage.getStore().getSnapshot().data);
+function dataOrCurrent(data, adapter = quizStorage) {
+  return data || (typeof window === 'undefined' ? createEmptyProgress() : adapter.getStore().getSnapshot().data);
 }
 function chapterNumber(value) { return Number(resolveChapterId(value)?.split('-')[1]); }
 function projectAnswers(record) {
@@ -24,12 +24,12 @@ function projectAnswers(record) {
 
 /** Compatibility readers project canonical facts; old browser keys are migration input only. */
 export const quizStorage = {
-  getStore() { return progressService.getStore('local'); },
+  getStore() { return progressService.getStore(); },
   async hydrate() { return this.getStore().hydrate(); },
   captureWriteContext(chapterId) { return this.getStore().captureWriteContext(`${resolveChapterId(chapterId)}:quiz`); },
   getAttempts(chapterId, data) {
     const chapter = resolveChapterId(chapterId);
-    return Object.values(dataOrCurrent(data).quizAttempts).filter(attempt => attempt.chapterId === chapter)
+    return Object.values(dataOrCurrent(data, this).quizAttempts).filter(attempt => attempt.chapterId === chapter)
       .sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')) || a.id.localeCompare(b.id))
       .map(attempt => ({ ...attempt, chapterId: chapterNumber(chapter), answers: projectAnswers(attempt), version: attempt.requestedVersion ?? null }));
   },
@@ -38,23 +38,23 @@ export const quizStorage = {
   },
   getLastAttempt(chapterId, data) { return this.getAttempts(chapterId, data).at(-1) || null; },
   getBestScores(data) {
-    const current = dataOrCurrent(data);
+    const current = dataOrCurrent(data, this);
     return Object.fromEntries(chapters.map(chapter => [chapter.number, selectQuizProgress(current, chapter.id)]).filter(([, summary]) => summary.attempted).map(([chapter, summary]) => [chapter, summary.bestScore]));
   },
-  getBestScore(chapterId, data) { return selectQuizProgress(dataOrCurrent(data), chapterId)?.bestScore || 0; },
+  getBestScore(chapterId, data) { return selectQuizProgress(dataOrCurrent(data, this), chapterId)?.bestScore || 0; },
   isChapterPassed(chapterId, passingScore, data) {
-    const summary = selectQuizProgress(dataOrCurrent(data), chapterId);
+    const summary = selectQuizProgress(dataOrCurrent(data, this), chapterId);
     return Boolean(summary?.attempted && summary.bestScore >= (passingScore ?? summary.passingScore));
   },
   getChapterStats(chapterId, data) {
-    const current = dataOrCurrent(data);
+    const current = dataOrCurrent(data, this);
     const attempts = this.getAttempts(chapterId, current);
     const scores = attempts.map(attempt => attempt.percentage).filter(validScore);
     const times = attempts.map(attempt => attempt.timeSpent).filter(time => Number.isFinite(time) && time >= 0);
     return { totalAttempts: attempts.length, attempted: Boolean(selectQuizProgress(current, chapterId)?.attempted), bestScore: this.getBestScore(chapterId, current), averageScore: scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0, averageTime: times.length ? times.reduce((a, b) => a + b, 0) / times.length : 0, lastAttemptDate: attempts.at(-1)?.date || null, passed: this.isChapterPassed(chapterId, undefined, current) };
   },
   getCurrentSession(chapterId, data) {
-    const current = dataOrCurrent(data);
+    const current = dataOrCurrent(data, this);
     const locator = current.resumeByDevice[current.deviceId]?.[`${resolveChapterId(chapterId)}:quiz`];
     if (locator?.session) {
       const session = locator.session;
@@ -64,7 +64,7 @@ export const quizStorage = {
     return null;
   },
   getPreferences(data) {
-    const preferences = { ...DEFAULT_QUIZ_PREFERENCES, ...dataOrCurrent(data).preferences.quiz };
+    const preferences = { ...DEFAULT_QUIZ_PREFERENCES, ...dataOrCurrent(data, this).preferences.quiz };
     return { ...preferences, immediateFeeback: preferences.immediateFeedback };
   },
   async savePreferences(preferences, { context } = {}) {
@@ -76,7 +76,7 @@ export const quizStorage = {
   async saveAttempt(chapterId, attemptData, { context } = {}) {
     const store = this.getStore();
     if (!store.isHydrated()) await store.hydrate();
-    const captured = context || this.captureWriteContext(chapterId);
+    const captured = context || store.captureWriteContext(`${resolveChapterId(chapterId)}:quiz`);
     if (attemptData.sessionId) return store.finishQuizAttempt(chapterId, { sessionId: attemptData.sessionId, attemptId: attemptData.id || createQuizId(), answersByQuestionId: attemptData.answersByQuestionId }, { context: captured });
     // Historical callers lack a pinned bank. Retain their score/raw answers as unverified.
     const attempt = { ...copy(attemptData), id: attemptData.id || createQuizId(), date: attemptData.date || new Date().toISOString(), chapterId: chapterNumber(chapterId) };
@@ -84,17 +84,19 @@ export const quizStorage = {
     const incoming = migrateLegacyProgress({ quiz_attempts: JSON.stringify({ [chapterNumber(chapterId)]: [attempt] }) }, { ownerScope: snapshot.ownerScope, deviceId: snapshot.deviceId });
     const applied = await store.importProgress({ snapshot: incoming }, { context: captured });
     if (!applied) return null;
-    return this.getAttempts(chapterId).find(saved => saved.legacy && saved.originalId === attempt.id) || this.getLastAttempt(chapterId);
+    const adapter = createQuizStorage(store);
+    return adapter.getAttempts(chapterId).find(saved => saved.legacy && saved.originalId === attempt.id) || adapter.getLastAttempt(chapterId);
   },
   async updateBestScore(chapterId, percentage, { context } = {}) {
     if (!validScore(percentage)) throw new TypeError('Invalid historical quiz score');
-    await this.hydrate();
-    return this.importData({ bestScores: { [chapterNumber(chapterId)]: Math.max(this.getBestScore(chapterId), percentage) } }, { context });
+    const adapter = createQuizStorage(this.getStore());
+    await adapter.hydrate();
+    return adapter.importData({ bestScores: { [chapterNumber(chapterId)]: Math.max(adapter.getBestScore(chapterId), percentage) } }, { context });
   },
   async saveCurrentSession(chapterId, sessionData, { context } = {}) {
     const store = this.getStore();
     if (!store.isHydrated()) await store.hydrate();
-    const captured = context || this.captureWriteContext(chapterId);
+    const captured = context || store.captureWriteContext(`${resolveChapterId(chapterId)}:quiz`);
     if (sessionData.bank) {
       const existing = store.getSnapshot().data.resumeByDevice[store.getSnapshot().data.deviceId]?.[`${resolveChapterId(chapterId)}:quiz`]?.session;
       if (existing?.sessionId === sessionData.sessionId) {
@@ -116,8 +118,8 @@ export const quizStorage = {
       ? store.clearQuizSession(item.chapter.number, sessionId || item.locator.session.sessionId, { context: item.context })
       : store.clearLegacyQuizSession(item.chapter.number, copy(item.locator), { context: item.context })));
   },
-  async clearAllData() { await this.hydrate(); return this.getStore().resetAllQuizzes(); },
-  async exportData() { await this.hydrate(); return { attempts: this.getAllAttempts(), bestScores: this.getBestScores(), preferences: this.getPreferences(), ...await this.getStore().exportProgress() }; },
+  async clearAllData() { const store = this.getStore(); await store.hydrate(); return store.resetAllQuizzes(); },
+  async exportData() { const adapter = createQuizStorage(this.getStore()); await adapter.hydrate(); return { attempts: adapter.getAllAttempts(), bestScores: adapter.getBestScores(), preferences: adapter.getPreferences(), ...await adapter.getStore().exportProgress() }; },
   async importData(data, { context } = {}) {
     const store = this.getStore();
     if (!store.isHydrated()) await store.hydrate();
@@ -131,6 +133,12 @@ export const quizStorage = {
     return store.importProgress({ snapshot: incoming }, { context: context || store.captureWriteContext() });
   },
 };
+
+/** A mounted quiz retains this exact owner store through every await. */
+export function createQuizStorage(store) {
+  if (!store || typeof store.getSnapshot !== 'function') throw new TypeError('Quiz storage requires a progress store');
+  return { ...quizStorage, getStore: () => store };
+}
 
 export function getOverallProgress(data) {
   const current = dataOrCurrent(data);

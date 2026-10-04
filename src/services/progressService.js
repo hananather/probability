@@ -2,8 +2,15 @@ import { CURRICULUM, resolveActivityId, resolveChapterId } from '@/lib/curriculu
 import { createEmptyProgress } from '@/lib/progress/schema';
 import { isActivityCompleted, selectChapterProgress, selectCourseProgress } from '@/lib/progress/selectors';
 import { getLocalProgressStore } from '@/lib/progress/store';
+import { getActiveProgressBinding } from '@/lib/progress/activeBinding';
 
 const EMPTY_CHAPTER = Object.freeze({ status: 'not_started', progress: 0, completedSections: [], lastVisited: null, timeSpent: 0 });
+const defaultStore = userId => {
+  if (userId !== undefined) return getLocalProgressStore(userId);
+  const binding = getActiveProgressBinding();
+  if (binding?.isCurrent()) return binding.store;
+  return getActiveProgressBinding()?.store || getLocalProgressStore();
+};
 
 /** Existing chapter-shaped consumers read the canonical facts through this projection. */
 export function projectChapterProgress(data) {
@@ -42,34 +49,34 @@ export function projectOverallProgress(data) {
 
 /** Compatibility facade. userId selects a local profile and carries no authentication authority. */
 export class ProgressService {
-  constructor({ storeProvider = getLocalProgressStore } = {}) {
+  constructor({ storeProvider = defaultStore } = {}) {
     this.storeProvider = storeProvider;
     this.storageKey = 'probLabProgress';
     this.metaKey = 'probLabProgressMeta';
   }
 
-  getStore(userId = 'local') { return this.storeProvider(userId); }
+  getStore(userId) { return this.storeProvider(userId); }
 
-  async getProgress(userId = 'local') {
+  async getProgress(userId) {
     if (typeof window === 'undefined') return {};
     const store = this.getStore(userId);
     await store.refresh();
     return projectChapterProgress(store.getSnapshot().data);
   }
 
-  async updateChapterProgress(userId = 'local', chapterId, data) {
+  async updateChapterProgress(userId, chapterId, data) {
     if (typeof window === 'undefined') return {};
     const store = this.getStore(userId);
     await store.updateChapter(chapterId, { ...data, lastUpdated: new Date().toISOString() });
     return projectChapterProgress(store.getSnapshot().data);
   }
 
-  async getChapterProgress(chapterId, userId = 'local') {
+  async getChapterProgress(chapterId, userId) {
     const progress = await this.getProgress(userId);
     return progress[resolveChapterId(chapterId)] || { ...EMPTY_CHAPTER, completedSections: [] };
   }
 
-  async completeSection(chapterId, sectionId, userId = 'local') {
+  async completeSection(chapterId, sectionId, userId) {
     if (typeof window === 'undefined') return {};
     const activityId = resolveActivityId(resolveChapterId(chapterId), sectionId);
     if (!activityId) throw new TypeError('Unrecognized completed section');
@@ -87,7 +94,7 @@ export class ProgressService {
     return Math.round(required.filter(lesson => completed.has(lesson.id)).length / required.length * 100);
   }
 
-  async getOverallProgress(userId = 'local') {
+  async getOverallProgress(userId) {
     if (typeof window === 'undefined') return projectOverallProgress(createEmptyProgress());
     const store = this.getStore(userId); await store.refresh();
     return projectOverallProgress(store.getSnapshot().data);
@@ -95,32 +102,32 @@ export class ProgressService {
 
   getLastActivity(progress) { return Object.values(progress || {}).map(chapter => chapter.lastUpdated).filter(Boolean).sort().at(-1) || null; }
 
-  async resetChapterProgress(chapterId, userId = 'local') {
+  async resetChapterProgress(chapterId, userId) {
     if (typeof window === 'undefined') return {};
     const store = this.getStore(userId); await store.resetChapter(chapterId);
     return projectChapterProgress(store.getSnapshot().data);
   }
 
-  async resetAllProgress(userId = 'local') {
+  async resetAllProgress(userId) {
     if (typeof window !== 'undefined') await this.getStore(userId).resetAll();
   }
 
-  async exportProgress(userId = 'local') {
+  async exportProgress(userId) {
     if (typeof window === 'undefined') return { meta: { version: '2.0.0' }, progress: {} };
     const exported = await this.getStore(userId).exportProgress();
     return { ...exported, progress: projectChapterProgress(exported.snapshot) };
   }
 
-  async importProgress(data, userId = 'local', options = {}) {
+  async importProgress(data, userId, options = {}) {
     if (typeof window === 'undefined') return false;
     try { return await this.getStore(userId).importProgress(data, options); }
     catch { return false; }
   }
 
-  queueSync() { return false; }
-  async syncWithDatabase() { return false; }
-  hasPendingSync() { return false; }
-  async retryLocalPersistence(userId = 'local') { return this.getStore(userId).retryPersistence(); }
+  queueSync(userId) { return userId === undefined ? getActiveProgressBinding()?.retrySync?.() || false : false; }
+  async syncWithDatabase(userId) { return this.queueSync(userId); }
+  hasPendingSync(userId) { return typeof window !== 'undefined' && Boolean(this.getStore(userId).getSnapshot().cloud?.pendingMutations); }
+  async retryLocalPersistence(userId) { return this.getStore(userId).retryPersistence(); }
 }
 
 const progressService = new ProgressService();

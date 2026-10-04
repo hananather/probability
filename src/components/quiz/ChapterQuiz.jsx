@@ -8,7 +8,7 @@ import { MultiSelectQuestion } from './MultiSelectQuestion';
 import { Button } from '../ui/button';
 import { AlertCircle, BookOpen, Settings, ChevronRight } from 'lucide-react';
 import { getChapterQuestions, isQuizVersion } from '@/lib/quiz/questionBank';
-import { quizStorage, createQuizId, DEFAULT_QUIZ_PREFERENCES } from '@/lib/quiz/quizStorage';
+import { createQuizStorage, createQuizId, DEFAULT_QUIZ_PREFERENCES } from '@/lib/quiz/quizStorage';
 import { mergeQuizSession } from '@/lib/progress/quizContract';
 import { resolveChapterId } from '@/lib/curriculum/manifest';
 import { useProgress } from '@/hooks/useProgress';
@@ -237,10 +237,16 @@ function BankNotice({ bank, selectedVersion }) {
   </p>;
 }
 
-export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
+export function ChapterQuiz(props) {
   const progress = useProgress();
+  return <BoundChapterQuiz key={`${progress.learningData.ownerScope}:${progress.generation}`} {...props} progress={progress} />;
+}
+
+function BoundChapterQuiz({ chapterId = 1, version = 'engineering', progress }) {
   const { learningData, loading } = progress;
-  const store = typeof window === 'undefined' ? null : quizStorage.getStore();
+  const store = progress.store;
+  const isCurrentBinding = progress.isCurrentBinding;
+  const storage = useMemo(() => store ? createQuizStorage(store) : null, [store]);
   const chapter = resolveChapterId(chapterId);
   const quizId = `${chapter}:quiz`;
   const freshData = useMemo(() => isQuizVersion(version) ? getChapterQuestions(chapterId, version) : null, [chapterId, version]);
@@ -264,11 +270,11 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
   const reducedMotion = useReducedMotion();
   const work = useRef(null);
   const mounted = useRef(false);
-  const scope = `${chapter}:${version}`;
+  const scope = `${learningData.ownerScope}:${progress.generation}:${chapter}:${version}`;
   const scopeRef = useRef(scope);
   scopeRef.current = scope;
-  const stats = quizStorage.getChapterStats(chapterId, learningData);
-  const attempts = quizStorage.getAttempts(chapterId, learningData);
+  const stats = storage?.getChapterStats(chapterId, learningData) || { attempted: false, bestScore: 0 };
+  const attempts = storage?.getAttempts(chapterId, learningData) || [];
   const latestPinned = [...attempts].reverse().find(attempt => attempt.legacy === false);
   const legacyAttempts = attempts.filter(attempt => attempt.legacy);
   const preferences = { ...DEFAULT_QUIZ_PREFERENCES, ...learningData.preferences.quiz };
@@ -312,7 +318,7 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
     if (loading || !store || !freshData) return;
     if (savedSession) {
       if (work.current?.sessionId !== savedSession.sessionId) {
-        work.current = { sessionId: savedSession.sessionId, context: store.captureWriteContext(quizId), attemptId: createQuizId(), scope };
+        work.current = { sessionId: savedSession.sessionId, store, isCurrentBinding, context: store.captureWriteContext(quizId), attemptId: createQuizId(), scope };
         setPreviousBest(stats.attempted ? stats.bestScore : null);
       }
       setActiveSession(savedSession);
@@ -323,11 +329,11 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
       else { setActiveSession(null); setQuizState('intro'); setActionError('This quiz was cleared or reset in another tab. Start a new attempt to continue.'); }
       work.current = null;
     }
-  }, [loading, savedSession, scope, learningData.quizAttempts, store, freshData, quizId, quizState, stats.attempted, stats.bestScore]);
+  }, [loading, savedSession, scope, learningData.quizAttempts, store, freshData, quizId, quizState, stats.attempted, stats.bestScore, isCurrentBinding]);
 
   const handleStartQuiz = async () => {
-    if (loading || !store || !quizData || work.current?.starting || busy) return;
-    const captured = { sessionId: createQuizId(), context: store.captureWriteContext(quizId), attemptId: createQuizId(), scope, starting: true };
+    if (loading || !store || !isCurrentBinding() || !quizData || work.current?.starting || busy) return;
+    const captured = { sessionId: createQuizId(), store, isCurrentBinding, context: store.captureWriteContext(quizId), attemptId: createQuizId(), scope, starting: true };
     const now = Date.now();
     const session = {
       sessionId: captured.sessionId, chapterId: chapter,
@@ -340,8 +346,8 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
     navigationFocus.current = { scope, questionId: freshData.questions[0].id };
     setPreviousBest(stats.attempted ? stats.bestScore : null); setActionError(null); setBusy(true); setShowFinishConfirmation(false);
     try {
-      const result = await store.beginQuizSession(chapterId, session, { context: captured.context });
-      if (!mounted.current || scopeRef.current !== captured.scope || work.current !== captured) return;
+      const result = await captured.store.beginQuizSession(chapterId, session, { context: captured.context });
+      if (!mounted.current || !captured.isCurrentBinding() || scopeRef.current !== captured.scope || work.current !== captured) return;
       if (!result.applied) {
         setActionError('The saved quiz changed or was reset. Start a new attempt.');
         setActiveSession(null); setResultAttempt(null); setQuizState('intro'); work.current = null;
@@ -363,10 +369,10 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
   const persistPatch = async patch => {
     const captured = work.current;
     const session = activeSession;
-    if (!captured || !session || captured.sessionId !== session.sessionId || captured.finishing || quizState !== 'quiz') return;
+    if (!captured || !captured.isCurrentBinding() || captured.scope !== scope || !session || captured.sessionId !== session.sessionId || captured.finishing || quizState !== 'quiz') return;
     setActiveSession(mergeQuizSession(session, patch));
     try {
-      const result = await store.updateQuizSession(chapterId, captured.sessionId, patch, { context: captured.context });
+      const result = await captured.store.updateQuizSession(chapterId, captured.sessionId, patch, { context: captured.context });
       if (mounted.current && work.current === captured && !result.applied) setActionError('This quiz changed or was reset. Your late change was not applied.');
     } catch (error) { if (mounted.current && work.current === captured) setActionError(error.message); }
   };
@@ -389,18 +395,18 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
   };
   const handleSubmitQuiz = useCallback(async () => {
     const captured = work.current;
-    if (quizState !== 'quiz' || !captured || captured.scope !== scope || captured.finishing || captured.starting || captured.sessionId !== activeSession?.sessionId) return;
+    if (quizState !== 'quiz' || !captured || !captured.isCurrentBinding() || captured.scope !== scope || captured.finishing || captured.starting || captured.sessionId !== activeSession?.sessionId) return;
     captured.finishing = true; setBusy(true); setShowFinishConfirmation(false); setActionError(null);
     try {
-      const result = await store.finishQuizAttempt(chapterId, { sessionId: captured.sessionId, attemptId: captured.attemptId, answersByQuestionId: activeSession.answersByQuestionId }, { context: captured.context });
-      if (!mounted.current || work.current !== captured || scopeRef.current !== captured.scope) return;
+      const result = await captured.store.finishQuizAttempt(chapterId, { sessionId: captured.sessionId, attemptId: captured.attemptId, answersByQuestionId: activeSession.answersByQuestionId }, { context: captured.context });
+      if (!mounted.current || !captured.isCurrentBinding() || work.current !== captured || scopeRef.current !== captured.scope) return;
       if (!result.applied || !result.attempt) { setActionError('This quiz changed or was reset. No new attempt was recorded.'); setQuizState('intro'); setActiveSession(null); return; }
       resultsFocus.current = true;
       finishReturnFocus.current = null;
       setResultAttempt(result.attempt); setQuizState('results');
     } catch (error) { if (mounted.current && work.current === captured) setActionError(error.message); }
     finally { captured.finishing = false; if (mounted.current && scopeRef.current === captured.scope) setBusy(false); }
-  }, [activeSession, chapterId, quizState, scope, store]);
+  }, [activeSession, chapterId, quizState, scope]);
   useEffect(() => {
     // A timer may expire while begin is awaiting storage; recheck the settled matching session.
     const captured = work.current;
@@ -432,8 +438,10 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
     setResultAttempt(latestPinned); setPreviousBest(null); setQuizState('review'); setReviewIndex(0);
   };
   const savePreference = async patch => {
+    const selectedScope = scope;
+    if (!isCurrentBinding()) return;
     try { await store.setQuizPreferences(patch, { context: store.captureWriteContext() }); }
-    catch (error) { if (mounted.current) setActionError(error.message); }
+    catch (error) { if (mounted.current && scopeRef.current === selectedScope && isCurrentBinding()) setActionError(error.message); }
   };
   const savingNotice = <PersistenceNotice progress={progress} actionError={actionError} />;
 

@@ -9,7 +9,7 @@ vi.mock('next/link', () => ({ default: ({ children, ...props }) => <a {...props}
 
 beforeEach(() => {
   state.value = {
-    learningData: createEmptyProgress(), loading: false, persistenceStatus: 'persisted',
+    learningData: createEmptyProgress(), loading: false, persistenceStatus: 'persisted', generation: 0, isCurrentBinding: vi.fn(() => true),
     exportProgress: vi.fn().mockResolvedValue(true), importProgress: vi.fn().mockResolvedValue(true), retryLocalPersistence: vi.fn().mockResolvedValue(false),
   };
 });
@@ -51,7 +51,7 @@ describe('learner progress and recovery feedback', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Export backup' }));
     await waitFor(() => expect(screen.getByText('Your progress backup is ready to download.')).toBeInTheDocument());
     expect(state.value.exportProgress).toHaveBeenCalledOnce();
-    expect(screen.getByText(/Account sign-in and automatic cross-device saves are not available yet/)).toBeInTheDocument();
+    expect(screen.getByText(/Clearing browser data can remove locally saved progress/)).toBeInTheDocument();
   });
 
   it('explains a failed import and retains visible existing study records', async () => {
@@ -63,7 +63,7 @@ describe('learner progress and recovery feedback', () => {
     expect(state.value.importProgress).toHaveBeenCalledWith(file);
     expect(screen.getByText('0 / 66')).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Choose a progress backup'), { target: { files: [{ ...file, size: 11 * 1024 * 1024 }] } });
-    expect(screen.getByRole('alert')).toHaveTextContent('smaller than 10 MB');
+    expect(screen.getByRole('alert')).toHaveTextContent('no larger than 10 MiB');
     expect(state.value.importProgress).toHaveBeenCalledOnce();
   });
 });
