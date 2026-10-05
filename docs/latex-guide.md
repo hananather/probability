@@ -1,271 +1,87 @@
-# LaTeX Rendering Guide
+# Render mathematics in a lesson
 
-## Core Principle
-Always use `dangerouslySetInnerHTML` for LaTeX content. This is the standard, reliable approach.
+Use the existing MathJax provider and shared hook or section wrapper. They wait for renderer readiness, serialize work, retire removed content and expose failures through the shared retry flow. MathJax recommends sequencing asynchronous typesetting and clearing removed math; the application owns those operations in [its runtime](../src/lib/mathjax/runtime.js). See the [MathJax 3.2 typesetting documentation](https://docs.mathjax.org/en/v3.2/web/typeset.html).
+
+## Render a section
+
+[MathJaxSection](../src/components/ui/MathJaxSection.jsx) handles its children through the shared hook. Give formulas their inline or display delimiters and render strings as React text:
 
 ```jsx
-<span dangerouslySetInnerHTML={{ __html: `\\(E[X] = \\mu\\)` }} />
+import MathJaxSection from '@/components/ui/MathJaxSection';
+
+export default function ExpectationFormula() {
+  return (
+    <MathJaxSection>
+      <p>{String.raw`\(\mathbb{E}[X] = \mu\)`}</p>
+      <p>{String.raw`\[\operatorname{Var}(X) = \mathbb{E}[X^2] - (\mathbb{E}[X])^2\]`}</p>
+    </MathJaxSection>
+  );
+}
 ```
 
-## The Standard Pattern (From Working Components)
-Based on our gold standard components, use this simple and reliable pattern:
+`String.raw` keeps TeX backslashes. An ordinary JavaScript string expression such as `{'\\(\\mu\\)'}` also works; both single-quoted and double-quoted JavaScript strings require escaped backslashes. JSX quoted attributes are a different syntax. Choose one string convention consistently and check the resulting formula.
+
+## Update a formula
+
+[useMathJax](../src/hooks/useMathJax.js) accepts either a dependency array and returns its own ref, or an existing object ref followed by a dependency array. Include values that change the rendered mathematical content:
 
 ```jsx
-import React, { useEffect, useRef } from "react";
+'use client';
 
-const YourComponent = () => {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    
-    processMathJax(); // Try immediately
-    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
-    return () => clearTimeout(timeoutId);
-  }, [/* dependencies */]);
-  
+import { useMathJax } from '@/hooks/useMathJax';
+
+export default function ExpectedValue({ mean }) {
+  const contentRef = useMathJax([mean]);
+
   return (
     <div ref={contentRef}>
-      <span dangerouslySetInnerHTML={{ __html: `\\(E[X] = \\mu\\)` }} />
+      {Number.isFinite(mean)
+        ? <span>{String.raw`\(\mathbb{E}[X] = ${mean}\)`}</span>
+        : <p>Enter a finite mean.</p>}
     </div>
   );
-};
+}
 ```
 
-## Key Patterns
+The existing-ref form is `useMathJax(contentRef, [mean])`, with `contentRef` created by `useRef(null)`. Choose either the hook or the section wrapper to own a region. For independently changing nested content, define child components at module scope and give each region its own stable owner.
 
-### 1. Nested Content Toggle
-Prevents parent LaTeX from disappearing when toggling child content.
+A formula-bearing button needs an accessible name that describes its action, such as “Show the variance derivation.” Keep calculation state in React and rendering work in the shared runtime. Adding a per-component timer or calling `window.MathJax.typesetPromise` directly creates a separate rendering lane.
+
+## Keep text and TeX within their boundaries
+
+Render imported questions, explanations and other external strings as React text. The provider requires the configured Safe extension and restricts TeX URLs, classes, IDs and styling; those checks supplement text escaping. See the [MathJax Safe options](https://docs.mathjax.org/en/v3.2/options/safe.html) and [runtime safety controls](../tests/mathjax/runtime/safety.test.js).
+
+Existing static authored formulas may use `dangerouslySetInnerHTML`. For a component that requires those legacy props, `useLatexString(latex, inline)` escapes the text before adding delimiters. Use it only inside a region owned by the shared renderer. Preserve the safety configuration when changing the loader or renderer.
+
+Math notation and JavaScript have separate jobs. `\rho_{XY}` gives two mathematical indices; `\rho_{\text{sample}}` gives a descriptive text subscript. Choose the notation for its meaning. Choose layout classes for spacing, contrast and wrapping.
+
+## Make long equations usable
+
+Provide a named scrolling region for a long equation, with keyboard focus and a visible focus indicator. Keep a readable explanation beside the formula. For example:
 
 ```jsx
-const NestedContentToggle = () => {
-  const [showDetails, setShowDetails] = useState(false);
-  
-  // Parent wrapped in React.memo to prevent re-render
-  const ParentContent = React.memo(() => {
-    const parentRef = useRef(null);
-    
-    useEffect(() => {
-      const processMathJax = () => {
-        if (window.MathJax?.typesetPromise && parentRef.current) {
-          window.MathJax.typesetPromise([parentRef.current]).catch(console.error);
-        }
-      };
-      processMathJax();
-      const timeoutId = setTimeout(processMathJax, 100);
-      return () => clearTimeout(timeoutId);
-    }, []);
-    
-    return (
-      <span ref={parentRef}>
-        Distribution: <span dangerouslySetInnerHTML={{ __html: `\\(N(\\mu, \\sigma^2)\\)` }} />
-      </span>
-    );
-  });
-  
+import MathJaxSection from '@/components/ui/MathJaxSection';
+
+export default function SampleSizeFormula() {
   return (
-    <div>
-      <ParentContent />
-      <button onClick={() => setShowDetails(!showDetails)}>Toggle Details</button>
-      {showDetails && <DetailsContent />}
+    <div
+      role="region"
+      aria-label="Sample-size planning equation"
+      tabIndex={0}
+      className="min-w-0 max-w-full overflow-x-auto rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400"
+    >
+      <MathJaxSection className="w-max min-w-full">
+        {String.raw`\[n = \left(\frac{z_{\alpha/2}\sigma}{E}\right)^2\]`}
+      </MathJaxSection>
     </div>
   );
-};
+}
 ```
 
-### 2. Buttons with LaTeX
-```jsx
-<button>
-  Show <span dangerouslySetInnerHTML={{ __html: `\\((x-\\mu)^2 \\cdot f(x)\\)` }} />
-  for <span dangerouslySetInnerHTML={{ __html: `\\(\\text{Var}[X]\\)` }} />
-</button>
-```
+At phone widths, shorten labels or stack a derivation where that keeps the meaning clear. Use scrolling when the complete equation needs more space, and keep the page itself within the viewport.
 
-### 3. WorkedExample Pattern
-```jsx
-const YourWorkedExample = React.memo(function YourWorkedExample({ props }) {
-  const contentRef = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(console.error);
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [/* dependencies */]);
-  
-  return (
-    <div ref={contentRef} style={{
-      backgroundColor: '#2A303C',
-      padding: '1.5rem',
-      borderRadius: '8px',
-      color: '#e0e0e0'
-    }}>
-      <p>
-        Step with inline math <span dangerouslySetInnerHTML={{ __html: `\\(E[X^2]\\)` }} />:
-      </p>
-      <div dangerouslySetInnerHTML={{ __html: `\\[\\text{Var}(X) = E[X^2] - (E[X])^2\\]` }} />
-    </div>
-  );
-});
-```
+## Verify the rendered lesson
 
-## CRITICAL: Props vs Hardcoded LaTeX
+Run `npm run test -- tests/mathjax` for the shared renderer controls and `npm run check` before submitting code changes. Exercise the changed page with its actual controls: update numbers, toggle details, switch tabs, leave and return, and use the shared retry after a rendering failure. Check fractions, roots, subscripts, raw delimiters, visible errors and keyboard access at desktop and phone widths. A successful build alone does not establish mathematical or rendering correctness.
 
-### ⚠️ Template Literals vs Regular Quotes
-When passing LaTeX as props, **you MUST use template literals**, not regular quotes:
-
-```jsx
-// ❌ WRONG - Regular quotes break when passed as props
-<SemanticCard formula="\\rho_{\\text{XY}}" />
-
-// ✅ CORRECT - Template literals preserve escaping
-<SemanticCard formula={`\\rho_{\\text{XY}}`} />
-```
-
-### Why This Matters
-React/Next.js prop serialization handles escape sequences differently:
-- Regular quotes (`"..."`) → Backslashes get stripped during prop passing
-- Template literals (`` `...` ``) → Backslashes are preserved correctly
-
-### Best Practice: Include Delimiters in Props
-When passing LaTeX formulas as props, include the delimiters:
-
-```jsx
-// ❌ WRONG - Adding delimiters in component
-<Card formula="\\rho_{\\text{XY}}" />
-// Component does: <span dangerouslySetInnerHTML={{ __html: `\\[${formula}\\]` }} />
-
-// ✅ CORRECT - Include delimiters in the prop
-<Card formula={`\\[\\rho_{\\text{XY}}\\]`} />
-// Component does: <span dangerouslySetInnerHTML={{ __html: formula }} />
-```
-
-## Common Mistakes to Avoid
-
-### 1. Basic LaTeX Rendering
-```jsx
-// ❌ WRONG - Won't render
-<span>\(E[X] = \mu\)</span>
-<button>Show E[X] = μ</button>
-<p>Step with inline math \(E[X^2]\):</p>
-
-// ✅ CORRECT
-<span dangerouslySetInnerHTML={{ __html: `\\(E[X] = \\mu\\)` }} />
-<button>Show <span dangerouslySetInnerHTML={{ __html: `\\(E[X] = \\mu\\)` }} /></button>
-<p>Step with inline math <span dangerouslySetInnerHTML={{ __html: `\\(E[X^2]\\)` }} />:</p>
-```
-
-### 2. Multi-Letter Subscripts
-**CRITICAL**: Multi-letter subscripts must be wrapped in `\text{}` to prevent MathJax errors:
-
-```jsx
-// ❌ WRONG - Causes "Can't find variable: XY" error
-<span dangerouslySetInnerHTML={{ __html: `\\[\\rho_{XY} = \\rho_{YX}\\]` }} />
-
-// ✅ CORRECT - Use \text{} for multi-letter subscripts
-<span dangerouslySetInnerHTML={{ __html: `\\[\\rho_{\\text{XY}} = \\rho_{\\text{YX}}\\]` }} />
-
-// ✅ Single letters work without \text{}
-<span dangerouslySetInnerHTML={{ __html: `\\[\\sigma_X\\]` }} />
-```
-
-**Rule**: Any subscript with more than one letter needs `\text{}`:
-- `_{X}` → Works (single letter)
-- `_{XY}` → Breaks (MathJax looks for JS variable)
-- `_{\\text{XY}}` → Works (properly escaped text)
-- `_{\\text{sample}}` → Works (descriptive subscripts)
-
-### LaTeX Re-rendering Issues
-**Problem**: LaTeX "unrenders" when component state changes (e.g., during simulations)
-**Solution**: Wrap LaTeX-containing sections in React.memo to prevent re-renders
-```jsx
-const FormulaSection = React.memo(function FormulaSection({ params }) {
-  const ref = useRef(null);
-  useEffect(() => {
-    // MathJax processing logic
-  }, [params]);
-  return <div ref={ref}>...</div>;
-});
-```
-
-## Quick Implementation Checklist
-
-- [ ] Use dangerouslySetInnerHTML for ALL LaTeX
-- [ ] Add processMathJax() + setTimeout(..., 100) pattern
-- [ ] Use React.memo for components that shouldn't re-render
-- [ ] Apply ref to container element
-- [ ] Include proper imports (React, useEffect, useRef, useState)
-
-## LaTeX in Custom Components
-UI components may not handle LaTeX props correctly. Use direct elements with dangerouslySetInnerHTML instead.
-
-## CRITICAL: Hub Components Requirements
-
-### ⚠️ Required CSS Classes for MathJax
-**ALWAYS use `font-mono` class** - MathJax depends on monospace font context:
-
-```jsx
-// ✅ CORRECT - Required pattern for all hubs
-<div className="text-2xl font-mono text-cyan-400">
-  <span dangerouslySetInnerHTML={{ __html: `\\(${latex}\\)` }} />
-</div>
-
-// ❌ WRONG - Missing font-mono breaks MathJax
-<div className="text-2xl text-cyan-400">
-  <span dangerouslySetInnerHTML={{ __html: `\\(${latex}\\)` }} />
-</div>
-```
-
-### ⚠️ Avoid Flexbox Containers
-**Never wrap LaTeX in flex containers** - Disrupts MathJax DOM processing:
-
-```jsx
-// ❌ WRONG - Flex containers break MathJax
-<div className="flex items-center">
-  <span dangerouslySetInnerHTML={{ __html: `\\(${latex}\\)` }} />
-</div>
-
-// ✅ CORRECT - Direct container structure
-<div className="text-2xl font-mono text-cyan-400">
-  <span dangerouslySetInnerHTML={{ __html: `\\(${latex}\\)` }} />
-</div>
-```
-
-### ⚠️ Use Proper MathJax Hook
-**Always use `useMathJax` hook** - Don't manually process:
-
-```jsx
-// ✅ CORRECT - Use the hook
-import { useMathJax } from "../../hooks/useMathJax";
-
-const YourComponent = () => {
-  const contentRef = useMathJax([dependencies]);
-  return <div ref={contentRef}>...</div>;
-};
-
-// ❌ WRONG - Manual processing is unreliable
-useEffect(() => {
-  window.MathJax?.typesetPromise([ref.current]);
-}, []);
-```
-
-### Hub Component Checklist
-- [ ] `font-mono` class present
-- [ ] No flex containers around LaTeX
-- [ ] Using `useMathJax` hook
-- [ ] `dangerouslySetInnerHTML` for all LaTeX
-- [ ] Proper ref attachment
+[Tabbed module guide](tabbed-learning-guide.md) · [Contributing](../CONTRIBUTING.md)
