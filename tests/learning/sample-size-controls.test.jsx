@@ -406,6 +406,21 @@ describe('sample-size domain, keyboard controls and explicit study signals', () 
     expectRendered();
   });
 
+  it('explains the standard-error factor and target interval half-width in the revealed formula parts', async () => {
+    startup.resolve(); await mount(); await click(/^Practice/);
+    await click('Critical value z'); await click('Margin of error E');
+    const numerator = getByRole(container, 'heading', { name: 'Why z × σ?' }).parentElement;
+    const precision = getByRole(container, 'heading', { name: 'Why divide by E?' }).parentElement;
+    expect(numerator.textContent).toContain('Before rounding, zσ/E = √n');
+    expect(numerator.querySelector('mjx-mfrac')).not.toBeNull();
+    expect(numerator.querySelector('mjx-msqrt')).not.toBeNull();
+    expect(precision.textContent).toContain('confidence interval for the population mean');
+    expect(precision.textContent).toContain('a particular interval can miss the fixed mean');
+    expect(precision.textContent).not.toContain('being ±1 unit off');
+    expect(precision.textContent).not.toContain('how close we want to be to the true value');
+    expectRendered();
+  });
+
   it('draws correct intermediate confidence counts in calculator Explore while retaining the supported rounded values', async () => {
     startup.resolve(); await mount(); await click(/^Practice/);
     const calculator = calculatorScope();

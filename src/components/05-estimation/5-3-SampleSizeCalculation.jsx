@@ -1222,13 +1222,13 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
             >
               <h5 className="font-semibold text-blue-400 mb-2">Why z × σ?</h5>
               <p className="text-sm text-neutral-300">
-                This represents how many standard errors we need to capture for our confidence level. 
-                The z-value (like 1.96 for 95%) tells us how many standard deviations, and σ is the population 
-                standard deviation. Together they give us the "margin" we need.
+                The critical value z sets the interval method's coverage. For 95% coverage under the normal
+                model, z ≈ 1.96. The half-width is zσ/√n. Before rounding, zσ/E = √n.
+                A larger z or σ requires a larger sample for the same E.
               </p>
               <FormulaScroll className="mt-3 text-center" label="Margin and standard error formula">
                 <span dangerouslySetInnerHTML={{ 
-                  __html: `\\[\\text{Margin} = z_{\\alpha/2} \\times \\text{Standard Error}\\]` 
+                  __html: `\\[\\text{Margin} = z_{\\alpha/2} \\times \\text{Standard Error} = \\frac{z_{\\alpha/2}\\sigma}{\\sqrt{n}}\\]`
                 }} />
               </FormulaScroll>
             </div>
@@ -1244,12 +1244,12 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
             >
               <h5 className="font-semibold text-yellow-400 mb-2">Why divide by E?</h5>
               <p className="text-sm text-neutral-300">
-                E is our desired margin of error - how close we want to be to the true value. 
-                Smaller E means we need more precision, which requires a larger sample size. 
-                Think of it like zoom: to see finer details (smaller E), you need more data points.
+                E is the target half-width of the confidence interval for the population mean.
+                A smaller E means a narrower interval and requires a larger sample under the same assumptions.
               </p>
-              <p className="text-xs text-neutral-500 mt-2">
-                If E = 1, we're okay being ±1 unit off. If E = 0.1, we want to be ±0.1 units off (10× more precise!).
+              <p className="text-xs text-neutral-300 mt-2">
+                E = 1 targets a half-width of 1 unit; E = 0.1 targets a half-width of 0.1 units.
+                Coverage describes repeated sampling, and a particular interval can miss the fixed mean.
               </p>
             </div>
           )}
