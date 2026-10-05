@@ -304,13 +304,13 @@ describe('sample-size responsive chart geometry and equation access', () => {
     const calculatorSection = getByRole(container, 'heading', { name: 'Sample Size Calculator' }).parentElement.parentElement;
     const inputs = getAllByRole(calculatorSection, 'spinbutton');
     await act(async () => fireEvent.change(inputs[1], { target: { value: '0.1' } })); await settle();
-    expect(getByText(calculatorSection, 'n = 86436')).toBeVisible();
+    expect(getByText(calculatorSection, 'n = 86433')).toBeVisible();
     await click('Explore', calculatorSection);
     let svg = chart('Sample size calculator exploration chart'); expectGeometry(svg, 136, 300);
     expect(calculatorData(svg)).toHaveLength(46);
     await click('Calculate', calculatorSection);
     await act(async () => fireEvent.change(getAllByRole(calculatorSection, 'spinbutton')[0], { target: { value: '55' } })); await settle();
-    expect(getByText(calculatorSection, 'n = 1162084')).toBeVisible();
+    expect(getByText(calculatorSection, 'n = 1162042')).toBeVisible();
     await click('Explore', calculatorSection); await click('Vary Std Dev', calculatorSection);
     expectGeometry(svg = chart('Sample size calculator exploration chart'), 136, 300);
     expect(calculatorData(svg).map(point => point.x)).toEqual(Array.from({ length: 51 }, (_, index) => 5 + index / 2));

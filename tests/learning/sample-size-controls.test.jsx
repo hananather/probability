@@ -250,7 +250,7 @@ describe('sample-size domain, keyboard controls and explicit study signals', () 
     expectRendered(calculator);
   });
 
-  it('blocks unrepresentable counts and recovers to the preserved large finite calculation', async () => {
+  it('blocks unrepresentable counts and recovers to the full-quantile large finite calculation', async () => {
     startup.resolve(); await mount(); await click(/^Practice/);
     const calculator = calculatorScope();
     for (const error of [1e-200, 1e-10]) {
@@ -261,10 +261,10 @@ describe('sample-size domain, keyboard controls and explicit study signals', () 
     }
     await edit(calculator, 'Population SD (σ)', 55);
     await edit(calculator, 'Margin of Error (E)', .1);
-    expect(calculator.textContent).toContain('n = 1162084');
+    expect(calculator.textContent).toContain('n = 1162042');
     await click('Save Result', calculator);
     await click(/^Applications/); await click(/^Practice/);
-    expect(calculator.textContent).toContain('σ=55, E=0.1, 95% → n=1162084');
+    expect(calculator.textContent).toContain('σ=55, E=0.1, 95% → n=1162042');
   });
 
   it('offers real named formula buttons with focus and the existing explanation toggles', async () => {

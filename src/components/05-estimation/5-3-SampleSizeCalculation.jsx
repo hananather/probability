@@ -29,7 +29,7 @@ import { colors, typography, createColorScheme } from '@/lib/design-system';
 import { useMathJax } from '@/hooks/useMathJax';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useLearningActivity } from '@/hooks/useLearningActivity';
-import { planEnrollmentForExpectedLoss, solveBudgetSampleSize } from '@/lib/statistics/sampleSizePlanning';
+import { normalMeanCriticalValue, planNormalMeanSampleSize, planEnrollmentForExpectedLoss, solveBudgetSampleSize } from '@/lib/statistics/sampleSizePlanning';
 
 function useChartWidth(ref) {
   const [width, setWidth] = useState(0);
@@ -1555,36 +1555,19 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
     { id: 4, sigma: 15, E: 1, confidence: 95, n: 865, description: "High precision" }
   ];
   
-  // Calculate z-value based on confidence
-  const getZ = (confidence) => {
-    const zValues = {
-      90: 1.645,
-      95: 1.960,
-      98: 2.326,
-      99: 2.576
-    };
-    return zValues[confidence] ?? jStat.normal.inv((1 + confidence / 100) / 2, 0, 1);
+  const getZ = normalMeanCriticalValue;
+  const calculateN = useCallback((sigma, E, confidence) =>
+    planNormalMeanSampleSize({ sigma, E, confidence }).n, []);
+  const plan = useMemo(() => planNormalMeanSampleSize(inputs), [inputs]);
+  const { n } = plan;
+  const calculationError = plan.message;
+  const displayedCriticalValue = plan.criticalValue?.toFixed(6);
+  const mathNumber = value => {
+    const [mantissa, exponent] = String(value).split('e');
+    return exponent === undefined ? mantissa : `${mantissa}\\times 10^{${Number(exponent)}}`;
   };
-  
-  // Calculate sample size
-  const calculateN = useCallback((sigma, E, confidence) => {
-    const z = getZ(confidence);
-    return Math.ceil(Math.pow((z * sigma) / E, 2));
-  }, []);
-  
-  const n = useMemo(() => 
-    Number.isFinite(inputs.sigma) && inputs.sigma > 0 && Number.isFinite(inputs.E) && inputs.E > 0
-      ? calculateN(inputs.sigma, inputs.E, inputs.confidence) : null,
-    [inputs, calculateN]
-  );
-  
-  const calculationError = !Number.isFinite(inputs.sigma) || inputs.sigma <= 0
-    ? 'Enter a positive, finite population standard deviation (σ).'
-    : !Number.isFinite(inputs.E) || inputs.E <= 0
-      ? 'Enter a positive, finite margin of error (E).'
-      : !Number.isSafeInteger(n) || n < 1
-        ? 'The sample size cannot be represented safely for these inputs. Use less extreme values.'
-        : null;
+  const displayedUnroundedCount = plan.unroundedN === null ? null
+    : plan.unroundedN < 0.005 ? plan.unroundedN.toExponential(3) : plan.unroundedN.toFixed(2);
 
   // Save calculation
   const handleSaveCalculation = () => {
@@ -1726,34 +1709,32 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
                   className="mt-4 text-left bg-neutral-900/50 rounded-lg p-4"
                 >
                   <p className="text-sm mb-3 text-neutral-300">Step-by-step calculation:</p>
+                  <p className="mb-3 text-sm leading-relaxed text-neutral-300">
+                    Rounded values are shown for readability. The final count uses the full computed
+                    critical value and unrounded arithmetic, then rounds up to a whole observation.
+                  </p>
                   <FormulaScroll className="space-y-2 font-mono text-sm" label="Sample size calculation steps">
                     <p className="flex items-center gap-2">
                       <span className="text-neutral-500">1.</span>
-                      <span dangerouslySetInnerHTML={{ 
-                        __html: '\\(z_{' + inputs.confidence + '\\%} = ' + getZ(inputs.confidence) + '\\)' 
-                      }} />
+                      <span>{`\\(z_{\\alpha/2} \\approx ${displayedCriticalValue}\\)`}</span>
                     </p>
                     <p className="flex items-center gap-2">
                       <span className="text-neutral-500">2.</span>
-                      <span dangerouslySetInnerHTML={{ 
-                        __html: '\\(n = \\left(\\frac{z \\times \\sigma}{E}\\right)^2\\)' 
-                      }} />
+                      <span>{'\\(n^* = \\left(\\frac{z_{\\alpha/2}\\sigma}{E}\\right)^2\\)'}</span>
                     </p>
                     <p className="flex items-center gap-2">
                       <span className="text-neutral-500">3.</span>
-                      <span dangerouslySetInnerHTML={{ 
-                        __html: '\\(n = \\left(\\frac{' + getZ(inputs.confidence) + ' \\times ' + inputs.sigma + '}{' + inputs.E + '}\\right)^2\\)' 
-                      }} />
+                      <span>{`\\(n^* \\approx \\left(\\frac{${displayedCriticalValue} \\times ${mathNumber(inputs.sigma)}}{${mathNumber(inputs.E)}}\\right)^2\\)`}</span>
                     </p>
                     <p className="flex items-center gap-2">
                       <span className="text-neutral-500">4.</span>
-                      <span dangerouslySetInnerHTML={{ 
-                        __html: '\\(n = \\left(\\frac{' + (getZ(inputs.confidence) * inputs.sigma).toFixed(2) + '}{' + inputs.E + '}\\right)^2\\)' 
-                      }} />
+                      <span>{'\\(n = \\left\\lceil n^* \\right\\rceil\\)'}</span>
                     </p>
                     <p className="flex items-center gap-2">
                       <span className="text-neutral-500">5.</span>
-                      <span>{`n = ${Math.pow((getZ(inputs.confidence) * inputs.sigma) / inputs.E, 2).toFixed(2)}`}</span>
+                      <span>{displayedUnroundedCount === null
+                        ? 'n* > 0 (too small for the numeric display)'
+                        : `n* ≈ ${displayedUnroundedCount}`}</span>
                     </p>
                     <p className="flex items-center gap-2">
                       <span className="text-neutral-500">6.</span>
