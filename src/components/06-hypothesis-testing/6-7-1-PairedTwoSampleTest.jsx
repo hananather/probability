@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useMathJax } from '@/hooks/useMathJax';
 import * as d3 from 'd3';
 import jStat from 'jstat';
+import { twoSidedTTest } from '@/utils/stats';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   VisualizationContainer,
@@ -22,7 +24,7 @@ import {
 const colors = createColorScheme('hypothesis');
 
 // Sample data for the engineers
-const engineersData = [
+export const engineersData = [
   { id: 1, name: "Alex", before: 43, after: 51, avatar: "👨‍💻" },
   { id: 2, name: "Blake", before: 82, after: 84, avatar: "👩‍💻" },
   { id: 3, name: "Casey", before: 77, after: 74, avatar: "👨‍💼" },
@@ -102,21 +104,22 @@ export default function PairedTwoSampleTest() {
     const afterVar = d3.variance(dataWithDifferences, d => d.after);
     
     const differences = dataWithDifferences.map(d => d.difference);
-    const diffMean = d3.mean(differences);
-    const diffVar = d3.variance(differences);
-    const diffStd = Math.sqrt(diffVar);
-    
     const n = dataWithDifferences.length;
-    const testStatistic = diffMean / (diffStd / Math.sqrt(n));
-    const df = n - 1;
+    const {
+      mean: diffMean,
+      variance: diffVar,
+      standardDeviation: diffStd,
+      statistic: testStatistic,
+      degreesOfFreedom: df,
+      criticalValue,
+      pValue,
+      rejectNull
+    } = twoSidedTTest(differences);
     
     // Calculate correlation
     const correlation = d3.sum(dataWithDifferences, d => 
       (d.before - beforeMean) * (d.after - afterMean)
     ) / (Math.sqrt(beforeVar) * Math.sqrt(afterVar) * (n - 1));
-    
-    const criticalValue = 1.833; // t(9, 0.05)
-    const pValue = 0.027; // For t = -2.21 with df = 9
     
     // Unpaired test statistics
     const pooledVar = ((n - 1) * beforeVar + (n - 1) * afterVar) / (2 * n - 2);
@@ -137,6 +140,7 @@ export default function PairedTwoSampleTest() {
       correlation,
       criticalValue,
       pValue,
+      rejectNull,
       unpairedTestStat,
       unpairedPValue,
       improvedCount: dataWithDifferences.filter(d => d.improved).length
@@ -156,8 +160,8 @@ export default function PairedTwoSampleTest() {
       if (currentStep === 1) {
         addDiscovery({
           title: "Paired Design Power",
-          description: "Each person serves as their own control, eliminating individual differences",
-          mathConcept: "D_i = X_{after,i} - X_{before,i}",
+          description: "Each person serves as their own control, accounting for differences in baseline levels",
+          mathConcept: "D_i = X_{before,i} - X_{after,i}",
           category: "concept"
         });
       } else if (currentStep === 2) {
@@ -170,7 +174,7 @@ export default function PairedTwoSampleTest() {
       } else if (currentStep === 3) {
         addDiscovery({
           title: "Two-Sample to One-Sample",
-          description: "Paired t-test transforms a complex two-sample problem into a simple one-sample test",
+          description: "Under H₀, independent normally distributed differences give a one-sample t statistic with n − 1 degrees of freedom",
           mathConcept: "T = \\frac{\\bar{D}}{S_D/\\sqrt{n}} \\sim t(n-1)",
           category: "pattern"
         });
@@ -531,7 +535,7 @@ export default function PairedTwoSampleTest() {
         animationTimeoutRef.current = null;
       }
     };
-  }, [currentStep, scatterAnimationPhase, stats.correlation]);
+  }, [currentStep, scatterAnimationPhase, stats.correlation, showScatterInsight]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -923,20 +927,7 @@ export default function PairedTwoSampleTest() {
 function ChallengeSection({ onNext }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <motion.div 
@@ -973,7 +964,7 @@ function ChallengeSection({ onNext }) {
             <div className="space-y-2 text-neutral-300">
               <p className="flex items-start gap-2">
                 <span className="text-green-400">→</span>
-                <span>For each subject i: <span dangerouslySetInnerHTML={{ __html: `\\(D_i = X_{\\text{after},i} - X_{\\text{before},i}\\)` }} /></span>
+                <span>For each subject i: <span dangerouslySetInnerHTML={{ __html: `\\(D_i = X_{\\text{before},i} - X_{\\text{after},i}\\)` }} /></span>
               </p>
               <p className="flex items-start gap-2">
                 <span className="text-green-400">→</span>
@@ -988,8 +979,8 @@ function ChallengeSection({ onNext }) {
           
           <div className="bg-gradient-to-r from-green-900/20 to-emerald-900/20 rounded-lg p-4 border border-green-700/30">
             <p className="text-sm text-green-300">
-              <span className="font-semibold">Why paired design is effective:</span> It eliminates individual variation. 
-              When subjects serve as their own control, we can detect smaller effects with the same sample size.
+              <span className="font-semibold">Why paired design is effective:</span> It accounts for each subject's baseline.
+              Positive within-pair correlation can reduce the variance of differences and improve power.
             </p>
           </div>
         </motion.div>
@@ -1003,7 +994,7 @@ function ChallengeSection({ onNext }) {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
-            Let's Build Intuition Through an Example
+            Let&apos;s Build Intuition Through an Example
           </h3>
         </motion.div>
         
@@ -1013,7 +1004,7 @@ function ChallengeSection({ onNext }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          We'll explore a hypothetical scenario: A tech company invested in a statistical quality control 
+          We&apos;ll explore a hypothetical scenario: A tech company invested in a statistical quality control
           training program for their engineers. Did the training improve their skills?
         </motion.p>
         
@@ -1267,7 +1258,7 @@ function DiscoverSection({ scatterRef, showScatterInsight, setShowScatterInsight
       >
         <h3 className="text-xl font-semibold text-white mb-2">The Hidden Pattern</h3>
         <p className="text-neutral-400">
-          Let's plot before vs. after scores. What do you notice?
+          Let&apos;s plot before vs. after scores. What do you notice?
         </p>
       </motion.div>
       
@@ -1365,7 +1356,7 @@ function DiscoverSection({ scatterRef, showScatterInsight, setShowScatterInsight
                 <p className="text-xs text-neutral-400 mb-2">Why this matters:</p>
                 <ul className="text-sm text-neutral-300 space-y-1">
                   <li>• Individual variation is huge (some score 40, others 80)</li>
-                  <li>• But each person's improvement is what we care about</li>
+                  <li>• But each person&apos;s improvement is what we care about</li>
                   <li>• Pairing removes the noise of individual differences!</li>
                 </ul>
               </div>
@@ -1390,20 +1381,7 @@ function DiscoverSection({ scatterRef, showScatterInsight, setShowScatterInsight
 function TransformSection({ transformRef, animationPhase, setAnimationPhase, transformationComplete, onNext }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [transformationComplete]);
+  useMathJax(contentRef, [transformationComplete]);
   
   return (
     <div ref={contentRef} className="space-y-6">
@@ -1453,10 +1431,10 @@ function TransformSection({ transformRef, animationPhase, setAnimationPhase, tra
           <div className="bg-gradient-to-r from-green-900/20 to-emerald-900/20 rounded-xl p-6 border border-green-700/30">
             <h4 className="font-semibold text-green-400 mb-3">Transformation Complete!</h4>
             <p className="text-sm text-neutral-300 mb-3">
-              By focusing on the differences, we've eliminated individual variation and can now use a simple one-sample t-test!
+              By focusing on the differences, we account for each person&apos;s baseline and can use a one-sample t-test on the paired changes.
             </p>
             <div className="bg-neutral-800/50 rounded-lg p-4 font-mono text-sm">
-              <p className="text-green-400"><span dangerouslySetInnerHTML={{ __html: `\\(H_0: \\mu_{\\text{difference}} = 0\\)` }} /> (no improvement)</p>
+              <p className="text-green-400"><span dangerouslySetInnerHTML={{ __html: `\\(H_0: \\mu_{\\text{difference}} = 0\\)` }} /> (no mean change)</p>
               <p className="text-red-400"><span dangerouslySetInnerHTML={{ __html: `\\(H_1: \\mu_{\\text{difference}} \\neq 0\\)` }} /> (there is a change)</p>
             </div>
           </div>
@@ -1479,20 +1457,7 @@ function TransformSection({ transformRef, animationPhase, setAnimationPhase, tra
 function ResultsSection({ stats, showFinalResult, setShowFinalResult }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [showFinalResult]);
+  useMathJax(contentRef, [stats, showFinalResult]);
   
   return (
     <div ref={contentRef} className="space-y-6">
@@ -1531,7 +1496,7 @@ function ResultsSection({ stats, showFinalResult, setShowFinalResult }) {
         >
           {/* Test Results */}
           <div className="bg-gradient-to-r from-green-900/20 to-emerald-900/20 rounded-xl p-6 border border-green-700/30">
-            <h4 className="text-2xl font-bold text-green-400 mb-4">Statistical Evidence of Improvement</h4>
+            <h4 className="text-2xl font-bold text-green-400 mb-4">Two-Sided Test of Mean Change</h4>
             
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-4">
@@ -1543,15 +1508,19 @@ function ResultsSection({ stats, showFinalResult, setShowFinalResult }) {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-400">t-statistic:</span>
-                    <span className="font-mono text-purple-400">{Math.abs(stats.testStatistic).toFixed(2)}</span>
+                    <span className="font-mono text-purple-400">{stats.testStatistic.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-neutral-400">p-value:</span>
+                    <span className="text-neutral-400">Two-sided p-value:</span>
                     <span className="font-mono text-red-400">{stats.pValue.toFixed(3)}</span>
                   </div>
                   <div className="flex justify-between">
+                    <span className="text-neutral-400">Critical |t| (df = {stats.df}):</span>
+                    <span className="font-mono text-neutral-200">{stats.criticalValue.toFixed(3)}</span>
+                  </div>
+                  <div className="flex justify-between">
                     <span className="text-neutral-400">Decision (α = 0.05):</span>
-                    <span className="font-semibold text-green-400">Reject <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /></span>
+                    <span className="font-semibold text-neutral-200">{stats.rejectNull ? 'Reject' : 'Fail to reject'} <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /></span>
                   </div>
                 </div>
               </div>
@@ -1567,11 +1536,11 @@ function ResultsSection({ stats, showFinalResult, setShowFinalResult }) {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-neutral-400">Decision:</span>
-                      <span className="text-neutral-400">Fail to reject</span>
+                      <span className="text-neutral-400">{stats.unpairedPValue < 0.05 ? 'Reject' : 'Fail to reject'}</span>
                     </div>
                   </div>
                   <p className="text-xs text-yellow-300 mt-3">
-                    Without pairing, we would have missed the effect entirely!
+                    Pairing gives a smaller p-value here, but neither analysis rejects at α = 0.05. The observed improvement remains uncertain.
                   </p>
                 </div>
               </div>
@@ -1598,7 +1567,7 @@ function ResultsSection({ stats, showFinalResult, setShowFinalResult }) {
                 </div>
                 <h5 className="font-medium text-white mb-2">Increased Power</h5>
                 <p className="text-xs text-neutral-400">
-                  Pairing removes individual variation, making it easier to detect true effects
+                  Positive within-pair correlation can reduce the variability of differences and improve power
                 </p>
               </div>
               
@@ -1629,6 +1598,9 @@ function ResultsSection({ stats, showFinalResult, setShowFinalResult }) {
                   <li>• Repeated measures on same subject</li>
                   <li>• Split-plot experiments</li>
                 </ul>
+                <p className="text-xs text-neutral-400 mt-3">
+                  For this small-sample t-test, pairs should be independent and the differences approximately normal. Before/after data alone do not establish that training caused a change.
+                </p>
               </div>
               
               <div>

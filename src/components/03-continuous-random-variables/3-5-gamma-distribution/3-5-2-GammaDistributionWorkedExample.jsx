@@ -297,6 +297,7 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
     
     return <div ref={ref}>{children}</div>;
   });
+FormulaSection.displayName = 'FormulaSection';
   
   return (
     <VisualizationContainer
@@ -631,5 +632,6 @@ const GammaDistributionWorkedExample = React.memo(function GammaDistributionWork
     </VisualizationContainer>
   );
 });
+GammaDistributionWorkedExample.displayName = 'GammaDistributionWorkedExample';
 
 export default GammaDistributionWorkedExample;

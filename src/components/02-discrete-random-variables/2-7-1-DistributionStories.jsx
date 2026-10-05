@@ -218,21 +218,6 @@ const BinomialStory = React.memo(function BinomialStory({ isActive }) {
     
   }, [isActive]);
 
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax(); // Try immediately
-    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
-    return () => clearTimeout(timeoutId);
-  }, [isActive]);
-  
   return (
     <div ref={contentRef} className="w-full h-full flex items-center justify-center">
       <svg ref={svgRef} className="w-full" />
@@ -507,21 +492,6 @@ const PoissonStory = React.memo(function PoissonStory({ isActive }) {
     
   }, [isActive]);
 
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax(); // Try immediately
-    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
-    return () => clearTimeout(timeoutId);
-  }, [isActive]);
-  
   return (
     <div ref={contentRef} className="w-full h-full flex items-center justify-center">
       <svg ref={svgRef} className="w-full" />

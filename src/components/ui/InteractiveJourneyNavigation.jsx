@@ -37,11 +37,21 @@ export function InteractiveJourneyNavigation({
     if (!allowKeyboardNav) return;
 
     const handleKeyPress = (e) => {
+      const target = e.target;
+      if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey ||
+          (target instanceof Element && (target.matches('[tabindex]:not([tabindex="-1"])') || target.closest(
+            'input, textarea, select, button, a, summary, details, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], [role="switch"], [role="link"], [role="menuitem"], [contenteditable]:not([contenteditable="false"]), [role="slider"], [role="textbox"], [role="combobox"]'
+          )))) {
+        return;
+      }
       if (e.key === 'ArrowLeft' && currentSection > 0) {
+        e.preventDefault();
         onNavigate(currentSection - 1);
       } else if (e.key === 'ArrowRight' && currentSection < totalSections - 1) {
+        e.preventDefault();
         onNavigate(currentSection + 1);
       } else if (e.key === 'Enter' && currentSection === totalSections - 1 && onComplete) {
+        e.preventDefault();
         onComplete();
       }
     };
@@ -83,21 +93,21 @@ export function InteractiveJourneyNavigation({
       </motion.div>
 
       {/* Navigation Controls */}
-      <div className="flex justify-between items-center">
+      <div className="grid grid-cols-2 items-stretch gap-3 sm:flex sm:justify-between sm:items-center">
         {/* Previous Button */}
         <Button
           variant="secondary"
           onClick={() => onNavigate(Math.max(0, currentSection - 1))}
           disabled={isFirstSection}
-          className="flex items-center gap-2"
+          className="order-2 flex min-h-11 h-auto min-w-0 items-center gap-2 whitespace-normal px-2 sm:order-1 sm:px-4"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="hidden w-4 h-4 shrink-0 sm:block" />
           <span className="hidden sm:inline">{getPreviousButtonText()}</span>
           <span className="sm:hidden">Previous</span>
         </Button>
 
         {/* Center Info */}
-        <div className="text-center">
+        <div className="order-1 col-span-2 text-center sm:order-2 sm:shrink-0">
           <div className="text-sm text-neutral-400">
             {currentSection + 1} of {totalSections}
           </div>
@@ -118,7 +128,7 @@ export function InteractiveJourneyNavigation({
               }
             }}
             disabled={isCompleted && !onComplete}
-            className="flex items-center gap-2"
+            className="order-3 flex min-h-11 h-auto min-w-0 items-center gap-2 whitespace-normal px-2 sm:px-4"
           >
             {isCompleted ? "✓ Completed" : "Complete Section"}
           </Button>
@@ -126,11 +136,11 @@ export function InteractiveJourneyNavigation({
           <Button
             variant="primary"
             onClick={() => onNavigate(currentSection + 1)}
-            className="flex items-center gap-2"
+            className="order-3 flex min-h-11 h-auto min-w-0 items-center gap-2 whitespace-normal px-2 sm:px-4"
           >
             <span className="hidden sm:inline">{getNextButtonText()}</span>
             <span className="sm:hidden">Next</span>
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="hidden w-4 h-4 shrink-0 sm:block" />
           </Button>
         )}
       </div>

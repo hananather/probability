@@ -17,6 +17,7 @@ import {
   Check, X, Calculator, BookOpen, GraduationCap, StickyNote, AlertCircle, CheckCircle
 } from 'lucide-react';
 import { ConfidenceIntervalReference } from '../ui/patterns/QuickReferenceCard';
+import { useMathJax } from '@/hooks/useMathJax';
 
 // Learning modes
 const LEARNING_MODES = {
@@ -45,19 +46,7 @@ const chapterColors = {
 const PlainEnglishCard = ({ title, explanation, example }) => {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <div 
@@ -107,20 +96,7 @@ const ExamTip = ({ tip, warning }) => {
 const LearningPathNavigation = React.memo(function LearningPathNavigation({ mode, onModeChange }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [mode]);
+  useMathJax(contentRef, [mode]);
   
   return (
     <div className="mb-8">
@@ -171,12 +147,15 @@ const LearningPathNavigation = React.memo(function LearningPathNavigation({ mode
 });
 
 // Problem Section: Why We Can't Just Use Z
-const ProblemStatement = ({ onInsight }) => {
+const ProblemStatement = React.memo(function ProblemStatement({ onInsight }) {
+  const contentRef = useRef(null);
   const [showNaiveApproach, setShowNaiveApproach] = useState(false);
   const [showWhyItFails, setShowWhyItFails] = useState(false);
+
+  useMathJax(contentRef, [showNaiveApproach, showWhyItFails]);
   
   return (
-    <div className="space-y-6">
+    <div ref={contentRef} className="space-y-6">
       <PlainEnglishCard
         explanation="In real life, we almost never know the true spread (σ) of our population. We only have our sample's spread (s). This creates extra uncertainty that we need to account for. Using s instead of σ introduces additional variability - we're estimating the mean AND the spread from the same limited data."
         example="Think of it like estimating a city's average income using only 10 households - you're guessing both the average AND the spread based on the same limited data. This double uncertainty needs special handling."
@@ -291,7 +270,7 @@ const ProblemStatement = ({ onInsight }) => {
       )}
     </div>
   );
-};
+});
 
 // Ozone Example Component
 const OzoneExample = React.memo(function OzoneExample({ onInsight }) {
@@ -335,19 +314,7 @@ const OzoneExample = React.memo(function OzoneExample({ onInsight }) {
     }
   ];
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [currentStep]);
+  useMathJax(contentRef, [currentStep]);
   
   // Visual component for data points
   const DataPointsVisualization = () => {
@@ -1352,19 +1319,7 @@ const MathematicalFoundation = React.memo(function MathematicalFoundation({ onIn
   const contentRef = useRef(null);
   const [showDerivation, setShowDerivation] = useState(false);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [showDerivation]);
+  useMathJax(contentRef, [showDerivation]);
   
   return (
     <VisualizationSection>
@@ -1532,19 +1487,7 @@ const StepByStepGuide = React.memo(function StepByStepGuide({ onInsight }) {
     }
   ];
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [currentStep]);
+  useMathJax(contentRef, [currentStep]);
   
   const checkAnswer = () => {
     if (userAnswer === steps[currentStep].answer) {
@@ -1724,19 +1667,7 @@ const PracticeProblems = React.memo(function PracticeProblems({ onInsight }) {
     }
   ];
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [currentProblem, showSolution]);
+  useMathJax(contentRef, [currentProblem, showSolution]);
   
   return (
     <VisualizationSection>
@@ -1873,19 +1804,7 @@ const CommonMistakes = () => {
     }
   ];
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <VisualizationSection>
@@ -1949,23 +1868,10 @@ const CommonMistakes = () => {
 };
 
 // Summary Comparison
-const SummaryComparison = () => {
+const SummaryComparison = React.memo(function SummaryComparison() {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <VisualizationSection>
@@ -2037,7 +1943,7 @@ const SummaryComparison = () => {
       </div>
     </VisualizationSection>
   );
-};
+});
 
 // Main Component with Mode-Based Navigation
 export default function ConfidenceIntervalUnknownVariance() {
@@ -2051,7 +1957,7 @@ export default function ConfidenceIntervalUnknownVariance() {
     viewedSolution: false
   });
   
-  const handleInsight = (insight) => {
+  const handleInsight = useCallback((insight) => {
     setUserInsights(prev => ({
       ...prev,
       [insight]: true
@@ -2069,7 +1975,7 @@ export default function ConfidenceIntervalUnknownVariance() {
     } else if (insight === 'viewedSolution') {
       setUserInsights(prev => ({ ...prev, practiceCompleted: true }));
     }
-  };
+  }, []);
   
   return (
     <VisualizationContainer

@@ -14,12 +14,12 @@ import { ArrowLeft } from 'lucide-react';
 export default function BackToHub({ chapter = 3, bottom = false }) {
   return (
     <div className={`flex justify-start ${bottom ? 'mt-8 mb-4' : 'mb-6'}`}>
-      <Link href={`/chapter${chapter}`}>
-        <Button variant="secondary" className="flex items-center gap-2">
+      <Button asChild variant="secondary" className="flex items-center gap-2">
+        <Link href={`/chapter${chapter}`}>
           <ArrowLeft className="w-4 h-4" />
           Back to Chapter {chapter} Hub
-        </Button>
-      </Link>
+        </Link>
+      </Button>
     </div>
   );
 }

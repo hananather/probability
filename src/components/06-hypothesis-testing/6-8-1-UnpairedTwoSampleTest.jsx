@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
+import { useMathJax } from '@/hooks/useMathJax';
 import * as d3 from "@/utils/d3-utils";
 import jStat from "jstat";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,20 +21,7 @@ const chapterColors = createColorScheme('hypothesis');
 const ConceptOverview = React.memo(function ConceptOverview() {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">
@@ -72,20 +60,7 @@ const ConceptOverview = React.memo(function ConceptOverview() {
 const TestSelectionFramework = React.memo(function TestSelectionFramework() {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">
@@ -160,20 +135,7 @@ const TestSelectionFramework = React.memo(function TestSelectionFramework() {
 const WorkedExample = React.memo(function WorkedExample({ example }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [example]);
+  useMathJax(contentRef, [example]);
   
   // Calculate statistics
   const calculateStats = (data) => {
@@ -311,20 +273,7 @@ const WorkedExample = React.memo(function WorkedExample({ example }) {
 const DataComparisonTable = React.memo(function DataComparisonTable({ group1Data, group2Data, group1Label, group2Label, example }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [group1Data, group2Data]);
+  useMathJax(contentRef, [group1Data, group2Data]);
   
   // Calculate statistics
   const calculateStats = (data) => {
@@ -350,6 +299,8 @@ const DataComparisonTable = React.memo(function DataComparisonTable({ group1Data
   const pooledSd = Math.sqrt(pooledVar);
   const cohensD = (stats1.mean - stats2.mean) / pooledSd;
   
+  const pooledMathRef = useMathJax([pooledSd]);
+
   return (
     <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">
       <h3 className="text-xl font-bold text-blue-400 mb-6">
@@ -457,7 +408,7 @@ const DataComparisonTable = React.memo(function DataComparisonTable({ group1Data
             Pooled Standard Deviation
           </h4>
           <p className="text-sm text-neutral-300">
-            <span dangerouslySetInnerHTML={{ __html: `\\(S_p = ${pooledSd.toFixed(3)}\\)` }} />
+            <span ref={pooledMathRef} dangerouslySetInnerHTML={{ __html: `\\(S_p = ${pooledSd.toFixed(3)}\\)` }} />
             {example.group1.knownSigma && example.group2.knownSigma && (
               <span className="block mt-1 text-xs text-neutral-400">
                 (Note: Using sample SDs for display, but Z-test uses known σ values)
@@ -502,20 +453,7 @@ const InteractiveCalculator = React.memo(function InteractiveCalculator() {
   const [testType, setTestType] = useState('auto');
   const [alpha, setAlpha] = useState(0.05);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [n1, mean1, sd1, n2, mean2, sd2, testType]);
+  useMathJax(contentRef, [n1, mean1, sd1, n2, mean2, sd2, testType, alpha]);
   
   // Calculate test results
   const varianceRatio = Math.max(sd1*sd1/(sd2*sd2), sd2*sd2/(sd1*sd1));
@@ -726,20 +664,7 @@ const InteractiveCalculator = React.memo(function InteractiveCalculator() {
 const KeyInsights = React.memo(function KeyInsights() {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">

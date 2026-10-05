@@ -1,45 +1,56 @@
 "use client";
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import * as Dialog from '@radix-ui/react-dialog';
 import { QuizTimer } from './QuizTimer';
 import { QuizProgress } from './QuizProgress';
 import { QuizResults } from './QuizResults';
 import { MultiSelectQuestion } from './MultiSelectQuestion';
 import { Button } from '../ui/button';
 import { AlertCircle, BookOpen, Settings, ChevronRight } from 'lucide-react';
-import { getChapterQuestions } from '@/lib/quiz/questionBank';
-import { quizStorage } from '@/lib/quiz/quizStorage';
+import { getChapterQuestions, isQuizVersion } from '@/lib/quiz/questionBank';
+import { createQuizStorage, createQuizId, DEFAULT_QUIZ_PREFERENCES } from '@/lib/quiz/quizStorage';
+import { mergeQuizSession } from '@/lib/progress/quizContract';
+import { resolveChapterId } from '@/lib/curriculum/manifest';
+import { useProgress } from '@/hooks/useProgress';
 import { useMathJax } from '@/hooks/useMathJax';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 // Single question component that handles both types
-function QuizQuestionWrapper({ 
+export function QuizQuestionWrapper({
   question, 
   onAnswer, 
   showExplanation = false,
-  disabled = false 
+  disabled = false,
+  reviewMode = false,
+  questionHeadingRef,
+  savedAnswer
 }) {
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [selectedAnswer, setSelectedAnswer] = useState(savedAnswer?.answer ?? null);
   const [selectedMultiple, setSelectedMultiple] = useState([]);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [isAnswered, setIsAnswered] = useState(false);
-  const questionRef = useMathJax([question.question]);
-  const optionsRef = useMathJax(question.options); // options is already an array
+  const [showFeedback, setShowFeedback] = useState(Boolean(savedAnswer) || reviewMode);
+  const [isAnswered, setIsAnswered] = useState(Boolean(savedAnswer) || reviewMode);
+  const questionIdentity = question.id ?? JSON.stringify([question.question, question.options, question.correct]);
+  const savedAnswerIdentity = JSON.stringify([Boolean(savedAnswer), savedAnswer?.answer ?? null, savedAnswer?.timestamp ?? null, savedAnswer?.isCorrect ?? null]);
+  const contentRef = useMathJax([question, savedAnswer, showExplanation, showFeedback]);
   
   const isMultiSelect = question.type === 'multi-select';
   
-  // Reset state when question changes
+  // Canonical session patches clone the bank; reset only for a new question or submitted answer.
   useEffect(() => {
-    setSelectedAnswer(null);
+    const [hasSavedAnswer, answer] = JSON.parse(savedAnswerIdentity);
+    setSelectedAnswer(answer);
     setSelectedMultiple([]);
-    setShowFeedback(false);
-    setIsAnswered(false);
-  }, [question]);
+    setShowFeedback(hasSavedAnswer || reviewMode);
+    setIsAnswered(hasSavedAnswer || reviewMode);
+  }, [questionIdentity, savedAnswerIdentity, reviewMode]);
   
   const handleSingleAnswer = (index) => {
-    if (isAnswered || disabled) return;
+    if (isAnswered || disabled || reviewMode) return;
     setSelectedAnswer(index);
   };
   
   const handleSubmit = () => {
+    if (isAnswered || disabled || reviewMode) return;
     if (!isMultiSelect && selectedAnswer === null) return;
     if (isMultiSelect && selectedMultiple.length === 0) return;
     
@@ -66,7 +77,7 @@ function QuizQuestionWrapper({
   // Use MultiSelectQuestion for multi-select
   if (isMultiSelect) {
     return (
-      <MultiSelectQuestion
+      <div ref={contentRef}><MultiSelectQuestion
         question={question.question}
         options={question.options}
         correctIndices={question.correct}
@@ -74,7 +85,11 @@ function QuizQuestionWrapper({
         onAnswer={onAnswer}
         showExplanation={showExplanation}
         disabled={disabled}
-      />
+        reviewMode={reviewMode}
+        questionId={questionIdentity}
+        questionHeadingRef={questionHeadingRef}
+        savedAnswer={savedAnswer}
+      /></div>
     );
   }
   
@@ -82,14 +97,14 @@ function QuizQuestionWrapper({
   const isCorrect = selectedAnswer === question.correct;
   
   return (
-    <div className="space-y-4">
+    <div ref={contentRef} className="space-y-4">
       {/* Question */}
-      <div ref={questionRef}>
-        <p className="text-lg text-neutral-200 font-medium">{question.question}</p>
+      <div>
+        <h2 ref={questionHeadingRef} tabIndex={-1} className="text-lg text-neutral-200 font-medium scroll-mt-24">{question.question}</h2>
       </div>
       
       {/* Options */}
-      <div ref={optionsRef} className="space-y-3">
+      <div role="group" aria-label="Answer choices" className="space-y-3">
         {question.options.map((option, index) => {
           const isSelected = selectedAnswer === index;
           const showAsCorrect = showFeedback && index === question.correct;
@@ -99,7 +114,8 @@ function QuizQuestionWrapper({
             <button
               key={index}
               onClick={() => handleSingleAnswer(index)}
-              disabled={isAnswered || disabled}
+              disabled={isAnswered || disabled || reviewMode}
+              aria-pressed={isSelected}
               className={`
                 w-full p-4 rounded-lg border text-left transition-all duration-300
                 ${(isAnswered || disabled) ? 'cursor-not-allowed' : 'cursor-pointer hover:scale-[1.02] hover:shadow-lg'}
@@ -144,6 +160,8 @@ function QuizQuestionWrapper({
                   }
                 `}>
                   {option}
+                  {showAsCorrect && <span className="sr-only"> — Correct answer</span>}
+                  {showAsIncorrect && <span className="sr-only"> — Your incorrect answer</span>}
                 </span>
               </div>
             </button>
@@ -156,7 +174,7 @@ function QuizQuestionWrapper({
         {!isAnswered ? (
           <Button
             onClick={handleSubmit}
-            disabled={selectedAnswer === null}
+            disabled={selectedAnswer === null || disabled || reviewMode}
             variant="primary"
             size="default"
           >
@@ -164,10 +182,10 @@ function QuizQuestionWrapper({
           </Button>
         ) : (
           <>
-            <span className={`font-medium ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
-              {isCorrect ? 'Correct!' : 'Incorrect'}
+            <span role="status" className={`font-medium ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
+              {isCorrect ? 'Correct!' : selectedAnswer === null ? 'Not answered' : 'Incorrect'}
             </span>
-            {!isCorrect && (
+            {!isCorrect && !disabled && !reviewMode && (
               <Button
                 onClick={handleTryAgain}
                 variant="neutral"
@@ -194,159 +212,262 @@ function QuizQuestionWrapper({
   );
 }
 
-// Main Quiz Component
-export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
-  // Quiz state
-  const [quizData, setQuizData] = useState(null);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [flaggedQuestions, setFlaggedQuestions] = useState([]);
-  const [quizState, setQuizState] = useState('intro'); // intro, quiz, results, review
-  const [startTime, setStartTime] = useState(null);
-  const [timeSpent, setTimeSpent] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-  
-  // Preferences
-  const [preferences, setPreferences] = useState(quizStorage.getPreferences());
+function PersistenceNotice({ progress, actionError }) {
+  const sessionOnly = progress.persistenceStatus === 'session-only';
+  const pending = progress.pendingLocalWrites > 0 || sessionOnly;
+  if (!pending && !actionError) return null;
+  return (
+    <div role="status" aria-label="Quiz saving" className="rounded-lg border border-amber-700 bg-amber-950 p-4 text-sm text-amber-100">
+      {actionError && <p>{actionError}</p>}
+      {pending && <>
+        <p>{sessionOnly ? 'This quiz is saved in this tab only while local storage is unavailable. Reloading may lose pending changes.' : 'Saving quiz changes to this device…'}</p>
+        {sessionOnly && <Button variant="neutral" size="sm" className="mt-2" onClick={progress.retryLocalPersistence}>Retry saving</Button>}
+      </>}
+    </div>
+  );
+}
+
+function BankNotice({ bank, selectedVersion }) {
+  const names = { engineering: 'Engineering', biostats: 'Biostats', social: 'Social Science' };
+  return <p className="text-sm text-neutral-400">
+    {bank.requestedVersion !== bank.effectiveVersion
+      ? `Requested ${names[bank.requestedVersion]}; using Engineering questions because this chapter has no ${names[bank.requestedVersion]} bank.`
+      : `${names[bank.effectiveVersion]} questions.`}
+    {selectedVersion !== bank.requestedVersion && ' This saved session keeps its original questions; a new attempt uses your selected version.'}
+  </p>;
+}
+
+export function ChapterQuiz(props) {
+  const progress = useProgress();
+  return <BoundChapterQuiz key={`${progress.learningData.ownerScope}:${progress.generation}`} {...props} progress={progress} />;
+}
+
+function BoundChapterQuiz({ chapterId = 1, version = 'engineering', progress }) {
+  const { learningData, loading } = progress;
+  const store = progress.store;
+  const isCurrentBinding = progress.isCurrentBinding;
+  const storage = useMemo(() => store ? createQuizStorage(store) : null, [store]);
+  const chapter = resolveChapterId(chapterId);
+  const quizId = `${chapter}:quiz`;
+  const freshData = useMemo(() => isQuizVersion(version) ? getChapterQuestions(chapterId, version) : null, [chapterId, version]);
+  const locator = learningData.resumeByDevice[learningData.deviceId]?.[quizId];
+  const savedSession = locator?.session;
+  const [activeSession, setActiveSession] = useState(null);
+  const [resultAttempt, setResultAttempt] = useState(null);
+  const [reviewIndex, setReviewIndex] = useState(0);
+  const [quizState, setQuizState] = useState('intro');
+  const [previousBest, setPreviousBest] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
-  
-  // Load quiz questions
+  const [showFinishConfirmation, setShowFinishConfirmation] = useState(false);
+  const [actionError, setActionError] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const finishButtonRef = useRef(null);
+  const questionHeadingRef = useRef(null);
+  const resultsHeadingRef = useRef(null);
+  const navigationFocus = useRef(null);
+  const resultsFocus = useRef(false);
+  const finishReturnFocus = useRef(null);
+  const reducedMotion = useReducedMotion();
+  const work = useRef(null);
+  const mounted = useRef(false);
+  const scope = `${learningData.ownerScope}:${progress.generation}:${chapter}:${version}`;
+  const scopeRef = useRef(scope);
+  scopeRef.current = scope;
+  const stats = storage?.getChapterStats(chapterId, learningData) || { attempted: false, bestScore: 0 };
+  const attempts = storage?.getAttempts(chapterId, learningData) || [];
+  const latestPinned = [...attempts].reverse().find(attempt => attempt.legacy === false);
+  const legacyAttempts = attempts.filter(attempt => attempt.legacy);
+  const preferences = { ...DEFAULT_QUIZ_PREFERENCES, ...learningData.preferences.quiz };
+  const displayBank = (quizState === 'results' || quizState === 'review') ? resultAttempt?.bank : activeSession?.bank;
+  const quizData = freshData && { ...freshData, questions: displayBank?.questions || freshData.questions };
+  const bank = displayBank || (freshData && { revision: freshData.bankRevision, requestedVersion: freshData.requestedVersion, effectiveVersion: freshData.effectiveVersion, questions: freshData.questions });
+  const answerMap = (quizState === 'results' || quizState === 'review') ? (resultAttempt?.answersByQuestionId || {}) : (activeSession?.answersByQuestionId || {});
+  const answers = Object.fromEntries((quizData?.questions || []).flatMap((question, index) => answerMap[question.id] ? [[index, answerMap[question.id]]] : []));
+  const currentQuestion = quizState === 'review' ? reviewIndex : Math.max(0, quizData?.questions.findIndex(question => question.id === activeSession?.currentQuestionId) ?? 0);
+  const flaggedQuestions = (activeSession?.flaggedQuestionIds || []).map(id => quizData?.questions.findIndex(question => question.id === id)).filter(index => index >= 0);
+  const isPaused = activeSession?.isPaused || false;
+  const deadline = activeSession?.deadline;
+  const pausedRemaining = activeSession?.pausedRemaining;
+  const timeSpent = resultAttempt?.timeSpent || 0;
+  const currentQuestionId = quizData?.questions[currentQuestion]?.id;
+
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   useEffect(() => {
-    const data = getChapterQuestions(chapterId, version);
-    if (data) {
-      setQuizData(data);
-      
-      // Check for existing session
-      const existingSession = quizStorage.getCurrentSession(chapterId);
-      if (existingSession && existingSession.version === version) {
-        // Resume existing session
-        setCurrentQuestion(existingSession.currentQuestion || 0);
-        setAnswers(existingSession.answers || {});
-        setFlaggedQuestions(existingSession.flaggedQuestions || []);
-        setQuizState('quiz');
-        setStartTime(existingSession.startTime);
+    work.current = null;
+    navigationFocus.current = null;
+    resultsFocus.current = false;
+    finishReturnFocus.current = null;
+    setActiveSession(null); setResultAttempt(null); setQuizState('intro'); setReviewIndex(0); setActionError(null);
+    setBusy(false); setShowFinishConfirmation(false); setShowSettings(false); setPreviousBest(null);
+  }, [scope]);
+  useEffect(() => {
+    const requested = navigationFocus.current;
+    if (!requested || requested.scope !== scope || requested.questionId !== currentQuestionId
+      || (quizState !== 'quiz' && quizState !== 'review') || !questionHeadingRef.current?.isConnected) return;
+    navigationFocus.current = null;
+    questionHeadingRef.current?.focus({ preventScroll: true });
+    questionHeadingRef.current?.scrollIntoView?.({ behavior: reducedMotion ? 'instant' : 'smooth', block: 'start' });
+  }, [currentQuestionId, quizState, scope, reducedMotion]);
+  useEffect(() => {
+    if (quizState !== 'results' || !resultsFocus.current) return;
+    resultsFocus.current = false;
+    resultsHeadingRef.current?.focus({ preventScroll: true });
+    resultsHeadingRef.current?.scrollIntoView?.({ behavior: reducedMotion ? 'instant' : 'smooth', block: 'start' });
+  }, [quizState, reducedMotion]);
+  useEffect(() => {
+    if (loading || !store || !freshData) return;
+    if (savedSession) {
+      if (work.current?.sessionId !== savedSession.sessionId) {
+        work.current = { sessionId: savedSession.sessionId, store, isCurrentBinding, context: store.captureWriteContext(quizId), attemptId: createQuizId(), scope };
+        setPreviousBest(stats.attempted ? stats.bestScore : null);
+      }
+      setActiveSession(savedSession);
+      setQuizState('quiz');
+    } else if (work.current && !work.current.finishing && !work.current.starting && quizState === 'quiz') {
+      const finished = Object.values(learningData.quizAttempts).find(attempt => !attempt.legacy && attempt.sessionId === work.current.sessionId);
+      if (finished) { setResultAttempt(finished); setQuizState('results'); }
+      else { setActiveSession(null); setQuizState('intro'); setActionError('This quiz was cleared or reset in another tab. Start a new attempt to continue.'); }
+      work.current = null;
+    }
+  }, [loading, savedSession, scope, learningData.quizAttempts, store, freshData, quizId, quizState, stats.attempted, stats.bestScore, isCurrentBinding]);
+
+  const handleStartQuiz = async () => {
+    if (loading || !store || !isCurrentBinding() || !quizData || work.current?.starting || busy) return;
+    const captured = { sessionId: createQuizId(), store, isCurrentBinding, context: store.captureWriteContext(quizId), attemptId: createQuizId(), scope, starting: true };
+    const now = Date.now();
+    const session = {
+      sessionId: captured.sessionId, chapterId: chapter,
+      bank: JSON.parse(JSON.stringify({ revision: freshData.bankRevision, requestedVersion: freshData.requestedVersion, effectiveVersion: freshData.effectiveVersion, questions: freshData.questions })),
+      currentQuestionId: freshData.questions[0].id, answersByQuestionId: {}, flaggedQuestionIds: [],
+      startTime: now, deadline: now + freshData.timeLimit * 60000, isPaused: false, pausedRemaining: null,
+    };
+    work.current = captured;
+    finishReturnFocus.current = null;
+    navigationFocus.current = { scope, questionId: freshData.questions[0].id };
+    setPreviousBest(stats.attempted ? stats.bestScore : null); setActionError(null); setBusy(true); setShowFinishConfirmation(false);
+    try {
+      const result = await captured.store.beginQuizSession(chapterId, session, { context: captured.context });
+      if (!mounted.current || !captured.isCurrentBinding() || scopeRef.current !== captured.scope || work.current !== captured) return;
+      if (!result.applied) {
+        setActionError('The saved quiz changed or was reset. Start a new attempt.');
+        setActiveSession(null); setResultAttempt(null); setQuizState('intro'); work.current = null;
+        navigationFocus.current = null;
+        return;
+      }
+      setActiveSession(store.getSnapshot().data.resumeByDevice[store.getSnapshot().data.deviceId]?.[quizId]?.session || session);
+      setResultAttempt(null); setQuizState('quiz');
+    } catch (error) {
+      if (mounted.current && scopeRef.current === captured.scope && work.current === captured) {
+        navigationFocus.current = null;
+        work.current = null;
+        setActionError(error.message);
       }
     }
-  }, [chapterId, version]);
-  
-  // Start quiz
-  const handleStartQuiz = () => {
-    setQuizState('quiz');
-    setStartTime(Date.now());
-    setCurrentQuestion(0);
-    setAnswers({});
-    setFlaggedQuestions([]);
-    quizStorage.clearCurrentSession();
+    finally { captured.starting = false; if (mounted.current && scopeRef.current === captured.scope) setBusy(false); }
   };
-  
-  // Handle answer submission
-  const handleAnswer = (questionIndex, isCorrect, answer) => {
-    const newAnswers = {
-      ...answers,
-      [questionIndex]: {
-        answer,
-        isCorrect,
-        timestamp: Date.now()
-      }
-    };
-    setAnswers(newAnswers);
-    
-    // Save session
-    quizStorage.saveCurrentSession(chapterId, {
-      currentQuestion,
-      answers: newAnswers,
-      timeRemaining: null, // Calculate from timer
-      startTime,
-      flaggedQuestions,
-      version
-    });
-    
-    // No auto-advance - user must click Next button
+
+  const persistPatch = async patch => {
+    const captured = work.current;
+    const session = activeSession;
+    if (!captured || !captured.isCurrentBinding() || captured.scope !== scope || !session || captured.sessionId !== session.sessionId || captured.finishing || quizState !== 'quiz') return;
+    setActiveSession(mergeQuizSession(session, patch));
+    try {
+      const result = await captured.store.updateQuizSession(chapterId, captured.sessionId, patch, { context: captured.context });
+      if (mounted.current && work.current === captured && !result.applied) setActionError('This quiz changed or was reset. Your late change was not applied.');
+    } catch (error) { if (mounted.current && work.current === captured) setActionError(error.message); }
   };
-  
-  // Navigate between questions
-  const handleNavigate = (index) => {
-    if (index >= 0 && index < quizData.questions.length) {
-      setCurrentQuestion(index);
+  const handleAnswer = (index, _isCorrect, answer) => {
+    const question = quizData.questions[index];
+    void persistPatch({ answersByQuestionId: { [question.id]: { answer, timestamp: Math.max(Date.now(), activeSession.startTime) } } });
+  };
+  const handleNavigate = index => {
+    if (index < 0 || index >= quizData.questions.length) return;
+    finishReturnFocus.current = null;
+    if (index !== currentQuestion) navigationFocus.current = { scope, questionId: quizData.questions[index].id };
+    if (quizState === 'review') setReviewIndex(index);
+    else void persistPatch({ currentQuestionId: quizData.questions[index].id });
+  };
+  const handleFlag = index => {
+    if (quizState !== 'quiz') return;
+    const id = quizData.questions[index].id;
+    const flags = activeSession.flaggedQuestionIds;
+    void persistPatch({ flaggedQuestionIds: flags.includes(id) ? flags.filter(value => value !== id) : [...flags, id] });
+  };
+  const handleSubmitQuiz = useCallback(async () => {
+    const captured = work.current;
+    if (quizState !== 'quiz' || !captured || !captured.isCurrentBinding() || captured.scope !== scope || captured.finishing || captured.starting || captured.sessionId !== activeSession?.sessionId) return;
+    captured.finishing = true; setBusy(true); setShowFinishConfirmation(false); setActionError(null);
+    try {
+      const result = await captured.store.finishQuizAttempt(chapterId, { sessionId: captured.sessionId, attemptId: captured.attemptId, answersByQuestionId: activeSession.answersByQuestionId }, { context: captured.context });
+      if (!mounted.current || !captured.isCurrentBinding() || work.current !== captured || scopeRef.current !== captured.scope) return;
+      if (!result.applied || !result.attempt) { setActionError('This quiz changed or was reset. No new attempt was recorded.'); setQuizState('intro'); setActiveSession(null); return; }
+      resultsFocus.current = true;
+      finishReturnFocus.current = null;
+      setResultAttempt(result.attempt); setQuizState('results');
+    } catch (error) { if (mounted.current && work.current === captured) setActionError(error.message); }
+    finally { captured.finishing = false; if (mounted.current && scopeRef.current === captured.scope) setBusy(false); }
+  }, [activeSession, chapterId, quizState, scope]);
+  useEffect(() => {
+    // A timer may expire while begin is awaiting storage; recheck the settled matching session.
+    const captured = work.current;
+    if (!busy && quizState === 'quiz' && activeSession && !activeSession.isPaused && activeSession.deadline <= Date.now()
+      && captured?.sessionId === activeSession.sessionId && captured.scope === scope && !captured.starting && !captured.finishing) {
+      void handleSubmitQuiz();
     }
+  }, [busy, quizState, activeSession, scope, handleSubmitQuiz]);
+  const handleRequestFinish = () => {
+    if (busy || quizState !== 'quiz') return;
+    if (quizData.questions.some(question => !answerMap[question.id])) {
+      finishReturnFocus.current = { scope, target: finishButtonRef.current };
+      setShowFinishConfirmation(true);
+    }
+    else void handleSubmitQuiz();
   };
-  
-  // Flag question for review
-  const handleFlag = (index) => {
-    setFlaggedQuestions(prev => 
-      prev.includes(index) 
-        ? prev.filter(q => q !== index)
-        : [...prev, index]
-    );
+  const handlePauseToggle = () => {
+    void persistPatch(isPaused ? { deadline: Date.now() + pausedRemaining * 1000, isPaused: false, pausedRemaining: null }
+      : { pausedRemaining: Math.max(0, Math.ceil((deadline - Date.now()) / 1000)), isPaused: true });
   };
-  
-  // Submit quiz
-  const handleSubmitQuiz = () => {
-    const endTime = Date.now();
-    const totalTime = Math.floor((endTime - startTime) / 1000);
-    setTimeSpent(totalTime);
-    
-    // Calculate results
-    const correctAnswers = Object.entries(answers)
-      .filter(([_, data]) => data.isCorrect)
-      .map(([index]) => parseInt(index));
-    
-    const incorrectAnswers = Object.entries(answers)
-      .filter(([_, data]) => !data.isCorrect)
-      .map(([index]) => parseInt(index));
-    
-    // Save attempt
-    const attemptData = {
-      score: correctAnswers.length,
-      percentage: Math.round((correctAnswers.length / quizData.questions.length) * 100),
-      timeSpent: totalTime,
-      totalQuestions: quizData.questions.length,
-      correctAnswers: correctAnswers.length,
-      answers,
-      version
-    };
-    
-    quizStorage.saveAttempt(chapterId, attemptData);
-    quizStorage.clearCurrentSession();
-    
-    setQuizState('results');
-  };
-  
-  // Handle timer expiry
-  const handleTimeUp = () => {
-    handleSubmitQuiz();
-  };
-  
-  // Retake quiz
-  const handleRetake = () => {
-    handleStartQuiz();
-  };
-  
-  // Review answers
   const handleReview = () => {
-    setQuizState('review');
-    setCurrentQuestion(0);
+    finishReturnFocus.current = null;
+    navigationFocus.current = { scope, questionId: resultAttempt.bank.questions[0].id };
+    setQuizState('review'); setReviewIndex(0);
   };
-  
-  // Get quiz statistics
-  const stats = quizStorage.getChapterStats(chapterId);
-  const previousBest = stats.bestScore;
-  
+  const handleSavedReview = () => {
+    finishReturnFocus.current = null;
+    navigationFocus.current = { scope, questionId: latestPinned.bank.questions[0].id };
+    setResultAttempt(latestPinned); setPreviousBest(null); setQuizState('review'); setReviewIndex(0);
+  };
+  const savePreference = async patch => {
+    const selectedScope = scope;
+    if (!isCurrentBinding()) return;
+    try { await store.setQuizPreferences(patch, { context: store.captureWriteContext() }); }
+    catch (error) { if (mounted.current && scopeRef.current === selectedScope && isCurrentBinding()) setActionError(error.message); }
+  };
+  const savingNotice = <PersistenceNotice progress={progress} actionError={actionError} />;
+
+  if (loading) return <p role="status" className="p-6 text-neutral-300">Loading saved quiz progress…</p>;
   if (!quizData) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-orange-500 mx-auto mb-4" />
-          <p className="text-neutral-400">Loading quiz questions...</p>
+          <p className="text-neutral-400">This quiz or version is unavailable. Choose Engineering, Biostats, or Social Science.</p>
         </div>
       </div>
     );
   }
+
+  const answeredQuestions = Object.keys(answers).map(index => Number(index));
+  const correctAnswers = answeredQuestions.filter(index => answers[index].isCorrect);
+  const incorrectAnswers = answeredQuestions.filter(index => !answers[index].isCorrect);
+  const unansweredQuestions = quizData.questions.map((_, index) => index).filter(index => !answers[index]);
   
   // Render based on quiz state
   if (quizState === 'intro') {
     return (
       <div className="max-w-2xl mx-auto space-y-6">
+        {savingNotice}
+        <BankNotice bank={bank} selectedVersion={version} />
         {/* Quiz Introduction */}
         <div className="text-center space-y-4">
           <BookOpen className="w-16 h-16 text-teal-500 mx-auto" />
@@ -372,15 +493,15 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
             <div>
               <p className="text-sm text-neutral-400">Your Best</p>
               <p className="text-2xl font-bold text-white">
-                {previousBest > 0 ? `${previousBest}%` : 'Not attempted'}
+                {stats.attempted ? `${stats.bestScore}%` : 'Not attempted'}
               </p>
             </div>
           </div>
           
-          {stats.totalAttempts > 0 && (
+          {stats.attempted && (
             <div className="pt-4 border-t border-neutral-800">
               <p className="text-sm text-neutral-400">
-                You've attempted this quiz {stats.totalAttempts} time{stats.totalAttempts > 1 ? 's' : ''}.
+                {stats.totalAttempts > 0 ? `You've recorded ${stats.totalAttempts} attempt${stats.totalAttempts > 1 ? 's' : ''}.` : 'A historical best score is retained without an attempt record.'}
                 {stats.passed && ' You have passed this quiz!'}
               </p>
             </div>
@@ -404,9 +525,7 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
                   type="checkbox"
                   checked={preferences.showTimer}
                   onChange={(e) => {
-                    const newPrefs = { ...preferences, showTimer: e.target.checked };
-                    setPreferences(newPrefs);
-                    quizStorage.savePreferences(newPrefs);
+                    void savePreference({ showTimer: e.target.checked });
                   }}
                   className="rounded"
                 />
@@ -416,22 +535,21 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  checked={preferences.immediateFeeback}
+                  checked={preferences.immediateFeedback}
                   onChange={(e) => {
-                    const newPrefs = { ...preferences, immediateFeeback: e.target.checked };
-                    setPreferences(newPrefs);
-                    quizStorage.savePreferences(newPrefs);
+                    void savePreference({ immediateFeedback: e.target.checked });
                   }}
                   className="rounded"
                 />
-                <span className="text-sm text-neutral-300">Show immediate feedback</span>
+                <span className="text-sm text-neutral-300">Show explanations after each answer</span>
               </label>
               
               <div className="pt-2">
                 <label className="text-sm text-neutral-400">Version:</label>
                 <select
+                  aria-label="Quiz version"
                   value={version}
-                  onChange={(e) => window.location.href = `?version=${e.target.value}`}
+                  onChange={(e) => { if (isQuizVersion(e.target.value)) window.location.assign(`?version=${e.target.value}`); }}
                   className="ml-2 bg-neutral-800 text-neutral-300 rounded px-2 py-1"
                 >
                   <option value="engineering">Engineering</option>
@@ -443,9 +561,20 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
           )}
         </div>
         
+        {locator?.legacySession && <div role="status" aria-label="Historical quiz session" className="rounded-lg border border-amber-700 p-4 text-sm text-amber-100">
+          <p>An older saved session has indexed answers and no verified question bank. Its original data is retained for recovery. Start a new quiz to use the current questions.</p>
+          <details className="mt-2"><summary>View historical session data</summary><pre className="mt-2 overflow-x-auto whitespace-pre-wrap">{JSON.stringify(locator.legacySession, null, 2)}</pre></details>
+        </div>}
+        {legacyAttempts.length > 0 && <details className="rounded-lg border border-neutral-700 p-4 text-sm text-neutral-300">
+          <summary>Historical attempts ({legacyAttempts.length}; question bank unverified)</summary>
+          <p className="mt-2">Original scores and indexed answers are retained. They are not matched to current questions.</p>
+          <pre className="mt-2 overflow-x-auto whitespace-pre-wrap">{JSON.stringify(legacyAttempts.map(({ date, percentage, originalId, answersByIndex }) => ({ date, percentage, originalId, answersByIndex })), null, 2)}</pre>
+        </details>}
+        {latestPinned && <Button variant="neutral" onClick={handleSavedReview}>Review latest saved attempt</Button>}
         {/* Start Button */}
         <Button
           onClick={handleStartQuiz}
+          disabled={busy}
           variant="primary"
           size="lg"
           className="w-full"
@@ -457,55 +586,45 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
   }
   
   if (quizState === 'results') {
-    const correctAnswers = Object.entries(answers)
-      .filter(([_, data]) => data.isCorrect)
-      .map(([index]) => parseInt(index));
-    
-    const incorrectAnswers = Object.entries(answers)
-      .filter(([_, data]) => !data.isCorrect)
-      .map(([index]) => parseInt(index));
-    
     return (
-      <QuizResults
+      <div className="space-y-4">{savingNotice}<BankNotice bank={bank} selectedVersion={version} /><QuizResults
         score={correctAnswers.length}
         totalQuestions={quizData.questions.length}
         timeSpent={timeSpent}
         correctAnswers={correctAnswers}
         incorrectAnswers={incorrectAnswers}
+        unansweredQuestions={unansweredQuestions}
         passingScore={quizData.passingScore}
         previousBest={previousBest}
-        onRetake={handleRetake}
+        onRetake={handleStartQuiz}
         onReview={handleReview}
         chapterId={chapterId}
         chapterTitle={quizData.title}
-      />
+        headingRef={resultsHeadingRef}
+      /></div>
     );
   }
   
   // Main quiz interface
   const question = quizData.questions[currentQuestion];
-  const answeredQuestions = Object.keys(answers).map(k => parseInt(k));
-  const allAnswered = answeredQuestions.length === quizData.questions.length;
-  
-  const correctAnswers = Object.entries(answers)
-    .filter(([_, data]) => data.isCorrect)
-    .map(([index]) => parseInt(index));
-  
-  const incorrectAnswers = Object.entries(answers)
-    .filter(([_, data]) => !data.isCorrect)
-    .map(([index]) => parseInt(index));
   
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {savingNotice}
+      <BankNotice bank={bank} selectedVersion={version} />
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-white">{quizData.title}</h1>
-        {preferences.showTimer && quizState === 'quiz' && (
+        {quizState === 'quiz' && (
           <QuizTimer
+            key={activeSession.sessionId}
             timeLimit={quizData.timeLimit}
-            onTimeUp={handleTimeUp}
+            onTimeUp={handleSubmitQuiz}
             isPaused={isPaused}
-            onPauseToggle={() => setIsPaused(!isPaused)}
+            onPauseToggle={handlePauseToggle}
+            deadline={deadline}
+            pausedRemaining={pausedRemaining}
+            hidden={!preferences.showTimer}
           />
         )}
       </div>
@@ -524,7 +643,7 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
       />
       
       {/* Question */}
-      <div className="bg-neutral-900 rounded-lg p-8 border border-neutral-700">
+      <div className="bg-neutral-900 rounded-lg p-4 sm:p-8 border border-neutral-700">
         {/* Topic Badge */}
         <div className="mb-4">
           <span className="inline-block px-3 py-1 bg-teal-500/20 text-teal-400 text-sm rounded-full border border-teal-500/30">
@@ -534,18 +653,21 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
         
         {/* Question Content */}
         <QuizQuestionWrapper
-          key={currentQuestion} // Force remount when question changes
+          key={`${quizState === 'review' ? resultAttempt?.id : activeSession?.sessionId}:${question.id}`}
           question={question}
           onAnswer={(isCorrect, answer) => handleAnswer(currentQuestion, isCorrect, answer)}
-          showExplanation={preferences.immediateFeeback || quizState === 'review'}
-          disabled={quizState === 'review'}
+          showExplanation={preferences.immediateFeedback || quizState === 'review'}
+          disabled={quizState === 'review' || busy}
+          reviewMode={quizState === 'review'}
+          questionHeadingRef={questionHeadingRef}
+          savedAnswer={answers[currentQuestion]}
         />
         
         {/* Next Question Button - Shows after answering */}
         {quizState === 'quiz' && answers[currentQuestion] && currentQuestion < quizData.questions.length - 1 && (
           <div className="flex justify-center mt-6">
             <Button
-              onClick={() => setCurrentQuestion(currentQuestion + 1)}
+              onClick={() => handleNavigate(currentQuestion + 1)}
               variant="primary"
               size="lg"
               className="min-w-[200px] flex items-center gap-2"
@@ -557,25 +679,60 @@ export function ChapterQuiz({ chapterId = 1, version = 'engineering' }) {
         )}
       </div>
       
-      {/* Submit Button */}
-      {quizState === 'quiz' && allAnswered && (
-        <div className="flex justify-center">
-          <Button
-            onClick={handleSubmitQuiz}
-            variant="success"
-            size="lg"
-            className="min-w-[200px]"
-          >
-            Submit Quiz
-          </Button>
-        </div>
+      {/* Finish practice */}
+      {quizState === 'quiz' && (
+        <Dialog.Root open={showFinishConfirmation} onOpenChange={setShowFinishConfirmation}>
+          <div className="flex justify-center">
+            <Button
+              ref={finishButtonRef}
+              onClick={handleRequestFinish}
+              disabled={busy}
+              variant="success"
+              size="lg"
+              className="min-w-[200px]"
+            >
+              Finish and review
+            </Button>
+          </div>
+          <Dialog.Portal>
+            <Dialog.Overlay className="fixed inset-0 z-[70] bg-black/60" />
+            <Dialog.Content
+              aria-modal="true"
+              className="fixed left-1/2 top-1/2 z-[80] w-[calc(100%_-_2rem)] max-w-lg max-h-[calc(100dvh_-_2rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-neutral-700 bg-neutral-900 p-6 text-white shadow-xl"
+              onCloseAutoFocus={event => {
+                event.preventDefault();
+                const restore = finishReturnFocus.current;
+                finishReturnFocus.current = null;
+                const focused = document.activeElement;
+                const focusWasRemoved = !focused?.isConnected || focused === document.body || event.target?.contains(focused);
+                if (restore?.scope === scopeRef.current && restore.target?.isConnected && focusWasRemoved) {
+                  restore.target.focus();
+                }
+              }}
+            >
+              <Dialog.Title className="text-xl font-semibold">Finish this quiz?</Dialog.Title>
+              <Dialog.Description className="mt-3 text-sm text-neutral-300">
+                {answeredQuestions.length} of {quizData.questions.length} questions answered. Only submitted answers are saved for review. Unanswered questions earn no credit.
+              </Dialog.Description>
+              <p className="mt-3 text-sm text-neutral-400">
+                Unanswered questions: {unansweredQuestions.map(index => index + 1).join(', ')}
+              </p>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <Dialog.Close asChild>
+                  <Button variant="neutral">Keep practicing</Button>
+                </Dialog.Close>
+                <Button variant="success" disabled={busy} onClick={handleSubmitQuiz}>Finish and review</Button>
+              </div>
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog.Root>
       )}
       
       {/* Back to Results (in review mode) */}
       {quizState === 'review' && (
         <div className="flex justify-center">
           <Button
-            onClick={() => setQuizState('results')}
+            onClick={() => { resultsFocus.current = true; setQuizState('results'); }}
             variant="neutral"
             size="default"
           >

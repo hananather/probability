@@ -14,14 +14,14 @@ const PhysicalIntuitionSection = () => {
       <div className="bg-gradient-to-br from-blue-900/20 to-cyan-900/20 border border-blue-700/50 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-blue-300 mb-3">Physical Intuition with Pebbles</h3>
         <p className="text-neutral-300 mb-4">
-          Imagine a world where everything is made of tiny pebbles. Each pebble represents a possible outcome, 
-          and probability is simply counting pebbles.
+          Imagine a bag of pebbles, one for each possible outcome. When all outcomes are equally likely,
+          an event's probability is the fraction of pebbles belonging to that event.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-neutral-800/50 rounded-lg p-4">
             <h4 className="font-medium text-teal-300 mb-2">Sample Space</h4>
             <p className="text-sm text-neutral-300">
-              All possible outcomes = All pebbles in the world
+              All possible outcomes = All pebbles in this bag
             </p>
             <div className="mt-2 text-xs text-neutral-400">
               <span dangerouslySetInnerHTML={{ __html: `\\(S = \\{\\text{all pebbles}\\}\\)` }} />
@@ -30,7 +30,7 @@ const PhysicalIntuitionSection = () => {
           <div className="bg-neutral-800/50 rounded-lg p-4">
             <h4 className="font-medium text-teal-300 mb-2">Event</h4>
             <p className="text-sm text-neutral-300">
-              A specific outcome = A subset of pebbles
+              A set of outcomes = A subset of pebbles
             </p>
             <div className="mt-2 text-xs text-neutral-400">
               <span dangerouslySetInnerHTML={{ __html: `\\(A \\subseteq S\\)` }} />
@@ -50,8 +50,8 @@ const CountingPrincipleSection = () => {
       <div className="bg-purple-900/20 border border-purple-700/50 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-purple-300 mb-3">The Counting Principle</h3>
         <p className="text-neutral-300 mb-4">
-          Probability is fundamentally about counting. When all outcomes are equally likely, 
-          it's just a ratio of favorable outcomes to total outcomes.
+          For a finite sample space with equally likely outcomes, probability is the ratio of
+          favorable outcomes to total outcomes.
         </p>
         
         <div className="bg-neutral-800/50 rounded-lg p-4 mb-4">
@@ -81,7 +81,7 @@ const CountingPrincipleSection = () => {
       
       <SimpleInsightBox title="Key Insight" theme="purple">
         <p>This only works when all outcomes are <strong>equally likely</strong>. 
-        Like having identical pebbles that are equally likely to be picked.</p>
+        In this model, the selection rule gives every pebble the same chance.</p>
       </SimpleInsightBox>
     </div>
   );
@@ -164,7 +164,8 @@ const CompleteExampleSection = () => {
       <div className="bg-gradient-to-br from-teal-900/20 to-green-900/20 border border-teal-700/50 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-teal-300 mb-3">Complete Example: Two Coin Flips</h3>
         <p className="text-neutral-300 mb-4">
-          Let's apply everything we've learned to a simple problem: flipping a coin twice.
+          Let's apply everything we've learned to two independent flips of a fair coin.
+          H means heads and T means tails; the first letter records the first flip.
         </p>
         
         <div className="space-y-4">
@@ -221,8 +222,9 @@ const CompleteExampleSection = () => {
       
       <SimpleInsightBox title="The Power of the Pebble Model" theme="teal">
         <p>
-          Every probability problem can be reduced to counting pebbles. This physical intuition 
-          will guide us through even the most complex scenarios.
+          Counting pebbles gives us a model for finite, equally likely outcomes. Unequally likely outcomes
+          need assigned probabilities. For the continuous models in this course, we use probability densities.
+          The event remains a set of outcomes in each model.
         </p>
       </SimpleInsightBox>
     </div>

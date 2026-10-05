@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef, useId } from "react";
+import { useMathJax } from '@/hooks/useMathJax';
 import { X, StickyNote, ChevronRight, BookOpen } from 'lucide-react';
 
 /**
@@ -25,23 +26,15 @@ export const QuickReferenceCard = ({
 }) => {
   const [isOpen, setIsOpen] = useState(mode === 'embedded' ? true : defaultOpen);
   const contentRef = useRef(null);
+  const toggleRef = useRef(null);
+  const panelId = useId();
+  const closeCard = () => {
+    setIsOpen(false);
+    toggleRef.current?.focus();
+  };
 
   // Process MathJax when content changes
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    if (isOpen || mode === 'embedded') {
-      processMathJax();
-      const timeoutId = setTimeout(processMathJax, 100);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [isOpen, sections, mode]);
+  useMathJax(contentRef, [isOpen, sections, mode]);
 
   // Render the content
   const renderContent = () => (
@@ -109,9 +102,18 @@ export const QuickReferenceCard = ({
   // Floating mode
   if (mode === 'floating') {
     return (
-      <div className="fixed z-50 right-6 bottom-24">
+      <div className="fixed z-50 right-6 bottom-24" onKeyDown={event => {
+        if (event.key === 'Escape' && isOpen) {
+          event.stopPropagation();
+          closeCard();
+        }
+      }}>
         {/* Toggle Button */}
         <button
+          ref={toggleRef}
+          aria-label={`Toggle ${title}`}
+          aria-expanded={isOpen}
+          aria-controls={panelId}
           onClick={() => setIsOpen(!isOpen)}
           className={`absolute bottom-0 right-0 w-12 h-12 rounded-full shadow-lg flex items-center justify-center cursor-pointer 
             ${isOpen ? `bg-${colorScheme.primary}-600` : `bg-${colorScheme.primary}-500`} 
@@ -123,6 +125,9 @@ export const QuickReferenceCard = ({
         {/* Formula Card */}
         {isOpen && (
           <div
+            id={panelId}
+            role="region"
+            aria-label={title}
             className={`absolute bottom-16 right-0 w-[500px] max-w-[90vw] bg-neutral-900 rounded-lg shadow-2xl 
               border border-${colorScheme.primary}-500/50 overflow-hidden`}
           >
@@ -131,8 +136,9 @@ export const QuickReferenceCard = ({
                 {title}
               </h3>
               <button
-                onClick={() => setIsOpen(false)}
-                className="text-neutral-400 hover:text-white"
+                onClick={closeCard}
+                aria-label={`Close ${title}`}
+                className="flex h-8 w-8 items-center justify-center text-neutral-400 hover:text-white"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -152,6 +158,8 @@ export const QuickReferenceCard = ({
     return (
       <div className={`bg-neutral-900/50 rounded-lg border border-${colorScheme.primary}-500/30`}>
         <button
+          aria-expanded={isOpen}
+          aria-controls={panelId}
           onClick={() => setIsOpen(!isOpen)}
           className={`w-full p-4 bg-${colorScheme.primary}-900/20 flex items-center justify-between 
             hover:bg-${colorScheme.primary}-900/30 transition-colors`}
@@ -169,7 +177,7 @@ export const QuickReferenceCard = ({
         </button>
 
         {isOpen && (
-          <div className="p-4 overflow-x-auto max-w-full">
+          <div id={panelId} className="p-4 overflow-x-auto max-w-full">
             {renderContent()}
           </div>
         )}

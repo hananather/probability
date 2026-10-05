@@ -11,6 +11,22 @@ import {
 
 const resources = [
   {
+    icon: BookOpen,
+    title: 'Your Learning Progress',
+    description: 'Review your study records and keep a backup of your progress.',
+    link: '/progress',
+    features: ['Study completion', 'Recorded quiz results', 'Backup and restore'],
+    color: 'text-teal-400'
+  },
+  {
+    icon: FileText,
+    title: 'Formula Reference',
+    description: 'Find formulas and interactive builders for each chapter.',
+    link: '/resources/formulas',
+    features: ['Probability distributions', 'Inference and estimation', 'Regression'],
+    color: 'text-blue-400'
+  },
+  {
     icon: GraduationCap,
     title: 'Study Tips',
     description: 'Strategies for learning probability and statistics effectively.',
@@ -39,7 +55,7 @@ export default function ResourcesPage() {
           </div>
           <h1 className="text-4xl font-bold mb-4">Learning Resources</h1>
           <p className="text-xl text-neutral-300">
-            Everything you need to succeed in probability and statistics
+            Formula builders, prerequisites, and strategies for studying probability and statistics
           </p>
         </div>
       </section>

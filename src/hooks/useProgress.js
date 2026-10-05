@@ -1,307 +1,108 @@
-/**
- * useProgress Hook
- * 
- * React hook for accessing and updating user progress.
- * Provides a clean interface to the progressService for React components.
- */
+'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import progressService from '../services/progressService';
+import { useCallback, useMemo, useState, useSyncExternalStore } from 'react';
+import { CURRICULUM, resolveChapterId } from '@/lib/curriculum/manifest';
+import { createEmptyProgress } from '@/lib/progress/schema';
+import { useActiveProgress } from '@/contexts/ActiveProgressContext';
+import { readProgressBackupFile } from '@/lib/progress/backups';
+import progressService, { ProgressService, projectChapterProgress, projectOverallProgress } from '@/services/progressService';
 
-/**
- * Hook for managing user progress
- * @param {string} userId - Optional user identifier (defaults to 'local')
- * @returns {Object} Progress data and methods
- */
-export function useProgress(userId = 'local') {
-  const [progress, setProgress] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [syncing, setSyncing] = useState(false);
+const SERVER_SNAPSHOT = Object.freeze({ data: createEmptyProgress({ ownerScope: 'guest:loading', deviceId: 'loading' }), loading: true, error: null, persistenceStatus: 'loading', pendingLocalWrites: 0 });
+const getServerSnapshot = () => SERVER_SNAPSHOT;
+const subscribeOnServer = () => () => {};
+const emptyChapter = () => ({ status: 'not_started', progress: 0, completedSections: [], lastVisited: null, timeSpent: 0 });
 
-  // Load initial progress
-  useEffect(() => {
-    const loadProgress = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await progressService.getProgress(userId);
-        setProgress(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadProgress();
-  }, [userId]);
-
-  // Update chapter progress
-  const updateChapterProgress = useCallback(async (chapterId, data) => {
-    try {
-      const updated = await progressService.updateChapterProgress(userId, chapterId, data);
-      setProgress(updated);
-      return updated;
-    } catch (err) {
-      setError(err.message);
-      return null;
-    }
-  }, [userId]);
-
-  // Mark a section as completed
-  const completeSection = useCallback(async (chapterId, sectionId) => {
-    try {
-      const updated = await progressService.completeSection(chapterId, sectionId, userId);
-      setProgress(updated);
-      return updated;
-    } catch (err) {
-      setError(err.message);
-      return null;
-    }
-  }, [userId]);
-
-  // Mark entire chapter as completed
-  const completeChapter = useCallback(async (chapterId) => {
-    return updateChapterProgress(chapterId, {
-      status: 'completed',
-      progress: 100,
-      completedAt: new Date().toISOString()
-    });
-  }, [updateChapterProgress]);
-
-  // Start a chapter (mark as in progress)
-  const startChapter = useCallback(async (chapterId) => {
-    return updateChapterProgress(chapterId, {
-      status: 'in_progress',
-      startedAt: new Date().toISOString()
-    });
-  }, [updateChapterProgress]);
-
-  // Get specific chapter progress
-  const getChapterProgress = useCallback((chapterId) => {
-    return progress[chapterId] || {
-      status: 'not_started',
-      progress: 0,
-      completedSections: [],
-      lastVisited: null,
-      timeSpent: 0
-    };
-  }, [progress]);
-
-  // Reset chapter progress
-  const resetChapter = useCallback(async (chapterId) => {
-    try {
-      const updated = await progressService.resetChapterProgress(chapterId, userId);
-      setProgress(updated);
-      return true;
-    } catch (err) {
-      setError(err.message);
-      return false;
-    }
-  }, [userId]);
-
-  // Reset all progress
-  const resetAll = useCallback(async () => {
-    try {
-      await progressService.resetAllProgress(userId);
-      setProgress({});
-      return true;
-    } catch (err) {
-      setError(err.message);
-      return false;
-    }
-  }, [userId]);
-
-  // Export progress data
-  const exportProgress = useCallback(async () => {
-    try {
-      const data = await progressService.exportProgress(userId);
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `problab-progress-${new Date().toISOString().split('T')[0]}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      return true;
-    } catch (err) {
-      setError(err.message);
-      return false;
-    }
-  }, [userId]);
-
-  // Import progress data
-  const importProgress = useCallback(async (file) => {
-    try {
-      const text = await file.text();
-      const data = JSON.parse(text);
-      const success = await progressService.importProgress(data, userId);
-      if (success) {
-        const updated = await progressService.getProgress(userId);
-        setProgress(updated);
-      }
-      return success;
-    } catch (err) {
-      setError(err.message);
-      return false;
-    }
-  }, [userId]);
-
-  // Sync with database (future feature)
-  const syncProgress = useCallback(async () => {
-    try {
-      setSyncing(true);
-      const success = await progressService.syncWithDatabase(userId);
-      if (success) {
-        const updated = await progressService.getProgress(userId);
-        setProgress(updated);
-      }
-      return success;
-    } catch (err) {
-      setError(err.message);
-      return false;
-    } finally {
-      setSyncing(false);
-    }
-  }, [userId]);
-
-  // Calculate overall statistics
+/** Every reader of a local profile subscribes to the same stable store. */
+export function useProgress(userId) {
+  const active = useActiveProgress();
+  const usesActive = userId === undefined && Boolean(active);
+  const store = useMemo(() => usesActive ? active.store : typeof window === 'undefined' ? null : progressService.getStore(userId), [usesActive, active?.store, userId]);
+  const localState = useSyncExternalStore(!usesActive && store ? store.subscribe : subscribeOnServer, !usesActive && store ? store.getSnapshot : getServerSnapshot, !usesActive && store ? store.getServerSnapshot : getServerSnapshot);
+  const state = usesActive ? active.state : localState;
+  const generation = usesActive ? active.generation : 0;
+  const errorScope = usesActive ? `${state.data.ownerScope}:${generation}` : userId || 'local';
+  const checkActiveBinding = active?.isCurrentBinding;
+  const retryActiveSync = active?.sync;
+  const isCurrentBinding = useCallback(() => !usesActive || checkActiveBinding(store, generation), [usesActive, checkActiveBinding, store, generation]);
+  const boundService = useMemo(() => new ProgressService({ storeProvider: () => store }), [store]);
+  const [actionErrors, setActionErrors] = useState({});
+  const [syncingProfiles, setSyncingProfiles] = useState({});
+  const setActionError = useCallback(message => setActionErrors(previous => ({ ...previous, [errorScope]: message })), [errorScope]);
+  const setSyncing = useCallback(active => setSyncingProfiles(previous => ({ ...previous, [errorScope]: active })), [errorScope]);
+  const progress = useMemo(() => projectChapterProgress(state.data), [state.data]);
   const overallStats = useMemo(() => {
-    const chapters = Object.keys(progress);
-    
-    if (chapters.length === 0) {
-      return {
-        totalProgress: 0,
-        completedChapters: 0,
-        inProgressChapters: 0,
-        notStartedChapters: 8,
-        totalTimeSpent: 0
-      };
-    }
-
-    let totalProgress = 0;
-    let completedChapters = 0;
-    let inProgressChapters = 0;
-    let totalTimeSpent = 0;
-
-    chapters.forEach(chapterId => {
-      const chapter = progress[chapterId];
-      totalProgress += chapter.progress || 0;
-      totalTimeSpent += chapter.timeSpent || 0;
-
-      if (chapter.status === 'completed') {
-        completedChapters++;
-      } else if (chapter.status === 'in_progress') {
-        inProgressChapters++;
-      }
-    });
-
-    return {
-      totalProgress: chapters.length > 0 ? Math.round(totalProgress / 8) : 0, // Average across all 8 chapters
-      completedChapters,
-      inProgressChapters,
-      notStartedChapters: 8 - completedChapters - inProgressChapters,
-      totalTimeSpent
-    };
-  }, [progress]);
-
-  // Check if sync is needed
-  const hasPendingSync = useMemo(() => {
-    return progressService.hasPendingSync();
-  }, []);
-
+    const summary = projectOverallProgress(state.data);
+    return { totalProgress: summary.overallProgress, completedChapters: summary.completedChapters, inProgressChapters: summary.inProgressChapters, notStartedChapters: summary.totalChapters - summary.completedChapters - summary.inProgressChapters, totalChapters: summary.totalChapters, totalTimeSpent: summary.totalTimeSpent, completedLessons: summary.completedLessons, totalLessons: summary.totalLessons };
+  }, [state.data]);
+  const execute = useCallback(async (action, failure = null) => {
+    if (!store || !isCurrentBinding()) return failure;
+    try { setActionError(null); const result = await action(); return isCurrentBinding() ? result : failure; }
+    catch (error) { setActionError(error.message); return failure; }
+  }, [setActionError, store, isCurrentBinding]);
+  const updateChapterProgress = useCallback((chapterId, data) => execute(() => boundService.updateChapterProgress(userId, chapterId, data)), [execute, boundService, userId]);
+  const completeSection = useCallback((chapterId, sectionId) => execute(() => boundService.completeSection(chapterId, sectionId, userId)), [execute, boundService, userId]);
+  const completeChapter = useCallback(chapterId => {
+    const chapter = CURRICULUM.chapters.find(item => item.id === resolveChapterId(chapterId));
+    const completedSections = chapter?.lessons.filter(lesson => lesson.required && lesson.published).map(lesson => lesson.legacyId) || [];
+    return updateChapterProgress(chapterId, { status: 'completed', progress: 100, completedSections, completedAt: new Date().toISOString() });
+  }, [updateChapterProgress]);
+  const startChapter = useCallback(chapterId => updateChapterProgress(chapterId, { status: 'in_progress', startedAt: new Date().toISOString() }), [updateChapterProgress]);
+  const getChapterProgress = useCallback(chapterId => progress[resolveChapterId(chapterId)] || emptyChapter(), [progress]);
+  const resetChapter = useCallback(chapterId => execute(async () => {
+    await boundService.resetChapterProgress(chapterId, userId);
+    return store?.getSnapshot().persistenceStatus !== 'session-only';
+  }, false), [execute, boundService, store, userId]);
+  const resetAll = useCallback(() => execute(async () => {
+    await boundService.resetAllProgress(userId);
+    return store?.getSnapshot().persistenceStatus !== 'session-only';
+  }, false), [execute, boundService, store, userId]);
+  const exportProgress = useCallback(() => execute(async () => {
+    const data = await boundService.exportProgress(userId);
+    if (!isCurrentBinding()) return false;
+    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+    const link = document.createElement('a'); link.href = url; link.download = `problab-progress-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+    return true;
+  }, false), [execute, boundService, userId, isCurrentBinding]);
+  const importProgress = useCallback(file => execute(async () => {
+    const context = store.captureWriteContext();
+    const data = await readProgressBackupFile(file, { ownerScope: state.data.ownerScope, isCurrent: isCurrentBinding });
+    if (!isCurrentBinding() || data === null) return false;
+    const success = await boundService.importProgress(data, userId, { allowGuestTransfer: true, context });
+    if (!success && !store?.getSnapshot().error) setActionError('Progress file could not be imported into this local profile');
+    return success;
+  }, false), [execute, boundService, setActionError, store, userId, isCurrentBinding, state.data.ownerScope]);
+  const syncProgress = useCallback(() => execute(async () => {
+    setSyncing(true);
+    try { return usesActive ? await retryActiveSync() : false; }
+    finally { setSyncing(false); }
+  }, false), [execute, setSyncing, usesActive, retryActiveSync]);
+  const retryLocalPersistence = useCallback(() => execute(() => boundService.retryLocalPersistence(userId), false), [execute, boundService, userId]);
   return {
-    // State
-    progress,
-    loading,
-    error,
-    syncing,
-    hasPendingSync,
-    
-    // Chapter operations
-    updateChapterProgress,
-    completeSection,
-    completeChapter,
-    startChapter,
-    getChapterProgress,
-    
-    // Reset operations
-    resetChapter,
-    resetAll,
-    
-    // Import/Export
-    exportProgress,
-    importProgress,
-    
-    // Sync
-    syncProgress,
-    
-    // Statistics
-    overallStats
+    learningData: state.data, store, generation, isCurrentBinding,
+    account: usesActive ? active.account : null, sessionStatus: usesActive ? active.sessionStatus : 'guest',
+    signingOut: usesActive && active.signingOut,
+    cloud: state.cloud || null,
+    progress, loading: state.loading, error: state.error || (Object.hasOwn(actionErrors, errorScope) ? actionErrors[errorScope] : null), syncing: Object.hasOwn(syncingProfiles, errorScope) && syncingProfiles[errorScope], hasPendingSync: Boolean(state.cloud?.pendingMutations),
+    persistenceStatus: state.persistenceStatus, pendingLocalWrites: state.pendingLocalWrites,
+    updateChapterProgress, completeSection, completeChapter, startChapter, getChapterProgress,
+    resetChapter, resetAll, exportProgress, importProgress, syncProgress, retryLocalPersistence, overallStats,
   };
 }
 
-/**
- * Hook for managing progress of a specific chapter
- * @param {string} chapterId - Chapter identifier
- * @param {string} userId - Optional user identifier
- * @returns {Object} Chapter-specific progress data and methods
- */
-export function useChapterProgress(chapterId, userId = 'local') {
-  const {
-    progress,
-    loading,
-    error,
-    updateChapterProgress,
-    completeSection,
-    completeChapter,
-    startChapter,
-    resetChapter,
-    getChapterProgress
-  } = useProgress(userId);
-
-  const chapterData = useMemo(() => {
-    return getChapterProgress(chapterId);
-  }, [getChapterProgress, chapterId]);
-
-  const updateProgress = useCallback((data) => {
-    return updateChapterProgress(chapterId, data);
-  }, [updateChapterProgress, chapterId]);
-
-  const complete = useCallback(() => {
-    return completeChapter(chapterId);
-  }, [completeChapter, chapterId]);
-
-  const start = useCallback(() => {
-    return startChapter(chapterId);
-  }, [startChapter, chapterId]);
-
-  const reset = useCallback(() => {
-    return resetChapter(chapterId);
-  }, [resetChapter, chapterId]);
-
-  const markSectionComplete = useCallback((sectionId) => {
-    return completeSection(chapterId, sectionId);
-  }, [completeSection, chapterId]);
-
+export function useChapterProgress(chapterId, userId) {
+  const value = useProgress(userId);
+  const { updateChapterProgress, completeChapter, startChapter, resetChapter, completeSection } = value;
+  const chapterProgress = value.getChapterProgress(chapterId);
+  const updateProgress = useCallback(data => updateChapterProgress(chapterId, data), [updateChapterProgress, chapterId]);
+  const complete = useCallback(() => completeChapter(chapterId), [completeChapter, chapterId]);
+  const start = useCallback(() => startChapter(chapterId), [startChapter, chapterId]);
+  const reset = useCallback(() => resetChapter(chapterId), [resetChapter, chapterId]);
+  const markSectionComplete = useCallback(sectionId => completeSection(chapterId, sectionId), [completeSection, chapterId]);
   return {
-    // State
-    chapterProgress: chapterData,
-    loading,
-    error,
-    
-    // Actions
-    updateProgress,
-    complete,
-    start,
-    reset,
-    markSectionComplete,
-    
-    // Computed values
-    isCompleted: chapterData.status === 'completed',
-    isInProgress: chapterData.status === 'in_progress',
-    isNotStarted: chapterData.status === 'not_started',
-    progressPercentage: chapterData.progress || 0
+    chapterProgress, loading: value.loading, error: value.error, persistenceStatus: value.persistenceStatus, pendingLocalWrites: value.pendingLocalWrites,
+    updateProgress, complete, start, reset, markSectionComplete,
+    isCompleted: chapterProgress.status === 'completed', isInProgress: chapterProgress.status === 'in_progress', isNotStarted: chapterProgress.status === 'not_started', progressPercentage: chapterProgress.progress || 0,
   };
 }

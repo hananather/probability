@@ -1,4 +1,6 @@
 import { ChapterQuiz } from '@/components/quiz/ChapterQuiz';
+import { isQuizVersion } from '@/lib/quiz/questionBank';
+import { notFound } from 'next/navigation';
 
 export const metadata = {
   title: 'Chapter 1 Quiz | Introduction to Probabilities',
@@ -9,7 +11,8 @@ export default async function Chapter1QuizPage({ searchParams }) {
   // Await searchParams as required in Next.js 15
   const params = await searchParams;
   // Get version from URL params, default to engineering
-  const version = params?.version || 'engineering';
+  const version = params?.version ?? 'engineering';
+  if (!isQuizVersion(version)) notFound();
   
   return (
     <div className="min-h-screen bg-neutral-950 py-8">

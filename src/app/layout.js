@@ -1,6 +1,10 @@
 import './globals.css';
+import Script from 'next/script';
 import { MathJaxProvider } from '../components/shared/MathJaxProvider';
 import { LayoutWrapper } from '../components/shared/LayoutWrapper';
+import { MotionPreferenceProvider } from '../components/shared/MotionPreferenceProvider';
+import { ActiveProgressProvider } from '../components/shared/ActiveProgressProvider';
+import { MATHJAX_CONFIG_SCRIPT } from '@/lib/mathjax/config';
 
 export const metadata = {
   title: 'Probability Lab - MAT 2377',
@@ -14,13 +18,24 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="scroll-smooth antialiased">
+    <html lang="en" className="scroll-smooth antialiased" data-reduced-motion="true">
       <body>
-        <MathJaxProvider>
-          <LayoutWrapper>
-            {children}
-          </LayoutWrapper>
-        </MathJaxProvider>
+      <Script
+        id="mathjax-config"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{
+          __html: MATHJAX_CONFIG_SCRIPT,
+        }}
+      />
+        <MotionPreferenceProvider>
+          <ActiveProgressProvider>
+            <MathJaxProvider>
+              <LayoutWrapper>
+                {children}
+              </LayoutWrapper>
+            </MathJaxProvider>
+          </ActiveProgressProvider>
+        </MotionPreferenceProvider>
       </body>
     </html>
   );

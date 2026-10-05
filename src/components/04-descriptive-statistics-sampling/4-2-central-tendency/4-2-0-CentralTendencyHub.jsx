@@ -12,6 +12,8 @@ import {
   Calculator, ChevronRight, Star, Lock, AlertCircle 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { LEGACY_SOURCE_BY_KEY } from '@/lib/curriculum/manifest';
+import { LearningActivityContext, useLearningActivity } from '@/hooks/useLearningActivity';
 
 // Component metadata
 const LEARNING_COMPONENTS = [
@@ -89,61 +91,19 @@ const LEARNING_COMPONENTS = [
   }
 ];
 
-// Progress tracking
-function useProgress() {
-  const [completedComponents, setCompletedComponents] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('dataDescriptionsProgress');
-      return saved ? JSON.parse(saved) : [];
-    }
-    return [];
-  });
-  
-  const [devMode, setDevMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('centralTendency_devMode');
-      return saved === 'true';
-    }
-    return false;
-  });
-  
-  useEffect(() => {
-    localStorage.setItem('dataDescriptionsProgress', JSON.stringify(completedComponents));
-  }, [completedComponents]);
-  
-  // Keyboard shortcut for dev mode (Ctrl/Cmd + Shift + D)
-  useEffect(() => {
-    const handleKeyPress = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'D') {
-        setDevMode(prev => {
-          const newValue = !prev;
-          localStorage.setItem('centralTendency_devMode', newValue.toString());
-          return newValue;
-        });
-      }
-    };
-    
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, []);
-  
-  const markComplete = (componentId) => {
-    if (!completedComponents.includes(componentId)) {
-      setCompletedComponents(prev => [...prev, componentId]);
-    }
+const SOURCE = LEGACY_SOURCE_BY_KEY.dataDescriptionsProgress;
+
+function LearningChild({ Component, activityId, learning }) {
+  const [context] = useState(() => learning.captureWriteContext(activityId));
+  const activity = {
+    ...learning, containerId: activityId, writeContext: context,
+    resume: learning.getResume(activityId),
+    completeActivity: (id = activityId, options = {}) => learning.completeActivity(id, { ...options, context: options.context || context }),
+    setResume: (id, locator, options = {}) => learning.setResume(id, locator, { ...options, context: options.context || context }),
   };
-  
-  const isUnlocked = (component) => {
-    // Always return true - all components are now accessible
-    return true;
-  };
-  
-  const hasPrerequisites = (component) => {
-    return component.prerequisites.length > 0 && 
-           !component.prerequisites.every(prereq => completedComponents.includes(prereq));
-  };
-  
-  return { completedComponents, markComplete, isUnlocked, hasPrerequisites, devMode };
+  return <LearningActivityContext.Provider value={activity}>
+    <Component onComplete={activityId.endsWith(':descriptive-stats-journey') ? undefined : () => learning.completeActivity(activityId, { sourceKey: 'central-tendency-child-study', context })} />
+  </LearningActivityContext.Provider>;
 }
 
 // Component card
@@ -159,6 +119,14 @@ function ComponentCard({ component, isUnlocked, isCompleted, hasPrerequisites, i
         "bg-neutral-800 hover:bg-neutral-700",
         isNext && "ring-2 ring-green-500 ring-opacity-50"
       )}
+      role="button"
+      tabIndex={0}
+      aria-label={`${component.title}${isCompleted ? ': Studied' : ''}`}
+      onKeyDown={event => {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onClick(); }
+      }}
+      onFocus={() => setIsHovered(true)}
+      onBlur={() => setIsHovered(false)}
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -274,54 +242,53 @@ function ComponentCard({ component, isUnlocked, isCompleted, hasPrerequisites, i
 
 // Main hub component
 export default function CentralTendencyHub() {
-  const [selectedComponent, setSelectedComponent] = useState(null);
-  const { completedComponents, markComplete, isUnlocked, hasPrerequisites, devMode } = useProgress();
-  const [showComponent, setShowComponent] = useState(false);
-  
-  // Calculate overall progress
-  const totalProgress = Math.round(
-    (completedComponents.length / LEARNING_COMPONENTS.length) * 100
-  );
-  
-  // Load selected component
+  const learning = useLearningActivity(SOURCE.containerId);
+  const selectedComponent = LEARNING_COMPONENTS.find(component => SOURCE.targetIds[LEARNING_COMPONENTS.indexOf(component)] === learning.resume?.activityId);
+  const completedComponents = LEARNING_COMPONENTS.filter((_, index) => learning.isCompleted(SOURCE.targetIds[index])).map(component => component.id);
+  const [loaded, setLoaded] = useState(null);
+  const { loading, setDevicePreference, writeContext } = learning;
+  const devMode = learning.learningData.preferences.device.centralTendency_devMode === true;
+  const hasPrerequisites = component => component.prerequisites.some(id => !completedComponents.includes(id));
+  const totalProgress = Math.round(completedComponents.length / LEARNING_COMPONENTS.length * 100);
+
   useEffect(() => {
-    if (selectedComponent) {
-      setShowComponent(false);
-      
-      // Dynamic import
-      selectedComponent.component().then(module => {
-        const Component = module.default;
-        setSelectedComponent({ ...selectedComponent, Component });
-        setShowComponent(true);
-      });
-    }
-  }, [selectedComponent?.id]);
-  
-  if (selectedComponent && showComponent) {
-    const { Component } = selectedComponent;
-    return (
-      <>
-        <div className="mb-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSelectedComponent(null)}
-          >
-            ← Back to Learning Hub
-          </Button>
-        </div>
-        <Component 
-          onComplete={() => {
-            markComplete(selectedComponent.id);
-            // Optionally show a success message
-          }}
-        />
-      </>
-    );
+    const onKeyDown = event => {
+      if (event.defaultPrevented || event.altKey || !(event.ctrlKey || event.metaKey) || !event.shiftKey || event.key.toLowerCase() !== 'd' || loading) return;
+      if (event.target instanceof Element && event.target.closest('input, textarea, select, [contenteditable="true"], [contenteditable=""]')) return;
+      void setDevicePreference('centralTendency_devMode', !devMode, { context: writeContext });
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [loading, devMode, setDevicePreference, writeContext]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (selectedComponent) selectedComponent.component().then(module => {
+      if (!cancelled) setLoaded({ id: selectedComponent.id, Component: module.default });
+    }).catch(error => {
+      if (!cancelled) setLoaded({ id: selectedComponent.id, error: error.message });
+    });
+    return () => { cancelled = true; };
+  }, [selectedComponent]);
+
+  const saveStatus = learning.persistenceStatus === 'session-only' && <div role="status" className="mb-4 text-sm text-amber-200">
+    <p>Your recent changes are only kept for this visit. Export a backup from Your progress before closing this page.</p>
+    <button className="min-h-11 underline" onClick={() => learning.retryLocalPersistence()}>Try saving again</button>
+  </div>;
+  if (learning.loading) return <p role="status">Loading your learning progress…</p>;
+  if (selectedComponent) {
+    const activityId = SOURCE.targetIds[LEARNING_COMPONENTS.indexOf(selectedComponent)];
+    return <>
+      {saveStatus}
+      <div className="mb-4"><Button variant="ghost" size="sm" onClick={() => learning.clearResume(SOURCE.containerId, { context: learning.writeContext })}>← Back to Learning Hub</Button></div>
+      {loaded?.id !== selectedComponent.id ? <p role="status">Loading section…</p> : loaded.error ? <p role="alert">This section could not load. Return to the hub and try again.</p> :
+        <LearningChild key={`${activityId}:${learning.getResetGeneration(activityId, learning.writeContext)}`} Component={loaded.Component} activityId={activityId} learning={learning} />}
+    </>;
   }
   
   return (
     <VisualizationContainer title="4.2 Measures of Central Tendency - Learning Hub">
+      {saveStatus}
       {/* Header with progress */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
@@ -363,11 +330,11 @@ export default function CentralTendencyHub() {
               <ComponentCard
                 key={component.id}
                 component={component}
-                isUnlocked={isUnlocked(component)}
+                isUnlocked={true}
                 isCompleted={isCompleted}
                 hasPrerequisites={hasPrerequisites(component)}
                 isNext={isNext}
-                onClick={() => setSelectedComponent(component)}
+                onClick={() => learning.setResume(SOURCE.containerId, { activityId: SOURCE.targetIds[index], kind: 'tab' }, { context: learning.writeContext })}
               />
             );
           })}

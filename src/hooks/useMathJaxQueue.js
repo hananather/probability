@@ -1,80 +1,32 @@
-import { useEffect, useRef, useState } from 'react';
-
-// Global queue for MathJax processing
-let processingQueue = [];
-let isProcessing = false;
-
-async function processQueue() {
-  if (isProcessing || processingQueue.length === 0) return;
-  
-  isProcessing = true;
-  
-  while (processingQueue.length > 0) {
-    const { element, resolve } = processingQueue.shift();
-    
-    if (window.MathJax && window.MathJax.typesetPromise && element) {
-      try {
-        // Clear previous rendering
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([element]);
-        }
-        
-        // Process the element
-        await window.MathJax.typesetPromise([element]);
-      } catch (err) {
-        // Silent error: MathJax error
-      }
-    }
-    
-    resolve();
-  }
-  
-  isProcessing = false;
-}
+import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
+import { getMathJaxRuntime } from '@/lib/mathjax/runtime';
 
 export function useMathJaxQueue() {
-  const [isReady, setIsReady] = useState(false);
+  const runtime = getMathJaxRuntime();
+  const state = useSyncExternalStore(runtime.subscribe, runtime.getSnapshot, runtime.getServerSnapshot);
   const elementRef = useRef(null);
-  const contentHashRef = useRef('');
-  
+  const requests = useRef(new Map());
+  const ownedElements = useRef(new Set());
   useEffect(() => {
-    // Check if MathJax is available
-    const checkMathJax = () => {
-      if (window.MathJax && window.MathJax.typesetPromise) {
-        setIsReady(true);
-        return true;
-      }
-      return false;
+    runtime.ensureReady().catch(() => {});
+    const owned = requests.current;
+    const nodes = ownedElements.current;
+    return () => {
+      owned.forEach((request, element) => {
+        request.cancel();
+      });
+      nodes.forEach(element => runtime.retire(element).catch(() => {}));
+      nodes.clear();
+      owned.clear();
     };
-    
-    if (!checkMathJax()) {
-      const timer = setInterval(() => {
-        if (checkMathJax()) {
-          clearInterval(timer);
-        }
-      }, 100);
-      
-      return () => clearInterval(timer);
-    }
-  }, []);
-  
-  const queueProcess = (element, contentHash) => {
-    if (!element || !isReady) return Promise.resolve();
-    
-    // Skip if content hasn't changed
-    if (contentHash === contentHashRef.current) {
-      return Promise.resolve();
-    }
-    
-    contentHashRef.current = contentHash;
-    
-    return new Promise((resolve) => {
-      processingQueue.push({ element, resolve });
-      
-      // Process queue after a small delay to batch updates
-      setTimeout(() => processQueue(), 10);
+  }, [runtime]);
+  const queueProcess = useCallback((element, contentHash) => {
+    if (element) ownedElements.current.add(element);
+    const request = runtime.enqueue(element, { key: contentHash });
+    requests.current.set(element, request);
+    return request.promise.finally(() => {
+      if (requests.current.get(element) === request) requests.current.delete(element);
     });
-  };
-  
-  return { queueProcess, isReady, elementRef };
+  }, [runtime]);
+  return { queueProcess, isReady: state.status === 'ready', elementRef, error: state.error, retry: runtime.retry };
 }

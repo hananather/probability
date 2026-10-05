@@ -1,5 +1,6 @@
 "use client";
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
+import { useMathJax } from '@/hooks/useMathJax';
 import { cn } from '../../../lib/design-system';
 import { VisualizationSection } from '../VisualizationContainer';
 
@@ -81,20 +82,7 @@ export function CalculationStep({
   const contentRef = useRef(null);
   
   // MathJax processing
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [children]);
+  useMathJax(contentRef, [children]);
 
   const variants = {
     default: 'bg-neutral-900/50',
@@ -125,20 +113,7 @@ export function CalculationStep({
 export function NestedCalculation({ label, children }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [children]);
+  useMathJax(contentRef, [children]);
 
   return (
     <div className="bg-neutral-800/50 rounded p-3 mb-4">
@@ -157,26 +132,19 @@ export function NestedCalculation({ label, children }) {
  * @param {string} props.formula - LaTeX formula string (without delimiters)
  * @param {string} props.className - Additional CSS classes
  */
-export function FormulaDisplay({ formula, className }) {
+export function FormulaDisplay({ formula, className, label = 'Calculation formula' }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [formula]);
+  useMathJax(contentRef, [formula]);
 
   return (
-    <div ref={contentRef} className={cn("text-center my-2", className)}>
+    <div
+      ref={contentRef}
+      role="region"
+      aria-label={label}
+      tabIndex={0}
+      className={cn("min-w-0 max-w-full overflow-x-auto text-center my-2 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400", className)}
+    >
       <span dangerouslySetInnerHTML={{ __html: `\\[${formula}\\]` }} />
     </div>
   );

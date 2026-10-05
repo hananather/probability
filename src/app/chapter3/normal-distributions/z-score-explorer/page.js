@@ -1,7 +1,6 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import BackToHub from '@/components/ui/BackToHub';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -29,12 +28,12 @@ export default function ZScoreExplorerPage() {
       <Chapter3ReferenceSheet mode="floating" />
       
       <div className="mb-6">
-        <Link href="/chapter3/normal-distributions">
-          <Button variant="secondary" className="flex items-center gap-2">
+        <Button asChild variant="secondary" className="flex items-center gap-2">
+          <Link href="/chapter3/normal-distributions">
             <ArrowLeft className="w-4 h-4" />
             Back to Normal Distributions
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
 
       <div className="space-y-12">
@@ -57,7 +56,13 @@ export default function ZScoreExplorerPage() {
         </div>
 
         <NormalZScoreExplorer />
-        <NormalZScoreWorkedExample />
+        <section aria-label="Fixed worked example">
+          <p className="text-neutral-300">
+            The worked example below keeps the mean at 100, the standard deviation at 15,
+            and x at 115. Compare its steps with the values you explore above.
+          </p>
+          <NormalZScoreWorkedExample />
+        </section>
       </div>
     </>
   );

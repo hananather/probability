@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback, useId } from 'react';
 import * as d3 from '@/utils/d3-utils';
+import { jStat } from 'jstat';
 import { 
   Compass, 
   Calculator, 
@@ -24,8 +25,54 @@ import {
   GraphContainer,
   ControlGroup
 } from '../ui/VisualizationContainer';
-import { Chapter5ReferenceSheet } from '../reference-sheets/Chapter5ReferenceSheet';
 import { colors, typography, createColorScheme } from '@/lib/design-system';
+import { useMathJax } from '@/hooks/useMathJax';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useLearningActivity } from '@/hooks/useLearningActivity';
+import { normalMeanCriticalValue, planNormalMeanSampleSize, planEnrollmentForExpectedLoss, solveBudgetSampleSize } from '@/lib/statistics/sampleSizePlanning';
+
+function useChartWidth(ref) {
+  const [width, setWidth] = useState(0);
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+    const measure = () => {
+      const nextWidth = Math.max(0, Math.floor(element.getBoundingClientRect().width));
+      setWidth(previous => previous === nextWidth ? previous : nextWidth);
+    };
+    measure();
+    if (typeof ResizeObserver !== 'undefined') {
+      const observer = new ResizeObserver(measure);
+      observer.observe(element);
+      return () => observer.disconnect();
+    }
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [ref]);
+  return width;
+}
+
+function FormulaScroll({ children, label, className = '' }) {
+  return (
+    <div
+      className={`min-w-0 max-w-full overflow-x-auto rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 ${className}`}
+      {...(label ? { role: 'region', 'aria-label': label, tabIndex: 0 } : {})}
+    >
+      <div className="w-max min-w-full">{children}</div>
+    </div>
+  );
+}
+
+function addChartLabel(axis, text, width, compact) {
+  const label = axis.append('text')
+    .attr('x', width / 2).attr('y', 50).attr('fill', 'white')
+    .attr('text-anchor', 'middle').style('font-size', compact ? '12px' : '14px');
+  if (width < 300 && text.includes(' (')) {
+    const boundary = text.indexOf(' (');
+    label.append('tspan').attr('x', width / 2).text(text.slice(0, boundary));
+    label.append('tspan').attr('x', width / 2).attr('dy', 16).text(text.slice(boundary + 1));
+  } else label.text(text);
+}
 
 // Learning modes
 const LEARNING_MODES = {
@@ -90,20 +137,7 @@ const SampleSizeJourney = {
 const LearningPathNavigation = React.memo(function LearningPathNavigation({ mode, onModeChange }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [mode]);
+  useMathJax(contentRef, [mode]);
   
   return (
     <div className="mb-8">
@@ -158,10 +192,15 @@ const LearningPathNavigation = React.memo(function LearningPathNavigation({ mode
             <strong className="text-blue-400"> confidence level (1-α)</strong>, 
             and <strong className="text-purple-400"> population variance (σ²)</strong>.
           </p>
+          <p>
+            This formula plans an interval for a population mean using independent observations from the same population
+            and a known population standard deviation σ. Coverage is exact for a normal population; otherwise,
+            it uses an appropriate normal approximation for the sample mean.
+          </p>
           
-          <div className="bg-gray-800/50 rounded p-3 text-center">
+          <FormulaScroll className="bg-gray-800/50 rounded p-3 text-center" label="Sample size planning formula">
             <span dangerouslySetInnerHTML={{ __html: `\\[n = \\left(\\frac{z_{\\alpha/2} \\cdot \\sigma}{E}\\right)^2\\]` }} />
-          </div>
+          </FormulaScroll>
           
           <p className="text-xs text-neutral-400">
             Progress through the learning modes to master sample size calculations.
@@ -248,20 +287,7 @@ const MathematicalFoundation = React.memo(function MathematicalFoundation() {
   const [showDerivation, setShowDerivation] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [showDerivation, currentStep]);
+  useMathJax(contentRef, [showDerivation, currentStep]);
   
   const derivationSteps = [
     {
@@ -272,7 +298,7 @@ const MathematicalFoundation = React.memo(function MathematicalFoundation() {
     {
       title: "The margin of error E is half the CI width",
       content: `\\[E = z_{\\alpha/2} \\frac{\\sigma}{\\sqrt{n}}\\]`,
-      explanation: "We want to control this maximum error"
+      explanation: "Choose the interval half-width before sampling"
     },
     {
       title: "Solve for n by rearranging",
@@ -298,14 +324,16 @@ const MathematicalFoundation = React.memo(function MathematicalFoundation() {
           <div className="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700/50">
             <h4 className={`${typography.h3} mb-3`}>Key Insight</h4>
             <p className="text-sm text-neutral-300 mb-3">
-              The margin of error E represents the maximum distance between our sample mean and the true population mean (with specified confidence). 
-              <span className="text-yellow-400 font-semibold"> Think of it as the "plus-or-minus" in poll results.</span>
+              The margin of error E is the planned half-width of the confidence interval for the population mean.
+              <span className="text-yellow-400 font-semibold"> Think of it as the "plus-or-minus" in an interval estimate.</span>
             </p>
             <div className="bg-purple-900/20 rounded p-3 text-center">
               <p className="text-sm text-purple-300">If we want E = 2 with 95% confidence:</p>
               <p className="text-xs text-neutral-400 mt-1">
-                We're 95% sure the true mean is within ±2 of our sample mean
+                Under these assumptions, if we repeatedly take independent samples and build intervals using this method,
+                about 95% of those intervals cover the fixed population mean.
               </p>
+              <p className="text-xs text-neutral-400 mt-1">A particular interval can miss the mean.</p>
               <p className="text-xs text-yellow-400 mt-2 italic">
                 Smaller E = More precision = Larger sample needed
               </p>
@@ -316,7 +344,7 @@ const MathematicalFoundation = React.memo(function MathematicalFoundation() {
           <div className="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700/50">
             <h4 className={`${typography.h3} mb-3`}>Central Limit Theorem Connection</h4>
             <p className="text-sm text-neutral-300 mb-3">
-              By the CLT, <span dangerouslySetInnerHTML={{ __html: `\\(\\bar{X} \\sim N(\\mu, \\sigma^2/n)\\)` }} />
+              For a normal population, <span dangerouslySetInnerHTML={{ __html: `\\(\\bar{X} \\sim N(\\mu, \\sigma^2/n)\\)` }} /> exactly. For independent observations from the same population with finite variance, the CLT gives this normal approximation as n grows.
             </p>
             <p className="text-sm text-neutral-300">
               As n increases:
@@ -347,9 +375,9 @@ const MathematicalFoundation = React.memo(function MathematicalFoundation() {
                 className="mt-4"
               >
                 <div className="bg-neutral-800/50 rounded-lg p-6">
-                  <div className="flex justify-between items-center mb-4">
+                  <div className="flex flex-wrap gap-3 justify-between items-center mb-4">
                     <h5 className="font-semibold text-purple-400">Derivation Steps</h5>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <button
                         onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
                         className="px-3 py-1 bg-neutral-700 hover:bg-neutral-600 rounded text-sm"
@@ -379,11 +407,11 @@ const MathematicalFoundation = React.memo(function MathematicalFoundation() {
                     <h6 className="font-medium text-white">
                       {derivationSteps[currentStep].title}
                     </h6>
-                    <div className="text-2xl text-center text-purple-300 py-4 bg-neutral-900/50 rounded">
+                    <FormulaScroll className="text-2xl text-center text-purple-300 py-4 bg-neutral-900/50 rounded" label="Sample size derivation equation">
                       <span dangerouslySetInnerHTML={{ 
                         __html: derivationSteps[currentStep].content 
                       }} />
-                    </div>
+                    </FormulaScroll>
                     <p className="text-sm text-neutral-400">
                       {derivationSteps[currentStep].explanation}
                     </p>
@@ -399,11 +427,14 @@ const MathematicalFoundation = React.memo(function MathematicalFoundation() {
 });
 
 // Visual Exploration Component
-const VisualExploration = React.memo(function VisualExploration({ onComplete }) {
+export const VisualExploration = React.memo(function VisualExploration({ onComplete }) {
+  const reducedMotion = useReducedMotion();
   const [activeRelationship, setActiveRelationship] = useState('n-E');
   const svgRef = useRef(null);
+  const chartWidth = useChartWidth(svgRef);
+  const exploredRelationships = useRef(new Set());
+  const completionReported = useRef(false);
   const [hoveredPoint, setHoveredPoint] = useState(null);
-  const [animating, setAnimating] = useState(false);
   
   const relationships = {
     'n-E': {
@@ -433,23 +464,18 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
   };
   
   // Calculate z-value based on confidence
-  const getZ = (confidence) => {
-    const zValues = {
-      90: 1.645,
-      95: 1.960,
-      98: 2.326,
-      99: 2.576
-    };
-    return zValues[confidence] || 1.960;
-  };
+  const getZ = (confidence) => jStat.normal.inv((1 + confidence / 100) / 2, 0, 1);
   
   useEffect(() => {
-    if (!svgRef.current) return;
+    if (!svgRef.current || chartWidth <= 0) return;
     
     const svg = d3.select(svgRef.current);
-    const width = svgRef.current.clientWidth || 700;
+    const width = chartWidth;
     const height = 450;
-    const margin = { top: 60, right: 120, bottom: 90, left: 100 }; // Improved spacing for readability
+    const compact = width < 500;
+    const margin = { top: 60, right: compact ? 12 : 120, bottom: 90, left: compact ? 52 : 100 };
+    const plotWidth = width - margin.left - margin.right;
+    svg.attr('viewBox', `0 0 ${width} ${height}`);
     
     // Clear previous
     svg.selectAll("*").remove();
@@ -526,22 +552,23 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
     }
     
     // Create main group
-    const g = svg.append("g");
+    const g = svg.append("g").attr('class', 'relationship-plot');
     
     // Add clip path to prevent overflow
     const clipPath = defs.append("clipPath")
       .attr("id", "chart-area-clip");
     
     clipPath.append("rect")
-      .attr("x", margin.left)
-      .attr("y", margin.top)
-      .attr("width", width - margin.left - margin.right)
-      .attr("height", height - margin.top - margin.bottom);
+      .attr("x", margin.left - 5)
+      .attr("y", margin.top - 5)
+      .attr("width", plotWidth + 10)
+      .attr("height", height - margin.top - margin.bottom + 10);
     
     // Draw axes with grid lines
     const xAxis = g.append("g")
+      .attr('class', 'x-axis')
       .attr("transform", `translate(0,${height - margin.bottom})`)
-      .call(d3.axisBottom(xScale).tickSize(-height + margin.top + margin.bottom).tickPadding(10));
+      .call(d3.axisBottom(xScale).ticks(Math.max(2, Math.floor(plotWidth / 65))).tickSize(-height + margin.top + margin.bottom).tickPadding(10));
     
     xAxis.selectAll("text")
       .attr("fill", "#f3f4f6");
@@ -550,17 +577,11 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
       .attr("stroke", "#374151")
       .attr("stroke-opacity", 0.2);
     
-    xAxis.append("text")
-      .attr("x", width / 2)
-      .attr("y", 50)
-      .attr("fill", "white")
-      .style("text-anchor", "middle")
-      .style("font-size", "14px")
-      .text(relationships[activeRelationship].xLabel);
+    addChartLabel(xAxis, relationships[activeRelationship].xLabel, width, compact);
     
     const yAxis = g.append("g")
       .attr("transform", `translate(${margin.left},0)`)
-      .call(d3.axisLeft(yScale).tickSize(-width + margin.left + margin.right).tickPadding(10));
+      .call(d3.axisLeft(yScale).ticks(6).tickSize(-plotWidth).tickPadding(10));
     
     yAxis.selectAll("text")
       .attr("fill", "#f3f4f6");
@@ -571,11 +592,11 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
     
     yAxis.append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", -70)
+      .attr("y", compact ? -38 : -70)
       .attr("x", -height / 2)
       .attr("fill", "white")
       .style("text-anchor", "middle")
-      .style("font-size", "14px")
+      .style("font-size", compact ? "12px" : "14px")
       .text(relationships[activeRelationship].yLabel);
     
     // Draw relationship curve with animation
@@ -592,16 +613,15 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
       .attr("d", line)
       .attr("clip-path", "url(#chart-area-clip)");
     
-    // Animate path drawing
-    setAnimating(true);
-    const totalLength = path.node().getTotalLength();
-    path
-      .attr("stroke-dasharray", totalLength)
-      .attr("stroke-dashoffset", totalLength)
-      .transition()
-      .duration(1500)
-      .attr("stroke-dashoffset", 0)
-      .on("end", () => setAnimating(false));
+    if (!reducedMotion) {
+      const totalLength = path.node().getTotalLength();
+      path
+        .attr('stroke-dasharray', totalLength)
+        .attr('stroke-dashoffset', totalLength)
+        .transition()
+        .duration(400)
+        .attr('stroke-dashoffset', 0);
+    }
     
     // Add data points with clipping
     const pointsGroup = g.append("g")
@@ -617,10 +637,6 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
       .attr("fill", relationships[activeRelationship].color)
       .attr("stroke", "#f3f4f6")
       .attr("stroke-width", 1)
-      .attr("opacity", 0)
-      .transition()
-      .delay((d, i) => 1500 + i * 50)
-      .duration(300)
       .attr("opacity", 0.8);
     
     // Add interactive hover effects
@@ -633,7 +649,7 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
       .attr("stroke", "white")
       .attr("stroke-width", 2);
     
-    const tooltip = focus.append("g");
+    const tooltip = focus.append("g").attr('class', 'hover-tooltip');
     
     tooltip.append("rect")
       .attr("x", -50)
@@ -689,7 +705,7 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
       } else if (activeRelationship === 'n-sigma') {
         y = Math.pow((1.96 * x) / 2, 2);
       } else {
-        y = Math.pow((getZ(Math.round(x)) * 15) / 2, 2);
+        y = Math.pow((getZ(x) * 15) / 2, 2);
       }
       
       // Get the actual y-axis domain max from the current scale
@@ -699,12 +715,14 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
       if (y > 0 && y <= yDomainMax) {
         focus.attr("opacity", 1)
           .attr("transform", `translate(${xScale(x)},${yScale(y)})`);
+        const tooltipX = Math.max(54, Math.min(width - 54, xScale(x))) - xScale(x);
+        tooltip.attr('transform', `translate(${tooltipX},${yScale(y) < 40 ? 45 : 0})`);
         
         focus.select("text:first-of-type")
-          .text(`n = ${Math.round(y)}`);
+          .text(`Required n = ${Math.ceil(y)}`);
         
         focus.select("text:last-of-type")
-          .text(`${relationships[activeRelationship].xLabel.split(' ')[0]} = ${x.toFixed(1)}`);
+          .text(`${activeRelationship === 'n-confidence' ? 'Confidence (%)' : relationships[activeRelationship].xLabel.split(' ')[0]} = ${x.toFixed(1)}`);
         
         setHoveredPoint({ x, y });
       } else {
@@ -714,18 +732,17 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
       }
     }
     
-  }, [activeRelationship]);
+    return () => { svg.selectAll('*').interrupt(); svg.selectAll('*').remove(); };
+  }, [activeRelationship, chartWidth, reducedMotion]);
   
-  // Mark as complete after exploring all relationships
-  useEffect(() => {
-    const explored = new Set(['n-E', 'n-sigma', 'n-confidence']);
-    if (explored.has(activeRelationship)) {
-      explored.delete(activeRelationship);
+  const selectRelationship = (relationship) => {
+    setActiveRelationship(relationship);
+    exploredRelationships.current.add(relationship);
+    if (exploredRelationships.current.size === 3 && !completionReported.current) {
+      completionReported.current = true;
+      onComplete?.('visual-exploration');
     }
-    if (explored.size === 0 && onComplete) {
-      onComplete('visual-exploration');
-    }
-  }, [activeRelationship, onComplete]);
+  };
   
   return (
     <div className="space-y-6">
@@ -739,12 +756,13 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
       </div>
       
       {/* Relationship Selector */}
-      <div className="flex gap-3 justify-center">
+      <div className="flex flex-wrap gap-3 justify-center">
         {Object.entries(relationships).map(([key, rel]) => (
           <button
             key={key}
-            onClick={() => setActiveRelationship(key)}
-            className={`px-6 py-3 rounded-lg font-medium transition-all ${
+            onClick={() => selectRelationship(key)}
+            aria-pressed={activeRelationship === key}
+            className={`max-w-full px-4 sm:px-6 py-3 rounded-lg font-medium transition-all ${
               activeRelationship === key
                 ? 'text-white shadow-lg'
                 : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
@@ -752,7 +770,6 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
             style={{
               backgroundColor: activeRelationship === key ? rel.color : undefined
             }}
-            disabled={animating}
           >
             {rel.title.split(' vs. ')[1]}
           </button>
@@ -760,9 +777,9 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
       </div>
       
       {/* Visualization */}
-      <div className="rounded-xl p-6">
-        <div className="flex justify-between items-start mb-6">
-          <div>
+      <div className="min-w-0 rounded-xl p-2 sm:p-6">
+        <div className="flex flex-wrap gap-4 justify-between items-start mb-6">
+          <div className="min-w-0">
             <h4 className="text-lg font-semibold text-white">
               {relationships[activeRelationship].title}
             </h4>
@@ -780,10 +797,12 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
           </div>
         </div>
         
-        <GraphContainer height="450px">
-          <svg ref={svgRef} width="100%" height="100%" />
+        <GraphContainer height="450px" className="min-w-0 !p-0 sm:!p-4">
+          <svg ref={svgRef} width="100%" height="100%" role="img" aria-label="Sample size relationship chart" />
         </GraphContainer>
         
+        <p className="mt-3 text-xs text-neutral-400">The curve shows the sample size before rounding; required observation counts are rounded up.</p>
+
         {/* Key Insights */}
         <div 
           className="mt-4 p-4 bg-neutral-900/50 rounded-lg"
@@ -827,15 +846,15 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
             <div className="space-y-2 text-sm">
               <p className="flex items-start gap-2">
                 <span className="text-emerald-400">•</span>
-                <span>90% → 95% confidence: n increases by 35%</span>
+                <span>90% → 95% confidence: n increases by about 42%</span>
               </p>
               <p className="flex items-start gap-2">
                 <span className="text-emerald-400">•</span>
-                <span>95% → 99% confidence: n increases by 73%</span>
+                <span>95% → 99% confidence: n increases by about 73%</span>
               </p>
               <p className="flex items-start gap-2">
                 <span className="text-emerald-400">•</span>
-                <span>Common choice: 95% balances confidence and cost</span>
+                <span>These comparisons hold σ and E fixed, before rounding n up.</span>
               </p>
             </div>
           )}
@@ -849,10 +868,10 @@ const VisualExploration = React.memo(function VisualExploration({ onComplete }) 
             animate={{ opacity: 1, y: 0 }}
           >
             <p className="text-neutral-400">
-              At this point: Sample size n = {Math.round(hoveredPoint.y)} 
+              At this point: Required sample size n = {Math.ceil(hoveredPoint.y)}
               {activeRelationship === 'n-E' && ` for E = ${hoveredPoint.x.toFixed(1)}`}
               {activeRelationship === 'n-sigma' && ` for σ = ${hoveredPoint.x.toFixed(1)}`}
-              {activeRelationship === 'n-confidence' && ` for ${Math.round(hoveredPoint.x)}% confidence`}
+              {activeRelationship === 'n-confidence' && ` for ${hoveredPoint.x.toFixed(1)}% confidence`}
             </p>
           </div>
         )}
@@ -866,20 +885,7 @@ const QuickReferenceCard = React.memo(function QuickReferenceCard() {
   const contentRef = useRef(null);
   const [activeTab, setActiveTab] = useState('z-values');
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [activeTab]);
+  useMathJax(contentRef, [activeTab]);
   
   return (
     <VisualizationSection className="bg-gradient-to-br from-purple-900/20 to-blue-900/20 rounded-lg p-6 border border-purple-700/50">
@@ -887,7 +893,7 @@ const QuickReferenceCard = React.memo(function QuickReferenceCard() {
         Quick Reference Guide
       </h3>
       
-      <div className="flex gap-2 mb-4">
+      <div className="flex flex-wrap gap-2 mb-4">
         <button
           onClick={() => setActiveTab('z-values')}
           className={`px-4 py-2 rounded-lg font-medium transition-all ${
@@ -924,6 +930,7 @@ const QuickReferenceCard = React.memo(function QuickReferenceCard() {
         {activeTab === 'z-values' && (
           <div className="bg-neutral-800/50 rounded-lg p-4">
             <h4 className="font-semibold text-white mb-3">Common Critical Values</h4>
+            <FormulaScroll label="Common critical values table">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-neutral-700">
@@ -960,6 +967,7 @@ const QuickReferenceCard = React.memo(function QuickReferenceCard() {
                 </tr>
               </tbody>
             </table>
+            </FormulaScroll>
             <p className="text-xs text-neutral-500 mt-3">
               Tip: Remember 1.96 ≈ 2 for quick estimates
             </p>
@@ -970,20 +978,20 @@ const QuickReferenceCard = React.memo(function QuickReferenceCard() {
           <div className="space-y-4">
             <div className="bg-neutral-800/50 rounded-lg p-4">
               <h5 className="font-semibold text-white mb-2">For Population Mean (σ known)</h5>
-              <div className="text-center text-teal-300 py-2">
+              <FormulaScroll className="text-center text-teal-300 py-2" label="Sample size for a population mean">
                 <span dangerouslySetInnerHTML={{ 
                   __html: `\\[n = \\left(\\frac{z_{\\alpha/2} \\times \\sigma}{E}\\right)^2\\]` 
                 }} />
-              </div>
+              </FormulaScroll>
             </div>
             
             <div className="bg-neutral-800/50 rounded-lg p-4">
               <h5 className="font-semibold text-white mb-2">For Population Proportion</h5>
-              <div className="text-center text-teal-300 py-2">
+              <FormulaScroll className="text-center text-teal-300 py-2" label="Sample size for a population proportion">
                 <span dangerouslySetInnerHTML={{ 
                   __html: `\\[n = \\left(\\frac{z_{\\alpha/2}}{E}\\right)^2 \\times p(1-p)\\]` 
                 }} />
-              </div>
+              </FormulaScroll>
               <p className="text-xs text-neutral-500 mt-2">
                 Use p = 0.5 if unknown (conservative approach)
               </p>
@@ -991,11 +999,11 @@ const QuickReferenceCard = React.memo(function QuickReferenceCard() {
             
             <div className="bg-neutral-800/50 rounded-lg p-4">
               <h5 className="font-semibold text-white mb-2">Finite Population Correction</h5>
-              <div className="text-center text-teal-300 py-2">
+              <FormulaScroll className="text-center text-teal-300 py-2" label="Finite population correction formula">
                 <span dangerouslySetInnerHTML={{ 
                   __html: `\\[n_{\\text{adjusted}} = \\frac{n}{1 + \\frac{n-1}{N}}\\]` 
                 }} />
-              </div>
+              </FormulaScroll>
               <p className="text-xs text-neutral-500 mt-2">
                 Use when n/N {'>'} 0.05
               </p>
@@ -1043,7 +1051,7 @@ const QuickReferenceCard = React.memo(function QuickReferenceCard() {
                 <div className="w-6 h-6 rounded-full bg-teal-600 text-white text-xs flex items-center justify-center flex-shrink-0">5</div>
                 <div>
                   <p className="font-medium text-white">Check feasibility</p>
-                  <p className="text-neutral-400">Budget? Time? Add 10-20% for dropouts</p>
+                  <p className="text-neutral-400">Budget? Time? Account for the expected proportion of lost observations</p>
                 </div>
               </div>
             </div>
@@ -1069,20 +1077,7 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
     squared: false
   });
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [selectedParts]);
+  useMathJax(contentRef, [selectedParts]);
   
   const allUnderstood = Object.values(understanding).every(v => v);
   
@@ -1101,29 +1096,36 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
         
         <div className="text-center mb-8">
           <p className="text-neutral-300 mb-4">
-            Click on each part to understand why it's in the formula
+            Select each part to explore why it's in the formula
           </p>
           
           {/* Interactive Formula Display */}
-          <div className="text-4xl font-mono inline-flex items-center gap-2">
+          <FormulaScroll label="Interactive sample size formula">
+          <div className="text-4xl font-mono inline-flex items-center gap-2 py-2">
             <span className="text-neutral-500">n =</span>
             
             {/* Opening parenthesis */}
-            <span
-              className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
+            <button
+              type="button"
+              aria-pressed={selectedParts.squared}
+              aria-label="Explain the squared expression"
+              className={`min-h-11 min-w-11 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
                 selectedParts.squared ? 'text-purple-400' : 'text-neutral-500'
               }`}
               onClick={() => setSelectedParts({...selectedParts, squared: !selectedParts.squared})}
             >
               (
-            </span>
+            </button>
             
             {/* Fraction */}
             <div className="inline-flex flex-col items-center">
               {/* Numerator */}
               <div className="flex items-center gap-1">
-                <span 
-                  className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
+                <button
+                  type="button"
+                  aria-pressed={selectedParts.numerator}
+                  aria-label="Critical value z"
+                  className={`min-h-11 min-w-11 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
                     understanding.z ? 'text-green-400' : 
                     selectedParts.numerator ? 'text-blue-400' : 'text-neutral-400'
                   }`}
@@ -1133,9 +1135,12 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
                   }}
                 >
                   z
-                </span>
-                <span 
-                  className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform text-xs ${
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={selectedParts.numerator}
+                  aria-label="Tail probability alpha over two"
+                  className={`min-h-11 min-w-11 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform text-xs ${
                     understanding.z ? 'text-green-400' : 
                     selectedParts.numerator ? 'text-blue-400' : 'text-neutral-400'
                   }`}
@@ -1145,10 +1150,13 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
                   }}
                 >
                   α/2
-                </span>
+                </button>
                 <span className="text-neutral-400">×</span>
-                <span 
-                  className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
+                <button
+                  type="button"
+                  aria-pressed={selectedParts.numerator}
+                  aria-label="Population standard deviation sigma"
+                  className={`min-h-11 min-w-11 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
                     understanding.sigma ? 'text-green-400' : 
                     selectedParts.numerator ? 'text-blue-400' : 'text-neutral-400'
                   }`}
@@ -1158,7 +1166,7 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
                   }}
                 >
                   σ
-                </span>
+                </button>
               </div>
               
               {/* Fraction bar */}
@@ -1166,8 +1174,11 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
               
               {/* Denominator */}
               <div>
-                <span 
-                  className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
+                <button
+                  type="button"
+                  aria-pressed={selectedParts.denominator}
+                  aria-label="Margin of error E"
+                  className={`min-h-11 min-w-11 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
                     understanding.E ? 'text-green-400' : 
                     selectedParts.denominator ? 'text-yellow-400' : 'text-neutral-400'
                   }`}
@@ -1177,13 +1188,16 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
                   }}
                 >
                   E
-                </span>
+                </button>
               </div>
             </div>
             
             {/* Closing parenthesis and square */}
-            <span
-              className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
+            <button
+              type="button"
+              aria-pressed={selectedParts.squared}
+              aria-label="Why squared"
+              className={`min-h-11 min-w-11 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
                 selectedParts.squared ? 'text-purple-400' : 'text-neutral-500'
               }`}
               onClick={() => {
@@ -1192,8 +1206,9 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
               }}
             >
               )²
-            </span>
+            </button>
           </div>
+          </FormulaScroll>
         </div>
         
         {/* Explanations */}
@@ -1208,15 +1223,15 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
             >
               <h5 className="font-semibold text-blue-400 mb-2">Why z × σ?</h5>
               <p className="text-sm text-neutral-300">
-                This represents how many standard errors we need to capture for our confidence level. 
-                The z-value (like 1.96 for 95%) tells us how many standard deviations, and σ is the population 
-                standard deviation. Together they give us the "margin" we need.
+                The critical value z sets the interval method's coverage. For 95% coverage under the normal
+                model, z ≈ 1.96. The half-width is zσ/√n. Before rounding, zσ/E = √n.
+                A larger z or σ requires a larger sample for the same E.
               </p>
-              <div className="mt-3 text-center">
+              <FormulaScroll className="mt-3 text-center" label="Margin and standard error formula">
                 <span dangerouslySetInnerHTML={{ 
-                  __html: `\\[\\text{Margin} = z_{\\alpha/2} \\times \\text{Standard Error}\\]` 
+                  __html: `\\[\\text{Margin} = z_{\\alpha/2} \\times \\text{Standard Error} = \\frac{z_{\\alpha/2}\\sigma}{\\sqrt{n}}\\]`
                 }} />
-              </div>
+              </FormulaScroll>
             </div>
           )}
           
@@ -1230,12 +1245,12 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
             >
               <h5 className="font-semibold text-yellow-400 mb-2">Why divide by E?</h5>
               <p className="text-sm text-neutral-300">
-                E is our desired margin of error - how close we want to be to the true value. 
-                Smaller E means we need more precision, which requires a larger sample size. 
-                Think of it like zoom: to see finer details (smaller E), you need more data points.
+                E is the target half-width of the confidence interval for the population mean.
+                A smaller E means a narrower interval and requires a larger sample under the same assumptions.
               </p>
-              <p className="text-xs text-neutral-500 mt-2">
-                If E = 1, we're okay being ±1 unit off. If E = 0.1, we want to be ±0.1 units off (10× more precise!).
+              <p className="text-xs text-neutral-300 mt-2">
+                E = 1 targets a half-width of 1 unit; E = 0.1 targets a half-width of 0.1 units.
+                Coverage describes repeated sampling, and a particular interval can miss the fixed mean.
               </p>
             </div>
           )}
@@ -1254,18 +1269,18 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
                 to eliminate the square root. This creates the quadratic relationship: halving the error 
                 quadruples the sample size!
               </p>
-              <div className="mt-3 text-center text-sm">
+              <FormulaScroll className="mt-3 text-center text-sm" label="Solving for sample size">
                 <span dangerouslySetInnerHTML={{ 
                   __html: `\\[E = \\frac{z \\times \\sigma}{\\sqrt{n}} \\Rightarrow \\sqrt{n} = \\frac{z \\times \\sigma}{E} \\Rightarrow n = \\left(\\frac{z \\times \\sigma}{E}\\right)^2\\]` 
                 }} />
-              </div>
+              </FormulaScroll>
             </div>
           )}
         </div>
         
-        {/* Understanding Progress */}
+        {/* Formula Exploration */}
         <div className="mt-6 bg-neutral-800/50 rounded-lg p-4">
-          <h5 className="font-semibold text-white mb-3">Your Understanding</h5>
+          <h5 className="font-semibold text-white mb-3">Formula parts explored</h5>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {Object.entries(understanding).map(([key, understood]) => (
               <div 
@@ -1293,7 +1308,7 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
               animate={{ opacity: 1 }}
               className="text-center text-green-400 mt-4 font-medium"
             >
-              Great! You understand all parts of the formula! 🎉
+              You have explored all parts. Try a calculation next.
             </p>
           )}
         </div>
@@ -1316,21 +1331,9 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems({ onComple
   const [showSolution, setShowSolution] = useState(false);
   const [userAnswer, setUserAnswer] = useState('');
   const [feedback, setFeedback] = useState(null);
+  const answerId = useId();
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [selectedProblem, showSolution]);
+  useMathJax(contentRef, [selectedProblem, showSolution]);
   
   const problems = [
     {
@@ -1352,7 +1355,7 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems({ onComple
     {
       id: 2,
       title: "Clinical Trial Problem",
-      question: "A researcher needs to detect a 2 mmHg change in blood pressure with 99% confidence. Previous studies show σ = 8 mmHg. Find the required sample size.",
+      question: "A researcher wants to estimate mean blood pressure with a margin of error of 2 mmHg at 99% confidence. Assume independent normal observations with known σ = 8 mmHg. Find the required sample size.",
       answer: 107,
       solution: {
         steps: [
@@ -1362,7 +1365,7 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems({ onComple
           "n = (10.304)² = 106.17",
           "Round up: n = 107"
         ],
-        trap: "99% confidence uses z = 2.576, not 2.58!"
+        trap: "For 99% confidence, use z ≈ 2.576 (about 2.58); 1.96 corresponds to 95%. Round the sample size up."
       }
     },
     {
@@ -1386,8 +1389,11 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems({ onComple
   const currentProblem = problems[selectedProblem];
   
   const checkAnswer = () => {
-    const userNum = parseFloat(userAnswer);
-    const correct = Math.abs(userNum - currentProblem.answer) < 0.01;
+    const userNum = Number(userAnswer);
+    const integerAnswer = selectedProblem < 2;
+    const correct = userAnswer.trim() !== '' && Number.isFinite(userNum) && (integerAnswer
+      ? Number.isSafeInteger(userNum) && userNum === currentProblem.answer
+      : Math.abs(userNum - currentProblem.answer) < 0.01);
     setFeedback({
       correct,
       message: correct 
@@ -1406,7 +1412,7 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems({ onComple
       </h3>
       
       {/* Problem Selector */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex flex-wrap gap-2 mb-6">
         {problems.map((prob, idx) => (
           <button
             key={prob.id}
@@ -1438,18 +1444,22 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems({ onComple
           </p>
           
           {/* Answer Input */}
-          <div className="flex gap-3 items-end">
-            <div className="flex-1">
-              <label className="block text-sm text-neutral-400 mb-2">
+          <div className="flex flex-wrap gap-3 items-end">
+            <div className="min-w-0 basis-full sm:basis-auto flex-1">
+              <label htmlFor={answerId} className="block text-sm text-neutral-400 mb-2">
                 Your Answer:
               </label>
               <input
+                id={answerId}
                 type="number"
                 value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
+                onChange={(e) => {
+                  setUserAnswer(e.target.value);
+                  setFeedback(null);
+                }}
                 className="w-full px-4 py-2 bg-neutral-700 rounded-lg text-white font-mono"
                 placeholder="Enter your answer"
-                step="0.01"
+                step={selectedProblem < 2 ? '1' : '0.01'}
               />
             </div>
             <button
@@ -1524,6 +1534,7 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems({ onComple
 
 // Sample Size Calculator Component
 const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComplete, onSaveCalculation }) {
+  const controlId = useId();
   const [mode, setMode] = useState('calculate'); // calculate, explore
   const [inputs, setInputs] = useState({
     sigma: 15,
@@ -1534,6 +1545,7 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
   const [showDerivation, setShowDerivation] = useState(false);
   const [compareExamples, setCompareExamples] = useState(false);
   const [savedResults, setSavedResults] = useState([]);
+  const calculationRef = useMathJax([mode, inputs, showDerivation, compareExamples, savedResults]);
   
   // Example cases
   const exampleCases = [
@@ -1543,30 +1555,23 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
     { id: 4, sigma: 15, E: 1, confidence: 95, n: 865, description: "High precision" }
   ];
   
-  // Calculate z-value based on confidence
-  const getZ = (confidence) => {
-    const zValues = {
-      90: 1.645,
-      95: 1.960,
-      98: 2.326,
-      99: 2.576
-    };
-    return zValues[confidence] || 1.960;
+  const getZ = normalMeanCriticalValue;
+  const calculateN = useCallback((sigma, E, confidence) =>
+    planNormalMeanSampleSize({ sigma, E, confidence }).n, []);
+  const plan = useMemo(() => planNormalMeanSampleSize(inputs), [inputs]);
+  const { n } = plan;
+  const calculationError = plan.message;
+  const displayedCriticalValue = plan.criticalValue?.toFixed(6);
+  const mathNumber = value => {
+    const [mantissa, exponent] = String(value).split('e');
+    return exponent === undefined ? mantissa : `${mantissa}\\times 10^{${Number(exponent)}}`;
   };
-  
-  // Calculate sample size
-  const calculateN = useCallback((sigma, E, confidence) => {
-    const z = getZ(confidence);
-    return Math.ceil(Math.pow((z * sigma) / E, 2));
-  }, []);
-  
-  const n = useMemo(() => 
-    calculateN(inputs.sigma, inputs.E, inputs.confidence), 
-    [inputs, calculateN]
-  );
-  
+  const displayedUnroundedCount = plan.unroundedN === null ? null
+    : plan.unroundedN < 0.005 ? plan.unroundedN.toExponential(3) : plan.unroundedN.toFixed(2);
+
   // Save calculation
   const handleSaveCalculation = () => {
+    if (calculationError) return;
     const newCalc = {
       ...inputs,
       n,
@@ -1584,7 +1589,7 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
   
   return (
     <VisualizationSection>
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-wrap gap-3 justify-between items-center mb-6">
         <h3 className="text-xl font-bold text-white">
           Sample Size Calculator
         </h3>
@@ -1616,36 +1621,39 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
         <div className="space-y-6">
           {/* Input Controls */}
           <div className="grid md:grid-cols-3 gap-6">
-            <ControlGroup label="Population SD (σ)">
+            <ControlGroup label={<span id={`${controlId}-sigma-label`}> Population SD (σ) </span>}>
               <input
                 type="number"
+                aria-labelledby={`${controlId}-sigma-label`}
                 value={inputs.sigma}
-                onChange={(e) => setInputs({...inputs, sigma: Number(e.target.value)})}
+                onChange={(e) => setInputs({...inputs, sigma: e.target.value === '' ? '' : Number(e.target.value)})}
                 className="w-full px-3 py-2 bg-neutral-700 rounded-lg text-white font-mono"
                 min="0.1"
                 step="0.1"
               />
               <p className="text-xs text-neutral-500 mt-1">
-                Known or estimated from pilot study
+                Known σ for the exact normal model; a pilot estimate gives a provisional plan.
               </p>
             </ControlGroup>
             
-            <ControlGroup label="Margin of Error (E)">
+            <ControlGroup label={<span id={`${controlId}-E-label`}> Margin of Error (E) </span>}>
               <input
                 type="number"
+                aria-labelledby={`${controlId}-E-label`}
                 value={inputs.E}
-                onChange={(e) => setInputs({...inputs, E: Number(e.target.value)})}
+                onChange={(e) => setInputs({...inputs, E: e.target.value === '' ? '' : Number(e.target.value)})}
                 className="w-full px-3 py-2 bg-neutral-700 rounded-lg text-white font-mono"
                 min="0.1"
                 step="0.1"
               />
               <p className="text-xs text-neutral-500 mt-1">
-                Maximum acceptable error
+                Desired interval half-width
               </p>
             </ControlGroup>
             
-            <ControlGroup label="Confidence Level">
+            <ControlGroup label={<span id={`${controlId}-confidence-label`}> Confidence Level </span>}>
               <select
+                aria-labelledby={`${controlId}-confidence-label`}
                 value={inputs.confidence}
                 onChange={(e) => setInputs({...inputs, confidence: Number(e.target.value)})}
                 className="w-full px-3 py-2 bg-neutral-700 rounded-lg text-white font-mono"
@@ -1670,16 +1678,20 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
             key={n} // Re-animate on change
           >
             <p className="text-sm text-neutral-400 mb-2">Required Sample Size</p>
-            <p className="text-5xl font-bold text-purple-400 mb-4 font-mono">n = {n}</p>
+            {calculationError ? <p role="alert" className="mb-4 text-amber-300">{calculationError}</p> : (
+              <p className="text-5xl font-bold text-purple-400 mb-4 font-mono">n = {n}</p>
+            )}
             
-            <div className="flex gap-3 justify-center">
+            <div className="flex flex-wrap gap-3 justify-center">
               <button
+                disabled={Boolean(calculationError)}
                 onClick={() => setShowDerivation(!showDerivation)}
                 className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
               >
                 {showDerivation ? 'Hide' : 'Show'} Calculation
               </button>
               <button
+                disabled={Boolean(calculationError)}
                 onClick={handleSaveCalculation}
                 className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
               >
@@ -1688,48 +1700,47 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
             </div>
             
             <div>
-              {showDerivation && (
+              {showDerivation && !calculationError && (
                 <div
+                  ref={calculationRef}
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   className="mt-4 text-left bg-neutral-900/50 rounded-lg p-4"
                 >
                   <p className="text-sm mb-3 text-neutral-300">Step-by-step calculation:</p>
-                  <div className="space-y-2 font-mono text-sm">
+                  <p className="mb-3 text-sm leading-relaxed text-neutral-300">
+                    Rounded values are shown for readability. The final count uses the full computed
+                    critical value and unrounded arithmetic, then rounds up to a whole observation.
+                  </p>
+                  <FormulaScroll className="space-y-2 font-mono text-sm" label="Sample size calculation steps">
                     <p className="flex items-center gap-2">
                       <span className="text-neutral-500">1.</span>
-                      <span dangerouslySetInnerHTML={{ 
-                        __html: '\\(z_{' + inputs.confidence + '\\%} = ' + getZ(inputs.confidence) + '\\)' 
-                      }} />
+                      <span>{`\\(z_{\\alpha/2} \\approx ${displayedCriticalValue}\\)`}</span>
                     </p>
                     <p className="flex items-center gap-2">
                       <span className="text-neutral-500">2.</span>
-                      <span dangerouslySetInnerHTML={{ 
-                        __html: '\\(n = \\left(\\frac{z \\times \\sigma}{E}\\right)^2\\)' 
-                      }} />
+                      <span>{'\\(n^* = \\left(\\frac{z_{\\alpha/2}\\sigma}{E}\\right)^2\\)'}</span>
                     </p>
                     <p className="flex items-center gap-2">
                       <span className="text-neutral-500">3.</span>
-                      <span dangerouslySetInnerHTML={{ 
-                        __html: '\\(n = \\left(\\frac{' + getZ(inputs.confidence) + ' \\times ' + inputs.sigma + '}{' + inputs.E + '}\\right)^2\\)' 
-                      }} />
+                      <span>{`\\(n^* \\approx \\left(\\frac{${displayedCriticalValue} \\times ${mathNumber(inputs.sigma)}}{${mathNumber(inputs.E)}}\\right)^2\\)`}</span>
                     </p>
                     <p className="flex items-center gap-2">
                       <span className="text-neutral-500">4.</span>
-                      <span dangerouslySetInnerHTML={{ 
-                        __html: '\\(n = \\left(\\frac{' + (getZ(inputs.confidence) * inputs.sigma).toFixed(2) + '}{' + inputs.E + '}\\right)^2\\)' 
-                      }} />
+                      <span>{'\\(n = \\left\\lceil n^* \\right\\rceil\\)'}</span>
                     </p>
                     <p className="flex items-center gap-2">
                       <span className="text-neutral-500">5.</span>
-                      <span>{`n = ${Math.pow((getZ(inputs.confidence) * inputs.sigma) / inputs.E, 2).toFixed(2)}`}</span>
+                      <span>{displayedUnroundedCount === null
+                        ? 'n* > 0 (too small for the numeric display)'
+                        : `n* ≈ ${displayedUnroundedCount}`}</span>
                     </p>
                     <p className="flex items-center gap-2">
                       <span className="text-neutral-500">6.</span>
                       <span className="text-purple-400">{`n = ${n} (rounded up)`}</span>
                     </p>
-                  </div>
+                  </FormulaScroll>
                 </div>
               )}
             </div>
@@ -1753,12 +1764,14 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
                   className="grid md:grid-cols-2 gap-4"
                 >
                   {exampleCases.map((ex, index) => (
-                    <div
+                    <button
+                      type="button"
                       key={ex.id}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="bg-neutral-800 rounded-lg p-4 cursor-pointer
+                      className="min-h-11 text-left bg-neutral-800 rounded-lg p-4 cursor-pointer
+                                 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400
                                  hover:bg-neutral-700 transition-all hover:scale-[1.02]"
                       onClick={() => setInputs({
                         sigma: ex.sigma,
@@ -1777,7 +1790,7 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
                           n = {ex.n}
                         </p>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}
@@ -1794,7 +1807,7 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
                     key={result.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="bg-neutral-800/50 rounded p-3 flex justify-between items-center"
+                    className="bg-neutral-800/50 rounded p-3 flex flex-wrap gap-2 justify-between items-center"
                   >
                     <span className="text-sm font-mono">
                       σ={result.sigma}, E={result.E}, {result.confidence}% → n={result.n}
@@ -1824,16 +1837,32 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
 const ExplorationMode = React.memo(function ExplorationMode({ inputs, setInputs, calculateN, getZ }) {
   const [parameter, setParameter] = useState('E'); // E, sigma, confidence
   const svgRef = useRef(null);
+  const chartWidth = useChartWidth(svgRef);
   
   useEffect(() => {
-    if (!svgRef.current) return;
+    if (!svgRef.current || chartWidth <= 0) return;
     
     const svg = d3.select(svgRef.current);
-    const width = svgRef.current.clientWidth || 600;
+    const width = chartWidth;
     const height = 300;
-    const margin = { top: 40, right: 60, bottom: 60, left: 80 }; // Better margins for chart visibility
+    const compact = width < 500;
+    const margin = { top: 40, right: compact ? 12 : 60, bottom: 80, left: compact ? 52 : 80 };
+    const plotWidth = width - margin.left - margin.right;
+    svg.attr('viewBox', `0 0 ${width} ${height}`);
     
     svg.selectAll("*").remove();
+
+    const showInvalidInputs = () => {
+      const label = svg.append('text').attr('x', width / 2).attr('y', height / 2)
+        .attr('text-anchor', 'middle').attr('fill', '#f3f4f6').attr('font-size', 12);
+      label.append('tspan').attr('x', width / 2).text('Enter positive ');
+      label.append('tspan').attr('x', width / 2).attr('dy', 18).text('finite inputs');
+      label.append('tspan').attr('x', width / 2).attr('dy', 18).text(' to draw this chart.');
+    };
+    if (![inputs.sigma, inputs.E, inputs.confidence].every(value => Number.isFinite(value) && value > 0) || inputs.confidence >= 100) {
+      showInvalidInputs();
+      return () => svg.selectAll('*').remove();
+    }
     
     // Generate data based on parameter
     let data = [];
@@ -1868,31 +1897,37 @@ const ExplorationMode = React.memo(function ExplorationMode({ inputs, setInputs,
       xLabel = "Confidence Level (%)";
     }
     
+    const currentX = parameter === 'E' ? inputs.E :
+                    parameter === 'sigma' ? inputs.sigma :
+                    inputs.confidence;
+    const currentY = calculateN(inputs.sigma, inputs.E, inputs.confidence);
+    if (!Number.isFinite(currentY) || !data.every(point => Number.isFinite(point.y))) {
+      showInvalidInputs();
+      return () => svg.selectAll('*').remove();
+    }
+    const [minimumX, maximumX] = xScale.domain();
+    xScale.domain([Math.min(minimumX, currentX), Math.max(maximumX, currentX)]);
+    const maximumY = Math.max(d3.max(data, d => d.y), currentY);
+    const paddedMaximumY = maximumY * 1.1;
     yScale = d3.scaleLinear()
-      .domain([0, d3.max(data, d => d.y) * 1.1])
+      .domain([0, Number.isFinite(paddedMaximumY) ? paddedMaximumY : maximumY])
       .range([height - margin.bottom, margin.top]);
     
     // Add axes
-    svg.append("g")
+    const xAxis = svg.append("g")
+      .attr('class', 'x-axis')
       .attr("transform", `translate(0,${height - margin.bottom})`)
-      .call(d3.axisBottom(xScale))
-      .selectAll("text")
-      .attr("fill", "#f3f4f6");
+      .call(d3.axisBottom(xScale).ticks(Math.max(2, Math.floor(plotWidth / 65))));
+    xAxis.selectAll('text').attr('fill', '#f3f4f6');
     
     svg.append("g")
       .attr("transform", `translate(${margin.left},0)`)
-      .call(d3.axisLeft(yScale))
+      .call(d3.axisLeft(yScale).ticks(5).tickFormat(d3.format('~s')))
       .selectAll("text")
       .attr("fill", "#f3f4f6");
     
     // Add axis labels
-    svg.append("text")
-      .attr("x", width / 2)
-      .attr("y", height - 5)
-      .attr("text-anchor", "middle")
-      .attr("fill", "white")
-      .attr("font-size", "12px")
-      .text(xLabel);
+    addChartLabel(xAxis, xLabel, width, compact);
     
     svg.append("text")
       .attr("transform", "rotate(-90)")
@@ -1917,11 +1952,6 @@ const ExplorationMode = React.memo(function ExplorationMode({ inputs, setInputs,
       .attr("d", line);
     
     // Add current point
-    const currentX = parameter === 'E' ? inputs.E : 
-                    parameter === 'sigma' ? inputs.sigma : 
-                    inputs.confidence;
-    const currentY = calculateN(inputs.sigma, inputs.E, inputs.confidence);
-    
     svg.append("circle")
       .attr("cx", xScale(currentX))
       .attr("cy", yScale(currentY))
@@ -1930,11 +1960,12 @@ const ExplorationMode = React.memo(function ExplorationMode({ inputs, setInputs,
       .attr("stroke", "white")
       .attr("stroke-width", 2);
     
-  }, [parameter, inputs, calculateN]);
+    return () => { svg.selectAll('*').interrupt(); svg.selectAll('*').remove(); };
+  }, [parameter, inputs, calculateN, chartWidth]);
   
   return (
     <div className="space-y-4">
-      <div className="flex gap-2 justify-center mb-4">
+      <div className="flex flex-wrap gap-2 justify-center mb-4">
         {['E', 'sigma', 'confidence'].map(param => (
           <button
             key={param}
@@ -1950,11 +1981,11 @@ const ExplorationMode = React.memo(function ExplorationMode({ inputs, setInputs,
         ))}
       </div>
       
-      <GraphContainer height="300px">
-        <svg ref={svgRef} width="100%" height="100%" />
+      <GraphContainer height="300px" className="min-w-0 !p-0 sm:!p-4">
+        <svg ref={svgRef} width="100%" height="100%" role="img" aria-label="Sample size calculator exploration chart" />
       </GraphContainer>
       
-      <div className="grid grid-cols-3 gap-4 text-center">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
         <div className="bg-neutral-800 rounded p-3">
           <p className="text-xs text-neutral-400">Current σ</p>
           <p className="font-mono text-lg">{inputs.sigma}</p>
@@ -1976,36 +2007,31 @@ const ExplorationMode = React.memo(function ExplorationMode({ inputs, setInputs,
 const MathematicalFramework = React.memo(function MathematicalFramework() {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <div ref={contentRef} className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 rounded-lg p-6 mb-6 border border-blue-700/30">
       <h4 className="text-lg font-bold text-white mb-4">Mathematical Framework: Cost-Constrained Optimization</h4>
-      
+      <p className="text-sm text-neutral-300 mb-4">
+        At 95% confidence (z ≈ 1.96), assume independent normal measurements with known σ.
+        E is the half-width in the same response units as σ. The chart range is a viewing window.
+      </p>
+
       <div className="grid md:grid-cols-2 gap-6">
         <div>
           <h5 className="text-emerald-400 font-semibold mb-2">The Optimization Problem</h5>
           <div className="bg-neutral-900/50 rounded p-3 space-y-2">
             <p className="text-sm text-neutral-300 mb-2">Minimize margin of error E subject to:</p>
+            <FormulaScroll label="Sample size constraint">
             <div dangerouslySetInnerHTML={{ 
               __html: `\\[n = \\left(\\frac{z_{\\alpha/2} \\cdot \\sigma}{E}\\right)^2\\]` 
             }} />
+            </FormulaScroll>
+            <FormulaScroll label="Total cost constraint">
             <div dangerouslySetInnerHTML={{ 
               __html: `\\[TC(n) = F + cn \\leq B\\]` 
             }} />
+            </FormulaScroll>
             <div className="text-xs text-neutral-400 mt-2">
               where F = fixed costs, c = cost per subject, B = budget
             </div>
@@ -2016,20 +2042,24 @@ const MathematicalFramework = React.memo(function MathematicalFramework() {
           <h5 className="text-purple-400 font-semibold mb-2">The Solution</h5>
           <div className="bg-neutral-900/50 rounded p-3 space-y-2">
             <p className="text-sm text-neutral-300 mb-2">Maximum affordable sample size:</p>
+            <FormulaScroll label="Maximum affordable sample size">
             <div dangerouslySetInnerHTML={{ 
-              __html: `\\[n_{max} = \\frac{B - F}{c}\\]` 
+              __html: `\\[n_{max} = \\left\\lfloor\\frac{B - F}{c}\\right\\rfloor,\\quad n_{max} \\geq 1\\]`
             }} />
+            </FormulaScroll>
             <p className="text-sm text-neutral-300 mt-2 mb-1">Minimum achievable error:</p>
+            <FormulaScroll label="Minimum achievable margin of error">
             <div dangerouslySetInnerHTML={{ 
               __html: `\\[E_{min} = \\frac{z_{\\alpha/2} \\cdot \\sigma}{\\sqrt{n_{max}}}\\]` 
             }} />
+            </FormulaScroll>
           </div>
         </div>
       </div>
       
       <div className="mt-4 bg-yellow-900/20 rounded p-3 border border-yellow-700/30">
         <p className="text-sm text-yellow-300">
-          <strong>Key Insight:</strong> The relationship E ∝ 1/√n means doubling precision (halving E) requires 4× the sample size and roughly 4× the variable costs.
+          <strong>Key Insight:</strong> Halving the target E multiplies the unrounded sample size and variable costs by 4. Round the planned sample size up to an integer.
         </p>
       </div>
     </div>
@@ -2037,26 +2067,11 @@ const MathematicalFramework = React.memo(function MathematicalFramework() {
 });
 
 // Live Calculations Component
-const LiveCalculations = React.memo(function LiveCalculations({ scenario, optimalPoint }) {
+const LiveCalculations = React.memo(function LiveCalculations({ scenario, budgetSolution }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [scenario, optimalPoint]);
-  
-  const maxN = Math.floor((scenario.budgetLimit - scenario.fixedCosts) / scenario.costPerSubject);
-  const minE = maxN > 0 ? (1.96 * scenario.sigma) / Math.sqrt(maxN) : Infinity;
+  useMathJax(contentRef, [scenario, budgetSolution]);
+  const optimalPoint = budgetSolution.status === 'feasible' ? budgetSolution : null;
   
   return (
     <div ref={contentRef} className="bg-neutral-800/50 rounded-lg p-4">
@@ -2070,36 +2085,41 @@ const LiveCalculations = React.memo(function LiveCalculations({ scenario, optima
           </div>
           
           <p className="text-neutral-400 mt-3">Maximum sample size:</p>
-          <div className="bg-neutral-900/50 rounded p-2">
-            <span dangerouslySetInnerHTML={{ 
-              __html: `\\(n_{max} = \\frac{${(scenario.budgetLimit - scenario.fixedCosts).toLocaleString()}}{${scenario.costPerSubject}} = ${maxN}\\)` 
-            }} />
-          </div>
+          {optimalPoint ? (
+            <FormulaScroll className="bg-neutral-900/50 rounded p-2" label="Affordable sample size calculation">
+              <span dangerouslySetInnerHTML={{
+                __html: `\\(n_{max} = \\left\\lfloor\\frac{${(scenario.budgetLimit - scenario.fixedCosts).toLocaleString()}}{${scenario.costPerSubject}}\\right\\rfloor = ${optimalPoint.n}\\)`
+              }} />
+            </FormulaScroll>
+          ) : <p role="status" className="text-amber-300">{budgetSolution.message}</p>}
         </div>
         
         <div className="space-y-2">
           <p className="text-neutral-400">Minimum achievable error:</p>
-          <div className="bg-neutral-900/50 rounded p-2">
-            <span dangerouslySetInnerHTML={{ 
-              __html: `\\(E_{min} = \\frac{1.96 \\times ${scenario.sigma}}{\\sqrt{${maxN}}} = ${minE.toFixed(2)}\\)` 
-            }} />
-          </div>
+          {optimalPoint ? (
+            <FormulaScroll className="bg-neutral-900/50 rounded p-2" label="Affordable margin of error calculation">
+              <span dangerouslySetInnerHTML={{
+                __html: `\\(E_{min} = \\frac{1.96 \\times ${scenario.sigma}}{\\sqrt{${optimalPoint.n}}} \\approx ${optimalPoint.E.toFixed(2)}\\)`
+              }} />
+            </FormulaScroll>
+          ) : <p className="text-neutral-300">No finite margin of error is available for this budget.</p>}
           
           {optimalPoint && (
             <>
-              <p className="text-neutral-400 mt-3">Cost efficiency:</p>
+              <p className="text-neutral-400 mt-3">Average cost per subject:</p>
               <div className="font-mono text-emerald-400 bg-neutral-900/50 rounded p-2">
-                ${(optimalPoint.cost / optimalPoint.n).toFixed(2)} per unit precision
+                ${(optimalPoint.cost / optimalPoint.n).toFixed(2)} per subject (including fixed costs)
               </div>
             </>
           )}
         </div>
       </div>
       
-      {maxN < 30 && (
+      {optimalPoint && optimalPoint.n < 30 && (
         <div className="mt-3 bg-red-900/20 rounded p-2 border border-red-700/30">
           <p className="text-xs text-red-300">
-            ⚠️ Sample size {maxN} may be too small for reliable estimates (typically need n ≥ 30)
+            For a nonnormal population, check whether the normal approximation is adequate.
+            A sample size of {optimalPoint.n} does not by itself establish that approximation.
           </p>
         </div>
       )}
@@ -2108,7 +2128,8 @@ const LiveCalculations = React.memo(function LiveCalculations({ scenario, optima
 });
 
 // Cost-Benefit Analysis Component
-const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete }) {
+export const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete }) {
+  const reducedMotion = useReducedMotion();
   const [scenario, setScenario] = useState({
     costPerSubject: 100,
     fixedCosts: 5000,
@@ -2118,8 +2139,19 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
     maxPrecision: 3
   });
   
-  const [optimalPoint, setOptimalPoint] = useState(null);
+  const budgetSolution = useMemo(() => solveBudgetSampleSize(scenario), [scenario]);
+  const optimalPoint = budgetSolution.status === 'feasible' ? budgetSolution : null;
+  const completionReported = useRef(false);
+  const updateScenario = (key, value) => {
+    if (scenario[key] === value) return;
+    setScenario(previous => ({ ...previous, [key]: value }));
+    if (!completionReported.current) {
+      completionReported.current = true;
+      onComplete?.('cost-benefit-explored');
+    }
+  };
   const svgRef = useRef(null);
+  const chartWidth = useChartWidth(svgRef);
   
   // Calculate total cost for given n
   const calculateCost = useCallback((n) => {
@@ -2133,15 +2165,24 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
   }, [scenario.sigma]);
   
   useEffect(() => {
-    if (!svgRef.current) return;
+    if (!svgRef.current || chartWidth <= 0) return;
     
     const svg = d3.select(svgRef.current);
-    const width = svgRef.current.clientWidth || 800;
+    const width = chartWidth;
     const height = 500;
-    const margin = { top: 60, right: 140, bottom: 100, left: 120 }; // Enhanced spacing for cost analysis
+    const compact = width < 500;
+    const margin = { top: 60, right: compact ? 12 : 140, bottom: 100, left: compact ? 60 : 120 };
+    const plotWidth = width - margin.left - margin.right;
+    svg.attr('viewBox', `0 0 ${width} ${height}`);
     
     svg.selectAll("*").remove();
-    
+    if (budgetSolution.status === 'invalid') {
+      svg.append('text').attr('x', width / 2).attr('y', height / 2)
+        .attr('text-anchor', 'middle').attr('fill', '#f3f4f6').attr('font-size', 12)
+        .text('Enter valid planning inputs to draw this chart.');
+      return () => svg.selectAll('*').remove();
+    }
+
     // Generate data points with finer granularity for smooth curve
     const data = [];
     const step = (scenario.maxPrecision - scenario.minPrecision) / 50; // 50 points for smooth curve
@@ -2153,12 +2194,19 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
       }
     }
     
-    // Filter data within budget
-    const affordableData = data.filter(d => d.cost <= scenario.budgetLimit);
-    
+    // Include the exact solution when it lies outside the initial viewing window.
+    let minimumE = Math.min(scenario.minPrecision, optimalPoint?.E ?? scenario.minPrecision);
+    let maximumE = Math.max(scenario.maxPrecision, optimalPoint?.E ?? scenario.maxPrecision);
+    if (optimalPoint) {
+      const markerInset = Math.min(12, plotWidth / 4);
+      const markerX = (optimalPoint.E - minimumE) / (maximumE - minimumE) * plotWidth;
+      if (markerX < markerInset) minimumE = optimalPoint.E - (maximumE - optimalPoint.E) * markerInset / (plotWidth - markerInset);
+      if (plotWidth - markerX < markerInset) maximumE = optimalPoint.E + (optimalPoint.E - minimumE) * markerInset / (plotWidth - markerInset);
+    }
+
     // Scales
     const xScale = d3.scaleLinear()
-      .domain([scenario.minPrecision, scenario.maxPrecision])
+      .domain([minimumE, maximumE])
       .range([margin.left, width - margin.right]);
     
     const yScale = d3.scaleLinear()
@@ -2201,8 +2249,9 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
     
     // Axes
     const xAxis = g.append("g")
+      .attr('class', 'x-axis')
       .attr("transform", `translate(0,${height - margin.bottom})`)
-      .call(d3.axisBottom(xScale).tickSize(-height + margin.top + margin.bottom).tickPadding(10));
+      .call(d3.axisBottom(xScale).tickValues(xScale.ticks(Math.max(2, Math.floor(plotWidth / 65))).filter(value => value > 0)).tickSize(-height + margin.top + margin.bottom).tickPadding(10));
     
     xAxis.selectAll("text")
       .attr("fill", "#f3f4f6");
@@ -2211,17 +2260,11 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
       .attr("stroke", "#374151")
       .attr("stroke-opacity", 0.3);
     
-    xAxis.append("text")
-      .attr("x", width / 2)
-      .attr("y", 50)
-      .attr("fill", "white")
-      .attr("text-anchor", "middle")
-      .style("font-size", "14px")
-      .text("Margin of Error (E)");
+    addChartLabel(xAxis, 'Margin of Error (E)', width, compact);
     
     const yAxis = g.append("g")
       .attr("transform", `translate(${margin.left},0)`)
-      .call(d3.axisLeft(yScale).tickFormat(d => `$${d/1000}k`).tickSize(-width + margin.left + margin.right).tickPadding(10));
+      .call(d3.axisLeft(yScale).ticks(6).tickFormat(d => `$${d/1000}k`).tickSize(-plotWidth).tickPadding(10));
     
     yAxis.selectAll("text")
       .attr("fill", "#f3f4f6");
@@ -2232,11 +2275,11 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
     
     yAxis.append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", -70)
+      .attr("y", compact ? -46 : -70)
       .attr("x", -height / 2)
       .attr("fill", "white")
       .attr("text-anchor", "middle")
-      .style("font-size", "14px")
+      .style("font-size", compact ? "12px" : "14px")
       .text("Total Cost ($)");
     
     // Budget limit line
@@ -2250,10 +2293,11 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
       .attr("stroke-dasharray", "8,4");
     
     g.append("text")
-      .attr("x", width - margin.right + 10)
-      .attr("y", yScale(scenario.budgetLimit))
+      .attr("x", compact ? width - margin.right : width - margin.right + 10)
+      .attr("y", yScale(scenario.budgetLimit) - (compact ? 12 : 0))
+      .attr('text-anchor', compact ? 'end' : 'start')
       .attr("fill", "#ef4444")
-      .attr("font-size", "14px")
+      .attr("font-size", compact ? "12px" : "14px")
       .attr("font-weight", "600")
       .attr("dominant-baseline", "middle")
       .text("Budget Limit");
@@ -2285,37 +2329,38 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
       .attr("d", line)
       .attr("clip-path", "url(#cost-chart-clip)");
     
-    // Find optimal point (smallest E within budget)
-    if (affordableData.length > 0) {
-      const optimal = affordableData[0]; // Smallest E is first
-      setOptimalPoint(optimal);
+    // The integer budget solution is independent of the plotting grid.
+    if (optimalPoint) {
+      const optimal = optimalPoint;
       
       // Highlight optimal point
-      g.append("circle")
+      const optimalMarker = g.append("circle")
         .attr("cx", xScale(optimal.E))
         .attr("cy", yScale(optimal.cost))
-        .attr("r", 0)
+        .attr("r", reducedMotion ? 8 : 0)
         .attr("fill", "#10b981")
         .attr("stroke", "white")
-        .attr("stroke-width", 2)
-        .transition()
-        .duration(1000)
-        .delay(500)
-        .attr("r", 8);
+        .attr("stroke-width", 2);
+      if (!reducedMotion) optimalMarker.transition().duration(400).attr('r', 8);
       
       // Annotation with background
       const annotationGroup = g.append("g")
+        .attr('class', 'optimal-annotation')
         .attr("transform", `translate(${xScale(optimal.E)}, ${yScale(optimal.cost)})`)
-        .attr("opacity", 0);
+        .attr("opacity", reducedMotion ? 1 : 0);
       
-      const annotationText = `Optimal: E=$${optimal.E.toFixed(1)}, n=${optimal.n}`;
+      const annotationText = `Optimal: E=${optimal.E.toFixed(2)}, n=${optimal.n}`;
       const textElement = annotationGroup.append("text")
         .attr("x", 0)
         .attr("y", 0)
         .attr("fill", "white")
-        .attr("font-size", "14px")
-        .attr("font-weight", "500")
-        .text(annotationText);
+        .attr("font-size", compact ? "12px" : "14px")
+        .attr("font-weight", "500");
+      if (compact) {
+        const [precision, sampleSize] = annotationText.split(', ');
+        textElement.append('tspan').attr('x', 0).text(`${precision},`);
+        textElement.append('tspan').attr('x', 0).attr('dy', 16).text(` ${sampleSize}`);
+      } else textElement.text(annotationText);
       
       const bbox = textElement.node().getBBox();
       
@@ -2328,25 +2373,16 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
         .attr("rx", 4);
       
       // Position annotation to avoid overlap
-      const annotationX = xScale(optimal.E) + 20;
-      const annotationY = yScale(optimal.cost) - 20;
+      const annotationX = Math.max(8 - bbox.x, Math.min(width - bbox.x - bbox.width - 8, xScale(optimal.E) + 20));
+      const annotationY = Math.max(4 - bbox.y, yScale(optimal.cost) - 20);
       
       annotationGroup
-        .attr("transform", `translate(${annotationX}, ${annotationY})`)
-        .transition()
-        .duration(500)
-        .delay(1500)
-        .attr("opacity", 1);
+        .attr("transform", `translate(${annotationX}, ${annotationY})`);
+      if (!reducedMotion) annotationGroup.transition().duration(200).attr('opacity', 1);
     }
     
-  }, [scenario, calculateCost]);
-  
-  // Mark complete after adjusting parameters
-  useEffect(() => {
-    if (scenario.costPerSubject !== 50 || scenario.budgetLimit !== 25000) {
-      if (onComplete) onComplete('cost-benefit-explored');
-    }
-  }, [scenario, onComplete]);
+    return () => { svg.selectAll('*').interrupt(); svg.selectAll('*').remove(); };
+  }, [scenario, calculateCost, chartWidth, reducedMotion, optimalPoint, budgetSolution]);
   
   return (
     <VisualizationSection>
@@ -2360,7 +2396,7 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
       {/* Controls in a horizontal layout */}
       <div className="mb-6 bg-neutral-800/50 rounded-lg p-4">
         <h4 className="font-semibold text-emerald-400 mb-4">Scenario Parameters</h4>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm text-neutral-400 mb-2">
               Cost per Subject
@@ -2372,11 +2408,9 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
                 max="500"
                 step="10"
                 value={scenario.costPerSubject}
-                onChange={(e) => setScenario({
-                  ...scenario, 
-                  costPerSubject: Number(e.target.value)
-                })}
-                className="flex-1"
+                aria-label="Cost per Subject"
+                onChange={(e) => updateScenario('costPerSubject', Number(e.target.value))}
+                className="min-w-0 flex-1"
               />
               <span className="text-sm font-mono text-white w-16">${scenario.costPerSubject}</span>
             </div>
@@ -2393,11 +2427,9 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
                 max="20000"
                 step="1000"
                 value={scenario.fixedCosts}
-                onChange={(e) => setScenario({
-                  ...scenario, 
-                  fixedCosts: Number(e.target.value)
-                })}
-                className="flex-1"
+                aria-label="Fixed Costs"
+                onChange={(e) => updateScenario('fixedCosts', Number(e.target.value))}
+                className="min-w-0 flex-1"
               />
               <span className="text-sm font-mono text-white w-16">${(scenario.fixedCosts/1000).toFixed(0)}k</span>
             </div>
@@ -2414,11 +2446,9 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
                 max="200000"
                 step="5000"
                 value={scenario.budgetLimit}
-                onChange={(e) => setScenario({
-                  ...scenario, 
-                  budgetLimit: Number(e.target.value)
-                })}
-                className="flex-1"
+                aria-label="Budget Limit"
+                onChange={(e) => updateScenario('budgetLimit', Number(e.target.value))}
+                className="min-w-0 flex-1"
               />
               <span className="text-sm font-mono text-white w-20">${(scenario.budgetLimit/1000).toFixed(0)}k</span>
             </div>
@@ -2434,11 +2464,9 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
                 min="5"
                 max="30"
                 value={scenario.sigma}
-                onChange={(e) => setScenario({
-                  ...scenario, 
-                  sigma: Number(e.target.value)
-                })}
-                className="flex-1"
+                aria-label="Population SD (σ)"
+                onChange={(e) => updateScenario('sigma', Number(e.target.value))}
+                className="min-w-0 flex-1"
               />
               <span className="text-sm font-mono text-white w-8">{scenario.sigma}</span>
             </div>
@@ -2447,12 +2475,12 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
       </div>
       
       {/* Live Calculations Panel */}
-      <LiveCalculations scenario={scenario} optimalPoint={optimalPoint} />
+      <LiveCalculations scenario={scenario} budgetSolution={budgetSolution} />
       
       {/* Main visualization with full width */}
       <div className="space-y-4 mt-6">
-        <GraphContainer height="500px">
-          <svg ref={svgRef} width="100%" height="100%" />
+        <GraphContainer height="500px" className="min-w-0 !p-0 sm:!p-4">
+          <svg ref={svgRef} width="100%" height="100%" role="img" aria-label="Sample size budget chart" />
         </GraphContainer>
         
         {/* Results and insights in a row below */}
@@ -2467,14 +2495,14 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
               <h5 className="font-semibold text-emerald-400 mb-3">
                 Optimal Solution
               </h5>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
                 <div>
                   <span className="text-neutral-400">Sample Size:</span>
                   <span className="font-mono text-white ml-2">n = {optimalPoint.n}</span>
                 </div>
                 <div>
                   <span className="text-neutral-400">Margin of Error:</span>
-                  <span className="font-mono text-white ml-2">E = ±{optimalPoint.E.toFixed(2)}</span>
+                  <span className="font-mono text-white ml-2">E = {optimalPoint.E.toFixed(2)} response units</span>
                 </div>
                 <div>
                   <span className="text-neutral-400">Total Cost:</span>
@@ -2497,7 +2525,7 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
                 <div>
                   <span className="font-semibold">Hyperbolic relationship:</span> Cost increases as 1/E²
                   <div className="text-xs text-neutral-400 mt-1">
-                    Halving error from 2 to 1 quadruples sample size (and variable costs)
+                    Halving target error from 2 to 1 quadruples the unrounded sample size and variable costs; round n up.
                   </div>
                 </div>
               </li>
@@ -2515,7 +2543,7 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
                 <div>
                   <span className="font-semibold">Diminishing returns:</span> Each $ buys less precision as E decreases
                   <div className="text-xs text-neutral-400 mt-1">
-                    The curve flattens at high cost, showing inefficient precision gains
+                    At higher cost, the achievable reduction in E per additional dollar becomes smaller.
                   </div>
                 </div>
               </li>
@@ -2523,9 +2551,9 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
                 <li className="flex items-start gap-2">
                   <span className="text-blue-400">•</span>
                   <div>
-                    <span className="font-semibold">Current efficiency:</span> {((1 / optimalPoint.E) / (optimalPoint.cost / 1000)).toFixed(2)} precision per $1K
+                    <span className="font-semibold">Inverse half-width per $1K:</span> {((1 / optimalPoint.E) / (optimalPoint.cost / 1000)).toFixed(2)} per $1K
                     <div className="text-xs text-neutral-400 mt-1">
-                      This measures how much precision you get per thousand dollars spent
+                      This compares 1/E per thousand dollars spent; E is measured in response units.
                     </div>
                   </div>
                 </li>
@@ -2539,26 +2567,27 @@ const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onComplete
 });
 
 // Real-World Scenarios Component
-const RealWorldScenarios = React.memo(function RealWorldScenarios({ onComplete }) {
+export const RealWorldScenarios = React.memo(function RealWorldScenarios({ onComplete }) {
   const [selectedScenario, setSelectedScenario] = useState('medical');
-  const [exploreCount, setExploreCount] = useState(0);
+  const exploredScenarios = useRef(new Set());
+  const completionReported = useRef(false);
   
   const scenarios = {
     medical: {
       title: 'Clinical Trial',
-      description: 'Testing a new drug\'s effect on blood pressure',
+      description: 'Estimating mean blood pressure after treatment',
       icon: Heart,
       color: '#ef4444',
       parameters: {
         sigma: 12, // mmHg
-        E: 2, // clinically significant difference
+        E: 2, // desired half-width in mmHg
         confidence: 95,
-        context: 'FDA requires 95% confidence, 2 mmHg is clinically meaningful'
+        context: 'Illustrative estimation of a mean: 95% confidence and ±2 mmHg precision under the stated assumptions'
       },
       considerations: [
         'Patient safety is paramount',
         'Recruitment costs are high (~$500/patient)',
-        'Dropout rate must be considered (add 15-20%)',
+        'Illustrative expected loss: 15% of enrolled observations',
         'Ethical review adds fixed costs'
       ]
     },
@@ -2610,14 +2639,16 @@ const RealWorldScenarios = React.memo(function RealWorldScenarios({ onComplete }
   
   const n = Math.ceil(Math.pow((getZ(scenario.parameters.confidence) * 
     scenario.parameters.sigma) / scenario.parameters.E, 2));
-  
-  // Track exploration
-  useEffect(() => {
-    setExploreCount(prev => prev + 1);
-    if (exploreCount >= 2 && onComplete) {
-      onComplete('scenarios-explored');
+  const enrollmentPlan = planEnrollmentForExpectedLoss(n, 0.15);
+
+  const selectScenario = (key) => {
+    setSelectedScenario(key);
+    exploredScenarios.current.add(key);
+    if (exploredScenarios.current.size === Object.keys(scenarios).length && !completionReported.current) {
+      completionReported.current = true;
+      onComplete?.('scenarios-explored');
     }
-  }, [selectedScenario]);
+  };
   
   return (
     <VisualizationSection>
@@ -2632,7 +2663,9 @@ const RealWorldScenarios = React.memo(function RealWorldScenarios({ onComplete }
           return (
             <button
               key={key}
-              onClick={() => setSelectedScenario(key)}
+              type="button"
+              aria-pressed={selectedScenario === key}
+              onClick={() => selectScenario(key)}
               className={`p-4 rounded-lg border-2 transition-all ${
                 selectedScenario === key
                   ? 'border-current shadow-lg'
@@ -2726,11 +2759,15 @@ const RealWorldScenarios = React.memo(function RealWorldScenarios({ onComplete }
                 Sample Size Recommendation
               </p>
               <p className="text-sm">
-                Plan for n = {Math.ceil(n * 1.15)} ({n} + 15% buffer for dropouts/errors)
+                Plan for n = {enrollmentPlan.enrollment} to retain {n} observations in expectation with 15% loss.
+              </p>
+              <p className="text-xs mt-2 text-neutral-400">
+                This expected-retention allowance does not guarantee enough usable observations
+                or remove bias from missing data.
               </p>
               {selectedScenario === 'medical' && (
                 <p className="text-xs mt-2 text-neutral-400">
-                  Estimated cost: ${Math.ceil(n * 1.15 * 500).toLocaleString()} + fixed costs
+                  Estimated cost: ${(enrollmentPlan.enrollment * 500).toLocaleString()} + fixed costs
                 </p>
               )}
             </div>
@@ -2751,21 +2788,7 @@ const StageContent = React.memo(function StageContent({
   const contentRef = useRef(null);
   
   // Process MathJax
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch((err) => {
-        });
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [stage]);
+  useMathJax(contentRef, [stage]);
   
   return (
     <div ref={contentRef} className="space-y-8">
@@ -2840,11 +2863,58 @@ const StageContent = React.memo(function StageContent({
 });
 
 // Main Component
-export default function SampleSizeCalculation() {
-  const [mode, setMode] = useState(LEARNING_MODES.FOUNDATIONS);
+const SAMPLE_SIZE_ACTIVITY = 'chapter-5:sample-size';
+const validLearningMode = mode => Object.values(LEARNING_MODES).includes(mode);
+
+export function SampleSizeLearningPage() {
+  const learning = useLearningActivity(SAMPLE_SIZE_ACTIVITY);
+  return <SampleSizeCalculation key={learning.resetGeneration} learning={learning} />;
+}
+
+export default function SampleSizeCalculation({ learning } = {}) {
+  const scope = learning?.resetGeneration || 'session';
+  const savedMode = learning?.resume?.kind === 'tab' && learning.resume.activityId === null && validLearningMode(learning.resume.positionId)
+    ? learning.resume.positionId : LEARNING_MODES.FOUNDATIONS;
+  const [selection, setSelection] = useState(null);
+  const mode = selection?.scope === scope ? selection.id : savedMode;
   const [currentStage, setCurrentStage] = useState('DISCOVER');
   const [completedActivities, setCompletedActivities] = useState(new Set());
   const [savedCalculations, setSavedCalculations] = useState([]);
+  const [savingStudy, setSavingStudy] = useState(false);
+  const [studyMessage, setStudyMessage] = useState(null);
+  const progressHeadingId = useId();
+  const studied = learning?.isCompleted(SAMPLE_SIZE_ACTIVITY) || false;
+  const locallySaved = learning?.persistenceStatus === 'persisted' && !learning.pendingLocalWrites;
+
+  const captureContext = learning?.captureWriteContext;
+  const getResetGeneration = learning?.getResetGeneration;
+  const setResume = learning?.setResume;
+  const loading = learning?.loading;
+  const currentWork = useCallback(() => {
+    const context = captureContext?.(SAMPLE_SIZE_ACTIVITY);
+    return context && getResetGeneration(SAMPLE_SIZE_ACTIVITY, context) === scope;
+  }, [captureContext, getResetGeneration, scope]);
+  const changeMode = useCallback(id => {
+    if (!validLearningMode(id) || loading || (!setResume && id === mode)) return;
+    const next = { scope, id };
+    setSelection(next);
+    if (!setResume) return;
+    const context = captureContext(SAMPLE_SIZE_ACTIVITY);
+    if (!context) return;
+    void setResume(SAMPLE_SIZE_ACTIVITY, { activityId: null, kind: 'tab', positionId: id }, { context }).then(saved => {
+      if (saved && currentWork()) setSelection(previous => previous === next ? null : previous);
+    });
+  }, [loading, mode, scope, setResume, captureContext, currentWork]);
+  const markStudied = async () => {
+    if (!learning || learning.loading || savingStudy || studied) return;
+    const context = learning.captureWriteContext(SAMPLE_SIZE_ACTIVITY);
+    if (!context) return;
+    setSavingStudy(true); setStudyMessage(null);
+    try {
+      const saved = await learning.completeActivity(SAMPLE_SIZE_ACTIVITY, { sourceKey: 'sample-size-explicit-study', context });
+      if (currentWork()) setStudyMessage(saved ? 'Study saved in this browser.' : 'The study record could not be saved. Your existing records are retained.');
+    } finally { if (currentWork()) setSavingStudy(false); }
+  };
   
   const handleActivityComplete = useCallback((activity) => {
     setCompletedActivities(prev => new Set([...prev, activity]));
@@ -2856,16 +2926,17 @@ export default function SampleSizeCalculation() {
   
   return (
     <>
-      <Chapter5ReferenceSheet mode="floating" />
       <VisualizationContainer
+        className="min-w-0 !p-3 sm:!p-5 [&_.grid>*]:min-w-0"
         title="5.3 Sample Size Determination"
         description="Find the perfect balance between precision, confidence, and cost"
       >
       <BackToHub chapter={5} />
       
-      <LearningPathNavigation 
+      <fieldset disabled={Boolean(learning?.loading)} aria-busy={Boolean(learning?.loading)} className="min-w-0 border-0 p-0">
+      <LearningPathNavigation
         mode={mode} 
-        onModeChange={setMode}
+        onModeChange={changeMode}
       />
       
       {/* FOUNDATIONS Mode */}
@@ -2885,15 +2956,15 @@ export default function SampleSizeCalculation() {
               <li className="flex items-start gap-2">
                 <span className="text-teal-400">1.</span>
                 <div>
-                  <span className="font-semibold">Precision (E):</span> How close do we need to be to the truth? 
+                  <span className="font-semibold">Precision (E):</span> How narrow should the interval be?
                   A political poll with ±10% is less useful than one with ±3%.
                 </div>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-teal-400">2.</span>
                 <div>
-                  <span className="font-semibold">Confidence (1-α):</span> How sure do we want to be? 
-                  95% confidence is standard, but critical decisions might need 99%.
+                  <span className="font-semibold">Confidence (1-α):</span> What coverage should the method achieve across repeated samples?
+                  95% is a common choice; 99% coverage requires a larger sample under the same assumptions.
                 </div>
               </li>
               <li className="flex items-start gap-2">
@@ -2931,9 +3002,25 @@ export default function SampleSizeCalculation() {
         <CostBenefitAnalysis onComplete={handleActivityComplete} />
         <RealWorldScenarios onComplete={handleActivityComplete} />
       </div>
+
+      </fieldset>
+      {learning && <section aria-labelledby={progressHeadingId} className="mt-8 rounded-lg border border-teal-700/50 bg-teal-900/10 p-4 sm:p-6">
+        <h2 id={progressHeadingId} className="text-lg font-semibold text-teal-300">Your study record</h2>
+        <p className="mt-2 text-sm leading-relaxed text-neutral-300">A study record reflects your own review of this lesson. Quiz results are tracked separately.</p>
+        <p className="mt-2 text-sm leading-relaxed text-neutral-300">Your learning mode is kept on this device for this profile. Calculations and practice answers stay in this visit.</p>
+        <p role="status" className="mt-3 text-sm text-neutral-300">{learning.loading ? 'Checking saved progress…'
+          : learning.persistenceStatus === 'session-only' ? 'Recent changes are kept only for this visit. Back them up in Your progress before leaving.'
+          : learning.pendingLocalWrites ? 'Saving on this device…'
+          : studied ? 'Study recorded for this profile.' : 'Mark this lesson after you have studied it.'}</p>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <button type="button" disabled={learning.loading || !learning.supported || savingStudy || studied} onClick={markStudied} className="min-h-11 rounded-lg bg-teal-600 px-4 py-2 font-medium text-white hover:bg-teal-700 disabled:cursor-default disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300">{studied ? locallySaved ? 'Lesson studied' : 'Studied for this visit' : savingStudy ? 'Recording study…' : 'Mark as studied'}</button>
+          {learning.persistenceStatus === 'session-only' && <button type="button" onClick={() => learning.retryLocalPersistence()} className="min-h-11 rounded-lg border border-neutral-600 px-4 py-2 text-neutral-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300">Try saving again</button>}
+          <a href="/progress" className="flex min-h-11 items-center rounded-lg px-4 py-2 text-teal-300 underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300">Your progress</a>
+        </div>
+        {studyMessage && <p role="status" className="mt-3 text-sm text-neutral-300">{studyMessage}</p>}
+      </section>}
       
-      {/* Section Complete - Standardized Component */}
-      <SectionComplete chapter={5} />
+      <SectionComplete chapter={5} status="navigation" />
       </VisualizationContainer>
     </>
   );

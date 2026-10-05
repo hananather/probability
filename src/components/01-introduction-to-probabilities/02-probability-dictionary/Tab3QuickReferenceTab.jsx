@@ -11,7 +11,7 @@ const SECTIONS = [
   {
     id: 'complete-dictionary',
     title: 'Complete Translation Dictionary',
-    content: ({ sectionIndex, isCompleted }) => {
+    content: function CompleteDictionarySection({ sectionIndex, isCompleted }) {
       // This is the complete table from the textbook image
       const completeDictionary = {
         title: "Complete English ↔ Set Notation Dictionary",
@@ -113,7 +113,7 @@ const SECTIONS = [
   {
     id: 'decision-flowchart',
     title: 'Translation Decision Guide',
-    content: ({ sectionIndex, isCompleted }) => {
+    content: function DecisionFlowchartSection({ sectionIndex, isCompleted }) {
       const decisionGuide = {
         title: "Translation Decision Flowchart",
         columns: [
@@ -270,7 +270,7 @@ const SECTIONS = [
   {
     id: 'quick-practice',
     title: 'Quick Reference Practice',
-    content: ({ sectionIndex, isCompleted }) => {
+    content: function QuickPracticeSection({ sectionIndex, isCompleted }) {
       const [showAnswers, setShowAnswers] = useState(false);
 
       const quickProblems = [

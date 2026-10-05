@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 /**
  * SharedNavigation - A consistent navigation component for all Interactive Explorer implementations
@@ -32,10 +33,11 @@ export default function SharedNavigation({
 }) {
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === totalSteps - 1;
+  const reducedMotion = useReducedMotion();
 
   // Handle keyboard navigation
   const handleKeyDown = useCallback((e) => {
-    if (disabled) return;
+    if (disabled || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.target !== e.currentTarget) return;
     
     if (e.key === 'ArrowLeft' && !isFirstStep) {
       e.preventDefault();
@@ -47,12 +49,7 @@ export default function SharedNavigation({
       e.preventDefault();
       onComplete();
     }
-  }, [currentStep, totalSteps, onNavigate, onComplete, disabled, isFirstStep, isLastStep]);
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+  }, [currentStep, onNavigate, onComplete, disabled, isFirstStep, isLastStep]);
 
   const handlePrevious = () => {
     if (!isFirstStep && !disabled) {
@@ -69,31 +66,31 @@ export default function SharedNavigation({
   };
 
   return (
-    <div className={`mt-8 pt-6 border-t border-neutral-700 ${className}`}>
-      <div className="flex items-center justify-between">
+    <div className={`mt-8 pt-6 border-t border-neutral-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 ${className}`} role="group" aria-label="Experiment navigation" tabIndex={0} onKeyDown={handleKeyDown}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
         {/* Previous Button */}
         <Button
           onClick={handlePrevious}
           disabled={isFirstStep || disabled}
           variant="neutral"
-          className="flex items-center gap-2"
+          className="order-2 flex h-auto min-h-11 min-w-0 flex-1 items-center gap-2 whitespace-normal py-2 sm:order-none sm:flex-initial"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4 shrink-0" />
           {previousLabel}
         </Button>
 
         {/* Progress Indicator */}
         {showProgress && (
-          <div className="flex items-center gap-4">
+          <div className="order-1 flex w-full items-center justify-center gap-4 sm:order-none sm:w-auto">
             {/* Progress Bar */}
             <div className="hidden md:flex items-center gap-2">
               <span className="text-sm text-neutral-400">Progress</span>
               <div className="w-32 h-2 bg-neutral-800 rounded-full overflow-hidden">
                 <motion.div
                   className="h-full bg-gradient-to-r from-blue-500 to-cyan-500"
-                  initial={{ width: 0 }}
+                  initial={reducedMotion ? false : { width: 0 }}
                   animate={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  transition={{ duration: reducedMotion ? 0 : 0.3, ease: "easeOut" }}
                 />
               </div>
               <span className="text-sm text-neutral-300 font-medium">
@@ -124,17 +121,17 @@ export default function SharedNavigation({
           onClick={handleNext}
           disabled={disabled}
           variant={isLastStep && !onComplete ? "neutral" : "primary"}
-          className="flex items-center gap-2"
+          className="order-3 flex h-auto min-h-11 min-w-0 flex-1 items-center gap-2 whitespace-normal py-2 sm:order-none sm:flex-initial"
         >
           {isLastStep && !onComplete ? "Complete" : nextLabel}
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-4 h-4 shrink-0" />
         </Button>
       </div>
 
       {/* Keyboard Hint */}
       <div className="mt-4 text-center">
         <p className="text-xs text-neutral-500">
-          Tip: Use <kbd className="px-2 py-1 bg-neutral-800 rounded text-neutral-300">←</kbd> and{' '}
+          Tip: Focus this navigation area, then use <kbd className="px-2 py-1 bg-neutral-800 rounded text-neutral-300">←</kbd> and{' '}
           <kbd className="px-2 py-1 bg-neutral-800 rounded text-neutral-300">→</kbd> arrow keys to navigate
         </p>
       </div>

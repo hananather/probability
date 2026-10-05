@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, Suspense, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { ArrowRight, CheckCircle, Circle, Clock, Lock, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { useChapterProgress } from '@/hooks/useProgress';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 // Predefined color classes to ensure they're included in the build
 const colorStyles = {
@@ -70,6 +71,7 @@ const colorStyles = {
 const ChapterCard = React.memo(({ chapter, index, visualization: Visualization, isLocked = false }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const reducedMotion = useReducedMotion();
   const chapterId = `chapter-${index + 1}`;
   
   // Get progress data for this chapter
@@ -92,25 +94,7 @@ const ChapterCard = React.memo(({ chapter, index, visualization: Visualization, 
   const colorKey = colorKeys[index];
   const colorClasses = colorStyles[colorKey];
   
-  // Handle chapter start and navigate when clicking the button
-  const handleBeginLearning = async (e) => {
-    e.stopPropagation(); // Prevent bubbling to outer Link
-    try {
-      if (isNotStarted) {
-        await start();
-      }
-    } finally {
-      // Always navigate to the same destination as the card
-      navigateToChapter();
-    }
-  };
-  
-  // Navigate to chapter
-  const navigateToChapter = () => {
-    if (!isLocked) {
-      window.location.href = `/chapter${index + 1}`;
-    }
-  };
+  const CardLink = isLocked ? 'div' : Link;
   
   // Get status badge
   const getStatusBadge = () => {
@@ -159,8 +143,9 @@ const ChapterCard = React.memo(({ chapter, index, visualization: Visualization, 
     if (!chapterProgress.lastVisited) return null;
     const date = new Date(chapterProgress.lastVisited);
     const today = new Date();
-    const diffTime = Math.abs(today - date);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (Number.isNaN(date.getTime())) return null;
+    const dayNumber = value => Date.UTC(value.getFullYear(), value.getMonth(), value.getDate());
+    const diffDays = Math.max(0, Math.round((dayNumber(today) - dayNumber(date)) / 86400000));
     
     if (diffDays === 0) return 'Today';
     if (diffDays === 1) return 'Yesterday';
@@ -170,16 +155,16 @@ const ChapterCard = React.memo(({ chapter, index, visualization: Visualization, 
   };
   
   return (
-    <Link 
-      href={isLocked ? '#' : `/chapter${index + 1}`}
-      className={`block ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-      onClick={(e) => {
-        if (isLocked) {
-          e.preventDefault();
-        } else if (isNotStarted) {
-          start();
-        }
+    <CardLink
+      href={isLocked ? undefined : `/chapter${index + 1}`}
+      aria-disabled={isLocked || undefined}
+      aria-label={`${getButtonText()}: Chapter ${index + 1}, ${chapter.title}`}
+      className={`block rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-400 ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+      onClick={() => {
+        if (!isLocked && isNotStarted) start().catch(() => {});
       }}
+      onFocus={() => setIsHovered(true)}
+      onBlur={() => setIsHovered(false)}
     >
       <div
         className={`bg-neutral-800 rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] group ${
@@ -191,7 +176,7 @@ const ChapterCard = React.memo(({ chapter, index, visualization: Visualization, 
       <div className="h-48 bg-gradient-to-br from-neutral-900 to-neutral-800 relative overflow-hidden">
         <ErrorBoundary fallbackType="visualization">
           <Suspense fallback={<div className="w-full h-full bg-neutral-900" />}>
-            <Visualization isActive={isHovered && !isLocked} />
+            <Visualization isActive={isHovered && !isLocked && !reducedMotion} />
           </Suspense>
         </ErrorBoundary>
         
@@ -264,23 +249,12 @@ const ChapterCard = React.memo(({ chapter, index, visualization: Visualization, 
         )}
         
         <div className="mt-4 pt-4 border-t border-neutral-700">
-          <Button 
-            variant="primary" 
-            size="sm" 
-            className={`w-full ${
+          <span
+            className={`${buttonVariants({ variant: 'primary', size: 'sm' })} w-full ${
               isLocked 
                 ? 'bg-neutral-600 hover:bg-neutral-600 cursor-not-allowed' 
                 : `${colorClasses.bg} ${colorClasses.bgHover}`
             } group`}
-            onClick={(e) => {
-              e.preventDefault(); // Prevent Link navigation
-              e.stopPropagation(); // Stop event bubbling
-              if (!isLocked) {
-                // Begin tracking and then navigate to the chapter
-                handleBeginLearning(e);
-              }
-            }}
-            disabled={isLocked}
           >
             {getButtonText()}
             {!isLocked && (
@@ -289,11 +263,11 @@ const ChapterCard = React.memo(({ chapter, index, visualization: Visualization, 
             {isLocked && (
               <Lock className="ml-2 h-4 w-4" />
             )}
-          </Button>
+          </span>
         </div>
       </div>
     </div>
-    </Link>
+    </CardLink>
   );
 });
 

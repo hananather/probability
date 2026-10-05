@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import * as d3 from "@/utils/d3-utils";
 import { 
   VisualizationContainer, 
@@ -13,6 +13,7 @@ import SectionComplete from '@/components/ui/SectionComplete';
 import { BookOpen, Code, FileText, Zap, AlertCircle, CheckCircle } from 'lucide-react';
 import { QuizBreak } from '../mdx/QuizBreak';
 import { Chapter5ReferenceSheet } from '../reference-sheets/Chapter5ReferenceSheet';
+import { useMathJax } from '@/hooks/useMathJax';
 
 // Get Chapter 5 color scheme
 const chapterColors = createColorScheme('estimation');
@@ -70,20 +71,7 @@ const quantileNormal = (p) => {
 const FoundationsContent = React.memo(function FoundationsContent() {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <div ref={contentRef} className="space-y-6">
@@ -217,20 +205,7 @@ const WorkedExamplesContent = React.memo(function WorkedExamplesContent() {
     }
   ];
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [currentExample]);
+  useMathJax(contentRef, [currentExample]);
   
   return (
     <div ref={contentRef} className="space-y-6">
@@ -302,20 +277,7 @@ const QuickReferenceContent = React.memo(function QuickReferenceContent() {
   const contentRef = useRef(null);
   const [selectedSection, setSelectedSection] = useState('formulas');
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [selectedSection]);
+  useMathJax(contentRef, [selectedSection]);
   
   return (
     <div ref={contentRef} className="space-y-6">

@@ -46,8 +46,8 @@ export function QuizProgress({
   return (
     <div className="space-y-4">
       {/* Progress Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
           <h3 className="text-lg font-semibold text-white">
             Question {currentQuestion + 1} of {totalQuestions}
           </h3>
@@ -67,7 +67,7 @@ export function QuizProgress({
         </div>
         
         {/* Statistics */}
-        <div className="flex items-center gap-4 text-sm">
+        <div className="flex flex-wrap items-center gap-4 text-sm">
           <span className="text-neutral-400">
             Answered: <span className="text-teal-400 font-semibold">{answeredQuestions.length}</span>/{totalQuestions}
           </span>
@@ -81,7 +81,7 @@ export function QuizProgress({
       
       {/* Question Grid */}
       <div className="bg-neutral-900 rounded-lg p-4 border border-neutral-700">
-        <div className="grid grid-cols-10 gap-2 mb-4">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(2.5rem,1fr))] sm:grid-cols-10 gap-2 mb-4">
           {Array.from({ length: totalQuestions }, (_, i) => {
             const status = getQuestionStatus(i);
             const isCurrent = i === currentQuestion;
@@ -91,7 +91,7 @@ export function QuizProgress({
                 key={i}
                 onClick={() => onNavigate(i)}
                 className={`
-                  relative w-10 h-10 rounded-lg border-2 flex items-center justify-center
+                  relative justify-self-center w-10 h-10 rounded-lg border-2 flex items-center justify-center
                   font-semibold text-sm transition-all transform hover:scale-110
                   ${isCurrent ? getStatusColor('current') : getStatusColor(status)}
                   ${!isCurrent && 'hover:ring-2 hover:ring-neutral-500 hover:ring-offset-1 hover:ring-offset-neutral-900'}
@@ -140,7 +140,7 @@ export function QuizProgress({
       </div>
       
       {/* Navigation Buttons */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <Button
           onClick={() => onNavigate(currentQuestion - 1)}
           disabled={currentQuestion === 0}
@@ -159,7 +159,7 @@ export function QuizProgress({
               const nextFlagged = flaggedQuestions.find(q => q > currentQuestion) || flaggedQuestions[0];
               onNavigate(nextFlagged);
             }}
-            className="text-sm text-orange-400 hover:text-orange-300 transition-colors"
+            className="order-3 w-full text-sm text-orange-400 hover:text-orange-300 transition-colors sm:order-none sm:w-auto"
           >
             Jump to next flagged →
           </button>

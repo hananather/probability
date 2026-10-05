@@ -168,6 +168,7 @@ const PoissonIntroduction = React.memo(() => {
     </div>
   );
 });
+PoissonIntroduction.displayName = 'PoissonIntroduction';
 
 // Real-World Examples Component
 const RealWorldExamples = React.memo(({ lambda }) => {
@@ -331,6 +332,7 @@ const RealWorldExamples = React.memo(({ lambda }) => {
     </div>
   );
 });
+RealWorldExamples.displayName = 'RealWorldExamples';
 
 // Main Component
 const PoissonDistribution = React.memo(function PoissonDistribution() {

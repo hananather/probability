@@ -2,14 +2,17 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Sparkles } from 'lucide-react';
-import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
+import { usePageVisibility, useReducedMotion } from '@/hooks/useReducedMotion';
+import { MotionPreferenceControl } from '@/components/shared/MotionPreferenceControl';
 
 const HeroSection = React.memo(() => {
+  const reducedMotion = useReducedMotion();
+  const pageVisible = usePageVisibility();
   const scrollToChapters = () => {
     const chaptersSection = document.getElementById('chapters');
     if (chaptersSection) {
-      chaptersSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      chaptersSection.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
     }
   };
 
@@ -20,13 +23,17 @@ const HeroSection = React.memo(() => {
       
       {/* Main content */}
       <div className="relative z-10 text-center max-w-4xl">
+        <MotionPreferenceControl />
         <h1 className="text-5xl md:text-6xl font-bold mb-6">
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-blue-400 to-purple-400 animate-gradient">
+          <span
+            className={`text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-blue-400 to-purple-400 ${reducedMotion ? '' : 'animate-gradient'}`}
+            style={{ animationPlayState: pageVisible ? 'running' : 'paused' }}
+          >
             Probability Lab
           </span>
         </h1>
         <p className="text-xl text-neutral-300 mb-8 leading-relaxed">
-          Learn by doing. Explore interactive visualizations that make complex concepts click instantly.
+          Build probability intuition with interactive models, worked examples, and practice questions.
         </p>
         <div className="flex justify-center">
           <Button 

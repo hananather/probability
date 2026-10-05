@@ -12,7 +12,7 @@ const SECTIONS = [
   {
     id: 'card-deck-foundation',
     title: 'Card Deck: A Complete Example',
-    content: ({ sectionIndex, isCompleted }) => {
+    content: function CardDeckFoundationExample({ sectionIndex, isCompleted }) {
       const contentRef = useMathJax([]);
       
       return (
@@ -37,7 +37,7 @@ const SECTIONS = [
                   <strong>Sample Space:</strong> <span dangerouslySetInnerHTML={{ __html: `\\(S = \\text{all 52 cards}\\)` }} />
                 </p>
                 <p className="text-sm text-neutral-400">
-                  Each card is equally likely to be drawn (equal mass pebbles)
+                  The draw is uniform: each of the 52 cards has the same selection probability.
                 </p>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-neutral-300">
@@ -80,6 +80,10 @@ const SECTIONS = [
             </CalculationStep>
 
             <CalculationStep title="Step 3: Calculate Basic Probabilities" variant="highlight">
+              <p className="text-neutral-300 mb-3">
+                S is the sample space of all 52 cards. The bars in |A| mean the number of
+                outcomes in event A; |S| is the total number of outcomes.
+              </p>
               <div className="space-y-4">
                 <div>
                   <FormulaDisplay formula={`P(A) = \\frac{|A|}{|S|} = \\frac{4}{52} = \\frac{1}{13} \\approx 0.077`} />
@@ -112,7 +116,7 @@ const SECTIONS = [
   {
     id: 'set-operations-detailed',
     title: 'Set Operations with Cards',
-    content: ({ sectionIndex, isCompleted }) => {
+    content: function DetailedSetOperationsExample({ sectionIndex, isCompleted }) {
       const contentRef = useMathJax([]);
       
       return (
@@ -134,7 +138,7 @@ const SECTIONS = [
               
               <InterpretationBox theme="green">
                 <p>
-                  <strong>Physical Check:</strong> Out of 52 equally-weighted pebbles, 
+                  <strong>Physical Check:</strong> Out of 52 equally likely pebbles,
                   only 1 satisfies both conditions. Makes perfect sense!
                 </p>
               </InterpretationBox>
@@ -204,7 +208,7 @@ const SECTIONS = [
   {
     id: 'multiple-methods',
     title: 'Multiple Solution Approaches',
-    content: ({ sectionIndex, isCompleted }) => {
+    content: function MultipleMethodsExample({ sectionIndex, isCompleted }) {
       const contentRef = useMathJax([]);
       
       return (
@@ -294,96 +298,48 @@ const SECTIONS = [
   },
   {
     id: 'why-cards-matter',
-    title: 'Why This Example Is Perfect',
-    content: ({ sectionIndex, isCompleted }) => {
-      const contentRef = useMathJax([]);
-      
+    title: 'Try a New Sample Space',
+    content: function TransferPracticeExample({ sectionIndex, isCompleted }) {
       return (
-        <div ref={contentRef} className="space-y-6">
-          <div className="bg-gradient-to-br from-cyan-900/20 to-blue-900/20 p-6 rounded-lg border border-cyan-600/30">
-            <h4 className="font-semibold text-cyan-400 mb-4 text-lg">
-              Why Cards Are the Perfect Teaching Tool
-            </h4>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <h5 className="font-semibold text-green-400 mb-3">Perfect Mathematical Properties</h5>
-                <ul className="list-disc list-inside space-y-2 text-sm text-neutral-300 ml-4">
-                  <li><strong>Finite sample space:</strong> Exactly 52 outcomes</li>
-                  <li><strong>Equal probability:</strong> Each card equally likely</li>
-                  <li><strong>Natural events:</strong> Suits, ranks, colors</li>
-                  <li><strong>Rich structure:</strong> Multiple ways to categorize</li>
-                  <li><strong>Familiar context:</strong> Everyone knows cards</li>
-                </ul>
+        <div className="space-y-6">
+          <p className="text-neutral-300">
+            Transfer the card example to a new setting. Predict each answer before revealing the solution,
+            and explain which selection rule makes your calculation valid.
+          </p>
+          <div className="bg-cyan-900/20 p-6 rounded-lg border border-cyan-600/30">
+            <h4 className="font-semibold text-cyan-400 mb-3 text-lg">Transfer 1: A Fair Die</h4>
+            <p className="text-neutral-300 mb-3">
+              Roll a fair six-sided die. S = {'{1, 2, 3, 4, 5, 6}'},
+              A = {'{2, 4, 6}'} (even), and B = {'{4, 5, 6}'} (greater than 3).
+              List A ∩ B and A ∪ B, then find their probabilities. Why must the overlap be counted only once?
+            </p>
+            <details className="rounded border border-cyan-600/30 p-3">
+              <summary className="cursor-pointer text-cyan-300 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400">Reveal die solution</summary>
+              <div className="space-y-2 mt-3 text-sm text-neutral-300">
+                <p>A ∩ B = {'{4, 6}'}, so P(A ∩ B) = 2/6 = 1/3.</p>
+                <p>A ∪ B = {'{2, 4, 5, 6}'}, so P(A ∪ B) = 4/6 = 2/3.</p>
+                <p>Adding |A| + |B| counts 4 and 6 twice. Subtract |A ∩ B| = 2: 3 + 3 − 2 = 4 distinct outcomes.</p>
               </div>
-              
-              <div>
-                <h5 className="font-semibold text-purple-400 mb-3">Builds Essential Skills</h5>
-                <ul className="list-disc list-inside space-y-2 text-sm text-neutral-300 ml-4">
-                  <li><strong>Set operations:</strong> Unions, intersections, complements</li>
-                  <li><strong>Multiple approaches:</strong> Different solution methods</li>
-                  <li><strong>Inclusion-exclusion:</strong> Avoiding double counting</li>
-                  <li><strong>Verification:</strong> Cross-checking answers</li>
-                  <li><strong>Physical intuition:</strong> Concrete mental models</li>
-                </ul>
-              </div>
-            </div>
+            </details>
           </div>
-          
-          <div className="bg-orange-900/20 p-6 rounded-lg border border-orange-600/30">
-            <h4 className="font-semibold text-orange-400 mb-4 text-lg">
-              The Magic Number: 2⁵²
-            </h4>
-            <div className="space-y-3">
-              <p className="text-neutral-200">
-                With 52 cards, there are <span dangerouslySetInnerHTML={{ __html: `\\(2^{52}\\)` }} /> possible events 
-                (subsets of the sample space). That's:
-              </p>
-              <div className="bg-neutral-800/50 p-4 rounded text-center">
-                <span className="text-orange-400 font-mono text-lg" dangerouslySetInnerHTML={{ __html: `\\(2^{52} \\approx 4.5 \\times 10^{15}\\)` }} />
-              </div>
-              <p className="text-neutral-300 text-sm">
-                That's about 4.5 quadrillion possible events! Yet we can understand them all 
-                through combinations of basic operations like union, intersection, and complement.
-              </p>
-            </div>
-          </div>
-          
           <div className="bg-purple-900/20 p-6 rounded-lg border border-purple-600/30">
-            <h4 className="font-semibold text-purple-400 mb-4 text-lg">
-              Your Probability Foundation
-            </h4>
-            <p className="text-neutral-200 mb-4">
-              You now have a rock-solid foundation in probability thinking:
+            <h4 className="font-semibold text-purple-400 mb-3 text-lg">Transfer 2: Count or Weight?</h4>
+            <p className="text-neutral-300 mb-3">
+              A bag has one red, one blue, and one green pebble with selection weights 2, 1, and 1.
+              The algorithm selects each pebble in proportion to its weight.
+              Find P(red). Would counting red pebbles out of all pebbles give the right answer?
             </p>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="bg-neutral-800/50 p-4 rounded">
-                <h5 className="font-semibold text-cyan-400 mb-2">Mental Model</h5>
-                <ul className="list-disc list-inside text-xs text-neutral-300 space-y-1">
-                  <li>Physical pebble selection process</li>
-                  <li>Sample spaces as complete inventories</li>
-                  <li>Events as collections of outcomes</li>
-                </ul>
+            <details className="rounded border border-purple-600/30 p-3">
+              <summary className="cursor-pointer text-purple-300 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-400">Reveal weighted solution</summary>
+              <div className="space-y-2 mt-3 text-sm text-neutral-300">
+                <p>The total selection weight is 2 + 1 + 1 = 4. P(red) = 2/4 = 1/2.</p>
+                <p>Counting would give 1/3 if all three pebbles were equally likely. Here the stated selection rule gives red twice the chance of either other pebble.</p>
+                <p>In the explorer, displayed size encodes selection weight. This model specifies a sampling algorithm; it does not infer a physical probability from mass.</p>
               </div>
-              
-              <div className="bg-neutral-800/50 p-4 rounded">
-                <h5 className="font-semibold text-cyan-400 mb-2">Mathematical Tools</h5>
-                <ul className="list-disc list-inside text-xs text-neutral-300 space-y-1">
-                  <li>Set operations and their meanings</li>
-                  <li>Multiple solution approaches</li>
-                  <li>Verification through cross-checking</li>
-                </ul>
-              </div>
-            </div>
+            </details>
           </div>
-          
           <SimpleInsightBox title="Next: The Translation Dictionary" theme="teal">
-            <p>
-              Now you're ready to learn how to translate between everyday English and mathematical notation. 
-              This "dictionary" will be your key to solving any probability problem you encounter.
-            </p>
-            <p className="mt-2 text-teal-300 font-medium">
-              Think of it as learning to speak two languages about the same simple idea: picking pebbles from a bag.
-            </p>
+            <p>The next page connects these event descriptions with mathematical notation.</p>
           </SimpleInsightBox>
         </div>
       );

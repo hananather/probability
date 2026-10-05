@@ -34,6 +34,8 @@ export function binomialPMF(k, n, p) {
 }
 
 export function binomialCDF(k, n, p) {
+  if (k < 0) return 0;
+  if (k >= n) return 1;
   let sum = 0;
   for (let i = 0; i <= k; i++) {
     sum += binomialPMF(i, n, p);
@@ -45,7 +47,7 @@ export function binomialStats(n, p) {
   return {
     mean: n * p,
     variance: n * p * (1 - p),
-    mode: Math.floor((n + 1) * p)
+    mode: Math.min(n, Math.floor((n + 1) * p))
   };
 }
 
@@ -57,7 +59,7 @@ export function geometricPMF(k, p) {
 
 export function geometricCDF(k, p) {
   if (k < 1) return 0;
-  return 1 - Math.pow(1 - p, k);
+  return 1 - Math.pow(1 - p, Math.floor(k));
 }
 
 export function geometricStats(p) {
@@ -75,6 +77,7 @@ export function negativeBinomialPMF(k, r, p) {
 }
 
 export function negativeBinomialCDF(k, r, p) {
+  if (k === Infinity) return 1;
   let sum = 0;
   for (let i = r; i <= k; i++) {
     sum += negativeBinomialPMF(i, r, p);
@@ -97,6 +100,7 @@ export function poissonPMF(k, lambda) {
 }
 
 export function poissonCDF(k, lambda) {
+  if (k === Infinity) return 1;
   let sum = 0;
   for (let i = 0; i <= k; i++) {
     sum += poissonPMF(i, lambda);
@@ -114,11 +118,12 @@ export function poissonStats(lambda) {
 
 // Hypergeometric Distribution
 export function hypergeometricPMF(k, N, K, n) {
-  if (k < Math.max(0, n - N + K) || k > Math.min(n, K)) return 0;
+  if (!Number.isInteger(k) || k < Math.max(0, n - N + K) || k > Math.min(n, K)) return 0;
   return (binomialCoefficient(K, k) * binomialCoefficient(N - K, n - k)) / binomialCoefficient(N, n);
 }
 
 export function hypergeometricCDF(k, N, K, n) {
+  if (k >= Math.min(n, K)) return 1;
   let sum = 0;
   const minK = Math.max(0, n - N + K);
   for (let i = minK; i <= k; i++) {
@@ -131,9 +136,40 @@ export function hypergeometricStats(N, K, n) {
   const p = K / N;
   return {
     mean: n * p,
-    variance: n * p * (1 - p) * ((N - n) / (N - 1)),
+    variance: N === 1 ? 0 : n * p * (1 - p) * ((N - n) / (N - 1)),
     mode: Math.floor(((n + 1) * (K + 1)) / (N + 2))
   };
+}
+
+function findUpperSupport(min, estimate, cdf, threshold) {
+  if (!Number.isFinite(threshold) || threshold <= 0 || threshold >= 1) {
+    throw new RangeError('Support threshold must be greater than 0 and less than 1');
+  }
+  const cumulative = (k) => {
+    const probability = cdf(k);
+    if (!Number.isFinite(probability)) {
+      throw new RangeError('The distribution parameters exceed the supported numerical range');
+    }
+    return probability;
+  };
+
+  let lower = min - 1;
+  let upper = Math.max(min, Math.ceil(estimate));
+  if (!Number.isSafeInteger(upper)) {
+    throw new RangeError('The requested support exceeds the supported numerical range');
+  }
+  while (cumulative(upper) < threshold) {
+    upper = Math.max(upper + 1, upper * 2);
+    if (!Number.isSafeInteger(upper)) {
+      throw new RangeError('The requested support exceeds the supported numerical range');
+    }
+  }
+  while (lower + 1 < upper) {
+    const middle = Math.floor(lower + (upper - lower) / 2);
+    if (cumulative(middle) >= threshold) upper = middle;
+    else lower = middle;
+  }
+  return upper;
 }
 
 // Support range calculation with cumulative probability threshold
@@ -148,28 +184,35 @@ export function getSupportRange(type, params, threshold = 0.999) {
       
     case 'geometric':
       min = 1;
+      if (!Number.isFinite(params.p) || params.p <= 0 || params.p > 1) {
+        throw new RangeError('Geometric success probability must be greater than 0 and at most 1');
+      }
+      if (!Number.isFinite(threshold) || threshold <= 0 || threshold >= 1) {
+        throw new RangeError('Support threshold must be greater than 0 and less than 1');
+      }
       // Find max where CDF >= threshold
-      max = Math.ceil(-Math.log(1 - threshold) / Math.log(1 - params.p));
+      max = params.p === 1 ? 1 : Math.ceil(Math.log1p(-threshold) / Math.log1p(-params.p));
       break;
       
     case 'negativeBinomial':
       min = params.r;
-      // Approximate using mean + k*std
+      if (!Number.isInteger(params.r) || params.r < 1 || !Number.isFinite(params.p) || params.p <= 0 || params.p > 1) {
+        throw new RangeError('Negative binomial parameters require a positive integer r and 0 < p ≤ 1');
+      }
+      // Start from a moment estimate, then find the actual discrete quantile.
       const nbMean = params.r / params.p;
       const nbStd = Math.sqrt((params.r * (1 - params.p)) / (params.p * params.p));
-      max = Math.ceil(nbMean + 4 * nbStd);
+      max = findUpperSupport(min, nbMean + 4 * nbStd, k => negativeBinomialCDF(k, params.r, params.p), threshold);
       break;
       
     case 'poisson':
       min = 0;
-      // Use quantile approximation
+      if (!Number.isFinite(params.lambda) || params.lambda < 0) {
+        throw new RangeError('Poisson rate must be finite and nonnegative');
+      }
       const poissonMean = params.lambda;
       const poissonStd = Math.sqrt(params.lambda);
-      max = Math.ceil(poissonMean + 4 * poissonStd);
-      // Ensure we capture enough of the distribution
-      if (params.lambda < 5) {
-        max = Math.max(max, 15);
-      }
+      max = findUpperSupport(min, poissonMean + 4 * poissonStd, k => poissonCDF(k, params.lambda), threshold);
       break;
       
     case 'hypergeometric':
@@ -264,9 +307,14 @@ export function calculateCDFData(type, params, range = null) {
 export function calculateRangeProbability(type, params, a, b) {
   const config = distributionConfig[type];
   if (!config) throw new Error(`Unknown distribution type: ${type}`);
+  if (a > b) return 0;
+  const args = config.paramNames.map(p => params[p]);
+  if (!Number.isFinite(a) || !Number.isFinite(b)) {
+    return config.cdf(Math.floor(b), ...args) - config.cdf(Math.ceil(a) - 1, ...args);
+  }
   
   let sum = 0;
-  for (let k = a; k <= b; k++) {
+  for (let k = Math.ceil(a); k <= Math.floor(b); k++) {
     const pmfArgs = [k, ...config.paramNames.map(p => params[p])];
     sum += config.pmf(...pmfArgs);
   }
@@ -321,7 +369,7 @@ export const distributions = {
   binomial: {
     mean: (params) => params.n * params.p,
     variance: (params) => params.n * params.p * (1 - params.p),
-    mode: (params) => Math.floor((params.n + 1) * params.p)
+    mode: (params) => Math.min(params.n, Math.floor((params.n + 1) * params.p))
   },
   geometric: {
     mean: (params) => 1 / params.p,

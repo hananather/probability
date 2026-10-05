@@ -1,8 +1,10 @@
 "use client";
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useMathJax } from '@/hooks/useMathJax';
 import { Button } from '../ui/button';
 import { VisualizationSection } from '../ui/VisualizationContainer';
 import { ChevronDown, ChevronUp, Calculator, TrendingUp, BarChart3 } from 'lucide-react';
+import { CORRELATION_EXAMPLE_STATISTICS } from '@/lib/statistics/correlationExample';
 
 // Chapter 7 color schemes from the actual codebase
 const chapter7Colors = {
@@ -25,28 +27,6 @@ const chapter7Colors = {
     border: 'border-green-500/30',
     text: 'text-green-400'
   }
-};
-
-// MathJax processing helper
-const useMathJax = (dependencies = []) => {
-  const ref = useRef(null);
-  
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && ref.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([ref.current]);
-        }
-        window.MathJax.typesetPromise([ref.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, dependencies);
-  
-  return ref;
 };
 
 // Pattern 1: Purple Gradient Container (from 7-1 Multiple Formula Representation)
@@ -83,7 +63,7 @@ function PurpleContainerPattern() {
                 <h5 className="font-semibold text-white mb-2">Conceptual Formula</h5>
                 <div className="text-center">
                   <span dangerouslySetInnerHTML={{ 
-                    __html: `\\[r = \\frac{\\sum(x_i - \\bar{x})(y_i - \\bar{y})}{\\sqrt{\\sum(x_i - \\bar{x})^2 \\sum(y_i - \\bar{y})^2}}\\]` 
+                    __html: `\\[r = \\frac{\\sum(x_i - \\bar{x})(y_i - \\bar{y})}{\\sqrt{\\sum(x_i - \\bar{x})^2 \\sum(y_i - \\bar{y})^2}}\\]`
                   }} />
                 </div>
               </div>
@@ -91,7 +71,7 @@ function PurpleContainerPattern() {
                 <h5 className="font-semibold text-white mb-2">Computational Formula</h5>
                 <div className="text-center">
                   <span dangerouslySetInnerHTML={{ 
-                    __html: `\\[r = \\frac{S_{xy}}{\\sqrt{S_{xx} \\cdot S_{yy}}}\\]` 
+                    __html: `\\[r = \\frac{S_{xy}}{\\sqrt{S_{xx} \\cdot S_{yy}}}\\]`
                   }} />
                 </div>
               </div>
@@ -102,7 +82,7 @@ function PurpleContainerPattern() {
       
       {/* Code snippet */}
       <div className="bg-neutral-950 rounded-lg p-4 text-xs text-neutral-300 font-mono">
-        <div className="text-green-400 mb-2">// The exact CSS classes used:</div>
+        <div className="text-green-400 mb-2">{"// The exact CSS classes used:"}</div>
         <div>className="bg-gradient-to-br from-purple-900/20 to-purple-800/20 border border-purple-500/30 rounded-lg p-6"</div>
       </div>
     </div>
@@ -112,6 +92,7 @@ function PurpleContainerPattern() {
 // Pattern 2: Green Interpretation Box (from worked examples)
 function GreenInterpretationPattern() {
   const mathRef = useMathJax();
+  const { Sxy, Sxx, Syy, r } = CORRELATION_EXAMPLE_STATISTICS;
   
   return (
     <div className="space-y-4">
@@ -126,7 +107,7 @@ function GreenInterpretationPattern() {
           <div ref={mathRef} className="text-neutral-300">
             <div className="text-center">
               <span dangerouslySetInnerHTML={{ 
-                __html: `\\[r = \\frac{12.47}{\\sqrt{0.389 \\times 168.2}} = \\frac{12.47}{8.07} = 0.846\\]` 
+                __html: `\\[r = \\frac{${Sxy.toFixed(4)}}{\\sqrt{${Sxx.toFixed(4)} \\times ${Syy.toFixed(4)}}} \\approx \\frac{${Sxy.toFixed(4)}}{${Math.sqrt(Sxx * Syy).toFixed(4)}} \\approx ${r.toFixed(4)}\\]`
               }} />
             </div>
           </div>
@@ -139,15 +120,18 @@ function GreenInterpretationPattern() {
             Interpretation
           </h5>
           <p className="text-neutral-200 text-sm">
-            r = 0.846 indicates a <strong>strong positive linear relationship</strong> between specific gravity and heating value. 
+            r ≈ {r.toFixed(4)} indicates a <strong>strong positive linear relationship</strong> between specific gravity and heating value.
             This means that as specific gravity increases, heating value tends to increase as well.
           </p>
+          <a href="/chapter7/correlation-coefficient" className="inline-block mt-3 text-sm text-green-400 underline hover:text-green-300">
+            See the 20-sample fuel quality worked example
+          </a>
         </div>
       </div>
       
       {/* Code snippet */}
       <div className="bg-neutral-950 rounded-lg p-4 text-xs text-neutral-300 font-mono">
-        <div className="text-green-400 mb-2">// Green interpretation pattern:</div>
+        <div className="text-green-400 mb-2">{"// Green interpretation pattern:"}</div>
         <div>className="bg-gradient-to-br from-green-900/20 to-green-800/20 border border-green-500/30 rounded-lg p-4"</div>
       </div>
     </div>
@@ -221,7 +205,7 @@ function ANOVAColorPattern() {
       
       {/* Code snippet */}
       <div className="bg-neutral-950 rounded-lg p-4 text-xs text-neutral-300 font-mono">
-        <div className="text-green-400 mb-2">// Semantic color mapping:</div>
+        <div className="text-green-400 mb-2">{"// Semantic color mapping:"}</div>
         <div className="space-y-1">
           <div>const anovaColors = {`{`}</div>
           <div className="ml-4">total: '#9ca3af',</div>
@@ -290,12 +274,12 @@ function TogglePattern() {
       
       {/* Code snippet */}
       <div className="bg-neutral-950 rounded-lg p-4 text-xs text-neutral-300 font-mono">
-        <div className="text-green-400 mb-2">// Progressive disclosure pattern:</div>
+        <div className="text-green-400 mb-2">{"// Progressive disclosure pattern:"}</div>
         <div className="space-y-1">
           <div>const [showContent, setShowContent] = useState(false);</div>
-          <div>// Button with icon and toggle text</div>
+          <div>{"// Button with icon and toggle text"}</div>
           <div>{`{showContent ? "Hide" : "Show"} Content`}</div>
-          <div>// Conditional rendering</div>
+          <div>{"// Conditional rendering"}</div>
           <div>{`{showContent && <ContentComponent />}`}</div>
         </div>
       </div>

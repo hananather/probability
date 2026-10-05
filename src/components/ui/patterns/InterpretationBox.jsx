@@ -1,5 +1,6 @@
 "use client";
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
+import { useMathJax } from '@/hooks/useMathJax';
 import { cn } from '../../../lib/design-system';
 
 /**
@@ -23,20 +24,7 @@ export function InterpretationBox({
   const contentRef = useRef(null);
   
   // MathJax processing - exact pattern from Chapter 7.1
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [children]);
+  useMathJax(contentRef, [children]);
 
   // Theme configurations - exact gradients from Chapter 7.1
   const themes = {

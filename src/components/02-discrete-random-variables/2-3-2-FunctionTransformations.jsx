@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import * as d3 from "@/utils/d3-utils";
+import { useMathJax } from '@/hooks/useMathJax';
 import { VisualizationContainer } from '../ui/VisualizationContainer';
 import { tutorial_2_3_2 } from '@/tutorials/chapter2.jsx';
 
@@ -366,23 +367,14 @@ const FunctionTransformations = () => {
     
   }, [functionType, customA, customB, customC, highlightedValue]);
   
-  // Process MathJax
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && statsRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([statsRef.current]);
-        }
-        window.MathJax.typesetPromise([statsRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax(); // Try immediately
-    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
-    return () => clearTimeout(timeoutId);
-  }, [functionType, customA, customB, customC]);
+  useMathJax(statsRef, [functionType, customA, customB, customC]);
   
   const stats = calculateStats();
+  const statisticsMath = useMemo(() => ({
+    squaredMean: { __html: `\\(g(E[X]) = (${stats.original.mean.toFixed(2)})^2 = ${(stats.original.mean ** 2).toFixed(3)}\\)` },
+    squareMapping: { __html: `Multiple X values can map to the same Y value (e.g., \\(X = -2\\) and \\(X = 2\\) both map to \\(Y = 4\\))` },
+    squareVariance: { __html: `\\(\\text{Var}(X^2) \\neq [\\text{Var}(X)]^2\\)` },
+  }), [stats.original.mean]);
   const transformedDist = getTransformedDistribution();
   
   return (
@@ -645,7 +637,7 @@ const FunctionTransformations = () => {
               </p>
               {functionType === 'square' && (
                 <p className="text-xs text-neutral-500 mt-2">
-                  <span dangerouslySetInnerHTML={{ __html: `\\(g(E[X]) = (${stats.original.mean.toFixed(2)})^2 = ${(stats.original.mean ** 2).toFixed(3)}\\)` }} />
+                  <span dangerouslySetInnerHTML={statisticsMath.squaredMean} />
                 </p>
               )}
             </div>
@@ -657,7 +649,7 @@ const FunctionTransformations = () => {
             <div className="text-xs text-neutral-300 space-y-1">
               {functionType === 'square' && (
                 <>
-                  <p>• <span dangerouslySetInnerHTML={{ __html: `The square function maps negative values to positive, creating symmetry` }} /></p>                  <p>• <span dangerouslySetInnerHTML={{ __html: `Multiple X values can map to the same Y value (e.g., \\(X = -2\\) and \\(X = 2\\) both map to \\(Y = 4\\))` }} /></p>                  <p>• <span dangerouslySetInnerHTML={{ __html: `\\(\\text{Var}(X^2) \\neq [\\text{Var}(X)]^2\\)` }} /></p>
+                  <p>• <span dangerouslySetInnerHTML={{ __html: `The square function maps negative values to positive, creating symmetry` }} /></p>                  <p>• <span dangerouslySetInnerHTML={statisticsMath.squareMapping} /></p>                  <p>• <span dangerouslySetInnerHTML={statisticsMath.squareVariance} /></p>
                 </>
               )}
               {functionType === 'abs' && (

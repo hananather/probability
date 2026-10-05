@@ -1,15 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, lazy, Suspense } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useId, useRef, Suspense } from "react";
+import { motion } from "framer-motion";
 import { VisualizationContainer, VisualizationSection } from "@/components/ui/VisualizationContainer";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { createColorScheme } from "@/lib/design-system";
-import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
-import Link from "next/link";
-import dynamic from 'next/dynamic';
+import { Loader2 } from "lucide-react";
 import BackToHub from '@/components/ui/BackToHub';
+import { ACTIVITY_BY_ID, LEGACY_SOURCE_BY_KEY } from '@/lib/curriculum/manifest';
+import { LearningActivityContext, useLearningActivity } from '@/hooks/useLearningActivity';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 /**
  * Generic Tabbed Learning Page Component
@@ -19,7 +18,7 @@ import BackToHub from '@/components/ui/BackToHub';
  * @param {string} props.subtitle - Page subtitle/description
  * @param {number} props.chapter - Chapter number for BackToHub
  * @param {Array} props.tabs - Array of tab configurations
- * @param {string} props.storageKey - localStorage key for progress tracking
+ * @param {string} props.storageKey - Registered progress source key
  * @param {string} props.colorScheme - Color scheme name from design system
  * 
  * Tab configuration:
@@ -43,60 +42,26 @@ const LoadingComponent = () => (
   </div>
 );
 
-// Progress tracking hook
-function useTabProgress(storageKey) {
-  const [completedTabs, setCompletedTabs] = useState([]);
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  // Load from localStorage after hydration
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        setCompletedTabs(JSON.parse(saved));
-      }
-      setIsHydrated(true);
-    }
-  }, [storageKey]);
-
-  useEffect(() => {
-    if (isHydrated && typeof window !== 'undefined') {
-      localStorage.setItem(storageKey, JSON.stringify(completedTabs));
-    }
-  }, [completedTabs, storageKey, isHydrated]);
-
-  const markTabComplete = (tabId) => {
-    if (!completedTabs.includes(tabId)) {
-      setCompletedTabs(prev => [...prev, tabId]);
-    }
+// A callback retains the context captured before this mounted child's work starts.
+const ComponentWrapper = ({ component: Component, activityId, learning, onComplete }) => {
+  const [capturedContext] = useState(() => activityId ? learning.captureWriteContext(activityId) : null);
+  const context = {
+    ...learning,
+    containerId: activityId,
+    writeContext: capturedContext,
+    resume: activityId ? learning.getResume(activityId) : null,
+    resetGeneration: learning.getResetGeneration(activityId, capturedContext),
+    completeActivity: (id = activityId, options = {}) => learning.completeActivity(id, { ...options, context: capturedContext }),
+    setResume: (id, locator, options = {}) => learning.setResume(id, locator, { ...options, context: capturedContext }),
+    clearResume: (id = activityId, options = {}) => learning.clearResume(id, { ...options, context: capturedContext }),
+    resetActivity: (id = activityId, options = {}) => learning.resetActivity(id, { ...options, context: capturedContext }),
   };
-
-  const resetProgress = () => {
-    setCompletedTabs([]);
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(storageKey);
-    }
-  };
-
-  return { completedTabs, markTabComplete, resetProgress, isHydrated };
-}
-
-// Component wrapper to standardize interfaces
-const ComponentWrapper = ({ component: Component, tabId, onComplete, isActive }) => {
-  const handleComplete = () => {
-    if (onComplete) {
-      onComplete(tabId);
-    }
-  };
-
-  if (!isActive) {
-    return null;
-  }
-
   return (
-    <div className="w-full">
-      <Component onComplete={handleComplete} />
-    </div>
+    <LearningActivityContext.Provider value={context}>
+      <div className="w-full">
+        <Component onComplete={() => onComplete(capturedContext)} />
+      </div>
+    </LearningActivityContext.Provider>
   );
 };
 
@@ -108,18 +73,57 @@ export default function TabbedLearningPage({
   storageKey,
   colorScheme = 'purple'
 }) {
-  const [activeTab, setActiveTab] = useState(tabs[0]?.id || '');
-  const { completedTabs, markTabComplete, resetProgress, isHydrated } = useTabProgress(storageKey);
-  const colors = createColorScheme(colorScheme);
+  const source = Object.hasOwn(LEGACY_SOURCE_BY_KEY, storageKey) ? LEGACY_SOURCE_BY_KEY[storageKey] : null;
+  const registered = source?.kind === 'completion-array' && ACTIVITY_BY_ID[source.containerId]?.kind === 'lesson';
+  const learning = useLearningActivity(registered ? source.containerId : null);
+  const reducedMotion = useReducedMotion();
+  const activityForTab = id => registered ? source.targetIds.find(activityId => ACTIVITY_BY_ID[activityId]?.legacyId === id) : null;
+  const [selection, setSelection] = useState(null);
+  const [sessionCompletion, setSessionCompletion] = useState({ key: storageKey, ids: [] });
+  const selectionScope = `${storageKey}:${learning.resetGeneration}`;
+  const restoredTab = registered && tabs.find(tab => activityForTab(tab.id) === learning.resume?.activityId)?.id;
+  const activeTab = selection?.scope === selectionScope && tabs.some(tab => tab.id === selection.id)
+    ? selection.id : restoredTab || tabs[0]?.id || '';
+  const completedTabs = registered
+    ? tabs.filter(tab => learning.isCompleted(activityForTab(tab.id))).map(tab => tab.id)
+    : sessionCompletion.key === storageKey ? sessionCompletion.ids : [];
+  const isHydrated = !registered || !learning.loading;
+  const setActiveTab = id => {
+    if (!tabs.some(tab => tab.id === id) || !isHydrated) return;
+    setSelection({ scope: selectionScope, id });
+    if (registered) {
+      void learning.setResume(source.containerId, { activityId: activityForTab(id), kind: 'tab' }, { context: learning.writeContext })
+        .finally(() => setSelection(previous => previous?.scope === selectionScope && previous.id === id ? null : previous));
+    }
+  };
+  const navigationId = useId();
+  const tabButtons = useRef([]);
 
-  const handleTabComplete = (tabId) => {
-    markTabComplete(tabId);
+  const handleTabKeyDown = (event, index) => {
+    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    let nextIndex;
+    if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabs.length;
+    if (event.key === 'ArrowLeft') nextIndex = (index - 1 + tabs.length) % tabs.length;
+    if (event.key === 'Home') nextIndex = 0;
+    if (event.key === 'End') nextIndex = tabs.length - 1;
+    if (nextIndex === undefined) return;
+    event.preventDefault();
+    setActiveTab(tabs[nextIndex].id);
+    tabButtons.current[nextIndex]?.focus();
+  };
+
+  const handleTabComplete = (tabId, context) => {
+    if (registered) {
+      void learning.completeActivity(activityForTab(tabId), { context });
+    } else {
+      setSessionCompletion(previous => ({ key: storageKey, ids: [...new Set([...(previous.key === storageKey ? previous.ids : []), tabId])] }));
+    }
   };
 
   const activeTabData = tabs.find(tab => tab.id === activeTab);
 
   // Calculate overall progress
-  const progressPercentage = Math.round((completedTabs.length / tabs.length) * 100);
+  const progressPercentage = tabs.length ? Math.round((completedTabs.length / tabs.length) * 100) : 0;
 
   return (
     <VisualizationContainer>
@@ -127,19 +131,27 @@ export default function TabbedLearningPage({
       
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-2">{title}</h1>
-        <p className="text-gray-600 dark:text-gray-400">{subtitle}</p>
+        <p className="text-neutral-400">{subtitle}</p>
       </div>
 
       {/* Tab Navigation */}
       <VisualizationSection className="bg-neutral-800/30 rounded-lg mb-6">
         <div className="border-b border-neutral-700">
-          <div className="flex space-x-1 px-6 overflow-x-auto">
-            {tabs.map(({ id, label, icon: Icon, description, color }) => (
+          <div role="tablist" aria-label={`${title} sections`} className="flex space-x-1 px-6 overflow-x-auto">
+            {tabs.map(({ id, label, icon: Icon, color }, index) => (
               <button
                 key={id}
+                ref={element => { tabButtons.current[index] = element; }}
+                id={`${navigationId}-tab-${id}`}
+                role="tab"
+                disabled={!isHydrated}
+                aria-selected={activeTab === id}
+                aria-controls={`${navigationId}-panel-${id}`}
+                tabIndex={activeTab === id ? 0 : -1}
                 onClick={() => setActiveTab(id)}
+                onKeyDown={event => handleTabKeyDown(event, index)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap",
+                  "relative flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap",
                   activeTab === id
                     ? 'bg-neutral-700 text-white border-b-2'
                     : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
@@ -151,7 +163,10 @@ export default function TabbedLearningPage({
                 <Icon className="w-4 h-4" style={{ color: activeTab === id ? color : 'currentColor' }} />
                 <span>{label}</span>
                 {isHydrated && completedTabs.includes(id) && (
-                  <div className="w-2 h-2 bg-green-500 rounded-full ml-1" />
+                  <>
+                    <div aria-hidden="true" className="w-2 h-2 bg-green-500 rounded-full ml-1" />
+                    <span className="sr-only">Completed</span>
+                  </>
                 )}
               </button>
             ))}
@@ -180,26 +195,49 @@ export default function TabbedLearningPage({
         )}
       </VisualizationSection>
 
+      {!registered ? (
+        <p role="status" className="mb-4 text-sm text-amber-200">Progress for this lesson is available only in this session.</p>
+      ) : learning.persistenceStatus === 'session-only' ? (
+        <div className="mb-4 text-sm text-amber-200" role="status">
+          <p>Your recent changes are only kept for this visit. Export a backup from Your progress before closing this page.</p>
+          <button type="button" className="mt-2 min-h-11 underline underline-offset-4" onClick={() => learning.retryLocalPersistence()}>Try saving again</button>
+        </div>
+      ) : null}
+
       {/* Tab Content */}
       <motion.div
-        key={activeTab}
-        initial={{ opacity: 0, y: 20 }}
+        id={`${navigationId}-panel-${activeTab}`}
+        role="tabpanel"
+        aria-busy={!isHydrated}
+        aria-labelledby={`${navigationId}-tab-${activeTab}`}
+        tabIndex={0}
+        key={`${activeTab}:${learning.getResetGeneration(activityForTab(activeTab), learning.writeContext)}:${storageKey}`}
+        initial={reducedMotion ? false : { opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
         className="max-w-6xl mx-auto"
       >
         <Suspense fallback={<LoadingComponent />}>
-          {tabs.map(tab => (
+          {!isHydrated ? <LoadingComponent /> : tabs.filter(tab => tab.id === activeTab).map(tab => (
             <ComponentWrapper
               key={tab.id}
               component={tab.component}
-              tabId={tab.id}
-              onComplete={handleTabComplete}
-              isActive={activeTab === tab.id}
+              activityId={activityForTab(tab.id)}
+              learning={learning}
+              onComplete={context => handleTabComplete(tab.id, context)}
             />
           ))}
         </Suspense>
       </motion.div>
+      {tabs.filter(tab => tab.id !== activeTab).map(tab => (
+        <div
+          key={tab.id}
+          id={`${navigationId}-panel-${tab.id}`}
+          role="tabpanel"
+          aria-labelledby={`${navigationId}-tab-${tab.id}`}
+          hidden
+        />
+      ))}
 
       {/* Progress indicator - only show after hydration */}
       {isHydrated && (

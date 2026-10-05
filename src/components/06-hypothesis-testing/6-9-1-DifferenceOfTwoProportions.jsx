@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import { useMathJax } from '@/hooks/useMathJax';
 import * as d3 from "@/utils/d3-utils";
 import jStat from "jstat";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,6 +15,11 @@ import { Button } from '@/components/ui/button';
 import BackToHub from '@/components/ui/BackToHub';
 import { Bug, Merge, Calculator, CheckCircle, AlertCircle, BarChart3 } from 'lucide-react';
 
+const FormulaText = React.memo(function FormulaText({ html, as: Tag = 'span' }) {
+  const ref = useMathJax([html]);
+  return <Tag ref={ref} dangerouslySetInnerHTML={{ __html: html }} />;
+});
+
 // Get vibrant Chapter 6 color scheme
 const chapterColors = createColorScheme('hypothesis');
 
@@ -21,20 +27,7 @@ const chapterColors = createColorScheme('hypothesis');
 const HypothesisDisplay = React.memo(function HypothesisDisplay() {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <div ref={contentRef} className="bg-neutral-800 rounded-lg p-4 max-w-2xl mx-auto">
@@ -57,20 +50,7 @@ const HypothesisDisplay = React.memo(function HypothesisDisplay() {
 const MathematicalFramework = React.memo(function MathematicalFramework() {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">
@@ -129,20 +109,7 @@ const MathematicalFramework = React.memo(function MathematicalFramework() {
 const KeyInsights = React.memo(function KeyInsights({ calculations }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [calculations]);
+  useMathJax(contentRef, [calculations]);
   
   return (
     <VisualizationSection className="bg-gradient-to-br from-yellow-900/20 to-orange-900/20 border border-yellow-700/30 rounded-lg p-6">
@@ -214,20 +181,7 @@ const KeyInsights = React.memo(function KeyInsights({ calculations }) {
 const ImportantDistinctions = React.memo(function ImportantDistinctions() {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <div ref={contentRef} className="grid md:grid-cols-2 gap-6">
@@ -277,20 +231,7 @@ const WorkedExample = React.memo(function WorkedExample({ sampleSize, significan
   const zStat = difference / sePooled;
   const pValue = 2 * (1 - jStat.normal.cdf(Math.abs(zStat), 0, 1));
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [sampleSize, significanceLevel]);
+  useMathJax(contentRef, [sampleSize, significanceLevel]);
   
   return (
     <VisualizationSection className="bg-gradient-to-br from-neutral-800/50 to-neutral-900/50 rounded-lg p-6 border border-neutral-700/50">
@@ -1189,7 +1130,7 @@ export default function DifferenceOfTwoProportions() {
               </div>
             </ControlGroup>
 
-            <ControlGroup label={<>Significance Level <span dangerouslySetInnerHTML={{ __html: `\\(\\alpha\\)` }} /></>}>
+            <ControlGroup label={<>Significance Level <FormulaText html={`\\(\\alpha\\)`} /></>}>
               <div className="space-y-3">
                 <div className="flex gap-2">
                   {[0.01, 0.05, 0.10].map(alpha => (
@@ -1273,9 +1214,9 @@ export default function DifferenceOfTwoProportions() {
             </div>
             <p className="text-xs text-neutral-400 mt-2">
               {calculations.pValue < significanceLevel ? (
-                <>Reject <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /></>
+                <>Reject <FormulaText html={`\\(H_0\\)`} /></>
               ) : (
-                <>Fail to reject <span dangerouslySetInnerHTML={{ __html: `\\(H_0\\)` }} /></>
+                <>Fail to reject <FormulaText html={`\\(H_0\\)`} /></>
               )}
             </p>
           </motion.div>

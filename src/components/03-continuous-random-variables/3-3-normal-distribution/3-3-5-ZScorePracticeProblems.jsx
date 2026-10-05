@@ -32,6 +32,7 @@ const ProblemTypeButton = React.memo(({ type, isSelected, onClick }) => {
     </button>
   );
 });
+ProblemTypeButton.displayName = 'ProblemTypeButton';
 
 // Memoized component for Quick Reference section
 const QuickReference = React.memo(() => {
@@ -62,6 +63,7 @@ const QuickReference = React.memo(() => {
     </div>
   );
 });
+QuickReference.displayName = 'QuickReference';
 
 const ZScorePracticeProblems = () => {
   const colors = createColorScheme('probability');
@@ -264,6 +266,7 @@ const ZScorePracticeProblems = () => {
       </div>
     );
   });
+ProblemDisplay.displayName = 'ProblemDisplay';
   
   // Memoized component for hint display
   const HintDisplay = React.memo(({ hint }) => {
@@ -278,6 +281,7 @@ const ZScorePracticeProblems = () => {
       </div>
     );
   });
+HintDisplay.displayName = 'HintDisplay';
   
   // Memoized component for solution display
   const SolutionDisplay = React.memo(({ solution }) => {
@@ -293,6 +297,7 @@ const ZScorePracticeProblems = () => {
       </div>
     );
   });
+SolutionDisplay.displayName = 'SolutionDisplay';
   
   return (
     <VisualizationContainer 

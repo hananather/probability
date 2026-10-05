@@ -1,41 +1,53 @@
 "use client";
 
-import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
+import React, { createContext, useContext, useState, useRef, useEffect, useId } from 'react';
+import * as Dialog from '@radix-ui/react-dialog';
 
 const SidebarContext = createContext();
 
 export function SidebarProvider({ children }) {
-  // Default to closed on mobile, open on desktop
   const [isOpen, setIsOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+  const desktopOpenRef = useRef(true);
+  const scrollPosRef = useRef(0);
+  const triggerRef = useRef(null);
+  const sidebarId = useId();
   
-  // Set initial state based on screen size
   useEffect(() => {
+    try {
+      const savedOpen = localStorage.getItem('sidebarOpen');
+      desktopOpenRef.current = savedOpen !== 'false';
+    } catch {
+      // Navigation remains available when browser storage is blocked.
+    }
+    const desktopQuery = window.matchMedia('(min-width: 1024px)');
     const checkScreenSize = () => {
-      // Desktop: check localStorage for saved state
-      if (window.innerWidth >= 1024) {
-        const savedOpen = localStorage.getItem('sidebarOpen');
-        setIsOpen(savedOpen !== null ? savedOpen === 'true' : true);
-      } else {
-        // Mobile: default closed
-        setIsOpen(false);
-      }
+      setIsDesktop(desktopQuery.matches);
+      setIsOpen(desktopQuery.matches ? desktopOpenRef.current : false);
     };
     checkScreenSize();
-    // Only check on mount, not on resize to respect user choice
+    desktopQuery.addEventListener('change', checkScreenSize);
+    return () => desktopQuery.removeEventListener('change', checkScreenSize);
   }, []);
   
   const toggle = () => {
-    setIsOpen(prev => {
-      const newState = !prev;
-      // Save preference to localStorage
-      localStorage.setItem('sidebarOpen', String(newState));
-      return newState;
-    });
+    const newState = !isOpen;
+    setIsOpen(newState);
+    if (isDesktop) {
+      desktopOpenRef.current = newState;
+      try {
+        localStorage.setItem('sidebarOpen', String(newState));
+      } catch {
+        // Keep the current session usable without saving the preference.
+      }
+    }
   };
   
   return (
-    <SidebarContext.Provider value={{ isOpen, toggle }}>
-      {children}
+    <SidebarContext.Provider value={{ isOpen, isDesktop, toggle, sidebarId, scrollPosRef, triggerRef, close: () => setIsOpen(false) }}>
+      <Dialog.Root open={!isDesktop && isOpen} onOpenChange={setIsOpen}>
+        {children}
+      </Dialog.Root>
     </SidebarContext.Provider>
   );
 }
@@ -47,67 +59,91 @@ export function useSidebar() {
 }
 
 export function Sidebar({ children }) {
-  const { isOpen, toggle } = useSidebar();
-  
-  return (
-    <>
-      {/* Mobile backdrop */}
-      {isOpen && (
-        <div 
-          className="lg:hidden fixed inset-0 bg-black/50 z-40"
-          onClick={toggle}
-          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && toggle()}
-          role="button"
-          tabIndex={0}
-          aria-label="Close sidebar"
-        />
-      )}
-      
-      {/* Sidebar */}
+  const { isOpen, isDesktop, sidebarId, close, triggerRef } = useSidebar();
+  const className = 'fixed top-16 left-0 flex h-[calc(100dvh-4rem)] w-64 flex-col bg-neutral-900 text-white sm:w-72 z-[60]';
+
+  if (isDesktop) {
+    return (
       <aside
-        className={`fixed top-16 left-0 h-[calc(100vh-4rem)] bg-neutral-900 text-white w-64 sm:w-72 transform transition-transform duration-200 z-50 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        id={sidebarId}
+        aria-label="Course navigation"
+        aria-hidden={!isOpen}
+        inert={!isOpen}
+        className={`${className} transform transition-transform duration-200 motion-reduce:transition-none ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         {children}
       </aside>
-    </>
+    );
+  }
+
+  return (
+    <Dialog.Portal>
+      <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50" />
+      <Dialog.Content
+        id={sidebarId}
+        aria-modal="true"
+        aria-describedby={undefined}
+        className={className}
+        onCloseAutoFocus={event => {
+          if (triggerRef.current) {
+            event.preventDefault();
+            triggerRef.current.focus();
+          }
+        }}
+        onClick={event => {
+          if (event.target.closest('a[href]') && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) close();
+        }}
+      >
+        <div className="flex shrink-0 items-center justify-between px-4 py-2">
+          <Dialog.Title className="text-sm font-medium">Course navigation</Dialog.Title>
+          <Dialog.Close className="flex h-10 w-10 items-center justify-center rounded-lg hover:bg-neutral-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400" aria-label="Close sidebar">
+            <span aria-hidden="true" className="text-2xl">×</span>
+          </Dialog.Close>
+        </div>
+        {children}
+      </Dialog.Content>
+    </Dialog.Portal>
   );
 }
 
 export function SidebarContent({ children }) {
-  const { isOpen } = useSidebar();
+  const { isOpen, scrollPosRef } = useSidebar();
   const contentRef = useRef(null);
-  const scrollPosRef = useRef(0);
 
   useEffect(() => {
     const el = contentRef.current;
     if (!el) return;
-    if (!isOpen) {
-      scrollPosRef.current = el.scrollTop;
-    } else {
+    if (isOpen) {
       el.scrollTop = scrollPosRef.current;
     }
-  }, [isOpen]);
+    return () => {
+      scrollPosRef.current = el.scrollTop;
+    };
+  }, [isOpen, scrollPosRef]);
 
   return (
-    <div ref={contentRef} className="pt-4 px-4 pb-4 space-y-2 overflow-y-auto h-full">
+    <div ref={contentRef} className="min-h-0 flex-1 pt-4 px-4 pb-4 space-y-2 overflow-y-auto">
       {children}
     </div>
   );
 }
 
 export function SidebarTrigger() {
-  const { toggle, isOpen } = useSidebar();
-  return (
+  const { toggle, isOpen, isDesktop, sidebarId, triggerRef } = useSidebar();
+  const button = (
     <button
-      onClick={toggle}
-      className="fixed top-3 left-3 sm:top-4 sm:left-4 z-[60] p-2 sm:p-2.5 bg-neutral-900 text-white rounded-lg hover:bg-neutral-700 focus:outline-none transition-all"
+      ref={triggerRef}
+      type="button"
+      onClick={isDesktop ? toggle : undefined}
+      className="flex h-10 w-10 shrink-0 items-center justify-center bg-neutral-900 text-white rounded-lg hover:bg-neutral-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 transition-colors motion-reduce:transition-none"
       aria-label="Toggle Sidebar"
+      aria-expanded={isOpen}
+      aria-controls={sidebarId}
     >
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
         <path strokeLinecap="round" strokeLinejoin="round" d={isOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
       </svg>
     </button>
   );
+  return isDesktop ? button : <Dialog.Trigger asChild>{button}</Dialog.Trigger>;
 }

@@ -142,19 +142,7 @@ const StageContent = React.memo(function StageContent({ stage, lambda }) {
 const ProbabilityCalculations = React.memo(function ProbabilityCalculations({ t, pdfAtT, cdfAtT, memorylessT1, memorylessT2, showMemoryless, pGreaterThanT1, pGreaterThanT1PlusT2, pGreaterThanT1PlusT2GivenT1 }) {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [t, pdfAtT, cdfAtT, memorylessT1, memorylessT2, showMemoryless]);
+  useMathJax(contentRef, [t, pdfAtT, cdfAtT, memorylessT1, memorylessT2, showMemoryless, pGreaterThanT1, pGreaterThanT1PlusT2, pGreaterThanT1PlusT2GivenT1]);
   
   return (
     <div ref={contentRef}>

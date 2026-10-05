@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useMathJax } from '@/hooks/useMathJax';
 import * as d3 from "@/utils/d3-utils";
 import { 
   VisualizationContainer, 
@@ -25,8 +26,13 @@ const measureColors = {
   highlight: '#8b5cf6', // Purple
 };
 
+function SectionMathContent({ children, section, answers, feedback }) {
+  const mathRef = useMathJax([section, answers, feedback]);
+  return <div ref={mathRef}>{children}</div>;
+}
+
 // Practice Problems Component with Multiple Choice
-const PracticeProblems = React.memo(function PracticeProblems({ mathRef }) {
+const PracticeProblems = React.memo(function PracticeProblems() {
   const [quizCompleted, setQuizCompleted] = useState({});
   
   const problems = [
@@ -57,7 +63,7 @@ const PracticeProblems = React.memo(function PracticeProblems({ mathRef }) {
   ];
   
   return (
-    <div className="space-y-6" ref={mathRef}>
+    <div className="space-y-6">
       <div className="bg-neutral-900 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-bold text-white">Practice Problems</h3>
@@ -156,7 +162,6 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
   const [microQuizAnswers, setMicroQuizAnswers] = useState({});
   const [showQuizFeedback, setShowQuizFeedback] = useState({});
   const svgRef = useRef(null);
-  const mathRef = useRef(null);
   const [hasCompleted, setHasCompleted] = useState(false);
   
   // Calculate measures
@@ -185,29 +190,6 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
     
     return { mean, median, modes, frequency, sorted };
   }, [data]);
-  
-  // Render LaTeX
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && mathRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([mathRef.current]);
-        }
-        window.MathJax.typesetPromise([mathRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax(); // Try immediately
-    const timeoutId1 = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
-    const timeoutId2 = setTimeout(processMathJax, 500); // Additional retry after 500ms
-    const timeoutId3 = setTimeout(processMathJax, 1000); // Final retry after 1s
-    
-    return () => {
-      clearTimeout(timeoutId1);
-      clearTimeout(timeoutId2);
-      clearTimeout(timeoutId3);
-    };
-  }, [currentSection]);
   
   // Keyboard navigation
   useEffect(() => {
@@ -762,7 +744,7 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
     switch(currentSection) {
       case 0:
         return (
-          <div className="space-y-4" ref={mathRef}>
+          <div className="space-y-4">
             {/* Attention-Grabbing Opening */}
             <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 p-4 rounded-lg mb-4">
               <h3 className="text-lg font-bold text-white mb-2">Real Scenario:</h3>
@@ -834,7 +816,7 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
       
       case 1:
         return (
-          <div className="space-y-4" ref={mathRef}>
+          <div className="space-y-4">
             <h3 className="text-xl font-bold text-white mb-2">Arithmetic Mean</h3>
             <p className="text-neutral-300">
               The arithmetic mean is the sum of all values divided by the number of values.
@@ -949,7 +931,7 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
       
       case 2:
         return (
-          <div className="space-y-4" ref={mathRef}>
+          <div className="space-y-4">
             <h3 className="text-xl font-bold text-white mb-2">Median</h3>
             <p className="text-neutral-300">
               The median is the middle value when data is ordered from smallest to largest.
@@ -1034,7 +1016,7 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
       
       case 3:
         return (
-          <div className="space-y-4" ref={mathRef}>
+          <div className="space-y-4">
             <h3 className="text-xl font-bold text-white mb-2">Mode</h3>
             <p className="text-neutral-300">
               The mode is the value that appears most frequently in the dataset.
@@ -1088,7 +1070,7 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
       
       case 4:
         return (
-          <div className="space-y-4" ref={mathRef}>
+          <div className="space-y-4">
             <h3 className="text-xl font-bold text-white">Comparing Measures</h3>
             <p className="text-neutral-300">
               Different measures of central tendency can give different values, especially with skewed data.
@@ -1172,7 +1154,7 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
       
       case 5:
         return (
-          <PracticeProblems mathRef={mathRef} />
+          <PracticeProblems />
         );
       
       default:
@@ -1254,7 +1236,9 @@ function CentralTendencyIntuitiveIntro({ onComplete }) {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              {renderSectionContent()}
+              <SectionMathContent section={currentSection} answers={microQuizAnswers} feedback={showQuizFeedback}>
+                {renderSectionContent()}
+              </SectionMathContent>
             </motion.div>
           </AnimatePresence>
         </VisualizationSection>

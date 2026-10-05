@@ -142,6 +142,11 @@ const SECTIONS = [
   }
 ];
 
+function SectionMathContent({ children, section, stats, data, animationStep }) {
+  const mathRef = useMathJax([section, stats, data, animationStep]);
+  return <div ref={mathRef}>{children}</div>;
+}
+
 function DescriptiveStatisticsFoundations({ onComplete }) {
   const [currentSection, setCurrentSection] = useState(0);
   const [data] = useState(ACCIDENT_DATA);
@@ -203,24 +208,6 @@ function DescriptiveStatisticsFoundations({ onComplete }) {
     };
   }, [data]);
   
-  // MathJax hook - must be after stats is defined
-  const mathRef = useMathJax([currentSection, stats, data]);
-  
-  // Render LaTeX
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && mathRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([mathRef.current]);
-        }
-        window.MathJax.typesetPromise([mathRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax(); // Try immediately
-    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
-    return () => clearTimeout(timeoutId);
-  }, [currentSection, animationStep]);
   
   // Keyboard navigation
   useEffect(() => {
@@ -2289,7 +2276,7 @@ function DescriptiveStatisticsFoundations({ onComplete }) {
     switch(currentSection) {
       case 0:
         return (
-          <div className="space-y-4" ref={mathRef}>
+          <div className="space-y-4">
             <h3 className="text-xl font-bold text-white">Central Tendency Review</h3>
             <p className="text-neutral-300">
               Let's explore a carefully chosen dataset that clearly shows why mean, median, and mode can differ dramatically.
@@ -2362,7 +2349,7 @@ function DescriptiveStatisticsFoundations({ onComplete }) {
       
       case 1:
         return (
-          <div className="space-y-4" ref={mathRef}>
+          <div className="space-y-4">
             <h3 className="text-xl font-bold text-white">Quartiles & Five-Number Summary</h3>
             <p className="text-neutral-300">
               Quartiles divide sorted data into four equal parts, helping us understand how data is distributed.
@@ -2451,7 +2438,7 @@ function DescriptiveStatisticsFoundations({ onComplete }) {
       
       case 2:
         return (
-          <div className="space-y-4" ref={mathRef}>
+          <div className="space-y-4">
             <h3 className="text-xl font-bold text-white">Measures of Spread</h3>
             <p className="text-neutral-300">
               How much do accident counts vary across road segments? Let's explore different ways to measure spread.
@@ -2592,7 +2579,7 @@ function DescriptiveStatisticsFoundations({ onComplete }) {
       
       case 3:
         return (
-          <div className="space-y-4" ref={mathRef}>
+          <div className="space-y-4">
             <h3 className="text-xl font-bold text-white">Outlier Detection</h3>
             <p className="text-neutral-300">
               Using the IQR method to identify unusually dangerous road segments.
@@ -2655,7 +2642,7 @@ function DescriptiveStatisticsFoundations({ onComplete }) {
       
       case 4:
         return (
-          <div className="space-y-4" ref={mathRef}>
+          <div className="space-y-4">
             <h3 className="text-xl font-bold text-white">Central Tendency vs Spread: A Complete Picture</h3>
             <p className="text-neutral-300">
               Understanding when to use different measures based on your data's characteristics.
@@ -2831,7 +2818,9 @@ function DescriptiveStatisticsFoundations({ onComplete }) {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              {renderSectionContent()}
+              <SectionMathContent section={currentSection} stats={stats} data={data} animationStep={animationStep}>
+                {renderSectionContent()}
+              </SectionMathContent>
             </motion.div>
           </AnimatePresence>
         </VisualizationSection>

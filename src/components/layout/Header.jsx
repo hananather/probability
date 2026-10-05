@@ -1,40 +1,23 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BarChart3, FileText } from 'lucide-react';
+import { BarChart3, FileText, UserRound } from 'lucide-react';
 
-import progressService from '../../services/progressService';
+import { useProgress } from '@/hooks/useProgress';
 import { Button } from '../ui/button';
+import { SidebarTrigger } from '../ui/sidebar';
+import { MotionPreferenceControl } from '../shared/MotionPreferenceControl';
 
 export function Header() {
-  const [progress, setProgress] = useState({ completed: 0, total: 7, percentage: 0 });
-  const [loadingProgress, setLoadingProgress] = useState(true);
+  const { overallStats, loading, account, signingOut } = useProgress();
   const pathname = usePathname();
-  
-  // Fetch progress data
-  useEffect(() => {
-    const fetchProgress = async () => {
-      try {
-        setLoadingProgress(true);
-        const overallProgress = await progressService.getOverallProgress();
-        setProgress({
-          completed: overallProgress.completedChapters || 0,
-          total: overallProgress.totalChapters || 7,
-          percentage: Math.round(((overallProgress.completedChapters || 0) / (overallProgress.totalChapters || 7)) * 100)
-        });
-      } catch (error) {
-        console.error('Error fetching progress:', error);
-        // Default values on error
-        setProgress({ completed: 0, total: 7, percentage: 0 });
-      } finally {
-        setLoadingProgress(false);
-      }
-    };
-
-    fetchProgress();
-  }, [pathname]); // Update when route changes
+  const progress = {
+    completed: overallStats.completedChapters,
+    total: overallStats.totalChapters,
+    percentage: Math.round(overallStats.completedChapters / overallStats.totalChapters * 100),
+  };
 
   // Don't show header on landing page
   if (pathname === '/') {
@@ -44,32 +27,42 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-neutral-800 bg-neutral-900/95 backdrop-blur supports-[backdrop-filter]:bg-neutral-900/75">
       <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-16 items-center gap-3 sm:gap-4">
+          <SidebarTrigger />
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <BarChart3 className="h-6 w-6 text-teal-400" />
-            <span className="text-xl font-bold text-white">Probability Lab</span>
+          <Link href="/" className="flex min-w-0 flex-1 items-center gap-2">
+            <BarChart3 className="h-5 w-5 shrink-0 text-teal-400 sm:h-6 sm:w-6" aria-hidden="true" />
+            <span className="truncate text-base font-bold text-white sm:text-xl">Probability Lab</span>
           </Link>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-4">
             {/* Progress Indicator */}
-            {!loadingProgress && (
-              <div className="hidden lg:flex items-center space-x-2 text-sm text-neutral-400">
+            {!loading && (
+              <Link href="/progress" aria-label="View your learning progress" className="hidden lg:flex items-center space-x-2 rounded text-sm text-neutral-400 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400">
                 <span>Progress:</span>
                 <div className="w-24 h-2 bg-neutral-700 rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-teal-400 rounded-full transition-all duration-300" 
+                    className="h-full bg-teal-400 rounded-full transition-[width] duration-300"
                     style={{ width: `${progress.percentage}%` }} 
                   />
                 </div>
                 <span>{progress.completed}/{progress.total}</span>
-              </div>
+              </Link>
             )}
 
-            <Button asChild variant="neutral" size="sm">
-              <Link href="/resources">
-                <FileText className="h-4 w-4" />
-                Resources
+            <MotionPreferenceControl compact />
+
+            <Button asChild variant="neutral" size="sm" className="h-10 w-10 px-0 sm:h-8 sm:w-auto sm:px-3">
+              <Link href={account || signingOut ? '/progress' : '/auth/sign-in'} aria-label={account || signingOut ? 'View account and progress' : 'Sign in with email'}>
+                <UserRound className="h-4 w-4" aria-hidden="true" />
+                <span className="hidden sm:inline">{account || signingOut ? 'Account' : 'Sign in'}</span>
+              </Link>
+            </Button>
+
+            <Button asChild variant="neutral" size="sm" className="h-10 w-10 px-0 sm:h-8 sm:w-auto sm:px-3">
+              <Link href="/resources" aria-label="Resources">
+                <FileText className="h-4 w-4" aria-hidden="true" />
+                <span className="hidden sm:inline">Resources</span>
               </Link>
             </Button>
           </div>

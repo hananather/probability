@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { useMathJax } from '@/hooks/useMathJax';
 import * as d3 from "@/utils/d3-utils";
 import jStat from "jstat";
 import { motion, AnimatePresence } from "framer-motion";
@@ -88,20 +89,7 @@ const calculateIntervals = (x0, regressionResults, alpha) => {
 const IntervalsIntroduction = React.memo(function IntervalsIntroduction() {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <VisualizationSection>
@@ -136,20 +124,7 @@ const IntervalsIntroduction = React.memo(function IntervalsIntroduction() {
 const MathematicalFramework = React.memo(function MathematicalFramework() {
   const contentRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
   
   return (
     <VisualizationSection className="bg-neutral-800/30 rounded-lg p-6">
@@ -216,20 +191,7 @@ const WorkedExample = React.memo(function WorkedExample({ data, regressionResult
   const contentRef = useRef(null);
   const intervals = calculateIntervals(xValue, regressionResults, alpha);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [xValue, alpha]);
+  useMathJax(contentRef, [regressionResults, xValue, alpha]);
   
   return (
     <VisualizationSection className="bg-gradient-to-br from-neutral-800/50 to-neutral-900/50 rounded-lg p-6 border border-neutral-700/50">
@@ -322,20 +284,7 @@ const WorkedExample = React.memo(function WorkedExample({ data, regressionResult
 const ComparisonTable = React.memo(function ComparisonTable() {
   const tableRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && tableRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([tableRef.current]);
-        }
-        window.MathJax.typesetPromise([tableRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(tableRef, []);
   
   return (
     <VisualizationSection>
@@ -452,7 +401,7 @@ export default function ConfidencePredictionIntervals() {
   const [showExtrapolation, setShowExtrapolation] = useState(false);
   
   const alpha = 1 - confidenceLevel;
-  const regressionResults = calculateRegression(data);
+  const regressionResults = useMemo(() => calculateRegression(data), [data]);
   const intervals = calculateIntervals(xValue, regressionResults, alpha);
   
   // Refs for D3 visualizations

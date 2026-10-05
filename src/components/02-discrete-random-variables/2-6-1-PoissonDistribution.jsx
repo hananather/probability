@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import { useMathJax } from '@/hooks/useMathJax';
 import { Card } from "../ui/card";
 import { 
   VisualizationContainer, 
@@ -50,20 +51,7 @@ const PoissonConceptsCard = React.memo(() => {
     { term: "Unique Property", definition: "Mean equals variance", latex: "E[X] = \\text{Var}(X) = \\lambda" },
   ];
 
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax(); // Try immediately
-    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
 
   return (
     <Card ref={contentRef} className="mb-8 p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
@@ -92,6 +80,7 @@ const PoissonConceptsCard = React.memo(() => {
     </Card>
   );
 });
+PoissonConceptsCard.displayName = 'PoissonConceptsCard';
 
 // Main Component
 const PoissonDistribution = React.memo(function PoissonDistribution() {

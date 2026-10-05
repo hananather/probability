@@ -1,211 +1,46 @@
-# Tabification Prompt - Transform Components to Learning Modules
-Transform the following into a tabbed learning module:
+# Building a tabbed learning module
 
-INPUTS:
-1. Existing component: [PASTE COMPONENT CODE]
-2. Course content: [PASTE RELEVANT COURSE MATERIAL/TEXTBOOK CONTENT]
-3. Component path: [CURRENT PATH OF COMPONENT]
+Use the existing tab and section components to give students a clear path through an explanation, examples, reference material and an interactive experiment. Preserve the lesson's working behavior, routes and saved progress while improving its teaching.
 
-REQUIREMENTS:
-Create a standardized tabbed module that:
-- Wraps content in TabbedLearningPage
-- Creates 3 new educational tabs
-- ALWAYS includes the existing component as a 4th tab (unchanged)
-- Each educational tab uses SectionBasedContent with 4 sections (3-5 min each)
-- Implements arrow key navigation and progress tracking
+Start with the [foundations route](../src/app/chapter1/01-foundations/page.jsx) and its [module folder](../src/components/01-introduction-to-probabilities/01-foundations). They demonstrate the current composition; their content is also subject to the [lesson review rubric](learning-quality.md).
 
-IMPORTANT: The existing component is ALWAYS preserved as-is and becomes one of the tabs!
+## Give each tab a teaching job
 
-TAB STRUCTURE:
+| Tab | Content to include |
+| --- | --- |
+| Foundations | A motivating question, prerequisite ideas, plain-language intuition, a formal definition with assumptions, and why the idea is useful. |
+| Worked examples | A simple example with justified steps, a harder or contrasting case, and a question that checks transfer to new inputs. |
+| Quick reference | Symbols, formulas with conditions, a decision guide, common mistakes and short retrieval questions. |
+| Interactive explorer | The existing simulation or visualization, a prediction before manipulation, labeled controls, interpretable results and a reset or return path. |
 
-TAB 1 - FOUNDATIONS (Green #10b981):
-□ Section 1: "Can You Solve This?" - Problem for motivation (try to use course content`/Users/hananather/Desktop/Javascript/prob-lab/course-materials/content`)
-□ Section 2: "Building Intuition" - Plain language before math
-□ Section 3: "Formal Definition" - Mathematical rigor with LaTeX
-□ Section 4: "Why This Matters" 
-- relevance to future topics in the course (if applicable)
-- relevance to other courses (if applicable) 
+Use these tabs when they serve distinct purposes; avoid padding a short idea into repeated explanations. Divide a tab into sections that each answer one question. Let students control the pace and return to earlier steps. Optional derivations can add depth without blocking the introductory path. Do not claim a completion time or learning gain without supporting evidence.
 
+Write original explanations and examples. For adapted material, record the exact source and reuse permission in the [provenance ledger](content-provenance.md). Preserve human credits and upstream notices. A textbook excerpt or external learning-site question needs its own evidence before incorporation.
 
-TAB 2 - WORKED EXAMPLES (Blue #3b82f6):
-□ Section 1: "Basic Example" - Simple case with steps
-□ Section 2: "Example 2" - Complex problem fully solved (from course content`/Users/hananather/Desktop/Javascript/prob-lab/course-materials/content`)
-□ Section 3: "Variations" - Different types they'll encounter (if applicable)
-□ Section 4: "Short Quiz to test your understanding" - Interactive practice (from course content`/Users/hananather/Desktop/Javascript/prob-lab/course-materials/content`)
+## Compose the existing components
 
-TAB 3 - QUICK REFERENCE (Violet #7c3aed):
-□ Section 1: "Formula Sheet" - All formulas with when to use
-□ Section 2: "Decision Guide" - If X then Y flowchart
-□ Section 3: "Common Mistakes" - What to avoid
-□ Section 4: "Practice Problems" -  problems
+Keep the page in `src/app/chapterN/<existing-or-new-route>/` and the lesson components in the matching chapter folder under `src/components`. Follow the surrounding folder's numbering rather than renaming established routes or components.
 
-TAB 4 - ORIGINAL COMPONENT (Keep original color):
-□ ALWAYS include the existing component that's being "tabified"
-□ Import it WITHOUT any modifications
-□ Just wrap it to work within tab structure
-□ Title: Use the original component's name
-□ This preserves all existing functionality users are familiar with
+- [TabbedLearningPage](../src/components/ui/TabbedLearningPage.jsx) receives `title`, `subtitle`, `chapter`, `tabs`, `storageKey` and `colorScheme`. Each tab supplies a stable `id`, `label`, `component` and optional icon/color. It owns tab navigation and routes completion through the registered learning activity.
+- [SectionBasedContent](../src/components/ui/SectionBasedContent.jsx) receives a `sections` array with stable `id`, `title` and `content` component entries. A tab forwards its `onComplete` callback. The component owns section navigation, focus movement, math rendering and saved section position for a registered enclosing activity.
+- [useLearningActivity](../src/hooks/useLearningActivity.js) supplies typed learning actions through the existing progress store. Reuse it instead of introducing another storage system.
 
-CONTENT RULES:
-✗ NO fake statistics ("appears in 75% of exams")
-✗ NO gamification or childish tone
-✓ Real applications (ML, AI, data science careers)
-✓ Connect to advanced topics and industry
-✓ Professional, respectful tone
-✓ LaTeX using dangerouslySetInnerHTML pattern
+The foundations module's [first tab](../src/components/01-introduction-to-probabilities/01-foundations/Tab1FoundationsTab.jsx) shows named section components and the callback connection. Define React components outside the section array when they need state or hooks; call hooks at the component's top level.
 
-FILE STRUCTURE RULES:
-If original component is: /components/XX-chapter/Y-Y-Y-ComponentName.jsx
-Then create:
+Keep stable tab/section IDs and existing `storageKey` values. Register new activities and tab mappings in the [curriculum manifest](../src/lib/curriculum/manifest.js); update migration mappings when an intentional change requires them. An arbitrary unregistered key does not create durable progress. Distinguish a saved position, studied content and assessed answers. Completion should follow an explicit student action, rather than mounting a tab or running an animation.
 
-1. NEW FOLDER: /components/XX-chapter/Y-Y-Y-component-name/
-   - Keep the section numbering (Y-Y-Y) from original component
-   - Slugify only the component name part
-   - Contains:
-     - Tab1FoundationsTab.jsx
-     - Tab2WorkedExamplesTab.jsx  
-     - Tab3QuickReferenceTab.jsx
-     - index.jsx (exports all tabs)
+## Render mathematics and motion
 
-2. NEW PAGE: /app/chapter[X]/component-name/page.jsx
-   - Use only the slugified name part (no section numbers)
-   - This keeps URLs clean and readable
+Use the current [useMathJax hook](../src/hooks/useMathJax.js) or existing math-aware UI components. The [shared runtime](../src/lib/mathjax/runtime.js) coordinates rendering and cleanup. Supply changing content dependencies when using the hook; do not add direct `window.MathJax` calls, retry timers or separate script loaders to a new lesson.
 
-3. ORIGINAL COMPONENT: Keep in original location
-   - DO NOT move or rename
-   - Import from original path in Tab 4
+Use inline `\(...\)` and display `\[...\]` delimiters for MathJax content, with JavaScript escaping where required. Check the surrounding component's contract before passing a formula: some accept raw TeX, others expect delimiters. Render user-supplied strings as text and keep any existing HTML-rendering surface restricted to trusted authored content. Inspect the final rendered equation, not only its source string.
 
-Example:
-Original: /components/01-introduction/1-1-1-SampleSpacesEvents.jsx
-Creates folder: /components/01-introduction/1-1-1-sample-spaces-events/
-  - Tab1FoundationsTab.jsx
-  - Tab2WorkedExamplesTab.jsx
-  - Tab3QuickReferenceTab.jsx
-  - index.jsx
-Creates page: /app/chapter1/sample-spaces-events/page.jsx
-Imports original from: /components/01-introduction/1-1-1-SampleSpacesEvents.jsx
-```
+Use [useReducedMotion](../src/hooks/useReducedMotion.js) for motion preferences. Keep controls usable during animation, provide the same conceptual result without motion, and cancel owned timers, transitions and animation frames on reset or unmount. Size charts to their available container, including hidden/reopened tabs and narrow layouts.
 
-## 📋 Implementation Checklist
+## Verify the complete path
 
-```jsx
-// Main page structure at /app/chapter[X]/[component-slug]/page.jsx
-import dynamic from 'next/dynamic';
-import TabbedLearningPage from '@/components/ui/TabbedLearningPage';
-import { BookOpen, Target, Zap, [OriginalIcon] } from 'lucide-react';
+Run `npm run check` and `npm run check:production` from the repository root. Add independent numerical checks for changed formulas and answer keys, and regression checks for changed interactions or saved state. Existing [learning tests](../tests/learning), [math tests](../tests/math) and [MathJax tests](../tests/mathjax) show the relevant test conventions.
 
-// Import new tabs from new folder (with tab numbers for clarity)
-const FoundationsTab = dynamic(() => 
-  import('@/components/XX-chapter/Y-Y-Y-component-name/Tab1FoundationsTab'), { ssr: false }
-);
-const WorkedExamplesTab = dynamic(() => 
-  import('@/components/XX-chapter/Y-Y-Y-component-name/Tab2WorkedExamplesTab'), { ssr: false }
-);
-const QuickReferenceTab = dynamic(() => 
-  import('@/components/XX-chapter/Y-Y-Y-component-name/Tab3QuickReferenceTab'), { ssr: false }
-);
+In the production build, visit every changed tab and section. Use keyboard navigation, predict and manipulate the experiment, inspect equations and numerical output, reset, navigate away and reload. Check desktop and narrow layouts, reduced motion, focus, labels, saved position and completion. Preserve the previously working explorer while correcting any demonstrated defect.
 
-// Import original component from its ORIGINAL location (unchanged)
-const [OriginalComponent] = dynamic(() => 
-  import('@/components/XX-chapter/Y-Y-Y-ComponentName'), { ssr: false }
-);
-
-export default function [Topic]Page() {
-  const TABS = [
-    { id: 'foundations', label: 'Foundations', icon: BookOpen, 
-      component: FoundationsTab, color: '#10b981' },
-    { id: 'worked-examples', label: 'Worked Examples', icon: Target,
-      component: WorkedExamplesTab, color: '#3b82f6' },
-    { id: 'quick-reference', label: 'Quick Reference', icon: Zap,
-      component: QuickReferenceTab, color: '#7c3aed' },
-    { id: 'original', label: '[Original Display Name]', icon: [Icon],
-      component: [OriginalComponent], color: '[original color]' }
-  ];
-  
-  return (
-    <TabbedLearningPage
-      title="[Topic Title from Component]"
-      subtitle="[Professional description]"
-      chapter={[X]}
-      tabs={TABS}
-      storageKey="chapter[X]-[component-slug]-progress"
-      colorScheme="purple"
-    />
-  );
-}
-```
-
-## 🎯 Key Principles
-
-1. **ALWAYS Preserve Original Component**: The existing component becomes Tab 4 - never modify it!
-2. **Add Educational Value**: Create 3 new educational tabs that teach the concepts
-3. **Professional Tone**: Treat students as adults learning for careers
-4. **Real Motivations**: Connect to ML/AI/tech industry applications
-5. **Exam Focus**: Use real exam problems without fake statistics
-
-## 🛡️ Critical Best Practices (Prevent Common Errors)
-
-### **React Hooks Rules**
-- **NEVER put hooks inside section content functions** - Always at component top level
-- **Extract section components** - Move hooks to separate components outside arrays
-- **Consistent hook order** - Same hooks called every render regardless of content
-
-### **Hydration Safety**
-- **NO localStorage in useState initializer** - Always start with empty/default state
-- **Load after hydration** - Use `useEffect` to populate from localStorage  
-- **Add isHydrated flag** - Track when client-side data is loaded
-- **Conditional progress UI** - Only render completion indicators after hydration
-
-### **Safe Hook Pattern**
-```js
-// ❌ BAD - Hooks in content functions
-const SECTIONS = [{
-  content: () => {
-    const [state] = useState(); // BREAKS RULES
-    return <div>...</div>;
-  }
-}];
-
-// ✅ GOOD - Hooks at top level
-const SectionComponent = ({ state, setState }) => <div>...</div>;
-
-export default function Tab() {
-  const [state, setState] = useState(); // All hooks here
-  const SECTIONS = [{
-    content: () => <SectionComponent state={state} setState={setState} />
-  }];
-}
-```
-
-### **Safe Hydration Pattern**
-```js
-function useProgress(key) {
-  const [data, setData] = useState([]); // Empty start
-  const [isHydrated, setIsHydrated] = useState(false);
-  
-  useEffect(() => {
-    const saved = localStorage.getItem(key);
-    if (saved) setData(JSON.parse(saved));
-    setIsHydrated(true);
-  }, []);
-  
-  return { data, isHydrated };
-}
-
-// Render: {isHydrated && <ProgressDots />}
-```
-
-## ✅ Quality Checks
-
-- [ ] All hooks at component top level (no hooks in content functions)
-- [ ] localStorage only in useEffect (not useState initializer)
-- [ ] Progress UI wrapped in isHydrated check
-- [ ] Original component works unchanged in its tab
-- [ ] All LaTeX renders correctly
-- [ ] Arrow keys navigate between sections
-- [ ] Progress saves to localStorage
-- [ ] No fake statistics or gamification
-- [ ] Connects to real-world applications
-- [ ] Build passes: `npm run build && npm run lint`
-
-**Remember: Server and client must render identically on first pass!**
+Apply the [three learner perspectives and six-dimension quality gate](learning-quality.md#review-the-teaching). Record the revision, tested actions, numerical evidence, screenshots where useful and remaining gaps in the pull request. See [CONTRIBUTING.md](../CONTRIBUTING.md) for source and submission requirements.

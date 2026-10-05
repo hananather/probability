@@ -12,7 +12,7 @@ const SECTIONS = [
   {
     id: 'basic-operations',
     title: 'Basic Set Operations Example',
-    content: ({ sectionIndex, isCompleted }) => {
+    content: function BasicOperationsExample({ sectionIndex, isCompleted }) {
       const contentRef = useMathJax([sectionIndex, isCompleted]);
       
       return (
@@ -75,7 +75,7 @@ const SECTIONS = [
   {
     id: 'demorgans-proof',
     title: "Proving De Morgan's Laws",
-    content: ({ sectionIndex, isCompleted }) => {
+    content: function DeMorgansProofExample({ sectionIndex, isCompleted }) {
       const contentRef = useMathJax([sectionIndex, isCompleted]);
       
       return (
@@ -130,7 +130,7 @@ const SECTIONS = [
   {
     id: 'card-example',
     title: 'Real-World Example: Card Game',
-    content: ({ sectionIndex, isCompleted }) => {
+    content: function CardExample({ sectionIndex, isCompleted }) {
       const contentRef = useMathJax([sectionIndex, isCompleted]);
       
       return (
@@ -208,7 +208,7 @@ const SECTIONS = [
   {
     id: 'operation-properties',
     title: 'Key Properties and Laws',
-    content: ({ sectionIndex, isCompleted }) => {
+    content: function OperationPropertiesExample({ sectionIndex, isCompleted }) {
       const contentRef = useMathJax([sectionIndex, isCompleted]);
       
       const operationProperties = {

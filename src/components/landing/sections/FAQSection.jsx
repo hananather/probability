@@ -1,49 +1,52 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import { ChevronDown, HelpCircle } from 'lucide-react';
 import { cn } from '../../../lib/design-system';
 
 const faqs = [
   {
     question: "What if I'm struggling with the math prerequisites?",
-    answer: "Don't worry! We've built a prerequisites checker that helps you identify gaps in your knowledge. Each chapter also includes review sections for relevant math concepts. Start with Chapter 1, which covers fundamentals and builds up gradually. The interactive visualizations help you understand concepts even if the math feels challenging."
+    answer: "Start with the prerequisites guide to review the mathematics you need. Chapter 1 introduces outcomes, events, and counting before conditional probability and Bayes' theorem. Work through a concrete example, then connect its diagram to the notation."
   },
   {
     question: "How long does each chapter take to complete?",
-    answer: "On average, students spend 3-5 hours per chapter, including practice problems. However, you can go at your own pace. Each chapter is broken into bite-sized sections (10-20 minutes each) that you can complete individually. The platform saves your progress automatically."
+    answer: "Study at your own pace; chapter times are estimates, not measured averages. Choose one concept for a focused session, work through an example, and try a question without looking at the answer. Return to the idea in later sessions. Saved progress currently belongs to this browser and depends on available browser storage."
   },
   {
     question: "Can I skip ahead to specific topics I need help with?",
-    answer: "Yes! While we recommend following the sequential path for the best learning experience, you can jump to any chapter or section you need. Use the navigation menu or search function to find specific topics. Just be aware that later chapters build on earlier concepts."
+    answer: "Yes. Use the chapter cards or navigation menu to open a specific topic. Each chapter hub lists the suggested sequence and prerequisites, so you can review a missing foundation before continuing."
   },
   {
     question: "How do the interactive visualizations help me learn?",
-    answer: "Our visualizations let you manipulate variables and see immediate results, building intuition for abstract concepts. Instead of memorizing formulas, you'll understand WHY they work through hands-on experimentation. Active learning through interaction helps improve understanding and retention."
+    answer: "Predict what will happen before changing a parameter. Compare the graph with your prediction, then explain the result using the formula and its assumptions. The visualization gives you evidence to reason about; the worked examples and practice questions help you check that reasoning."
   },
   {
     question: "Is this suitable for my course (MAT 2377 or similar)?",
-    answer: "Yes! This platform covers standard probability and statistics topics taught in engineering courses. We align with common textbooks and curricula. Check the chapter overview to match topics with your syllabus. This content is suitable for courses like MAT 2377, STAT 2507, and similar."
+    answer: "The curriculum covers probability and statistics topics used in engineering courses, including MAT 2377. Compare the chapter list with your own syllabus, and use your instructor's definitions and requirements for assessed work."
   },
   {
     question: "Do I need to install any software?",
-    answer: "No installation required! Everything runs in your web browser. The platform works on computers, tablets, and phones. For the best experience, we recommend using a modern browser (Chrome, Firefox, Safari, or Edge) on a device with at least a 10-inch screen."
+    answer: "No installation is required. Lessons run in a web browser. A larger screen gives detailed graphs more room; narrow screens can use the menu and scrollable diagrams. Use a current browser and report a control that does not work on your device."
   },
   {
     question: "How is this different from watching video lectures?",
-    answer: "Instead of passive watching, you're actively engaged. You can pause, experiment, and test hypotheses in real-time. Each concept has multiple representations (visual, numerical, and symbolic) to match different learning styles. Plus, you get immediate feedback on practice problems."
+    answer: "You can make predictions, change a model, inspect numerical results, and test your reasoning in practice questions. Diagrams, calculations, and notation show complementary parts of the same idea. Try explaining how they connect before moving on."
   },
   {
     question: "What if I get stuck on a problem?",
-    answer: "Each problem includes hints that guide you toward the solution without giving it away. Worked examples show step-by-step solutions to similar problems. The platform also includes comprehensive review materials and practice problems to help reinforce your understanding."
+    answer: "Return to the relevant worked example and identify the first step you cannot explain. Review the symbols and assumptions, then retry the question. Available hints and answer explanations can help you compare your reasoning with a solution."
   }
 ];
 
 const FAQItem = ({ question, answer, isOpen, onToggle }) => {
+  const id = useId();
   return (
     <div className="border-b border-neutral-800 last:border-0">
       <button
         onClick={onToggle}
+        aria-expanded={isOpen}
+        aria-controls={`${id}-answer`}
         className="w-full py-4 px-6 flex items-start justify-between text-left hover:bg-neutral-800/50 transition-colors"
       >
         <span className="text-white font-medium pr-4">{question}</span>
@@ -54,10 +57,7 @@ const FAQItem = ({ question, answer, isOpen, onToggle }) => {
           )} 
         />
       </button>
-      <div className={cn(
-        "overflow-hidden transition-all duration-300",
-        isOpen ? "max-h-96" : "max-h-0"
-      )}>
+      <div id={`${id}-answer`} hidden={!isOpen}>
         <div className="px-6 pb-4 text-neutral-300 leading-relaxed">
           {answer}
         </div>

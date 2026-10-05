@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from "framer-motion";
+import { useMathJax } from '@/hooks/useMathJax';
 import { Card } from "../ui/card";
 import * as d3 from "@/utils/d3-utils";
 import { 
@@ -70,20 +71,7 @@ const NegativeBinomialConceptsCard = React.memo(() => {
     { term: "Standard Deviation", definition: "Square root of variance", latex: "\\sigma = \\sqrt{\\frac{r(1-p)}{p^2}}" },
   ];
 
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax(); // Try immediately
-    const timeoutId = setTimeout(processMathJax, 100); // CRITICAL: Retry after 100ms
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(contentRef, []);
 
   return (
     <Card ref={contentRef} className="mb-8 p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/50 border-gray-700/50">
@@ -112,6 +100,7 @@ const NegativeBinomialConceptsCard = React.memo(() => {
     </Card>
   );
 });
+NegativeBinomialConceptsCard.displayName = 'NegativeBinomialConceptsCard';
 
 export default function NegativeBinomialDistribution() {
   // State

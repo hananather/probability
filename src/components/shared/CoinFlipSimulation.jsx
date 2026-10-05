@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import { useMathJax } from '@/hooks/useMathJax';
 import * as d3 from "@/utils/d3-utils";
 import { 
   VisualizationContainer, 
@@ -21,7 +22,7 @@ export default function CoinFlipSimulation() {
   const [inputValue, setInputValue] = useState("10");
   
   const svgRef = useRef(null);
-  const contentRef = useRef(null);
+  const contentRef = useMathJax([counts, trueProb, sampleCount, inputValue]);
   const scalesRef = useRef({ x0: null, x1: null, y: null });
   const elementsRef = useRef({
     observedBars: null,
@@ -57,22 +58,6 @@ export default function CoinFlipSimulation() {
     setSampleCount(10);
     setInputValue("10");
   }
-  
-  // Process MathJax
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [totalFlips, trueProb, counts]);
   
   // Initialize D3 visualization once
   useEffect(() => {

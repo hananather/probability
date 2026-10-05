@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
+import { useMathJax } from '@/hooks/useMathJax';
 import { cn } from '../../../lib/design-system';
 import { Button } from '../button';
 import { ChevronDown, ChevronUp } from 'lucide-react';
@@ -28,20 +29,7 @@ export function SideBySideFormulas({
   const mathRef = useRef(null);
   
   // MathJax processing - exact pattern from Chapter 7
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && mathRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([mathRef.current]);
-        }
-        window.MathJax.typesetPromise([mathRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [showDetails]);
+  useMathJax(mathRef, [showDetails, formulas]);
 
   // Theme configurations - exact gradients from Chapter 7
   const themes = {
@@ -184,20 +172,7 @@ export const createVarianceSideBySide = () => ({
 export function StaticFormulaGrid({ title, formulas, theme = 'purple', className }) {
   const mathRef = useRef(null);
   
-  useEffect(() => {
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && mathRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([mathRef.current]);
-        }
-        window.MathJax.typesetPromise([mathRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useMathJax(mathRef, [formulas]);
 
   const themes = {
     purple: 'text-purple-400',

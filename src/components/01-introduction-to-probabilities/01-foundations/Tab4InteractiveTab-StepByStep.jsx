@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { StepByStepCalculation, CalculationStep, NestedCalculation, FormulaDisplay } from '@/components/ui/patterns/StepByStepCalculation';
 import { ComparisonTable, SimpleComparisonTable } from '@/components/ui/patterns/ComparisonTable';
 import { InterpretationBox } from '@/components/ui/patterns/InterpretationBox';
 import { SimpleInsightBox, SimpleFormulaCard } from '@/components/ui/patterns/SimpleComponents';
 import { useMathJax } from '@/hooks/useMathJax';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { RefreshCw, Calculator, PlayCircle } from 'lucide-react';
 import SharedNavigation from '../shared/SharedNavigation';
 
@@ -15,14 +16,18 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
   const [selectedBag, setSelectedBag] = useState('bag-a');
   const [currentStep, setCurrentStep] = useState(0);
   const [isCalculating, setIsCalculating] = useState(false);
+  const calculationRef = useRef(null);
+  const startButtonRef = useRef(null);
+  const navigationIntentRef = useRef(null);
+  const reducedMotion = useReducedMotion();
   
-  const contentRef = useMathJax([currentScenario, selectedBag, currentStep]);
+  const contentRef = useMathJax([currentScenario, selectedBag, currentStep, isCalculating]);
 
   // Scenario definitions
   const scenarios = {
     'equal-mass': {
-      title: 'Equal Mass Pebbles',
-      description: 'All pebbles have the same weight - classical probability',
+      title: 'Equal Selection Weights',
+      description: 'Every pebble is equally likely under the selection rule',
       bags: {
         'bag-a': {
           name: 'Bag A: Simple Colors',
@@ -43,16 +48,16 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
       }
     },
     'weighted-mass': {
-      title: 'Weighted Mass Pebbles',
-      description: 'Pebbles have different weights - weighted probability',
+      title: 'Weighted Selection',
+      description: 'Selection probability is proportional to an assigned numeric weight',
       bags: {
         'bag-a': {
-          name: 'Bag A: Light vs Heavy',
+          name: 'Bag A: Selection Weights 1 and 3',
           light: { count: 4, weight: 1 },
           heavy: { count: 2, weight: 3 },
           total: 6,
           totalWeight: 10,
-          description: '4 light pebbles (weight 1), 2 heavy pebbles (weight 3)'
+          description: '4 pebbles with selection weight 1, 2 with selection weight 3'
         }
       }
     },
@@ -72,23 +77,49 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
   };
 
   const currentBag = scenarios[currentScenario].bags[selectedBag];
+  const totalSteps = currentScenario === 'equal-mass' ? 5 : currentScenario === 'weighted-mass' ? 6 : 7;
+  const isFinalStep = currentStep === totalSteps - 1;
+
+  useEffect(() => {
+    const intent = navigationIntentRef.current;
+    if (!intent) return;
+    navigationIntentRef.current = null;
+    if (intent === 'start') {
+      startButtonRef.current?.focus({ preventScroll: true });
+      return;
+    }
+    if (!isCalculating) return;
+    const heading = [...(calculationRef.current?.querySelectorAll('h4') || [])]
+      .find(element => element.textContent.startsWith(`Step ${currentStep + 1}:`));
+    if (!heading) return;
+    heading.tabIndex = -1;
+    heading.classList.add('scroll-mt-24');
+    heading.focus({ preventScroll: true });
+    heading.scrollIntoView({ behavior: reducedMotion ? 'instant' : 'smooth', block: 'start' });
+  }, [currentStep, isCalculating, currentScenario, selectedBag, reducedMotion]);
 
   const startCalculation = () => {
+    navigationIntentRef.current = 'step';
     setIsCalculating(true);
     setCurrentStep(0);
   };
 
-  const nextStep = () => {
-    const maxSteps = currentScenario === 'equal-mass' ? 4 : 
-                   currentScenario === 'weighted-mass' ? 5 : 6;
-    if (currentStep < maxSteps) {
-      setCurrentStep(currentStep + 1);
-    }
+  const navigateToStep = (step) => {
+    if (!Number.isInteger(step) || step < 0 || step >= totalSteps || step === currentStep) return;
+    navigationIntentRef.current = 'step';
+    setCurrentStep(step);
   };
 
-  const resetCalculation = () => {
+  const resetCalculation = (focusStart = false) => {
+    navigationIntentRef.current = focusStart ? 'start' : null;
     setIsCalculating(false);
     setCurrentStep(0);
+  };
+
+  const finishCalculation = () => {
+    if (!isCalculating || !isFinalStep) return;
+    resetCalculation(true);
+    onComplete?.();
   };
 
   const renderEqualMassCalculation = () => {
@@ -282,7 +313,7 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
               <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
                 <li>Each pebble has equal chance of being drawn</li>
                 <li>Probabilities are simple counting ratios</li>
-                <li>All probabilities sum to 1</li>
+                <li>Probabilities of a complete set of disjoint outcomes sum to 1</li>
                 <li>Set operations follow logical rules</li>
               </ul>
             </InterpretationBox>
@@ -292,7 +323,7 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
                 <strong>Why this foundation matters:</strong>
               </p>
               <ul className="list-disc list-inside space-y-1 text-sm">
-                <li>Equal mass pebbles → Classical probability</li>
+                <li>Equally likely pebbles → Count outcomes in the event and divide by the total</li>
                 <li>Counting favorable outcomes → Probability values</li>
                 <li>Set operations → Complex event probabilities</li>
                 <li>Physical intuition → Mathematical confidence</li>
@@ -314,18 +345,18 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
           <CalculationStep title="Step 1: Define the Weighted Sample Space" variant="default">
             <div className="space-y-3">
               <p className="text-neutral-300">
-                <strong>Physical Model:</strong> {currentBag.description}
+                <strong>Selection Model:</strong> {currentBag.description}
               </p>
               <div className="bg-neutral-800/50 p-4 rounded">
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <p className="text-yellow-400 font-semibold">Light Pebbles</p>
+                    <p className="text-yellow-400 font-semibold">Weight-1 Pebbles</p>
                     <p>Count: {currentBag.light.count}</p>
                     <p>Weight each: {currentBag.light.weight}</p>
                     <p>Total weight: {currentBag.light.count * currentBag.light.weight}</p>
                   </div>
                   <div>
-                    <p className="text-red-400 font-semibold">Heavy Pebbles</p>
+                    <p className="text-red-400 font-semibold">Weight-3 Pebbles</p>
                     <p>Count: {currentBag.heavy.count}</p>
                     <p>Weight each: {currentBag.heavy.weight}</p>
                     <p>Total weight: {currentBag.heavy.count * currentBag.heavy.weight}</p>
@@ -344,15 +375,17 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
           <CalculationStep title="Step 2: Weighted Probability Formula" variant="highlight">
             <div className="space-y-4">
               <p className="text-neutral-300">
-                <strong>Key Insight:</strong> Heavier pebbles are more likely to be selected
+                <strong>Key Insight:</strong> This model assigns a larger selection probability to a larger numeric weight.
               </p>
               <FormulaDisplay formula={`P(\\text{Event}) = \\frac{\\text{Total weight of favorable outcomes}}{\\text{Total weight in bag}}`} />
               
               <div className="bg-purple-900/20 p-4 rounded border border-purple-600/30">
                 <p className="text-purple-400 font-semibold mb-2">Why weights matter:</p>
                 <p className="text-neutral-300 text-sm">
-                  Imagine reaching into the bag blindfolded. Your hand is more likely to grab a heavy pebble 
-                  than a light one because heavy pebbles take up more "selection space."
+                  Draw a random number uniformly between 0 and the total selection weight.
+                  Give each pebble an interval of length equal to its weight, and select the interval
+                  containing the number. A pebble with weight w has probability w divided by the total weight.
+                  Visual size encodes that weight; physical mass alone does not determine the probability.
                 </p>
               </div>
             </div>
@@ -361,18 +394,18 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
 
         {/* Step 2: Calculate Light Probability */}
         {currentStep >= 2 && (
-          <CalculationStep title="Step 3: Calculate P(Light Pebble)" variant="default">
+          <CalculationStep title="Step 3: Calculate P(Weight-1 Pebble)" variant="default">
             <div className="space-y-3">
               <NestedCalculation label="Identify favorable outcomes:">
                 <p className="text-neutral-300 text-sm mb-2">
-                  Light pebbles: {currentBag.light.count} pebbles, each weighing {currentBag.light.weight}
+                  Weight-1 group: {currentBag.light.count} pebbles, each with selection weight {currentBag.light.weight}
                 </p>
-                <FormulaDisplay formula={`\\text{Total weight of light pebbles} = ${currentBag.light.count} \\times ${currentBag.light.weight} = ${currentBag.light.count * currentBag.light.weight}`} />
+                <FormulaDisplay formula={`\\text{Total selection weight of weight-1 group} = ${currentBag.light.count} \\times ${currentBag.light.weight} = ${currentBag.light.count * currentBag.light.weight}`} />
               </NestedCalculation>
               
               <NestedCalculation label="Apply formula:">
-                <FormulaDisplay formula={`P(\\text{Light}) = \\frac{${currentBag.light.count * currentBag.light.weight}}{${currentBag.totalWeight}} = \\frac{4}{10} = 0.4`} />
-                <p className="text-sm text-neutral-400 mt-1">40% chance of drawing a light pebble</p>
+                <FormulaDisplay formula={`P(\\text{Weight-1 group}) = \\frac{${currentBag.light.count * currentBag.light.weight}}{${currentBag.totalWeight}} = \\frac{4}{10} = 0.4`} />
+                <p className="text-sm text-neutral-400 mt-1">40% chance of drawing from the weight-1 group</p>
               </NestedCalculation>
             </div>
           </CalculationStep>
@@ -380,18 +413,18 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
 
         {/* Step 3: Calculate Heavy Probability */}
         {currentStep >= 3 && (
-          <CalculationStep title="Step 4: Calculate P(Heavy Pebble)" variant="default">
+          <CalculationStep title="Step 4: Calculate P(Weight-3 Pebble)" variant="default">
             <div className="space-y-3">
               <NestedCalculation label="Identify favorable outcomes:">
                 <p className="text-neutral-300 text-sm mb-2">
-                  Heavy pebbles: {currentBag.heavy.count} pebbles, each weighing {currentBag.heavy.weight}
+                  Weight-3 group: {currentBag.heavy.count} pebbles, each with selection weight {currentBag.heavy.weight}
                 </p>
-                <FormulaDisplay formula={`\\text{Total weight of heavy pebbles} = ${currentBag.heavy.count} \\times ${currentBag.heavy.weight} = ${currentBag.heavy.count * currentBag.heavy.weight}`} />
+                <FormulaDisplay formula={`\\text{Total selection weight of weight-3 group} = ${currentBag.heavy.count} \\times ${currentBag.heavy.weight} = ${currentBag.heavy.count * currentBag.heavy.weight}`} />
               </NestedCalculation>
               
               <NestedCalculation label="Apply formula:">
-                <FormulaDisplay formula={`P(\\text{Heavy}) = \\frac{${currentBag.heavy.count * currentBag.heavy.weight}}{${currentBag.totalWeight}} = \\frac{6}{10} = 0.6`} />
-                <p className="text-sm text-neutral-400 mt-1">60% chance of drawing a heavy pebble</p>
+                <FormulaDisplay formula={`P(\\text{Weight-3 group}) = \\frac{${currentBag.heavy.count * currentBag.heavy.weight}}{${currentBag.totalWeight}} = \\frac{6}{10} = 0.6`} />
+                <p className="text-sm text-neutral-400 mt-1">60% chance of drawing from the weight-3 group</p>
               </NestedCalculation>
             </div>
           </CalculationStep>
@@ -399,35 +432,36 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
 
         {/* Step 4: Comparison */}
         {currentStep >= 4 && (
-          <CalculationStep title="Step 5: Compare with Equal Mass Case" variant="highlight">
+          <CalculationStep title="Step 5: Compare with Uniform Selection" variant="highlight">
             <SimpleComparisonTable
-              title="Equal Mass vs Weighted Mass"
-              headers={{ left: "Equal Mass", right: "Weighted Mass" }}
+              title="Uniform vs Weighted Selection"
+              showAspectColumn
+              headers={{ left: "Uniform Selection", right: "Weighted Selection" }}
               colors={{ left: "text-blue-400", right: "text-purple-400" }}
               data={[
                 { 
-                  aspect: "P(Light Pebble)", 
-                  left: `\\(\\frac{4}{6} = 0.667\\)`, 
+                  aspect: "P(Weight-1 group)",
+                  left: `\\(\\frac{4}{6} \\approx 0.667\\)`,
                   right: `\\(\\frac{4}{10} = 0.4\\)` 
                 },
                 { 
-                  aspect: "P(Heavy Pebble)", 
-                  left: `\\(\\frac{2}{6} = 0.333\\)`, 
+                  aspect: "P(Weight-3 group)",
+                  left: `\\(\\frac{2}{6} \\approx 0.333\\)`,
                   right: `\\(\\frac{6}{10} = 0.6\\)` 
                 },
                 { 
                   aspect: "Most likely", 
-                  left: "Light (more numerous)", 
-                  right: "Heavy (more weight)" 
+                  left: "Weight-1 group (4 of 6 pebbles)",
+                  right: "Weight-3 group (6 of 10 selection weight)"
                 }
               ]}
             />
             
             <InterpretationBox theme="purple">
               <p>
-                <strong>Key Insight:</strong> Weight dramatically changes probabilities! Even though there are 
-                more light pebbles (4 vs 2), the heavy pebbles are more likely to be drawn because 
-                their total weight (6) exceeds the light pebbles' total weight (4).
+                <strong>Key Insight:</strong> The selection rule changes the answer. Although there are
+                more weight-1 pebbles (4 vs 2), weighted selection favors the weight-3 group because
+                its total selection weight (6) exceeds the other group's total (4).
               </p>
             </InterpretationBox>
           </CalculationStep>
@@ -438,21 +472,16 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
           <CalculationStep title="Step 6: Verification and Applications" variant="highlight">
             <div className="bg-green-900/20 p-4 rounded border border-green-600/30 mb-4">
               <p className="text-green-400 font-semibold mb-2">Probability Check:</p>
-              <FormulaDisplay formula={`P(\\text{Light}) + P(\\text{Heavy}) = 0.4 + 0.6 = 1.0 \\checkmark`} />
+              <FormulaDisplay formula={`P(\\text{Weight-1 group}) + P(\\text{Weight-3 group}) = 0.4 + 0.6 = 1.0 \\checkmark`} />
               <p className="text-xs text-neutral-400">Perfect! All probabilities sum to 1.</p>
             </div>
             
-            <SimpleInsightBox title="Real-World Applications" theme="orange">
-              <p className="mb-2">
-                <strong>Weighted probability appears everywhere:</strong>
+            <SimpleInsightBox title="Apply the Selection Rule" theme="orange">
+              <p>
+                A game can assign selection weights to random item drops and normalize them by their sum.
+                Before using this formula in another setting, check that its sampling rule actually
+                selects outcomes in proportion to those weights.
               </p>
-              <ul className="list-disc list-inside space-y-1 text-sm">
-                <li><strong>Elections:</strong> Weighted voting systems</li>
-                <li><strong>Economics:</strong> Market capitalization-weighted indices</li>
-                <li><strong>Quality control:</strong> Defect severity weighting</li>
-                <li><strong>Gaming:</strong> Rare item drop rates</li>
-                <li><strong>Medicine:</strong> Treatment effectiveness weighting</li>
-              </ul>
             </SimpleInsightBox>
           </CalculationStep>
         )}
@@ -471,6 +500,10 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
             <div className="space-y-3">
               <p className="text-neutral-300">
                 <strong>Scenario:</strong> Draw 2 pebbles from bag with {currentBag.red} red and {currentBag.blue} blue pebbles
+              </p>
+              <p className="text-sm text-neutral-300">
+                Every draw selects uniformly from the pebbles currently in the bag.
+                With replacement, each draw uses a fresh independent random choice.
               </p>
               <div className="bg-neutral-800/50 p-4 rounded">
                 <p className="text-neutral-200 mb-3">
@@ -625,6 +658,7 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
           <CalculationStep title="Step 6: With vs Without Replacement" variant="highlight">
             <SimpleComparisonTable
               title="Replacement Effects on Probability"
+              showAspectColumn
               headers={{ left: "With Replacement", right: "Without Replacement" }}
               colors={{ left: "text-blue-400", right: "text-green-400" }}
               data={[
@@ -717,6 +751,9 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
           {Object.entries(scenarios).map(([key, scenario]) => (
             <button
               key={key}
+              type="button"
+              aria-pressed={currentScenario === key}
+              aria-label={`${scenario.title}: ${scenario.description}`}
               onClick={() => {
                 setCurrentScenario(key);
                 setSelectedBag('bag-a');
@@ -743,6 +780,9 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
             {Object.entries(scenarios[currentScenario].bags).map(([bagKey, bag]) => (
               <button
                 key={bagKey}
+                type="button"
+                aria-pressed={selectedBag === bagKey}
+                aria-label={`${bag.name}: ${bag.description}`}
                 onClick={() => {
                   setSelectedBag(bagKey);
                   resetCalculation();
@@ -762,10 +802,11 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
         </div>
       )}
 
-      {/* Action Buttons and Navigation */}
-      {!isCalculating ? (
+      {/* Start Calculation */}
+      {!isCalculating && (
         <div className="flex justify-center">
-          <Button 
+          <Button
+            ref={startButtonRef}
             onClick={startCalculation}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
           >
@@ -773,30 +814,31 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
             Start Step-by-Step Calculation
           </Button>
         </div>
-      ) : (
+      )}
+
+      {/* Calculation Content */}
+      <div ref={calculationRef}>
+        {currentScenario === 'equal-mass' && renderEqualMassCalculation()}
+        {currentScenario === 'weighted-mass' && renderWeightedMassCalculation()}
+        {currentScenario === 'multiple-picks' && renderMultiplePicksCalculation()}
+      </div>
+
+      {/* Navigation follows the reasoning for the current step. */}
+      {isCalculating && (
         <div className="space-y-4">
           <SharedNavigation
             currentStep={currentStep}
-            totalSteps={currentScenario === 'equal-mass' ? 5 : 
-                        currentScenario === 'weighted-mass' ? 6 : 7}
-            onNavigate={(step) => setCurrentStep(step)}
-            onComplete={() => {
-              if (currentStep >= (currentScenario === 'equal-mass' ? 4 : 
-                                 currentScenario === 'weighted-mass' ? 5 : 6)) {
-                resetCalculation();
-                onComplete?.();
-              } else {
-                nextStep();
-              }
-            }}
+            totalSteps={totalSteps}
+            onNavigate={navigateToStep}
+            onComplete={finishCalculation}
             showProgress={true}
-            nextLabel="Next Step"
+            nextLabel={isFinalStep ? (onComplete ? 'Mark as Complete' : 'Finish Calculation') : 'Next Step'}
             previousLabel="Previous Step"
             disabled={false}
           />
           <div className="text-center">
             <Button 
-              onClick={resetCalculation}
+              onClick={() => resetCalculation(true)}
               variant="outline"
               size="sm"
             >
@@ -807,28 +849,14 @@ export default function Tab4InteractiveTabStepByStep({ onComplete }) {
         </div>
       )}
 
-      {/* Calculation Content */}
-      {currentScenario === 'equal-mass' && renderEqualMassCalculation()}
-      {currentScenario === 'weighted-mass' && renderWeightedMassCalculation()}
-      {currentScenario === 'multiple-picks' && renderMultiplePicksCalculation()}
-
       {/* Completion Message */}
-      {isCalculating && currentStep >= (currentScenario === 'equal-mass' ? 4 : 
-                                       currentScenario === 'weighted-mass' ? 5 : 6) && (
+      {isCalculating && isFinalStep && (
         <div className="bg-gradient-to-br from-green-900/20 to-emerald-800/20 border border-green-600/30 rounded-lg p-6 text-center">
           <h3 className="text-xl font-bold text-green-400 mb-3">🎉 Calculation Complete!</h3>
           <p className="text-neutral-200 mb-4">
-            You've mastered the step-by-step approach for this scenario. Try another scenario 
+            You've completed this calculation. Try another scenario
             or move on to the next topic to continue building your probability foundation.
           </p>
-          {onComplete && (
-            <Button 
-              onClick={onComplete}
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-2"
-            >
-              Mark as Complete
-            </Button>
-          )}
         </div>
       )}
     </div>

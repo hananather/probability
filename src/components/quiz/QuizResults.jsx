@@ -1,8 +1,23 @@
 "use client";
 import React from 'react';
 import { Trophy, Target, Clock, TrendingUp, RefreshCcw, Home, ChevronRight } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Button, buttonVariants } from '../ui/button';
 import Link from 'next/link';
+
+function elapsedTime(seconds) {
+  if (!Number.isFinite(seconds) || seconds < 0) return null;
+  const total = Math.floor(seconds);
+  const days = Math.floor(total / 86400);
+  const hours = Math.floor(total % 86400 / 3600);
+  const minutes = Math.floor(total % 3600 / 60);
+  const remainder = total % 60;
+  const parts = [[days, 'day'], [hours, 'hour'], [minutes, 'minute'], [remainder, 'second']];
+  return {
+    duration: `PT${total}S`,
+    display: days ? `${days}d ${hours}h ${minutes}m ${remainder}s` : hours ? `${hours}h ${minutes}m ${remainder}s` : `${minutes}:${remainder.toString().padStart(2, '0')}`,
+    accessible: `${parts.filter(([value]) => value).map(([value, unit]) => `${value} ${unit}${value === 1 ? '' : 's'}`).join(', ') || '0 seconds'} since start, including pauses and time away`,
+  };
+}
 
 export function QuizResults({
   score,
@@ -10,24 +25,25 @@ export function QuizResults({
   timeSpent,
   correctAnswers,
   incorrectAnswers,
+  unansweredQuestions = [],
   passingScore = 50,
   previousBest = null,
   onRetake,
   onReview,
   chapterId,
-  chapterTitle
+  chapterTitle,
+  headingRef
 }) {
   const percentage = Math.round((score / totalQuestions) * 100);
   const passed = percentage >= passingScore;
-  const minutes = Math.floor(timeSpent / 60);
-  const seconds = timeSpent % 60;
-  const improvement = previousBest ? percentage - previousBest : null;
+  const elapsed = elapsedTime(timeSpent);
+  const improvement = previousBest !== null ? percentage - previousBest : null;
   
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold text-white">
+        <h2 ref={headingRef} tabIndex={-1} className="scroll-mt-24 text-3xl font-bold text-white">
           Quiz Complete
         </h2>
         <p className="text-neutral-400">
@@ -73,14 +89,15 @@ export function QuizResults({
         </div>
         
         {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" role="group" aria-label="Quiz summary">
           {/* Time Spent */}
           <div className="bg-neutral-900/50 rounded-lg p-4 text-center">
             <Clock className="w-5 h-5 text-neutral-400 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-white">
-              {minutes}:{seconds.toString().padStart(2, '0')}
+            <p className="break-words text-2xl font-bold text-white">
+              {elapsed ? <time dateTime={elapsed.duration} aria-label={elapsed.accessible}>{elapsed.display}</time> : 'Not recorded'}
             </p>
-            <p className="text-xs text-neutral-400">Time Spent</p>
+            <p className="text-xs text-neutral-400">Time since start</p>
+            <p className="mt-1 text-xs text-neutral-400">Includes pauses and time away</p>
           </div>
           
           {/* Correct Answers */}
@@ -95,6 +112,11 @@ export function QuizResults({
             <div className="w-5 h-5 rounded-full bg-red-500 mx-auto mb-2" />
             <p className="text-2xl font-bold text-red-400">{incorrectAnswers.length}</p>
             <p className="text-xs text-red-400">Incorrect</p>
+          </div>
+          <div className="bg-neutral-900/50 rounded-lg p-4 text-center border border-neutral-700">
+            <div className="w-5 h-5 rounded-full bg-neutral-600 mx-auto mb-2" />
+            <p className="text-2xl font-bold text-neutral-200">{unansweredQuestions.length}</p>
+            <p className="text-xs text-neutral-400">Unanswered</p>
           </div>
         </div>
         
@@ -119,20 +141,25 @@ export function QuizResults({
       </div>
       
       {/* Topic Performance (if available) */}
-      {incorrectAnswers.length > 0 && (
+      {(incorrectAnswers.length > 0 || unansweredQuestions.length > 0) && (
         <div className="bg-neutral-900 rounded-lg p-6 border border-neutral-700">
           <h3 className="text-lg font-semibold text-white mb-4">Areas for Review</h3>
           <p className="text-sm text-neutral-400 mb-3">
-            Consider reviewing these topics:
+            Review these questions and their explanations:
           </p>
           <div className="space-y-2">
-            {/* This would be populated with actual topic data */}
-            <div className="flex items-center justify-between p-2 bg-neutral-800 rounded">
-              <span className="text-sm text-neutral-300">Questions to review:</span>
-              <span className="text-sm text-orange-400 font-mono">
-                {incorrectAnswers.map(q => q + 1).join(', ')}
-              </span>
-            </div>
+            {incorrectAnswers.length > 0 && (
+              <div className="flex items-center justify-between gap-3 p-2 bg-neutral-800 rounded">
+                <span className="text-sm text-neutral-300">Incorrect answers:</span>
+                <span className="text-sm text-orange-400 font-mono">{incorrectAnswers.map(index => index + 1).join(', ')}</span>
+              </div>
+            )}
+            {unansweredQuestions.length > 0 && (
+              <div className="flex items-center justify-between gap-3 p-2 bg-neutral-800 rounded">
+                <span className="text-sm text-neutral-300">Unanswered questions:</span>
+                <span className="text-sm text-neutral-300 font-mono">{unansweredQuestions.map(index => index + 1).join(', ')}</span>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -163,19 +190,15 @@ export function QuizResults({
       
       {/* Navigation */}
       <div className="flex items-center justify-between pt-4 border-t border-neutral-800">
-        <Link href={`/chapter${chapterId}`}>
-          <Button variant="ghost" size="sm" className="flex items-center gap-2">
-            <Home className="w-4 h-4" />
-            Back to Chapter
-          </Button>
+        <Link href={`/chapter${chapterId}`} className={buttonVariants({ variant: 'ghost', size: 'sm', className: 'flex items-center gap-2' })}>
+          <Home className="w-4 h-4" aria-hidden="true" />
+          Back to Chapter
         </Link>
         
         {passed && chapterId < 7 && (
-          <Link href={`/chapter${chapterId + 1}`}>
-            <Button variant="ghost" size="sm" className="flex items-center gap-2">
-              Next Chapter
-              <ChevronRight className="w-4 h-4" />
-            </Button>
+          <Link href={`/chapter${chapterId + 1}`} className={buttonVariants({ variant: 'ghost', size: 'sm', className: 'flex items-center gap-2' })}>
+            Next Chapter
+            <ChevronRight className="w-4 h-4" aria-hidden="true" />
           </Link>
         )}
       </div>
@@ -184,7 +207,7 @@ export function QuizResults({
       {!passed && (
         <div className="bg-blue-900/20 rounded-lg p-4 border border-blue-500/30">
           <p className="text-sm text-blue-300">
-            <strong>Study Tip:</strong> Review the incorrect answers and try the chapter's practice problems 
+            <strong>Study Tip:</strong> Review the incorrect and unanswered questions, then try the chapter's practice problems
             before retaking the quiz. You can do this!
           </p>
         </div>
@@ -202,7 +225,7 @@ export function QuizResults({
       {percentage === 100 && (
         <div className="bg-gradient-to-br from-yellow-900/20 to-orange-900/20 rounded-lg p-4 border border-yellow-500/30">
           <p className="text-sm text-yellow-300 text-center font-semibold">
-            🌟 Perfect Score! You've mastered {chapterTitle}! 🌟
+            All answers correct on this attempt!
           </p>
         </div>
       )}

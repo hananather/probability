@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
+import { useMathJax } from '@/hooks/useMathJax';
 import { Button } from '@/components/ui/button';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { InteractiveJourneyNavigation } from '@/components/ui/InteractiveJourneyNavigation';
@@ -7,6 +8,8 @@ import BackToHub from '@/components/ui/BackToHub';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import * as d3 from 'd3';
+import { LEGACY_SOURCE_BY_KEY } from '@/lib/curriculum/manifest';
+import { LearningActivityContext, useLearningActivity } from '@/hooks/useLearningActivity';
 
 const STAGES = [
   {
@@ -120,81 +123,69 @@ const KnowledgeCheck = React.memo(function KnowledgeCheck({ stage, onComplete })
   );
 });
 
-const StatisticalAnalysis = React.memo(function StatisticalAnalysis({ 
-  data, activeStage, outlierMultiplier = 1.5 
+export function calculateDescriptiveStatistics(data, outlierMultiplier = 1.5) {
+  if (data.length === 0) return null;
+
+  const sorted = [...data].sort((a, b) => a - b);
+  const n = sorted.length;
+
+  // Mean
+  const mean = data.reduce((sum, val) => sum + val, 0) / n;
+
+  // Median
+  const mid = Math.floor(n / 2);
+  const median = n % 2 === 0
+    ? (sorted[mid - 1] + sorted[mid]) / 2
+    : sorted[mid];
+
+  // Mode
+  const frequency = {};
+  data.forEach(val => {
+    frequency[val] = (frequency[val] || 0) + 1;
+  });
+  const maxFreq = Math.max(...Object.values(frequency));
+  const mode = maxFreq > 1
+    ? Object.keys(frequency)
+        .filter(key => frequency[key] === maxFreq)
+        .map(Number)
+    : [];
+
+  // Inverse empirical CDF, averaging at discontinuities (quantile type 2).
+  const q1Index = Math.floor(n / 4);
+  const q3Index = Math.floor(3 * n / 4);
+  const q1 = n % 4 === 0
+    ? (sorted[q1Index - 1] + sorted[q1Index]) / 2
+    : sorted[q1Index];
+  const q3 = n % 4 === 0
+    ? (sorted[q3Index - 1] + sorted[q3Index]) / 2
+    : sorted[q3Index];
+  const iqr = q3 - q1;
+
+  // Standard deviation
+  const variance = data.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / n;
+  const stdDev = Math.sqrt(variance);
+  // Keep numerically equal decimal endpoints inside the inclusive interval.
+  const endpointTolerance = 8 * Number.EPSILON * stdDev;
+  const withinOneStdDev = data.filter(value => Math.abs(value - mean) <= stdDev + endpointTolerance).length;
+
+  // Outliers
+  const lowerBound = q1 - outlierMultiplier * iqr;
+  const upperBound = q3 + outlierMultiplier * iqr;
+  const outliers = data.filter(x => x < lowerBound || x > upperBound);
+
+  return {
+    mean, median, mode, q1, q3, iqr, stdDev, variance,
+    count: n, withinOneStdDev, withinOneStdDevFraction: withinOneStdDev / n,
+    min: sorted[0], max: sorted[n - 1],
+    lowerBound, upperBound, outliers
+  };
+}
+
+export const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
+  data, activeStage, outlierMultiplier = 1.5
 }) {
-  const contentRef = useRef(null);
-  
-  // Calculate all statistics
-  const stats = React.useMemo(() => {
-    if (data.length === 0) return null;
-    
-    const sorted = [...data].sort((a, b) => a - b);
-    const n = sorted.length;
-    
-    // Mean
-    const mean = data.reduce((sum, val) => sum + val, 0) / n;
-    
-    // Median
-    const mid = Math.floor(n / 2);
-    const median = n % 2 === 0 
-      ? (sorted[mid - 1] + sorted[mid]) / 2 
-      : sorted[mid];
-    
-    // Mode
-    const frequency = {};
-    data.forEach(val => {
-      frequency[val] = (frequency[val] || 0) + 1;
-    });
-    const maxFreq = Math.max(...Object.values(frequency));
-    const mode = maxFreq > 1 
-      ? Object.keys(frequency)
-          .filter(key => frequency[key] === maxFreq)
-          .map(Number)
-      : [];
-    
-    // Quartiles
-    const q1Index = Math.floor(n / 4);
-    const q3Index = Math.floor(3 * n / 4);
-    const q1 = n % 4 === 0 
-      ? (sorted[q1Index - 1] + sorted[q1Index]) / 2 
-      : sorted[q1Index];
-    const q3 = n % 4 === 0 
-      ? (sorted[q3Index - 1] + sorted[q3Index]) / 2 
-      : sorted[q3Index];
-    const iqr = q3 - q1;
-    
-    // Standard deviation
-    const variance = data.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / n;
-    const stdDev = Math.sqrt(variance);
-    
-    // Outliers
-    const lowerBound = q1 - outlierMultiplier * iqr;
-    const upperBound = q3 + outlierMultiplier * iqr;
-    const outliers = data.filter(x => x < lowerBound || x > upperBound);
-    
-    return {
-      mean, median, mode, q1, q3, iqr, stdDev, variance,
-      min: sorted[0], max: sorted[n - 1],
-      lowerBound, upperBound, outliers
-    };
-  }, [data, outlierMultiplier]);
-  
-  useEffect(() => {
-    // MathJax processing
-    const processMathJax = () => {
-      if (typeof window !== "undefined" && window.MathJax?.typesetPromise && contentRef.current) {
-        if (window.MathJax.typesetClear) {
-          window.MathJax.typesetClear([contentRef.current]);
-        }
-        window.MathJax.typesetPromise([contentRef.current]).catch(() => {});
-      }
-    };
-    
-    processMathJax();
-    const timeoutId = setTimeout(processMathJax, 100);
-    return () => clearTimeout(timeoutId);
-  }, [data, activeStage]);
+  const contentRef = useMathJax([data, activeStage, outlierMultiplier]);
+  const stats = React.useMemo(() => calculateDescriptiveStatistics(data, outlierMultiplier), [data, outlierMultiplier]);
   
   if (!stats) return null;
   
@@ -249,11 +240,12 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
               <div className="mt-4 bg-purple-900/20 p-3 rounded-lg border border-purple-600/30">
                 <strong className="text-indigo-300 text-sm">Key Insight:</strong>
                 <div className="mt-1 text-xs text-indigo-200">
-                  {Math.abs(stats.mean - stats.median) < stats.stdDev * 0.2 
-                    ? "Mean ≈ Median: Your data is roughly symmetric"
-                    : stats.mean > stats.median 
-                      ? "Mean > Median: Your data is right-skewed (tail on right)"
-                      : "Mean < Median: Your data is left-skewed (tail on left)"}
+                  {stats.mean.toFixed(2) === stats.median.toFixed(2)
+                    ? 'Mean and median match at the displayed precision.'
+                    : stats.mean > stats.median
+                      ? 'The mean is greater than the median for these values.'
+                      : 'The mean is less than the median for these values.'}
+                  <p className="mt-2">The mean–median gap can suggest asymmetry. Inspect the plot as well; these two summaries alone cannot establish symmetry or a normal model.</p>
                 </div>
               </div>
             </div>
@@ -301,7 +293,7 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
                     </div>
                   </div>
                   <div className="mt-2 text-xs text-blue-300">
-                    Typical distance from the mean
+                    Root mean square distance from the mean, in the original units
                   </div>
                 </div>
               </div>
@@ -309,8 +301,10 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
               <div className="mt-4 bg-blue-900/20 p-3 rounded-lg border border-blue-600/30">
                 <strong className="text-teal-300 text-sm">Interpretation:</strong>
                 <div className="mt-1 text-xs text-teal-200">
-                  About 68% of your data falls within {stats.mean.toFixed(1)} ± {stats.stdDev.toFixed(1)} 
-                  = [{(stats.mean - stats.stdDev).toFixed(1)}, {(stats.mean + stats.stdDev).toFixed(1)}]
+                  <p>{stats.withinOneStdDev} of {stats.count} displayed values ({(100 * stats.withinOneStdDevFraction).toFixed(1)}%) fall within the mean ± one descriptive standard deviation,
+                    {' '}[{(stats.mean - stats.stdDev).toFixed(1)}, {(stats.mean + stats.stdDev).toFixed(1)}], including the endpoints.</p>
+                  <p className="mt-2">Under a normal population model, about 68.27% of the population lies within its mean ± one population standard deviation. A finite dataset can have a different observed fraction.</p>
+                  <p className="mt-2">These summaries describe the displayed values using divisor n. Estimating a population variance from a sample commonly uses n − 1 instead.</p>
                 </div>
               </div>
             </div>
@@ -358,15 +352,16 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
                   </div>
                 </div>
                 <div className="mt-2 text-xs text-teal-300">
-                  The middle 50% of your data spans {stats.iqr.toFixed(2)} units
+                  The span between the 25th and 75th percentile cut points is {stats.iqr.toFixed(2)} units
                 </div>
               </div>
               
               <div className="mt-4 bg-green-900/20 p-3 rounded-lg border border-green-600/30">
                 <strong className="text-green-300 text-sm">Why IQR Matters:</strong>
                 <div className="mt-1 text-xs text-green-200">
-                  IQR is robust to outliers - it only looks at the middle 50% of data, 
-                  making it more reliable than range for understanding typical spread.
+                  IQR summarizes the central spread and is less sensitive to extreme values than the full range.
+                  <p className="mt-2">Quartile convention: use ranks n/4 and 3n/4 in the sorted data, counting from 1. Round a non-integer rank up; for an integer rank, average that value and the next. Other conventions may give different quartiles.</p>
+                  <p className="mt-2">With ties or small datasets, the fraction of observations between these cut points need not be exactly 50%.</p>
                 </div>
               </div>
             </div>
@@ -405,8 +400,8 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
                     stats.outliers.length > 0 ? "text-amber-300" : "text-emerald-300"
                   )}>
                     {stats.outliers.length > 0 
-                      ? `Outliers detected: ${stats.outliers.map(x => x.toFixed(2)).join(', ')}`
-                      : 'No outliers detected'}
+                      ? `Potential outliers beyond the fences: ${stats.outliers.map(x => x.toFixed(2)).join(', ')}`
+                      : 'No values beyond these IQR fences'}
                   </div>
                 </div>
               </div>
@@ -414,9 +409,10 @@ const StatisticalAnalysis = React.memo(function StatisticalAnalysis({
               <div className="mt-4 bg-amber-900/20 p-3 rounded-lg border border-amber-600/30">
                 <strong className="text-rose-300 text-sm">Robustness Analysis:</strong>
                 <div className="mt-1 space-y-1 text-xs text-rose-200">
-                  <div>• Mean is {Math.abs(stats.mean - stats.median) > stats.stdDev * 0.5 ? 'significantly' : 'slightly'} affected by outliers</div>
-                  <div>• Median remains stable (robust measure)</div>
-                  <div>• IQR is unaffected by extreme values</div>
+                  <div>• The mean uses every value, so moving an extreme value changes it.</div>
+                  <div>• The median depends on the middle ranks and is less sensitive to extreme values.</div>
+                  <div>• IQR uses quartile ranks, so extreme changes beyond those ranks often leave it unchanged.</div>
+                  <div>• Investigate a flagged value before deciding whether to remove it.</div>
                 </div>
               </div>
             </div>
@@ -566,76 +562,63 @@ function InteractiveDataViz({ data, onDataChange, activeStage }) {
   );
 }
 
-export default function DescriptiveStatsJourney({ onComplete }) {
-  const [currentStage, setCurrentStage] = useState(0);
-  const [completedStages, setCompletedStages] = useState([]);
+const SOURCE = LEGACY_SOURCE_BY_KEY['descriptive-stats-journey-progress'];
+
+function JourneyContent({ learning, onComplete }) {
+  const restored = SOURCE.targetIds.indexOf(learning.resume?.activityId);
+  const currentStage = restored >= 0 ? restored : 0;
+  const completedStages = STAGES.map((_, index) => index).filter(index => learning.isCompleted(SOURCE.targetIds[index]));
   const [showStageSelect, setShowStageSelect] = useState(false);
   const [data, setData] = useState([5, 7, 8, 9, 10, 11, 12, 14, 15, 18]);
-  const [interactionCount, setInteractionCount] = useState(0);
-  const [showKnowledgeCheck, setShowKnowledgeCheck] = useState(false);
-  
-  // Load progress from localStorage
+  const interactionRef = useRef(0);
+  useEffect(() => { interactionRef.current = 0; }, [currentStage]);
+  const contexts = useRef({});
+  const notification = useRef(null);
+  const stageGeneration = learning.getResetGeneration(SOURCE.targetIds[currentStage], learning.writeCheckpoint);
+  const contextKey = `${currentStage}:${stageGeneration}`;
+  if (!contexts.current[contextKey]) contexts.current[contextKey] = learning.captureWriteContext(SOURCE.containerId);
+  const context = contexts.current[contextKey];
+  const currentContext = (index, captured) => learning.getResetGeneration(SOURCE.targetIds[index], learning.captureWriteContext(SOURCE.targetIds[index])) === learning.getResetGeneration(SOURCE.targetIds[index], captured);
+  const completeStage = (index = currentStage, captured = context) => {
+    if (!currentContext(index, captured)) return;
+    notification.current = captured;
+    void learning.completeActivity(SOURCE.targetIds[index], { sourceKey: 'descriptive-journey-stage-study', context: captured });
+  };
   useEffect(() => {
-    const savedProgress = localStorage.getItem('descriptive-stats-journey-progress');
-    if (savedProgress) {
-      const { stage, completed } = JSON.parse(savedProgress);
-      setCurrentStage(stage);
-      setCompletedStages(completed);
+    if (completedStages.length === STAGES.length && notification.current) {
+      notification.current = null;
+      onComplete?.();
     }
-  }, []);
-  
-  // Save progress
-  useEffect(() => {
-    localStorage.setItem('descriptive-stats-journey-progress', JSON.stringify({
-      stage: currentStage,
-      completed: completedStages
-    }));
-  }, [currentStage, completedStages]);
-  
-  const handleDataChange = (newData) => {
+  }, [completedStages.length, onComplete]);
+
+  const handleDataChange = newData => {
+    if (!currentContext(currentStage, context)) return;
     setData(newData);
-    setInteractionCount(prev => prev + 1);
-    
-    // Mark stage as complete after sufficient interaction
-    if (interactionCount >= 3 && !completedStages.includes(currentStage)) {
-      setCompletedStages([...completedStages, currentStage]);
-    }
+    interactionRef.current += 1;
+    if (interactionRef.current >= 4 && !completedStages.includes(currentStage)) completeStage();
   };
-  
-  const handleStageComplete = () => {
-    if (!completedStages.includes(currentStage)) {
-      setCompletedStages([...completedStages, currentStage]);
-    }
-    if (currentStage < STAGES.length - 1) {
-      setCurrentStage(currentStage + 1);
-      setInteractionCount(0);
-    } else {
-      // All stages completed - call onComplete
-      if (onComplete) {
-        onComplete();
-      }
-    }
-  };
-  
-  const handleStageSelect = (index) => {
-    setCurrentStage(index);
+  const handleStageComplete = () => completeStage();
+  const handleStageSelect = index => {
+    if (!Number.isInteger(index) || index < 0 || index >= STAGES.length) return;
+    void learning.setResume(SOURCE.containerId, { activityId: SOURCE.targetIds[index], kind: 'stage' }, { context: learning.writeContext });
     setShowStageSelect(false);
-    setInteractionCount(0);
+    interactionRef.current = 0;
   };
-  
+
   const addOutlier = () => {
     const outlierValue = Math.random() > 0.5 ? 25 + Math.random() * 5 : Math.random() * 3;
     setData([...data, outlierValue]);
-    setInteractionCount(prev => prev + 1);
+    interactionRef.current += 1;
   };
   
   const resetData = () => {
     setData([5, 7, 8, 9, 10, 11, 12, 14, 15, 18]);
-    setInteractionCount(0);
+    interactionRef.current = 0;
   };
   
   return (
     <div className="space-y-6">
+      {completedStages.length === STAGES.length && <p role="status" className="text-green-300">All four journey stages are studied.</p>}
       {/* Journey Header */}
       <div className="bg-neutral-900 border border-purple-600/30 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
@@ -671,6 +654,8 @@ export default function DescriptiveStatsJourney({ onComplete }) {
               {STAGES.map((stage, index) => (
                 <button
                   key={stage.id}
+                  aria-pressed={currentStage === index}
+                  aria-label={`${STAGES[index].title}${completedStages.includes(index) ? ": Studied" : ""}`}
                   onClick={() => handleStageSelect(index)}
                   className={cn(
                     "p-4 rounded-lg border transition-all text-left",
@@ -726,6 +711,9 @@ export default function DescriptiveStatsJourney({ onComplete }) {
         >
           Add Outlier
         </Button>
+        <Button onClick={handleStageComplete} disabled={completedStages.includes(currentStage)}>
+          {completedStages.includes(currentStage) ? '✓ Stage studied' : 'Mark stage as studied'}
+        </Button>
         <Button
           variant="outline"
           size="sm"
@@ -738,7 +726,7 @@ export default function DescriptiveStatsJourney({ onComplete }) {
       {/* Statistical Analysis */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={currentStage}
+          key={contextKey}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
@@ -756,10 +744,7 @@ export default function DescriptiveStatsJourney({ onComplete }) {
       <InteractiveJourneyNavigation
         currentSection={currentStage}
         totalSections={STAGES.length}
-        onNavigate={(newStage) => {
-          setCurrentStage(newStage);
-          setInteractionCount(0);
-        }}
+        onNavigate={handleStageSelect}
         onComplete={handleStageComplete}
         sectionTitles={STAGES.map(s => s.title)}
         showProgress={true}
@@ -773,4 +758,27 @@ export default function DescriptiveStatsJourney({ onComplete }) {
       <BackToHub chapter={4} bottom />
     </div>
   );
+}
+
+function journeyGeneration(learning) {
+  return JSON.stringify([learning.getResetGeneration(SOURCE.containerId, learning.writeCheckpoint),
+    ...SOURCE.targetIds.map(id => learning.getResetGeneration(id, learning.writeCheckpoint))]);
+}
+
+function StandaloneJourney({ onComplete }) {
+  const learning = useLearningActivity(SOURCE.containerId);
+  if (learning.loading) return <p role="status">Loading your journey progress…</p>;
+  return <>
+    {learning.persistenceStatus === 'session-only' && <div role="status" className="mb-4 text-sm text-amber-200">
+      <p>Your recent changes are only kept for this visit. Export a backup from Your progress before closing this page.</p>
+      <button className="min-h-11 underline" onClick={() => learning.retryLocalPersistence()}>Try saving again</button>
+    </div>}
+    <JourneyContent key={journeyGeneration(learning)} learning={learning} onComplete={onComplete} />
+  </>;
+}
+
+export default function DescriptiveStatsJourney({ onComplete }) {
+  const parent = useContext(LearningActivityContext);
+  if (parent?.containerId === SOURCE.containerId) return <JourneyContent key={journeyGeneration(parent)} learning={parent} onComplete={onComplete} />;
+  return <StandaloneJourney onComplete={onComplete} />;
 }

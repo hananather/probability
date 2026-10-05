@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { SidebarProvider, SidebarTrigger } from '../ui/sidebar';
+import { SidebarProvider } from '../ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { ContentWrapper } from './ContentWrapper';
 import { FooterWrapper } from './FooterWrapper';
@@ -19,12 +19,11 @@ export function LayoutWrapper({ children }) {
   
   // All other pages with sidebar, header, and footer
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <SidebarProvider>
+    <SidebarProvider>
+      <div className="min-h-screen flex flex-col">
+        <Header />
         <div className="flex flex-1">
           <AppSidebar />
-          <SidebarTrigger />
           <ContentWrapper>
             {children}
           </ContentWrapper>
@@ -32,7 +31,7 @@ export function LayoutWrapper({ children }) {
         <FooterWrapper>
           <Footer />
         </FooterWrapper>
-      </SidebarProvider>
-    </div>
+      </div>
+    </SidebarProvider>
   );
 }

@@ -132,7 +132,7 @@ const SECTIONS = [
   {
     id: 'basic-example',
     title: 'Basic Example',
-    content: ({ sectionIndex, isCompleted }) => {
+    content: function BasicExampleSection({ sectionIndex, isCompleted }) {
       const contentRef = useMathJax([]);
       
       return (
@@ -211,7 +211,7 @@ const SECTIONS = [
   {
     id: 'exam-level',
     title: 'Exam-Level Example',
-    content: ({ sectionIndex, isCompleted }) => {
+    content: function ExamLevelExampleSection({ sectionIndex, isCompleted }) {
       const contentRef = useMathJax([]);
       
       return (
@@ -302,7 +302,7 @@ const SECTIONS = [
   {
     id: 'variations',
     title: 'Variations',
-    content: ({ sectionIndex, isCompleted }) => {
+    content: function VariationsSection({ sectionIndex, isCompleted }) {
       const contentRef = useMathJax([]);
       
       return (

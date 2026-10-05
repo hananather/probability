@@ -56,6 +56,7 @@ const KeyConceptsCard = React.memo(() => {
     </Card>
   );
 });
+KeyConceptsCard.displayName = 'KeyConceptsCard';
 
 // Chapter 7 specific configuration with navigation
 const CHAPTER_7_SECTIONS = [

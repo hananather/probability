@@ -59,9 +59,10 @@ export default function Tab4InteractiveTab({ onComplete }) {
   return (
     <div className="space-y-6">
       {/* Learning Approach Selector */}
-      <VisualizationContainer title="Choose Your Learning Approach" className="p-6">
+      <VisualizationContainer title="Explore Complementary Views" className="p-6">
         <p className="text-neutral-300 mb-6">
-          Select the approach that works best for your learning style:
+          Use these complementary views to connect experiments, events, and calculations.
+          Changing views starts a new experiment or calculation.
         </p>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -72,6 +73,9 @@ export default function Tab4InteractiveTab({ onComplete }) {
             return (
               <button
                 key={impl.id}
+                type="button"
+                aria-pressed={isSelected}
+                aria-label={`${impl.name}: ${impl.description}`}
                 onClick={() => setSelectedImplementation(impl.id)}
                 className={`
                   relative p-4 rounded-lg border-2 transition-all duration-300
@@ -100,7 +104,7 @@ export default function Tab4InteractiveTab({ onComplete }) {
                 
                 {isSelected && (
                   <div className="absolute top-2 right-2">
-                    <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                    <span className="text-xs text-blue-300">Selected</span>
                   </div>
                 )}
               </button>
