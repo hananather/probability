@@ -28,6 +28,7 @@ import {
 import { colors, typography, createColorScheme } from '@/lib/design-system';
 import { useMathJax } from '@/hooks/useMathJax';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useLearningActivity } from '@/hooks/useLearningActivity';
 import { planEnrollmentForExpectedLoss, solveBudgetSampleSize } from '@/lib/statistics/sampleSizePlanning';
 
 function useChartWidth(ref) {
@@ -2881,11 +2882,58 @@ const StageContent = React.memo(function StageContent({
 });
 
 // Main Component
-export default function SampleSizeCalculation() {
-  const [mode, setMode] = useState(LEARNING_MODES.FOUNDATIONS);
+const SAMPLE_SIZE_ACTIVITY = 'chapter-5:sample-size';
+const validLearningMode = mode => Object.values(LEARNING_MODES).includes(mode);
+
+export function SampleSizeLearningPage() {
+  const learning = useLearningActivity(SAMPLE_SIZE_ACTIVITY);
+  return <SampleSizeCalculation key={learning.resetGeneration} learning={learning} />;
+}
+
+export default function SampleSizeCalculation({ learning } = {}) {
+  const scope = learning?.resetGeneration || 'session';
+  const savedMode = learning?.resume?.kind === 'tab' && learning.resume.activityId === null && validLearningMode(learning.resume.positionId)
+    ? learning.resume.positionId : LEARNING_MODES.FOUNDATIONS;
+  const [selection, setSelection] = useState(null);
+  const mode = selection?.scope === scope ? selection.id : savedMode;
   const [currentStage, setCurrentStage] = useState('DISCOVER');
   const [completedActivities, setCompletedActivities] = useState(new Set());
   const [savedCalculations, setSavedCalculations] = useState([]);
+  const [savingStudy, setSavingStudy] = useState(false);
+  const [studyMessage, setStudyMessage] = useState(null);
+  const progressHeadingId = useId();
+  const studied = learning?.isCompleted(SAMPLE_SIZE_ACTIVITY) || false;
+  const locallySaved = learning?.persistenceStatus === 'persisted' && !learning.pendingLocalWrites;
+
+  const captureContext = learning?.captureWriteContext;
+  const getResetGeneration = learning?.getResetGeneration;
+  const setResume = learning?.setResume;
+  const loading = learning?.loading;
+  const currentWork = useCallback(() => {
+    const context = captureContext?.(SAMPLE_SIZE_ACTIVITY);
+    return context && getResetGeneration(SAMPLE_SIZE_ACTIVITY, context) === scope;
+  }, [captureContext, getResetGeneration, scope]);
+  const changeMode = useCallback(id => {
+    if (!validLearningMode(id) || loading || (!setResume && id === mode)) return;
+    const next = { scope, id };
+    setSelection(next);
+    if (!setResume) return;
+    const context = captureContext(SAMPLE_SIZE_ACTIVITY);
+    if (!context) return;
+    void setResume(SAMPLE_SIZE_ACTIVITY, { activityId: null, kind: 'tab', positionId: id }, { context }).then(saved => {
+      if (saved && currentWork()) setSelection(previous => previous === next ? null : previous);
+    });
+  }, [loading, mode, scope, setResume, captureContext, currentWork]);
+  const markStudied = async () => {
+    if (!learning || learning.loading || savingStudy || studied) return;
+    const context = learning.captureWriteContext(SAMPLE_SIZE_ACTIVITY);
+    if (!context) return;
+    setSavingStudy(true); setStudyMessage(null);
+    try {
+      const saved = await learning.completeActivity(SAMPLE_SIZE_ACTIVITY, { sourceKey: 'sample-size-explicit-study', context });
+      if (currentWork()) setStudyMessage(saved ? 'Study saved in this browser.' : 'The study record could not be saved. Your existing records are retained.');
+    } finally { if (currentWork()) setSavingStudy(false); }
+  };
   
   const handleActivityComplete = useCallback((activity) => {
     setCompletedActivities(prev => new Set([...prev, activity]));
@@ -2904,9 +2952,10 @@ export default function SampleSizeCalculation() {
       >
       <BackToHub chapter={5} />
       
-      <LearningPathNavigation 
+      <fieldset disabled={Boolean(learning?.loading)} aria-busy={Boolean(learning?.loading)} className="min-w-0 border-0 p-0">
+      <LearningPathNavigation
         mode={mode} 
-        onModeChange={setMode}
+        onModeChange={changeMode}
       />
       
       {/* FOUNDATIONS Mode */}
@@ -2972,6 +3021,23 @@ export default function SampleSizeCalculation() {
         <CostBenefitAnalysis onComplete={handleActivityComplete} />
         <RealWorldScenarios onComplete={handleActivityComplete} />
       </div>
+
+      </fieldset>
+      {learning && <section aria-labelledby={progressHeadingId} className="mt-8 rounded-lg border border-teal-700/50 bg-teal-900/10 p-4 sm:p-6">
+        <h2 id={progressHeadingId} className="text-lg font-semibold text-teal-300">Your study record</h2>
+        <p className="mt-2 text-sm leading-relaxed text-neutral-300">A study record reflects your own review of this lesson. Quiz results are tracked separately.</p>
+        <p className="mt-2 text-sm leading-relaxed text-neutral-300">Your learning mode is kept on this device for this profile. Calculations and practice answers stay in this visit.</p>
+        <p role="status" className="mt-3 text-sm text-neutral-300">{learning.loading ? 'Checking saved progress…'
+          : learning.persistenceStatus === 'session-only' ? 'Recent changes are kept only for this visit. Back them up in Your progress before leaving.'
+          : learning.pendingLocalWrites ? 'Saving on this device…'
+          : studied ? 'Study recorded for this profile.' : 'Mark this lesson after you have studied it.'}</p>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <button type="button" disabled={learning.loading || !learning.supported || savingStudy || studied} onClick={markStudied} className="min-h-11 rounded-lg bg-teal-600 px-4 py-2 font-medium text-white hover:bg-teal-700 disabled:cursor-default disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300">{studied ? locallySaved ? 'Lesson studied' : 'Studied for this visit' : savingStudy ? 'Recording study…' : 'Mark as studied'}</button>
+          {learning.persistenceStatus === 'session-only' && <button type="button" onClick={() => learning.retryLocalPersistence()} className="min-h-11 rounded-lg border border-neutral-600 px-4 py-2 text-neutral-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300">Try saving again</button>}
+          <a href="/progress" className="flex min-h-11 items-center rounded-lg px-4 py-2 text-teal-300 underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300">Your progress</a>
+        </div>
+        {studyMessage && <p role="status" className="mt-3 text-sm text-neutral-300">{studyMessage}</p>}
+      </section>}
       
       <SectionComplete chapter={5} status="navigation" />
       </VisualizationContainer>
