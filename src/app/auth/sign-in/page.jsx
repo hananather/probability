@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getAuthConfig } from '@/lib/auth/config';
-import { sendSignInLink } from '@/lib/auth/browser';
 
 export default function SignInPage() {
   const [email, setEmail] = useState('');
@@ -21,6 +20,7 @@ export default function SignInPage() {
     setStatus('sending');
     setMessage('');
     try {
+      const { sendSignInLink } = await import('@/lib/auth/browser');
       const { error } = await sendSignInLink(email.trim());
       if (error) {
         setStatus('idle');

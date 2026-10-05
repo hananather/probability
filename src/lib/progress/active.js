@@ -1,5 +1,5 @@
-import { getBrowserAuthClient } from '@/lib/auth/browser';
 import { HttpError, isAccountId, readJsonBody } from '@/lib/auth/http';
+import { createAuthSessionHints } from '@/lib/auth/sessionHints';
 import { createProgressTransport } from '@/lib/auth/transport';
 import { createEmptyProgress } from './schema';
 import { createAccountProgressStore, getLocalProgressStore } from './store';
@@ -15,13 +15,20 @@ export const ACTIVE_PROGRESS_SERVER_SNAPSHOT = Object.freeze({
 
 const sessionMessage = 'Account verification is unavailable. Your account data and queued changes are retained.';
 const needsConnection = 'Reconnect to your account to continue saving account progress. Your queued changes are retained.';
+let browserModule;
+function loadBrowserAuthFactory() {
+  if (!browserModule) browserModule = import('@/lib/auth/browser').catch(error => { browserModule = undefined; throw error; });
+  return browserModule.then(module => module.getBrowserAuthClient);
+}
 
 /** Only the verified session endpoint can activate an account namespace. */
 export function createActiveProgressController({
   fetchImpl = (...args) => fetch(...args),
   getGuestStore = () => getLocalProgressStore(),
   createAccountStore = accountId => createAccountProgressStore({ accountId }),
-  getAuthClient = getBrowserAuthClient,
+  getAuthClient,
+  loadAuthClient = loadBrowserAuthFactory,
+  listenAuthHints = createAuthSessionHints,
   createTransport = () => createProgressTransport({ fetchImpl }),
   createCoordinator = createAccountSyncCoordinator,
   eventTarget = typeof window === 'undefined' ? null : window,
@@ -31,6 +38,7 @@ export function createActiveProgressController({
 } = {}) {
   let snapshot = ACTIVE_PROGRESS_SERVER_SNAPSHOT;
   let started = false;
+  let lifecycle = 0;
   let generation = 0;
   let checkSequence = 0;
   let authority = null;
@@ -40,6 +48,8 @@ export function createActiveProgressController({
   let authClient = null;
   let unsubscribeStore;
   let authSubscription;
+  let stopAuthHints;
+  let authLoad;
   let releaseBinding;
   let sessionAbort;
   let expiryTimer;
@@ -154,6 +164,27 @@ export function createActiveProgressController({
     queuedCheck = true;
     queueMicrotask(() => { queuedCheck = false; if (started && !localSignOut) void reconcile(); });
   }
+  function ensureAuthSubscription() {
+    if (authSubscription || !authority || signOutPending || !isAccountCurrent({ accountId: authority.id, generation })) return;
+    const selected = { lifecycle, generation, accountId: authority.id };
+    const isCurrent = () => lifecycle === selected.lifecycle && !signOutPending && isAccountCurrent(selected);
+    if (authLoad?.lifecycle === selected.lifecycle && authLoad.generation === selected.generation) return;
+    const install = factory => {
+      if (authSubscription || !isCurrent()) return;
+      const client = factory();
+      if (!isCurrent()) return;
+      const subscription = client?.auth.onAuthStateChange(authChanged)?.data?.subscription;
+      if (!subscription) return;
+      if (!isCurrent()) { subscription.unsubscribe(); return; }
+      authClient = client; authSubscription = subscription;
+      stopAuthHints?.(); stopAuthHints = undefined;
+    };
+    if (getAuthClient) { try { install(getAuthClient); } catch { /* Passive hints and server verification remain available. */ } return; }
+    authLoad = selected;
+    try {
+      void Promise.resolve(loadAuthClient()).then(install).catch(() => {}).finally(() => { if (authLoad === selected) authLoad = undefined; });
+    } catch { authLoad = undefined; }
+  }
   async function reconcile() {
     if (!started || localSignOut) return false;
     if (knownExpiredAuthority()) detach('reconnect', needsConnection);
@@ -180,6 +211,7 @@ export function createActiveProgressController({
     const account = { id: session.account.id, email: typeof session.account.email === 'string' ? session.account.email : null, expiresAt: session.account.expiresAt };
     if (authority?.id === account.id && store?.getSnapshot().data.ownerScope === `account:${account.id}`) {
       authority = account; setExpiry(); publish({ account, sessionStatus: 'authenticated', sessionError: null });
+      ensureAuthSubscription();
       void sync({ automatic: true }); return true;
     }
     coordinator?.detach(); clearTimers(); generation++; transferPreview = null;
@@ -187,6 +219,7 @@ export function createActiveProgressController({
     const selectedGeneration = generation;
     if (guest) subscribeStore(guest, { account: null, sessionStatus: 'connecting', sessionError: null });
     setExpiry();
+    ensureAuthSubscription();
     if (!accounts.has(account.id)) accounts.set(account.id, createAccountStore(account.id));
     const candidate = accounts.get(account.id);
     const selectedCoordinator = createCoordinator({ store: candidate, transport: ownerTransport(selectedGeneration), accountId: account.id, generation: selectedGeneration, isCurrent: isAccountCurrent });
@@ -220,17 +253,17 @@ export function createActiveProgressController({
     isCurrentBinding: current,
     async start() {
       if (started) return;
-      started = true; localSignOut = false; generation++;
+      started = true; localSignOut = false; generation++; lifecycle++;
       guest = getGuestStore(); subscribeStore(guest, { account: null, sessionStatus: 'checking', sessionError: null });
-      try { authClient = getAuthClient(); } catch { authClient = null; }
-      authSubscription = authClient?.auth.onAuthStateChange(authChanged)?.data?.subscription;
+      try { stopAuthHints = listenAuthHints(authChanged); } catch { stopAuthHints = undefined; }
       eventTarget?.addEventListener('focus', onFocus); eventTarget?.addEventListener('online', onFocus);
       await reconcile();
     },
     stop() {
-      started = false; generation++; checkSequence++;
+      started = false; generation++; checkSequence++; lifecycle++;
       sessionAbort?.abort(); coordinator?.detach(); coordinator = null; clearTimers();
       unsubscribeStore?.(); unsubscribeStore = undefined; authSubscription?.unsubscribe(); authSubscription = undefined;
+      stopAuthHints?.(); stopAuthHints = undefined; authLoad = undefined; authClient = null;
       eventTarget?.removeEventListener('focus', onFocus); eventTarget?.removeEventListener('online', onFocus);
       releaseBinding?.(); releaseBinding = undefined; authority = null; transferPreview = null;
     },

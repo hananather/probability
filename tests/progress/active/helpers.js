@@ -20,6 +20,7 @@ export function activeFixture(controllerOptions = {}) {
   let authError = false;
   let progressError = false;
   let listener;
+  let hintListener;
   let writeHold;
   let remoteHold;
   let sessionHold;
@@ -81,11 +82,11 @@ export function activeFixture(controllerOptions = {}) {
     stopAutoRefresh: vi.fn(async () => {}), signOut: vi.fn(async () => ({ error: null })),
   } };
   const eventTarget = new EventTarget();
-  const controller = createActiveProgressController({ getGuestStore: () => guest, createAccountStore, getAuthClient: () => authClient, fetchImpl, eventTarget, now: () => time, ...controllerOptions });
+  const controller = createActiveProgressController({ getGuestStore: () => guest, createAccountStore, getAuthClient: () => authClient, listenAuthHints: callback => { hintListener = callback; return () => { hintListener = null; }; }, fetchImpl, eventTarget, now: () => time, ...controllerOptions });
   return {
     controller, guest, accounts, databases, remote, requests, fetchImpl, eventTarget, authClient,
     setAccount(id, expiresAt = time + 3600000) { verified = id ? { id, email: id === A ? 'alice@example.test' : 'bob@example.test', expiresAt } : null; },
-    emit(event, id) { listener?.(event, id ? { user: { id }, expires_at: 9999999999 } : null); },
+    emit(event, id) { (listener || hintListener)?.(event, id ? { user: { id }, expires_at: 9999999999 } : null); },
     setAuthError(value) { authError = value; }, setProgressError(value) { progressError = value; },
     advanceTime(value) { time += value; },
     holdWrite(id = A) { const hold = { id, gate: deferred(), entered: deferred() }; writeHold = hold; return hold; },
