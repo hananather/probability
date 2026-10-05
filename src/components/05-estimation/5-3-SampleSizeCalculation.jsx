@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback, useId } from 'react';
 import * as d3 from '@/utils/d3-utils';
 import { jStat } from 'jstat';
 import { 
@@ -704,7 +704,7 @@ export const VisualExploration = React.memo(function VisualExploration({ onCompl
       } else if (activeRelationship === 'n-sigma') {
         y = Math.pow((1.96 * x) / 2, 2);
       } else {
-        y = Math.pow((getZ(Math.round(x)) * 15) / 2, 2);
+        y = Math.pow((getZ(x) * 15) / 2, 2);
       }
       
       // Get the actual y-axis domain max from the current scale
@@ -718,10 +718,10 @@ export const VisualExploration = React.memo(function VisualExploration({ onCompl
         tooltip.attr('transform', `translate(${tooltipX},${yScale(y) < 40 ? 45 : 0})`);
         
         focus.select("text:first-of-type")
-          .text(`n = ${Math.round(y)}`);
+          .text(`Required n = ${Math.ceil(y)}`);
         
         focus.select("text:last-of-type")
-          .text(`${relationships[activeRelationship].xLabel.split(' ')[0]} = ${x.toFixed(1)}`);
+          .text(`${activeRelationship === 'n-confidence' ? 'Confidence (%)' : relationships[activeRelationship].xLabel.split(' ')[0]} = ${x.toFixed(1)}`);
         
         setHoveredPoint({ x, y });
       } else {
@@ -800,6 +800,8 @@ export const VisualExploration = React.memo(function VisualExploration({ onCompl
           <svg ref={svgRef} width="100%" height="100%" role="img" aria-label="Sample size relationship chart" />
         </GraphContainer>
         
+        <p className="mt-3 text-xs text-neutral-400">The curve shows the sample size before rounding; required observation counts are rounded up.</p>
+
         {/* Key Insights */}
         <div 
           className="mt-4 p-4 bg-neutral-900/50 rounded-lg"
@@ -865,10 +867,10 @@ export const VisualExploration = React.memo(function VisualExploration({ onCompl
             animate={{ opacity: 1, y: 0 }}
           >
             <p className="text-neutral-400">
-              At this point: Sample size n = {Math.round(hoveredPoint.y)} 
+              At this point: Required sample size n = {Math.ceil(hoveredPoint.y)}
               {activeRelationship === 'n-E' && ` for E = ${hoveredPoint.x.toFixed(1)}`}
               {activeRelationship === 'n-sigma' && ` for σ = ${hoveredPoint.x.toFixed(1)}`}
-              {activeRelationship === 'n-confidence' && ` for ${Math.round(hoveredPoint.x)}% confidence`}
+              {activeRelationship === 'n-confidence' && ` for ${hoveredPoint.x.toFixed(1)}% confidence`}
             </p>
           </div>
         )}
@@ -1093,7 +1095,7 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
         
         <div className="text-center mb-8">
           <p className="text-neutral-300 mb-4">
-            Click on each part to understand why it's in the formula
+            Select each part to explore why it's in the formula
           </p>
           
           {/* Interactive Formula Display */}
@@ -1102,21 +1104,27 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
             <span className="text-neutral-500">n =</span>
             
             {/* Opening parenthesis */}
-            <span
-              className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
+            <button
+              type="button"
+              aria-pressed={selectedParts.squared}
+              aria-label="Explain the squared expression"
+              className={`min-h-11 min-w-11 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
                 selectedParts.squared ? 'text-purple-400' : 'text-neutral-500'
               }`}
               onClick={() => setSelectedParts({...selectedParts, squared: !selectedParts.squared})}
             >
               (
-            </span>
+            </button>
             
             {/* Fraction */}
             <div className="inline-flex flex-col items-center">
               {/* Numerator */}
               <div className="flex items-center gap-1">
-                <span 
-                  className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
+                <button
+                  type="button"
+                  aria-pressed={selectedParts.numerator}
+                  aria-label="Critical value z"
+                  className={`min-h-11 min-w-11 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
                     understanding.z ? 'text-green-400' : 
                     selectedParts.numerator ? 'text-blue-400' : 'text-neutral-400'
                   }`}
@@ -1126,9 +1134,12 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
                   }}
                 >
                   z
-                </span>
-                <span 
-                  className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform text-xs ${
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={selectedParts.numerator}
+                  aria-label="Tail probability alpha over two"
+                  className={`min-h-11 min-w-11 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform text-xs ${
                     understanding.z ? 'text-green-400' : 
                     selectedParts.numerator ? 'text-blue-400' : 'text-neutral-400'
                   }`}
@@ -1138,10 +1149,13 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
                   }}
                 >
                   α/2
-                </span>
+                </button>
                 <span className="text-neutral-400">×</span>
-                <span 
-                  className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
+                <button
+                  type="button"
+                  aria-pressed={selectedParts.numerator}
+                  aria-label="Population standard deviation sigma"
+                  className={`min-h-11 min-w-11 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
                     understanding.sigma ? 'text-green-400' : 
                     selectedParts.numerator ? 'text-blue-400' : 'text-neutral-400'
                   }`}
@@ -1151,7 +1165,7 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
                   }}
                 >
                   σ
-                </span>
+                </button>
               </div>
               
               {/* Fraction bar */}
@@ -1159,8 +1173,11 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
               
               {/* Denominator */}
               <div>
-                <span 
-                  className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
+                <button
+                  type="button"
+                  aria-pressed={selectedParts.denominator}
+                  aria-label="Margin of error E"
+                  className={`min-h-11 min-w-11 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
                     understanding.E ? 'text-green-400' : 
                     selectedParts.denominator ? 'text-yellow-400' : 'text-neutral-400'
                   }`}
@@ -1170,13 +1187,16 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
                   }}
                 >
                   E
-                </span>
+                </button>
               </div>
             </div>
             
             {/* Closing parenthesis and square */}
-            <span
-              className={`cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
+            <button
+              type="button"
+              aria-pressed={selectedParts.squared}
+              aria-label="Why squared"
+              className={`min-h-11 min-w-11 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400 cursor-pointer transition-all hover:scale-125 hover:text-white active:scale-90 transform ${
                 selectedParts.squared ? 'text-purple-400' : 'text-neutral-500'
               }`}
               onClick={() => {
@@ -1185,7 +1205,7 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
               }}
             >
               )²
-            </span>
+            </button>
           </div>
           </FormulaScroll>
         </div>
@@ -1257,9 +1277,9 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
           )}
         </div>
         
-        {/* Understanding Progress */}
+        {/* Formula Exploration */}
         <div className="mt-6 bg-neutral-800/50 rounded-lg p-4">
-          <h5 className="font-semibold text-white mb-3">Your Understanding</h5>
+          <h5 className="font-semibold text-white mb-3">Formula parts explored</h5>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {Object.entries(understanding).map(([key, understood]) => (
               <div 
@@ -1287,7 +1307,7 @@ const InteractiveFormulaBuilder = React.memo(function InteractiveFormulaBuilder(
               animate={{ opacity: 1 }}
               className="text-center text-green-400 mt-4 font-medium"
             >
-              Great! You understand all parts of the formula! 🎉
+              You have explored all parts. Try a calculation next.
             </p>
           )}
         </div>
@@ -1310,6 +1330,7 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems({ onComple
   const [showSolution, setShowSolution] = useState(false);
   const [userAnswer, setUserAnswer] = useState('');
   const [feedback, setFeedback] = useState(null);
+  const answerId = useId();
   
   useMathJax(contentRef, [selectedProblem, showSolution]);
   
@@ -1333,7 +1354,7 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems({ onComple
     {
       id: 2,
       title: "Clinical Trial Problem",
-      question: "A researcher needs to detect a 2 mmHg change in blood pressure with 99% confidence. Previous studies show σ = 8 mmHg. Find the required sample size.",
+      question: "A researcher wants to estimate mean blood pressure with a margin of error of 2 mmHg at 99% confidence. Assume independent normal observations with known σ = 8 mmHg. Find the required sample size.",
       answer: 107,
       solution: {
         steps: [
@@ -1343,7 +1364,7 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems({ onComple
           "n = (10.304)² = 106.17",
           "Round up: n = 107"
         ],
-        trap: "99% confidence uses z = 2.576, not 2.58!"
+        trap: "For 99% confidence, use z ≈ 2.576 (about 2.58); 1.96 corresponds to 95%. Round the sample size up."
       }
     },
     {
@@ -1367,8 +1388,11 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems({ onComple
   const currentProblem = problems[selectedProblem];
   
   const checkAnswer = () => {
-    const userNum = parseFloat(userAnswer);
-    const correct = Math.abs(userNum - currentProblem.answer) < 0.01;
+    const userNum = Number(userAnswer);
+    const integerAnswer = selectedProblem < 2;
+    const correct = userAnswer.trim() !== '' && Number.isFinite(userNum) && (integerAnswer
+      ? Number.isSafeInteger(userNum) && userNum === currentProblem.answer
+      : Math.abs(userNum - currentProblem.answer) < 0.01);
     setFeedback({
       correct,
       message: correct 
@@ -1421,16 +1445,20 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems({ onComple
           {/* Answer Input */}
           <div className="flex flex-wrap gap-3 items-end">
             <div className="min-w-0 basis-full sm:basis-auto flex-1">
-              <label className="block text-sm text-neutral-400 mb-2">
+              <label htmlFor={answerId} className="block text-sm text-neutral-400 mb-2">
                 Your Answer:
               </label>
               <input
+                id={answerId}
                 type="number"
                 value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
+                onChange={(e) => {
+                  setUserAnswer(e.target.value);
+                  setFeedback(null);
+                }}
                 className="w-full px-4 py-2 bg-neutral-700 rounded-lg text-white font-mono"
                 placeholder="Enter your answer"
-                step="0.01"
+                step={selectedProblem < 2 ? '1' : '0.01'}
               />
             </div>
             <button
@@ -1505,6 +1533,7 @@ const ExamPracticeProblems = React.memo(function ExamPracticeProblems({ onComple
 
 // Sample Size Calculator Component
 const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComplete, onSaveCalculation }) {
+  const controlId = useId();
   const [mode, setMode] = useState('calculate'); // calculate, explore
   const [inputs, setInputs] = useState({
     sigma: 15,
@@ -1533,7 +1562,7 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
       98: 2.326,
       99: 2.576
     };
-    return zValues[confidence] || 1.960;
+    return zValues[confidence] ?? jStat.normal.inv((1 + confidence / 100) / 2, 0, 1);
   };
   
   // Calculate sample size
@@ -1543,12 +1572,22 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
   }, []);
   
   const n = useMemo(() => 
-    calculateN(inputs.sigma, inputs.E, inputs.confidence), 
+    Number.isFinite(inputs.sigma) && inputs.sigma > 0 && Number.isFinite(inputs.E) && inputs.E > 0
+      ? calculateN(inputs.sigma, inputs.E, inputs.confidence) : null,
     [inputs, calculateN]
   );
   
+  const calculationError = !Number.isFinite(inputs.sigma) || inputs.sigma <= 0
+    ? 'Enter a positive, finite population standard deviation (σ).'
+    : !Number.isFinite(inputs.E) || inputs.E <= 0
+      ? 'Enter a positive, finite margin of error (E).'
+      : !Number.isSafeInteger(n) || n < 1
+        ? 'The sample size cannot be represented safely for these inputs. Use less extreme values.'
+        : null;
+
   // Save calculation
   const handleSaveCalculation = () => {
+    if (calculationError) return;
     const newCalc = {
       ...inputs,
       n,
@@ -1598,11 +1637,12 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
         <div className="space-y-6">
           {/* Input Controls */}
           <div className="grid md:grid-cols-3 gap-6">
-            <ControlGroup label="Population SD (σ)">
+            <ControlGroup label={<span id={`${controlId}-sigma-label`}> Population SD (σ) </span>}>
               <input
                 type="number"
+                aria-labelledby={`${controlId}-sigma-label`}
                 value={inputs.sigma}
-                onChange={(e) => setInputs({...inputs, sigma: Number(e.target.value)})}
+                onChange={(e) => setInputs({...inputs, sigma: e.target.value === '' ? '' : Number(e.target.value)})}
                 className="w-full px-3 py-2 bg-neutral-700 rounded-lg text-white font-mono"
                 min="0.1"
                 step="0.1"
@@ -1612,11 +1652,12 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
               </p>
             </ControlGroup>
             
-            <ControlGroup label="Margin of Error (E)">
+            <ControlGroup label={<span id={`${controlId}-E-label`}> Margin of Error (E) </span>}>
               <input
                 type="number"
+                aria-labelledby={`${controlId}-E-label`}
                 value={inputs.E}
-                onChange={(e) => setInputs({...inputs, E: Number(e.target.value)})}
+                onChange={(e) => setInputs({...inputs, E: e.target.value === '' ? '' : Number(e.target.value)})}
                 className="w-full px-3 py-2 bg-neutral-700 rounded-lg text-white font-mono"
                 min="0.1"
                 step="0.1"
@@ -1626,8 +1667,9 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
               </p>
             </ControlGroup>
             
-            <ControlGroup label="Confidence Level">
+            <ControlGroup label={<span id={`${controlId}-confidence-label`}> Confidence Level </span>}>
               <select
+                aria-labelledby={`${controlId}-confidence-label`}
                 value={inputs.confidence}
                 onChange={(e) => setInputs({...inputs, confidence: Number(e.target.value)})}
                 className="w-full px-3 py-2 bg-neutral-700 rounded-lg text-white font-mono"
@@ -1652,16 +1694,20 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
             key={n} // Re-animate on change
           >
             <p className="text-sm text-neutral-400 mb-2">Required Sample Size</p>
-            <p className="text-5xl font-bold text-purple-400 mb-4 font-mono">n = {n}</p>
+            {calculationError ? <p role="alert" className="mb-4 text-amber-300">{calculationError}</p> : (
+              <p className="text-5xl font-bold text-purple-400 mb-4 font-mono">n = {n}</p>
+            )}
             
             <div className="flex flex-wrap gap-3 justify-center">
               <button
+                disabled={Boolean(calculationError)}
                 onClick={() => setShowDerivation(!showDerivation)}
                 className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
               >
                 {showDerivation ? 'Hide' : 'Show'} Calculation
               </button>
               <button
+                disabled={Boolean(calculationError)}
                 onClick={handleSaveCalculation}
                 className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
               >
@@ -1670,7 +1716,7 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
             </div>
             
             <div>
-              {showDerivation && (
+              {showDerivation && !calculationError && (
                 <div
                   ref={calculationRef}
                   initial={{ opacity: 0, height: 0 }}
@@ -1736,12 +1782,14 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
                   className="grid md:grid-cols-2 gap-4"
                 >
                   {exampleCases.map((ex, index) => (
-                    <div
+                    <button
+                      type="button"
                       key={ex.id}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="bg-neutral-800 rounded-lg p-4 cursor-pointer
+                      className="min-h-11 text-left bg-neutral-800 rounded-lg p-4 cursor-pointer
+                                 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400
                                  hover:bg-neutral-700 transition-all hover:scale-[1.02]"
                       onClick={() => setInputs({
                         sigma: ex.sigma,
@@ -1760,7 +1808,7 @@ const SampleSizeCalculator = React.memo(function SampleSizeCalculator({ onComple
                           n = {ex.n}
                         </p>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}
@@ -2539,7 +2587,8 @@ export const CostBenefitAnalysis = React.memo(function CostBenefitAnalysis({ onC
 // Real-World Scenarios Component
 export const RealWorldScenarios = React.memo(function RealWorldScenarios({ onComplete }) {
   const [selectedScenario, setSelectedScenario] = useState('medical');
-  const [exploreCount, setExploreCount] = useState(0);
+  const exploredScenarios = useRef(new Set());
+  const completionReported = useRef(false);
   
   const scenarios = {
     medical: {
@@ -2610,13 +2659,14 @@ export const RealWorldScenarios = React.memo(function RealWorldScenarios({ onCom
     scenario.parameters.sigma) / scenario.parameters.E, 2));
   const enrollmentPlan = planEnrollmentForExpectedLoss(n, 0.15);
 
-  // Track exploration
-  useEffect(() => {
-    setExploreCount(prev => prev + 1);
-    if (exploreCount >= 2 && onComplete) {
-      onComplete('scenarios-explored');
+  const selectScenario = (key) => {
+    setSelectedScenario(key);
+    exploredScenarios.current.add(key);
+    if (exploredScenarios.current.size === Object.keys(scenarios).length && !completionReported.current) {
+      completionReported.current = true;
+      onComplete?.('scenarios-explored');
     }
-  }, [selectedScenario]);
+  };
   
   return (
     <VisualizationSection>
@@ -2631,7 +2681,9 @@ export const RealWorldScenarios = React.memo(function RealWorldScenarios({ onCom
           return (
             <button
               key={key}
-              onClick={() => setSelectedScenario(key)}
+              type="button"
+              aria-pressed={selectedScenario === key}
+              onClick={() => selectScenario(key)}
               className={`p-4 rounded-lg border-2 transition-all ${
                 selectedScenario === key
                   ? 'border-current shadow-lg'

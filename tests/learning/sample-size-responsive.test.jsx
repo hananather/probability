@@ -290,13 +290,13 @@ describe('sample-size responsive chart geometry and equation access', () => {
     const svg = chart('Sample size relationship chart'), overlay = svg.querySelector('rect[fill="transparent"]');
     const middle = Number(overlay.getAttribute('x')) + Number(overlay.getAttribute('width')) / 2;
     await act(async () => fireEvent.mouseMove(overlay, { clientX: middle, clientY: 200 })); await settle();
-    expect(getByText(container, /Sample size n = 96 for E = 3.0/)).toBeVisible();
+    expect(getByText(container, /Required sample size n = 97 for E = 3.0/)).toBeVisible();
     const tooltip = svg.querySelector('.hover-tooltip'); const translated = Number(tooltip.getAttribute('transform').match(/translate\(([^,]+)/)[1]);
     expect(middle + translated - 50).toBeGreaterThanOrEqual(0); expect(middle + translated + 50).toBeLessThanOrEqual(136);
     await resize(1100, 1440);
     const newOverlay = svg.querySelector('rect[fill="transparent"]'), newMiddle = Number(newOverlay.getAttribute('x')) + Number(newOverlay.getAttribute('width')) / 2;
     await act(async () => fireEvent.mouseMove(newOverlay, { clientX: newMiddle, clientY: 200 })); await settle();
-    expect(getByText(container, /Sample size n = 96 for E = 3.0/)).toBeVisible();
+    expect(getByText(container, /Required sample size n = 97 for E = 3.0/)).toBeVisible();
   });
 
   it('keeps permitted small-error and large-SD current markers visible without changing calculator results or sweep data', async () => {
