@@ -16,34 +16,66 @@ function cloudMessage(cloud, state) {
   return 'Account progress has not been acknowledged by the cloud yet.';
 }
 
+export function isProgressDestinationPending(active) {
+  return Boolean(active && !active.account && !active.signingOut && ['checking', 'connecting'].includes(active.sessionStatus));
+}
+
 export function AccountProgressPanel({ active }) {
   const [preview, setPreview] = useState(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState(null);
+  const [retrySettled, setRetrySettled] = useState(0);
   const headingRef = useRef(null);
   const previewHeadingRef = useRef(null);
   const reviewButtonRef = useRef(null);
   const syncButtonRef = useRef(null);
-  const retryFocusRef = useRef(false);
+  const retryFocusRef = useRef(null);
   const hadPreviewRef = useRef(false);
   useEffect(() => { if (preview) { hadPreviewRef.current = true; previewHeadingRef.current?.focus(); } }, [preview]);
   useEffect(() => {
     if (!preview && !busy && hadPreviewRef.current) { hadPreviewRef.current = false; reviewButtonRef.current?.focus(); }
   }, [preview, busy]);
   useEffect(() => { if (active.signingOut) headingRef.current?.focus(); }, [active.signingOut]);
-  useEffect(() => { if (!busy && retryFocusRef.current) { retryFocusRef.current = false; syncButtonRef.current?.focus(); } }, [busy]);
+  useEffect(() => {
+    const intent = retryFocusRef.current;
+    retryFocusRef.current = null;
+    intent?.dispose();
+    if (intent && !intent.cancelled && intent.isCurrent() && intent.target?.isConnected && !intent.target.disabled
+      && [intent.trigger, document.body].includes(document.activeElement)) intent.target.focus({ preventScroll: true });
+  }, [retrySettled]);
+  useEffect(() => () => {
+    if (retryFocusRef.current) { retryFocusRef.current.cancelled = true; retryFocusRef.current.dispose(); }
+  }, []);
   const account = active.account;
+  const destinationPending = isProgressDestinationPending(active);
   const selectedStore = active.store;
   const selectedGeneration = active.generation;
   const current = () => active.isCurrentBinding(selectedStore, selectedGeneration);
-  const run = async (action, success) => {
+  const run = async (action, success, focusTrigger = null) => {
     if (busy || !current()) return;
+    let focusIntent;
+    if (focusTrigger && document.activeElement === focusTrigger) {
+      retryFocusRef.current?.dispose();
+      focusIntent = { trigger: focusTrigger, target: syncButtonRef.current, isCurrent: current, cancelled: false };
+      const onFocus = event => { if (![focusTrigger, document.body].includes(event.target)) focusIntent.cancelled = true; };
+      const onPointer = () => { focusIntent.cancelled = true; };
+      document.addEventListener('focusin', onFocus);
+      document.addEventListener('pointerdown', onPointer);
+      focusIntent.dispose = () => {
+        document.removeEventListener('focusin', onFocus);
+        document.removeEventListener('pointerdown', onPointer);
+      };
+      retryFocusRef.current = focusIntent;
+    }
     setBusy(true); setMessage(null);
     try {
       const result = await action();
       if (current()) setMessage({ error: !result, text: result ? success : 'This action could not be completed. Your existing progress is retained.' });
     } catch (error) { if (current()) setMessage({ error: true, text: error.message }); }
-    finally { if (current()) setBusy(false); }
+    finally {
+      if (current()) { setBusy(false); if (focusIntent && retryFocusRef.current === focusIntent) setRetrySettled(value => value + 1); }
+      else focusIntent?.dispose();
+    }
   };
   const reviewTransfer = () => run(async () => {
     const result = await active.previewGuestTransfer();
@@ -55,20 +87,18 @@ export function AccountProgressPanel({ active }) {
     if (current()) setPreview(null);
     return result;
   }, 'Guest records were saved to this account in this browser. Check the account sync status for cloud acknowledgement.');
-  const retryRetained = () => run(async () => {
-    const result = await active.retryRetainedQuizUpdates();
-    if (current()) retryFocusRef.current = true;
-    return result;
-  }, 'Retained quiz updates were queued with their original identity. Check the account sync status for acknowledgement or conflicts; the original backup is preserved.');
+  const retryRetained = event => run(active.retryRetainedQuizUpdates,
+    'Retained quiz updates were queued with their original identity. Check the account sync status for acknowledgement or conflicts; the original backup is preserved.', event.currentTarget);
 
   return <section aria-labelledby="account-progress-heading" className="rounded-xl border border-neutral-700 bg-neutral-800/40 p-4 sm:p-6">
     <h2 ref={headingRef} tabIndex={-1} id="account-progress-heading" className="mb-2 text-lg font-semibold text-white">Progress destination</h2>
-    <p className="break-words text-neutral-200">{account ? `Account: ${account.email || account.id}` : 'Guest progress in this browser'}</p>
+    {destinationPending ? <p role="status" className="text-neutral-200">{active.sessionStatus === 'connecting' ? 'Opening verified account progress…' : 'Checking account connection…'}</p>
+      : <p className="break-words text-neutral-200">{account ? `Account: ${account.email || account.id}` : 'Guest progress in this browser'}</p>}
     {account ? <>
       <p role="status" className="mt-3 text-sm text-teal-200">{cloudMessage(active.state.cloud, active.state)}</p>
       <p className="mt-2 text-sm leading-relaxed text-neutral-300">Completed study, quiz history and quiz preferences can sync with this account. Your current reading position and unfinished quiz stay on this device. Keep a backup of changes that have not synchronized.</p>
       <div className="mt-4 flex flex-wrap gap-3">
-        <Button ref={syncButtonRef} type="button" variant="secondary" className="min-h-11" disabled={busy} onClick={() => run(active.sync, 'The account synchronization check finished. Check the status above for pending or conflicting records.')}>Retry account sync</Button>
+        <Button ref={syncButtonRef} type="button" variant="secondary" className="min-h-11" disabled={busy} onClick={event => run(active.sync, 'The account synchronization check finished. Check the status above for pending or conflicting records.', event.currentTarget)}>Retry account sync</Button>
         {!!active.state.cloud?.retryableQuizUpdates && <Button type="button" variant="secondary" className="min-h-11" disabled={busy} onClick={retryRetained}>Retry retained quiz updates</Button>}
         <Button ref={reviewButtonRef} type="button" variant="secondary" className="min-h-11" disabled={busy || active.state.loading} onClick={reviewTransfer}>Review guest progress</Button>
         <Button type="button" variant="neutral" className="min-h-11" disabled={busy} onClick={() => run(active.signOut, 'Signed out on this device.')}>Sign out</Button>
@@ -83,11 +113,10 @@ export function AccountProgressPanel({ active }) {
           <Button type="button" variant="neutral" className="min-h-11" disabled={busy} onClick={() => { setPreview(null); setMessage(null); reviewButtonRef.current?.focus(); }}>Cancel transfer</Button>
         </div>
       </div>}
-    </> : <>
+    </> : destinationPending ? <p className="mt-2 text-sm leading-relaxed text-neutral-300">Your saved records are retained while we check the account connection. Public lessons remain available.</p> : <>
       <p className="mt-2 text-sm leading-relaxed text-neutral-300">Your guest records stay in this browser. Signing in opens the account's own progress; you can then choose which guest records to add.</p>
-      {active.sessionStatus === 'connecting' && <p role="status" className="mt-2 text-sm text-neutral-300">Opening verified account progress…</p>}
       {active.signingOut && <p role="status" className="mt-2 text-sm text-neutral-300">Completing sign-out… Guest progress stays available.</p>}
-      {!active.configured && active.sessionStatus !== 'checking' && <p className="mt-2 text-sm text-neutral-300">Account sign-in is unavailable in this installation. You can continue studying as a guest.</p>}
+      {!active.configured && active.sessionStatus === 'guest' && <p className="mt-2 text-sm text-neutral-300">Account sign-in is unavailable in this installation. You can continue studying as a guest.</p>}
       <div className="mt-4 flex flex-wrap gap-3">
         {active.signingOut ? <Button disabled variant="secondary" className="min-h-11">Completing sign-out…</Button> : <Button asChild variant="secondary" className="min-h-11"><Link href="/auth/sign-in">Sign in with email</Link></Button>}
         <Button type="button" variant="neutral" className="min-h-11" disabled={busy || active.signingOut} onClick={() => run(active.reconnect, 'Account verification finished.')}>Check account connection</Button>

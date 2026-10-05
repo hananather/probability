@@ -4,6 +4,21 @@ import { Trophy, Target, Clock, TrendingUp, RefreshCcw, Home, ChevronRight } fro
 import { Button, buttonVariants } from '../ui/button';
 import Link from 'next/link';
 
+function elapsedTime(seconds) {
+  if (!Number.isFinite(seconds) || seconds < 0) return null;
+  const total = Math.floor(seconds);
+  const days = Math.floor(total / 86400);
+  const hours = Math.floor(total % 86400 / 3600);
+  const minutes = Math.floor(total % 3600 / 60);
+  const remainder = total % 60;
+  const parts = [[days, 'day'], [hours, 'hour'], [minutes, 'minute'], [remainder, 'second']];
+  return {
+    duration: `PT${total}S`,
+    display: days ? `${days}d ${hours}h ${minutes}m ${remainder}s` : hours ? `${hours}h ${minutes}m ${remainder}s` : `${minutes}:${remainder.toString().padStart(2, '0')}`,
+    accessible: `${parts.filter(([value]) => value).map(([value, unit]) => `${value} ${unit}${value === 1 ? '' : 's'}`).join(', ') || '0 seconds'} since start, including pauses and time away`,
+  };
+}
+
 export function QuizResults({
   score,
   totalQuestions,
@@ -21,8 +36,7 @@ export function QuizResults({
 }) {
   const percentage = Math.round((score / totalQuestions) * 100);
   const passed = percentage >= passingScore;
-  const minutes = Math.floor(timeSpent / 60);
-  const seconds = timeSpent % 60;
+  const elapsed = elapsedTime(timeSpent);
   const improvement = previousBest !== null ? percentage - previousBest : null;
   
   return (
@@ -79,10 +93,11 @@ export function QuizResults({
           {/* Time Spent */}
           <div className="bg-neutral-900/50 rounded-lg p-4 text-center">
             <Clock className="w-5 h-5 text-neutral-400 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-white">
-              {minutes}:{seconds.toString().padStart(2, '0')}
+            <p className="break-words text-2xl font-bold text-white">
+              {elapsed ? <time dateTime={elapsed.duration} aria-label={elapsed.accessible}>{elapsed.display}</time> : 'Not recorded'}
             </p>
-            <p className="text-xs text-neutral-400">Elapsed time</p>
+            <p className="text-xs text-neutral-400">Time since start</p>
+            <p className="mt-1 text-xs text-neutral-400">Includes pauses and time away</p>
           </div>
           
           {/* Correct Answers */}

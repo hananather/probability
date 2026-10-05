@@ -91,7 +91,7 @@ describe('quiz history before the current attempt', async () => {
     await saveCompleteSession({ startTime: Date.now() - 20000, isPaused: true, pausedRemaining: 50, deadline: Date.now() + 50000 });
     render(<ChapterQuiz chapterId={1} />); await flush();
     await click(screen.getByRole('button', { name: 'Finish and review' }));
-    expect(screen.getByText('Elapsed time').parentElement).toHaveTextContent('0:20');
+    expect(screen.getByText('Time since start').parentElement).toHaveTextContent('0:20');
     expect(quizStorage.getAttempts(1)[0].timeSpent).toBe(20);
   });
 });

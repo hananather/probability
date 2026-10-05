@@ -26,7 +26,9 @@ it('offers an explicit retained-quiz action, preserves the original backup, and 
   await screen.findByText('Account: alice@example.test');
   expect(screen.getByText(/Some account updates could not be queued for sync/)).toBeInTheDocument();
   const held = f.holdRemote(A);
-  await click(screen.getByRole('button', { name: 'Retry retained quiz updates' }));
+  const retry = screen.getByRole('button', { name: 'Retry retained quiz updates' });
+  retry.focus();
+  await click(retry);
   await held.entered.promise;
   await screen.findByText(/Retained quiz updates were queued with their original identity/);
   expect(screen.queryByText('Account progress synchronized')).not.toBeInTheDocument();
